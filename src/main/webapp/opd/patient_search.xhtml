@@ -54,6 +54,37 @@
                         <div class="row">
                             <div class="col-md-2">
 
+                                <div class="mb-3 w-100 d-flex align-items-center justify-content-between">
+                                    <!-- First three buttons -->
+                                    <div>
+                                        <p:commandButton 
+                                            value="New"
+                                            action="#{patientController.navigateToAddNewPatientForOpd()}" 
+                                            ajax="false"
+                                            icon="fa-solid fa-plus"
+                                            class=" ui-button-success" />
+
+                                        <p:commandButton 
+                                            id="btnSearch"
+                                            value="Search"
+                                            icon="fa-solid fa-search"
+                                            action="#{patientController.searchPatientForOpd()}" 
+                                            ajax="false" 
+                                            class="mx-3 ui-button-warning" />
+                                        <p:defaultCommand target="btnSearch"> </p:defaultCommand>
+
+                                        <p:commandButton 
+                                            value="Clear" 
+                                            action="#{patientController.clearSearchDetails()}"
+                                            ajax="false" 
+                                            icon="fa-solid fa-eraser" 
+                                            class=" ui-button-danger"/>
+                                    </div>
+
+                                    <!-- Right-aligned controls -->
+
+                                </div>
+
 
                                 <div class="mb-3">
                                     <h:outputLabel value="Name" class="form-label" />
@@ -105,38 +136,24 @@
                                     <p:inputText  class="form form-control"  autocomplete="off"  value="#{patientController.searchSampleId}"></p:inputText>
 
                                 </div>
-                            </div>
-                            <div class="col-md-10">
-                                <div class="mb-3 w-100 d-flex align-items-center justify-content-between">
-                                    <!-- First three buttons -->
-                                    <div>
-                                        <p:commandButton 
-                                            value="New"
-                                            action="#{patientController.navigateToAddNewPatientForOpd()}" 
-                                            ajax="false"
-                                            icon="fa-solid fa-plus"
-                                            class="m-1 ui-button-success" />
 
-                                        <p:commandButton 
-                                            id="btnSearch"
-                                            value="Search"
-                                            icon="fa-solid fa-search"
-                                            action="#{patientController.searchPatientForOpd()}" 
-                                            ajax="false" 
-                                            class="m-1 ui-button-warning" />
-                                        <p:defaultCommand target="btnSearch"> </p:defaultCommand>
-
-                                        <p:commandButton 
-                                            value="Clear" 
-                                            action="#{patientController.clearSearchDetails()}"
-                                            ajax="false" 
-                                            icon="fa-solid fa-eraser" 
-                                            class="m-1 ui-button-danger"/>
-                                    </div>
-
-                                    <!-- Right-aligned controls -->
+                                <div class="mb-3" style="display: #{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system') ? 'block' : 'none'}">
+                                    <h:outputLabel class="form form-label" value="Patient Specific Status" ></h:outputLabel>
+                                    <p:selectOneMenu class="w-100" id="specificStatus" value="#{patientController.specificPatientStatus}">
+                                        <f:selectItem itemLabel="Select a status" itemValue="#{null}"/>
+                                        <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
+                                    </p:selectOneMenu>
 
                                 </div>
+                                
+                                <div class="mb-3" style="display: #{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system') ? 'block' : 'none'}">
+                                    <h:outputLabel class="form form-label" value="Patient Active Status" ></h:outputLabel><br></br>
+                                    <p:selectBooleanButton class="w-100" value="#{patientController.blackListStatus}" onLabel="Blacklist" onIcon="pi pi-times" offLabel="Active" offIcon="pi pi-check"/>
+
+                                </div>
+                            </div>
+                            <div class="col-md-10">
+
 
                                 <p:dataTable 
                                     value="#{patientController.searchedPatients}" 
@@ -144,30 +161,44 @@
                                     class="w-100 table table-sm table-striped"
                                     paginatorAlwaysVisible="false"
                                     paginator="true"
-                                    rows="10"
+                                    rows="8"
+                                    rowIndexVar="i"
+                                    paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,20"
                                     >
-                                    <p:column headerText="Name" width="25%">
-                                        <p:outputLabel value="#{p.person.name}" ></p:outputLabel>
-                                        <br/>
+                                    <p:column headerText="NO" width="5%">
+                                        <p:outputLabel value="#{i+1}"></p:outputLabel> 
+                                    </p:column>
+                                    <p:column headerText="Patient Name" width="25%" filterMatchMode="contains" filterBy="#{p.person.name}">
+                                        <p:outputLabel style="font-weight: bold"  value="#{p.person.nameWithTitle}" ></p:outputLabel>
                                         <p:outputLabel rendered="#{p.person.sex == 'Male'}">
-                                            <i class="fas fa-mars" style="color: blue;  font-size: 24px;"></i>
+                                            <i class="fas fa-mars mx-2" style="color: blue;  font-size: 24px;"></i>
                                         </p:outputLabel>
 
                                         <p:outputLabel rendered="#{p.person.sex == 'Female'}">
-                                            <i class="fas fa-venus" style="color: pink; font-size: 24px;"></i>
+                                            <i class="fas fa-venus mx-2" style="color: pink; font-size: 24px;"></i>
                                         </p:outputLabel>
-                                        <p:outputLabel value=" "></p:outputLabel>
-                                        <p:outputLabel value="#{p.person.ageAsString}"></p:outputLabel>
+                                        <br/>
+
+                                        <p:outputLabel value="#{p.person.ageAsString == 'Not Recorded' ? 'N/A' : p.person.ageAsString}"></p:outputLabel>
                                         <br/>
                                         <p:outputLabel value="#{p.person.phone}">
                                         </p:outputLabel>
                                         <p:outputLabel rendered="#{not empty p.person.phone and p.person.phone ne ''}" value=",&nbsp; "></p:outputLabel>
                                         <br/>
+                                        <p:outputLabel value="#{p.phn}"></p:outputLabel>
                                         <p:outputLabel value="#{p.person.address}"></p:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Actions">
+
+                                    <p:column style="text-align: center" headerText="Patient Status" width="10%" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}">
+                                        <p:outputLabel value="X Blaclisted" class="px-3" rendered="#{p.blacklisted}" style="color: #FF401F; font-weight: bold; padding: 5px; border-radius: 15px;"></p:outputLabel>
+                                        <p:outputLabel value="Active" class="px-3" rendered="#{!p.blacklisted}" style="color: green; font-weight: bold; padding: 5px; border-radius: 15px;"></p:outputLabel>
+                                        <p:outputLabel value="#{p.specificStatus}" class="px-3" rendered="#{not empty p.specificStatus}" style="color: EB7633; font-weight: bold; padding: 5px; border-radius: 15px;"></p:outputLabel>
+                                        <p:outputLabel value="NORMAL" class="px-3" rendered="#{empty p.specificStatus}" style="color: EB7633; font-weight: bold; padding: 5px; border-radius: 15px;"></p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Actions" width="65%">
                                         <div class="row g-2">
                                             <!-- Your p:commandButton elements here wrapped in col divs -->
                                             <div class="col-auto gap-2">
