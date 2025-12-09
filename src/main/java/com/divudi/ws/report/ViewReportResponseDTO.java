@@ -94,9 +94,11 @@ public class ViewReportResponseDTO {
         dto.qrCodeContentsDetailed = patientReport.getQrCodeContentsDetailed();
         dto.qrCodeContentsLink = patientReport.getQrCodeContentsLink();
 
-        dto.reportItemValues = ViewReportItemValueResponseDTO.fromPatientReportItemValues(
-                patientReport.getPatientReportItemValues()
-        );
+        dto.reportItemValues = patientReport.getPatientReportItemValues() != null
+                ? ViewReportItemValueResponseDTO.fromPatientReportItemValues(
+                        patientReport.getPatientReportItemValues()
+                )
+                : Collections.emptyList();
 
         return dto;
     }

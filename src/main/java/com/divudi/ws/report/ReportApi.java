@@ -82,10 +82,12 @@ public class ReportApi {
         getSearchKeyword().setPatientInvestigationStatus(PatientInvestigationStatus.REPORT_APPROVED);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime fromLocal = LocalDateTime.parse(fromDate.trim(), formatter);
+        LocalDateTime toLocal = LocalDateTime.parse(toDate.trim(), formatter);
 
         List<PatientInvestigation> investigations = patientInvestigationService.fetchPatientInvestigations(
-                Date.from(LocalDateTime.parse(fromDate, formatter).atZone(ZoneId.systemDefault()).toInstant()),
-                Date.from(LocalDateTime.parse(toDate, formatter).atZone(ZoneId.systemDefault()).toInstant()),
+                Date.from(fromLocal.atZone(ZoneId.systemDefault()).toInstant()),
+                Date.from(toLocal.atZone(ZoneId.systemDefault()).toInstant()),
                 getSearchKeyword()
         );
 
