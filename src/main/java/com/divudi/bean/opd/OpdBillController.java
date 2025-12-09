@@ -1876,41 +1876,49 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     private void savePatient() {
         if (getPatient().getId() == null) {
+            // New patient
             if (getPatient().getPerson().getName() != null) {
                 String updatedPatientName;
                 updatedPatientName = changeTextCases(getPatient().getPerson().getName(), getSessionController().getApplicationPreference().getChangeTextCasesPatientName());
                 getPatient().getPerson().setName(updatedPatientName);
             }
-            getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+
+            // Generate PHN upfront
+            if (getPatient().getPhn() == null || getPatient().getPhn().trim().equals("")) {
+                getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+            }
+
             getPatient().setCreatedInstitution(getSessionController().getInstitution());
             getPatient().setCreater(getSessionController().getLoggedUser());
             getPatient().setCreatedAt(new Date());
             getPatient().setHasAnAccount(false);
             getPatient().setCreditLimit(0.0);
+
+            // Save Person first (no flush yet)
             if (getPatient().getPerson().getId() != null) {
-//                getPatientFacade().edit(getPatient());
                 getPersonFacade().edit(getPatient().getPerson());
             } else {
                 getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
                 getPatient().getPerson().setCreatedAt(new Date());
-//                getPatientFacade().create(getPatient());
                 getPersonFacade().create(getPatient().getPerson());
             }
-            try {
-                getPatientFacade().create(getPatient());
-            } catch (Exception e) {
-                getPatientFacade().edit(getPatient());
-            }
+
+            // Save Patient with immediate flush (flushes both Person and Patient)
+            getPatientFacade().createAndFlush(getPatient());
+
         } else {
+            // Existing patient
+            // Save Person first (no flush yet)
             if (getPatient().getPerson().getId() != null) {
-//                getPatientFacade().edit(getPatient());
                 getPersonFacade().edit(getPatient().getPerson());
             } else {
                 getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
                 getPatient().getPerson().setCreatedAt(new Date());
-//                getPatientFacade().create(getPatient());
                 getPersonFacade().create(getPatient().getPerson());
             }
+
+            // Save Patient with immediate flush (THIS WAS MISSING!)
+            getPatientFacade().editAndFlush(getPatient());
         }
     }
 
