@@ -163,7 +163,6 @@ public class LaboratoryCommonController implements Serializable {
     }
 
     public SampleDTO refreshPatientSampleDTO(Long sampleId) {
-        System.out.println("refreshPatientSampleDTO");
         String jpql = "SELECT new com.divudi.core.data.dto.SampleDTO( "
                 + " COALESCE(ps.id, 0), "
                 + " COALESCE(ps.tube.name, ''), "

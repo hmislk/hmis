@@ -1309,7 +1309,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     public void save() {
-        System.out.println("save");
         List<ShiftTable> tmpShiftTable = new ArrayList<>();
         errorMessage = new ArrayList<>();
 
@@ -1327,7 +1326,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //            return;
 //        }
         for (ShiftTable st : shiftTables) {
-            System.out.println("st = " + st);
             ShiftTable newSh = new ShiftTable();
             newSh.setDate(st.getDate());
             newSh.setFlag(st.isFlag());
@@ -1420,7 +1418,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 getStaffShiftFacade().edit(ss);
                 
                 System.out.println("ss = " + ss);
-                System.out.println("ss.getStartRecord = " + ss.getStartRecord());
 
             }
 

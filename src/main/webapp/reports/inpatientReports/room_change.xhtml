@@ -14,32 +14,48 @@
 
                         <h:panelGrid columns="6" class="w-100">
 
-                            <h:panelGroup>
+
+
+                            <!-- From Date -->
+                            <h:panelGroup >
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="From Date " class="m-3" />
+                                <h:outputLabel class="mx-3" value="From Date"/>
                             </h:panelGroup>
-                            <p:datePicker value=""
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                          showTime="true"
-                                          hourFormat="24"
-                                          styleClass="w-100"
-                                          inputStyleClass="w-100 form-control" />
+
+                            <p:datePicker
+                                id="fromdate"
+                                value=""
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                showTime="true"
+                                timeInput="true"
+                                yearNavigator="true"
+                                monthNavigator="true"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                />
 
                             <p:spacer width="20"/>
 
-                            <h:panelGroup>
+                            <!-- To Date -->
+                            <h:panelGroup >
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="To Date " class="m-3" />
+                                <h:outputLabel class="mx-3" value="To Date"/>
                             </h:panelGroup>
-                            <p:datePicker value=""
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                          showTime="true"
-                                          hourFormat="24"
-                                          styleClass="w-100"
-                                          inputStyleClass="w-100 form-control" />
+
+                            <p:datePicker 
+                                id ="toDate"
+                                value=""
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                showTime="true"
+                                timeInput="true"
+                                yearNavigator="true"
+                                monthNavigator="true"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                />
 
                             <p:spacer width="20"/>
-
+                            <!-- Patient Name -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-user mr-2"/>
 
@@ -56,7 +72,7 @@
                             </p:selectOneMenu>
 
                             <p:spacer width="20"/>
-
+                            <!-- Visit No -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-user mr-2"/>
                                 <p:outputLabel value="Visit No" class="m-3"/>
@@ -72,6 +88,7 @@
                             </p:selectOneMenu>
 
                             <p:spacer width="20"/>
+                            <!-- From Ward -->
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
@@ -88,7 +105,7 @@
                             </p:selectOneMenu>
 
                             <p:spacer width="20"/>
-
+                            <!-- To ward -->
                             <h:panelGroup layout="block" styleClass="to-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
                                 <p:outputLabel value="To Ward" class="m-3"/>
@@ -103,6 +120,7 @@
                             </p:selectOneMenu>
 
                         </h:panelGrid>
+
 
                         <div class="d-flex align-items-center my-3 mt-5 mb-5">
 
@@ -161,7 +179,7 @@
                                         <p:columnGroup type="header">
                                             <p:row>
                                                 <p:column rowspan="2" headerText="S.No" styleClass="border"/>
-                                                <p:column rowspan="2" headerText="MR.No" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="MRNO" styleClass="border"/>
                                                 <p:column rowspan="2" headerText="Patient Name" styleClass="border"/>
                                                 <p:column rowspan="2" headerText="Age" styleClass="border"/>
                                                 <p:column rowspan="2" headerText="Gender" styleClass="border"/>

@@ -72,7 +72,11 @@ public class FavouriteController implements Serializable {
     }
 
     public void fillFavouriteDisgnosis() {
+        System.out.println("DEBUG FILL: fillFavouriteDisgnosis() called");
+        System.out.println("DEBUG FILL: Selected item (diagnosis): " + (item != null ? item.getName() : "NULL"));
+        System.out.println("DEBUG FILL: Type: " + PrescriptionTemplateType.FavouriteDiagnosis);
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
+        System.out.println("DEBUG FILL: Found " + (items != null ? items.size() : "null") + " favourite diagnosis items");
     }
 
     public String toAddFavDig() {
@@ -90,7 +94,28 @@ public class FavouriteController implements Serializable {
     }
 
     public void fillFavouriteItems(Item forItem, PrescriptionTemplateType type) {
+        System.out.println("DEBUG FILL: fillFavouriteItems() called");
+        System.out.println("DEBUG FILL: forItem: " + (forItem != null ? forItem.getName() : "NULL"));
+        System.out.println("DEBUG FILL: type: " + type);
         items = listFavouriteItems(forItem, type);
+        System.out.println("DEBUG FILL: listFavouriteItems returned " + (items != null ? items.size() : "null") + " items");
+        if (items != null && !items.isEmpty()) {
+            System.out.println("DEBUG FILL: Found items:");
+            for (int i = 0; i < items.size(); i++) {
+                PrescriptionTemplate template = items.get(i);
+                if (template != null && template.getItem() != null) {
+                    System.out.println("DEBUG FILL:   " + (i+1) + ". " + template.getItem().getName() +
+                                     " (Type: " + template.getType() +
+                                     ", ForItem: " + (template.getForItem() != null ? template.getForItem().getName() : "NULL") +
+                                     ", FromDays: " + template.getFromDays() +
+                                     ", ToDays: " + template.getToDays() + ")");
+                } else {
+                    System.out.println("DEBUG FILL:   " + (i+1) + ". NULL template or item");
+                }
+            }
+        } else {
+            System.out.println("DEBUG FILL: No items found");
+        }
     }
 
     public List<PrescriptionTemplate> listFavouriteItems(Item forItem, PrescriptionTemplateType type) {
@@ -106,6 +131,13 @@ public class FavouriteController implements Serializable {
     }
 
     public List<PrescriptionTemplate> listFavouriteItems(Item forItem, PrescriptionTemplateType type, Double weight, Long ageInDays) {
+        System.out.println("DEBUG QUERY: listFavouriteItems called with:");
+        System.out.println("DEBUG QUERY:   forItem: " + (forItem != null ? forItem.getName() + " (ID: " + forItem.getId() + ")" : "NULL"));
+        System.out.println("DEBUG QUERY:   type: " + type);
+        System.out.println("DEBUG QUERY:   weight: " + weight);
+        System.out.println("DEBUG QUERY:   ageInDays: " + ageInDays);
+        System.out.println("DEBUG QUERY:   currentUser: " + (sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getWebUserPerson().getNameWithTitle() : "NULL"));
+
         String j;
         Map m = new HashMap();
         j = "select i "
@@ -116,24 +148,33 @@ public class FavouriteController implements Serializable {
         if (type != null) {
             m.put("t", type);
             j += " and i.type=:t ";
+            System.out.println("DEBUG QUERY: Added type filter: " + type);
         }
 
         if(forItem!=null){
             m.put("fi", forItem);
             j += " and i.forItem=:fi ";
+            System.out.println("DEBUG QUERY: Added forItem filter: " + forItem.getName() + " (ID: " + forItem.getId() + ")");
         }
         if (weight != null) {
             j += " and ( i.fromKg < :wt and i.toKg > :wt ) ";
             m.put("wt", weight);
+            System.out.println("DEBUG QUERY: Added weight filter: " + weight);
         }
         if (ageInDays != null) {
             j += " and ( i.fromDays < :ad and i.toDays > :ad ) ";
             m.put("ad", (double)ageInDays);
+            System.out.println("DEBUG QUERY: Added age filter: " + ageInDays + " days");
         }
         j += " order by i.orderNo";
 
+        System.out.println("DEBUG QUERY: Final JPQL: " + j);
+        System.out.println("DEBUG QUERY: Parameters: " + m);
+
         m.put("wu", sessionController.getLoggedUser());
         List<PrescriptionTemplate> its = favouriteItemFacade.findByJpql(j, m);
+        System.out.println("DEBUG QUERY: Query returned " + (its != null ? its.size() : "null") + " results");
+
         if(its==null){
             its = new ArrayList<>();
         }

@@ -76,7 +76,7 @@ public class UserSettingsController implements Serializable {
             });
         } catch (Exception e) {
             // Graceful degradation - if settings can't be loaded, continue with defaults
-            System.err.println("Error loading user settings: " + e.getMessage());
+
         }
     }
 
@@ -152,7 +152,6 @@ public class UserSettingsController implements Serializable {
         try {
             return deserializeFromJson(jsonString, clazz);
         } catch (Exception e) {
-            System.err.println("Error deserializing JSON setting " + key + ": " + e.getMessage());
             return defaultValue;
         }
     }
@@ -198,7 +197,6 @@ public class UserSettingsController implements Serializable {
             settingsCache.put(key, option);
 
         } catch (Exception e) {
-            System.err.println("Error saving user setting " + key + ": " + e.getMessage());
         }
     }
 
@@ -230,7 +228,6 @@ public class UserSettingsController implements Serializable {
             String jsonString = serializeToJson(value);
             saveUserSetting(key, jsonString, OptionValueType.LONG_TEXT);
         } catch (Exception e) {
-            System.err.println("Error serializing JSON setting " + key + ": " + e.getMessage());
         }
     }
 
@@ -333,7 +330,6 @@ public class UserSettingsController implements Serializable {
                 JsfUtil.addSuccessMessage("Settings reset to defaults");
             }
         } catch (Exception e) {
-            System.err.println("Error resetting page settings: " + e.getMessage());
             JsfUtil.addErrorMessage("Error resetting settings");
         }
     }

@@ -63,9 +63,8 @@ import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
-//Removed for performance optimization
-//import com.divudi.core.entity.pharmacy.UserStock;
-//import com.divudi.core.entity.pharmacy.UserStockContainer;
+import com.divudi.core.entity.pharmacy.UserStock;
+import com.divudi.core.entity.pharmacy.UserStockContainer;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
@@ -78,9 +77,8 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.core.facade.TokenFacade;
-//Removed for performance optimization
-//import com.divudi.core.facade.UserStockContainerFacade;
-//import com.divudi.core.facade.UserStockFacade;
+import com.divudi.core.facade.UserStockContainerFacade;
+import com.divudi.core.facade.UserStockFacade;
 import com.divudi.service.AuditService;
 import com.divudi.service.BillService;
 import com.divudi.service.DiscountSchemeValidationService;
@@ -124,9 +122,8 @@ import org.primefaces.PrimeFaces;
 @SessionScoped
 public class PharmacySaleForCashierController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
-    //Removed for performance optimization
-//    @Inject
-//    private UserStockController userStockController;
+    @Inject
+    private UserStockController userStockController;
     @Inject
     private PriceMatrixController priceMatrixController;
     @Inject
@@ -179,11 +176,10 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     private StaffService staffBean;
     @EJB
     private PaymentService paymentService;
-    //Removed for performance optimization
-//    @EJB
-//    private UserStockContainerFacade userStockContainerFacade;
-//    @EJB
-//    private UserStockFacade userStockFacade;
+    @EJB
+    private UserStockContainerFacade userStockContainerFacade;
+    @EJB
+    private UserStockFacade userStockFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
     @EJB
@@ -237,8 +233,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     String cashPaidStr;
     String comment;
     ///////////////////
-    //Removed for performance optimization
-    //private UserStockContainer userStockContainer;
+    private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
     private boolean patientDetailsEditable;
     private Department counter;
@@ -600,7 +595,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         tmp.setQty(0.0);
         tmp.getPharmaceuticalBillItem().setQtyInUnit(0.0f);
 
-        //UserStock update removed for performance optimization
+        userStockController.updateUserStock(tmp.getTransUserStock(), 0);
     }
 
     //Check when edititng Qty
@@ -621,9 +616,16 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             return true;
         }
 
-        //Check Is There Any Other User using same Stock - REMOVED for performance optimization
+        //Check Is There Any Other User using same Stock
+        if (!userStockController.isStockAvailable(tmp.getPharmaceuticalBillItem().getStock(), tmp.getQty(), getSessionController().getLoggedUser())) {
 
-        //UserStock update removed for performance optimization
+            setZeroToQty(tmp);
+            onEditCalculation(tmp);
+            JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
+            return true;
+        }
+
+        userStockController.updateUserStock(tmp.getTransUserStock(), tmp.getQty());
 
         onEditCalculation(tmp);
 
@@ -786,87 +788,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         this.stock = stock;
     }
 
-    /**
-     * Converts a StockDTO to a minimal Stock entity without database queries.
-     * Creates detached entities populated only with data from the DTO.
-     * This avoids JPA proxy issues and LazyInitializationException.
-     *
-     * @param stockDto The DTO containing all necessary data
-     * @return A minimal Stock entity with ItemBatch and Item populated from DTO
-     */
     public Stock convertStockDtoToEntity(StockDTO stockDto) {
-        long conversionStart = System.currentTimeMillis();
-        System.out.println("  >> convertStockDtoToEntity: Start");
-
         if (stockDto == null || stockDto.getId() == null) {
-            System.out.println("  >> convertStockDtoToEntity: stockDto is null or has no ID - returning null");
             return null;
         }
-
-        // Debug: Print DTO data
-        System.out.println("    >>> DTO Details - StockId: " + stockDto.getId() +
-                          ", ItemBatchId: " + stockDto.getItemBatchId() +
-                          ", ItemId: " + stockDto.getItemId() +
-                          ", CostRate: " + stockDto.getCostRate());
-
-        // Check if we have the necessary data for lightweight creation
-        if (stockDto.getItemBatchId() != null && stockDto.getItemId() != null) {
-            long entityCreationStart = System.currentTimeMillis();
-            System.out.println("    >>> Using lightweight DTO conversion (NO database query)");
-
-            // Create minimal Stock entity with data from DTO
-            Stock stock = new Stock();
-            stock.setId(stockDto.getId());
-            stock.setStock(stockDto.getStockQty());
-
-            // Create minimal ItemBatch with data from DTO
-            ItemBatch itemBatch = new ItemBatch();
-            itemBatch.setId(stockDto.getItemBatchId());
-            itemBatch.setRetailsaleRate(stockDto.getRetailRate());
-            itemBatch.setDateOfExpire(stockDto.getDateOfExpire());
-            itemBatch.setBatchNo(stockDto.getBatchNo());
-            itemBatch.setCostRate(stockDto.getCostRate());
-
-            // Create minimal Item (we use Amp as a concrete implementation)
-            // Note: This is a detached entity used only for reference
-            // The actual fetch happens when saving the bill if needed
-            Item item = createMinimalItemFromDto(stockDto);
-
-            itemBatch.setItem(item);
-            stock.setItemBatch(itemBatch);
-
-            System.out.println("    >>> Entity creation time: " + (System.currentTimeMillis() - entityCreationStart) + "ms");
-            System.out.println("  >> convertStockDtoToEntity: Total time = " + (System.currentTimeMillis() - conversionStart) + "ms");
-            return stock;
-        }
-
-        // Fallback to database fetch if DTO doesn't have all required data
-        // This ensures backward compatibility with existing code
-        System.out.println("    >>> WARNING: Falling back to database fetch (missing DTO data)");
-        long dbFetchStart = System.currentTimeMillis();
-        Stock result = stockFacade.find(stockDto.getId());
-        System.out.println("    >>> Database fetch time: " + (System.currentTimeMillis() - dbFetchStart) + "ms");
-        System.out.println("  >> convertStockDtoToEntity: Total time = " + (System.currentTimeMillis() - conversionStart) + "ms");
-        return result;
-    }
-
-    /**
-     * Creates a minimal Item entity from StockDTO data.
-     * Since Item is abstract, we create an Amp instance.
-     * This is safe because we only use properties set from DTO data.
-     *
-     * @param stockDto The DTO containing item data
-     * @return A minimal Amp instance with properties from DTO
-     */
-    private Item createMinimalItemFromDto(StockDTO stockDto) {
-        // Create a minimal Amp instance (Item is abstract)
-        Amp item = new Amp();
-        item.setId(stockDto.getItemId());
-        item.setName(stockDto.getItemName());
-        item.setCode(stockDto.getCode());
-        // Set discountAllowed from DTO, defaulting to true for safety
-        item.setDiscountAllowed(stockDto.getDiscountAllowed() != null ? stockDto.getDiscountAllowed() : true);
-        return item;
+        return stockFacade.find(stockDto.getId());
     }
 
     public StockDTO getStockDto() {
@@ -992,7 +918,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     public void resetAll() {
         setBillSettlingStarted(false);
-        //UserStock cleanup removed for performance optimization
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
         clearBillItem();
 //        searchController.createPreBillsNotPaid();
@@ -1000,7 +926,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     public void prepareForNewPharmacyRetailBill() {
-        //UserStock cleanup removed for performance optimization
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
         clearBillItem();
 //        searchController.createPreBillsNotPaid();
@@ -1169,7 +1095,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         return getStockFacade().findByJpql(sql, parameters, 20);
     }
 
-    public List<StockDTO> completeAvailableStockOptimized(String qry) {
+    public List<Stock> completeAvailableStockOptimized(String qry) {
         if (qry == null || qry.trim().isEmpty()) {
             return Collections.emptyList();
         }
@@ -1190,10 +1116,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
                 "Enable search medicines by generic name(VMP)", false);
 
-        StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
-                .append("i.id, i.itemBatch.id, i.itemBatch.item.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
-                .append("i.itemBatch.batchNo, i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire, i.itemBatch.item.discountAllowed, i.itemBatch.costRate) ")
-                .append("FROM Stock i ")
+        StringBuilder sql = new StringBuilder("SELECT i FROM Stock i ")
                 .append("WHERE i.stock > :stockMin ")
                 .append("AND i.department = :department ")
                 .append("AND (");
@@ -1214,18 +1137,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
 
-        System.out.println(">>> Autocomplete SQL: " + sql.toString());
-        List<StockDTO> results = (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
-        System.out.println(">>> Autocomplete returned " + (results != null ? results.size() : 0) + " results");
-        if (results != null && !results.isEmpty()) {
-            StockDTO firstResult = results.get(0);
-            System.out.println(">>> First result - StockId: " + firstResult.getId() +
-                             ", ItemBatchId: " + firstResult.getItemBatchId() +
-                             ", ItemId: " + firstResult.getItemId() +
-                             ", CostRate: " + firstResult.getCostRate());
-        }
-
-        return results;
+        return getStockFacade().findByJpql(sql.toString(), parameters, 20);
     }
 
     public List<StockDTO> completeAvailableStockOptimizedDto(String qry) {
@@ -1250,8 +1162,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 "Enable search medicines by generic name(VMP)", false);
 
         StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
-                .append("i.id, i.itemBatch.id, i.itemBatch.item.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
-                .append("i.itemBatch.batchNo, i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire, i.itemBatch.item.discountAllowed, i.itemBatch.costRate) ")
+                .append("i.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
+                .append("i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire) ")
                 .append("FROM Stock i ")
                 .append("WHERE i.stock > :stockMin ")
                 .append("AND i.department = :department ")
@@ -1273,84 +1185,20 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
 
-        System.out.println(">>> AutocompleteDto SQL: " + sql.toString());
-        List<StockDTO> results = (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
-        System.out.println(">>> AutocompleteDto returned " + (results != null ? results.size() : 0) + " results");
-        if (results != null && !results.isEmpty()) {
-            StockDTO firstResult = results.get(0);
-            System.out.println(">>> First result - StockId: " + firstResult.getId() +
-                             ", ItemBatchId: " + firstResult.getItemBatchId() +
-                             ", ItemId: " + firstResult.getItemId() +
-                             ", CostRate: " + firstResult.getCostRate());
-        }
-
-        return results;
+        return (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
     }
 
-    /**
-     * Handles item selection from autocomplete.
-     * Converts DTO to minimal entity (no database query) and calculates rates.
-     */
     public void handleSelectAction() {
-        long startTime = System.currentTimeMillis();
-        System.out.println("=== HANDLE SELECT ACTION START ===");
-
-        if (stockDto == null) {
-            System.out.println("handleSelectAction: stockDto is null - exiting");
-            return;
-        }
-
-        // Convert DTO to minimal entity (no database query)
-        long step1Start = System.currentTimeMillis();
-        this.stock = convertStockDtoToEntity(stockDto);
-        System.out.println("Step 1 - Convert DTO to entity: " + (System.currentTimeMillis() - step1Start) + "ms");
-
         if (stock == null) {
-            System.out.println("handleSelectAction: stock is null after conversion - exiting");
             return;
         }
-
-        long step2Start = System.currentTimeMillis();
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
-        System.out.println("Step 2 - Get BillItem and set stock: " + (System.currentTimeMillis() - step2Start) + "ms");
-
-        long step3Start = System.currentTimeMillis();
         calculateRatesOfSelectedBillItemBeforeAddingToTheList(billItem);
-        System.out.println("Step 3 - Calculate rates: " + (System.currentTimeMillis() - step3Start) + "ms");
-
-        // Load item instructions only if configured (performance optimization)
-        if (configOptionApplicationController.getBooleanValueByKey("Load Item Instructions in Pharmacy Retail Sale", false)) {
-            long step4Start = System.currentTimeMillis();
-            pharmacyService.addBillItemInstructions(billItem);
-            System.out.println("Step 4 - Add bill item instructions: " + (System.currentTimeMillis() - step4Start) + "ms");
-        } else {
-            System.out.println("Step 4 - Add bill item instructions: SKIPPED (not enabled)");
-        }
-
-        long totalTime = System.currentTimeMillis() - startTime;
-        System.out.println("=== HANDLE SELECT ACTION TOTAL TIME: " + totalTime + "ms ===");
+        pharmacyService.addBillItemInstructions(billItem);
     }
 
     public void handleSelect(SelectEvent event) {
-        System.out.println(">>> handleSelect: Event received");
-
-        // Get the complete DTO directly from the selection event
-        // This bypasses the converter and preserves all DTO fields
-        StockDTO selectedDto = (StockDTO) event.getObject();
-
-        if (selectedDto != null) {
-            System.out.println(">>> handleSelect: Got DTO from event - StockId: " + selectedDto.getId() +
-                             ", ItemBatchId: " + selectedDto.getItemBatchId() +
-                             ", ItemId: " + selectedDto.getItemId());
-
-            // Store the complete DTO directly
-            this.stockDto = selectedDto;
-
-            // Now call handleSelectAction which will use the complete DTO
-            handleSelectAction();
-        } else {
-            System.out.println(">>> handleSelect: DTO from event is NULL");
-        }
+        handleSelectAction();
     }
 
     public void showItemDetailsForSelectedStock() {
@@ -1483,47 +1331,20 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     public void calculateRatesOfSelectedBillItemBeforeAddingToTheList(BillItem bi) {
-        long calcRatesStart = System.currentTimeMillis();
-        System.out.println("  >> calculateRatesOfSelectedBillItemBeforeAddingToTheList: Start");
-
         PharmaceuticalBillItem pharmBillItem = bi.getPharmaceuticalBillItem();
         if (pharmBillItem != null && pharmBillItem.getStock() != null) {
-            long step1Start = System.currentTimeMillis();
             ItemBatch itemBatch = pharmBillItem.getStock().getItemBatch();
             if (itemBatch != null) {
                 bi.setRate(itemBatch.getRetailsaleRate());
             }
-            System.out.println("    >>> Set rate from item batch: " + (System.currentTimeMillis() - step1Start) + "ms");
-
-            // Performance optimization: Skip discount calculation if no discount scheme is active
-            long step2Start = System.currentTimeMillis();
-            boolean hasDiscountScheme = getPaymentScheme() != null ||
-                                       (getPaymentMethod() == PaymentMethod.Credit && toInstitution != null);
-
-            if (hasDiscountScheme) {
-                System.out.println("    >>> Discount scheme detected, calculating discount...");
-                long discountStart = System.currentTimeMillis();
-                bi.setDiscountRate(calculateBillItemDiscountRate(bi));
-                System.out.println("    >>> Calculate discount rate: " + (System.currentTimeMillis() - discountStart) + "ms");
-            } else {
-                System.out.println("    >>> No discount scheme, setting discount to 0");
-                bi.setDiscountRate(0.0);
-            }
-            System.out.println("    >>> Check discount scheme and calculate: " + (System.currentTimeMillis() - step2Start) + "ms");
-
-            long step3Start = System.currentTimeMillis();
+            bi.setDiscountRate(calculateBillItemDiscountRate(bi));
             bi.setNetRate(bi.getRate() - bi.getDiscountRate());
 
             bi.setGrossValue(bi.getRate() * bi.getQty());
             bi.setDiscount(bi.getDiscountRate() * bi.getQty());
             bi.setNetValue(bi.getGrossValue() - bi.getDiscount());
-            System.out.println("    >>> Calculate final values: " + (System.currentTimeMillis() - step3Start) + "ms");
 
-        } else {
-            System.out.println("  >> calculateRatesOfSelectedBillItemBeforeAddingToTheList: PharmBillItem or Stock is null - skipping");
         }
-
-        System.out.println("  >> calculateRatesOfSelectedBillItemBeforeAddingToTheList: Total time = " + (System.currentTimeMillis() - calcRatesStart) + "ms");
     }
 
     public void calculatePreBillTotals() {
@@ -1593,7 +1414,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 //            JsfUtil.addErrorMessage("This batch is Expire With in 31 Days.");
 //            return;
 //        }
-        //Checking User Stock Entity - REMOVED for performance optimization
+        //Checking User Stock Entity
+        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
+            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+            return addedQty;
+        }
         if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
             if (patient != null && getBillItem() != null) {
 
@@ -1623,7 +1448,12 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
 
-        //UserStock creation removed for performance optimization
+        if (getUserStockContainer().getId() == null) {
+            saveUserStockContainer();
+        }
+
+        UserStock us = saveUserStock(billItem);
+        billItem.setTransUserStock(us);
 
         pharmacyService.addBillItemInstructions(billItem);
 
@@ -1745,7 +1575,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         billItem.setBill(getPreBill());
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
-        //UserStock creation removed for performance optimization
+        if (getUserStockContainer().getId() == null) {
+            saveUserStockContainer();
+        }
+        UserStock us = saveUserStock(billItem);
+        billItem.setTransUserStock(us);
     }
 
     private void addMultipleStock() {
@@ -1755,30 +1589,29 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     }
 
-    //Helper methods removed for performance optimization
-//    private void saveUserStockContainer() {
-//        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
-//
-//        getUserStockContainer().setCreater(getSessionController().getLoggedUser());
-//        getUserStockContainer().setCreatedAt(new Date());
-//
-//        getUserStockContainerFacade().create(getUserStockContainer());
-//
-//    }
-//
-//    private UserStock saveUserStock(BillItem tbi) {
-//        UserStock us = new UserStock();
-//        us.setStock(tbi.getPharmaceuticalBillItem().getStock());
-//        us.setUpdationQty(tbi.getQty());
-//        us.setCreater(getSessionController().getLoggedUser());
-//        us.setCreatedAt(new Date());
-//        us.setUserStockContainer(getUserStockContainer());
-//        getUserStockFacade().create(us);
-//
-//        getUserStockContainer().getUserStocks().add(us);
-//
-//        return us;
-//    }
+    private void saveUserStockContainer() {
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
+
+        getUserStockContainer().setCreater(getSessionController().getLoggedUser());
+        getUserStockContainer().setCreatedAt(new Date());
+
+        getUserStockContainerFacade().create(getUserStockContainer());
+
+    }
+
+    private UserStock saveUserStock(BillItem tbi) {
+        UserStock us = new UserStock();
+        us.setStock(tbi.getPharmaceuticalBillItem().getStock());
+        us.setUpdationQty(tbi.getQty());
+        us.setCreater(getSessionController().getLoggedUser());
+        us.setCreatedAt(new Date());
+        us.setUserStockContainer(getUserStockContainer());
+        getUserStockFacade().create(us);
+
+        getUserStockContainer().getUserStocks().add(us);
+
+        return us;
+    }
 
     //    public void calculateAllRatesNew() {
 //        ////////System.out.println("calculating all rates");
@@ -2143,7 +1976,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 //            getPreBill().getBillItems().add(tbi);
         }
 
-        //UserStock cleanup removed for performance optimization
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
 
         calculateRatesForAllBillItemsInPreBill();
 
@@ -2153,7 +1986,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         // Initialize the billItems collection if it was set to null
         if (getPreBill().getBillItems() == null) {
             getPreBill().setBillItems(new ArrayList<>());
-            System.out.println("Initialized PreBill billItems collection");
         }
         System.out.println("savePreBillItemsFinally: Processing " + list.size() + " items");
 
@@ -2204,11 +2036,9 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 getBillItemFacade().edit(tbi);
             }
             getPreBill().getBillItems().add(tbi);
-            System.out.println("Added BillItem ID: " + tbi.getId() + " back to PreBill");
         }
 
-        System.out.println("savePreBillItemsFinally: Final PreBill items count: " + getPreBill().getBillItems().size());
-        //UserStock cleanup removed for performance optimization
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
 
         calculateRatesForAllBillItemsInPreBill();
 
@@ -2433,7 +2263,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
-                //UserStock availability check removed for performance optimization
+                if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), getSessionController().getLoggedUser())) {
+                    setZeroToQty(bi);
+                    JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
+                    return null;
+                }
                 if (bi.getQty() <= 0.0) {
                     JsfUtil.addErrorMessage("Some BillItem Quntity is Zero or less than Zero");
                     return null;
@@ -2595,17 +2429,17 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
         setPrintBill(getBillFacade().find(getPreBill().getId()));
+        // Calculate and record costing values for stock valuation after persistence
+        // Using current bill directly instead of reloading to avoid transaction timing issues
 
         // Calculate and record costing values for stock valuation after persistence
         // Using current bill directly instead of reloading to avoid transaction timing issues
         System.out.println("=== Using current PreBill directly ===");
         System.out.println("PreBill ID: " + getPreBill().getId());
-        System.out.println("PreBill items count: " + (getPreBill().getBillItems() != null ? getPreBill().getBillItems().size() : "null"));
 
         if (getPreBill().getBillItems() != null && !getPreBill().getBillItems().isEmpty()) {
             calculateAndRecordCostingValues(getPreBill());
         } else {
-            System.out.println("WARNING: PreBill has no items, trying to reload...");
             Bill managedBill = loadBillWithPharmaceuticalItems(getPreBill().getId());
             if (managedBill != null) {
                 calculateAndRecordCostingValues(managedBill);
@@ -2614,7 +2448,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 // CRITICAL: Log when bill reload fails - possible concurrent delete or data corruption
                 System.out.println("CRITICAL WARNING: Failed to reload Bill with ID: " + getPreBill().getId());
                 System.out.println("Skipping costing calculations - bill may have been deleted or data corrupted");
-                System.out.println("PreBill settlement will complete but without financial details");
             }
         }
 
@@ -2660,7 +2493,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
-                //UserStock availability check removed for performance optimization
+                if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), getSessionController().getLoggedUser())) {
+                    setZeroToQty(bi);
+                    JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
+                    return;
+                }
                 if (bi.getQty() <= 0.0) {
                     JsfUtil.addErrorMessage("Some BillItem Quntity is Zero or less than Zero");
                     return;
@@ -3399,7 +3236,13 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
-                //UserStock availability check removed for performance optimization
+                if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), getSessionController().getLoggedUser())) {
+                    setZeroToQty(bi);
+//                    onEditCalculation(bi);
+                    JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
+                    billSettlingStarted = false;
+                    return;
+                }
                 ////System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
                 ////System.out.println("bi.getQty() = " + bi.getQty());
                 if (bi.getQty() <= 0.0) {
@@ -3469,7 +3312,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         System.out.println("=== Starting updateRetailSaleFinanceDetails ===");
 
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
-            System.out.println("Early return - no bill or bill items");
             return;
         }
 
@@ -3490,7 +3332,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             System.out.println("BillItem qty: " + (billItem != null ? billItem.getQty() : "null"));
 
             if (billItem == null || billItem.isRetired()) {
-                System.out.println("Skipping retired or null bill item");
                 continue;
             }
 
@@ -3498,7 +3339,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
             System.out.println("PharmaceuticalBillItem: " + (pharmaItem != null ? "exists" : "null"));
             if (pharmaItem == null) {
-                System.out.println("Skipping - no pharmaceutical bill item");
                 continue;
             }
 
@@ -3521,12 +3361,9 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 Double batchCostRate = pharmaItem.getItemBatch().getCostRate();
                 if (batchCostRate != null && batchCostRate > 0) {
                     costRate = BigDecimal.valueOf(batchCostRate);
-                    System.out.println("Got costRate from itemBatch.getCostRate(): " + costRate);
                 } else {
-                    System.out.println("ItemBatch costRate is null or negative, using pharma purchaseRate: " + costRate);
                 }
             } else {
-                System.out.println("No itemBatch found, using pharma purchaseRate: " + costRate);
             }
 
             // Get BillItemFinanceDetails (note: getBillItemFinanceDetails() auto-creates if null)
@@ -3595,7 +3432,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             totalQuantity = totalQuantity.add(qty);
             totalFreeQuantity = totalFreeQuantity.add(freeQty);
 
-            System.out.println("Item " + itemIndex + " processing complete");
         }
 
         // UPDATE BILL-LEVEL FINANCE DETAILS (check if auto-creation happens here too)
@@ -3605,9 +3441,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             bfd = new BillFinanceDetails();
             bfd.setBill(bill);
             bill.setBillFinanceDetails(bfd);
-            System.out.println("Created new BillFinanceDetails for bill");
         } else {
-            System.out.println("BillFinanceDetails for bill - ID: " + bfd.getId());
         }
 
         // Set basic totals from bill
@@ -3641,13 +3475,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         System.out.println("After setting - BFD.totalCostValue toString: " + (bfd.getTotalCostValue() != null ? bfd.getTotalCostValue().toString() : "null"));
         System.out.println("=== END PRECISION DEBUG ===");
 
-        System.out.println("=== Completed updateRetailSaleFinanceDetails ===");
     }
 
     private void updateAll() {
         System.out.println("=== updateAll() - Before saving to database ===");
         if (saleBill.getBillFinanceDetails() != null) {
-            System.out.println("SaleBill BFD totalCostValue before DB save: " + saleBill.getBillFinanceDetails().getTotalCostValue());
         }
 
         for (BillItem pbi : preBill.getBillItems()) {
@@ -3659,12 +3491,10 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
         billFacade.edit(saleBill);
 
-        System.out.println("=== updateAll() - After saving to database ===");
         if (saleBill.getBillFinanceDetails() != null) {
             System.out.println("SaleBill BFD totalCostValue after DB save: " + saleBill.getBillFinanceDetails().getTotalCostValue());
             System.out.println("*** DATABASE SCHEMA ISSUE CONFIRMED ***");
             System.out.println("Expected: DECIMAL(18,4) but database has DECIMAL(38,0)");
-            System.out.println("This causes BigDecimal precision loss during JPA save!");
         }
     }
 
@@ -3722,13 +3552,20 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             return;
         }
 
-        //Checking User Stock Entity - REMOVED for performance optimization
+        //Checking User Stock Entity
+        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
+            errorMessage = "Sorry Already Other User Try to Billing This Stock You Cant Add";
+            return;
+        }
 
         billItem.setBill(getPreBill());
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
 
-        //User Stock Container Save if New Bill - REMOVED for performance optimization
+        //User Stock Container Save if New Bill
+        userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
+        UserStock us = userStockController.saveUserStock(billItem, getSessionController().getLoggedUser(), getUserStockContainer());
+        billItem.setTransUserStock(us);
 
         calculateRatesForAllBillItemsInPreBill();
 
@@ -3739,7 +3576,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     public void removeBillItem(BillItem b) {
-        //UserStock removal removed for performance optimization
+        userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
         getPreBill().getBillItems().remove(b.getSearialNo());
 
         calculateBillItemsAndBillTotalsOfPreBill();
@@ -3754,7 +3591,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         Iterator<BillItem> iterator = selectedBillItems.iterator();
         while (iterator.hasNext()) {
             BillItem billItem = iterator.next();
-            //UserStock removal removed for performance optimization
+            userStockController.removeUserStock(billItem.getTransUserStock(), getSessionController().getLoggedUser());
             getPreBill().getBillItems().remove(billItem);
             iterator.remove();
         }
@@ -3878,32 +3715,22 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     //    TO check the functionality
     public double calculateBillItemDiscountRate(BillItem bi) {
-        long discountCalcStart = System.currentTimeMillis();
-        System.out.println("      >>>> calculateBillItemDiscountRate: Start");
-
         if (bi == null) {
-            System.out.println("      >>>> calculateBillItemDiscountRate: BillItem is null - returning 0");
             return 0.0;
         }
         if (bi.getPharmaceuticalBillItem() == null) {
-            System.out.println("      >>>> calculateBillItemDiscountRate: PharmaceuticalBillItem is null - returning 0");
             return 0.0;
         }
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
-            System.out.println("      >>>> calculateBillItemDiscountRate: Stock is null - returning 0");
             return 0.0;
         }
         if (bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null) {
-            System.out.println("      >>>> calculateBillItemDiscountRate: ItemBatch is null - returning 0");
             return 0.0;
         }
-
-        long setupStart = System.currentTimeMillis();
         bi.setItem(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getItem());
         double retailRate = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
         double discountRate = 0;
         boolean discountAllowed = bi.getItem().isDiscountAllowed();
-        System.out.println("      >>>> Setup item and retail rate: " + (System.currentTimeMillis() - setupStart) + "ms");
 //        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         //MEMBERSHIPSCHEME DISCOUNT
 //        if (membershipScheme != null && discountAllowed) {
@@ -3940,10 +3767,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         //PAYMENTSCHEME DISCOUNT
 
         if (getPaymentScheme() != null && discountAllowed) {
-            long priceMatrixStart = System.currentTimeMillis();
-            System.out.println("      >>>> Checking PaymentScheme discount...");
             PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPaymentMethod(), getPaymentScheme(), getSessionController().getDepartment(), bi.getItem());
-            System.out.println("      >>>> PriceMatrix lookup (PaymentScheme): " + (System.currentTimeMillis() - priceMatrixStart) + "ms");
 
             if (priceMatrix != null) {
                 bi.setPriceMatrix(priceMatrix);
@@ -3952,17 +3776,13 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
             double dr;
             dr = (retailRate * discountRate) / 100;
-            System.out.println("      >>>> calculateBillItemDiscountRate: Total time = " + (System.currentTimeMillis() - discountCalcStart) + "ms, returning: " + dr);
             return dr;
 
         }
 
         //PAYMENTMETHOD DISCOUNT
         if (getPaymentMethod() != null && discountAllowed) {
-            long priceMatrixStart = System.currentTimeMillis();
-            System.out.println("      >>>> Checking PaymentMethod discount...");
             PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPaymentMethod(), getSessionController().getDepartment(), bi.getItem());
-            System.out.println("      >>>> PriceMatrix lookup (PaymentMethod): " + (System.currentTimeMillis() - priceMatrixStart) + "ms");
 
             if (priceMatrix != null) {
                 bi.setPriceMatrix(priceMatrix);
@@ -3971,23 +3791,18 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
             double dr;
             dr = (retailRate * discountRate) / 100;
-            System.out.println("      >>>> calculateBillItemDiscountRate: Total time = " + (System.currentTimeMillis() - discountCalcStart) + "ms, returning: " + dr);
             return dr;
 
         }
 
         //CREDIT COMPANY DISCOUNT
         if (getPaymentMethod() == PaymentMethod.Credit && toInstitution != null) {
-            System.out.println("      >>>> Checking Credit company discount...");
             discountRate = toInstitution.getPharmacyDiscount();
 
             double dr;
             dr = (retailRate * discountRate) / 100;
-            System.out.println("      >>>> calculateBillItemDiscountRate: Total time = " + (System.currentTimeMillis() - discountCalcStart) + "ms, returning: " + dr);
             return dr;
         }
-
-        System.out.println("      >>>> calculateBillItemDiscountRate: No discount applicable, Total time = " + (System.currentTimeMillis() - discountCalcStart) + "ms, returning 0");
         return 0;
 
     }
@@ -4172,7 +3987,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         balance = 0;
         paymentScheme = null;
         paymentMethod = PaymentMethod.Cash;
-        //userStockContainer = null; //Removed for performance optimization
+        userStockContainer = null;
         fromOpdEncounter = false;
         opdEncounterComments = null;
         patientSearchTab = 0;
@@ -4440,17 +4255,16 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         this.stockHistoryFacade = stockHistoryFacade;
     }
 
-    //Removed for performance optimization
-//    public UserStockContainer getUserStockContainer() {
-//        if (userStockContainer == null) {
-//            userStockContainer = new UserStockContainer();
-//        }
-//        return userStockContainer;
-//    }
-//
-//    public void setUserStockContainer(UserStockContainer userStockContainer) {
-//        this.userStockContainer = userStockContainer;
-//    }
+    public UserStockContainer getUserStockContainer() {
+        if (userStockContainer == null) {
+            userStockContainer = new UserStockContainer();
+        }
+        return userStockContainer;
+    }
+
+    public void setUserStockContainer(UserStockContainer userStockContainer) {
+        this.userStockContainer = userStockContainer;
+    }
 
     public BillBeanController getBillBean() {
         return billBean;
@@ -4508,22 +4322,21 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         this.errorMessage = errorMessage;
     }
 
-    //Removed for performance optimization
-//    public UserStockContainerFacade getUserStockContainerFacade() {
-//        return userStockContainerFacade;
-//    }
-//
-//    public void setUserStockContainerFacade(UserStockContainerFacade userStockContainerFacade) {
-//        this.userStockContainerFacade = userStockContainerFacade;
-//    }
-//
-//    public UserStockFacade getUserStockFacade() {
-//        return userStockFacade;
-//    }
-//
-//    public void setUserStockFacade(UserStockFacade userStockFacade) {
-//        this.userStockFacade = userStockFacade;
-//    }
+    public UserStockContainerFacade getUserStockContainerFacade() {
+        return userStockContainerFacade;
+    }
+
+    public void setUserStockContainerFacade(UserStockContainerFacade userStockContainerFacade) {
+        this.userStockContainerFacade = userStockContainerFacade;
+    }
+
+    public UserStockFacade getUserStockFacade() {
+        return userStockFacade;
+    }
+
+    public void setUserStockFacade(UserStockFacade userStockFacade) {
+        this.userStockFacade = userStockFacade;
+    }
 
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
@@ -4683,19 +4496,12 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             }
             try {
                 Long id = Long.valueOf(value);
-                System.out.println(">>> CONVERTER: Converting ID: " + id);
                 PharmacySaleForCashierController controller = (PharmacySaleForCashierController) facesContext.getApplication().getELResolver()
                         .getValue(facesContext.getELContext(), null, "pharmacySaleForCashierController");
-
-                // Check if it's the currently selected stockDto (optimization for immediate reuse)
                 if (controller != null && controller.getStockDto() != null && id.equals(controller.getStockDto().getId())) {
-                    System.out.println(">>> CONVERTER: Found in current stockDto");
                     return controller.getStockDto();
                 }
-
-                // Create a minimal DTO with just the ID
-                // This will trigger the database fetch in convertStockDtoToEntity to get fresh data
-                System.out.println(">>> CONVERTER: Creating minimal DTO (will fetch fresh data from DB)");
+                // Create a minimal DTO with just the ID for form submission
                 StockDTO dto = new StockDTO();
                 dto.setId(id);
                 return dto;
@@ -4733,7 +4539,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         System.out.println("Basic bill found: " + (bill != null ? bill.getId() : "null"));
 
         if (bill != null) {
-            System.out.println("Bill items before JPQL: " + (bill.getBillItems() != null ? bill.getBillItems().size() : "null"));
         }
 
         // Now try with JPQL to fetch associations
@@ -4743,21 +4548,16 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 + "LEFT JOIN FETCH pbi.itemBatch "
                 + "WHERE b.id = :billId";
 
-        System.out.println("JPQL query: " + jpql);
         Map<String, Object> params = new HashMap<>();
         params.put("billId", billId);
 
         try {
             Bill loadedBill = getBillFacade().findFirstByJpql(jpql, params);
-            System.out.println("JPQL result: " + (loadedBill != null ? "Found bill ID " + loadedBill.getId() : "null"));
 
             if (loadedBill != null && loadedBill.getBillItems() != null) {
-                System.out.println("JPQL loaded bill items count: " + loadedBill.getBillItems().size());
                 for (BillItem bi : loadedBill.getBillItems()) {
-                    System.out.println("  - BillItem ID: " + bi.getId() + ", PharmaItem: " + (bi.getPharmaceuticalBillItem() != null ? "EXISTS" : "NULL"));
                 }
             } else {
-                System.out.println("ERROR: JPQL returned bill with no items!");
             }
 
             return loadedBill;
@@ -4768,26 +4568,20 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             // Check if original bill exists before attempting fallback
             if (bill == null) {
                 System.out.println("CRITICAL: Original bill is null, cannot use fallback loading");
-                System.out.println("Bill ID " + billId + " may have been deleted or does not exist");
                 return null;
             }
 
             // Fallback: Force load collections manually
-            System.out.println("Using fallback manual loading...");
             if (bill.getBillItems() != null) {
-                System.out.println("Forcing bill items load - count: " + bill.getBillItems().size());
                 for (BillItem bi : bill.getBillItems()) {
                     // Force lazy loading
                     if (bi.getPharmaceuticalBillItem() != null) {
-                        System.out.println("Loaded PharmaItem for BillItem ID: " + bi.getId());
                         // Force load item batch if needed
                         if (bi.getPharmaceuticalBillItem().getItemBatch() != null) {
-                            System.out.println("Loaded ItemBatch for BillItem ID: " + bi.getId());
                         }
                     }
                 }
             } else {
-                System.out.println("WARNING: Fallback bill has no items to load");
             }
             return bill;
         }
@@ -4805,13 +4599,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         System.out.println("Method call stack trace (first 3 levels):");
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
         for (int i = 1; i <= Math.min(4, stack.length - 1); i++) {
-            System.out.println("  " + i + ": " + stack[i].getClassName() + "." + stack[i].getMethodName() + ":" + stack[i].getLineNumber());
         }
 
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
             System.out.println("ERROR: Bill is null or has no items");
             System.out.println("Bill: " + bill);
-            System.out.println("BillItems: " + (bill != null ? bill.getBillItems() : "bill is null"));
             return;
         }
 
@@ -4819,12 +4611,10 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         // Initialize bill finance details if not present
         if (bill.getBillFinanceDetails() == null) {
-            System.out.println("Creating new BillFinanceDetails for bill ID: " + bill.getId());
             BillFinanceDetails billFinanceDetails = new BillFinanceDetails();
             billFinanceDetails.setBill(bill);
             bill.setBillFinanceDetails(billFinanceDetails);
         } else {
-            System.out.println("BillFinanceDetails already exists for bill ID: " + bill.getId());
             BillFinanceDetails existingBfd = bill.getBillFinanceDetails();
 
             // Check if calculations are already done
@@ -4835,7 +4625,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 System.out.println("  TotalCostValue: " + existingBfd.getTotalCostValue());
                 System.out.println("  TotalPurchaseValue: " + existingBfd.getTotalPurchaseValue());
                 System.out.println("  TotalRetailSaleValue: " + existingBfd.getTotalRetailSaleValue());
-                System.out.println("SKIPPING to prevent duplicate calculations");
                 return;
             }
         }
@@ -4854,13 +4643,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             System.out.println("BillItem ID: " + (billItem != null ? billItem.getId() : "null"));
 
             if (billItem == null) {
-                System.out.println("SKIP: BillItem is null");
                 continue;
             }
 
             System.out.println("BillItem considered for costing: " + billItem.isConsideredForCosting());
             if (!billItem.isConsideredForCosting()) {
-                System.out.println("SKIP: BillItem not considered for costing");
                 continue;
             }
 
@@ -4868,15 +4655,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             BillItemFinanceDetails existingDetails = billItem.getBillItemFinanceDetails();
             if (existingDetails != null) {
                 System.out.println("BillItem ID: " + billItem.getId() + " already has BIFD ID: " + existingDetails.getId());
-                System.out.println("Current BIFD values: costRate=" + existingDetails.getValueAtCostRate()
-                                 + ", purchaseRate=" + existingDetails.getValueAtPurchaseRate()
-                                 + ", retailRate=" + existingDetails.getValueAtRetailRate());
 
                 // Check if values are already set - if so, skip calculation to prevent duplicates
                 if (existingDetails.getValueAtCostRate() != null ||
                     existingDetails.getValueAtPurchaseRate() != null ||
                     existingDetails.getValueAtRetailRate() != null) {
-                    System.out.println("SKIP: BillItem ID: " + billItem.getId() + " already has calculated finance details");
                     continue;
                 }
             }
@@ -4896,7 +4679,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
             // Calculate stock valuations for this item based on pharmaceutical bill item rates
             PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
-            System.out.println("PharmaceuticalBillItem: " + (pharmaItem != null ? "EXISTS" : "NULL"));
 
             if (pharmaItem != null) {
                 System.out.println("PharmaItem ID: " + pharmaItem.getId());
@@ -4905,18 +4687,15 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 System.out.println("PharmaItem Wholesale Rate: " + pharmaItem.getWholesaleRate());
                 System.out.println("PharmaItem ItemBatch: " + (pharmaItem.getItemBatch() != null ? "EXISTS" : "NULL"));
                 if (pharmaItem.getItemBatch() != null) {
-                    System.out.println("ItemBatch Cost Rate: " + pharmaItem.getItemBatch().getCostRate());
                 }
                 // Calculate value at cost rate - use actual cost rate from ItemBatch
                 Double costRateValue = null;
                 if (pharmaItem.getItemBatch() != null) {
                     costRateValue = pharmaItem.getItemBatch().getCostRate();
                 }
-                System.out.println("Initial Cost Rate Value: " + costRateValue);
 
                 if (costRateValue == null || costRateValue <= 0) {
                     costRateValue = pharmaItem.getPurchaseRate(); // fallback
-                    System.out.println("Using Purchase Rate as fallback: " + costRateValue);
                 }
 
                 if (costRateValue > 0) {
@@ -4925,9 +4704,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                     System.out.println("Calculated valueAtCostRate: " + valueAtCostRate);
                     itemFinanceDetails.setValueAtCostRate(valueAtCostRate);
                     totalCostValue = totalCostValue.add(valueAtCostRate);
-                    System.out.println("Set valueAtCostRate on itemFinanceDetails");
                 } else {
-                    System.out.println("SKIP: Cost rate is 0 or negative");
                 }
 
                 // Calculate value at purchase rate (same as cost rate for now)
@@ -4937,9 +4714,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                     System.out.println("Calculated valueAtPurchaseRate: " + valueAtPurchaseRate);
                     itemFinanceDetails.setValueAtPurchaseRate(valueAtPurchaseRate);
                     totalPurchaseValue = totalPurchaseValue.add(valueAtPurchaseRate);
-                    System.out.println("Set valueAtPurchaseRate on itemFinanceDetails");
                 } else {
-                    System.out.println("SKIP: Purchase rate is 0 or negative");
                 }
 
                 // Calculate value at retail rate (based on retail rate)
@@ -4949,9 +4724,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                     System.out.println("Calculated valueAtRetailRate: " + valueAtRetailRate);
                     itemFinanceDetails.setValueAtRetailRate(valueAtRetailRate);
                     totalRetailSaleValue = totalRetailSaleValue.add(valueAtRetailRate);
-                    System.out.println("Set valueAtRetailRate on itemFinanceDetails");
                 } else {
-                    System.out.println("SKIP: Retail rate is 0 or negative");
                 }
 
                 // Calculate value at wholesale rate (use retail rate if wholesale rate not available)
@@ -5002,7 +4775,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         // Save the bill with its finance details
         billFacade.edit(bill);
-        System.out.println("=== CALCULATE AND RECORD COSTING VALUES COMPLETED ===");
     }
 
 }

@@ -2754,7 +2754,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         System.out.println("=== Starting updateRetailSaleFinanceDetails ===");
 
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
-            System.out.println("Early return - no bill or bill items");
             return;
         }
 
@@ -2775,7 +2774,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             System.out.println("BillItem qty: " + (billItem != null ? billItem.getQty() : "null"));
 
             if (billItem == null || billItem.isRetired()) {
-                System.out.println("Skipping retired or null bill item");
                 continue;
             }
 
@@ -2783,7 +2781,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
             System.out.println("PharmaceuticalBillItem: " + (pharmaItem != null ? "exists" : "null"));
             if (pharmaItem == null) {
-                System.out.println("Skipping - no pharmaceutical bill item");
                 continue;
             }
 
@@ -2806,12 +2803,9 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
                 Double batchCostRate = pharmaItem.getItemBatch().getCostRate();
                 if (batchCostRate != null && batchCostRate > 0) {
                     costRate = BigDecimal.valueOf(batchCostRate);
-                    System.out.println("Got costRate from itemBatch.getCostRate(): " + costRate);
                 } else {
-                    System.out.println("ItemBatch costRate is null or negative, using pharma purchaseRate: " + costRate);
                 }
             } else {
-                System.out.println("No itemBatch found, using pharma purchaseRate: " + costRate);
             }
 
             // Get BillItemFinanceDetails (note: getBillItemFinanceDetails() auto-creates if null)
@@ -2880,7 +2874,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             totalQuantity = totalQuantity.add(qty);
             totalFreeQuantity = totalFreeQuantity.add(freeQty);
 
-            System.out.println("Item " + itemIndex + " processing complete");
         }
 
         // UPDATE BILL-LEVEL FINANCE DETAILS (check if auto-creation happens here too)
@@ -2890,9 +2883,7 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             bfd = new BillFinanceDetails();
             bfd.setBill(bill);
             bill.setBillFinanceDetails(bfd);
-            System.out.println("Created new BillFinanceDetails for bill");
         } else {
-            System.out.println("BillFinanceDetails for bill - ID: " + bfd.getId());
         }
 
         // Set basic totals from bill
@@ -2914,7 +2905,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
                 + ", totalQuantity: " + bfd.getTotalQuantity()
                 + ", totalFreeQuantity: " + bfd.getTotalFreeQuantity());
 
-        System.out.println("=== Completed updateRetailSaleFinanceDetails ===");
     }
 
     // ========= OLD METHOD FRAGMENTS BELOW - TO BE REMOVED IN FUTURE CLEANUP =========
