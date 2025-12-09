@@ -118,7 +118,6 @@ public class DailyReturnDtoService {
         params.put("bts", ccBillTypes);
         
         List<BillItemDetailDTO> result = (List<BillItemDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("DEBUG: CC Collection - found " + (result != null ? result.size() : "null") + " BillItems");
         
         return result;
     }
@@ -168,7 +167,6 @@ public class DailyReturnDtoService {
         System.out.println("DEBUG: CC Collection - Test without fromDepartment: " + (testResult != null ? testResult.size() : "null"));
         
         if (testResult != null && testResult.size() > 0) {
-            System.out.println("DEBUG: CC Collection - Constructor works! Using hardcoded empty string for fromDepartment");
             return testResult;
         }
         
@@ -186,7 +184,6 @@ public class DailyReturnDtoService {
         System.out.println("DEBUG: CC Collection Bill-level - looking for billTypeAtomics: " + ccBillTypes);
         
         List<DailyReturnDetailDTO> result = (List<DailyReturnDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("DEBUG: CC Collection Bill-level - found " + (result != null ? result.size() : "null") + " Bills");
         
         return result;
     }

@@ -3640,7 +3640,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         System.out.println("=== Starting updateRetailSaleFinanceDetails ===");
 
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
-            System.out.println("Early return - no bill or bill items");
             return;
         }
 
@@ -3661,7 +3660,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             System.out.println("BillItem qty: " + (billItem != null ? billItem.getQty() : "null"));
 
             if (billItem == null || billItem.isRetired()) {
-                System.out.println("Skipping retired or null bill item");
                 continue;
             }
 
@@ -3669,7 +3667,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
             System.out.println("PharmaceuticalBillItem: " + (pharmaItem != null ? "exists" : "null"));
             if (pharmaItem == null) {
-                System.out.println("Skipping - no pharmaceutical bill item");
                 continue;
             }
 
@@ -3692,12 +3689,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 Double batchCostRate = pharmaItem.getItemBatch().getCostRate();
                 if (batchCostRate != null && batchCostRate > 0) {
                     costRate = BigDecimal.valueOf(batchCostRate);
-                    System.out.println("Got costRate from itemBatch.getCostRate(): " + costRate);
                 } else {
-                    System.out.println("ItemBatch costRate is null or negative, using pharma purchaseRate: " + costRate);
                 }
             } else {
-                System.out.println("No itemBatch found, using pharma purchaseRate: " + costRate);
             }
 
             // Get BillItemFinanceDetails (note: getBillItemFinanceDetails() auto-creates if null)
@@ -3766,7 +3760,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             totalQuantity = totalQuantity.add(qty);
             totalFreeQuantity = totalFreeQuantity.add(freeQty);
 
-            System.out.println("Item " + itemIndex + " processing complete");
         }
 
         // UPDATE BILL-LEVEL FINANCE DETAILS (check if auto-creation happens here too)
@@ -3776,9 +3769,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             bfd = new BillFinanceDetails();
             bfd.setBill(bill);
             bill.setBillFinanceDetails(bfd);
-            System.out.println("Created new BillFinanceDetails for bill");
         } else {
-            System.out.println("BillFinanceDetails for bill - ID: " + bfd.getId());
         }
 
         // Set basic totals from bill
@@ -3812,13 +3803,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         System.out.println("After setting - BFD.totalCostValue toString: " + (bfd.getTotalCostValue() != null ? bfd.getTotalCostValue().toString() : "null"));
         System.out.println("=== END PRECISION DEBUG ===");
 
-        System.out.println("=== Completed updateRetailSaleFinanceDetails ===");
     }
 
     private void updateAll() {
         System.out.println("=== updateAll() - Before saving to database ===");
         if (saleBill.getBillFinanceDetails() != null) {
-            System.out.println("SaleBill BFD totalCostValue before DB save: " + saleBill.getBillFinanceDetails().getTotalCostValue());
         }
 
         for (BillItem pbi : preBill.getBillItems()) {
@@ -3830,12 +3819,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
         billFacade.edit(saleBill);
 
-        System.out.println("=== updateAll() - After saving to database ===");
         if (saleBill.getBillFinanceDetails() != null) {
             System.out.println("SaleBill BFD totalCostValue after DB save: " + saleBill.getBillFinanceDetails().getTotalCostValue());
             System.out.println("*** DATABASE SCHEMA ISSUE CONFIRMED ***");
             System.out.println("Expected: DECIMAL(18,4) but database has DECIMAL(38,0)");
-            System.out.println("This causes BigDecimal precision loss during JPA save!");
         }
     }
 

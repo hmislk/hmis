@@ -247,7 +247,6 @@ public class ReportTemplateController implements Serializable {
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
-        System.out.println("results = " + results);
         
         // Properly handle empty or null results
         if (results == null || results.isEmpty()) {
@@ -325,7 +324,6 @@ public class ReportTemplateController implements Serializable {
         jpql += " group by bill";
 
         System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
 
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);

@@ -869,7 +869,6 @@ public class PharmacyCalculation implements Serializable {
             itemBatch = fetchItemBatchWithCosting(amp, purchaseRatePerUnit, retailRatePerUnit, costRatePerUnit, expiryDate);
 
             System.out.println("ItemBatch fetched/created with costRate: " + (itemBatch != null ? itemBatch.getCostRate() : "null"));
-            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         } else {
             // Use values from PharmaceuticalBillItem when costing is not enabled
             purchaseRatePerUnit = inputBillItem.getPharmaceuticalBillItem().getPurchaseRate();

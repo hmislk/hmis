@@ -5310,12 +5310,10 @@ public class BookingControllerViewScopeMonth implements Serializable {
     }
 
     private void calculateBillTotalsFromBillFees(Bill billToCaclculate, List<BillFee> billfeesAvailable) {
-        System.out.println("calculateBillTotalsFromBillFees");
         double calculatingGrossBillTotal = 0.0;
         double calculatingNetBillTotal = 0.0;
 
         for (BillFee iteratingBillFee : billfeesAvailable) {
-            System.out.println("iteratingBillFee = " + iteratingBillFee);
             if (iteratingBillFee.getFee() == null) {
                 continue;
             }
@@ -7171,7 +7169,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
         }
 
         System.out.println("feeTotalForSelectedBill = " + feeTotalForSelectedBill);
-        System.out.println("feeDiscountForSelectedBill = " + feeDiscountForSelectedBill);
         feeNetTotalForSelectedBill = feeTotalForSelectedBill - feeDiscountForSelectedBill;
     }
 
@@ -7572,7 +7569,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
     public double getCashBalance() {
         if (feeTotalForSelectedBill != null) {
-            System.out.println("feeNetTotalForSelectedBill = " + feeNetTotalForSelectedBill);
             if (feeNetTotalForSelectedBill == null) {
                 feeNetTotalForSelectedBill = 0.0;
             }

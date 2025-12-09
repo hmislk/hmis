@@ -169,7 +169,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         current = getDepositOfThePatient(patient, sessionController.getDepartment());
         fillLatestPatientDeposits(current);
         fillLatestPatientDepositHistory(current);
-        System.out.println("current = " + current);
     }
 
     public void getPatientDepositOnPatientDepositAddingMulti() {
@@ -181,7 +180,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         current = getDepositOfThePatient(patient, sessionController.getDepartment());
         fillLatestPatientDeposits(current);
         fillLatestPatientDepositHistory(current);
-        System.out.println("current = " + current);
     }
 
     private boolean validatePaymentMethodDataForPatientDeposit() {

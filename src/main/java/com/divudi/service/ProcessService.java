@@ -301,8 +301,6 @@ public class ProcessService {
 
         jpql += " ORDER BY pi.createdAt DESC"; // Ordering by createdAt date in descending order
 
-        System.out.println("jpql = " + jpql);
-
         List<ProcessInstance> processInstances = processInstanceFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return processInstances;
     }

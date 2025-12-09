@@ -2861,7 +2861,6 @@ public class GrnCostingController implements Serializable {
             System.out.println("Item: " + grnItem.getItem().getName() + " - Ordered Free: " + orderedFreeQty + ", Current GRN Free: " + currentGrnFreeQty);
 
             double totalReceivedFromAllGrns = calculateRemainigQtyFromOrder(poItem);
-            System.out.println("totalReceivedFromAllGrns = " + totalReceivedFromAllGrns);
             double totalFreeReceivedFromAllGrns = calculateRemainingFreeQtyFromOrder(poItem);
 
             double previouslyReceivedQty = totalReceivedFromAllGrns;
