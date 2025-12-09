@@ -2511,6 +2511,13 @@ public class BillSearch implements Serializable {
                 return;
             }
         }
+        
+        List<PatientInvestigation> investigations = billService.fetchPatientInvestigations(getBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
+
+        if (investigations != null && !investigations.isEmpty()) {
+            JsfUtil.addErrorMessage("Some Investigations's Samples Send to Out Lab.");
+            return ;
+        }
 
         if (errorsPresentOnOpdBillCancellation()) {
             return;
@@ -2643,6 +2650,14 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Saved bill");
             ccBillCancellingStarted.set(false);
             return;
+        }
+        
+        List<PatientInvestigation> investigations = billService.fetchPatientInvestigations(getBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
+
+        if (investigations != null && !investigations.isEmpty()) {
+            ccBillCancellingStarted.set(false);
+            JsfUtil.addErrorMessage("Some Investigations's Samples Send to Out Lab.");
+            return ;
         }
 
         if (!getWebUserController().hasPrivilege("BillCancel")) {
@@ -4070,7 +4085,6 @@ public class BillSearch implements Serializable {
         }
 
         Bill foundBill = billFacade.find(BillId);
-        System.out.println("foundBill = " + foundBill);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -4089,7 +4103,6 @@ public class BillSearch implements Serializable {
         }
 
         Bill foundBill = billFacade.find(BillId);
-        System.out.println("foundBill = " + foundBill);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -4108,7 +4121,6 @@ public class BillSearch implements Serializable {
         }
 
         Bill foundBill = billFacade.find(BillId);
-        System.out.println("foundBill = " + foundBill);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -4127,7 +4139,6 @@ public class BillSearch implements Serializable {
         }
 
         Bill foundBill = billFacade.find(selectedBillId);
-        System.out.println("foundBill = " + foundBill);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found for ID: " + selectedBillId);
             return null;
@@ -4225,7 +4236,6 @@ public class BillSearch implements Serializable {
     }
 
     public String navigateToViewBillByAtomicBillType() {
-        System.out.println("navigateToViewBillByAtomicBillType");
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
             return null;
@@ -4804,6 +4814,21 @@ public class BillSearch implements Serializable {
     public String navigateToViewPharmacySettledPreBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        pharmacyBillSearch.setBill(bill);
+        return "/pharmacy/pharmacy_reprint_bill_sale_cashier?faces-redirect=true";
+    }
+    
+    public String navigateToViewPharmacySettledPreBill(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        bill = billFacade.find(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
             return null;
         }
         loadBillDetails(bill);

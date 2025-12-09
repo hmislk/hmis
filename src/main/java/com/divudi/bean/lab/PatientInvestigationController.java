@@ -2261,7 +2261,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void retrievingTheSentSampleToLab() {
-        System.out.println("retrievingTheSentSampleToLab");
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
             JsfUtil.addErrorMessage("No samples selected");
             return;
@@ -2827,7 +2826,7 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (orderedDepartment != null) {
-            jpql += " AND pi.billItem.bill.toDepartment = :orderedDepartment";
+            jpql += " AND pi.billItem.bill.department = :orderedDepartment";
             params.put("orderedDepartment", getOrderedDepartment());
         }
 
@@ -3021,12 +3020,12 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (orderedInstitution != null) {
-            jpql += " AND b.fromInstitution = :orderedInstitution";
+            jpql += " AND b.institution = :orderedInstitution";
             params.put("orderedInstitution", getOrderedInstitution());
         }
 
         if (orderedDepartment != null) {
-            jpql += " AND b.fromDepartment = :orderedDepartment";
+            jpql += " AND b.department = :orderedDepartment";
             params.put("orderedDepartment", getOrderedDepartment());
         }
 

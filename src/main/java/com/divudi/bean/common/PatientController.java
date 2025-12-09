@@ -872,8 +872,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
         admissionController.setPrintPreview(false);
         admissionController.setAdmittingProcessStarted(false);
         admissionController.setPatientRoom(new PatientRoom());
+        admissionController.setBhtText("");
         quickSearchPhoneNumber = null;
         admissionController.setPatientAllergies(null);
+        admissionController.setCurrentReservation(null);
         return "/inward/inward_admission?faces-redirect=true";
 
     }
@@ -1042,6 +1044,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         return opdBillController.navigateToNewOpdBill(current);
+    }
+
+    public String navigateToPharmacyRetailSaleFromOpdPatient() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        return pharmacySaleController.navigateToPharmacyRetailSale(current, null);
     }
 
     public String navigateToSaleFromOpticianRepair() {
@@ -2064,7 +2074,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
             admissionController.fillCurrentPatientAllergies(current);//TODO
 
             boolean automaticallySetPatientDeposit = configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false);
-            System.out.println("One patient found - controller.getPatient().getHasAnAccount() = " + controller.getPatient().getHasAnAccount());
             if (controller.getPatient().getHasAnAccount() != null) {
                 if (controller.getPatient().getHasAnAccount() && automaticallySetPatientDeposit) {
                     controller.setPatient(controller.getPatient());
@@ -2104,7 +2113,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         admissionController.fillCurrentPatientAllergies(current); //TODO
 
         boolean automaticallySetPatientDeposit = configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false);
-        System.out.println("Select Patient - controller.getPatient().getHasAnAccount() = " + controller.getPatient().getHasAnAccount());
         if (controller.getPatient().getHasAnAccount() != null) {
             if (controller.getPatient().getHasAnAccount() && automaticallySetPatientDeposit) {
                 controller.setPatient(controller.getPatient());
@@ -3220,21 +3228,30 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
 
         //applyPatientNameCapitalization(p);
-//        if (p.getPerson().getId() == null) {
-//            p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
-//            p.getPerson().setCreater(getSessionController().getLoggedUser());
-//            getPersonFacade().create(p.getPerson());
-//        } else {
-//            getPersonFacade().edit(p.getPerson());
-//        }
+
+        // Generate PHN upfront if needed
+        if (p.getPhn() == null || p.getPhn().trim().equals("")) {
+            p.setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+        }
+
+        // Save Person first (no flush yet)
+        if (p.getPerson().getId() == null) {
+            p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
+            p.getPerson().setCreater(getSessionController().getLoggedUser());
+            getPersonFacade().create(p.getPerson());
+        } else {
+            getPersonFacade().edit(p.getPerson());
+        }
+
+        // Save Patient with immediate flush (flushes both Person and Patient)
         if (p.getId() == null) {
             p.setCreatedAt(new Date());
             p.setCreater(getSessionController().getLoggedUser());
             p.setCreatedInstitution(getSessionController().getInstitution());
-            getFacade().create(p);
+            getFacade().createAndFlush(p);  // Immediate flush to database
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
         } else {
-            getFacade().edit(p);
+            getFacade().editAndFlush(p);    // Immediate flush to database
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
         }
         return true;
@@ -3314,6 +3331,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         //applyPatientNameCapitalization(p);
 
+        // Generate PHN upfront if needed
+        if (p.getPhn() == null || p.getPhn().trim().equals("")) {
+            p.setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+        }
+
+        // Save Person first (no flush yet)
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
             p.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -3322,19 +3345,17 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getPersonFacade().edit(p.getPerson());
         }
 
+        // Save Patient with immediate flush (flushes both Person and Patient)
         if (p.getId() == null) {
             p.setCreatedAt(new Date());
             p.setCreater(getSessionController().getLoggedUser());
             p.setCreatedInstitution(getSessionController().getInstitution());
-            getFacade().create(p);
+            getFacade().createAndFlush(p);  // Immediate flush to database
             JsfUtil.addSuccessMessage("Saved Successfully");
         } else {
-            getFacade().edit(p);
+            getFacade().editAndFlush(p);    // Immediate flush to database
         }
-        if (p.getPhn() == null || p.getPhn().trim().equals("")) {
-            p.setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
-            getEjbFacade().edit(p);
-        }
+
         p.setEditingMode(false);
     }
 

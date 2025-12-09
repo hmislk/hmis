@@ -179,7 +179,6 @@ public class ReportFormatController implements Serializable {
         System.out.println("URL");
         getUpload().setFileUrl(null);
         uploadController.saveUpload(getUpload());
-        System.out.println("URL End");
         JsfUtil.addSuccessMessage("Removed Successfully");
 
     }

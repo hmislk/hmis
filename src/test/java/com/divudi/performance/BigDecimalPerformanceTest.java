@@ -56,10 +56,8 @@ public class BigDecimalPerformanceTest {
         
         // Verify we got a result (not testing correctness, just performance)
         assertNotNull(runningTotal);
-        
         // Log performance results
-        System.out.printf("Null-safe addition performance: %d operations in %d ms%n", 
-            PERFORMANCE_ITERATIONS * testDataset.size() * 3, executionTime);
+
         
         // Ensure reasonable performance (adjust threshold as needed)
         assertTrue(executionTime < 5000, "Null-safe additions taking too long: " + executionTime + "ms");
@@ -102,14 +100,12 @@ public class BigDecimalPerformanceTest {
         
         // Results should be identical
         assertEquals(traditionalTotal, utilTotal);
+        // Log performance comparison
         
         // Log performance comparison
         System.out.printf("Performance comparison:%n");
         System.out.printf("  Traditional approach: %d ms%n", traditionalTime);
         System.out.printf("  BigDecimalUtil approach: %d ms%n", utilTime);
-        System.out.printf("  Difference: %d ms (%.2fx)%n", 
-            Math.abs(utilTime - traditionalTime),
-            Math.max(utilTime, traditionalTime) / (double) Math.min(utilTime, traditionalTime));
         
         // BigDecimalUtil should not be more than 10x slower than traditional approach
         // This accounts for the additional method call overhead for null safety and JVM warm-up variations
@@ -152,8 +148,6 @@ public class BigDecimalPerformanceTest {
         
         System.out.printf("Large dataset calculations: %d items processed in %d ms%n", 
             testDataset.size(), executionTime);
-        System.out.printf("  Average time per item: %.2f ms%n", 
-            (double) executionTime / testDataset.size());
         
         // Should process large datasets efficiently (configurable threshold)
         assertTrue(executionTime < PERFORMANCE_THRESHOLD_MS, 
@@ -209,8 +203,6 @@ public class BigDecimalPerformanceTest {
         long endMemory = getUsedMemory();
         long memoryUsed = endMemory - startMemory;
         
-        System.out.printf("Memory usage test: %d KB used for %d entities%n", 
-            memoryUsed / 1024, LARGE_DATASET_SIZE * 2);
         
         // Memory usage should be reasonable (adjust threshold as needed)
         long maxExpectedMemory = LARGE_DATASET_SIZE * 2 * 1024; // 1KB per entity max
@@ -265,8 +257,6 @@ public class BigDecimalPerformanceTest {
             assertNotNull(result);
         }
         
-        System.out.printf("Concurrent performance: %d threads completed in %d ms%n", 
-            threadCount, executionTime);
         
         // Should complete within reasonable time
         assertTrue(executionTime < 15000, "Concurrent operations too slow: " + executionTime + "ms");

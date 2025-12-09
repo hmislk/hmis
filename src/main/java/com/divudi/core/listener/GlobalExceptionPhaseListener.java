@@ -26,7 +26,6 @@ public class GlobalExceptionPhaseListener implements PhaseListener, Serializable
                 ExceptionLogger logger = CDI.current().select(ExceptionLogger.class).get();
                 logger.log(exception);
             } catch (Exception e) {
-                System.err.println("Could not log exception: " + e.getMessage());
             }
         }
     }

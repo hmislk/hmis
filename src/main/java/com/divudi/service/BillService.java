@@ -58,6 +58,7 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 
 import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
 
 import com.divudi.core.entity.Category;
 import com.divudi.core.facade.BillFacade;
@@ -1086,7 +1087,6 @@ public class BillService {
 
         jpql += " order by b.createdAt desc  ";
         System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
     }
@@ -1531,12 +1531,12 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt desc";
+        // Debug logging
 
         // Debug logging
         System.out.println("=== BillService.fetchOpdIncomeReportDTOs Query Debug ===");
         System.out.println("JPQL: " + jpql);
         System.out.println("Parameters: " + params);
-        System.out.println("========================================================");
 
         return (List<OpdIncomeReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -2861,6 +2861,37 @@ public class BillService {
         Map<String, Object> params = new HashMap<>();
         params.put("bb", batchBill);
         return patientInvestigationFacade.findByJpql(jpql, params);
+    }
+    
+    public List<PatientInvestigation> fetchPatientInvestigationsOfBatchBill(Bill batchBill, PatientInvestigationStatus status) {
+        if (batchBill == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT pbi "
+                + "FROM PatientInvestigation pbi "
+                + "WHERE pbi.billItem.bill IN ("
+                + "  SELECT b FROM Bill b WHERE b.backwardReferenceBill = :bb"
+                + ") "
+                + " AND pbi.status =:st "
+                + " ORDER BY pbi.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bb", batchBill);
+        params.put("st", status);
+        return patientInvestigationFacade.findByJpql(jpql, params);
+    }
+    
+    public List<PatientInvestigation> fetchPatientInvestigations(Bill bill, PatientInvestigationStatus status) {
+        String jpql;
+        HashMap<String, Object> params = new HashMap<>();
+        jpql = "SELECT pbi "
+                + " FROM PatientInvestigation pbi "
+                + " WHERE pbi.billItem.bill=:bl "
+                + " AND pbi.status =:st "
+                + " order by pbi.id";
+        params.put("bl", bill);
+        params.put("st", status);
+        List<PatientInvestigation> ptix = patientInvestigationFacade.findByJpql(jpql, params);
+        return ptix;
     }
 
     public List<BillItem> checkCreditBillPaymentReciveFromCreditCompany(Bill bill) {

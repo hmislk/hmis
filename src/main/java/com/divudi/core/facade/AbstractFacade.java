@@ -345,24 +345,30 @@ public abstract class AbstractFacade<T> {
         getEntityManager().persist(entity);
     }
 
+    /**
+     * Creates entity and immediately flushes to database WITHOUT clearing persistence context.
+     * Entities remain managed after this operation.
+     *
+     * Use this when you need immediate database writes (e.g., to generate IDs)
+     * but want to keep entities managed for further operations.
+     */
     public void createAndFlush(T entity) {
         getEntityManager().persist(entity);
         getEntityManager().flush(); // Immediately write to the database
-        Object id = getEntityManager().getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(entity);
-        getEntityManager().clear(); // Clear first-level (persistence context) cache
-        if (id != null) {
-            getEntityManager().getEntityManagerFactory().getCache().evict(entityClass, id); // Evict from second-level cache
-        }
+        // NO clear() - entities remain managed
     }
 
+    /**
+     * Edits entity and immediately flushes to database WITHOUT clearing persistence context.
+     * Entities remain managed after this operation.
+     *
+     * This is different from editAndCommit() which calls clear() and detaches entities.
+     * Use this when you need immediate database writes but want to keep entities managed.
+     */
     public void editAndFlush(T entity) {
-        Object id = getEntityManager().getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(entity);
         getEntityManager().merge(entity);
         getEntityManager().flush(); // Immediately write to the database
-        getEntityManager().clear(); // Clear first-level (persistence context) cache
-        if (id != null) {
-            getEntityManager().getEntityManagerFactory().getCache().evict(entityClass, id); // Evict from second-level cache
-        }
+        // NO clear() - entities remain managed
     }
 
     public void refresh(T entity) {

@@ -1986,7 +1986,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         // Initialize the billItems collection if it was set to null
         if (getPreBill().getBillItems() == null) {
             getPreBill().setBillItems(new ArrayList<>());
-            System.out.println("Initialized PreBill billItems collection");
         }
         System.out.println("savePreBillItemsFinally: Processing " + list.size() + " items");
 
@@ -2037,10 +2036,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 getBillItemFacade().edit(tbi);
             }
             getPreBill().getBillItems().add(tbi);
-            System.out.println("Added BillItem ID: " + tbi.getId() + " back to PreBill");
         }
 
-        System.out.println("savePreBillItemsFinally: Final PreBill items count: " + getPreBill().getBillItems().size());
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
 
         calculateRatesForAllBillItemsInPreBill();
@@ -2432,17 +2429,17 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
         setPrintBill(getBillFacade().find(getPreBill().getId()));
+        // Calculate and record costing values for stock valuation after persistence
+        // Using current bill directly instead of reloading to avoid transaction timing issues
 
         // Calculate and record costing values for stock valuation after persistence
         // Using current bill directly instead of reloading to avoid transaction timing issues
         System.out.println("=== Using current PreBill directly ===");
         System.out.println("PreBill ID: " + getPreBill().getId());
-        System.out.println("PreBill items count: " + (getPreBill().getBillItems() != null ? getPreBill().getBillItems().size() : "null"));
 
         if (getPreBill().getBillItems() != null && !getPreBill().getBillItems().isEmpty()) {
             calculateAndRecordCostingValues(getPreBill());
         } else {
-            System.out.println("WARNING: PreBill has no items, trying to reload...");
             Bill managedBill = loadBillWithPharmaceuticalItems(getPreBill().getId());
             if (managedBill != null) {
                 calculateAndRecordCostingValues(managedBill);
@@ -2451,7 +2448,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 // CRITICAL: Log when bill reload fails - possible concurrent delete or data corruption
                 System.out.println("CRITICAL WARNING: Failed to reload Bill with ID: " + getPreBill().getId());
                 System.out.println("Skipping costing calculations - bill may have been deleted or data corrupted");
-                System.out.println("PreBill settlement will complete but without financial details");
             }
         }
 
@@ -2663,7 +2659,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             JsfUtil.addErrorMessage("Pre-bill is not persisted; cannot load for printing");
             return;
         }
-        setPrintBill(getBillFacade().find(id));
+//        setPrintBill(getBillFacade().find(id));
+
         if (configOptionController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
 
             if (getPatient() != null) {
@@ -2688,6 +2685,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
 
         resetAll();
+        setPrintBill(billService.reloadBill(id));
         billPreview = true;
     }
 
@@ -3314,7 +3312,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         System.out.println("=== Starting updateRetailSaleFinanceDetails ===");
 
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
-            System.out.println("Early return - no bill or bill items");
             return;
         }
 
@@ -3335,7 +3332,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             System.out.println("BillItem qty: " + (billItem != null ? billItem.getQty() : "null"));
 
             if (billItem == null || billItem.isRetired()) {
-                System.out.println("Skipping retired or null bill item");
                 continue;
             }
 
@@ -3343,7 +3339,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
             System.out.println("PharmaceuticalBillItem: " + (pharmaItem != null ? "exists" : "null"));
             if (pharmaItem == null) {
-                System.out.println("Skipping - no pharmaceutical bill item");
                 continue;
             }
 
@@ -3366,12 +3361,9 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 Double batchCostRate = pharmaItem.getItemBatch().getCostRate();
                 if (batchCostRate != null && batchCostRate > 0) {
                     costRate = BigDecimal.valueOf(batchCostRate);
-                    System.out.println("Got costRate from itemBatch.getCostRate(): " + costRate);
                 } else {
-                    System.out.println("ItemBatch costRate is null or negative, using pharma purchaseRate: " + costRate);
                 }
             } else {
-                System.out.println("No itemBatch found, using pharma purchaseRate: " + costRate);
             }
 
             // Get BillItemFinanceDetails (note: getBillItemFinanceDetails() auto-creates if null)
@@ -3440,7 +3432,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             totalQuantity = totalQuantity.add(qty);
             totalFreeQuantity = totalFreeQuantity.add(freeQty);
 
-            System.out.println("Item " + itemIndex + " processing complete");
         }
 
         // UPDATE BILL-LEVEL FINANCE DETAILS (check if auto-creation happens here too)
@@ -3450,9 +3441,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             bfd = new BillFinanceDetails();
             bfd.setBill(bill);
             bill.setBillFinanceDetails(bfd);
-            System.out.println("Created new BillFinanceDetails for bill");
         } else {
-            System.out.println("BillFinanceDetails for bill - ID: " + bfd.getId());
         }
 
         // Set basic totals from bill
@@ -3486,13 +3475,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         System.out.println("After setting - BFD.totalCostValue toString: " + (bfd.getTotalCostValue() != null ? bfd.getTotalCostValue().toString() : "null"));
         System.out.println("=== END PRECISION DEBUG ===");
 
-        System.out.println("=== Completed updateRetailSaleFinanceDetails ===");
     }
 
     private void updateAll() {
         System.out.println("=== updateAll() - Before saving to database ===");
         if (saleBill.getBillFinanceDetails() != null) {
-            System.out.println("SaleBill BFD totalCostValue before DB save: " + saleBill.getBillFinanceDetails().getTotalCostValue());
         }
 
         for (BillItem pbi : preBill.getBillItems()) {
@@ -3504,12 +3491,10 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
         billFacade.edit(saleBill);
 
-        System.out.println("=== updateAll() - After saving to database ===");
         if (saleBill.getBillFinanceDetails() != null) {
             System.out.println("SaleBill BFD totalCostValue after DB save: " + saleBill.getBillFinanceDetails().getTotalCostValue());
             System.out.println("*** DATABASE SCHEMA ISSUE CONFIRMED ***");
             System.out.println("Expected: DECIMAL(18,4) but database has DECIMAL(38,0)");
-            System.out.println("This causes BigDecimal precision loss during JPA save!");
         }
     }
 
@@ -4554,7 +4539,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         System.out.println("Basic bill found: " + (bill != null ? bill.getId() : "null"));
 
         if (bill != null) {
-            System.out.println("Bill items before JPQL: " + (bill.getBillItems() != null ? bill.getBillItems().size() : "null"));
         }
 
         // Now try with JPQL to fetch associations
@@ -4564,21 +4548,16 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 + "LEFT JOIN FETCH pbi.itemBatch "
                 + "WHERE b.id = :billId";
 
-        System.out.println("JPQL query: " + jpql);
         Map<String, Object> params = new HashMap<>();
         params.put("billId", billId);
 
         try {
             Bill loadedBill = getBillFacade().findFirstByJpql(jpql, params);
-            System.out.println("JPQL result: " + (loadedBill != null ? "Found bill ID " + loadedBill.getId() : "null"));
 
             if (loadedBill != null && loadedBill.getBillItems() != null) {
-                System.out.println("JPQL loaded bill items count: " + loadedBill.getBillItems().size());
                 for (BillItem bi : loadedBill.getBillItems()) {
-                    System.out.println("  - BillItem ID: " + bi.getId() + ", PharmaItem: " + (bi.getPharmaceuticalBillItem() != null ? "EXISTS" : "NULL"));
                 }
             } else {
-                System.out.println("ERROR: JPQL returned bill with no items!");
             }
 
             return loadedBill;
@@ -4589,26 +4568,20 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             // Check if original bill exists before attempting fallback
             if (bill == null) {
                 System.out.println("CRITICAL: Original bill is null, cannot use fallback loading");
-                System.out.println("Bill ID " + billId + " may have been deleted or does not exist");
                 return null;
             }
 
             // Fallback: Force load collections manually
-            System.out.println("Using fallback manual loading...");
             if (bill.getBillItems() != null) {
-                System.out.println("Forcing bill items load - count: " + bill.getBillItems().size());
                 for (BillItem bi : bill.getBillItems()) {
                     // Force lazy loading
                     if (bi.getPharmaceuticalBillItem() != null) {
-                        System.out.println("Loaded PharmaItem for BillItem ID: " + bi.getId());
                         // Force load item batch if needed
                         if (bi.getPharmaceuticalBillItem().getItemBatch() != null) {
-                            System.out.println("Loaded ItemBatch for BillItem ID: " + bi.getId());
                         }
                     }
                 }
             } else {
-                System.out.println("WARNING: Fallback bill has no items to load");
             }
             return bill;
         }
@@ -4626,13 +4599,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         System.out.println("Method call stack trace (first 3 levels):");
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
         for (int i = 1; i <= Math.min(4, stack.length - 1); i++) {
-            System.out.println("  " + i + ": " + stack[i].getClassName() + "." + stack[i].getMethodName() + ":" + stack[i].getLineNumber());
         }
 
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
             System.out.println("ERROR: Bill is null or has no items");
             System.out.println("Bill: " + bill);
-            System.out.println("BillItems: " + (bill != null ? bill.getBillItems() : "bill is null"));
             return;
         }
 
@@ -4640,12 +4611,10 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         // Initialize bill finance details if not present
         if (bill.getBillFinanceDetails() == null) {
-            System.out.println("Creating new BillFinanceDetails for bill ID: " + bill.getId());
             BillFinanceDetails billFinanceDetails = new BillFinanceDetails();
             billFinanceDetails.setBill(bill);
             bill.setBillFinanceDetails(billFinanceDetails);
         } else {
-            System.out.println("BillFinanceDetails already exists for bill ID: " + bill.getId());
             BillFinanceDetails existingBfd = bill.getBillFinanceDetails();
 
             // Check if calculations are already done
@@ -4656,7 +4625,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 System.out.println("  TotalCostValue: " + existingBfd.getTotalCostValue());
                 System.out.println("  TotalPurchaseValue: " + existingBfd.getTotalPurchaseValue());
                 System.out.println("  TotalRetailSaleValue: " + existingBfd.getTotalRetailSaleValue());
-                System.out.println("SKIPPING to prevent duplicate calculations");
                 return;
             }
         }
@@ -4675,13 +4643,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             System.out.println("BillItem ID: " + (billItem != null ? billItem.getId() : "null"));
 
             if (billItem == null) {
-                System.out.println("SKIP: BillItem is null");
                 continue;
             }
 
             System.out.println("BillItem considered for costing: " + billItem.isConsideredForCosting());
             if (!billItem.isConsideredForCosting()) {
-                System.out.println("SKIP: BillItem not considered for costing");
                 continue;
             }
 
@@ -4689,15 +4655,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             BillItemFinanceDetails existingDetails = billItem.getBillItemFinanceDetails();
             if (existingDetails != null) {
                 System.out.println("BillItem ID: " + billItem.getId() + " already has BIFD ID: " + existingDetails.getId());
-                System.out.println("Current BIFD values: costRate=" + existingDetails.getValueAtCostRate()
-                                 + ", purchaseRate=" + existingDetails.getValueAtPurchaseRate()
-                                 + ", retailRate=" + existingDetails.getValueAtRetailRate());
 
                 // Check if values are already set - if so, skip calculation to prevent duplicates
                 if (existingDetails.getValueAtCostRate() != null ||
                     existingDetails.getValueAtPurchaseRate() != null ||
                     existingDetails.getValueAtRetailRate() != null) {
-                    System.out.println("SKIP: BillItem ID: " + billItem.getId() + " already has calculated finance details");
                     continue;
                 }
             }
@@ -4717,7 +4679,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
             // Calculate stock valuations for this item based on pharmaceutical bill item rates
             PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
-            System.out.println("PharmaceuticalBillItem: " + (pharmaItem != null ? "EXISTS" : "NULL"));
 
             if (pharmaItem != null) {
                 System.out.println("PharmaItem ID: " + pharmaItem.getId());
@@ -4726,18 +4687,15 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 System.out.println("PharmaItem Wholesale Rate: " + pharmaItem.getWholesaleRate());
                 System.out.println("PharmaItem ItemBatch: " + (pharmaItem.getItemBatch() != null ? "EXISTS" : "NULL"));
                 if (pharmaItem.getItemBatch() != null) {
-                    System.out.println("ItemBatch Cost Rate: " + pharmaItem.getItemBatch().getCostRate());
                 }
                 // Calculate value at cost rate - use actual cost rate from ItemBatch
                 Double costRateValue = null;
                 if (pharmaItem.getItemBatch() != null) {
                     costRateValue = pharmaItem.getItemBatch().getCostRate();
                 }
-                System.out.println("Initial Cost Rate Value: " + costRateValue);
 
                 if (costRateValue == null || costRateValue <= 0) {
                     costRateValue = pharmaItem.getPurchaseRate(); // fallback
-                    System.out.println("Using Purchase Rate as fallback: " + costRateValue);
                 }
 
                 if (costRateValue > 0) {
@@ -4746,9 +4704,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                     System.out.println("Calculated valueAtCostRate: " + valueAtCostRate);
                     itemFinanceDetails.setValueAtCostRate(valueAtCostRate);
                     totalCostValue = totalCostValue.add(valueAtCostRate);
-                    System.out.println("Set valueAtCostRate on itemFinanceDetails");
                 } else {
-                    System.out.println("SKIP: Cost rate is 0 or negative");
                 }
 
                 // Calculate value at purchase rate (same as cost rate for now)
@@ -4758,9 +4714,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                     System.out.println("Calculated valueAtPurchaseRate: " + valueAtPurchaseRate);
                     itemFinanceDetails.setValueAtPurchaseRate(valueAtPurchaseRate);
                     totalPurchaseValue = totalPurchaseValue.add(valueAtPurchaseRate);
-                    System.out.println("Set valueAtPurchaseRate on itemFinanceDetails");
                 } else {
-                    System.out.println("SKIP: Purchase rate is 0 or negative");
                 }
 
                 // Calculate value at retail rate (based on retail rate)
@@ -4770,9 +4724,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                     System.out.println("Calculated valueAtRetailRate: " + valueAtRetailRate);
                     itemFinanceDetails.setValueAtRetailRate(valueAtRetailRate);
                     totalRetailSaleValue = totalRetailSaleValue.add(valueAtRetailRate);
-                    System.out.println("Set valueAtRetailRate on itemFinanceDetails");
                 } else {
-                    System.out.println("SKIP: Retail rate is 0 or negative");
                 }
 
                 // Calculate value at wholesale rate (use retail rate if wholesale rate not available)
@@ -4823,7 +4775,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         // Save the bill with its finance details
         billFacade.edit(bill);
-        System.out.println("=== CALCULATE AND RECORD COSTING VALUES COMPLETED ===");
     }
 
 }

@@ -123,7 +123,10 @@ public class DocumentTemplateController implements Serializable {
                 + "Patient's Name : {patient_name}<br/>"
                 + "Patient's Age : {patient_age}<br/>"
                 + "Patient's PHN Number : {patient_phn_number}<br/>"
-                + "Patient's National Identity Card Number : {patient_nic}<br/>";
+                + "Patient's National Identity Card Number : {patient_nic}<br/>"
+                + "Medical Start Date : {medical_start_date}<br/>"
+                + "Medical End Days : {medical_end_days}<br/>"
+                + "Duration of Medical Certificate : {medical_certificate_duration}<br/>";
         return contents;
 
     }
