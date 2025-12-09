@@ -381,9 +381,22 @@
                                         <h:panelGroup  rendered="#{not opdBillController.patientDetailsEditable}"  >
                                             <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
                                                 <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{opdBillController.patient ne null}" >
-                                                    <h:outputLabel value="Name " class="mx-3"/>
+
+                                                    <p:outputLabel value="Name" class="mx-3" rendered="#{not empty opdBillController.patient.person.nameWithTitle}" />
                                                     <h:outputLabel value=" : " class="mx-3"/>
-                                                    <h:outputText value="#{opdBillController.patient.person.nameWithTitle}" />
+                                                    <h:panelGroup class="d-flex">
+
+                                                        <p:outputLabel class="ml-4" value="#{opdBillController.patient.person.nameWithTitle}" rendered="#{not empty opdBillController.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
+
+                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty opdBillController.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{opdBillController.patient.specificStatus}" severity="danger">
+                                                            <p:outputLabel value="#{opdBillController.patient.person.nameWithTitle}" rendered="#{not empty opdBillController.patient.person.nameWithTitle}" />
+                                                        </p:badge> 
+
+                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient blacklist status management in the system')}" style="transform: translate(110%, -40%);background-color: #{opdBillController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{opdBillController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+
+                                                        </p:badge>
+
+                                                    </h:panelGroup>
 
                                                     <h:outputLabel value="Gender " class="mx-3"/>
                                                     <h:outputLabel value=" : " class="mx-3"/>
@@ -428,7 +441,7 @@
                                                         severity="#{opdBillController.patient.person.foreigner?'warning':'success'}" 
                                                         styleClass="mr-2">
                                                     </p:badge>
-                                                        
+
                                                     <h:outputLabel value="Account Balance (PD)" class="mx-3" rendered="#{opdBillController.patient.hasAnAccount}"/>
                                                     <h:outputLabel value=" : " class="mx-3" rendered="#{opdBillController.patient.hasAnAccount}"/>
 

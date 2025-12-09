@@ -2854,6 +2854,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("Can not bill without a name for the Patient !");
             return true;
         }
+        
+        if(configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false) 
+                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for OPD from the system", false)){
+            if(getPatient().isBlacklisted()){
+                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+                return true;
+            }
+        }
+        
         if (getPatient().getPerson().getSex() == null) {
             JsfUtil.addErrorMessage("Can not bill without sex for the Patient !");
             return true;
