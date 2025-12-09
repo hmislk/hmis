@@ -50,12 +50,14 @@
                                         styleClass="ui-button-secondary mx-2"
                                         oncomplete="PF('emailDialog').show();"
                                         update="emailDialogForm"/>
-                                    <p:commandButton 
-                                        class="ui-button-danger mx-2" 
-                                        icon="fas fa-ban" ajax="false" 
-                                        value="Cancel" action="pharmacy_cancel_po"
-                                        disabled="#{pharmacyBillSearch.bill.cancelled or !webUserController.hasPrivilege('PharmacyOrderCancellation')}">
-                                    </p:commandButton>  
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Purchase Order Bill can be Cancelled', true)}">
+                                        <p:commandButton 
+                                            class="ui-button-danger mx-2" 
+                                            icon="fas fa-ban" ajax="false" 
+                                            value="Cancel" action="pharmacy_cancel_po?faces-redirect=true"
+                                            disabled="#{pharmacyBillSearch.bill.cancelled or !webUserController.hasPrivilege('PharmacyOrderCancellation')}">
+                                        </p:commandButton>  
+                                    </h:panelGroup>
                                 </div>
                             </div>
                         </f:facet>

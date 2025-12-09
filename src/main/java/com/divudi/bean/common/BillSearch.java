@@ -4820,6 +4820,21 @@ public class BillSearch implements Serializable {
         pharmacyBillSearch.setBill(bill);
         return "/pharmacy/pharmacy_reprint_bill_sale_cashier?faces-redirect=true";
     }
+    
+    public String navigateToViewPharmacySettledPreBill(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        bill = billFacade.find(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        loadBillDetails(bill);
+        pharmacyBillSearch.setBill(bill);
+        return "/pharmacy/pharmacy_reprint_bill_sale_cashier?faces-redirect=true";
+    }
 
     public String navigateToPharmacyRetailSaleReturnItemOnly() {
         if (bill == null) {

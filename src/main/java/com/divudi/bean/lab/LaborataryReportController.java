@@ -2,6 +2,7 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillSearch;
+import com.divudi.bean.common.RouteController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
@@ -26,6 +27,7 @@ import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.Route;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -96,9 +98,10 @@ public class LaborataryReportController implements Serializable {
     ConfigOptionApplicationController configController;
     @Inject
     ReportTimerController reportTimerController;
-
+    @Inject
+    RouteController routeController;
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillService billService;
@@ -1191,17 +1194,36 @@ public class LaborataryReportController implements Serializable {
         addSummaryRow();
 
     }
-
-// Helper methods:
+    
+    // Helper methods:
     private Map<String, IncomeRow> initializeIncomeCategories() {
         Map<String, IncomeRow> incomeRows = new LinkedHashMap<>();
 
         String[] categories = {"OPD", "Inpatient", "Home Visit", "Collection", "Total"};
+        
+        List<Route> routes = routeController.fillRoutes();
+        
+        List<String> categoriesList = new ArrayList<>();
+        for (int i = 0; i < 4; i++) { // Up to "Collection"
+            categoriesList.add(categories[i]);
+        }
+        
+        for (int i = 0; i < routes.size(); i++) { // Up to "Collection"
+            categoriesList.add(routes.get(i).getName());
+        }
 
-        for (String category : categories) {
+        categoriesList.add("Other Routes");
+        
+        for (int i = 4; i < categories.length; i++) {
+            categoriesList.add(categories[i]);
+        }
+        
+        categories = categoriesList.toArray(new String[0]);
+        
+        for (String cat : categories) {
             IncomeRow row = new IncomeRow();
-            row.setCategoryName(category);
-            incomeRows.put(category, row);
+            row.setCategoryName(cat);
+            incomeRows.put(cat, row);
         }
 
         return incomeRows;
@@ -1227,15 +1249,33 @@ public class LaborataryReportController implements Serializable {
 
                 // CC Section    
                 case CC_BILL:
-                    addToAgentValue(incomeRows.get("Collection"), bill.getNetTotal());
+                    String billKey = "";
+                    if(bill.getCollectingCentre() == null || bill.getCollectingCentre().getRoute() == null){
+                        billKey = "Other Routes";
+                    }else{
+                        billKey = bill.getCollectingCentre().getRoute().getName();
+                    }
+                    addToAgentValue(incomeRows.get(billKey), bill.getNetTotal());
                     break;
 
                 case CC_BILL_REFUND:
-                    addToRefund(incomeRows.get("Collection"), bill.getNetTotal());
+                    String refundKey = "";
+                    if(bill.getCollectingCentre() == null || bill.getCollectingCentre().getRoute() == null){
+                        refundKey = "Other Routes";
+                    }else{
+                        refundKey = bill.getCollectingCentre().getRoute().getName();
+                    }
+                    addToRefund(incomeRows.get(refundKey), bill.getNetTotal());
                     break;
 
                 case CC_BILL_CANCELLATION:
-                    addToCancellation(incomeRows.get("Collection"), bill.getNetTotal());
+                    String cancelKey = "";
+                    if(bill.getCollectingCentre() == null || bill.getCollectingCentre().getRoute() == null){
+                        cancelKey = "Other Routes";
+                    }else{
+                        cancelKey = bill.getCollectingCentre().getRoute().getName();
+                    }
+                    addToCancellation(incomeRows.get(cancelKey), bill.getNetTotal());
                     break;
 
                 // Inward Section
