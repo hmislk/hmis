@@ -873,13 +873,13 @@
 
                                                             <h:panelGroup class="d-flex">
 
-                                                                <p:outputLabel class="ml-4" value="#{pharmacySaleController.patient.person.nameWithTitle}" rendered="#{not empty pharmacySaleController.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
+                                                                <p:outputLabel class="ml-4" value="#{pharmacySaleController.patient.person.nameWithTitle}" rendered="#{not empty pharmacySaleController.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system', false)}" />
 
-                                                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty pharmacySaleController.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{pharmacySaleController.patient.specificStatus}" severity="danger">
+                                                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system', false)}" style="transform: translate(110%, -40%);background-color: #{empty pharmacySaleController.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{pharmacySaleController.patient.specificStatus}" severity="danger">
                                                                     <p:outputLabel value="#{pharmacySaleController.patient.person.nameWithTitle}" rendered="#{not empty pharmacySaleController.patient.person.nameWithTitle}" />
                                                                 </p:badge> 
 
-                                                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient blacklist status management in the system')}" style="transform: translate(110%, -40%);background-color: #{pharmacySaleController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{pharmacySaleController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+                                                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient blacklist status management in the system', false) and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for Pharmacy from the system', false)}" style="transform: translate(110%, -40%);background-color: #{pharmacySaleController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{pharmacySaleController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
 
                                                                 </p:badge>
 
