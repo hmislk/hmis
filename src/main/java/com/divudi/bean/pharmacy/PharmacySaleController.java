@@ -1200,6 +1200,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             itemBatch.setRetailsaleRate(stockDto.getRetailRate());
             itemBatch.setDateOfExpire(stockDto.getDateOfExpire());
             itemBatch.setBatchNo(stockDto.getBatchNo());
+            itemBatch.setCostRate(stockDto.getCostRate());
 
             // Create minimal Item (we use Amp as a concrete implementation)
             // Note: This is a detached entity used only for reference
@@ -1237,14 +1238,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         item.setCode(stockDto.getCode());
         // Set discountAllowed from DTO, defaulting to true for safety
         item.setDiscountAllowed(stockDto.getDiscountAllowed() != null ? stockDto.getDiscountAllowed() : true);
-
-        // Create minimal Category entity for price matrix discount calculation
-        if (stockDto.getCategoryId() != null) {
-            Category category = new Category();
-            category.setId(stockDto.getCategoryId());
-            item.setCategory(category);
-        }
-
         return item;
     }
 
@@ -1577,9 +1570,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
                 .append("i.id, i.itemBatch.id, i.itemBatch.item.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
                 .append("i.itemBatch.batchNo, i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire, i.itemBatch.item.discountAllowed, ")
-                .append("c.id) ")
+                .append("i.itemBatch.costRate) ")
                 .append("FROM Stock i ")
-                .append("LEFT JOIN i.itemBatch.item.category c ")
                 .append("WHERE i.stock > :stockMin ")
                 .append("AND i.department = :department ")
                 .append("AND (");
@@ -1627,9 +1619,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
                 .append("i.id, i.itemBatch.id, i.itemBatch.item.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
                 .append("i.itemBatch.batchNo, i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire, i.itemBatch.item.discountAllowed, ")
-                .append("c.id) ")
+                .append("i.itemBatch.costRate) ")
                 .append("FROM Stock i ")
-                .append("LEFT JOIN i.itemBatch.item.category c ")
                 .append("WHERE i.stock > :stockMin ")
                 .append("AND i.department = :department ")
                 .append("AND (");
@@ -1793,14 +1784,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void calculateBillItemsAndBillTotalsOfPreBill() {
-        // Performance optimization: Only recalculate all rates if payment terms changed
-        // This prevents O(n²) recalculation on every item add
-        if (ratesNeedRecalculation || hasPaymentTermsChanged()) {
-            calculateRatesForAllBillItemsInPreBill();
-            ratesNeedRecalculation = false;
-            lastCalculatedPaymentScheme = paymentScheme;
-            lastCalculatedPaymentMethod = paymentMethod;
-        }
+        calculateRatesForAllBillItemsInPreBill();
         calculatePreBillTotals();
     }
 
@@ -1829,20 +1813,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 bi.setRate(itemBatch.getRetailsaleRate());
             }
 
-            // Performance optimization: Skip discount calculation if not applicable
-            // Check if item allows discount first (cheapest check)
-            if (bi.getItem() != null && !bi.getItem().isDiscountAllowed()) {
-                bi.setDiscountRate(0.0);
-            } else {
-                boolean hasDiscountScheme = getPaymentScheme() != null ||
-                                           (getPaymentMethod() != null && getPaymentMethod() != PaymentMethod.Cash) ||
-                                           (getPaymentMethod() == PaymentMethod.Credit && toInstitution != null);
+            // Performance optimization: Skip discount calculation if no discount scheme is active
+            boolean hasDiscountScheme = getPaymentScheme() != null ||
+                                       (getPaymentMethod() == PaymentMethod.Credit && toInstitution != null);
 
-                if (hasDiscountScheme) {
-                    bi.setDiscountRate(calculateBillItemDiscountRate(bi));
-                } else {
-                    bi.setDiscountRate(0.0);
-                }
+            if (hasDiscountScheme) {
+                bi.setDiscountRate(calculateBillItemDiscountRate(bi));
+            } else {
+                bi.setDiscountRate(0.0);
             }
 
             bi.setNetRate(bi.getRate() - bi.getDiscountRate());
