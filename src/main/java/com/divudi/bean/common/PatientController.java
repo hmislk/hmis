@@ -1,7 +1,6 @@
 package com.divudi.bean.common;
 
 // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
-
 import com.divudi.bean.optician.OpticianRepairBillController;
 import com.divudi.bean.optician.OpticianSaleController;
 import org.apache.poi.ss.usermodel.*;
@@ -250,6 +249,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private String searchBillId;
     private String searchSampleId;
     private String searchPatientPhoneNumber;
+    private SpecificPatientStatus specificPatientStatus;
+    private boolean blackListStatus;
 
     private List<Patient> searchedPatients;
     private List<Person> searchedPersons;
@@ -277,6 +278,23 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private boolean reGenerateePhn;
     private PaymentMethod paymentMethod;
     private String blacklistComment;
+    
+    public boolean isBlackListStatus() {
+        return blackListStatus;
+    }
+
+    public void setBlackListStatus(boolean blackListStatus) {
+        this.blackListStatus = blackListStatus;
+    }
+
+
+    public SpecificPatientStatus getSpecificPatientStatus() {
+        return specificPatientStatus;
+    }
+
+    public void setSpecificPatientStatus(SpecificPatientStatus specificPatientStatus) {
+        this.specificPatientStatus = specificPatientStatus;
+    }
 
     public String getBlacklistComment() {
         return blacklistComment;
@@ -320,8 +338,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigateToPatientPastChannelBiiking() {
         return "/channel/patients_pastbookings_channel?faces-redirect=true";
     }
-    
-    public List<SpecificPatientStatus> getAllPatientSpecificLabels(){
+
+    public List<SpecificPatientStatus> getAllPatientSpecificLabels() {
         return Arrays.asList(SpecificPatientStatus.values());
     }
 
@@ -1699,6 +1717,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (searchSampleId != null && !searchSampleId.trim().equals("")) {
             noSearchCriteriaWasFound = false;
         }
+        if(specificPatientStatus != null){
+            noSearchCriteriaWasFound = false;
+        }
+        
+        System.out.println(blackListStatus);
+        
+        if(blackListStatus){
+            noSearchCriteriaWasFound = false;
+        }
 
         if (noSearchCriteriaWasFound) {
             JsfUtil.addErrorMessage("No Search Criteria Found !");
@@ -1717,7 +1744,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
             searchPatientByNic();
         } else if (searchPhone == null && searchName == null && searchNic != null && searchNic != null && !searchPatientPhoneNumber.trim().equals("")) {
             searchByPatientPhoneNumber();
-        } else {
+        }else if(specificPatientStatus != null){
+            searchPatientBySpecificStatus();
+        }else if(blackListStatus){
+            searchPatientsBlacklisted();
+        }else {
             searchPatientByDetails();
         }
 
@@ -1727,15 +1758,18 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String searchPatientForOpd() {
         boolean noError = searchPatientCommon();
         if (!noError) {
+            searchedPatients = null;
             return "";
         }
         if (searchedPatients == null || searchedPatients.isEmpty()) {
             JsfUtil.addErrorMessage("No Matches. Please use different criteria");
-            return navigateToAddNewPatientForOpd(getSearchName(), getSearchNic(), getSearchPhone());
-        } else if (searchedPatients.size() == 1) {
-            setCurrent(searchedPatients.get(0));
-            return navigateToOpdPatientProfile();
+        
+            return "";
         }
+//        } else if (searchedPatients.size() == 1) {
+//            setCurrent(searchedPatients.get(0));
+//            return navigateToOpdPatientProfile();
+//        }
         clearSearchDetails();
         return "";
     }
@@ -1788,6 +1822,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         searchBillId = null;
         searchSampleId = null;
         searchPatientPhoneNumber = null;
+        specificPatientStatus = null;
+        blackListStatus = false;
     }
 
     public void searchByBill() {
@@ -2009,6 +2045,23 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         }
     }
+    
+    public void searchPatientsBlacklisted(){
+        
+        String j;
+        Map m = new HashMap();
+        j = "select p from Patient p where p.retired=false and p.blacklisted = :status";
+        m.put("status", blackListStatus);
+        searchedPatients = getFacade().findByJpql(j, m, TemporalType.DATE, 20);
+    }
+    
+    public void searchPatientBySpecificStatus(){
+        String j;
+        Map m = new HashMap();
+        j = "select p from Patient p where p.retired=false and p.specificStatus = :status";
+        m.put("status", specificPatientStatus);
+        searchedPatients = getFacade().findByJpql(j, m, TemporalType.DATE, 20);
+    }
 
     public void searchByPatientPhoneNumber() {
         Long patientPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(searchPatientPhoneNumber);
@@ -2022,23 +2075,23 @@ public class PatientController implements Serializable, ControllerWithPatient {
         m.put("pp", patientPhoneNumber);
         searchedPatients = getFacade().findByJpql(j, m);
     }
-    
-    public boolean checkHasField(Class<?> controller, String fieldName){
-        try{
+
+    public boolean checkHasField(Class<?> controller, String fieldName) {
+        try {
             System.out.println("line 2028");
             controller.getDeclaredField(fieldName);
             return true;
-        }catch(Exception e){
+        } catch (Exception e) {
             return false;
         }
     }
-    
-    public boolean checkHasMethod(Class<?> controller, String methodName, Class<?>... parameterTypes){
-        try{
+
+    public boolean checkHasMethod(Class<?> controller, String methodName, Class<?>... parameterTypes) {
+        try {
             System.out.println("line 2038");
             controller.getMethod(methodName, parameterTypes);
             return true;
-        }catch(Exception e){
+        } catch (Exception e) {
             return false;
         }
     }
@@ -2089,7 +2142,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             controller.setPatientDetailsEditable(false);
 //            controller.setPaymentMethod(null);
 
-            if(checkHasField(controller.getClass(), "patientAllergies") && checkHasMethod(controller.getClass(), "fillCurrentPatientAllergies", Patient.class)){
+            if (checkHasField(controller.getClass(), "patientAllergies") && checkHasMethod(controller.getClass(), "fillCurrentPatientAllergies", Patient.class)) {
                 Method method = controller.getClass().getDeclaredMethod("fillCurrentPatientAllergies", Patient.class);
                 method.setAccessible(true);
                 method.invoke(controller, patientSearched);
@@ -2407,7 +2460,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return null;
         }
     }
-
 
     public Family fetchFamilyFromMembershipNumber(String paramMembershipNumber, MembershipScheme paramMembershipScheme, String phoneNumber) {
         if (paramMembershipNumber == null) {
@@ -2997,15 +3049,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
         saveSelectedPatient();
         return toViewPatient();
     }
-    
-    public void toggleBlacklistPatient( boolean blacklist){
+
+    public void toggleBlacklistPatient(boolean blacklist) {
         Patient patient = this.current;
-        if(patient == null || patient.getId() == null){
-            return;   
+        if (patient == null || patient.getId() == null) {
+            return;
         }
 
-        if(blacklist && !patient.isBlacklisted()){
-            if(blacklistComment == null || blacklistComment.isEmpty()){
+        if (blacklist && !patient.isBlacklisted()) {
+            if (blacklistComment == null || blacklistComment.isEmpty()) {
                 JsfUtil.addErrorMessage("Please provide a reason for blacklisting. ");
                 return;
             }
@@ -3014,16 +3066,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
             newb.setBlacklistedAt(new Date());
             getFacade().edit(newb);
             newb.setBlacklistedBy(sessionController.getLoggedUser());
-            newb.setReasonForBlacklist(newb.getReasonForBlacklist() != null ? newb.getReasonForBlacklist() + " / " + blacklistComment  : blacklistComment);
+            newb.setReasonForBlacklist(newb.getReasonForBlacklist() != null ? newb.getReasonForBlacklist() + " / " + blacklistComment : blacklistComment);
 //            getFacade().edit(patient);
 
             getFacade().editAndCommit(newb);
             this.current = getFacade().findWithoutCache(newb.getId());
             blacklistComment = null;
             JsfUtil.addSuccessMessage("Patient is blacklisted.");
-            
-        }else if(!blacklist && patient.isBlacklisted()){
-            if(blacklistComment == null || blacklistComment.isEmpty()){
+
+        } else if (!blacklist && patient.isBlacklisted()) {
+            if (blacklistComment == null || blacklistComment.isEmpty()) {
                 JsfUtil.addErrorMessage("Please provide a reason for revert blacklisting. ");
                 return;
             }
@@ -3031,12 +3083,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
             Patient newb = getFacade().find(patient.getId());
             newb.setBlacklisted(false);
             getFacade().edit(newb);
-            newb.setReasonForBlacklist(patient.getReasonForBlacklist() +" at " 
-                    + newb.getBlacklistedAt() + " by " 
-                    + newb.getBlacklistedBy() 
-                    + " / revert by " + sessionController.getWebUser() 
-                    + " at "+new Date() + " revert comment - " + blacklistComment);
-            
+            newb.setReasonForBlacklist(patient.getReasonForBlacklist() + " at "
+                    + newb.getBlacklistedAt() + " by "
+                    + newb.getBlacklistedBy()
+                    + " / revert by " + sessionController.getWebUser()
+                    + " at " + new Date() + " revert comment - " + blacklistComment);
+
             newb.setBlacklistedAt(null);
             newb.setBlacklistedBy(null);
 
@@ -3347,7 +3399,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
 
         //applyPatientNameCapitalization(p);
-
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
             p.getPerson().setCreater(getSessionController().getLoggedUser());
