@@ -1091,6 +1091,14 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
                 return true;
             }
         }
+        
+        if(configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false) 
+                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for OPD from the system", false)){
+            if(getPatient().isBlacklisted()){
+                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+                return true;
+            }
+        }
 
 //        if (getPaymentMethod() == null) {
 //            JsfUtil.addErrorMessage("Select Payment Method.");
