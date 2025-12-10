@@ -284,7 +284,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void setBlackListStatus(boolean blackListStatus) {
-        System.out.println("line 287 "+this.blackListStatus);
         this.blackListStatus = blackListStatus;
     }
 
@@ -2207,7 +2206,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         admissionController.fillCurrentPatientAllergies(current); //TODO
 
         boolean automaticallySetPatientDeposit = configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false);
-        System.out.println("Select Patient - controller.getPatient().getHasAnAccount() = " + controller.getPatient().getHasAnAccount());
+
         if (controller.getPatient().getHasAnAccount() != null) {
             if (controller.getPatient().getHasAnAccount() && automaticallySetPatientDeposit) {
                 controller.setPatient(controller.getPatient());

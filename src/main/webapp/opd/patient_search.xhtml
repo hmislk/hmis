@@ -192,7 +192,7 @@
                                     </p:column>
 
                                     <p:column style="text-align: center" headerText="Patient Status" width="10%" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}">
-                                        <p:outputLabel value="X Blaclisted" class="px-3" rendered="#{p.blacklisted}" style="color: #FF401F; font-weight: bold; padding: 5px; border-radius: 15px;"></p:outputLabel>
+                                        <p:outputLabel value="X Blacklisted" class="px-3" rendered="#{p.blacklisted}" style="color: #FF401F; font-weight: bold; padding: 5px; border-radius: 15px;"></p:outputLabel>
                                         <p:outputLabel value="Active" class="px-3" rendered="#{!p.blacklisted}" style="color: green; font-weight: bold; padding: 5px; border-radius: 15px;"></p:outputLabel>
                                         <p:outputLabel value="#{p.specificStatus}" class="px-3" rendered="#{not empty p.specificStatus}" style="color: EB7633; font-weight: bold; padding: 5px; border-radius: 15px;"></p:outputLabel>
                                         <p:outputLabel value="NORMAL" class="px-3" rendered="#{empty p.specificStatus}" style="color: EB7633; font-weight: bold; padding: 5px; border-radius: 15px;"></p:outputLabel>
