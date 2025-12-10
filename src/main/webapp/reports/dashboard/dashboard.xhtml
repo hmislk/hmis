@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <div >
+                    <h:form>
+                        <div class="row">
+                            <div class="col-12 d-flex gap-3 m-4 justify-content-center">
+
+                                <p:commandButton 
+                                    value="Bed Occupency" 
+                                    ajax="false" 
+                                    action="#{inwardReportDashboardController.navigateToBedOccupencyDashboard()}" 
+                                    icon="fa fa-box" 
+                                    class="#{inwardReportDashboardController.activeIndex == 1 ? 'ui-button-warning': ''}" >
+                                </p:commandButton>
+                                
+                                <p:commandButton 
+                                    value="Opd Revenue" 
+                                    ajax="false" 
+                                    action="#{inwardReportDashboardController.navigateToopdRevenueDashboard()}" 
+                                    icon="fa fa-handshake" 
+                                    class="#{inwardReportDashboardController.activeIndex == 2 ? 'ui-button-warning': ''}" >
+                                </p:commandButton>
+                                
+                                <p:commandButton 
+                                    value="Discount" 
+                                    ajax="false" 
+                                    action="#{inwardReportDashboardController.navigateToDiscountDashboard()}" 
+                                    icon="fa fa-file-alt" 
+                                    class="#{inwardReportDashboardController.activeIndex == 3 ? 'ui-button-warning': ''}" >
+                                </p:commandButton>
+                                
+                                <p:commandButton 
+                                    value="HR" 
+                                    ajax="false" 
+                                    action="#{inwardReportDashboardController.navigateToHRDashboard()}" 
+                                    icon="fa fa-print" 
+                                    class="#{inwardReportDashboardController.activeIndex == 4 ? 'ui-button-warning': ''}" >
+                                </p:commandButton>
+                                
+                            </div>
+                        </div>
+                    </h:form>
+                    <div class="row">
+                        <div class="col-12">
+                            <ui:insert name="subcontent"></ui:insert>
+                        </div>
+                    </div>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
