@@ -874,7 +874,7 @@
                                                                     <p:outputLabel value="#{pharmacySaleController1.patient.person.nameWithTitle}" rendered="#{not empty pharmacySaleController1.patient.person.nameWithTitle}" />
                                                                 </p:badge> 
 
-                                                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient blacklist status management in the system')}" style="transform: translate(110%, -40%);background-color: #{pharmacySaleController1.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{pharmacySaleController1.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+                                                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system')}" style="transform: translate(110%, -40%);background-color: #{pharmacySaleController1.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{pharmacySaleController1.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
 
                                                                 </p:badge>
 

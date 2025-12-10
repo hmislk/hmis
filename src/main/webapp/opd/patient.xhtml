@@ -80,7 +80,7 @@
                                                             <p:outputLabel value="#{patientController.current.person.nameWithTitle}" rendered="#{not empty patientController.current.person.nameWithTitle}" />
                                                         </p:badge> 
 
-                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient blacklist status management in the system')}" style="transform: translate(110%, -40%);background-color: #{patientController.current.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{patientController.current.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system')}" style="transform: translate(110%, -40%);background-color: #{patientController.current.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{patientController.current.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
 
                                                         </p:badge>
                                                     </h:panelGroup>
