@@ -2853,6 +2853,7 @@ public class PatientReportController implements Serializable {
     public PatientReport createNewMicrobiologyReport(PatientInvestigation pi, Investigation ix) {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
+            r = new PatientReport();
             Patient pt = patientFacade.find(pi.getPatient().getId());
             
             r.setPatientName(pt.getPerson().getNameWithTitle());
