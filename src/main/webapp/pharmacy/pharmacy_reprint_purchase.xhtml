@@ -19,14 +19,16 @@
                             <div class="d-flex justify-content-between">
                                 <div><h:outputLabel value="Purchase Reprint" class="mt-2"></h:outputLabel></div>
                                 <div class="d-flex gap-2">
-                                    <p:commandButton 
-                                        value="To Cancel" 
-                                        ajax="false"
-                                        icon="fas fa-cancel"
-                                        class="ui-button-danger mx-2"
-                                        action="pharmacy_cancel_purchase?faces-redirect=true" 
-                                        disabled="#{pharmacyBillSearch.bill.cancelled}">                           
-                                    </p:commandButton>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Direct Purchase Bill can be Cancelled', true)}">
+                                        <p:commandButton 
+                                            value="To Cancel" 
+                                            ajax="false"
+                                            icon="fas fa-cancel"
+                                            class="ui-button-danger mx-2"
+                                            action="pharmacy_cancel_purchase?faces-redirect=true" 
+                                            disabled="#{pharmacyBillSearch.bill.cancelled}">                           
+                                        </p:commandButton>
+                                    </h:panelGroup>
 
                                     <p:commandButton
                                         value="To Return" 

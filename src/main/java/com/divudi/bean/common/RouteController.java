@@ -75,6 +75,11 @@ public class RouteController implements Serializable {
         m.put("ret", false);
         items = getFacade().findByJpql(j, m);
     }
+    
+    public List<Route> fillRoutes() {
+        fillItems();
+        return items;
+    }
 
     public List<Route> completeRoute(String qry) {
         List<Route> list;
