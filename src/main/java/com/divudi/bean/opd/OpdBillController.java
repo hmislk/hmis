@@ -3500,7 +3500,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         setNetTotal(billNet);
         setVat(billVat);
         setNetPlusVat(getVat() + getNetTotal());
-
+        if (getPaymentMethod() == PaymentMethod.ewallet) {
+            getPaymentMethodData().getEwallet().setTotalValue(getNetTotal());
+        }
         if (getSessionController() != null) {
             if (getSessionController().getApplicationPreference() != null) {
 
@@ -4244,6 +4246,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
         } else if (paymentMethod == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
+//        } else if (paymentMethod == PaymentMethod.ewallet){
+//            getPaymentMethodData().getEwallet().setTotalValue(netTotal);
         } else if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
