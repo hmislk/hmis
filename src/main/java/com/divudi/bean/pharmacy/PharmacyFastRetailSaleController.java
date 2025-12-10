@@ -1544,7 +1544,7 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     @EJB
     private CashTransactionBean cashTransactionBean;
 
-    public void settleBillWithPay() {
+     public void settleBillWithPay() {
         editingQty = null;
 
         if (billSettlingStarted) {
@@ -1607,6 +1607,15 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
                     || getPatient().getPerson().getName() == null
                     || getPatient().getPerson().getName().trim().isEmpty()) {
                 JsfUtil.addErrorMessage("Please Select a Patient");
+                billSettlingStarted = false;
+                return;
+            }
+        }
+        
+        if(configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false) 
+                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Pharmacy from the system", false)){
+            if(getPatient().isBlacklisted()){
+                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
                 billSettlingStarted = false;
                 return;
             }
