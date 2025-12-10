@@ -124,6 +124,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
         returningStarted.set(false);
         paymentMethod = originalBillToReturn.getPaymentMethod();
+        initializeReturnBillFromOriginalBill(originalBillToReturn);
         paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(originalBillToReturn);
         return "/opd/bill_return?faces-redirect=true";
     }
@@ -932,5 +933,19 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
     public void setToStaff(Staff toStaff) {
         this.toStaff = toStaff;
+    }
+    
+    private void initializeReturnBillFromOriginalBill(Bill originalBillToReturn) {
+        switch (originalBillToReturn.getPaymentMethod()) {
+            case Cheque:
+                getPaymentMethodData().getCheque().setInstitution(originalBillToReturn.getBank());
+                getPaymentMethodData().getCheque().setDate(originalBillToReturn.getChequeDate());
+                getPaymentMethodData().getCheque().setNo(originalBillToReturn.getChequeRefNo());
+                getPaymentMethodData().getCheque().setComment(originalBillToReturn.getComments());
+                getPaymentMethodData().getCheque().setTotalValue(originalBillToReturn.getNetTotal());
+                break;
+            default:
+                break;
+        }
     }
 }
