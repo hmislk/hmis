@@ -21,12 +21,17 @@
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Admission From Date " class="m-3" />
                             </h:panelGroup>
-                            <p:datePicker value=""
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                          showTime="true"
-                                          hourFormat="24"
-                                          styleClass="w-100"
-                                          inputStyleClass="w-100 form-control" />
+                            <p:datePicker
+                                id="fromdate"
+                                value=""
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                showTime="true"
+                                timeInput="true"
+                                yearNavigator="true"
+                                monthNavigator="true"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                />
                                                            
 
                             <!-- Admission To Date -->
@@ -34,48 +39,68 @@
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Admission To Date " class="m-3" />
                             </h:panelGroup>
-                            <p:datePicker value=""
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                          showTime="true"
-                                          hourFormat="24"
-                                          styleClass="w-100"
-                                          inputStyleClass="w-100 form-control" />
+                            <p:datePicker
+                                id="todate"
+                                value=""
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                showTime="true"
+                                timeInput="true"
+                                yearNavigator="true"
+                                monthNavigator="true"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                />
 
                             <!-- Discharge From Date -->
                             <h:panelGroup>
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Discharge From Date " class="m-3" />
                             </h:panelGroup>
-                            <p:datePicker value=""
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                          showTime="true"
-                                          hourFormat="24"
-                                          styleClass="w-100"
-                                          inputStyleClass="w-100 form-control" />
+                            <p:datePicker
+                                id="dischargefromdate"
+                                value=""
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                showTime="true"
+                                timeInput="true"
+                                yearNavigator="true"
+                                monthNavigator="true"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                />
 
                             <!-- Discharge To Date -->
                             <h:panelGroup>
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Discharge To Date " class="m-3" />
                             </h:panelGroup>
-                            <p:datePicker value=""
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                          showTime="true"
-                                          hourFormat="24"
-                                          styleClass="w-100"
-                                          inputStyleClass="w-100 form-control" />
+                            <p:datePicker
+                                id="dischargetodate"
+                                value=""
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                showTime="true"
+                                timeInput="true"
+                                yearNavigator="true"
+                                monthNavigator="true"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                />
 
                             <!-- Invoice Approved From Date -->
                             <h:panelGroup>
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Invoice Approved From Date" class="m-3" />
                             </h:panelGroup>
-                            <p:datePicker value=""
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                          showTime="true"
-                                          hourFormat="24"
-                                          styleClass="w-100"
-                                          inputStyleClass="w-100 form-control" />
+                             <p:datePicker
+                                id="invoicefromdate"
+                                value=""
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                showTime="true"
+                                timeInput="true"
+                                yearNavigator="true"
+                                monthNavigator="true"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                />
 
                             <!-- Invoice Approved To Date -->
                             <h:panelGroup>
@@ -83,21 +108,36 @@
                                 <p:outputLabel value="Invoice Approved To Date" class="m-3" />
                             </h:panelGroup>
 
-                            <p:datePicker value=""
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                          showTime="true"
-                                          hourFormat="24"
-                                          styleClass="w-100"
-                                          inputStyleClass="w-100 form-control"/>
+                            <p:datePicker
+                                id="invoicetodate"
+                                value=""
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                showTime="true"
+                                timeInput="true"
+                                yearNavigator="true"
+                                monthNavigator="true"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                />
 
 
-                            <!-- Branch -->
+                            <!-- Institution -->
                             <h:panelGroup>
                                 <h:outputText styleClass="fa fa-building mr-2"/>
-                                <p:outputLabel value="Branch" class="m-3"/>
+                                <p:outputLabel value="Institution" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true" class="w-100">
-                                <f:selectItem itemLabel="All Branches"/>
+                                <f:selectItem itemLabel="All Institutions"/>
+
+                            </p:selectOneMenu>
+                            
+                            <!-- Site-->
+                            <h:panelGroup>
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Site" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true" class="w-100">
+                                <f:selectItem itemLabel="All Sites"/>
 
                             </p:selectOneMenu>
 
@@ -162,7 +202,14 @@
 
                             </p:selectOneMenu>
 
-
+                            <!-- Admission Status -->
+                            <h:panelGroup>
+                                <h:outputText styleClass="fa fa-user mr-2"/>
+                                <p:outputLabel value="Admission Status" class="m-3"/>
+                            </h:panelGroup>
+                         <p:selectOneMenu value="" filter="true" class="w-100">
+                                <f:selectItem itemLabel="All Admission Statuses"/>
+                             </p:selectOneMenu>
 
                             <!-- Admission Types -->
                             <h:panelGroup>
@@ -170,7 +217,7 @@
                                 <p:outputLabel value="Admission Types" class="m-3"/>
                             </h:panelGroup>
                          <p:selectOneMenu value="" filter="true" class="w-100">
-                                <f:selectItem itemLabel="All Admission Types"/>
+                                <f:selectItem itemLabel="All"/>
 
                             </p:selectOneMenu>
 
