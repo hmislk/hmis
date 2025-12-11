@@ -153,6 +153,13 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdmissionsEditAdmission, "Edit Admission Details"), admissionsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdmissionsInwardAppoinment, "Inward Appointment"), admissionsNode);
 
+        TreeNode appointmentNode = new DefaultTreeNode(new PrivilegeHolder(null, "Appointment"), inwardNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAppointmentMenu, "Add IP Appointment"), appointmentNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.AddInwardAppointment, "Add IP Appointment"), appointmentNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAppointmentAdmission, "IP Appointment to Admit"), appointmentNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAppointmentUpdate, "IP Appointment Update"), appointmentNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAppointmentCancel, "IP Appointment Cancel"), appointmentNode);
+
         TreeNode roomNode = new DefaultTreeNode(new PrivilegeHolder(null, "Room"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoom, "Room Menu"), roomNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoomRoomOccupency, "Room Occupancy"), roomNode);
