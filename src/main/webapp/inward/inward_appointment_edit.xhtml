@@ -27,6 +27,7 @@
                                 <p:inputText
                                     id="commentsMenu"
                                     value="#{appointmentController.comment}"
+                                    rendered="#{webUserController.hasPrivilege('InwardAppointmentCancel')}"
                                     placeholder="Reason of the Cancel"
                                     style="float: right; width: 500px;"
                                     >
@@ -37,6 +38,7 @@
                                     value="Cancel Appointment" 
                                     icon="fa fa-cancel"
                                     style="float: right"
+                                    rendered="#{webUserController.hasPrivilege('InwardAppointmentCancel')}"
                                     class="ui-button-danger" 
                                     disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                     action="#{appointmentController.cancelAppointment()}">
@@ -61,6 +63,7 @@
                                     disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                     action="#{appointmentController.updateChangesReservation()}" 
                                     ajax="false"
+                                    rendered="#{webUserController.hasPrivilege('InwardAppointmentUpdate')}"
                                     icon="fa fa-check"
                                     class="ui-button-success mx-1 ">
                                 </p:commandButton>
@@ -75,7 +78,7 @@
                                         <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
                                     </f:facet>
 
-                                    <common:patient_details_for_appoiment editable="true" controller="#{appointmentController}"/>
+                                    <common:patient_details_for_appoiment editable="#{webUserController.hasPrivilege('InwardAppointmentUpdate')}" controller="#{appointmentController}"/>
 
                                 </p:panel>
 
@@ -91,6 +94,7 @@
                                                 forceSelection="true"  
                                                 id="cmbRspRoom" 
                                                 class="mx-4 my-2"
+                                                readonly="#{not webUserController.hasPrivilege('InwardAppointmentUpdate')}"
                                                 disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                                 value="#{appointmentController.reservedroom}" 
                                                 completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
@@ -110,6 +114,7 @@
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                                 styleClass="form-control w-100"
                                                 showButtonBar="true"
+                                                readonly="#{not webUserController.hasPrivilege('InwardAppointmentUpdate')}"
                                                 disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                                 timeInput="true"
                                                 showTime="true"
@@ -123,6 +128,7 @@
                                                 id="reserveToTimeStamp"
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                                 styleClass="form-control w-100"
+                                                readonly="#{not webUserController.hasPrivilege('InwardAppointmentUpdate')}"
                                                 showButtonBar="true"
                                                 disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                                 timeInput="true"
@@ -148,6 +154,7 @@
                                             class="w-100 my-1"
                                             inputStyleClass="w-100"
                                             id="cmbDoc" 
+                                            readonly="#{not webUserController.hasPrivilege('InwardAppointmentUpdate')}"
                                             value="#{appointmentController.currentBill.referredBy}"
                                             completeMethod="#{doctorController.completeDoctor}" 
                                             var="doc" 
@@ -164,6 +171,7 @@
                                             class="w-100 my-1"
                                             showTime="true"
                                             showButtonBar="true"
+                                            readonly="#{not webUserController.hasPrivilege('InwardAppointmentUpdate')}"
                                             disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                             timeInput="true"
                                             value="#{appointmentController.currentAppointment.appointmentDate}" 

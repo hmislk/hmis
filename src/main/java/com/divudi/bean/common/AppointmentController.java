@@ -155,20 +155,17 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         return "/inward/view_appointment?faces-redirect=true";
     }
 
+    public String navigateToAppointmentAdminFromMenu() {
+        makeNull();
+        return "/inward/appointment_admit?faces-redirect=true";
+    }
+
     public String navigateToSearchAppointmentsListFromViewAppointments() {
         searchAppointments();
         return "/inward/view_appointment?faces-redirect=true";
     }
 
-    public String navigatePatientAdmit(Long reservationId) {
-
-        if (reservationId == null) {
-            JsfUtil.addErrorMessage("Error in Reservation");
-            return "";
-        }
-
-        reservation = reservationFacade.find(reservationId);
-
+    public String navigatePatientAdmit() {
         if (reservation == null) {
             JsfUtil.addErrorMessage("No Reservation Found");
             return "";
@@ -180,7 +177,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         }
 
         Admission ad = new Admission();
-
         if (ad.getDateOfAdmission() == null) {
             ad.setDateOfAdmission(CommonFunctions.getCurrentDateTime());
         }
@@ -192,16 +188,25 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         admissionController.setAppointmentBill(reservation.getAppointment().getBill());
         admissionController.setPatientAllergies(null);
         admissionController.setCurrentReservation(reservation);
-
         admissionController.setBhtText("");
-
         admissionController.listnerForAppoimentSelect(reservation.getAppointment().getBill());
 
         return "/inward/inward_admission?faces-redirect=true";
     }
 
+    public String navigatePatientAdmit(Long reservationId) {
+
+        if (reservationId == null) {
+            JsfUtil.addErrorMessage("Error in Reservation");
+            return "";
+        }
+
+        reservation = reservationFacade.find(reservationId);
+
+        return navigatePatientAdmit();
+    }
+
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public AppointmentController() {
     }
@@ -211,6 +216,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         toDate = null;
         appointmentNo = null;
         patientName = null;
+        reservation = null;
         appointmentstatus = null;
         reservationDTOs = new ArrayList<>();
         comment = null;
@@ -354,6 +360,30 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
         reservationDTOs = reservationFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
 
+    }
+
+    public List<Reservation> searcheservations(String quary) {
+
+        HashMap params = new HashMap();
+
+        String jpql = "SELECT res "
+                + " FROM Reservation res "
+                + " WHERE res.retired =:ret"
+                + " AND res.appointment.status = :status "
+                + " AND "
+                + " (res.appointment.appointmentNumber like :number "
+                + " or res.patient.person.name like :name )"
+                + " and res.appointment.appointmentType =:type";
+
+        jpql += " ORDER BY res.createdAt";
+
+        params.put("ret", false);
+        params.put("number", "%" + quary + "%");
+        params.put("name", "%" + quary + "%");
+        params.put("type", AppointmentType.IP_APPOINTMENT);
+        params.put("status", AppointmentStatus.PENDING);
+
+        return reservationFacade.findByJpql(jpql, params);
     }
 
     private Patient savePatient(Patient p) {
@@ -683,7 +713,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         } else {
             getFacade().edit(newCancelBill);
         }
-        
+
         //Update Original Bill
         originalBill.setCancelled(true);
         originalBill.setCancelledBill(newCancelBill);
@@ -864,7 +894,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setters">
     public Title[] getTitle() {
         return Title.values();
@@ -1279,6 +1308,53 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
                         + object.getClass().getName() + "; expected type: " + Appointment.class.getName());
+            }
+        }
+    }
+
+    /**
+     * Converter for Reservation entity
+     */
+    @FacesConverter(forClass = Reservation.class)
+    public static class ReservationControllerConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.isEmpty() || value.equals("null")) {
+                return null;
+            }
+            AppointmentController controller = (AppointmentController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "appointmentController");
+            Long key = getKey(value);
+            if (key == null) {
+                return null;
+            }
+            return controller.getReservationFacade().find(key);
+        }
+
+        java.lang.Long getKey(String value) {
+            java.lang.Long key;
+            key = Long.valueOf(value);
+            return key;
+        }
+
+        String getStringKey(java.lang.Long value) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof Reservation) {
+                Reservation o = (Reservation) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + Reservation.class.getName());
             }
         }
     }

@@ -21,11 +21,13 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
+import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.service.AuditService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -150,6 +152,20 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
 
         showConfirmation = true;
         JsfUtil.addSuccessMessage("Please confirm the patient change");
+    }
+    
+    @EJB
+    private ClinicalFindingValueFacade clinicalFindingValueFacade;
+    
+    public void fillCurrentPatientAllergies(Patient pt) {
+        if (pt == null) {
+            return;
+        }
+        patientAllergies = new ArrayList<>();
+        Map params = new HashMap<>();
+        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt";
+        params.put("pt", pt);
+        patientAllergies = clinicalFindingValueFacade.findByJpql(s, params);
     }
 
     /**
