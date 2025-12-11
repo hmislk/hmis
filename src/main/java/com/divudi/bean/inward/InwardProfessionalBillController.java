@@ -608,11 +608,15 @@ public class InwardProfessionalBillController implements Serializable {
             JsfUtil.addErrorMessage("Please select Date");
             return;
         }
-        
-        if(isFreeOfChargeProfessionalPayment()){
+
+        if (isFreeOfChargeProfessionalPayment()) {
+            if (currentBillFee.getFeeValue() != 0.0) {
+                JsfUtil.addErrorMessage("Do not add fee when it marked free of charge.");
+                return;
+            }
             currentBillFee.setFreeOfCharge(true);
         }
-        
+
         if (getCurrent().getId() == null) {
             getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
             getCurrent().setInstitution(getSessionController().getLoggedUser().getInstitution());
