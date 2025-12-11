@@ -219,7 +219,12 @@
                             </p:tab>
                             <p:tab title="Dashboard">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton   class="w-100"  ajax="false" value="Dashboard" />
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Dashboard"
+                                        action="#{reportController.navigateToDashboard()}"
+                                        />
                                 </div>
                             </p:tab>
                             <p:tab title="Financial Reports">

@@ -4756,8 +4756,6 @@ public class ReportsController implements Serializable {
                 + "LEFT JOIN PatientInvestigation pi ON pi.billItem = billItem "
                 + "WHERE bill.billTypeAtomic IN :bts "
                 + "AND billItem.item is not null "
-                + "AND billItem.bill.cancelled =:canceled "
-                + "AND billItem.refunded =:ref "
                 + "AND TYPE(billItem.item) = Investigation "
                 + "AND (TYPE(bill) != RefundBill AND TYPE(bill) != CancelledBill) ";
 //        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
@@ -4770,8 +4768,6 @@ public class ReportsController implements Serializable {
 //                + " AND bill.billTypeAtomic in :bts ";
 
         parameters.put("bts", bts);
-        parameters.put("canceled", false);
-        parameters.put("ref", false);
 
         if (staff != null) {
             jpql += "AND billItem.patientInvestigation.barcodeGeneratedBy.webUserPerson.name = :staff ";
@@ -4924,9 +4920,11 @@ public class ReportsController implements Serializable {
             cancelledParameters.put("code", investigation);
         }
 
-//        if (externalLaboratoryOnly) {
-//            cancelledJpql += "AND billItem.patientInvestigation.outsourced = true ";
-//        }
+        if (externalLaboratoryOnly) {
+            // For cancellations, check if the REFERENCE billItem (original) was outsourced
+            // Cancellation billItems may not have their own PatientInvestigation
+            cancelledJpql += "AND (billItem.referanceBillItem.patientInvestigation.outsourced = true) ";
+        }
 
         cancelledJpql += "AND bill.createdAt BETWEEN :fd AND :td ";
         cancelledParameters.put("fd", fromDate);
