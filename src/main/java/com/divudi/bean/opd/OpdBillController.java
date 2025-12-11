@@ -2747,6 +2747,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         case OnlineSettlement:
                             multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
                             break;
+                        case IOU:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getIou().getTotalValue();
+                            break;
                         default:
                             break;
                     }
@@ -2840,6 +2843,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     // Only set if user hasn't already entered a value
                     if (pm.getPaymentMethodData().getOnlineSettlement().getTotalValue() == 0.0) {
                         pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
+                    }
+                    break;
+                case IOU:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getIou().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getIou().setTotalValue(remainAmount);
                     }
                     break;
                 default:

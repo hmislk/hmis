@@ -840,6 +840,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                         case OnlineSettlement:
                             multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
                             break;
+                        case IOU:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getIou().getTotalValue();
+                            break;
                         default:
                             break;
                     }
@@ -920,6 +923,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             } else if (pm.getPaymentMethod() == PaymentMethod.OnlineSettlement) {
                 if (pm.getPaymentMethodData().getOnlineSettlement().getTotalValue() == 0.0) {
                     pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.IOU) {
+                if (pm.getPaymentMethodData().getIou().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getIou().setTotalValue(remainAmount);
                 }
             }
 
