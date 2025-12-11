@@ -34,16 +34,16 @@
                             forceSelection="true" 
                             id="acColl"
                             completeMethod="#{appointmentController.searcheservations}" 
-                            var="res1"                             
-                            itemLabel="#{res1.appointment.appointmentNumber}" 
-                            itemValue="#{res1}" 
+                            var="res"                             
+                            itemLabel="#{res.appointment.appointmentNumber}" 
+                            itemValue="#{res}" 
                             maxResults="15"
                             class="w-100 mb-1"
                             required="true"
                             requiredMessage="Appointment is Required"
                             inputStyleClass="form-control">
-                            <p:column headerText="Appointment Number" style="padding: 6px; ">#{res1.appointment.appointmentNumber}</p:column>
-                            <p:column headerText="Patient Name" style="padding: 6px;">#{res1.patient.person.name}</p:column>
+                            <p:column headerText="Appointment Number" style="padding: 6px; ">#{res.appointment.appointmentNumber}</p:column>
+                            <p:column headerText="Patient Name" style="padding: 6px;">#{res.patient.person.name}</p:column>
                         </p:autoComplete>
                     </div>
                     <div class="col-md-3">
