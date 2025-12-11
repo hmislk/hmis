@@ -791,6 +791,8 @@
                                             <h:outputLabel value="#{pf.feeValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
+                                            
+                                            <p:badge class="mx-2" value="Free Of Charge" rendered="#{pf.freeOfCharge}" severity="danger"></p:badge>
                                         </p:column>
                                         <p:column headerText="Fee At">
                                             <h:outputLabel value="#{pf.feeAt}">
