@@ -2711,15 +2711,46 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                if (cd == null) {
+                    continue;
+                }
+                if (cd.getPaymentMethodData() != null && cd.getPaymentMethod() != null) {
+                    // Only add the value from the selected payment method for this ComponentDetail
+                    switch (cd.getPaymentMethod()) {
+                        case Cash:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                            break;
+                        case Card:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                            break;
+                        case Cheque:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                            break;
+                        case ewallet:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                            break;
+                        case PatientDeposit:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                            break;
+                        case Slip:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                            break;
+                        case Staff:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                            break;
+                        case Staff_Welfare:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                            break;
+                        case Credit:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCredit().getTotalValue();
+                            break;
+                        case OnlineSettlement:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
             remainAmount = total - multiplePaymentMethodTotalValue;
             return total - multiplePaymentMethodTotalValue;
