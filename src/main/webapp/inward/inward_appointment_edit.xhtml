@@ -1,0 +1,210 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:bill="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:ia="http://xmlns.jcp.org/jsf/composite/inward/bht_1"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <ui:define name="content">
+
+        <h:outputStylesheet library="css" name="printing.css" />
+
+        <h:panelGroup styleClass="opdPanel"  >
+            <h:form id="form">
+
+                <h:panelGroup rendered="#{!appointmentController.printPreview}"  >
+                    <p:panel > 
+                        <f:facet name="header">
+                            <h:outputLabel class="mt-2" value="Inward Appointments"/>
+                            <div class="d-flex gap-3" style="float: right;" >
+                                <p:inputText
+                                    id="commentsMenu"
+                                    value="#{appointmentController.comment}"
+                                    placeholder="Reason of the Cancel"
+                                    style="float: right; width: 500px;"
+                                    >
+                                </p:inputText>
+
+                                <p:commandButton 
+                                    ajax="false"
+                                    value="Cancel Appointment" 
+                                    icon="fa fa-cancel"
+                                    style="float: right"
+                                    class="ui-button-danger" 
+                                    disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
+                                    action="#{appointmentController.cancelAppointment()}">
+                                </p:commandButton>
+                                
+                                <p:commandButton 
+                                    ajax="false"
+                                    value="Back" 
+                                    icon="fa fa-arrow-left"
+                                    style="float: right"
+                                    class="ui-button-warning" 
+                                    action="#{appointmentController.navigateToSearchAppointmentsListFromViewAppointments()}">
+                                </p:commandButton>
+                            </div>
+                            
+                        </f:facet>
+                        
+                        <div class="row">
+                            <div class="d-flex justify-content-end gap-5">
+                                <p:commandButton  
+                                    value="Update Appointment" 
+                                    disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
+                                    action="#{appointmentController.updateChangesReservation()}" 
+                                    ajax="false"
+                                    icon="fa fa-check"
+                                    class="ui-button-success mx-1 ">
+                                </p:commandButton>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-6">
+                                <p:panel>
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fa fa-user-circle" />
+                                        <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+
+                                    <common:patient_details_for_appoiment editable="true" controller="#{appointmentController}"/>
+
+                                </p:panel>
+
+                                <p:panel class="my-2">
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Reservation Details" />
+                                    </f:facet>
+                                    <h:panelGroup class="my-2 w-100" >
+                                        <h:panelGrid columns="3" class="w-50 my-2">
+                                            <h:outputLabel value="Room No"/>
+                                            <h:outputLabel value=":"/>
+                                            <p:autoComplete  
+                                                forceSelection="true"  
+                                                id="cmbRspRoom" 
+                                                class="mx-4 my-2"
+                                                disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
+                                                value="#{appointmentController.reservedroom}" 
+                                                completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
+                                                var="rf" 
+                                                inputStyleClass="w-100"
+                                                itemLabel="#{rf.name}" 
+                                                itemValue="#{rf}" 
+                                                size="30"
+                                                maxResults="25"
+                                                >                            
+                                            </p:autoComplete>
+                                            <h:outputLabel value="Reserve From"/>
+                                            <h:outputLabel value=":"/>
+                                            <p:datePicker 
+                                                value="#{appointmentController.reservedFromDate}" 
+                                                id="reserveFromTimeStamp"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                styleClass="form-control w-100"
+                                                showButtonBar="true"
+                                                disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
+                                                timeInput="true"
+                                                showTime="true"
+                                                class="w-50 mx-4 my-2" 
+                                                inputStyleClass="w-100" >                               
+                                            </p:datePicker>     
+                                            <h:outputLabel value="Reserve To"/>
+                                            <h:outputLabel value=":"/>
+                                            <p:datePicker 
+                                                value="#{appointmentController.reservedToDate}" 
+                                                id="reserveToTimeStamp"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                styleClass="form-control w-100"
+                                                showButtonBar="true"
+                                                disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
+                                                timeInput="true"
+                                                showTime="true"
+                                                class="w-50 mx-4 my-2" 
+                                                inputStyleClass="w-100" >                               
+                                            </p:datePicker>     
+                                        </h:panelGrid>
+                                    </h:panelGroup>
+                                </p:panel>
+
+                                <p:panel>
+                                    <f:facet name="header" >
+                                        <h:outputText styleClass="fas fa-info-circle" />
+                                        <h:outputLabel value="Referring Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+
+                                    <h:panelGrid columns="2" class="w-100"  id="refferingDr">
+                                        <p:outputLabel value="Referring Doctor" 
+                                                       class="form-label"/>
+                                        <p:autoComplete 
+                                            forceSelection="true"
+                                            class="w-100 my-1"
+                                            inputStyleClass="w-100"
+                                            id="cmbDoc" 
+                                            value="#{appointmentController.currentBill.referredBy}"
+                                            completeMethod="#{doctorController.completeDoctor}" 
+                                            var="doc" 
+                                            disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
+                                            maxResults="20"
+                                            itemLabel="#{doc.person.nameWithTitle}" 
+                                            itemValue="#{doc}" 
+                                            size="30"  >
+                                        </p:autoComplete>
+
+                                        <p:outputLabel value="Appointment Date"/>
+                                        <p:datePicker 
+                                            inputStyleClass="w-100"
+                                            class="w-100 my-1"
+                                            showTime="true"
+                                            showButtonBar="true"
+                                            disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
+                                            timeInput="true"
+                                            value="#{appointmentController.currentAppointment.appointmentDate}" 
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                            >                            
+                                        </p:datePicker>
+
+
+                                    </h:panelGrid>
+                                </p:panel>
+
+
+                            </div>
+                            <div class="col-6">
+                                <p:panel >
+                                    <f:facet name="header">
+                                        <h:outputLabel class="mt-2" value="Appointment"/>
+                                        <div class="d-flex gap-2" style="float: right;">
+                                            <p:commandButton 
+                                                class="ui-button-info" 
+                                                icon="fa fa-print"
+                                                value="Print Appointment" 
+                                                ajax="false" >
+                                                <p:printer target="gpBillPreview" ></p:printer>
+                                            </p:commandButton>
+                                        </div>
+                                    </f:facet>
+
+                                    <h:panelGroup id="gpBillPreview">
+                                        <ez:inward_appointment_print reservation="#{appointmentController.reservation}"/>
+                                    </h:panelGroup>
+
+                                </p:panel>
+                            </div>
+                        </div>
+
+
+                    </p:panel>
+                </h:panelGroup>
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
