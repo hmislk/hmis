@@ -15,11 +15,15 @@
 
     <ui:define name="content">
         <h:form>
+            <h:panelGroup rendered="#{not webUserController.hasPrivilege('InwardAppointmentAdmission')}">
+                <na:not_authorize />
+            </h:panelGroup>
+            
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardAppointmentAdmission')}">  
             <p:panel>
                 <f:facet name="header" >
                     <h:outputText styleClass="fa-solid fa-warehouse" />
                     <h:outputLabel  class="mx-4" value="Reservation Admit"/>
-
                 </f:facet>
 
                 <h:panelGroup 
@@ -57,7 +61,7 @@
                 </h:panelGroup>
 
             </p:panel>
-
+            </h:panelGroup>
         </h:form>
 
     </ui:define>
