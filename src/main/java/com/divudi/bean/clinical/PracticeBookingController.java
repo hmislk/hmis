@@ -53,6 +53,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -66,6 +68,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class PracticeBookingController implements Serializable {
+
+    private static final Logger logger = Logger.getLogger(PracticeBookingController.class.getName());
 
     private Speciality speciality;
     private ServiceSession selectedServiceSession;
@@ -316,9 +320,10 @@ public class PracticeBookingController implements Serializable {
         }
         getPharmacySaleController().setPatient(opdVisit.getPatient());
 
-        // Debug: Check encounter comments
+        // Debug: Check encounter comments (PHI-safe logging)
         String encounterComments = opdVisit.getComments();
-        System.out.println("DEBUG: opdVisit.getComments() = " + (encounterComments != null ? encounterComments : "null"));
+        logger.log(Level.FINE, "Encounter comments status: {0}",
+                (encounterComments != null && !encounterComments.trim().isEmpty()) ? "present" : "absent");
         getPharmacySaleController().setOpdEncounterComments(encounterComments);
 
         getPharmacySaleController().setFromOpdEncounter(true);
@@ -333,7 +338,7 @@ public class PracticeBookingController implements Serializable {
         }
 
         // Set referring doctor on preBill (which is displayed on the UI)
-        if (referringDoctor != null) {
+        if (referringDoctor != null && getPharmacySaleController().getPreBill() != null) {
             getPharmacySaleController().getPreBill().setReferredBy(referringDoctor);
         }
 
@@ -350,7 +355,7 @@ public class PracticeBookingController implements Serializable {
 
         // Transfer prescription text from encounter to pharmacy bill comments
         // First load the encounter data into the controller
-        System.out.println("DEBUG: About to load encounter data for opdVisit ID: " + opdVisit.getId());
+        logger.log(Level.FINE, "Loading encounter data for opdVisit ID: {0}", opdVisit.getId());
         getPatientEncounterController().fillCurrentEncounterLists(opdVisit);
 
         // After loading the list, set the encounterPrescreption from the list if available
@@ -359,19 +364,20 @@ public class PracticeBookingController implements Serializable {
             // Use the first/latest prescription from the list
             ClinicalFindingValue firstPrescription = getPatientEncounterController().getEncounterPrescreptions().get(0);
             getPatientEncounterController().setEncounterPrescreption(firstPrescription);
-            System.out.println("DEBUG: Set encounterPrescreption from list. ID: " + firstPrescription.getId());
+            logger.log(Level.FINE, "Set encounterPrescreption from list. Prescription ID: {0}", firstPrescription.getId());
         } else {
-            System.out.println("DEBUG: No prescriptions found in list");
+            logger.log(Level.FINE, "No prescriptions found in list");
         }
 
         String prescriptionText = getPrescriptionText();
-        System.out.println("DEBUG: Prescription text result: " + (prescriptionText != null && !prescriptionText.trim().isEmpty() ? "Found prescription text" : "No prescription text"));
+        boolean hasPrescriptionText = (prescriptionText != null && !prescriptionText.trim().isEmpty());
+        logger.log(Level.FINE, "Prescription text status: {0}", hasPrescriptionText ? "found" : "not found");
 
-        if (prescriptionText != null && !prescriptionText.trim().isEmpty()) {
+        if (hasPrescriptionText) {
             getPharmacySaleController().setComment(prescriptionText);
-            System.out.println("DEBUG: Set prescription text as comment");
+            logger.log(Level.FINE, "Set prescription text as comment (length: {0} characters)", prescriptionText.length());
         } else {
-            System.out.println("DEBUG: No prescription text to set");
+            logger.log(Level.FINE, "No prescription text to set");
         }
 
         getPatientEncounterController().fillEncounterMedicines(opdVisit);
@@ -388,22 +394,23 @@ public class PracticeBookingController implements Serializable {
      */
     private String getPrescriptionText() {
         try {
-            System.out.println("DEBUG: Checking for prescription text...");
+            logger.log(Level.FINE, "Checking for prescription text...");
 
             // Access prescription the same way as in opd_visit.xhtml
             if (getPatientEncounterController().getEncounterPrescreption() != null) {
                 String prescriptionText = getPatientEncounterController().getEncounterPrescreption().getLobValue();
-                System.out.println("DEBUG: Found prescription text: " + (prescriptionText != null ? prescriptionText.substring(0, Math.min(100, prescriptionText.length())) + "..." : "null"));
+                // PHI-safe logging: log only length/status, NOT the actual prescription content
+                logger.log(Level.FINE, "Found prescription text: {0}",
+                        (prescriptionText != null ? prescriptionText.length() + " characters" : "null"));
                 return prescriptionText;
             } else {
-                System.out.println("DEBUG: encounterPrescreption is null");
+                logger.log(Level.FINE, "encounterPrescreption is null");
             }
             return null;
 
         } catch (Exception e) {
-            // Log error but don't fail the pharmacy bill creation
-            System.err.println("Error extracting prescription text: " + e.getMessage());
-            e.printStackTrace();
+            // Log error without exposing PHI - don't print stack trace to stderr
+            logger.log(Level.SEVERE, "Error extracting prescription text: {0}", e.getMessage());
             return null;
         }
     }
