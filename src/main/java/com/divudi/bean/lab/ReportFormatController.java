@@ -204,7 +204,7 @@ public class ReportFormatController implements Serializable {
         String jpql = "select f "
                 + " from ReportFormat f"
                 + " where f.retired=:ret"
-                + " order by f.id desc";
+                + " order by f.id asc";
         Map params = new HashMap();
         params.put("ret", false);
         ReportFormat r = getFacade().findFirstByJpql(jpql, params);
