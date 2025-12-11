@@ -1,0 +1,367 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <ui:define name="content">
+        <h:panelGroup id="panChangePatient">
+            <h:form id="formChangePatient">
+
+                <!-- Search for Admission Section -->
+                <h:panelGroup class="row" rendered="#{admissionPatientChangeController.current eq null}">
+                    <div class="col-12">
+                        <h:panelGroup>
+                            <p:panel>
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h:outputText styleClass="fa-solid fa-exchange-alt fa-lg" />
+                                            <p:outputLabel value="Change Patient for Admission" class="m-2"/>
+                                        </div>
+                                    </div>
+                                </f:facet>
+
+                                <h:outputLabel value="Type Patient Name or BHT Number: " class="mx-2"/>
+
+                                <p:autoComplete
+                                    widgetVar="acAdmission"
+                                    id="acAdmission"
+                                    forceSelection="true"
+                                    value="#{admissionPatientChangeController.current}"
+                                    completeMethod="#{admissionPatientChangeController.completeAdmission}"
+                                    var="adm"
+                                    itemValue="#{adm}"
+                                    itemLabel="#{adm.bhtNo}"
+                                    class="mx-2"
+                                    size="30">
+
+                                    <p:column headerText="PHN" style="padding: 6px; width: 8em;">
+                                        <h:outputLabel value="#{adm.patient.phn}"/>
+                                    </p:column>
+                                    <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
+                                        <h:outputLabel value="#{adm.bhtNo}"/>
+                                    </p:column>
+                                    <p:column headerText="Current Patient" style="padding: 6px; width: 400px;">
+                                        <h:outputLabel value="#{adm.patient.person.nameWithTitle}"/>
+                                    </p:column>
+                                    <p:column headerText="Room" style="padding: 6px; width: 8em;">
+                                        <h:outputLabel value="#{adm.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Status" style="padding: 6px; width: 10em;">
+                                        <div class="d-flex justify-content-center">
+                                            <span class="#{adm.discharged ? 'discharged-badge' : 'active-badge'}">
+                                                #{adm.discharged ? 'Discharged' : 'Active'}
+                                            </span>
+                                        </div>
+                                    </p:column>
+                                </p:autoComplete>
+
+                                <p:commandButton
+                                    id="btnLoadAdmission"
+                                    ajax="false"
+                                    value="Load Admission"
+                                    icon="fa fa-arrow-right"
+                                    class="ui-button-info mx-2"
+                                    action="#{admissionPatientChangeController.loadAdmission()}">
+                                </p:commandButton>
+
+                                <style>
+                                    .discharged-badge {
+                                        background-color: #f44336;
+                                        color: white;
+                                        padding: 2px 8px;
+                                        border-radius: 12px;
+                                        font-size: 1em;
+                                        font-weight: bold;
+                                    }
+
+                                    .active-badge {
+                                        background-color: #4CAF50;
+                                        color: white;
+                                        padding: 2px 8px;
+                                        border-radius: 12px;
+                                        font-size: 1em;
+                                        font-weight: bold;
+                                    }
+                                </style>
+
+                            </p:panel>
+                        </h:panelGroup>
+                    </div>
+                </h:panelGroup>
+
+                <!-- Main Change Patient Section -->
+                <h:panelGroup rendered="#{admissionPatientChangeController.current ne null}">
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h:outputText styleClass="fa-solid fa-exchange-alt"></h:outputText>
+                                    <h:outputLabel value="Change Patient for Admission" class="mx-4"></h:outputLabel>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Search Another"
+                                        icon="fa fa-search"
+                                        action="#{admissionPatientChangeController.prepareForNew}"
+                                        ajax="false"
+                                        class="ui-button-secondary">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <div class="row">
+                            <!-- Left Column: Current Patient and New Patient Selection -->
+                            <div class="col-12 col-lg-6">
+
+                                <!-- Admission Details -->
+                                <p:panel styleClass="mb-3">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa-solid fa-bed"></h:outputText>
+                                        <h:outputLabel value="Admission Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                                    <h:panelGrid columns="2" class="w-100">
+                                        <h:outputLabel value="BHT Number:" class="font-weight-bold"/>
+                                        <h:outputText value="#{admissionPatientChangeController.current.bhtNo}"/>
+
+                                        <h:outputLabel value="Admission Date:" class="font-weight-bold"/>
+                                        <h:outputText value="#{admissionPatientChangeController.current.dateOfAdmission}">
+                                            <f:convertDateTime pattern="dd/MM/yyyy hh:mm:ss a"/>
+                                        </h:outputText>
+
+                                        <h:outputLabel value="Consultant:" class="font-weight-bold"/>
+                                        <h:outputText value="#{admissionPatientChangeController.current.referringConsultant.person.nameWithTitle}"/>
+                                    </h:panelGrid>
+                                </p:panel>
+
+                                <!-- Current Patient Display (Read-Only) -->
+                                <p:panel styleClass="mb-3">
+                                    <f:facet name="header">
+                                        <div class="d-flex align-items-center">
+                                            <h:outputText styleClass="fa-solid fa-user"></h:outputText>
+                                            <h:outputLabel value="Current Patient (Read Only)" class="mx-4"></h:outputLabel>
+                                        </div>
+                                    </f:facet>
+
+                                    <h:panelGrid columns="2" class="w-100" rendered="#{admissionPatientChangeController.originalPatient ne null}">
+                                            
+                                        <h:outputLabel value="Name:" class="font-weight-bold mx-3"/>
+                                        
+                                        <h:panelGroup class="d-flex">
+
+                                            <p:outputLabel class="ml-4" value="#{admissionPatientChangeController.originalPatient.person.nameWithTitle}" rendered="#{not empty admissionPatientChangeController.originalPatient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
+
+                                            <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty admissionPatientChangeController.originalPatient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{admissionPatientChangeController.originalPatient.specificStatus}" severity="danger">
+                                                <p:outputLabel value="#{admissionPatientChangeController.originalPatient.person.nameWithTitle}" rendered="#{not empty admissionPatientChangeController.originalPatient.person.nameWithTitle}" />
+                                            </p:badge> 
+
+                                            <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system') and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for Inward from the system', false)}" style="transform: translate(110%, -40%);background-color: #{admissionPatientChangeController.originalPatient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{admissionPatientChangeController.originalPatient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+
+                                            </p:badge>
+
+                                        </h:panelGroup>
+
+                                        <h:outputLabel value="PHN:" class="font-weight-bold mx-3"/>
+                                        <h:outputText value="#{empty admissionPatientChangeController.originalPatient.phn ? 'N/A' : admissionPatientChangeController.originalPatient.phn }"/>
+
+                                        <h:outputLabel value="Gender:" class="font-weight-bold mx-3"/>
+                                        <h:outputText value="#{admissionPatientChangeController.originalPatient.person.sex}"/>
+
+                                        <h:outputLabel value="Date of Birth:" class="font-weight-bold mx-3"/>
+                                        <h:outputText value="#{admissionPatientChangeController.originalPatient.person.dob}">
+                                            <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                        </h:outputText>
+
+                                        <h:outputLabel value="Age:" class="font-weight-bold mx-3"/>
+                                        <h:outputText value="#{admissionPatientChangeController.originalPatient.person.ageAsString}"/>
+
+                                        <h:outputLabel value="Mobile:" class="font-weight-bold mx-3"/>
+                                        <h:outputText value="#{empty admissionPatientChangeController.originalPatient.person.mobile ? 'N/A' : admissionPatientChangeController.originalPatient.person.mobile}"/>
+
+                                        <h:outputLabel value="NIC:" class="font-weight-bold mx-3"/>
+                                        <h:outputText value="#{empty admissionPatientChangeController.originalPatient.person.nic ? 'N/A' : admissionPatientChangeController.originalPatient.person.nic}"/>
+
+                                        <h:outputLabel value="Address:" class="font-weight-bold mx-3"/>
+                                        <h:outputText value="#{empty admissionPatientChangeController.originalPatient.person.address ? 'N/A' : admissionPatientChangeController.originalPatient.person.address}"/>
+                                    </h:panelGrid>
+                                </p:panel>
+
+                                <!-- New Patient Selection -->
+                                <h:panelGroup rendered="#{!admissionPatientChangeController.showConfirmation}">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <div class="d-flex align-items-center">
+                                                <h:outputText styleClass="fa-solid fa-user-plus"></h:outputText>
+                                                <h:outputLabel value="Select New Patient" class="mx-4"></h:outputLabel>
+                                            </div>
+                                        </f:facet>
+
+                                        <common:patient_details_for_addmission
+                                            controller="#{admissionPatientChangeController}"
+                                            editable="false"
+                                            searchable="true">
+                                        </common:patient_details_for_addmission>
+
+                                        <div class="d-flex justify-content-end mt-3 gap-2">
+                                            <p:commandButton
+                                                value="Prepare to Change Patient"
+                                                icon="fa fa-check"
+                                                action="#{admissionPatientChangeController.prepareConfirmation}"
+                                                ajax="false"
+                                                class="ui-button-warning">
+                                            </p:commandButton>
+                                        </div>
+                                    </p:panel>
+                                </h:panelGroup>
+
+                            </div>
+
+                            <!-- Right Column: Confirmation Panel -->
+                            <div class="col-12 col-lg-6">
+                                <h:panelGroup rendered="#{admissionPatientChangeController.showConfirmation}">
+                                    <p:panel styleClass="confirmation-panel">
+                                        <f:facet name="header">
+                                            <div class="d-flex align-items-center">
+                                                <h:outputText styleClass="fa-solid fa-exclamation-triangle text-warning"></h:outputText>
+                                                <h:outputLabel value="Confirm Patient Change" class="mx-4"></h:outputLabel>
+                                            </div>
+                                        </f:facet>
+
+                                        <div class="alert alert-warning mb-3" role="alert">
+                                            <h:outputText styleClass="fa-solid fa-exclamation-circle"/>
+                                            <strong> Warning:</strong> You are about to change the patient associated with this admission. This action will be recorded in the audit log.
+                                        </div>
+
+                                        <h:panelGrid columns="2" class="w-100 mb-3">
+                                            <h:outputLabel value="BHT Number:" class="font-weight-bold"/>
+                                            <h:outputText value="#{admissionPatientChangeController.current.bhtNo}" styleClass="text-primary font-weight-bold"/>
+                                        </h:panelGrid>
+
+                                        <div class="change-summary mb-3">
+                                            <h5 class="mb-3">
+                                                <h:outputText styleClass="fa-solid fa-arrow-right"/>
+                                                Change Summary
+                                            </h5>
+
+                                            <div class="card mb-2">
+                                                <div class="card-header bg-danger text-white">
+                                                    <h:outputText styleClass="fa-solid fa-user-minus"/>
+                                                    Current Patient (Will be removed)
+                                                </div>
+                                                <div class="card-body">
+                                                    <p><strong>Name:</strong> #{admissionPatientChangeController.originalPatient.person.nameWithTitle}</p>
+                                                    <p><strong>PHN:</strong> #{admissionPatientChangeController.originalPatient.phn}</p>
+                                                    <p><strong>ID:</strong> #{admissionPatientChangeController.originalPatient.id}</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="text-center my-2">
+                                                <h:outputText styleClass="fa-solid fa-arrow-down fa-2x text-primary"/>
+                                            </div>
+
+                                            <div class="card">
+                                                <div class="card-header bg-success text-white">
+                                                    <h:outputText styleClass="fa-solid fa-user-check"/>
+                                                    New Patient (Will be assigned)
+                                                </div>
+                                                <div class="card-body">
+                                                    <p><strong>Name:</strong> #{admissionPatientChangeController.patient.person.nameWithTitle}</p>
+                                                    <p><strong>PHN:</strong> #{admissionPatientChangeController.patient.phn}</p>
+                                                    <p><strong>ID:</strong> #{admissionPatientChangeController.patient.id}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between gap-2 mt-4">
+                                            <p:commandButton
+                                                value="Cancel"
+                                                icon="fa fa-times"
+                                                action="#{admissionPatientChangeController.cancelChange}"
+                                                ajax="false"
+                                                class="ui-button-secondary">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                value="Confirm &amp; Change Patient"
+                                                icon="fa fa-check-circle"
+                                                action="#{admissionPatientChangeController.confirmPatientChange}"
+                                                ajax="false"
+                                                class="ui-button-danger"
+                                                onclick="return confirm('Are you absolutely sure you want to change the patient for this admission? This action will be permanently recorded in the audit log.');">
+                                            </p:commandButton>
+                                        </div>
+                                    </p:panel>
+                                </h:panelGroup>
+
+                                <!-- Info Panel when not in confirmation mode -->
+                                <h:panelGroup rendered="#{!admissionPatientChangeController.showConfirmation}">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa-solid fa-info-circle"/>
+                                            <h:outputLabel value="Information" class="mx-4"></h:outputLabel>
+                                        </f:facet>
+
+                                        <div class="alert alert-info">
+                                            <h:outputText styleClass="fa-solid fa-lightbulb"/>
+                                            <strong> Instructions:</strong>
+                                            <ol class="mt-2 mb-0">
+                                                <li>Review the current patient details above</li>
+                                                <li>Use the quick search to find and select the new patient by phone number</li>
+                                                <li>Or click "Add New Patient" to create a new patient record</li>
+                                                <li>Once selected, click "Prepare to Change Patient" to proceed</li>
+                                                <li>Review the confirmation details carefully before confirming</li>
+                                                <li>All changes are recorded in the audit log for compliance</li>
+                                            </ol>
+                                        </div>
+
+                                        <div class="alert alert-warning mt-3">
+                                            <h:outputText styleClass="fa-solid fa-exclamation-triangle"/>
+                                            <strong> Important:</strong>
+                                            <ul class="mt-2 mb-0">
+                                                <li>Ensure you select the correct new patient</li>
+                                                <li>This action cannot be easily undone</li>
+                                                <li>All billing and medical records will remain with the original patient</li>
+                                                <li>Only the admission record will be reassigned to the new patient</li>
+                                            </ul>
+                                        </div>
+                                    </p:panel>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:panelGroup>
+
+            </h:form>
+        </h:panelGroup>
+
+        <style>
+            .confirmation-panel {
+                border: 2px solid #ff9800;
+            }
+
+            .change-summary .card {
+                border: 2px solid #ddd;
+            }
+
+            .change-summary .card-header {
+                font-weight: bold;
+            }
+
+            .font-weight-bold {
+                font-weight: bold;
+            }
+
+            .text-primary {
+                color: #007bff !important;
+            }
+        </style>
+
+    </ui:define>
+
+</ui:composition>
