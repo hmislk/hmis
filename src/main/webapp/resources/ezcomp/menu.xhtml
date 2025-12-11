@@ -362,18 +362,20 @@
 
                     </p:submenu>
 
-                    <p:submenu label="Appointment" icon="fa fa-calendar-plus" rendered="true">
+                    <p:submenu label="Appointment" icon="fa fa-calendar-plus" rendered="#{webUserController.hasPrivilege('InwardAppointmentMenu')}">
                         <p:menuitem
                             ajax="false"
                             action="#{appointmentController.navigateToInwardAppointmentFromMenu()}"
                             value="Add Appointment"
+                            rendered="#{webUserController.hasPrivilege('AddInwardAppointment')}"
                             icon="fa fa-calendar-plus" >
                         </p:menuitem>
                         <p:menuitem
                             ajax="false"
                             value="Appointment admission"
                             action="#{appointmentController.navigateToAppointmentAdminFromMenu()}"
-                            icon="fa fa-user-plus" >
+                            icon="fa fa-user-plus"
+                            rendered="#{webUserController.hasPrivilege('InwardAppointmentAdmission')}">
                         </p:menuitem>
                         <p:menuitem
                             ajax="false"
