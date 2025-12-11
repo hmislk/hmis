@@ -574,6 +574,16 @@ public class InwardProfessionalBillController implements Serializable {
         addToBill();
     }
 
+    private boolean freeOfChargeProfessionalPayment;
+
+    public boolean isFreeOfChargeProfessionalPayment() {
+        return freeOfChargeProfessionalPayment;
+    }
+
+    public void setFreeOfChargeProfessionalPayment(boolean freeOfChargeProfessionalPayment) {
+        this.freeOfChargeProfessionalPayment = freeOfChargeProfessionalPayment;
+    }
+
     public void addToBill() {
         if (getCurrent().getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("Please Select Patient Encounter");
@@ -591,13 +601,22 @@ public class InwardProfessionalBillController implements Serializable {
         } else if (currentBillFee.getStaff() == null) {
             JsfUtil.addErrorMessage("Please select a Staff");
             return;
-        } else if (currentBillFee.getFeeValue() == 0.0) {
+        } else if (currentBillFee.getFeeValue() == 0.0 && !isFreeOfChargeProfessionalPayment()) {
             JsfUtil.addErrorMessage("Please add fee");
             return;
         } else if (currentBillFee.getFeeAt() == null) {
             JsfUtil.addErrorMessage("Please select Date");
             return;
         }
+
+        if (isFreeOfChargeProfessionalPayment()) {
+            if (currentBillFee.getFeeValue() != 0.0) {
+                JsfUtil.addErrorMessage("Do not add fee when it marked free of charge.");
+                return;
+            }
+            currentBillFee.setFreeOfCharge(true);
+        }
+
         if (getCurrent().getId() == null) {
             getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
             getCurrent().setInstitution(getSessionController().getLoggedUser().getInstitution());
@@ -613,6 +632,7 @@ public class InwardProfessionalBillController implements Serializable {
         currentBillFee = null;
 
         save();
+        freeOfChargeProfessionalPayment = false;
         //   JsfUtil.addSuccessMessage("Fee Added");
     }
 
