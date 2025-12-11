@@ -991,6 +991,11 @@ public enum Privileges {
                 return "Nursing Work Bench";
                 
             case WatingRoomAdmitPatient:
+            case InwardAppointmentMenu:
+            case AddInwardAppointment:
+            case InwardAppointmentAdmission:
+            case InwardAppointmentUpdate:
+            case InwardAppointmentCancel:
                 return "Inward";
                 
             default:
