@@ -18,49 +18,49 @@
             <h:panelGroup rendered="#{not webUserController.hasPrivilege('InwardAppointmentAdmission')}">
                 <na:not_authorize />
             </h:panelGroup>
-            
+
             <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardAppointmentAdmission')}">  
-            <p:panel>
-                <f:facet name="header" >
-                    <h:outputText styleClass="fa-solid fa-warehouse" />
-                    <h:outputLabel  class="mx-4" value="Reservation Admit"/>
-                </f:facet>
+                <p:panel>
+                    <f:facet name="header" >
+                        <h:outputText styleClass="fa-solid fa-warehouse" />
+                        <h:outputLabel  class="mx-4" value="Reservation Admit"/>
+                    </f:facet>
 
-                <h:panelGroup 
-                    class="row"
-                    layout="block" >
-                    <div class="col-md-3">
-                        <p:outputLabel class="mt-1" value="Select Reservation Details"></p:outputLabel>
-                    </div>
-                    <div class="col-md-6">
-                        <p:autoComplete
-                            value="#{appointmentController.reservation}" 
-                            forceSelection="true" 
-                            id="acColl"
-                            completeMethod="#{appointmentController.searcheservations}" 
-                            var="res"                             
-                            itemLabel="#{res.appointment.appointmentNumber}" 
-                            itemValue="#{res}" 
-                            maxResults="15"
-                            class="w-100 mb-1"
-                            required="true"
-                            requiredMessage="Appointment is Required"
-                            placeholder="Search by appointment number or patient name"
-                            inputStyleClass="form-control">
-                            <p:column headerText="Appointment Number" style="padding: 6px; ">#{res.appointment.appointmentNumber}</p:column>
-                            <p:column headerText="Patient Name" style="padding: 6px;">#{res.patient.person.name}</p:column>
-                        </p:autoComplete>
-                    </div>
-                    <div class="col-md-3">
-                        <p:commandButton 
-                            ajax="false" 
-                            value="Select" 
-                            action="#{appointmentController.navigatePatientAdmit()}" >
-                        </p:commandButton>
-                    </div>
-                </h:panelGroup>
+                    <h:panelGroup 
+                        class="row"
+                        layout="block" >
+                        <div class="col-md-3">
+                            <p:outputLabel class="mt-1" value="Select Reservation Details"></p:outputLabel>
+                        </div>
+                        <div class="col-md-6">
+                            <p:autoComplete
+                                value="#{appointmentController.reservation}" 
+                                forceSelection="true" 
+                                id="acColl"
+                                completeMethod="#{appointmentController.searcheservations}" 
+                                var="res"                             
+                                itemLabel="#{res.appointment.appointmentNumber}" 
+                                itemValue="#{res}" 
+                                maxResults="15"
+                                class="w-100 mb-1"
+                                required="true"
+                                requiredMessage="Appointment is Required"
+                                placeholder="Search by appointment number or patient name"
+                                inputStyleClass="form-control">
+                                <p:column headerText="Appointment Number" style="padding: 6px; ">#{res.appointment.appointmentNumber}</p:column>
+                                <p:column headerText="Patient Name" style="padding: 6px;">#{res.patient.person.name}</p:column>
+                            </p:autoComplete>
+                        </div>
+                        <div class="col-md-3">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Select" 
+                                action="#{appointmentController.navigatePatientAdmit()}" >
+                            </p:commandButton>
+                        </div>
+                    </h:panelGroup>
 
-            </p:panel>
+                </p:panel>
             </h:panelGroup>
         </h:form>
 
