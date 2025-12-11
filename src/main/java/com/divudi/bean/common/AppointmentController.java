@@ -155,9 +155,80 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         return "/inward/view_appointment?faces-redirect=true";
     }
 
+    public String navigateToAppointmentAdminFromMenu() {
+        makeNull();
+        return "/inward/appointment_admit?faces-redirect=true";
+    }
+
     public String navigateToSearchAppointmentsListFromViewAppointments() {
         searchAppointments();
         return "/inward/view_appointment?faces-redirect=true";
+    }
+
+    public String navigatePatientAdmit() {
+        System.out.println("DEBUG: Starting navigatePatientAdmit() method");
+
+        System.out.println("DEBUG: Checking reservation...");
+        if (reservation == null) {
+            System.out.println("DEBUG: reservation is NULL - returning error");
+            JsfUtil.addErrorMessage("No Reservation Found");
+            return "";
+        }
+
+        System.out.println("DEBUG: reservation exists, checking nested properties...");
+        System.out.println("DEBUG: reservation.getAppointment() = " + (reservation.getAppointment() != null ? "exists" : "null"));
+        System.out.println("DEBUG: reservation.getAppointment().getBill() = "
+                + (reservation.getAppointment() != null && reservation.getAppointment().getBill() != null ? "exists" : "null"));
+
+        if (reservation == null || reservation.getAppointment() == null || reservation.getAppointment().getBill() == null) {
+            System.out.println("DEBUG: Failed nested check - returning error");
+            JsfUtil.addErrorMessage("No Reservation Found");
+            return "";
+        }
+
+        System.out.println("DEBUG: All checks passed. Creating Admission object...");
+        Admission ad = new Admission();
+        System.out.println("DEBUG: New Admission object created: " + ad);
+
+        System.out.println("DEBUG: Checking admission date...");
+        if (ad.getDateOfAdmission() == null) {
+            System.out.println("DEBUG: Setting admission date to current time");
+            ad.setDateOfAdmission(CommonFunctions.getCurrentDateTime());
+        } else {
+            System.out.println("DEBUG: Admission date already set: " + ad.getDateOfAdmission());
+        }
+
+        System.out.println("DEBUG: Configuring admissionController properties...");
+
+        admissionController.setCurrent(ad);
+        System.out.println("DEBUG: admissionController.setCurrent() called");
+
+        admissionController.setPrintPreview(false);
+        System.out.println("DEBUG: PrintPreview set to false");
+
+        admissionController.setAdmittingProcessStarted(false);
+        System.out.println("DEBUG: AdmittingProcessStarted set to false");
+
+        admissionController.setPatientRoom(new PatientRoom());
+        System.out.println("DEBUG: New PatientRoom set");
+
+        admissionController.setAppointmentBill(reservation.getAppointment().getBill());
+        System.out.println("DEBUG: AppointmentBill set");
+
+        admissionController.setPatientAllergies(null);
+        System.out.println("DEBUG: PatientAllergies set to null");
+
+        admissionController.setCurrentReservation(reservation);
+        System.out.println("DEBUG: CurrentReservation set");
+
+        admissionController.setBhtText("");
+        System.out.println("DEBUG: BhtText set to empty string");
+
+        System.out.println("DEBUG: Calling listnerForAppoimentSelect with bill...");
+        admissionController.listnerForAppoimentSelect(reservation.getAppointment().getBill());
+
+        System.out.println("DEBUG: Method completed successfully. Redirecting to /inward/inward_admission");
+        return "/inward/inward_admission?faces-redirect=true";
     }
 
     public String navigatePatientAdmit(Long reservationId) {
@@ -169,39 +240,12 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
         reservation = reservationFacade.find(reservationId);
 
-        if (reservation == null) {
-            JsfUtil.addErrorMessage("No Reservation Found");
-            return "";
-        }
-
-        if (reservation == null || reservation.getAppointment() == null || reservation.getAppointment().getBill() == null) {
-            JsfUtil.addErrorMessage("No Reservation Found");
-            return "";
-        }
-
-        Admission ad = new Admission();
-
-        if (ad.getDateOfAdmission() == null) {
-            ad.setDateOfAdmission(CommonFunctions.getCurrentDateTime());
-        }
-
-        admissionController.setCurrent(ad);
-        admissionController.setPrintPreview(false);
-        admissionController.setAdmittingProcessStarted(false);
-        admissionController.setPatientRoom(new PatientRoom());
-        admissionController.setAppointmentBill(reservation.getAppointment().getBill());
-        admissionController.setPatientAllergies(null);
-        admissionController.setCurrentReservation(reservation);
-
-        admissionController.setBhtText("");
-
-        admissionController.listnerForAppoimentSelect(reservation.getAppointment().getBill());
+        navigatePatientAdmit();
 
         return "/inward/inward_admission?faces-redirect=true";
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public AppointmentController() {
     }
@@ -211,6 +255,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         toDate = null;
         appointmentNo = null;
         patientName = null;
+        reservation = null;
         appointmentstatus = null;
         reservationDTOs = new ArrayList<>();
         comment = null;
@@ -354,6 +399,34 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
         reservationDTOs = reservationFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
 
+    }
+
+    public List<Reservation> searcheservations(String quary) {
+        System.out.println("searcheservations");
+
+        HashMap params = new HashMap();
+
+        String jpql = "SELECT res "
+                + " FROM Reservation res "
+                + " WHERE res.retired =:ret"
+                + " AND res.appointment.status = :status "
+                + " AND "
+                + " (res.appointment.appointmentNumber like :number "
+                + " or res.patient.person.name like :name )"
+                + " and res.appointment.appointmentType =:type";
+
+        jpql += " ORDER BY res.createdAt";
+
+        params.put("ret", false);
+        params.put("number", "%" + quary + "%");
+        params.put("name", "%" + quary + "%");
+        params.put("type", AppointmentType.IP_APPOINTMENT);
+        params.put("status", AppointmentStatus.PENDING);
+
+        System.out.println("params = " + params);
+        System.out.println("jpql = " + jpql);
+
+        return reservationFacade.findByJpql(jpql, params);
     }
 
     private Patient savePatient(Patient p) {
@@ -683,7 +756,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         } else {
             getFacade().edit(newCancelBill);
         }
-        
+
         //Update Original Bill
         originalBill.setCancelled(true);
         originalBill.setCancelledBill(newCancelBill);
@@ -864,7 +937,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setters">
     public Title[] getTitle() {
         return Title.values();
@@ -1279,6 +1351,49 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
                         + object.getClass().getName() + "; expected type: " + Appointment.class.getName());
+            }
+        }
+    }
+
+    /**
+     * Converter for Reservation entity
+     */
+    @FacesConverter(forClass = Reservation.class)
+    public static class ReservationControllerConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.isEmpty()) {
+                return null;
+            }
+            AppointmentController controller = (AppointmentController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "appointmentController");
+            return controller.getReservationFacade().find(getKey(value));
+        }
+
+        java.lang.Long getKey(String value) {
+            java.lang.Long key;
+            key = Long.valueOf(value);
+            return key;
+        }
+
+        String getStringKey(java.lang.Long value) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof Reservation) {
+                Reservation o = (Reservation) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + Reservation.class.getName());
             }
         }
     }
