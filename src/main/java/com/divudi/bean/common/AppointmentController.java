@@ -203,9 +203,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
         reservation = reservationFacade.find(reservationId);
 
-        navigatePatientAdmit();
-
-        return "/inward/inward_admission?faces-redirect=true";
+        return navigatePatientAdmit();
     }
 
     // </editor-fold>
@@ -1322,12 +1320,16 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.isEmpty()) {
+            if (value == null || value.isEmpty() || value.equals("null")) {
                 return null;
             }
             AppointmentController controller = (AppointmentController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "appointmentController");
-            return controller.getReservationFacade().find(getKey(value));
+            Long key = getKey(value);
+            if (key == null) {
+                return null;
+            }
+            return controller.getReservationFacade().find(key);
         }
 
         java.lang.Long getKey(String value) {

@@ -382,9 +382,6 @@
                             action="#{appointmentController.navigateToSearchAppointmentsListFromMenu()}"
                             icon="fa fa-list" >
                         </p:menuitem>
-                    </p:submenu>
-                    
-                    <p:submenu label="Room" icon="fa fa-door-open" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
                         <p:menuitem 
                             ajax="false" 
                             action="#{inwardReservationController.navigateToReservationCalendarFromMenu()}" 
@@ -392,6 +389,9 @@
                             icon="fa fa-calendar-check" 
                             rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" >
                         </p:menuitem>
+                    </p:submenu>
+                    
+                    <p:submenu label="Room" icon="fa fa-door-open" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
                         <p:menuitem 
                             ajax="false" 
                             action="#{admissionController.navigateToRoomOccupancy()}" 
