@@ -4920,9 +4920,11 @@ public class ReportsController implements Serializable {
             cancelledParameters.put("code", investigation);
         }
 
-//        if (externalLaboratoryOnly) {
-//            cancelledJpql += "AND billItem.patientInvestigation.outsourced = true ";
-//        }
+        if (externalLaboratoryOnly) {
+            // For cancellations, check if the REFERENCE billItem (original) was outsourced
+            // Cancellation billItems may not have their own PatientInvestigation
+            cancelledJpql += "AND (billItem.referanceBillItem.patientInvestigation.outsourced = true) ";
+        }
 
         cancelledJpql += "AND bill.createdAt BETWEEN :fd AND :td ";
         cancelledParameters.put("fd", fromDate);
