@@ -1448,11 +1448,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 //            JsfUtil.addErrorMessage("This batch is Expire With in 31 Days.");
 //            return;
 //        }
-        //Checking User Stock Entity
-        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
-            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
-            return addedQty;
-        }
+        //Checking User Stock Entity - COMMENTED OUT FOR PERFORMANCE
+//        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
+//            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+//            return addedQty;
+//        }
         if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
             if (patient != null && getBillItem() != null) {
 
@@ -1470,24 +1470,29 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         addedQty = qty;
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
-        billItem.getPharmaceuticalBillItem().setStock(stock);
-        billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
+
+        // Convert StockDTO to Stock entity for persistence
+        Stock stockEntity = convertStockDtoToEntity(stockDto);
+        if (stockEntity != null) {
+            billItem.getPharmaceuticalBillItem().setStock(stockEntity);
+            billItem.getPharmaceuticalBillItem().setItemBatch(stockEntity.getItemBatch());
+            billItem.setItem(stockEntity.getItemBatch().getItem());
+        }
+
         calculateBillItem();
         ////System.out.println("Rate*****" + billItem.getRate());
         billItem.setInwardChargeType(InwardChargeType.Medicine);
-
-        billItem.setItem(getStock().getItemBatch().getItem());
         billItem.setBill(getPreBill());
 
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
 
-        if (getUserStockContainer().getId() == null) {
-            saveUserStockContainer();
-        }
-
-        UserStock us = saveUserStock(billItem);
-        billItem.setTransUserStock(us);
+        // UserStock operations commented out for performance
+        //if (getUserStockContainer().getId() == null) {
+        //    saveUserStockContainer();
+        //}
+        //UserStock us = saveUserStock(billItem);
+        //billItem.setTransUserStock(us);
 
         pharmacyService.addBillItemInstructions(billItem);
 
