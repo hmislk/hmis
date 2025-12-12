@@ -2706,20 +2706,64 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return false;
     }
 
-    @Override
+    
+    /**
+     * Calculates the total value for the selected payment method in a ComponentDetail.
+     * This helper method centralizes the logic for extracting the correct payment total
+     * based on the selected payment method, preventing code duplication and ensuring
+     * consistent handling across different parts of the billing process.
+     *
+     * @param cd ComponentDetail containing payment method selection and data
+     * @return Total value for the selected payment method, or 0.0 if invalid/null
+     */
+    private double calculateSelectedPaymentTotal(ComponentDetail cd) {
+        if (cd == null || cd.getPaymentMethodData() == null || cd.getPaymentMethod() == null) {
+            return 0.0;
+        }
+
+        switch (cd.getPaymentMethod()) {
+            case Cash:
+                return cd.getPaymentMethodData().getCash().getTotalValue();
+            case Card:
+                return cd.getPaymentMethodData().getCreditCard().getTotalValue();
+            case Cheque:
+                return cd.getPaymentMethodData().getCheque().getTotalValue();
+            case ewallet:
+                return cd.getPaymentMethodData().getEwallet().getTotalValue();
+            case PatientDeposit:
+                return cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+            case Slip:
+                return cd.getPaymentMethodData().getSlip().getTotalValue();
+            case Staff:
+                return cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+            case Staff_Welfare:
+                return cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+            case Credit:
+                return cd.getPaymentMethodData().getCredit().getTotalValue();
+            case OnlineSettlement:
+                return cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+            case IOU:
+                return cd.getPaymentMethodData().getIou().getTotalValue();
+            case YouOweMe:
+                // YouOweMe maps to the same IOU field in PaymentMethodData
+                return cd.getPaymentMethodData().getIou().getTotalValue();
+            default:
+                // Return 0.0 for unexpected or unsupported payment methods
+                return 0.0;
+        }
+    }
+
     public double calculatRemainForMultiplePaymentTotal() {
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                if (cd == null) {
+                    continue;
+                }
+                if (cd.getPaymentMethodData() != null && cd.getPaymentMethod() != null) {
+                    // Only add the value from the selected payment method for this ComponentDetail
+                    multiplePaymentMethodTotalValue += calculateSelectedPaymentTotal(cd);
+                }
             }
             remainAmount = total - multiplePaymentMethodTotalValue;
             return total - multiplePaymentMethodTotalValue;
@@ -2811,6 +2855,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
                     }
                     break;
+                case IOU:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getIou().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getIou().setTotalValue(remainAmount);
+                    }
+                    break;
                 default:
                     throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());
             }
@@ -2854,6 +2904,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("Can not bill without a name for the Patient !");
             return true;
         }
+        
+        if(configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false) 
+                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for OPD from the system", false)){
+            if(getPatient().isBlacklisted()){
+                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+                return true;
+            }
+        }
+        
         if (getPatient().getPerson().getSex() == null) {
             JsfUtil.addErrorMessage("Can not bill without sex for the Patient !");
             return true;
@@ -3082,16 +3141,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         return true;
                     }
                 }
-                //TODO - filter only relavant value
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                // Use helper method to get only the selected payment method's value
+                multiplePaymentMethodTotalValue += calculateSelectedPaymentTotal(cd);
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);

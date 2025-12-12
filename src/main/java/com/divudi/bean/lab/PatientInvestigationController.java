@@ -2081,6 +2081,11 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
+        
+        if (sampleTransportedToLabByStaff == null) {
+            JsfUtil.addErrorMessage("Transporter is Missing");
+            return;
+        }
 
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {

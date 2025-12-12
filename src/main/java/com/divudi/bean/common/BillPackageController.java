@@ -451,6 +451,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 return true;
             }
         }
+        
+        if(configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false) 
+                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for OPD from the system", false)){
+            if(getPatient().isBlacklisted()){
+                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+                return true;
+            }
+        }
 
         if (getLstBillEntries().isEmpty()) {
             JsfUtil.addErrorMessage("No investigations are added to the bill to settle.");

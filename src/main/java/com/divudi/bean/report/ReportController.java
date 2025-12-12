@@ -1555,6 +1555,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         setReportTemplateFileIndexName("/reports/index.xhtml");
         return "/reports/collectionCenterReports/cc_bill_item_list?faces-redirect=true";
     }
+    
+    public String navigateToDashboard() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/dashboard/dashboard?faces-redirect=true";
+    }
 
     private Person person;
 
