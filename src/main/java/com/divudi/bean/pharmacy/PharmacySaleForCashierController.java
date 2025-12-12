@@ -801,12 +801,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     public void setStockDto(StockDTO stockDto) {
         this.stockDto = stockDto;
-        // Automatically convert DTO to entity
-        if (stockDto != null) {
-            this.stock = convertStockDtoToEntity(stockDto);
-        } else {
-            this.stock = null;
-        }
     }
 
     public String newSaleBillWithoutReduceStock() {
@@ -1162,7 +1156,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 "Enable search medicines by generic name(VMP)", false);
 
         StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
-                .append("i.id, i.itemBatch.item.name, i.itemBatch.item.code, i.itemBatch.item.vmp.name, ")
+                .append("i.id, i.itemBatch.item.name, i.itemBatch.item.code, ")
+                .append("COALESCE(i.itemBatch.item.vmp.name, ''), ")
                 .append("i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire) ")
                 .append("FROM Stock i ")
                 .append("WHERE i.stock > :stockMin ")
@@ -1192,14 +1187,19 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         long startTime = System.currentTimeMillis();
         System.out.println("=== CASHIER handleSelectAction START at " + startTime);
 
-        if (stock == null) {
-            System.out.println("=== CASHIER handleSelectAction - stock is null, returning");
+        if (stockDto == null) {
+            System.out.println("=== CASHIER handleSelectAction - stockDto is null, returning");
             return;
         }
 
         long beforeSetStock = System.currentTimeMillis();
-        System.out.println("=== CASHIER Before setStock: " + (beforeSetStock - startTime) + "ms");
-        getBillItem().getPharmaceuticalBillItem().setStock(stock);
+        System.out.println("=== CASHIER Before setStockDto: " + (beforeSetStock - startTime) + "ms");
+
+        // Convert StockDTO to Stock entity only for persistence
+        Stock stockEntity = convertStockDtoToEntity(stockDto);
+        if (stockEntity != null) {
+            getBillItem().getPharmaceuticalBillItem().setStock(stockEntity);
+        }
 
         long beforeCalculateRates = System.currentTimeMillis();
         System.out.println("=== CASHIER Before calculateRates: " + (beforeCalculateRates - beforeSetStock) + "ms");
@@ -1413,12 +1413,12 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         if (billItem.getPharmaceuticalBillItem() == null) {
             return addedQty;
         }
-        if (getStock() == null) {
+        if (getStockDto() == null) {
             errorMessage = "Item ??";
             JsfUtil.addErrorMessage("Please select an Item Batch to Dispense ??");
             return addedQty;
         }
-        if (getStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+        if (getStockDto().getDateOfExpire() != null && getStockDto().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return addedQty;
         }
@@ -1432,7 +1432,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             JsfUtil.addErrorMessage("Quentity Zero?");
             return addedQty;
         }
-        if (getQty() > getStock().getStock()) {
+        if (getStockDto().getStockQty() != null && getQty() > getStockDto().getStockQty()) {
             errorMessage = "No sufficient stocks.";
             JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return addedQty;
