@@ -166,68 +166,31 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     public String navigatePatientAdmit() {
-        System.out.println("DEBUG: Starting navigatePatientAdmit() method");
-
-        System.out.println("DEBUG: Checking reservation...");
         if (reservation == null) {
-            System.out.println("DEBUG: reservation is NULL - returning error");
             JsfUtil.addErrorMessage("No Reservation Found");
             return "";
         }
-
-        System.out.println("DEBUG: reservation exists, checking nested properties...");
-        System.out.println("DEBUG: reservation.getAppointment() = " + (reservation.getAppointment() != null ? "exists" : "null"));
-        System.out.println("DEBUG: reservation.getAppointment().getBill() = "
-                + (reservation.getAppointment() != null && reservation.getAppointment().getBill() != null ? "exists" : "null"));
 
         if (reservation == null || reservation.getAppointment() == null || reservation.getAppointment().getBill() == null) {
-            System.out.println("DEBUG: Failed nested check - returning error");
             JsfUtil.addErrorMessage("No Reservation Found");
             return "";
         }
 
-        System.out.println("DEBUG: All checks passed. Creating Admission object...");
         Admission ad = new Admission();
-        System.out.println("DEBUG: New Admission object created: " + ad);
-
-        System.out.println("DEBUG: Checking admission date...");
         if (ad.getDateOfAdmission() == null) {
-            System.out.println("DEBUG: Setting admission date to current time");
             ad.setDateOfAdmission(CommonFunctions.getCurrentDateTime());
-        } else {
-            System.out.println("DEBUG: Admission date already set: " + ad.getDateOfAdmission());
         }
 
-        System.out.println("DEBUG: Configuring admissionController properties...");
-
         admissionController.setCurrent(ad);
-        System.out.println("DEBUG: admissionController.setCurrent() called");
-
         admissionController.setPrintPreview(false);
-        System.out.println("DEBUG: PrintPreview set to false");
-
         admissionController.setAdmittingProcessStarted(false);
-        System.out.println("DEBUG: AdmittingProcessStarted set to false");
-
         admissionController.setPatientRoom(new PatientRoom());
-        System.out.println("DEBUG: New PatientRoom set");
-
         admissionController.setAppointmentBill(reservation.getAppointment().getBill());
-        System.out.println("DEBUG: AppointmentBill set");
-
         admissionController.setPatientAllergies(null);
-        System.out.println("DEBUG: PatientAllergies set to null");
-
         admissionController.setCurrentReservation(reservation);
-        System.out.println("DEBUG: CurrentReservation set");
-
         admissionController.setBhtText("");
-        System.out.println("DEBUG: BhtText set to empty string");
-
-        System.out.println("DEBUG: Calling listnerForAppoimentSelect with bill...");
         admissionController.listnerForAppoimentSelect(reservation.getAppointment().getBill());
 
-        System.out.println("DEBUG: Method completed successfully. Redirecting to /inward/inward_admission");
         return "/inward/inward_admission?faces-redirect=true";
     }
 
@@ -240,9 +203,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
         reservation = reservationFacade.find(reservationId);
 
-        navigatePatientAdmit();
-
-        return "/inward/inward_admission?faces-redirect=true";
+        return navigatePatientAdmit();
     }
 
     // </editor-fold>
@@ -402,7 +363,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     public List<Reservation> searcheservations(String quary) {
-        System.out.println("searcheservations");
 
         HashMap params = new HashMap();
 
@@ -422,9 +382,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         params.put("name", "%" + quary + "%");
         params.put("type", AppointmentType.IP_APPOINTMENT);
         params.put("status", AppointmentStatus.PENDING);
-
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
 
         return reservationFacade.findByJpql(jpql, params);
     }
@@ -1363,12 +1320,16 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.isEmpty()) {
+            if (value == null || value.isEmpty() || value.equals("null")) {
                 return null;
             }
             AppointmentController controller = (AppointmentController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "appointmentController");
-            return controller.getReservationFacade().find(getKey(value));
+            Long key = getKey(value);
+            if (key == null) {
+                return null;
+            }
+            return controller.getReservationFacade().find(key);
         }
 
         java.lang.Long getKey(String value) {
