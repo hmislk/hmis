@@ -118,14 +118,55 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToReturnOpdBill() {
+        System.out.println("[DEBUG] Entering navigateToReturnOpdBill()");
+
         if (originalBillToReturn == null) {
+            System.out.println("[DEBUG] originalBillToReturn is NULL → returning null");
             return null;
         }
+
+        System.out.println("[DEBUG] originalBillToReturn ID: " + originalBillToReturn.getId());
+        System.out.println("[DEBUG] Fetching bill items available for return...");
+
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
+        System.out.println("[DEBUG] Bill Items fetched: " + originalBillItemsAvailableToReturn.size());
+
         returningStarted.set(false);
-        paymentMethod = originalBillToReturn.getPaymentMethod();
-        initializeReturnBillFromOriginalBill(originalBillToReturn);
+        System.out.println("[DEBUG] returningStarted set to false");
+
+        newlyReturnedBill = new RefundBill();
+        newlyReturnedBill.setPatient(originalBillToReturn.getPatient());
+        System.out.println("[DEBUG] Newly created RefundBill; Patient set: " +
+                (newlyReturnedBill.getPatient() != null ? newlyReturnedBill.getPatient().getId() : "NULL"));
+
+        // Fetch payment data
+        System.out.println("[DEBUG] Fetching original payments...");
+        List<Payment> originalPayments = billService.fetchBillPayments(null, originalBillToReturn.getBackwardReferenceBill());
+        System.out.println("[DEBUG] originalPayments fetched: " + (originalPayments == null ? "NULL" : originalPayments.size()));
+
+        if (originalPayments != null && !originalPayments.isEmpty()) {
+            System.out.println("[DEBUG] originalPayments is NOT EMPTY → Initializing refund payment");
+            initializeRefundPaymentFromOriginalPayments(originalPayments);
+        } else {
+            System.out.println("[DEBUG] originalPayments is EMPTY → Using original bill payment method");
+            paymentMethod = originalBillToReturn.getPaymentMethod();
+            System.out.println("[DEBUG] paymentMethod set to: " + paymentMethod);
+        }
+
+        // Fetch available refund methods
+        System.out.println("[DEBUG] Fetching available payment methods for refunds...");
         paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(originalBillToReturn);
+
+        if (paymentMethods != null) {
+            System.out.println("[DEBUG] paymentMethods fetched: " + paymentMethods.size());
+            for (PaymentMethod pm : paymentMethods) {
+                System.out.println("         - " + pm);
+            }
+        } else {
+            System.out.println("[DEBUG] paymentMethods is NULL");
+        }
+
+        System.out.println("[DEBUG] Exiting navigateToReturnOpdBill() → Redirecting to /opd/bill_return");
         return "/opd/bill_return?faces-redirect=true";
     }
 
@@ -410,8 +451,9 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         }
 
         // fetch original bill now, checked alteady returned, cancelled, ,
-        newlyReturnedBill = new RefundBill();
+        
         newlyReturnedBill.copy(originalBillToReturn);
+        newlyReturnedBill.setPaymentMethod(paymentMethod);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
         newlyReturnedBill.setComments(refundComment);
         newlyReturnedBill.setInstitution(sessionController.getInstitution());
@@ -522,6 +564,9 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 //        }
         // drawer Update
 //        drawerController.updateDrawerForOuts(returningPayment);
+
+        System.out.println("staff = " + newlyReturnedBill.getToStaff());
+
         returningStarted.set(false);
         return "/opd/bill_return_print?faces-redirect=true";
 
@@ -935,30 +980,265 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         this.toStaff = toStaff;
     }
     
-    private void initializeReturnBillFromOriginalBill(Bill originalBillToReturn) {
-        switch (originalBillToReturn.getPaymentMethod()) {
-            case Cheque:
-                getPaymentMethodData().getCheque().setInstitution(originalBillToReturn.getBank());
-                getPaymentMethodData().getCheque().setDate(originalBillToReturn.getChequeDate());
-                getPaymentMethodData().getCheque().setNo(originalBillToReturn.getChequeRefNo());
-                getPaymentMethodData().getCheque().setComment(originalBillToReturn.getComments());
-                getPaymentMethodData().getCheque().setTotalValue(originalBillToReturn.getNetTotal());
-                break;
-            case Card:
-                getPaymentMethodData().getCreditCard().setInstitution(originalBillToReturn.getBank());
-                getPaymentMethodData().getCreditCard().setNo(originalBillToReturn.getCreditCardRefNo());
-                getPaymentMethodData().getCreditCard().setComment(originalBillToReturn.getComments());
-                break;
-            case Slip:
-                getPaymentMethodData().getSlip().setInstitution(originalBillToReturn.getBank());
-                getPaymentMethodData().getSlip().setDate(originalBillToReturn.getChequeDate());
-                getPaymentMethodData().getSlip().setComment(originalBillToReturn.getComments());
-//                getPaymentMethodData().getSlip().setReferenceNo(originalBillToReturn.getReferenceNumber());
-                break;
-            default:
-                break;
+    @Inject
+    PatientDepositController patientDepositController;
+    
+    private void initializeRefundPaymentFromOriginalPayments(List<Payment> originalPayments) {
+        System.out.println("[DEBUG] Entering initializeRefundPaymentFromOriginalPayments()");
+
+        if (originalPayments == null || originalPayments.isEmpty()) {
+            System.out.println("[DEBUG] originalPayments is NULL or EMPTY → returning");
+            return;
         }
+
+        System.out.println("[DEBUG] originalPayments count: " + originalPayments.size());
+
+        // -------------------- SINGLE PAYMENT --------------------
+        if (originalPayments.size() == 1) {
+            Payment originalPayment = originalPayments.get(0);
+            System.out.println("[DEBUG] Single payment detected. Method = " + originalPayment.getPaymentMethod());
+
+            paymentMethod = originalPayment.getPaymentMethod();
+            System.out.println("[DEBUG] paymentMethod set to: " + paymentMethod);
+
+            double refundValue = Math.abs(newlyReturnedBill.getNetTotal());
+            System.out.println("[DEBUG] Refund Amount (abs(netTotal)): " + refundValue);
+
+            switch (originalPayment.getPaymentMethod()) {
+                case Cash:
+                    System.out.println("[DEBUG] Populating Cash details");
+                    getPaymentMethodData().getCash().setTotalValue(refundValue);
+                    break;
+
+                case Card:
+                    System.out.println("[DEBUG] Populating Card details");
+                    getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
+                    getPaymentMethodData().getCreditCard().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getCreditCard().setTotalValue(refundValue);
+                    break;
+
+                case Cheque:
+                    System.out.println("[DEBUG] Populating Cheque details");
+                    getPaymentMethodData().getCheque().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
+                    getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
+                    getPaymentMethodData().getCheque().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getCheque().setTotalValue(refundValue);
+                    break;
+
+                case Slip:
+                    System.out.println("[DEBUG] Populating Slip details");
+                    getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate());
+                    getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getSlip().setTotalValue(refundValue);
+                    break;
+
+                case ewallet:
+                    System.out.println("[DEBUG] Populating eWallet details");
+                    getPaymentMethodData().getEwallet().setInstitution(
+                            originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution()
+                    );
+                    getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
+                    getPaymentMethodData().getEwallet().setTotalValue(refundValue);
+                    getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
+                    break;
+
+                case PatientDeposit:
+                    System.out.println("[DEBUG] Populating PatientDeposit details");
+                    getPaymentMethodData().getPatient_deposit().setTotalValue(refundValue);
+                    getPaymentMethodData().getPatient_deposit().setPatient(newlyReturnedBill.getPatient());
+                    getPaymentMethodData().getPatient_deposit().setComment(originalPayment.getComments());
+
+                    if (newlyReturnedBill.getPatient() != null) {
+                        System.out.println("[DEBUG] Fetching patient deposit for patient ID = " +
+                                newlyReturnedBill.getPatient().getId());
+                        com.divudi.core.entity.PatientDeposit pd =
+                                patientDepositController.getDepositOfThePatient(
+                                        newlyReturnedBill.getPatient(),
+                                        sessionController.getDepartment()
+                                );
+
+                        if (pd != null) {
+                            System.out.println("[DEBUG] Patient deposit found. ID = " + pd.getId());
+                            getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                            getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                        } else {
+                            System.out.println("[DEBUG] No PatientDeposit record found");
+                        }
+                    }
+                    break;
+
+                case Credit:
+                    System.out.println("[DEBUG] Populating Credit details");
+                    getPaymentMethodData().getCredit().setInstitution(originalPayment.getCreditCompany());
+                    getPaymentMethodData().getCredit().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getCredit().setReferralNo(originalPayment.getPolicyNo());
+                    getPaymentMethodData().getCredit().setTotalValue(refundValue);
+                    getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
+                    break;
+
+                case Staff:
+                    System.out.println("[DEBUG] Populating Staff Credit details");
+                    Staff staffCredit = originalPayment.getToStaff();
+                    if (staffCredit == null && originalBillToReturn != null) {
+                        staffCredit = originalBillToReturn.getToStaff();
+                    }
+                    getPaymentMethodData().getStaffCredit().setToStaff(staffCredit);
+                    getPaymentMethodData().getStaffCredit().setTotalValue(refundValue);
+                    getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
+                    setToStaff(staffCredit);
+                    break;
+
+                case Staff_Welfare:
+                    System.out.println("[DEBUG] Populating Staff Welfare details");
+                    Staff staffWelfare = originalPayment.getToStaff();
+                    if (staffWelfare == null && originalBillToReturn != null) {
+                        staffWelfare = originalBillToReturn.getToStaff();
+                    }
+                    getPaymentMethodData().getStaffWelfare().setToStaff(staffWelfare);
+                    getPaymentMethodData().getStaffWelfare().setTotalValue(refundValue);
+                    getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
+                    setToStaff(staffWelfare);
+                    break;
+
+                default:
+                    System.out.println("[DEBUG] Payment method not specifically handled: " 
+                            + originalPayment.getPaymentMethod());
+                    break;
+            }
+
+        }
+        // -------------------- MULTIPLE PAYMENTS --------------------
+        else {
+            System.out.println("[DEBUG] Multiple payments detected");
+
+            paymentMethod = PaymentMethod.MultiplePaymentMethods;
+            System.out.println("[DEBUG] Setting paymentMethod = MultiplePaymentMethods");
+
+            getPaymentMethodData().getPaymentMethodMultiple()
+                    .getMultiplePaymentMethodComponentDetails().clear();
+
+            for (Payment originalPayment : originalPayments) {
+                System.out.println("[DEBUG] Processing payment component: " + originalPayment.getPaymentMethod());
+
+                ComponentDetail cd = new ComponentDetail();
+                cd.setPaymentMethod(originalPayment.getPaymentMethod());
+
+                double refundAmount = Math.abs(originalPayment.getPaidValue());
+                System.out.println("        refundAmount = " + refundAmount);
+
+                switch (originalPayment.getPaymentMethod()) {
+                    case Cash:
+                        cd.getPaymentMethodData().getCash().setTotalValue(refundAmount);
+                        break;
+
+                    case Card:
+                        cd.getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
+                        cd.getPaymentMethodData().getCreditCard().setComment(originalPayment.getComments());
+                        cd.getPaymentMethodData().getCreditCard().setTotalValue(refundAmount);
+                        break;
+
+                    case Cheque:
+                        cd.getPaymentMethodData().getCheque().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
+                        cd.getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
+                        cd.getPaymentMethodData().getCheque().setComment(originalPayment.getComments());
+                        cd.getPaymentMethodData().getCheque().setTotalValue(refundAmount);
+                        break;
+
+                    case Slip:
+                        cd.getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate() != null
+                                ? originalPayment.getPaymentDate()
+                                : originalPayment.getRealizedAt());
+                        cd.getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
+                        cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
+                        break;
+
+                    case ewallet:
+                        cd.getPaymentMethodData().getEwallet().setInstitution(
+                                originalPayment.getBank() != null
+                                        ? originalPayment.getBank()
+                                        : originalPayment.getInstitution()
+                        );
+                        cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
+                        cd.getPaymentMethodData().getEwallet().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
+                        break;
+
+                    case PatientDeposit:
+                        System.out.println("[DEBUG] Populating PatientDeposit component");
+                        cd.getPaymentMethodData().getPatient_deposit().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getPatient_deposit().setPatient(newlyReturnedBill.getPatient());
+                        cd.getPaymentMethodData().getPatient_deposit().setComment(originalPayment.getComments());
+
+                        if (newlyReturnedBill.getPatient() != null) {
+                            com.divudi.core.entity.PatientDeposit pd =
+                                    patientDepositController.getDepositOfThePatient(
+                                            newlyReturnedBill.getPatient(),
+                                            sessionController.getDepartment()
+                                    );
+                            if (pd != null) {
+                                System.out.println("        PatientDeposit found ID = " + pd.getId());
+                                cd.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                                cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                            }
+                        }
+                        break;
+
+                    case Credit:
+                        cd.getPaymentMethodData().getCredit().setInstitution(originalPayment.getCreditCompany());
+                        cd.getPaymentMethodData().getCredit().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getCredit().setReferralNo(originalPayment.getPolicyNo());
+                        cd.getPaymentMethodData().getCredit().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
+                        break;
+
+                    case Staff:
+                        Staff staffCredit = originalPayment.getToStaff();
+                        if (staffCredit == null && originalBillToReturn != null) {
+                            staffCredit = originalBillToReturn.getToStaff();
+                        }
+                        cd.getPaymentMethodData().getStaffCredit().setToStaff(staffCredit);
+                        cd.getPaymentMethodData().getStaffCredit().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
+                        setToStaff(staffCredit);
+                        break;
+
+                    case Staff_Welfare:
+                        Staff staffWelfare = originalPayment.getToStaff();
+                        if (staffWelfare == null && originalBillToReturn != null) {
+                            staffWelfare = originalBillToReturn.getToStaff();
+                       }
+                        cd.getPaymentMethodData().getStaffWelfare().setToStaff(staffWelfare);
+                        cd.getPaymentMethodData().getStaffWelfare().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
+                        setToStaff(staffWelfare);
+                        break;
+
+                    default:
+                        System.out.println("[DEBUG] Unhandled payment method in multiple: "
+                                + originalPayment.getPaymentMethod());
+                        break;
+                }
+
+                getPaymentMethodData().getPaymentMethodMultiple()
+                        .getMultiplePaymentMethodComponentDetails().add(cd);
+
+                System.out.println("[DEBUG] ComponentDetail added");
+            }
+        }
+
+        System.out.println("[DEBUG] Exiting initializeRefundPaymentFromOriginalPayments()");
     }
-    
-    
+ 
 }

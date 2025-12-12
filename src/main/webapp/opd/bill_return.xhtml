@@ -202,19 +202,19 @@
                                             class="row my-1"
                                             layout="block" 
                                             id="eWallet"  rendered="#{billReturnController.paymentMethod eq 'ewallet'}" >
-                                            <pa:ewallet paymentMethodData="#{billReturnController.paymentMethodData}"/>
+                                            <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{billReturnController.paymentMethodData}"/>
                                         </h:panelGroup>
                                         <h:panelGroup
                                             class="row my-1"
                                             layout="block" 
                                             id="cheque"  rendered="#{billReturnController.paymentMethod eq 'Cheque'}" >
-                                            <pa:cheque paymentMethodData="#{billReturnController.paymentMethodData}"/>
+                                            <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{billReturnController.paymentMethodData}"/>
                                         </h:panelGroup>
                                         <h:panelGroup 
                                             class="row my-1"
                                             layout="block" 
                                             id="slip"  rendered="#{billReturnController.paymentMethod eq 'Slip'}" >
-                                            <pa:slip paymentMethodData="#{billReturnController.paymentMethodData}"/>
+                                            <pa:slipDetailsAsOnlyPayment paymentMethodData="#{billReturnController.paymentMethodData}"/>
                                         </h:panelGroup>
                                         <h:panelGroup 
                                             class="row my-1"
