@@ -3509,7 +3509,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         setNetTotal(billNet);
         setVat(billVat);
         setNetPlusVat(getVat() + getNetTotal());
-
+        if (getPaymentMethod() == PaymentMethod.ewallet) {
+            getPaymentMethodData().getEwallet().setTotalValue(getNetTotal());
+        }
         if (getSessionController() != null) {
             if (getSessionController().getApplicationPreference() != null) {
 
