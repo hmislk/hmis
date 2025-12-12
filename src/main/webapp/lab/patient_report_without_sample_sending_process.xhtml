@@ -694,6 +694,33 @@
                                         <p:outputLabel value="Printed Time" ></p:outputLabel>
                                         <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.printingAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
                                     </p:panelGrid>
+                                    
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}"><hr/></h:panelGroup>
+
+                                    <p:panelGrid columns="2" rendered="#{webUserController.hasPrivilege('Developers') and (patientReportController.currentPatientReport.patientName ne null or patientReportController.currentPatientReport.patientGender ne null or patientReportController.currentPatientReport.patientAge ne null)}">
+
+                                        <p:outputLabel for="PatientName" value="Patient Name" ></p:outputLabel>
+                                        <p:inputText 
+                                            id="PatientName" 
+                                            value="#{patientReportController.currentPatientReport.patientName}" 
+                                            class="w-100">
+                                        </p:inputText>
+
+                                        <p:outputLabel for="PatientAge" value="Patient Age (for Bill Date)" ></p:outputLabel>
+                                        <p:inputText 
+                                            id="PatientAge" 
+                                            value="#{patientReportController.currentPatientReport.patientAge}" 
+                                            class="w-100">
+                                        </p:inputText>
+
+                                        <p:outputLabel for="PatientGender" value="Patient Gender" ></p:outputLabel>
+                                        <p:inputText 
+                                            id="PatientGender" 
+                                            value="#{patientReportController.currentPatientReport.patientGender}" 
+                                            class="w-100">
+                                        </p:inputText>
+
+                                    </p:panelGrid>
                                 </p:panel>
 
                             </div>
