@@ -236,7 +236,12 @@ public class GrnCostingController implements Serializable {
                     currentGrnBillPre = billService.reloadBill(currentGrnBillPre);
                 }
             }
-            calTotal();
+            // Use comprehensive calculation methods to update totals and differences
+            ensureBillDiscountSynchronization();
+            calculateBillTotalsFromItems();
+            distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+            recalculateProfitMarginsForAllItems();
+            calDifference();
         }
     }
 
@@ -328,7 +333,12 @@ public class GrnCostingController implements Serializable {
         if (currentGrnBillPre.getId() != null) {
             currentGrnBillPre = billService.reloadBill(currentGrnBillPre);
         }
-        calTotal();
+        // Use comprehensive calculation methods to update totals and differences
+        ensureBillDiscountSynchronization();
+        calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+        recalculateProfitMarginsForAllItems();
+        calDifference();
         selectedBillItems = null;
     }
 
@@ -2851,7 +2861,6 @@ public class GrnCostingController implements Serializable {
             System.out.println("Item: " + grnItem.getItem().getName() + " - Ordered Free: " + orderedFreeQty + ", Current GRN Free: " + currentGrnFreeQty);
 
             double totalReceivedFromAllGrns = calculateRemainigQtyFromOrder(poItem);
-            System.out.println("totalReceivedFromAllGrns = " + totalReceivedFromAllGrns);
             double totalFreeReceivedFromAllGrns = calculateRemainingFreeQtyFromOrder(poItem);
 
             double previouslyReceivedQty = totalReceivedFromAllGrns;
@@ -2994,14 +3003,14 @@ public class GrnCostingController implements Serializable {
             configOptionApplicationController.setLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_GRN, "GRN");
         }
 
-        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
         boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
         boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Pharmacy GRN - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
 
         // Handle Department ID generation
         String deptId;
-        if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
-            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+        if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
                     sessionController.getDepartment(),
                     BillTypeAtomic.PHARMACY_GRN
             );
@@ -3024,7 +3033,7 @@ public class GrnCostingController implements Serializable {
             );
         } else {
             // Default behavior - use the department ID for institution ID or original method
-            if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount || billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
+            if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount || billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
                 insId = deptId;
             } else {
                 insId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyGrnBill, BillClassType.BilledBill, BillNumberSuffix.GRN);

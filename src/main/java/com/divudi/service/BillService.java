@@ -58,6 +58,7 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 
 import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
 
 import com.divudi.core.entity.Category;
 import com.divudi.core.facade.BillFacade;
@@ -605,18 +606,46 @@ public class BillService {
         return billItemFacade.findByJpql(jpql, params);
     }
 
+    /**
+     * Fetches bill type atomics for OPD finance operations, now including all pharmacy credit bills
+     * as part of the credit consolidation initiative where pharmacy credit bills are managed
+     * alongside OPD credit bills under the unified OPD Credit Settle bill type.
+     * This includes pharmacy retail sales, wholesale sales, and sales settled at cashier.
+     *
+     * <p><strong>Important:</strong> This method returns atomics for ORIGINAL BILLS that can have
+     * outstanding balances (used by OPD Due Search, OPD Due Age queries), NOT settlement record atomics.
+     * Settlement records (PAYMENT_RECEIVED bills) are queried separately by
+     * {@code listBillsOpdCreditCompanySettle()} for "OPD Done Search" functionality.
+     */
     public List<BillTypeAtomic> fetchBillTypeAtomicsForOpdFinance() {
         List<BillTypeAtomic> btas = new ArrayList<>();
+        // OPD Bill Types
         btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
         btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         btas.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.OPD_BILL_REFUND);
+        // Package OPD Bill Types
         btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+        // Pharmacy Bill Types (consolidated with OPD for credit management)
+        // Pharmacy Retail Sales
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        // Pharmacy Wholesale
+        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE);
+        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE_PRE);
+        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
+        // Pharmacy Wholesale GRN
+        btas.add(BillTypeAtomic.PHARMACY_GRN_WHOLESALE);
         return btas;
     }
 
@@ -1058,7 +1087,6 @@ public class BillService {
 
         jpql += " order by b.createdAt desc  ";
         System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
     }
@@ -1503,12 +1531,12 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt desc";
+        // Debug logging
 
         // Debug logging
         System.out.println("=== BillService.fetchOpdIncomeReportDTOs Query Debug ===");
         System.out.println("JPQL: " + jpql);
         System.out.println("Parameters: " + params);
-        System.out.println("========================================================");
 
         return (List<OpdIncomeReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -2833,6 +2861,37 @@ public class BillService {
         Map<String, Object> params = new HashMap<>();
         params.put("bb", batchBill);
         return patientInvestigationFacade.findByJpql(jpql, params);
+    }
+    
+    public List<PatientInvestigation> fetchPatientInvestigationsOfBatchBill(Bill batchBill, PatientInvestigationStatus status) {
+        if (batchBill == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT pbi "
+                + "FROM PatientInvestigation pbi "
+                + "WHERE pbi.billItem.bill IN ("
+                + "  SELECT b FROM Bill b WHERE b.backwardReferenceBill = :bb"
+                + ") "
+                + " AND pbi.status =:st "
+                + " ORDER BY pbi.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bb", batchBill);
+        params.put("st", status);
+        return patientInvestigationFacade.findByJpql(jpql, params);
+    }
+    
+    public List<PatientInvestigation> fetchPatientInvestigations(Bill bill, PatientInvestigationStatus status) {
+        String jpql;
+        HashMap<String, Object> params = new HashMap<>();
+        jpql = "SELECT pbi "
+                + " FROM PatientInvestigation pbi "
+                + " WHERE pbi.billItem.bill=:bl "
+                + " AND pbi.status =:st "
+                + " order by pbi.id";
+        params.put("bl", bill);
+        params.put("st", status);
+        List<PatientInvestigation> ptix = patientInvestigationFacade.findByJpql(jpql, params);
+        return ptix;
     }
 
     public List<BillItem> checkCreditBillPaymentReciveFromCreditCompany(Bill bill) {

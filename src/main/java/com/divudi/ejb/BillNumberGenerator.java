@@ -2173,7 +2173,6 @@ public class BillNumberGenerator {
         
         billNumber = fetchLastRequestNumberForYear(dep.getInstitution(), dep, requestType);
         
-        System.out.println("billNumber = " + billNumber);
         
         // Get the last bill number
         Long dd = billNumber.getLastBillNumber();
@@ -3344,6 +3343,174 @@ public class BillNumberGenerator {
         hm.put("td", td);
 
         return getItemFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+    }
+
+    // ***** CASHIER SETTLEMENT BILL NUMBER GENERATION HELPER METHODS *****
+
+    /**
+     * Cashier settlement bill number generation - Strategy 1: Prefix + Department Code + Institution Code + Year + Yearly Number
+     * Format: CSB/DEPT_CODE/INS_CODE/YY/NNNNNN
+     */
+    public String cashierSettlementBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(Department dep, BillTypeAtomic billType) {
+        if (dep == null || dep.getInstitution() == null) {
+            return "";
+        }
+
+        BillNumber billNumber;
+        String billSuffix = configOptionApplicationController.getShortTextValueByKey("Bill Number Suffix for " + billType, "CSB");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            // Use custom prefix as fallback
+            billSuffix = configOptionApplicationController.getShortTextValueByKey("Cashier Settlement Bill Number Custom Prefix", "CS");
+            if (billSuffix == null || billSuffix.trim().isEmpty()) {
+                billSuffix = "CSB";
+            }
+        }
+
+        billNumber = fetchLastBillNumberForYear(dep.getInstitution(), dep, billType);
+
+        // Get and increment the bill number
+        Long dd = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(dd);
+        billNumberFacade.edit(billNumber);
+
+        // Generate the bill number string - Format: PREFIX/DEPT_CODE/INS_CODE/YY/NNNNNN
+        StringBuilder result = new StringBuilder();
+        result.append(billSuffix);
+        result.append(getBillNumberDelimiter());
+        result.append(dep.getDepartmentCode());
+        result.append(getBillNumberDelimiter());
+        result.append(dep.getInstitution().getInstitutionCode());
+        result.append(getBillNumberDelimiter());
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
+        result.append(String.format("%02d", year));
+        result.append(getBillNumberDelimiter());
+        result.append(String.format("%06d", dd));
+
+        return result.toString();
+    }
+
+    /**
+     * Cashier settlement bill number generation - Strategy 2: Prefix + Institution Code + Department Code + Year + Yearly Number
+     * Format: CSB/INS_CODE/DEPT_CODE/YY/NNNNNN
+     */
+    public String cashierSettlementBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(Department dep, BillTypeAtomic billType) {
+        if (dep == null || dep.getInstitution() == null) {
+            return "";
+        }
+
+        BillNumber billNumber;
+        String billSuffix = configOptionApplicationController.getShortTextValueByKey("Bill Number Suffix for " + billType, "CSB");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            // Use custom prefix as fallback
+            billSuffix = configOptionApplicationController.getShortTextValueByKey("Cashier Settlement Bill Number Custom Prefix", "CS");
+            if (billSuffix == null || billSuffix.trim().isEmpty()) {
+                billSuffix = "CSB";
+            }
+        }
+
+        billNumber = fetchLastBillNumberForYear(dep.getInstitution(), dep, billType);
+
+        // Get and increment the bill number
+        Long dd = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(dd);
+        billNumberFacade.edit(billNumber);
+
+        // Generate the bill number string - Format: PREFIX/INS_CODE/DEPT_CODE/YY/NNNNNN
+        StringBuilder result = new StringBuilder();
+        result.append(billSuffix);
+        result.append(getBillNumberDelimiter());
+        result.append(dep.getInstitution().getInstitutionCode());
+        result.append(getBillNumberDelimiter());
+        result.append(dep.getDepartmentCode());
+        result.append(getBillNumberDelimiter());
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
+        result.append(String.format("%02d", year));
+        result.append(getBillNumberDelimiter());
+        result.append(String.format("%06d", dd));
+
+        return result.toString();
+    }
+
+    /**
+     * Cashier settlement bill number generation - Strategy 3: Prefix + Institution Code + Year + Yearly Number (Institution-wide)
+     * Format: CSB/INS_CODE/YY/NNNNNN
+     */
+    public String cashierSettlementBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(Department dep, BillTypeAtomic billType) {
+        if (dep == null || dep.getInstitution() == null) {
+            return "";
+        }
+
+        BillNumber billNumber;
+        String billSuffix = configOptionApplicationController.getShortTextValueByKey("Bill Number Suffix for " + billType, "CSB");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            // Use custom prefix as fallback
+            billSuffix = configOptionApplicationController.getShortTextValueByKey("Cashier Settlement Bill Number Custom Prefix", "CS");
+            if (billSuffix == null || billSuffix.trim().isEmpty()) {
+                billSuffix = "CSB";
+            }
+        }
+
+        // Use institution-wide numbering (department = null)
+        billNumber = fetchLastBillNumberForYear(dep.getInstitution(), null, billType);
+
+        // Get and increment the bill number
+        Long dd = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(dd);
+        billNumberFacade.edit(billNumber);
+
+        // Generate the bill number string - Format: PREFIX/INS_CODE/YY/NNNNNN
+        StringBuilder result = new StringBuilder();
+        result.append(billSuffix);
+        result.append(getBillNumberDelimiter());
+        result.append(dep.getInstitution().getInstitutionCode());
+        result.append(getBillNumberDelimiter());
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
+        result.append(String.format("%02d", year));
+        result.append(getBillNumberDelimiter());
+        result.append(String.format("%06d", dd));
+
+        return result.toString();
+    }
+
+    /**
+     * Institution-wide InsId generator for cashier settlement bills (separate counter)
+     * Format: CSB/INS_CODE/YY/NNNNNN
+     */
+    public String cashierSettlementInsIdGeneratorYearlyWithPrefixInsYearCountInstitutionWide(Department dep, BillTypeAtomic billType) {
+        if (dep == null || dep.getInstitution() == null) {
+            return "";
+        }
+
+        BillNumber billNumber;
+        String billSuffix = configOptionApplicationController.getShortTextValueByKey("Bill Number Suffix for " + billType, "CSB");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            // Use custom prefix as fallback
+            billSuffix = configOptionApplicationController.getShortTextValueByKey("Cashier Settlement Bill Number Custom Prefix", "CS");
+            if (billSuffix == null || billSuffix.trim().isEmpty()) {
+                billSuffix = "CSB";
+            }
+        }
+
+        // Use institution-wide numbering for InsId (different counter from DeptId)
+        billNumber = fetchLastBillNumberForYearInstitutionOnly(dep.getInstitution(), billType);
+
+        // Get and increment the bill number
+        Long dd = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(dd);
+        billNumberFacade.edit(billNumber);
+
+        // Generate the institution ID string - Format: PREFIX/INS_CODE/YY/NNNNNN
+        StringBuilder result = new StringBuilder();
+        result.append(billSuffix);
+        result.append(getBillNumberDelimiter());
+        result.append(dep.getInstitution().getInstitutionCode());
+        result.append(getBillNumberDelimiter());
+        int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
+        result.append(String.format("%02d", year));
+        result.append(getBillNumberDelimiter());
+        result.append(String.format("%06d", dd));
+
+        return result.toString();
     }
 
 }

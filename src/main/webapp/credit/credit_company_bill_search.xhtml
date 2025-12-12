@@ -89,10 +89,11 @@
                                         <h:outputLabel value="Bill Type" class="m-3"/>
                                     </h:panelGroup>
                                     <p:selectOneMenu class="w-100" value="#{searchController.settledBillType}">
-                                        <f:selectItem  itemLabel="All Bills"/>    
+                                        <f:selectItem  itemLabel="All Bills"/>
                                         <f:selectItem itemValue="IP" itemLabel="Inpatient Bills(IP)"/>
-                                        <f:selectItem itemValue="OP" itemLabel="Outpatient Bills(IP)"/>
+                                        <f:selectItem itemValue="OP" itemLabel="Outpatient Bills(OP)"/>
                                         <f:selectItem itemValue="PACKAGE" itemLabel="Package Bills (PACKAGE)"/>
+                                        <f:selectItem itemValue="PHARMACY" itemLabel="Pharmacy Bills (PHARMACY)"/>
                                         <p:ajax update="@all"/>
                                     </p:selectOneMenu>
 
@@ -194,8 +195,19 @@
                                 </h:outputLabel>                                   
                             </p:column>       
 
-                            <p:column headerText="Comments"  style="padding: 8px;">                             
+                            <p:column headerText="Comments"  style="padding: 8px;">
                                 <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" ></h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Action" style="padding: 8px; text-align: center;">
+                                <p:commandButton
+                                    value="View"
+                                    icon="fa fa-eye"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}"
+                                    ajax="false"
+                                    class="ui-button-info">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                                </p:commandButton>
                             </p:column>
                         </p:dataTable>
 

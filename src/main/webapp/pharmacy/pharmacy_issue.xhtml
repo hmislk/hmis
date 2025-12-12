@@ -14,6 +14,8 @@
                 <h:form id="bill">
                     <p:growl id="panelError" />
 
+
+
                     <p:panel rendered="#{!pharmacyIssueController.billPreview}">
                         <h:panelGroup class="row" rendered="#{pharmacyIssueController.toDepartment eq null or pharmacyIssueController.toDepartment eq sessionController.loggedUser.department}">
                             <p:panel>
@@ -70,451 +72,466 @@
                         </h:panelGroup>
 
                         <p:panel rendered="#{pharmacyIssueController.toDepartment ne null and pharmacyIssueController.toDepartment ne sessionController.loggedUser.department}">
-                        <f:facet name="header" >
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div>
-                                    <i class="fas fa-building mt-2" />
-                                    <h:outputLabel class="mx-2 mt-2" value="Department Disposal - Issue to #{pharmacyIssueController.toDepartment.name}" />
-                                </div>
-                                <div class="float-end" >
-                                    <p:commandButton
-                                        accesskey="n"
-                                        value="New Disposal Issue Bill"
-                                        icon="pi pi-plus"
-                                        class="ui-button-warning m-1"
-                                        ajax="false"
-                                        action="/pharmacy/pharmacy_issue"
-                                        actionListener="#{pharmacyIssueController.resetAll()}">
-                                    </p:commandButton>
-                                    <p:commandButton
-                                        id="btnIssue"
-                                        accesskey="s"
-                                        value="Settle Issue"
-                                        icon="pi pi-check"
-                                        class="ui-button-success m-1"
-                                        ajax="false"
-                                        action="#{pharmacyIssueController.settleDisposalIssueBill()}"
-                                        onclick="return confirm('Are you sure you want to issue this disposal bill?');" />
-                                </div>
-                            </div>
-                        </f:facet>
+                            <f:facet name="header" >
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <i class="fas fa-building mt-2" />
+                                        <h:outputLabel class="mx-2 mt-2" value="Department Disposal - Issue to #{pharmacyIssueController.toDepartment.name}" />
 
-                        <div class="row">
-                            <div class="col-8">
-                                <p:panel id="panelAddBillItem">
-                                    <f:facet name="header">
-                                        <h:outputText styleClass="fa-solid fa-circle-plus" />
-                                        <h:outputText class="mx-4" value="Add Items"/>
-                                    </f:facet>
-                                    <div class="w-100 row d-flex align-items-center">
-                                        <div class="col-6">
-                                            <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
-                                            <p:autoComplete
-                                                accesskey="i"
-                                                class="w-100"
-                                                inputStyleClass="w-100"
-                                                forceSelection="true"
-                                                id="acStock"
-                                                maxResults="10"
-                                                minQueryLength="3"
-                                                value="#{pharmacyIssueController.stockDto}"
-                                                completeMethod="#{pharmacyIssueController.completeAvailableStocksWithConsumptionFilter}"
-                                                converter="#{pharmacyIssueController.stockDtoConverter}"
-                                                var="i"
-                                                itemLabel="#{i.itemName}"
-                                                itemValue="#{i}" >
-                                                <p:column style="padding: 3px" headerText="Item" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:panelGroup layout="block" style="width: 300px!important;">
-                                                        <h:outputText value="#{i.itemName}" />
-                                                        <p:tag
-                                                            rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}"
-                                                            value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expired Soon':''}"
-                                                            severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}"
-                                                            styleClass="ms-1" />
-                                                    </h:panelGroup>
-                                                    <h:outputLabel value=" (" ></h:outputLabel>
-                                                    <h:outputText value="#{i.code}" style="width: 50px!important;"></h:outputText>
-                                                    <h:outputLabel value=") - " ></h:outputLabel>
-                                                    <h:outputText value="#{i.genericName}" style="width: 150px!important;"></h:outputText>
-                                                </p:column>
-                                                <p:column
-                                                    style="padding: 3px"
-                                                    headerText="Purchase Rate"
-                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}"
-                                                    styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputLabel value="#{i.purchaseRate}" >
-                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                    </h:outputLabel>
-                                                </p:column>
-                                                <p:column
-                                                    style="padding: 3px"
-                                                    headerText="Retail Rate"
-                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}"
-                                                    styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputLabel value="#{i.retailRate}" >
-                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                    </h:outputLabel>
-                                                </p:column>
-                                                <p:column
-                                                    style="padding: 3px"
-                                                    headerText="Cost Rate"
-                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}"
-                                                    styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputLabel value="#{i.costRate}" >
-                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                    </h:outputLabel>
-                                                </p:column>
-                                                <p:column style="padding: 3px" headerText="Stocks" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputLabel value="#{i.stockQty}" >
-                                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                    </h:outputLabel>
-                                                </p:column>
-                                                <p:column style="padding: 3px" headerText="Expiry" class="text-center" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputLabel value="#{i.dateOfExpire}" style="width: 100px!important;" >
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                                                    </h:outputLabel>
-                                                </p:column>
-                                                <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('acDept',view).clientId}"  ></p:ajax>
-                                                <p:ajax event="itemSelect"
-                                                        listener="#{pharmacyIssueController.handleSelect}"
-                                                        update="txtQty txtQtyDisplay txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtIssueVal focusQty" ></p:ajax>
-                                            </p:autoComplete>
-                                        </div>
-                                        <div class="col-2">
-                                            <p:outputLabel value="Quantity" ></p:outputLabel>
-                                             <p:inputText
-                                                 autocomplete="off"
-                                                 accesskey="q"
-                                                 id="txtQty"
-                                                 value="#{pharmacyIssueController.qty}"
-                                                 class="w-100 text-end"
-                                                 onfocus="this.select();">
-                                                 <f:convertNumber integerOnly="#{!pharmacyIssueController.stockDto.allowFractions}" />
-                                                 <p:ajax
-                                                     event="keyup"
-                                                     listener="#{pharmacyIssueController.calculateBillItemAtQtyChange}"
-                                                     process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}"
-                                                     update="txtQtyDisplay txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtIssueVal :#{p:resolveFirstComponentWithId('panelError',view).clientId}" ></p:ajax>
-                                             </p:inputText>
-                                             <p:keyFilter for="txtQty" mask="#{pharmacyIssueController.stockDto.allowFractions ? 'num' : 'int'}" />
-                                        </div>
-                                        <div class="col-2  d-grid">
-                                            <p:outputLabel value="&nbsp;" ></p:outputLabel>
+                                        <!-- Config Button (Admin Only) -->
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                             <p:commandButton
-                                                accesskey="a"
-                                                class="ui-button-success w-100"
-                                                icon="fas fa-plus"
-                                                id="btnAdd"
-                                                value="Add"
-                                                action="#{pharmacyIssueController.addBillItem}"
-                                                process="@this acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}"
-                                                update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtPRate txtPurchaseRate txtCostRate txtQty txtQtyDisplay txtPVal txtRVal txtCostVal txtIssueVal acStock focusItem" >
-                                            </p:commandButton>
-
-                                            <p:defaultCommand  target="btnAdd" />
-
-                                        </div>
-                                        <div class="col-2">
-                                        </div>
-                                        <div class="col-1 d-grid">
-                                            <p:outputLabel value="Issue Rate" for="txtPRate" />
-                                            <p:inputText
-                                                id="txtPRate"
-                                                readonly="true"
-                                                class="w-100 text-end"
-                                                value="#{pharmacyIssueController.billItem.billItemFinanceDetails.lineGrossRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </p:inputText>
-                                        </div>
-                                        <div class="col-1 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <p:outputLabel value="Retail Rate" for="txtRate" />
-                                            <p:inputText
-                                                id="txtRate"
-                                                readonly="true"
-                                                class="w-100 text-end"
-                                                value="#{pharmacyIssueController.billItem.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
-                                                <f:convertNumber pattern="#,##0.0000" />
-                                            </p:inputText>
-                                        </div>
-                                        <div class="col-1 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <p:outputLabel value="Purchase Rate" for="txtPurchaseRate" />
-                                            <p:inputText
-                                                id="txtPurchaseRate"
-                                                readonly="true"
-                                                class="w-100 text-end"
-                                                value="#{pharmacyIssueController.billItem.pharmaceuticalBillItem.itemBatch.purcahseRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </p:inputText>
-                                        </div>
-                                        <div class="col-1 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <p:outputLabel value="Cost Rate" for="txtCostRate" />
-                                            <p:inputText
-                                                id="txtCostRate"
-                                                readonly="true"
-                                                class="w-100 text-end"
-                                                value="#{pharmacyIssueController.billItem.pharmaceuticalBillItem.itemBatch.costRate}">
-                                                <f:convertNumber pattern="#,##0.0000" />
-                                            </p:inputText>
-                                        </div>
-
-                                        <div class="col-2 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <p:outputLabel value="Purchase Value" for="txtPVal" />
-                                            <p:inputText
-                                                id="txtPVal"
-                                                readonly="true"
-                                                class="w-100 text-end"
-                                                value="#{pharmacyIssueController.billItem.billItemFinanceDetails.valueAtPurchaseRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </p:inputText>
-                                        </div>
-                                        <div class="col-2 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <p:outputLabel value="Retail Value" for="txtRVal" />
-                                            <p:inputText
-                                                id="txtRVal"
-                                                readonly="true"
-                                                class="w-100 text-end"
-                                                value="#{pharmacyIssueController.billItem.billItemFinanceDetails.valueAtRetailRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </p:inputText>
-                                        </div>
-                                        <div class="col-2 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <p:outputLabel value="Cost Value" for="txtCostVal" />
-                                            <p:inputText
-                                                id="txtCostVal"
-                                                readonly="true"
-                                                class="w-100 text-end"
-                                                value="#{pharmacyIssueController.billItem.billItemFinanceDetails.valueAtCostRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </p:inputText>
-                                        </div>     
-
-                                        <div class="col-2 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <p:outputLabel value="Issue Value" for="txtIssueVal" />
-                                            <p:inputText
-                                                id="txtIssueVal"
-                                                readonly="true"
-                                                class="w-100 text-end"
-                                                value="#{pharmacyIssueController.billItem.billItemFinanceDetails.lineNetTotal}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </p:inputText>
-                                        </div>                                        
-
-
-                                    </div>
-
-                                    <p:focus id="focusQty" for="txtQty" ></p:focus>
-                                    <p:focus id="focusItem" for="acStock" ></p:focus>
-
-
-                                </p:panel>
-
-
-                                <p:panel header="Bill Items" id="pBis" class="my-1">
-                                    <f:facet name="header">
-                                        <h:outputText styleClass="fas fa-list-alt"/>
-                                        <h:outputText class="mx-4" value="Bill Items" />
-                                    </f:facet>
-                                    <p:dataTable
-                                        id="tblBillItem"
-                                        value="#{pharmacyIssueController.preBill.billItems}"
-                                        var="bi"
-                                        rowIndexVar="s"
-                                        editable="true"
-                                        sortBy="#{bi.searialNo}" >
-
-                                        <p:column headerText="Item" style="padding: 6px; width:300px;">
-                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
-                                            <p:commandButton 
-                                                icon="pi pi-search"
-                                                id="btnViewSelectedItemDetails"
-                                                title="View Item Details"
-                                                action="#{pharmacyIssueController.displayItemDetails(bi)}"
-                                                update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
-                                                process="@this"
-                                                class="ui-button-icon-only mx-3"/>
-                                        </p:column>
-                                        <p:column headerText="Qty" style="padding: 6px;">
-                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.qty}" ></h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Issue Rate" style="padding: 6px;" styleClass="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <h:outputLabel value="#{bi.billItemFinanceDetails.lineGrossRate}">
-                                                <f:convertNumber pattern="#,##0.0000" />
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column 
-                                            headerText="Retail Rate" 
-                                            style="padding: 6px;" 
-                                            styleClass="text-end"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column 
-                                            headerText="Purchase Rate" 
-                                            style="padding: 6px;" 
-                                            styleClass="text-end"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column 
-                                            headerText="Cost Rate" 
-                                            style="padding: 6px;" 
-                                            styleClass="text-end"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.costRate}">
-                                                <f:convertNumber pattern="#,##0.0000" />
-                                            </h:outputLabel>
-                                        </p:column>
-
-                                        <p:column 
-                                            headerText="Purchase Value" 
-                                            style="padding: 6px;" 
-                                            styleClass="text-end"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <h:outputLabel value="#{bi.billItemFinanceDetails.valueAtPurchaseRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column 
-                                            headerText="Retail Value" 
-                                            style="padding: 6px;" 
-                                            styleClass="text-end"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <h:outputLabel value="#{bi.billItemFinanceDetails.valueAtRetailRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column 
-                                            headerText="Cost Value" 
-                                            style="padding: 6px;" 
-                                            styleClass="text-end"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <h:outputLabel value="#{bi.billItemFinanceDetails.valueAtCostRate}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column 
-                                            headerText="Issue Value" 
-                                            style="padding: 6px;" 
-                                            styleClass="text-end"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <h:outputLabel value="#{bi.billItemFinanceDetails.lineNetTotal}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Expiry" style="padding: 6px;">
-                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
-                                            </h:outputLabel>
-                                        </p:column>
-
-                                        <p:column headerText="Remove" style="padding: 6px; width: 59px;">
-                                            <p:commandButton icon="fas fa-trash" class="ui-button-danger" action="#{pharmacyIssueController.removeBillItem(bi)}" ajax="false" >
-                                            </p:commandButton>
-                                        </p:column>
-
-                                    </p:dataTable>
-                                </p:panel>
-
-
-
-                            </div>
-                            <div class="col-4">
-                                <p:panel>
-                                    <f:facet name="header">
-                                        <h:outputText styleClass="fas fa-share-square" />
-                                        <h:outputText class="mx-4" value="Issue Details" />
-                                    </f:facet>
-
-                                    <h:panelGrid columns="2" class="w-100">
-                                        <h:outputLabel value="Issuing Department"/>
-                                        <h:panelGroup id="acDept" class="d-flex align-items-center justify-content-between">
-                                            <h:outputText value="#{pharmacyIssueController.toDepartment.name}" class="fw-bold"/>
-                                            <p:commandButton
-                                                icon="pi pi-refresh"
-                                                title="Change Department"
-                                                class="ui-button-primary ui-button-sm"
+                                                value="Config"
+                                                icon="fa fa-cog"
+                                                title="Page Configuration Management"
+                                                action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_issue')}"
                                                 ajax="false"
-                                                action="#{pharmacyIssueController.changeDepartment()}" />
+                                                styleClass="ui-button-secondary mx-1">
+                                            </p:commandButton>
                                         </h:panelGroup>
 
-                                        <h:outputLabel value="Request Number"/>
-                                        <p:inputText class="w-100" value="#{pharmacyIssueController.preBill.invoiceNumber}" id="req"/>
-
-                                        <h:outputLabel value="Comment"/>
-                                        <p:inputTextarea class="w-100" value="#{pharmacyIssueController.preBill.comments}" id="comment"/>
-
-                                    </h:panelGrid>
 
 
-
-                                </p:panel>
-                                <p:panel header="Bill Details" id="pBillDetails" class="my-1" >
-                                    <f:facet name="header">
-                                        <h:outputText styleClass="fas fa-file-invoice"/>
-                                        <h:outputText class="mx-4" value="Bill Details" />
-                                    </f:facet>
-                                    <div class="row g-2">
-                                        <div class="col-12" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <h:outputLabel class="fw-bold text-muted" value="Total Issue Value:" />
-                                                <p:inputText 
-                                                    value="#{pharmacyIssueController.preBill.netTotal}" 
-                                                    readonly="true"
-                                                    class="text-end fw-bold"
-                                                    style="width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
-                                                    <f:convertNumber pattern="#,##0.0000" />
-                                                </p:inputText>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-12" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <h:outputLabel class="fw-bold text-muted" value="Total Purchase Value:" />
-                                                <p:inputText 
-                                                    value="#{pharmacyIssueController.preBill.billFinanceDetails.totalPurchaseValue}" 
-                                                    readonly="true"
-                                                    class="text-end fw-bold"
-                                                    style="width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
-                                                    <f:convertNumber pattern="#,##0.0000" />
-                                                </p:inputText>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-12" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <h:outputLabel class="fw-bold text-muted" value="Total Retail Value:" />
-                                                <p:inputText 
-                                                    value="#{pharmacyIssueController.preBill.billFinanceDetails.totalRetailSaleValue}" 
-                                                    readonly="true"
-                                                    class="text-end fw-bold"
-                                                    style="width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
-                                                    <f:convertNumber pattern="#,##0.0000" />
-                                                </p:inputText>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-12" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <h:outputLabel class="fw-bold text-muted" value="Total Cost Value:" />
-                                                <p:inputText 
-                                                    value="#{pharmacyIssueController.preBill.billFinanceDetails.totalCostValue}" 
-                                                    readonly="true"
-                                                    class="text-end fw-bold"
-                                                    style="width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
-                                                    <f:convertNumber pattern="#,##0.0000" />
-                                                </p:inputText>
-                                            </div>
-                                        </div>
                                     </div>
-                                </p:panel>
-                            </div>
-                        </div>
+                                    <div class="float-end" >
+                                        <p:commandButton
+                                            accesskey="n"
+                                            value="New Disposal Issue Bill"
+                                            icon="pi pi-plus"
+                                            class="ui-button-warning m-1"
+                                            ajax="false"
+                                            action="/pharmacy/pharmacy_issue"
+                                            actionListener="#{pharmacyIssueController.resetAll()}">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            id="btnIssue"
+                                            accesskey="s"
+                                            value="Settle Issue"
+                                            icon="pi pi-check"
+                                            class="ui-button-success m-1"
+                                            ajax="false"
+                                            action="#{pharmacyIssueController.settleDisposalIssueBill()}"
+                                            onclick="return confirm('Are you sure you want to issue this disposal bill?');" />
+                                    </div>
+                                </div>
+                            </f:facet>
 
-                        <ph:history/>
+                            <div class="row">
+                                <div class="col-8">
+                                    <p:panel id="panelAddBillItem">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa-solid fa-circle-plus" />
+                                            <h:outputText class="mx-4" value="Add Items"/>
+                                        </f:facet>
+                                        <div class="w-100 row d-flex align-items-center">
+                                            <div class="col-6">
+                                                <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
+                                                <p:autoComplete
+                                                    accesskey="i"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    forceSelection="true"
+                                                    id="acStock"
+                                                    maxResults="10"
+                                                    minQueryLength="3"
+                                                    value="#{pharmacyIssueController.stockDto}"
+                                                    completeMethod="#{pharmacyIssueController.completeAvailableStocksWithConsumptionFilter}"
+                                                    converter="#{pharmacyIssueController.stockDtoConverter}"
+                                                    var="i"
+                                                    itemLabel="#{i.itemName}"
+                                                    itemValue="#{i}" >
+                                                    <p:column style="padding: 3px" headerText="Item" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                        <h:panelGroup layout="block" style="width: 300px!important;">
+                                                            <h:outputText value="#{i.itemName}" />
+                                                            <p:tag
+                                                                rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}"
+                                                                value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expired Soon':''}"
+                                                                severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}"
+                                                                styleClass="ms-1" />
+                                                        </h:panelGroup>
+                                                        <h:outputLabel value=" (" ></h:outputLabel>
+                                                        <h:outputText value="#{i.code}" style="width: 50px!important;"></h:outputText>
+                                                        <h:outputLabel value=") - " ></h:outputLabel>
+                                                        <h:outputText value="#{i.genericName}" style="width: 150px!important;"></h:outputText>
+                                                    </p:column>
+                                                    <p:column
+                                                        style="padding: 3px"
+                                                        headerText="Purchase Rate"
+                                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}"
+                                                        styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                        <h:outputLabel value="#{i.purchaseRate}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </h:outputLabel>
+                                                    </p:column>
+                                                    <p:column
+                                                        style="padding: 3px"
+                                                        headerText="Retail Rate"
+                                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}"
+                                                        styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                        <h:outputLabel value="#{i.retailRate}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </h:outputLabel>
+                                                    </p:column>
+                                                    <p:column
+                                                        style="padding: 3px"
+                                                        headerText="Cost Rate"
+                                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}"
+                                                        styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                        <h:outputLabel value="#{i.costRate}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </h:outputLabel>
+                                                    </p:column>
+                                                    <p:column style="padding: 3px" headerText="Stocks" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                        <h:outputLabel value="#{i.stockQty}" >
+                                                            <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                                        </h:outputLabel>
+                                                    </p:column>
+                                                    <p:column style="padding: 3px" headerText="Expiry" class="text-center" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                        <h:outputLabel value="#{i.dateOfExpire}" style="width: 100px!important;" >
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                                        </h:outputLabel>
+                                                    </p:column>
+                                                    <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('acDept',view).clientId}"  ></p:ajax>
+                                                    <p:ajax event="itemSelect"
+                                                            listener="#{pharmacyIssueController.handleSelect}"
+                                                            update="txtQty txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtIssueVal focusQty" ></p:ajax>
+                                                </p:autoComplete>
+                                            </div>
+                                            <div class="col-2">
+                                                <p:outputLabel value="Quantity" ></p:outputLabel>
+                                                <p:inputText
+                                                    autocomplete="off"
+                                                    accesskey="q"
+                                                    id="txtQty"
+                                                    value="#{pharmacyIssueController.qty}"
+                                                    class="w-100 text-end"
+                                                    onfocus="this.select();">
+                                                    <f:convertNumber integerOnly="#{!pharmacyIssueController.stockDto.allowFractions}" />
+                                                    <p:ajax
+                                                        event="keyup"
+                                                        listener="#{pharmacyIssueController.calculateBillItemAtQtyChange}"
+                                                        process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}"
+                                                        update="txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtIssueVal :#{p:resolveFirstComponentWithId('panelError',view).clientId}" ></p:ajax>
+                                                </p:inputText>
+                                                <p:keyFilter for="txtQty" mask="#{pharmacyIssueController.stockDto.allowFractions ? 'num' : 'int'}" />
+                                            </div>
+                                            <div class="col-2  d-grid">
+                                                <p:outputLabel value="&nbsp;" ></p:outputLabel>
+                                                <p:commandButton
+                                                    accesskey="a"
+                                                    class="ui-button-success w-100"
+                                                    icon="fas fa-plus"
+                                                    id="btnAdd"
+                                                    value="Add"
+                                                    action="#{pharmacyIssueController.addBillItem}"
+                                                    process="@this acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}"
+                                                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtPRate txtPurchaseRate txtCostRate txtQty txtPVal txtRVal txtCostVal txtIssueVal acStock focusItem" >
+                                                </p:commandButton>
+
+                                                <p:defaultCommand  target="btnAdd" />
+
+                                            </div>
+                                            <div class="col-2">
+                                            </div>
+                                            <div class="col-1 d-grid">
+                                                <p:outputLabel value="Issue Rate" for="txtPRate" />
+                                                <p:inputText
+                                                    id="txtPRate"
+                                                    readonly="true"
+                                                    class="w-100 text-end"
+                                                    value="#{pharmacyIssueController.billItem.billItemFinanceDetails.lineGrossRate}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:inputText>
+                                            </div>
+                                            <div class="col-1 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <p:outputLabel value="Retail Rate" for="txtRate" />
+                                                <p:inputText
+                                                    id="txtRate"
+                                                    readonly="true"
+                                                    class="w-100 text-end"
+                                                    value="#{pharmacyIssueController.billItem.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                                                    <f:convertNumber pattern="#,##0.0000" />
+                                                </p:inputText>
+                                            </div>
+                                            <div class="col-1 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <p:outputLabel value="Purchase Rate" for="txtPurchaseRate" />
+                                                <p:inputText
+                                                    id="txtPurchaseRate"
+                                                    readonly="true"
+                                                    class="w-100 text-end"
+                                                    value="#{pharmacyIssueController.billItem.pharmaceuticalBillItem.itemBatch.purcahseRate}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:inputText>
+                                            </div>
+                                            <div class="col-1 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <p:outputLabel value="Cost Rate" for="txtCostRate" />
+                                                <p:inputText
+                                                    id="txtCostRate"
+                                                    readonly="true"
+                                                    class="w-100 text-end"
+                                                    value="#{pharmacyIssueController.billItem.pharmaceuticalBillItem.itemBatch.costRate}">
+                                                    <f:convertNumber pattern="#,##0.0000" />
+                                                </p:inputText>
+                                            </div>
+
+                                            <div class="col-2 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <p:outputLabel value="Purchase Value" for="txtPVal" />
+                                                <p:inputText
+                                                    id="txtPVal"
+                                                    readonly="true"
+                                                    class="w-100 text-end"
+                                                    value="#{pharmacyIssueController.billItem.billItemFinanceDetails.valueAtPurchaseRate}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:inputText>
+                                            </div>
+                                            <div class="col-2 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <p:outputLabel value="Retail Value" for="txtRVal" />
+                                                <p:inputText
+                                                    id="txtRVal"
+                                                    readonly="true"
+                                                    class="w-100 text-end"
+                                                    value="#{pharmacyIssueController.billItem.billItemFinanceDetails.valueAtRetailRate}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:inputText>
+                                            </div>
+                                            <div class="col-2 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <p:outputLabel value="Cost Value" for="txtCostVal" />
+                                                <p:inputText
+                                                    id="txtCostVal"
+                                                    readonly="true"
+                                                    class="w-100 text-end"
+                                                    value="#{pharmacyIssueController.billItem.billItemFinanceDetails.valueAtCostRate}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:inputText>
+                                            </div>     
+
+                                            <div class="col-2 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <p:outputLabel value="Issue Value" for="txtIssueVal" />
+                                                <p:inputText
+                                                    id="txtIssueVal"
+                                                    readonly="true"
+                                                    class="w-100 text-end"
+                                                    value="#{pharmacyIssueController.billItem.billItemFinanceDetails.lineNetTotal}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:inputText>
+                                            </div>                                        
+
+
+                                        </div>
+
+                                        <p:focus id="focusQty" for="txtQty" ></p:focus>
+                                        <p:focus id="focusItem" for="acStock" ></p:focus>
+
+
+                                    </p:panel>
+
+
+                                    <p:panel header="Bill Items" id="pBis" class="my-1">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-list-alt"/>
+                                            <h:outputText class="mx-4" value="Bill Items" />
+                                        </f:facet>
+                                        <p:dataTable
+                                            id="tblBillItem"
+                                            value="#{pharmacyIssueController.preBill.billItems}"
+                                            var="bi"
+                                            rowIndexVar="s"
+                                            editable="true"
+                                            sortBy="#{bi.searialNo}" >
+
+                                            <p:column headerText="Item" style="padding: 6px; width:300px;">
+                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
+                                                <p:commandButton 
+                                                    icon="pi pi-search"
+                                                    id="btnViewSelectedItemDetails"
+                                                    title="View Item Details"
+                                                    action="#{pharmacyIssueController.displayItemDetails(bi)}"
+                                                    update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                                    process="@this"
+                                                    class="ui-button-icon-only mx-3"/>
+                                            </p:column>
+                                            <p:column headerText="Qty" style="padding: 6px;">
+                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.qty}" ></h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Issue Rate" style="padding: 6px;" styleClass="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <h:outputLabel value="#{bi.billItemFinanceDetails.lineGrossRate}">
+                                                    <f:convertNumber pattern="#,##0.0000" />
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column 
+                                                headerText="Retail Rate" 
+                                                style="padding: 6px;" 
+                                                styleClass="text-end"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column 
+                                                headerText="Purchase Rate" 
+                                                style="padding: 6px;" 
+                                                styleClass="text-end"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column 
+                                                headerText="Cost Rate" 
+                                                style="padding: 6px;" 
+                                                styleClass="text-end"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.costRate}">
+                                                    <f:convertNumber pattern="#,##0.0000" />
+                                                </h:outputLabel>
+                                            </p:column>
+
+                                            <p:column 
+                                                headerText="Purchase Value" 
+                                                style="padding: 6px;" 
+                                                styleClass="text-end"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <h:outputLabel value="#{bi.billItemFinanceDetails.valueAtPurchaseRate}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column 
+                                                headerText="Retail Value" 
+                                                style="padding: 6px;" 
+                                                styleClass="text-end"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <h:outputLabel value="#{bi.billItemFinanceDetails.valueAtRetailRate}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column 
+                                                headerText="Cost Value" 
+                                                style="padding: 6px;" 
+                                                styleClass="text-end"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <h:outputLabel value="#{bi.billItemFinanceDetails.valueAtCostRate}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column 
+                                                headerText="Issue Value" 
+                                                style="padding: 6px;" 
+                                                styleClass="text-end"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <h:outputLabel value="#{bi.billItemFinanceDetails.lineNetTotal}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Expiry" style="padding: 6px;">
+                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
+                                                </h:outputLabel>
+                                            </p:column>
+
+                                            <p:column headerText="Remove" style="padding: 6px; width: 59px;">
+                                                <p:commandButton icon="fas fa-trash" class="ui-button-danger" action="#{pharmacyIssueController.removeBillItem(bi)}" ajax="false" >
+                                                </p:commandButton>
+                                            </p:column>
+
+                                        </p:dataTable>
+                                    </p:panel>
+
+
+
+                                </div>
+                                <div class="col-4">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-share-square" />
+                                            <h:outputText class="mx-4" value="Issue Details" />
+                                        </f:facet>
+
+                                        <h:panelGrid columns="2" class="w-100">
+                                            <h:outputLabel value="Issuing Department"/>
+                                            <h:panelGroup id="acDept" class="d-flex align-items-center justify-content-between">
+                                                <h:outputText value="#{pharmacyIssueController.toDepartment.name}" class="fw-bold"/>
+                                                <p:commandButton
+                                                    icon="pi pi-refresh"
+                                                    title="Change Department"
+                                                    class="ui-button-primary ui-button-sm"
+                                                    ajax="false"
+                                                    action="#{pharmacyIssueController.changeDepartment()}" />
+                                            </h:panelGroup>
+
+                                            <h:outputLabel value="Request Number"/>
+                                            <p:inputText class="w-100" value="#{pharmacyIssueController.preBill.invoiceNumber}" id="req"/>
+
+                                            <h:outputLabel value="Comment"/>
+                                            <p:inputTextarea class="w-100" value="#{pharmacyIssueController.preBill.comments}" id="comment"/>
+
+                                        </h:panelGrid>
+
+
+
+                                    </p:panel>
+                                    <p:panel header="Bill Details" id="pBillDetails" class="my-1" >
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-file-invoice"/>
+                                            <h:outputText class="mx-4" value="Bill Details" />
+                                        </f:facet>
+                                        <div class="row g-2">
+                                            <div class="col-12" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h:outputLabel class="fw-bold text-muted" value="Total Issue Value:" />
+                                                    <p:inputText 
+                                                        value="#{pharmacyIssueController.preBill.netTotal}" 
+                                                        readonly="true"
+                                                        class="text-end fw-bold"
+                                                        style="width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
+                                                        <f:convertNumber pattern="#,##0.0000" />
+                                                    </p:inputText>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h:outputLabel class="fw-bold text-muted" value="Total Purchase Value:" />
+                                                    <p:inputText 
+                                                        value="#{pharmacyIssueController.preBill.billFinanceDetails.totalPurchaseValue}" 
+                                                        readonly="true"
+                                                        class="text-end fw-bold"
+                                                        style="width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
+                                                        <f:convertNumber pattern="#,##0.0000" />
+                                                    </p:inputText>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h:outputLabel class="fw-bold text-muted" value="Total Retail Value:" />
+                                                    <p:inputText 
+                                                        value="#{pharmacyIssueController.preBill.billFinanceDetails.totalRetailSaleValue}" 
+                                                        readonly="true"
+                                                        class="text-end fw-bold"
+                                                        style="width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
+                                                        <f:convertNumber pattern="#,##0.0000" />
+                                                    </p:inputText>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h:outputLabel class="fw-bold text-muted" value="Total Cost Value:" />
+                                                    <p:inputText 
+                                                        value="#{pharmacyIssueController.preBill.billFinanceDetails.totalCostValue}" 
+                                                        readonly="true"
+                                                        class="text-end fw-bold"
+                                                        style="width: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
+                                                        <f:convertNumber pattern="#,##0.0000" />
+                                                    </p:inputText>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </p:panel>
+                                </div>
+                            </div>
+
+                            <ph:history/>
 
                         </p:panel>
                     </p:panel>

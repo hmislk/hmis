@@ -4332,6 +4332,14 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("Cancelled bills cannot be returned");
             return null;
         }
+        // Check if credit has been partially or fully settled
+        if (bill.getPaymentMethod() == PaymentMethod.Credit){
+            if (bill.getPaidAmount() > 0) {
+                JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
+                return null;
+            }
+        }
+        
         // Set the bill in PreReturnController and navigate directly to return process
         preReturnController.setBill(bill);
         return "/pharmacy/pharmacy_bill_return_pre?faces-redirect=true";
@@ -4350,6 +4358,13 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("Cancelled bills cannot be returned");
             return null;
         }
+        // Check if credit has been partially or fully settled
+        if (bill.getPaymentMethod() == PaymentMethod.Credit){
+            if (bill.getPaidAmount() > 0) {
+                JsfUtil.addErrorMessage("Cannot return items for bills with partially or fully settled credit. Please contact the administrator.");
+                return null;
+            }
+        }     
         // Set the bill in SaleReturnController and navigate directly to return process
         saleReturnController.setBill(bill);
         return saleReturnController.navigateToReturnItemsAndPaymentsForPharmacyRetailSale();
@@ -4378,9 +4393,17 @@ public class PharmacyBillSearch implements Serializable {
         return "/pharmacy/pharmacy_reprint_bill_unit_issue?faces-redirect=true";
     }
 
+    public String navigateToViewPharmacyDisposalReturnBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected.");
+            return null;
+        }
+        // Navigate to disposal return reprint page
+        return "/pharmacy/pharmacy_disposal_return_reprint?faces-redirect=true";
+    }
+
     public String navigateToViewPharmacyIssueBill() {
         System.out.println("navigateToViewPharmacyIssueBill");
-        System.out.println("bill = " + bill);
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected.");
             return null;

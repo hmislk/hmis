@@ -12,44 +12,248 @@
 
                 <h:form >
                     <p:panel header="Surgery Survey Report" >
-                        <h:panelGrid columns="5" >
-                          
-
-                            <p:outputLabel value="Surgery Type"/>
-                            <p:selectOneMenu value="#{inwardReportController.admissionType}">
+                        <h:panelGrid columns="6" class="w-100" >
+                             <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="From Date" class="m-3" for="fromDate"/>
+                            </h:panelGroup>
+                            <p:datePicker
+                            styleClass="w-100"
+                            inputStyleClass="w-100 form-control"
+                            id="fromDate"
+                            showTime="true"
+                            yearNavigator="true"
+                            monthNavigator="true"
+                            timeInput="true"
+                            value="#{patientInvestigationController.fromDate}"
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                            />
+                            <p:spacer width="20"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="To Date" class="m-3" for="toDate"/>
+                            </h:panelGroup>
+                            <p:datePicker
+                            styleClass="w-100"
+                            inputStyleClass="w-100 form-control"
+                            id="toDate"
+                            showTime="true"
+                            yearNavigator="true"
+                            monthNavigator="true"
+                            timeInput="true"
+                            value="#{patientInvestigationController.fromDate}"
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                            />
+                            <p:spacer width="20"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="Surgery Type" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100" value="#">
                                 <f:selectItem itemLabel="Select Type"/>
                             </p:selectOneMenu>
-                            <p:spacer width="20"></p:spacer>
-                            <p:spacer width="20"></p:spacer>
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="Report Type" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100" value="#">
+                                <f:selectItem itemLabel="Summary"/>
+                                <f:selectItem itemLabel="Detail"/>
+                            </p:selectOneMenu>
+                            <p:spacer width="20"/>
+                            
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university mr-2"/>
+                                <p:outputLabel value="Institution" for="phmIns" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmIns"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions"/>
+                            </p:selectOneMenu>
 
-                            <p:commandButton ajax="false" value="Process" action="null" >
-                            </p:commandButton>
+                            <p:spacer width="20"/>
 
-
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
+                                <p:outputLabel value="Site" for="phmSite" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmSite"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites"/>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer width="20"/>
+                            
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building mr-2"/>
+                                <p:outputLabel value="Department" for="phmDept" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmDept"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
+                            </p:selectOneMenu>
+                            <p:spacer width="20"/>
                         </h:panelGrid>
+                        <!-- Action Buttons -->
+                    <div class="d-flex align-items-center my-3">
 
+                        <p:commandButton
+                                class="ui-button-warning mx-1"
+                                icon="fas fa-cogs"
+                                ajax="false"
+                                value="Process"
+                                action="#"/>
 
+                        <p:commandButton class="ui-button-primary mx-1"
+                                         icon="fas fa-print"
+                                         ajax="false"
+                                         value="Print All">
+                            <p:printer target="printPanel"/>
+                        </p:commandButton>
 
+                        <p:commandButton
+                                class="ui-button-success mx-1"
+                                icon="fas fa-file-excel"
+                                ajax="false"
+                                value="Download">
+                            <p:dataExporter type="xlsx"
+                                            target="detailWise"
+                                            fileName="Surgery_Cost_Estimation_Report.xlsx"/>
+                        </p:commandButton>
 
-                        <p:dataTable value="null" var="c">
-                            <p:column headerText="Month" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Intermediate" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Major" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Minor" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Toatal" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                           
-                        </p:dataTable>
+                        <p:commandButton
+                                class="ui-button-danger mx-1"
+                                icon="fas fa-file-pdf"
+                                ajax="false"
+                                value="PDF"
+                                action="#"/>
+
+                    </div>
+                        <h:panelGroup id="printPanel">
+                            
+                         <!--Summary Report-->
+                        <p:panel header="Surgery Survey Summary Report">
+                            <p:dataTable id="sumlWise"
+                                         value="#"
+                                         var="var"
+                                         rowIndexVar="n"
+                                         paginator="false"
+                                         paginatorPosition="bottom"
+                                         rows="10"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+                                <p:column headerText="Month" style="width: 100px">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer">
+                                    <h:outputLabel value="Total"></h:outputLabel>
+                                </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Intermediate">
+                                    <h:outputText value=""/>
+                                </p:column>
+
+                                <p:column headerText="Major">
+                                    <h:outputText value=""/>
+                                </p:column>
+
+                                <p:column headerText="Minor">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="Normal">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="Total">
+                                    <h:outputText value=""/>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                            <p:spacer width="20"/>
+                         <!--Detail Report  -->
+                         <p:panel header="Surgery Survey Detail Report">
+                            <p:dataTable id="detailWise"
+                                         value="#"
+                                         var="var"
+                                         rowIndexVar="n"
+                                         paginator="false"
+                                         paginatorPosition="bottom"
+                                         rows="10"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+
+                                <p:column headerText="Surgery Name" style="width: 100px">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer">
+                                    <h:outputLabel value="Total"></h:outputLabel>
+                                </f:facet>
+                                </p:column>
+                                
+                                <p:column headerText="LSCS">
+                                    <h:outputText value=""/>
+                                </p:column>
+
+                                <p:column headerText="January">
+                                    <h:outputText value=""/>
+                                </p:column>
+
+                                <p:column headerText="February">
+                                    <h:outputText value=""/>
+                                </p:column>
+
+                                <p:column headerText="March">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="April">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="May">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="June">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="July">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="August">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="September">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="October">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="November">
+                                    <h:outputText value=""/>
+                                </p:column>
+                                
+                                <p:column headerText="December">
+                                    <h:outputText value=""/>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                        </h:panelGroup>
 
 
                     </p:panel>

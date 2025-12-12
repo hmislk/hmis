@@ -20,36 +20,47 @@
                             </h:outputText>
                         </f:facet>
 
-                        <h:panelGrid columns="4" >
-                            <p:outputLabel value="Select Medicine" ></p:outputLabel>
+                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-3 p-3" style="gap: 1rem; flex-wrap: wrap;">
 
-                            <p:autoComplete id="acItem"
-                                            value="#{favouriteController.item}"
-                                            forceSelection="true" class="mx-4 w-100" inputStyleClass="w-100"
-                                            completeMethod="#{itemController.completeMedicineByTypePriority}"
-                                            var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                                <p:column headerText="Item" >
-                                    <h:outputLabel value="#{vt.name}"></h:outputLabel>
-                                </p:column>
-                                <p:ajax event="itemSelect" process="@this" update="tab"
-                                        listener="#{favouriteController.onItemSelected}" />
-                            </p:autoComplete>
+                            <!-- Medicine Selection Section -->
+                            <h:panelGroup layout="block" styleClass="flex-fill" style="min-width: 300px; max-width: 600px;">
+                                <p:outputLabel value="Select Medicine" styleClass="d-block mb-2 font-weight-bold"></p:outputLabel>
+                                <p:autoComplete id="acItem"
+                                                value="#{favouriteController.item}"
+                                                forceSelection="true"
+                                                styleClass="w-100"
+                                                inputStyleClass="w-100"
+                                                completeMethod="#{itemController.completeMedicineByTypePriority}"
+                                                var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                    <p:column headerText="Item" >
+                                        <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                                    </p:column>
+                                    <p:ajax event="itemSelect" process="@this" update="tab"
+                                            listener="#{favouriteController.onItemSelected}" />
+                                </p:autoComplete>
+                            </h:panelGroup>
 
-                            <p:commandButton value="Add New"
-                                             class="ui-button-success mx-4" icon="fas fa-plus"
-                                             process="@this"
-                                             update="dlgFavioriteMedicines"
-                                             oncomplete="PF('dlg2').show()"
-                                             action="#{favouriteController.prepareAddingFavouriteItem()}" >
-                            </p:commandButton>
+                            <!-- Action Buttons Section -->
+                            <h:panelGroup layout="block" styleClass="d-flex" style="gap: 0.75rem; align-items: flex-end;">
+                                <p:commandButton value="Add New"
+                                                 styleClass="ui-button-success"
+                                                 icon="fas fa-plus"
+                                                 process="@this"
+                                                 update="dlgFavioriteMedicines"
+                                                 oncomplete="PF('dlg2').show()"
+                                                 action="#{favouriteController.prepareAddingFavouriteItem()}" >
+                                </p:commandButton>
 
-                            <p:commandButton value="Fill"
-                                             class="ui-button-info mx-2" icon="fas fa-fill-drip"
-                                             action="#{favouriteController.fillFavouriteMedicines()}"
-                                             update="favouriteTable">
-                                <f:setPropertyActionListener target="#{favouriteController.item}" value="#{favouriteController.item}" />
-                            </p:commandButton>
-                        </h:panelGrid>
+                                <p:commandButton value="Fill"
+                                                 styleClass="ui-button-info"
+                                                 icon="fas fa-fill-drip"
+                                                 action="#{favouriteController.fillFavouriteMedicines()}"
+                                                 update="favouriteTable">
+                                    <f:setPropertyActionListener target="#{favouriteController.item}" value="#{favouriteController.item}" />
+                                </p:commandButton>
+                            </h:panelGroup>
+
+                        </h:panelGroup>
                         <p:dialog
                             id="dlgFavioriteMedicines"
                             header="Add Favourite Medicine" widgetVar="dlg2" modal="true" width="600px" responsive="true">
@@ -464,7 +475,7 @@
                             </f:facet>
                         </p:dialog>
 
-                        <p:dataTable id="favouriteTable" value="#{favouriteController.items}" var="fi" styleClass="w-100" paginator="true" rows="10">
+                        <p:dataTable id="favouriteTable" value="#{favouriteController.items}" var="fi" styleClass="w-100" paginator="true" rows="10" sortBy="#{fi.createdAt}" sortOrder="ascending">
                             <p:column  >
                                 <f:facet name="header" >
                                     <i class="fas fa-baby mr-1"></i>

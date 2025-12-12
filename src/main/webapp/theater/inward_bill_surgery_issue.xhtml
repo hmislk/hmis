@@ -72,8 +72,11 @@
                                 <h:outputLabel value="#{apt2.patientEncounter.currentPatientRoom.roomFacilityCharge.name}"/>
                             </p:column>
                             <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                                <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt2.patientEncounter.discharged}" />
-                                <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!apt2.patientEncounter.discharged}" />
+                                <div class="d-flex justify-content-center">
+                                    <span class="#{apt2.patientEncounter.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
+                                        #{apt2.patientEncounter.discharged ? 'Discharged' : 'Not Discharged'}
+                                    </span>
+                                </div>
                             </p:column>
                             <p:column headerText="From Time" style="padding: 6px; width: 16em;">
                                 <h:outputLabel value="#{apt2.procedure.fromTime}">
@@ -93,19 +96,74 @@
                             value="Select"
                             ajax="false">
                         </p:commandButton>
+
+                        <style>
+                            .discharged-badge {
+                                background-color: #f44336;
+                                color: white;
+                                padding: 2px 8px;
+                                border-radius: 12px;
+                                font-size: 1em;
+                                font-weight: bold;
+                            }
+
+                            .not-discharged-badge {
+                                background-color: #2196F3;
+                                color: white;
+                                padding: 2px 8px;
+                                border-radius: 12px;
+                                font-size: 1em;
+                                font-weight: bold;
+                            }
+                        </style>
+
                     </p:panel>
 
 
                     <p:panel rendered="#{!pharmacySaleBhtController.billPreview}"  >
 
                         <p:panel rendered="#{pharmacySaleBhtController.batchBill ne null}">
-                            <f:facet name="header" >
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <h:outputLabel styleClass="fas fa-cut"/>
-                                        <h:outputLabel value="Surgery Issue" class="mx-2" />
+                            <f:facet name="header" class="row">
+                                <div class="row ">
+
+                                    <div class="col d-flex justify-content-between">
+                                        <div>
+                                            <h:outputLabel styleClass="fas fa-cut"/>
+                                            <h:outputLabel value="Surgery Issue "   class="mx-2" />
+                                            <h:outputLabel style="color: red" value=" - #{not empty pharmacySaleBhtController.batchBill.procedure ? pharmacySaleBhtController.batchBill.procedure.item.name : ''}"/>
+                                        </div>
                                     </div>
-                                    <div>
+
+                                    <div class="col-auto d-flex justify-content-end gap-2" >
+                                        <p:commandButton
+                                            ajax= "false"
+                                            accesskey="s"
+                                            value="Settle"
+                                            action="#{pharmacySaleBhtController.settleSurgeryBhtIssue()}"
+                                            class="ui-button-success"
+                                            icon="fa fa-check"
+                                            update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('txtQty',view).clientId} "
+                                            actionListener="#{pharmacySaleBhtController.calculateAllRates}" >
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            accesskey="n"
+                                            value="New Surgery Issue"
+                                            ajax="false"
+                                            class="ui-button-warning "
+                                            icon="fa fa-plus"
+                                            action="inward_bill_surgery_issue"
+                                            actionListener="#{pharmacySaleBhtController.resetAll}"   >
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false"
+                                            icon="fa-solid fa-address-card"
+                                            class="ui-button-secondary "
+                                            value="Inpatient Dashboard"
+                                            style="float: right;"
+                                            action="#{admissionController.navigateToAdmissionProfilePage}"
+                                            >
+                                            <f:setPropertyActionListener value="#{pharmacySaleBhtController.batchBill.patientEncounter}" target="#{admissionController.current}" />
+                                        </p:commandButton>
 
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                             <p:commandButton 
@@ -117,41 +175,10 @@
                                             </p:commandButton>
                                         </h:panelGroup>
                                     </div>
+
                                 </div>
 
                             </f:facet>
-
-                            <div class="d-flex justify-content-end gap-2" >
-                                <p:commandButton
-                                    ajax= "false"
-                                    accesskey="s"
-                                    value="Settle"
-                                    action="#{pharmacySaleBhtController.settleSurgeryBhtIssue()}"
-                                    class="ui-button-success"
-                                    icon="fa fa-check"
-                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('txtQty',view).clientId} "
-                                    actionListener="#{pharmacySaleBhtController.calculateAllRates}" >
-                                </p:commandButton>
-                                <p:commandButton
-                                    accesskey="n"
-                                    value="New Surgery Issue"
-                                    ajax="false"
-                                    class="ui-button-warning "
-                                    icon="fa fa-plus"
-                                    action="inward_bill_surgery_issue"
-                                    actionListener="#{pharmacySaleBhtController.resetAll}"   >
-                                </p:commandButton>
-                                <p:commandButton
-                                    ajax="false"
-                                    icon="fa-solid fa-address-card"
-                                    class="ui-button-secondary "
-                                    value="Inpatient Dashboard"
-                                    style="float: right;"
-                                    action="#{admissionController.navigateToAdmissionProfilePage}"
-                                    >
-                                    <f:setPropertyActionListener value="#{pharmacySaleBhtController.batchBill.patientEncounter}" target="#{admissionController.current}" />
-                                </p:commandButton>
-                            </div>
                             <div class="row mt-2">
                                 <div class="col-5">
                                     <p:panel header="">

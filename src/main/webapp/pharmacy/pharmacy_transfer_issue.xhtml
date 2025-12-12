@@ -8,12 +8,27 @@
                 xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <ui:define name="subcontent">
+
+
         <h:form>
 
             <p:panel rendered="#{!transferIssueForRequestsController.printPreview}">
 
                 <f:facet name="header" >
                     <h:outputLabel value="Pharmacy Issue" />
+
+                    <!-- Admin Config Button (Admin Only) -->
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                        <p:commandButton
+                            value="Config"
+                            icon="fa fa-cog"
+                            title="Page Configuration Management"
+                            action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_transfer_issue')}"
+                            ajax="false"
+                            styleClass="ui-button-secondary ms-5">
+                        </p:commandButton>
+                    </h:panelGroup>
+
                 </f:facet>
 
                 <div class="row" >

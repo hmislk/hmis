@@ -35,11 +35,38 @@ public abstract class AbstractFacade<T> {
 
     private Class<T> entityClass;
 
+    /**
+     * Executes native SQL query.
+     *
+     * WARNING: This method does not provide SQL injection protection.
+     * Use executeNativeSql(String sql, List<Object> parameters) for dynamic queries.
+     * This method should ONLY be used for:
+     * - Static SQL from trusted sources (migration files, hardcoded statements)
+     * - Admin operations with proper access control and input validation
+     *
+     * @param sql The SQL statement to execute (must be from trusted source)
+     * @throws Exception if query fails
+     */
     public void executeNativeSql(String sql) throws Exception {
+        if (sql == null || sql.trim().isEmpty()) {
+            throw new IllegalArgumentException("SQL statement cannot be null or empty");
+        }
+
         try {
             // Execute the native SQL query
             Query query = getEntityManager().createNativeQuery(sql);
-            query.executeUpdate();
+
+            // Check if this is a SELECT query
+            String trimmedSql = sql.trim().toUpperCase();
+            if (trimmedSql.startsWith("SELECT") || trimmedSql.startsWith("SHOW") ||
+                trimmedSql.startsWith("DESCRIBE") || trimmedSql.startsWith("EXPLAIN")) {
+                // For SELECT queries, execute and get results but don't return them
+                // This allows SELECT statements to run without throwing "executeUpdate with result sets" error
+                query.getResultList();
+            } else {
+                // For DML statements (INSERT, UPDATE, DELETE, ALTER, etc.)
+                query.executeUpdate();
+            }
         } catch (Exception e) {
             throw e; // Rethrow exception to be handled in calling method
         }
@@ -48,18 +75,45 @@ public abstract class AbstractFacade<T> {
     /**
      * Executes native SQL using positional parameters, suitable for MySQL.
      *
+     * Automatically detects query type:
+     * - Read-only queries (SELECT, SHOW, DESCRIBE, EXPLAIN): Uses getResultList()
+     * - DML/DDL statements (INSERT, UPDATE, DELETE, ALTER, etc.): Uses executeUpdate()
+     *
+     * Healthcare Usage:
+     * - Database migrations and schema updates
+     * - Bulk data corrections under admin supervision
+     * - System maintenance operations
+     *
+     * IMPORTANT: Use this method for dynamic queries requiring parameterization.
+     * Never concatenate user input into SQL strings.
+     *
      * @param sql The SQL with positional placeholders (e.g., "UPDATE table SET
      * col = ? WHERE id = ?")
      * @param parameters List of parameter values in exact order.
      * @throws Exception if query fails.
      */
     public void executeNativeSql(String sql, List<Object> parameters) throws Exception {
+        if (sql == null || sql.trim().isEmpty()) {
+            throw new IllegalArgumentException("SQL statement cannot be null or empty");
+        }
+
         try {
             Query query = getEntityManager().createNativeQuery(sql);
             for (int i = 0; i < parameters.size(); i++) {
                 query.setParameter(i + 1, parameters.get(i));
             }
-            query.executeUpdate();
+
+            // Check if this is a SELECT query
+            String trimmedSql = sql.trim().toUpperCase();
+            if (trimmedSql.startsWith("SELECT") || trimmedSql.startsWith("SHOW") ||
+                trimmedSql.startsWith("DESCRIBE") || trimmedSql.startsWith("EXPLAIN")) {
+                // For SELECT queries, execute and get results but don't return them
+                // This allows SELECT statements to run without throwing "executeUpdate with result sets" error
+                query.getResultList();
+            } else {
+                // For DML statements (INSERT, UPDATE, DELETE, ALTER, etc.)
+                query.executeUpdate();
+            }
         } catch (Exception e) {
             throw e;
         }
@@ -291,24 +345,30 @@ public abstract class AbstractFacade<T> {
         getEntityManager().persist(entity);
     }
 
+    /**
+     * Creates entity and immediately flushes to database WITHOUT clearing persistence context.
+     * Entities remain managed after this operation.
+     *
+     * Use this when you need immediate database writes (e.g., to generate IDs)
+     * but want to keep entities managed for further operations.
+     */
     public void createAndFlush(T entity) {
         getEntityManager().persist(entity);
         getEntityManager().flush(); // Immediately write to the database
-        Object id = getEntityManager().getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(entity);
-        getEntityManager().clear(); // Clear first-level (persistence context) cache
-        if (id != null) {
-            getEntityManager().getEntityManagerFactory().getCache().evict(entityClass, id); // Evict from second-level cache
-        }
+        // NO clear() - entities remain managed
     }
 
+    /**
+     * Edits entity and immediately flushes to database WITHOUT clearing persistence context.
+     * Entities remain managed after this operation.
+     *
+     * This is different from editAndCommit() which calls clear() and detaches entities.
+     * Use this when you need immediate database writes but want to keep entities managed.
+     */
     public void editAndFlush(T entity) {
-        Object id = getEntityManager().getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(entity);
         getEntityManager().merge(entity);
         getEntityManager().flush(); // Immediately write to the database
-        getEntityManager().clear(); // Clear first-level (persistence context) cache
-        if (id != null) {
-            getEntityManager().getEntityManagerFactory().getCache().evict(entityClass, id); // Evict from second-level cache
-        }
+        // NO clear() - entities remain managed
     }
 
     public void refresh(T entity) {

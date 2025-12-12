@@ -302,6 +302,12 @@ public class CreditCompanyBillSearch implements Serializable {
             return true;
         }
 
+        // Check if this is a cancellation bill (bill created during cancellation process)
+        if (isBillACancellationBill(getBill())) {
+            JsfUtil.addErrorMessage("This is a Cancellation Bill and cannot be cancelled again.");
+            return true;
+        }
+
         if (checkPaid()) {
             JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
             return true;
@@ -316,6 +322,34 @@ public class CreditCompanyBillSearch implements Serializable {
         }
 
         return false;
+    }
+
+    /**
+     * Checks if the given bill is a cancellation bill (bill created during cancellation process).
+     * Cancellation bills have specific BillTypeAtomic values and should not be allowed to be cancelled again.
+     *
+     * @param bill The bill to check
+     * @return true if the bill is a cancellation bill, false otherwise
+     */
+    private boolean isBillACancellationBill(Bill bill) {
+        if (bill == null || bill.getBillTypeAtomic() == null) {
+            return false;
+        }
+
+        BillTypeAtomic billType = bill.getBillTypeAtomic();
+        return billType == BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION
+            || billType == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION
+            || billType == BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION;
+    }
+
+    /**
+     * Public method to check if the current bill is a cancellation bill.
+     * Used by the UI to disable cancel button and show appropriate messages.
+     *
+     * @return true if the current bill is a cancellation bill, false otherwise
+     */
+    public boolean isBillACancellationBill() {
+        return isBillACancellationBill(getBill());
     }
 
 //    if (getTabId().equals("tabBht")) {
@@ -383,7 +417,8 @@ public class CreditCompanyBillSearch implements Serializable {
                 JsfUtil.addSuccessMessage("Cancelled");
                 WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
                 getSessionController().setLoggedUser(wb);
-                createPayment(cb, paymentMethod);
+                paymentService.createPaymentsForCancelling(cb);
+//                createPayment(cb, paymentMethod);
                 printPreview = true;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);
@@ -434,6 +469,15 @@ public class CreditCompanyBillSearch implements Serializable {
 
     }
 
+    /**
+     * @deprecated This method will be removed in the next iteration.
+     * Pharmacy credit company payment cancellations are now handled through the unified OPD credit
+     * cancellation methods, as pharmacy credit bills are being consolidated with OPD credit bills.
+     * The separate Pharmacy Credit Settle bill type (BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED)
+     * and its cancellation type (BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION) are being deprecated
+     * in favor of the unified OPD Credit Settle bill type.
+     */
+    @Deprecated
     public void cancelPharmacyCreditCompanyPaymentBill() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (errorCheck()) {
@@ -479,19 +523,15 @@ public class CreditCompanyBillSearch implements Serializable {
             }
         } else if (getPaymentMethod() == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(b.getTotal());
-            System.out.println("this = " + this);
         } else if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
 //            getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(b.getPatientEncounter().getPatient(), sessionController.getDepartment());
 
             if (pd != null && pd.getId() != null) {
-                System.out.println("pd = " + pd);
                 boolean hasPatientDeposit = false;
                 for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                    System.out.println("cd = " + cd);
                     if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-                        System.out.println("cd = " + cd);
                         hasPatientDeposit = true;
                         cd.getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
                         cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
@@ -687,19 +727,49 @@ public class CreditCompanyBillSearch implements Serializable {
     @EJB
     private CreditBean creditBean;
 
-    private void updateReferenceBill(BillItem tmp) {
-        double dbl = getCreditBean().getPaidAmount(tmp.getReferenceBill(), BillType.CashRecieveBill);
+    private void updateReferenceBill(BillItem cancellationBillItem) {
+        Bill referenceBill = cancellationBillItem.getReferenceBill();
 
-        tmp.getReferenceBill().setPaidAmount(0 - dbl);
-        getBillFacade().edit(tmp.getReferenceBill());
+        // The cancellation bill item has negative netValue (inverted from original)
+        // The amount that was originally added during settlement is the absolute value
+        double originalSettlementAmount = Math.abs(cancellationBillItem.getNetValue());
+
+        // Reverse the settlement by subtracting the original amount from paidAmount
+        double currentPaidAmount = referenceBill.getPaidAmount();
+        referenceBill.setPaidAmount(currentPaidAmount - originalSettlementAmount);
+
+        // Recalculate settled amounts (will exclude the cancelled settlement)
+        double settledCreditValueByCompanies = getCreditBean().getSettledAmountByCompany(referenceBill);
+        double settledCreditValueByPatient = getCreditBean().getSettledAmountByPatient(referenceBill);
+
+        // Update the settled amount fields
+        referenceBill.setSettledAmountByPatient(settledCreditValueByPatient);
+        referenceBill.setSettledAmountBySponsor(settledCreditValueByCompanies);
+
+        // CRITICAL FIX: Update balance field to stay synchronized with paid amount changes
+        // Calculate the accurate current balance using the same formula used in settlement process
+        double totalSettlement = settledCreditValueByCompanies + settledCreditValueByPatient;
+        double netTotal = Math.abs(referenceBill.getNetTotal() + referenceBill.getVat());
+        double refundAmount = Math.abs(getCreditBean().getRefundAmount(referenceBill));
+        double currentBalance = netTotal - (totalSettlement + refundAmount);
+        referenceBill.setBalance(Math.max(0, currentBalance)); // Ensure balance doesn't go negative
+
+        getBillFacade().edit(referenceBill);
 
     }
 
-    private void updateReferenceBht(BillItem tmp) {
-        double dbl = getCreditBean().getPaidAmount(tmp.getPatientEncounter(), BillType.CashRecieveBill);
+    private void updateReferenceBht(BillItem cancellationBillItem) {
+        PatientEncounter encounter = cancellationBillItem.getPatientEncounter();
 
-        tmp.getPatientEncounter().setCreditPaidAmount(0 - dbl);
-        getPatientEncounterFacade().edit(tmp.getPatientEncounter());
+        // The cancellation bill item has negative netValue (inverted from original)
+        // The amount that was originally added during settlement is the absolute value
+        double originalSettlementAmount = Math.abs(cancellationBillItem.getNetValue());
+
+        // Reverse the settlement by subtracting the original amount from creditPaidAmount
+        double currentPaidAmount = encounter.getCreditPaidAmount();
+        encounter.setCreditPaidAmount(currentPaidAmount - originalSettlementAmount);
+
+        getPatientEncounterFacade().edit(encounter);
 
     }
 

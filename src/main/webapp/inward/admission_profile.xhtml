@@ -65,8 +65,12 @@
                                     action="#{admissionController.navigateToEditAdmission}" 
                                     icon="fa fa-edit"
                                     class="w-100 ">
-
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{bhtEditController.current}" >
+                                    </f:setPropertyActionListener>
                                 </p:commandButton>
+                                
                                 <p:commandButton 
                                     disabled="#{admissionController.current.discharged eq true}"
                                     value="Room Change" 

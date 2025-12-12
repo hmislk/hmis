@@ -7,10 +7,24 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="subcontent">
+
+
         <h:form>
             <p:panel >
                 <f:facet name="header">
                     <p:outputLabel value="Select Request For Department : #{sessionController.department.name}"/> 
+                    <!-- Admin Config Button (Admin Only) -->
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                        <p:commandButton
+                            value="Config"
+                            icon="fa fa-cog"
+                            title="Page Configuration Management"
+                            action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_transfer_request_list')}"
+                            ajax="false"
+                            styleClass="ui-button-secondary ms-5">
+                        </p:commandButton>
+                    </h:panelGroup>
+
                 </f:facet>
 
                 <div class="row">
@@ -43,12 +57,12 @@
                             action="#{searchController.createRequestTableDto()}"
                             actionListener="#{transferIssueForRequestsController.makeNull()}">
                         </p:commandButton>
-                        
+
                         <h:outputLabel value="Request No"/>   
                         <p:inputText class="w-100"  autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />   
-                      
+
                     </div>
-                    
+
                     <div class="col-md-10">
                         <p:dataTable
                             value="#{searchController.transferRequestDtos}"
@@ -141,7 +155,7 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>                                  
                                     </p:column>
-                                    
+
                                 </p:dataTable>
                             </p:column>
                         </p:dataTable>

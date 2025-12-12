@@ -44,22 +44,35 @@
                                         </div>
                                         <div class="mb-3">
                                             <h:outputLabel value="To Date" styleClass="form-label"/>
-                                            <p:calendar 
-                                                id="toDate" 
+                                            <p:calendar
+                                                id="toDate"
                                                 styleClass="w-100"
                                                 inputStyleClass="form-control"
-                                                value="#{searchController.toDate}" 
-                                                navigator="false" 
+                                                value="#{searchController.toDate}"
+                                                navigator="false"
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </div>
-                                        <p:commandButton 
-                                            id="btnSearch" 
+                                        <div class="mb-3">
+                                            <h:outputLabel value="Payment Method" styleClass="form-label"/>
+                                            <p:selectOneMenu
+                                                id="paymentMethod"
+                                                value="#{searchController.paymentMethod}"
+                                                styleClass="w-100">
+                                                <f:selectItem itemLabel="All Payment Methods" itemValue="#{null}" noSelectionOption="true"/>
+                                                <f:selectItems value="#{enumController.paymentMethods}"
+                                                               var="pm"
+                                                               itemLabel="#{pm.label}"
+                                                               itemValue="#{pm}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <p:commandButton
+                                            id="btnSearch"
                                             title="Search pre-bills"
-                                            ajax="false" 
+                                            ajax="false"
                                             icon="fas fa-search"
                                             styleClass="ui-button-success w-100 mb-3"
-                                            value="Search" 
-                                            action="#{searchController.createPharmacyTableRe()}"/>
+                                            value="Search"
+                                            action="#{searchController.createPharmacyTableReDto()}"/>
                                     </div>
 
                                     <!-- Advanced Filters -->
@@ -116,11 +129,11 @@
                                 </p:panel>
                             </div>
                             <div class="col-lg-9 col-md-8">
-                                <p:dataTable 
-                                    rowIndexVar="i" 
-                                    id="tblBills" 
-                                    value="#{searchController.bills}" 
-                                    var="bill"  
+                                <p:dataTable
+                                    rowIndexVar="i"
+                                    id="tblBills"
+                                    value="#{searchController.cashierPreBillSearchDtos}"
+                                    var="bill"
                                     paginator="true"
                                     paginatorPosition="bottom"
                                     rows="10"
@@ -130,7 +143,7 @@
                                     >
 
 
-                                    <p:column headerText="Pre-Bill Details" width="320">
+                                    <p:column headerText="Pre-Bill Details" width="320" styleClass="align-top">
                                         <f:facet name="header">
                                             <div class="d-flex align-items-center">
                                                 <i class="fas fa-file-medical me-1"></i>
@@ -145,10 +158,10 @@
                                                     <i class="fas fa-hashtag me-1 text-primary"></i>
                                                     <h:outputText value="#{bill.deptId}" styleClass="fw-bold"/>
                                                 </div>
-                                                <p:commandButton 
+                                                <p:commandButton
                                                     id="btnViewPreBill"
-                                                    title="View Pre-Bill" 
-                                                    icon="fas fa-eye" 
+                                                    title="View Pre-Bill"
+                                                    icon="fas fa-eye"
                                                     styleClass="ui-button-info ui-button-sm"
                                                     action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(bill.id)}"
                                                     ajax="false">
@@ -158,7 +171,7 @@
                                             <!-- Department -->
                                             <div class="mb-2">
                                                 <i class="fas fa-hospital me-1 text-info"></i>
-                                                <h:outputText value="#{bill.department.name}" styleClass="text-muted"/>
+                                                <h:outputText value="#{bill.departmentName}" styleClass="text-muted"/>
                                             </div>
 
                                             <!-- Created At and By -->
@@ -171,18 +184,32 @@
                                             </div>
                                             <div class="mb-2">
                                                 <i class="fas fa-user me-1 text-success"></i>
-                                                <h:outputText value="#{bill.creater.webUserPerson.name}" styleClass="small"/>
+                                                <h:outputText value="#{bill.creatorName}" styleClass="small"/>
                                             </div>
 
-                                            <!-- Payment Status -->
+                                            <!-- Pre-Bill Status -->
                                             <div class="mb-2">
-                                                <div class="d-flex align-items-center">
-                                                    <i class="fas fa-check-circle me-1"></i>
+                                                <div class="d-flex align-items-center flex-wrap gap-1">
+                                                    <i class="fas fa-info-circle me-1"></i>
                                                     <h:outputText value="Status:" styleClass="small fw-bold me-2"/>
-                                                    <h:outputText value="PAID" rendered="#{bill.referenceBill ne null}" 
-                                                                  styleClass="badge bg-success text-white"/>
-                                                    <h:outputText value="NOT PAID" rendered="#{bill.referenceBill eq null}" 
-                                                                  styleClass="badge bg-danger text-white"/>
+
+                                                    <!-- Payment Status -->
+                                                    <h:outputText value="PAID" rendered="#{bill.referenceBillId ne null and !bill.cancelled and !bill.refunded}"
+                                                                  styleClass="badge bg-success text-white me-1"/>
+                                                    <h:outputText value="UNPAID" rendered="#{bill.referenceBillId eq null and !bill.cancelled and !bill.refunded}"
+                                                                  styleClass="badge bg-warning text-dark me-1"/>
+
+                                                    <!-- Status Flags -->
+                                                    <h:outputText value="CANCELLED" rendered="#{bill.cancelled}"
+                                                                  styleClass="badge bg-danger text-white me-1"/>
+                                                    <h:outputText value="REFUNDED" rendered="#{bill.refunded}"
+                                                                  styleClass="badge bg-secondary text-white me-1"/>
+                                                    <h:outputText value="RETIRED" rendered="#{bill.retired}"
+                                                                  styleClass="badge bg-dark text-white me-1"/>
+
+                                                    <!-- Active Status -->
+                                                    <h:outputText value="ACTIVE" rendered="#{!bill.cancelled and !bill.refunded and !bill.retired and bill.referenceBillId eq null}"
+                                                                  styleClass="badge bg-primary text-white me-1"/>
                                                 </div>
                                             </div>
 
@@ -191,13 +218,13 @@
                                                 <div class="mb-1">
                                                     <i class="fas fa-undo me-1 text-danger"></i>
                                                     <h:outputText value="Returned: " styleClass="text-danger small fw-bold"/>
-                                                    <h:outputText value="#{bill.refundedBill.createdAt}" styleClass="text-danger small">
+                                                    <h:outputText value="#{bill.refundedBillCreatedAt}" styleClass="text-danger small">
                                                         <f:convertDateTime timeZone="#{configOptionApplicationController.getShortTextValueByKey('TimeZone','Asia/Colombo')}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                     </h:outputText>
                                                 </div>
                                                 <div class="mb-1">
                                                     <i class="fas fa-user-times me-1 text-danger"></i>
-                                                    <h:outputText value="#{bill.refundedBill.creater.webUserPerson.name}" styleClass="text-danger small"/>
+                                                    <h:outputText value="#{bill.refundedBillCreatorName}" styleClass="text-danger small"/>
                                                 </div>
                                             </h:panelGroup>
 
@@ -215,13 +242,13 @@
                                                 <div class="mb-1">
                                                     <i class="fas fa-ban me-1 text-danger"></i>
                                                     <h:outputText value="Cancelled: " styleClass="text-danger small fw-bold"/>
-                                                    <h:outputText value="#{bill.cancelledBill.createdAt}" styleClass="text-danger small">
+                                                    <h:outputText value="#{bill.cancelledBillCreatedAt}" styleClass="text-danger small">
                                                         <f:convertDateTime timeZone="#{configOptionApplicationController.getShortTextValueByKey('TimeZone','Asia/Colombo')}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                     </h:outputText>
                                                 </div>
                                                 <div class="mb-1">
                                                     <i class="fas fa-user-times me-1 text-danger"></i>
-                                                    <h:outputText value="#{bill.cancelledBill.creater.webUserPerson.name}" styleClass="text-danger small"/>
+                                                    <h:outputText value="#{bill.cancelledBillCreatorName}" styleClass="text-danger small"/>
                                                 </div>
                                             </h:panelGroup>
                                         </div>
@@ -236,7 +263,7 @@
                                                                                 </p:commandLink>-->
                                     </p:column>
 
-                                    <p:column headerText="Bill Details" width="280">
+                                    <p:column headerText="Bill Details" width="280" styleClass="align-top">
                                         <f:facet name="header">
                                             <div class="d-flex align-items-center">
                                                 <i class="fas fa-receipt me-1"></i>
@@ -244,13 +271,13 @@
                                             </div>
                                         </f:facet>
 
-                                        <h:panelGroup rendered="#{bill.referenceBill ne null}">
+                                        <h:panelGroup rendered="#{bill.referenceBillId ne null}">
                                             <div class="d-flex flex-column">
                                                 <!-- Bill Number and Action -->
                                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                                     <div>
                                                         <i class="fas fa-receipt me-1 text-primary"></i>
-                                                        <h:outputText value="#{bill.referenceBill.deptId}" styleClass="fw-bold"/>
+                                                        <h:outputText value="#{bill.referenceBillDeptId}" styleClass="fw-bold"/>
                                                     </div>
                                                     <p:commandButton
                                                         id="btnViewPaymentBill"
@@ -258,17 +285,16 @@
                                                         title="View Bill"
                                                         icon="fas fa-eye"
                                                         styleClass="ui-button-success ui-button-sm"
-                                                        action="#{billSearch.navigateToViewPharmacySettledPreBill()}"
+                                                        action="#{billSearch.navigateToViewPharmacySettledPreBill(bill.referenceBillId)}"
                                                         rendered="#{webUserController.hasPrivilege('PharmacySaleReprint')}">
-                                                        <f:setPropertyActionListener target="#{billSearch.bill}" value="#{bill.referenceBill}" />
                                                     </p:commandButton>
-                                                    <p:commandButton 
+                                                    <p:commandButton
                                                         id="btnViewSettledBill"
                                                         rendered="#{webUserController.hasPrivilege('PrintOriginalPharmacyBillFromReprint')}"
-                                                        title="View" 
-                                                        icon="fa fa-eye" 
+                                                        title="View"
+                                                        icon="fa fa-eye"
                                                         class="m-1 ui-button-info"
-                                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(bill.referenceBill.id)}"
+                                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(bill.referenceBillId)}"
                                                         ajax="false">
                                                     </p:commandButton>
                                                 </div>
@@ -276,47 +302,47 @@
                                                 <!-- Billed At and By -->
                                                 <div class="mb-1">
                                                     <i class="fas fa-calendar-alt me-1 text-success"></i>
-                                                    <h:outputText value="#{bill.referenceBill.createdAt}" styleClass="small">
+                                                    <h:outputText value="#{bill.referenceBillCreatedAt}" styleClass="small">
                                                         <f:convertDateTime timeZone="#{configOptionApplicationController.getShortTextValueByKey('TimeZone','Asia/Colombo')}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                     </h:outputText>
                                                 </div>
                                                 <div class="mb-2">
                                                     <i class="fas fa-user me-1 text-success"></i>
-                                                    <h:outputText value="#{bill.referenceBill.creater.webUserPerson.name}" styleClass="small"/>
+                                                    <h:outputText value="#{bill.referenceBillCreatorName}" styleClass="small"/>
                                                 </div>
 
                                                 <!-- Bill Status Messages -->
-                                                <h:panelGroup rendered="#{bill.referenceBill.cancelled}">
+                                                <h:panelGroup rendered="#{bill.referenceBillCancelled}">
                                                     <div class="mb-1">
                                                         <i class="fas fa-ban me-1 text-danger"></i>
-                                                        <h:outputText value="Cancelled: " styleClass="text-danger small fw-bold"/>
-                                                        <h:outputText value="#{bill.referenceBill.cancelledBill.createdAt}" styleClass="text-danger small">
-                                                            <f:convertDateTime timeZone="#{configOptionApplicationController.getShortTextValueByKey('TimeZone','Asia/Colombo')}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                        </h:outputText>
-                                                    </div>
-                                                    <div class="mb-1">
-                                                        <i class="fas fa-user-times me-1 text-danger"></i>
-                                                        <h:outputText value="#{bill.referenceBill.cancelledBill.creater.webUserPerson.name}" styleClass="text-danger small"/>
+                                                        <h:outputText value="Payment Bill Cancelled" styleClass="text-danger small fw-bold"/>
                                                     </div>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup rendered="#{bill.referenceBill.refunded}">
+                                                <h:panelGroup rendered="#{bill.referenceBillRefunded}">
                                                     <div class="mb-1">
                                                         <i class="fas fa-undo me-1 text-danger"></i>
-                                                        <h:outputText value="Refunded: " styleClass="text-danger small fw-bold"/>
-                                                        <h:outputText value="#{bill.referenceBill.refundedBill.createdAt}" styleClass="text-danger small">
-                                                            <f:convertDateTime timeZone="#{configOptionApplicationController.getShortTextValueByKey('TimeZone','Asia/Colombo')}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                        </h:outputText>
-                                                    </div>
-                                                    <div class="mb-1">
-                                                        <i class="fas fa-user-times me-1 text-danger"></i>
-                                                        <h:outputText value="#{bill.referenceBill.refundedBill.creater.webUserPerson.name}" styleClass="text-danger small"/>
+                                                        <h:outputText value="Payment Bill Refunded" styleClass="text-danger small fw-bold"/>
                                                     </div>
                                                 </h:panelGroup>
+
+                                                <!-- Payment Information -->
+                                                <div class="border-top pt-2 mt-2">
+                                                    <div class="mb-1">
+                                                        <i class="fas fa-credit-card me-1 text-success"></i>
+                                                        <h:outputText value="Payment:" styleClass="text-success small fw-bold me-1"/>
+                                                        <h:outputText value="#{bill.paymentMethod}" styleClass="small"/>
+                                                    </div>
+                                                    <div class="mb-1" rendered="#{bill.paymentSchemeName ne null and bill.paymentSchemeName ne ''}">
+                                                        <i class="fas fa-tags me-1 text-info"></i>
+                                                        <h:outputText value="Scheme:" styleClass="text-info small fw-bold me-1"/>
+                                                        <h:outputText value="#{bill.paymentSchemeName}" styleClass="small"/>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </h:panelGroup>
 
-                                        <h:panelGroup rendered="#{bill.referenceBill eq null}">
+                                        <h:panelGroup rendered="#{bill.referenceBillId eq null}">
                                             <div class="text-center text-muted">
                                                 <i class="fas fa-minus-circle me-1"></i>
                                                 <h:outputText value="Not Billed Yet" styleClass="small"/>
@@ -333,11 +359,11 @@
                                                                                 </p:commandButton>-->
                                     </p:column>                      
 
-                                    <p:column headerText="Client &amp; Payment" width="200" styleClass="align-top">
+                                    <p:column headerText="Client" width="200" styleClass="align-top">
                                         <f:facet name="header">
                                             <div class="d-flex align-items-center">
-                                                <i class="fas fa-user-tag me-1"></i>
-                                                <h:outputText value="Client &amp; Payment"/>
+                                                <i class="fas fa-user me-1"></i>
+                                                <h:outputText value="Client"/>
                                             </div>
                                         </f:facet>
 
@@ -347,31 +373,17 @@
                                                 <div class="d-flex align-items-start">
                                                     <i class="fas fa-user me-1 text-primary mt-1"></i>
                                                     <div class="flex-grow-1">
-                                                        <h:outputText value="#{bill.patient.person.nameWithTitle}" 
-                                                                      rendered="#{bill.patient ne null}" 
+                                                        <h:outputText value="#{bill.patientName}"
+                                                                      rendered="#{bill.patientName ne null and bill.patientName ne ''}"
                                                                       styleClass="fw-bold small d-block"/>
-                                                        <h:outputText value="#{bill.toStaff.person.nameWithTitle}" 
-                                                                      rendered="#{bill.toStaff ne null}" 
+                                                        <h:outputText value="#{bill.toStaffName}"
+                                                                      rendered="#{bill.toStaffName ne null and bill.toStaffName ne ''}"
                                                                       styleClass="fw-bold small d-block"/>
-                                                        <h:outputText value="#{bill.toDepartment.name}" 
-                                                                      rendered="#{bill.toDepartment ne null}" 
+                                                        <h:outputText value="#{bill.toDepartmentName}"
+                                                                      rendered="#{bill.toDepartmentName ne null and bill.toDepartmentName ne ''}"
                                                                       styleClass="text-muted small d-block"/>
-                                                        <h:outputText value="#{bill.toInstitution.name}" 
-                                                                      rendered="#{bill.toInstitution ne null}" 
-                                                                      styleClass="text-muted small d-block"/>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Payment Information -->
-                                            <div class="w-100 border-top pt-2">
-                                                <div class="d-flex align-items-start">
-                                                    <i class="fas fa-credit-card me-1 text-success mt-1"></i>
-                                                    <div class="flex-grow-1">
-                                                        <h:outputText value="#{bill.paymentMethod}" 
-                                                                      styleClass="fw-bold small d-block text-success"/>
-                                                        <h:outputText value="#{bill.paymentScheme.name}" 
-                                                                      rendered="#{bill.paymentScheme ne null and bill.paymentScheme.name ne null and bill.paymentScheme.name ne ''}"
+                                                        <h:outputText value="#{bill.toInstitutionName}"
+                                                                      rendered="#{bill.toInstitutionName ne null and bill.toInstitutionName ne ''}"
                                                                       styleClass="text-muted small d-block"/>
                                                     </div>
                                                 </div>
@@ -379,7 +391,7 @@
                                         </div>
                                     </p:column>
 
-                                    <p:column headerText="Gross Value" styleClass="text-end" width="120">
+                                    <p:column headerText="Gross Value" styleClass="text-end align-top" width="120">
                                         <f:facet name="header">
                                             <div class="d-flex align-items-center justify-content-end">
                                                 <i class="fas fa-coins me-1"></i>
@@ -391,7 +403,7 @@
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Discount" styleClass="text-end" width="100">
+                                    <p:column headerText="Discount" styleClass="text-end align-top" width="100">
                                         <f:facet name="header">
                                             <div class="d-flex align-items-center justify-content-end">
                                                 <i class="fas fa-percentage me-1"></i>
@@ -403,7 +415,7 @@
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Net Value" styleClass="text-end" width="120">
+                                    <p:column headerText="Net Value" styleClass="text-end align-top" width="120">
                                         <f:facet name="header">
                                             <div class="d-flex align-items-center justify-content-end">
                                                 <i class="fas fa-money-bill me-1"></i>
@@ -413,13 +425,6 @@
                                         <h:outputText value="#{bill.netTotal}" styleClass="fw-bold text-success text-end d-block">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
-                                    </p:column>
-
-                                    <p:column headerText="Comments" >
-                                        <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
-                                        </h:outputLabel>
-                                        <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
-                                        </h:outputLabel>
                                     </p:column>
                                 </p:dataTable>
 

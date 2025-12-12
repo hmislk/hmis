@@ -40,6 +40,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -52,6 +54,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class CashRecieveBillController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(CashRecieveBillController.class.getName());
 
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -100,6 +104,7 @@ public class CashRecieveBillController implements Serializable {
     
     private Institution creditCompany;
     private String comment;
+    private String selectedBillType;
 
     public void makeNull() {
         printPreview = false;
@@ -310,17 +315,44 @@ public class CashRecieveBillController implements Serializable {
         return false;
     }
 
+    /**
+     * Calculates the accurate current balance for a bill by querying settled amounts and refunds.
+     * This method should be used for payment validation and settlement calculations instead of
+     * the persisted balance field, which may be stale.
+     *
+     * @param billItem BillItem containing the reference bill to calculate balance for
+     * @return Current outstanding balance (NetTotal + VAT - SettledAmount - RefundAmount)
+     */
     private double getReferenceBallance(BillItem billItem) {
-        System.out.println("getReferenceBallance");
-        System.out.println("billItem = " + billItem);
-        
+        if (billItem == null || billItem.getReferenceBill() == null) {
+            return 0.0;
+        }
+
         double refBallance = 0;
         double neTotal = Math.abs(billItem.getReferenceBill().getNetTotal() + billItem.getReferenceBill().getVat());
         double refAmount = Math.abs(getCreditBean().getRefundAmount(billItem.getReferenceBill()));
-        System.out.println("refAmount = " + refAmount);
         double paidAmt = Math.abs(getCreditBean().getTotalCreditSettledAmount(billItem.getReferenceBill()));
         refBallance = neTotal - (paidAmt + refAmount);
         return refBallance;
+    }
+
+    /**
+     * Calculates the accurate current balance for a bill directly.
+     * Use this method when you have the bill object directly instead of through a BillItem.
+     *
+     * @param bill The bill to calculate balance for
+     * @return Current outstanding balance (NetTotal + VAT - SettledAmount - RefundAmount)
+     */
+    private double calculateCurrentBalance(Bill bill) {
+        if (bill == null) {
+            return 0.0;
+        }
+
+        double neTotal = Math.abs(bill.getNetTotal() + bill.getVat());
+        double refAmount = Math.abs(getCreditBean().getRefundAmount(bill));
+        double paidAmt = Math.abs(getCreditBean().getTotalCreditSettledAmount(bill));
+        double balance = neTotal - (paidAmt + refAmount);
+        return balance;
     }
 
     private double getReferenceBhtBallance(BillItem billItem) {
@@ -335,9 +367,8 @@ public class CashRecieveBillController implements Serializable {
 
     public void selectBillListener() {
         double dbl = getReferenceBallance(getCurrentBillItem());
-        System.out.println(getCurrentBillItem().getReferenceBill());
 
-        if (dbl > 0.1) {
+        if (dbl > 0.01) {
             getCurrentBillItem().setNetValue(dbl);
         }
 
@@ -346,19 +377,42 @@ public class CashRecieveBillController implements Serializable {
     public void selectBhtListener() {
         double dbl = getReferenceBhtBallance(getCurrentBillItem());
 
-        if (dbl > 0.1) {
+        if (dbl > 0.01) {
             getCurrentBillItem().setNetValue(dbl);
         }
 
     }
 
     public void remove(BillItem billItem) {
-        getBillItems().remove(billItem.getSearialNo());
-        getSelectedBillItems().remove(billItem.getSearialNo());
+        // Check if the item is already persisted to database
+        if (billItem.getId() != null) {
+            // If saved, retire the item instead of deleting to maintain audit trail
+            billItem.setBill(null);  // Remove relationship
+            billItem.setRetired(true);
+            billItem.setRetiredAt(new Date());
+            billItem.setRetirer(getSessionController().getLoggedUser());
+            getBillItemFacade().edit(billItem);  // Persist the retired state
+
+            // Reload all bill items from database to reflect changes
+            if (getCurrent() != null && getCurrent().getId() != null) {
+                getCurrent().setBillItems(getBillFacade().find(getCurrent().getId()).getBillItems());
+            }
+        } else {
+            // If not previously persisted, just remove from lists
+            getBillItems().remove(billItem.getSearialNo());
+            getSelectedBillItems().remove(billItem.getSearialNo());
+        }
+
         calTotalWithResetingIndex();
     }
 
     private boolean errorCheckForAdding() {
+        // Check if referenceBill is null first
+        if (getCurrentBillItem().getReferenceBill() == null) {
+            JsfUtil.addErrorMessage("Please select a bill to add");
+            return true;
+        }
+
         if (getCurrentBillItem().getReferenceBill().getCreditCompany() == null) {
             JsfUtil.addErrorMessage("U cant add without credit company name");
             return true;
@@ -396,6 +450,12 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private boolean errorCheckForAddingPharmacy() {
+        // Check if referenceBill is null first
+        if (getCurrentBillItem().getReferenceBill() == null) {
+            JsfUtil.addErrorMessage("Please select a bill to add");
+            return true;
+        }
+
         if (getCurrentBillItem().getReferenceBill().getToInstitution() == null) {
             JsfUtil.addErrorMessage("U cant add without credit company name");
             return true;
@@ -535,6 +595,70 @@ public class CashRecieveBillController implements Serializable {
         currentBillItem = null;
         calTotal();
 
+    }
+
+    /**
+     * Combined add to bill method that automatically detects the bill type from the selected bill
+     * and routes to appropriate method (addToBill() for OPD bills or addToBillPharmacy() for pharmacy bills)
+     * Does not depend on selectedBillType - automatically detects from bill properties
+     */
+    public void addToBillCombined() {
+        // Validate that referenceBill is not null before routing
+        if (getCurrentBillItem().getReferenceBill() == null) {
+            JsfUtil.addErrorMessage("Please select a bill to add");
+            return;
+        }
+
+        Bill referenceBill = getCurrentBillItem().getReferenceBill();
+
+        // Validate payment amount
+        if (getCurrentBillItem().getNetValue() <= 0) {
+            JsfUtil.addErrorMessage("Please enter a valid payment amount greater than zero");
+            return;
+        }
+
+        // Validate that payment amount does not exceed due amount
+        double paymentAmount = getCurrentBillItem().getNetValue();
+        // Use calculated balance instead of persisted balance field to ensure accuracy
+        double dueAmount = getReferenceBallance(getCurrentBillItem());
+
+        if (paymentAmount > dueAmount) {
+            String message = String.format("Payment amount (%.2f) cannot exceed the due amount (%.2f). " +
+                    "Maximum payable amount is %.2f",
+                    paymentAmount, dueAmount, dueAmount);
+            JsfUtil.addErrorMessage(message);
+            return;
+        }
+
+        // Determine the bill type from the reference bill properties
+        // First check BillTypeAtomic for OPD bills
+        BillTypeAtomic billTypeAtomic = referenceBill.getBillTypeAtomic();
+        if (billTypeAtomic != null) {
+            // Check if it's an OPD Batch bill
+            if (billTypeAtomic == BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT
+                    || billTypeAtomic == BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER) {
+                addToBill();
+                return;
+            }
+            // Check if it's an OPD Package bill
+            if (billTypeAtomic == BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT
+                    || billTypeAtomic == BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER) {
+                addToBill();
+                return;
+            }
+        }
+
+        // Check BillType for Pharmacy bills
+        BillType billType = referenceBill.getBillType();
+        if (billType != null) {
+            if (billType == BillType.PharmacySale || billType == BillType.PharmacyWholeSale) {
+                addToBillPharmacy();
+                return;
+            }
+        }
+
+        // If we reach here, the bill type is not supported
+        JsfUtil.addErrorMessage("Unsupported bill type. Cannot add this bill to the collection.");
     }
 
     private List<Bill> creditBills;
@@ -793,6 +917,27 @@ public class CashRecieveBillController implements Serializable {
         if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
             return;
         }
+
+        // Validate that no bill items have zero or negative values
+        for (BillItem item : getBillItems()) {
+            if (item.getNetValue() <= 0) {
+                JsfUtil.addErrorMessage("Cannot settle bills with zero or negative values. Please check item: " +
+                    (item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "Unknown Bill"));
+                return;
+            }
+        }
+
+        // Calculate total and validate it's greater than zero
+        double totalSettlementAmount = 0.0;
+        for (BillItem item : getBillItems()) {
+            totalSettlementAmount += item.getNetValue();
+        }
+
+        if (totalSettlementAmount <= 0) {
+            JsfUtil.addErrorMessage("Cannot settle bills with zero total amount. Total settlement amount must be greater than zero.");
+            return;
+        }
+
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
         calulateTotalForSettlingCreditForOpdPackageBills();
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
@@ -815,7 +960,8 @@ public class CashRecieveBillController implements Serializable {
             getBillFacade().edit(getCurrent());
         }
 
-        for (BillItem savingBillItem : getBillItems()) {
+        // Use defensive copy to avoid ConcurrentModificationException when modifying collections during iteration
+        for (BillItem savingBillItem : new ArrayList<>(getBillItems())) {
             savingBillItem.setCreatedAt(new Date());
             savingBillItem.setCreater(getSessionController().getLoggedUser());
             savingBillItem.setBill(getCurrent());
@@ -854,6 +1000,27 @@ public class CashRecieveBillController implements Serializable {
         if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
             return;
         }
+
+        // Validate that no bill items have zero or negative values
+        for (BillItem item : getBillItems()) {
+            if (item.getNetValue() <= 0) {
+                JsfUtil.addErrorMessage("Cannot settle bills with zero or negative values. Please check item: " +
+                    (item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "Unknown Bill"));
+                return;
+            }
+        }
+
+        // Calculate total and validate it's greater than zero
+        double totalSettlementAmount = 0.0;
+        for (BillItem item : getBillItems()) {
+            totalSettlementAmount += item.getNetValue();
+        }
+
+        if (totalSettlementAmount <= 0) {
+            JsfUtil.addErrorMessage("Cannot settle bills with zero total amount. Total settlement amount must be greater than zero.");
+            return;
+        }
+
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
         calulateTotalForSettlingCreditForOpdBatchBills();
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
@@ -876,7 +1043,8 @@ public class CashRecieveBillController implements Serializable {
             getBillFacade().edit(getCurrent());
         }
 
-        for (BillItem savingBillItem : getBillItems()) {
+        // Use defensive copy to avoid ConcurrentModificationException when modifying collections during iteration
+        for (BillItem savingBillItem : new ArrayList<>(getBillItems())) {
             savingBillItem.setCreatedAt(new Date());
             savingBillItem.setCreater(getSessionController().getLoggedUser());
             savingBillItem.setBill(getCurrent());
@@ -907,7 +1075,6 @@ public class CashRecieveBillController implements Serializable {
         calTotal();
 
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
-        System.out.println(getSelectedBillItems());
 
         getCurrent().setTotal(getCurrent().getNetTotal());
 
@@ -943,6 +1110,27 @@ public class CashRecieveBillController implements Serializable {
         if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
             return;
         }
+
+        // Validate that no bill items have zero or negative values
+        for (BillItem item : getBillItems()) {
+            if (item.getNetValue() <= 0) {
+                JsfUtil.addErrorMessage("Cannot settle bills with zero or negative values. Please check item: " +
+                    (item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "Unknown Bill"));
+                return;
+            }
+        }
+
+        // Calculate total and validate it's greater than zero
+        double totalSettlementAmount = 0.0;
+        for (BillItem item : getBillItems()) {
+            totalSettlementAmount += item.getNetValue();
+        }
+
+        if (totalSettlementAmount <= 0) {
+            JsfUtil.addErrorMessage("Cannot settle bills with zero total amount. Total settlement amount must be greater than zero.");
+            return;
+        }
+
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
         calulateTotalForSettlingCreditForInwardCreditCompanyPaymentBills();
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
@@ -1032,7 +1220,6 @@ public class CashRecieveBillController implements Serializable {
 
         //calTotal();
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
-        System.out.println(getSelectedBillItems());
 
         getCurrent().setTotal(getCurrent().getNetTotal());
         getCurrent().setBalance(getCurrent().getNetTotal());
@@ -1121,35 +1308,12 @@ public class CashRecieveBillController implements Serializable {
                 + "AND b.retired = false "
                 + "AND b.balance > 0 "
                 + "ORDER BY b.id DESC";
-        System.out.println("sql = " + sql);
         Map<String, Object> temMap = new HashMap<>();
         temMap.put("billTypes", billTypes);
         List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
         return bills;
     }
 
-    public void settleBillPharmacy() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
-        if (errorCheckPharmacy()) {
-            return;
-        }
-
-        calTotal();
-
-        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
-
-        getCurrent().setTotal(getCurrent().getNetTotal());
-
-        saveBill(BillType.CashRecieveBill, BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED);
-        saveBillItem();
-        //   savePayments();
-        JsfUtil.addSuccessMessage("Bill Saved");
-        printPreview = true;
-
-    }
 
     public void settleBillBht() {
         Date startTime = new Date();
@@ -1442,38 +1606,34 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void updateSettlingCreditBillSettledValues(BillItem billItemWithReferanceToCreditBill) {
-        System.out.println("Starting updateSettlingCreditBillSettledValues");
-        System.out.println("Bill Item Reference: " + billItemWithReferanceToCreditBill);
+        Bill referenceBill = billItemWithReferanceToCreditBill.getReferenceBill();
 
-        double settledCreditValueByCompanies = getCreditBean().getSettledAmountByCompany(billItemWithReferanceToCreditBill.getReferenceBill());
-        System.out.println("Settled Credit Value By Companies: " + settledCreditValueByCompanies);
-
-        double settledCreditValueByPatient = getCreditBean().getSettledAmountByPatient(billItemWithReferanceToCreditBill.getReferenceBill());
-        System.out.println("Settled Credit Value By Patient: " + settledCreditValueByPatient);
-
+        double settledCreditValueByCompanies = getCreditBean().getSettledAmountByCompany(referenceBill);
+        double settledCreditValueByPatient = getCreditBean().getSettledAmountByPatient(referenceBill);
         double settleCreditValueTotal = settledCreditValueByCompanies + settledCreditValueByPatient;
-        System.out.println("Total Settled Credit Value: " + settleCreditValueTotal);
 
-        billItemWithReferanceToCreditBill.getReferenceBill().setPaidAmount(settleCreditValueTotal);
-        System.out.println("Paid Amount Set: " + settleCreditValueTotal);
+        // Update all financial fields consistently
+        referenceBill.setPaidAmount(settleCreditValueTotal);
+        referenceBill.setSettledAmountByPatient(settledCreditValueByPatient);
+        referenceBill.setSettledAmountBySponsor(settledCreditValueByCompanies);
 
-        billItemWithReferanceToCreditBill.getReferenceBill().setSettledAmountByPatient(settledCreditValueByPatient);
-        System.out.println("Settled Amount By Patient Set: " + settledCreditValueByPatient);
+        // CRITICAL FIX: Update balance field to stay synchronized with paid amount
+        // Calculate the accurate current balance using the same formula as calculateCurrentBalance
+        double netTotal = Math.abs(referenceBill.getNetTotal() + referenceBill.getVat());
+        double refundAmount = Math.abs(getCreditBean().getRefundAmount(referenceBill));
+        double currentBalance = netTotal - (settleCreditValueTotal + refundAmount);
+        referenceBill.setBalance(Math.max(0, currentBalance)); // Ensure balance doesn't go negative
 
-        billItemWithReferanceToCreditBill.getReferenceBill().setSettledAmountBySponsor(settledCreditValueByCompanies);
-        System.out.println("Settled Amount By Sponsor Set: " + settledCreditValueByCompanies);
-
-        double absBillAmount = Math.abs(billItemWithReferanceToCreditBill.getReferenceBill().getNetTotal());
-        double absSettledAmount = Math.abs(billItemWithReferanceToCreditBill.getReferenceBill().getPaidAmount());
+        // Check if bill is fully paid and set paidAt timestamp
+        double absBillAmount = Math.abs(referenceBill.getNetTotal());
+        double absSettledAmount = Math.abs(referenceBill.getPaidAmount());
         double difference = absBillAmount - absSettledAmount;
         double absDifference = Math.abs(difference);
         if (absDifference < 1.0) {
-            billItemWithReferanceToCreditBill.getReferenceBill().setPaidAt(new Date());
+            referenceBill.setPaidAt(new Date());
         }
 
-        getBillFacade().edit(billItemWithReferanceToCreditBill.getReferenceBill());
-        System.out.println("Reference Bill Updated: " + billItemWithReferanceToCreditBill.getReferenceBill());
-        System.out.println("Completed updateSettlingCreditBillSettledValues");
+        getBillFacade().edit(referenceBill);
     }
 
     private void updateReferenceBht(BillItem tmp) {
@@ -1518,6 +1678,7 @@ public class CashRecieveBillController implements Serializable {
         creditCompany = null;
         comment = null;
         selectedBill = null;
+        selectedBillType = null;
     }
 
     public String prepareNewBill() {
@@ -1747,6 +1908,252 @@ public class CashRecieveBillController implements Serializable {
             return 0.0;
         }
         return creditBean.getRefundAmount(bill);
+    }
+
+    // Combined Credit Collection Methods
+
+    /**
+     * Legacy property - kept for backward compatibility with other pages
+     * The simplified combined credit collection page does not use this property
+     */
+    public String getSelectedBillType() {
+        return selectedBillType;
+    }
+
+    public void setSelectedBillType(String selectedBillType) {
+        this.selectedBillType = selectedBillType;
+    }
+
+    /**
+     * Checks if the current bill is a cancellation bill (bill created during cancellation process).
+     * Cancellation bills have specific BillTypeAtomic values and should not be allowed to be cancelled again.
+     *
+     * @return true if the current bill is a cancellation bill, false otherwise
+     */
+    public boolean isCurrentBillACancellationBill() {
+        if (current == null || current.getBillTypeAtomic() == null) {
+            return false;
+        }
+
+        BillTypeAtomic billType = current.getBillTypeAtomic();
+        return billType == BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION
+            || billType == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION
+            || billType == BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION;
+    }
+
+    /**
+     * Legacy method - called when bill type dropdown changes to clear current selections
+     * Kept for backward compatibility with pages that still use bill type selection
+     */
+    public void billTypeChanged() {
+        makeNull();
+        selectedBillType = this.selectedBillType; // Preserve the selected bill type
+    }
+
+    /**
+     * Combined autocomplete method that searches across ALL bill types (OPD Batch, OPD Package, and Pharmacy)
+     * Does not depend on selectedBillType - searches all credit bills and combines results
+     * @param query The search query string
+     * @return List of bills matching the query from all bill types
+     */
+    public List<Bill> completeCombinedCreditBills(String query) {
+
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // Create combined list to hold results from all bill types
+        List<Bill> combinedResults = new ArrayList<>();
+
+        try {
+            // Get results from OPD Batch bills
+            List<Bill> opdBatchBills = billController.completeOpdCreditBatchBill(query);
+            if (opdBatchBills != null && !opdBatchBills.isEmpty()) {
+                combinedResults.addAll(opdBatchBills);
+            }
+
+            // Get results from OPD Package bills
+            List<Bill> opdPackageBills = billController.completeOpdCreditPackageBatchBill(query);
+            if (opdPackageBills != null && !opdPackageBills.isEmpty()) {
+                combinedResults.addAll(opdPackageBills);
+            }
+
+            // Get results from Pharmacy bills
+            List<Bill> pharmacyBills = billController.completePharmacyCreditBill(query);
+            if (pharmacyBills != null && !pharmacyBills.isEmpty()) {
+                combinedResults.addAll(pharmacyBills);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return combinedResults;
+    }
+
+    /**
+     * Combined settlement method that routes to appropriate settlement method based on bill types in the list.
+     * Determines the bill type from the bills in the selectedBillItems list.
+     *
+     * <p><strong>Action:</strong> This method is called by the Combined OPD Credit Collection page
+     * (/credit/credit_company_bill_opd_combined.xhtml).
+     *
+     * <p><strong>Current Implementation:</strong> This method now routes all bill types to
+     * {@link #settleUniversalCreditBills()}, which uses the unified
+     * {@code OPD_CREDIT_COMPANY_PAYMENT_RECEIVED} bill type for all settlements (OPD, Package, and Pharmacy).
+     * The deprecated pharmacy-specific routing has been removed as part of settlement method unification.
+     *
+     * @see #settleUniversalCreditBills() for the unified replacement that handles all bill types
+     */
+    public void settleCombinedCreditBills() {
+        if (getSelectedBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Item ");
+            return;
+        }
+
+        // Determine bill type from the first bill item
+        BillItem firstItem = getSelectedBillItems().get(0);
+        if (firstItem.getReferenceBill() == null) {
+            JsfUtil.addErrorMessage("Invalid bill reference");
+            return;
+        }
+
+        BillTypeAtomic billTypeAtomic = firstItem.getReferenceBill().getBillTypeAtomic();
+
+        // Route to unified settlement method for all bill types
+        // This replaces the previous individual routing to achieve settlement method unification
+        settleUniversalCreditBills();
+    }
+
+    /**
+     * Universal settlement method that handles all bill types (OPD, Package, Pharmacy, etc.)
+     * and creates settlements under the unified {@code BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED}.
+     *
+     * <p>This method consolidates pharmacy credit settlements with OPD settlements as per the
+     * credit unification requirement, eliminating the separate {@code PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED}
+     * bill type.
+     *
+     * <p><strong>Status:</strong> This method is now the active universal settlement method that replaced
+     * the deprecated pharmacy-specific settlement method. It is now wired to the Combined OPD Credit
+     * Collection page through {@link #settleCombinedCreditBills()}, which routes all bill types
+     * (OPD, Package, and Pharmacy) to this unified method.
+     *
+     * <p><strong>Bill Type Used:</strong> All settlements created by this method use
+     * {@code BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED}, regardless of whether the
+     * source bills are OPD, Package, or Pharmacy bills.
+     *
+     * <p>Based on {@link #settleCreditForOpdBatchBills()} but extended to handle all bill types
+     * with proper credit company field detection (creditCompany for OPD, toInstitution for Pharmacy).
+     */
+    public void settleUniversalCreditBills() {
+        if (getSelectedBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Item ");
+            return;
+        }
+        if (getCurrent().getFromInstitution() == null) {
+            JsfUtil.addErrorMessage("Select Credit Company");
+            return;
+        }
+
+        // Enhanced validation to handle different credit company reference patterns
+        for (BillItem item : getBillItems()) {
+            Institution billCreditCompany = null;
+
+            // Handle different ways credit company is referenced in different bill types
+            if (item.getReferenceBill().getCreditCompany() != null) {
+                // OPD bills use creditCompany field
+                billCreditCompany = item.getReferenceBill().getCreditCompany();
+            } else if (item.getReferenceBill().getToInstitution() != null) {
+                // Pharmacy bills use toInstitution field
+                billCreditCompany = item.getReferenceBill().getToInstitution();
+            }
+
+            if (billCreditCompany == null || !Objects.equals(billCreditCompany.getId(), getCurrent().getFromInstitution().getId())) {
+                JsfUtil.addErrorMessage("All Bills Settling Should be from a one single company.");
+                return;
+            }
+        }
+
+        if (getCurrent().getPaymentMethod() == null) {
+            return;
+        }
+        if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
+            return;
+        }
+
+        // Validate that no bill items have zero or negative values
+        for (BillItem item : getBillItems()) {
+            if (item.getNetValue() <= 0) {
+                JsfUtil.addErrorMessage("Cannot settle bills with zero or negative values. Please check item: " +
+                    (item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "Unknown Bill"));
+                return;
+            }
+        }
+
+        // Calculate total and validate it's greater than zero
+        double totalSettlementAmount = 0.0;
+        for (BillItem item : getBillItems()) {
+            totalSettlementAmount += item.getNetValue();
+        }
+
+        if (totalSettlementAmount <= 0) {
+            JsfUtil.addErrorMessage("Cannot settle bills with zero total amount. Total settlement amount must be greater than zero.");
+            return;
+        }
+
+        // Generate department bill number for OPD credit company payment
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+
+        // Calculate total using the same method as OPD batch bills
+        calulateTotalForSettlingCreditForOpdBatchBills();
+
+        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+        getCurrent().setTotal(getCurrent().getNetTotal());
+        getCurrent().setInsId(deptId);
+        getCurrent().setDeptId(deptId);
+        getCurrent().setBillType(BillType.CashRecieveBill);
+
+        // IMPORTANT: All settlements now use OPD_CREDIT_COMPANY_PAYMENT_RECEIVED regardless of original bill type
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+
+        getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getCurrent().setComments(comment);
+        getCurrent().setBillDate(new Date());
+        getCurrent().setBillTime(new Date());
+        getCurrent().setCreatedAt(new Date());
+        getCurrent().setCreater(getSessionController().getLoggedUser());
+        getCurrent().setNetTotal(getCurrent().getNetTotal());
+
+        // Save the main settlement bill
+        if (getCurrent().getId() == null) {
+            getBillFacade().create(getCurrent());
+        } else {
+            getBillFacade().edit(getCurrent());
+        }
+
+        // Save bill items and update reference bills
+        for (BillItem savingBillItem : getBillItems()) {
+            savingBillItem.setCreatedAt(new Date());
+            savingBillItem.setCreater(getSessionController().getLoggedUser());
+            savingBillItem.setBill(getCurrent());
+            savingBillItem.setGrossValue(savingBillItem.getNetValue());
+            getCurrent().getBillItems().add(savingBillItem);
+            if (savingBillItem.getId() == null) {
+                getBillItemFacade().create(savingBillItem);
+            } else {
+                getBillItemFacade().edit(savingBillItem);
+            }
+
+            // Update settled values in reference bills (works for both OPD and pharmacy bills)
+            updateSettlingCreditBillSettledValues(savingBillItem);
+        }
+
+        // Create payment records
+        paymentService.createPayment(current, getPaymentMethodData());
+
+        JsfUtil.addSuccessMessage("Bill Saved");
+        printPreview = true;
     }
 
 }

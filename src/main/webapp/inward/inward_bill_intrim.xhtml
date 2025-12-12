@@ -55,8 +55,11 @@
                                     <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
                                 </p:column>
                                 <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                                    <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{myItem.discharged}" />
-                                    <p:badge value="Not Yet" styleClass="ui-badge-info" rendered="#{!myItem.discharged}" />
+                                    <div class="d-flex justify-content-center">
+                                        <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
+                                            #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
+                                        </span>
+                                    </div>
                                 </p:column>
 
                             </p:autoComplete>
@@ -67,6 +70,26 @@
                                 class="ml-2"
                                 action="#{bhtSummeryController.createIntrimBillTable()}" >
                             </p:commandButton>
+
+                            <style>
+                                .discharged-badge {
+                                    background-color: #f44336;
+                                    color: white;
+                                    padding: 2px 8px;
+                                    border-radius: 12px;
+                                    font-size: 1em;
+                                    font-weight: bold;
+                                }
+
+                                .not-discharged-badge {
+                                    background-color: #2196F3;
+                                    color: white;
+                                    padding: 2px 8px;
+                                    border-radius: 12px;
+                                    font-size: 1em;
+                                    font-weight: bold;
+                                }
+                            </style>
 
                         </h:panelGrid>
                     </p:panel>
@@ -265,111 +288,117 @@
                             </f:facet>
                             <p:tabView  id="tvPt"  rendered="#{bhtSummeryController.patientEncounter ne null}" >
                                 <p:tab id="tabNewPt" title="Room Details" >
+                                    <h:panelGroup rendered="#{!bhtSummeryController.patientEncounter.roomAdmitted}">
+                                        <div class="d-flex justify-content-center">
+                                            <h:outputLabel value="Patient not admitted to the Room"/>
+                                        </div>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{bhtSummeryController.patientEncounter.roomAdmitted}">
+                                        <p:dataTable  value="#{bhtSummeryController.patientRooms}" var="rm" style="min-width:10em;">
+                                            <p:column headerText="Room">
+                                                <h:outputLabel value="#{rm.roomFacilityCharge.name}" style="display: inline;"/>
 
-                                    <p:dataTable  value="#{bhtSummeryController.patientRooms}" var="rm" style="min-width:10em;">
-                                        <p:column headerText="Room">
-                                            <h:outputLabel value="#{rm.roomFacilityCharge.name}" style="display: inline;"/>
+                                                <h:outputText value="&#xf058;" escape="false"
+                                                              styleClass="fa"
+                                                              rendered="#{rm.discharged}"
+                                                              title="Discharged" style="color: green; margin-left: 5px; display: inline;"/>
 
-                                            <h:outputText value="&#xf058;" escape="false"
-                                                          styleClass="fa"
-                                                          rendered="#{rm.discharged}"
-                                                          title="Discharged" style="color: green; margin-left: 5px; display: inline;"/>
+                                                <h:outputText value="&#xf057;" escape="false"
+                                                              styleClass="fa"
+                                                              rendered="#{not rm.discharged}"
+                                                              title="Not Discharged" style="color: red; margin-left: 5px; display: inline;"/>
 
-                                            <h:outputText value="&#xf057;" escape="false"
-                                                          styleClass="fa"
-                                                          rendered="#{not rm.discharged}"
-                                                          title="Not Discharged" style="color: red; margin-left: 5px; display: inline;"/>
+                                                <h:outputLabel value="&nbsp;-&nbsp;GAURDIAN ROOM" style="color: #008000; display: inline;"
+                                                               rendered="#{rm.patientRoomClass eq 'class com.divudi.core.entity.inward.GuardianRoom'}"/>
+                                            </p:column>
+                                            <p:column headerText="Admission" style="min-width:10em;">
+                                                <p:datePicker
+                                                    id="roomAdmittedTimeStamp"
+                                                    value="#{rm.admittedAt}"
+                                                    showTime="true"
+                                                    showButtonBar="true"
+                                                    timeInput="true"
+                                                    pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"
+                                                    size="11"/>
+                                            </p:column>
+                                            <p:column headerText="Discharge" style="min-width:10em;" >
+                                                <p:datePicker
+                                                    showTime="true"
+                                                    showButtonBar="true"
+                                                    timeInput="true"
+                                                    id="roomDischargeTimeStamp"
+                                                    value="#{rm.dischargedAt}"
+                                                    pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"
+                                                    size="11"/>
+                                            </p:column>
+                                            <p:column headerText="Room"   style="width: 5em; text-align: right;" >
+                                                <h:outputLabel value="#{rm.calculatedRoomCharge}" style="text-align: center" >
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Maintain"  style="width: 5em; text-align: right;" >
+                                                <h:outputLabel value="#{rm.calculatedMaintainCharge}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="MO"   style="width: 5em; text-align: right;">
+                                                <h:outputLabel  value="#{rm.calculatedMoCharge}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Nursing"   style="width: 5em; text-align: right;">
+                                                <h:outputLabel value="#{rm.calculatedNursingCharge}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Linen"  style="width: 5em; text-align: right;">
+                                                <h:outputLabel value="#{rm.calculatedLinenCharge}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Admin"  style="width: 5em; text-align: right;">
+                                                <h:outputLabel value="#{rm.calculatedAdministrationCharge}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Madical" style="width: 5em; text-align: right;">
+                                                <h:outputLabel value="#{rm.calculatedMedicalCareCharge}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Actions"  style="width: 10em;">
+                                                <div class="d-inline-flex"> <!-- Bootstrap class for inline flex container -->
+                                                    <!-- Discharge Button -->
+                                                    <p:commandButton 
+                                                        ajax="false"
+                                                        icon="fa fa-check-square"
+                                                        title="Discharge"
+                                                        class="ui-button-warning"
+                                                        action="#{roomChangeController.dischargeWithCurrentTime(rm)}" >
+                                                    </p:commandButton>
 
-                                            <h:outputLabel value="&nbsp;-&nbsp;GAURDIAN ROOM" style="color: #008000; display: inline;"
-                                                           rendered="#{rm.patientRoomClass eq 'class com.divudi.core.entity.inward.GuardianRoom'}"/>
-                                        </p:column>
-                                        <p:column headerText="Admission" style="min-width:10em;">
-                                            <p:datePicker
-                                                id="roomAdmittedTimeStamp"
-                                                value="#{rm.admittedAt}"
-                                                showTime="true"
-                                                showButtonBar="true"
-                                                timeInput="true"
-                                                pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"
-                                                size="11"/>
-                                        </p:column>
-                                        <p:column headerText="Discharge" style="min-width:10em;" >
-                                            <p:datePicker
-                                                showTime="true"
-                                                showButtonBar="true"
-                                                timeInput="true"
-                                                id="roomDischargeTimeStamp"
-                                                value="#{rm.dischargedAt}"
-                                                pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"
-                                                size="11"/>
-                                        </p:column>
-                                        <p:column headerText="Room"   style="width: 5em; text-align: right;" >
-                                            <h:outputLabel value="#{rm.calculatedRoomCharge}" style="text-align: center" >
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Maintain"  style="width: 5em; text-align: right;" >
-                                            <h:outputLabel value="#{rm.calculatedMaintainCharge}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="MO"   style="width: 5em; text-align: right;">
-                                            <h:outputLabel  value="#{rm.calculatedMoCharge}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Nursing"   style="width: 5em; text-align: right;">
-                                            <h:outputLabel value="#{rm.calculatedNursingCharge}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Linen"  style="width: 5em; text-align: right;">
-                                            <h:outputLabel value="#{rm.calculatedLinenCharge}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Admin"  style="width: 5em; text-align: right;">
-                                            <h:outputLabel value="#{rm.calculatedAdministrationCharge}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Madical" style="width: 5em; text-align: right;">
-                                            <h:outputLabel value="#{rm.calculatedMedicalCareCharge}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Actions"  style="width: 10em;">
-                                            <div class="d-inline-flex"> <!-- Bootstrap class for inline flex container -->
-                                                <!-- Discharge Button -->
-                                                <p:commandButton 
-                                                    ajax="false"
-                                                    icon="fa fa-check-square"
-                                                    title="Discharge"
-                                                    class="ui-button-warning"
-                                                    action="#{roomChangeController.dischargeWithCurrentTime(rm)}" >
-                                                </p:commandButton>
+                                                    <!-- Cancel Discharge Button -->
+                                                    <p:commandButton 
+                                                        ajax="false"
+                                                        icon="fa fa-times-circle"
+                                                        title="Cancel Discharge"
+                                                        class="ui-button-warning mx-2"
+                                                        action="#{roomChangeController.dischargeCancel(rm)}" >
+                                                    </p:commandButton>
+                                                    <!-- Update Charges Button -->
+                                                    <p:commandButton 
+                                                        ajax="false"
+                                                        icon="fa fa-pencil-square"
+                                                        title="Update Charges"
+                                                        action="#{bhtSummeryController.updatePatientRoom(rm)}"
+                                                        class="ui-button-info" >
+                                                    </p:commandButton>
 
-                                                <!-- Cancel Discharge Button -->
-                                                <p:commandButton 
-                                                    ajax="false"
-                                                    icon="fa fa-times-circle"
-                                                    title="Cancel Discharge"
-                                                    class="ui-button-warning mx-2"
-                                                    action="#{roomChangeController.dischargeCancel(rm)}" >
-                                                </p:commandButton>
-                                                <!-- Update Charges Button -->
-                                                <p:commandButton 
-                                                    ajax="false"
-                                                    icon="fa fa-pencil-square"
-                                                    title="Update Charges"
-                                                    action="#{bhtSummeryController.updatePatientRoom(rm)}"
-                                                    class="ui-button-info" >
-                                                </p:commandButton>
+                                                </div>
+                                            </p:column>
 
-                                            </div>
-                                        </p:column>
-
-                                    </p:dataTable>
+                                        </p:dataTable>
+                                    </h:panelGroup>
                                 </p:tab>
 
                                 <p:tab id="tabTimed" title="Timed Service Details"  >
@@ -762,6 +791,8 @@
                                             <h:outputLabel value="#{pf.feeValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
+                                            
+                                            <p:badge class="mx-2" value="Free Of Charge" rendered="#{pf.freeOfCharge}" severity="warning"></p:badge>
                                         </p:column>
                                         <p:column headerText="Fee At">
                                             <h:outputLabel value="#{pf.feeAt}">

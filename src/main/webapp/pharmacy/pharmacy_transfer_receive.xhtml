@@ -8,6 +8,21 @@
                 xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <ui:define name="subcontent">
+        <!-- Admin Config Button (Admin Only) -->
+        <div class="d-flex justify-content-start mb-2">
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                <p:commandButton
+                    value="Config"
+                    icon="fa fa-cog"
+                    title="Page Configuration Management"
+                    action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_transfer_receive')}"
+                    ajax="false"
+                    styleClass="ui-button-secondary ui-button-sm p-button-outlined"
+                    style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                </p:commandButton>
+            </h:panelGroup>
+        </div>
+
         <h:form>
             <p:panel rendered="#{!transferReceiveController.printPreview}">
                 <p:panel>
@@ -231,7 +246,6 @@
                     <h:panelGroup
                         rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Transfer Receive Receipt is A4',true)}"
                         styleClass="noBorder">
-                        sdfsdf
                         <ph:transferReceive bill="#{transferReceiveController.receivedBill}" />
                     </h:panelGroup>
 

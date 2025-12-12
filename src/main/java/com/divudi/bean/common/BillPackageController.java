@@ -325,6 +325,16 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         batchBill.setNetTotal(dbl);
         batchBill.setTotal(dblTot);
         batchBill.setDiscount(dblTot - dbl);
+
+        // Initialize balance field for credit bills
+        if (paymentMethod == PaymentMethod.Credit) {
+            double totalAmount = Math.abs(batchBill.getNetTotal());
+            if (batchBill.getVat() != 0.0) {
+                totalAmount += Math.abs(batchBill.getVat());
+            }
+            batchBill.setBalance(totalAmount);
+        }
+
         getBillFacade().edit(batchBill);
 
     }
@@ -438,6 +448,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (configOptionApplicationController.getBooleanValueByKey("Need Patient Area to save Patient in Package Billing", false)) {
             if (getPatient().getPerson().getArea() == null || getPatient().getPerson().getArea().getName().trim().isEmpty()) {
                 JsfUtil.addErrorMessage("Please select patient area.");
+                return true;
+            }
+        }
+        
+        if(configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false) 
+                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for OPD from the system", false)){
+            if(getPatient().isBlacklisted()){
+                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
                 return true;
             }
         }
@@ -1170,6 +1188,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         temp.setComments(comment);
 
         if (temp.getId() == null) {
+            // Initialize balance field for credit bills before creating
+            if (paymentMethod == PaymentMethod.Credit) {
+                double totalAmount = Math.abs(temp.getNetTotal());
+                if (temp.getVat() != 0.0) {
+                    totalAmount += Math.abs(temp.getVat());
+                }
+                temp.setBalance(totalAmount);
+            }
             getFacade().create(temp);
         }
         return temp;

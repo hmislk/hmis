@@ -6,6 +6,10 @@ import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 
 /**
@@ -61,7 +65,7 @@ public class VersionController {
                 gitCommitIdAbbrev = props.getProperty("git.commit.id.abbrev", null);
                 gitBranch = props.getProperty("git.branch", null);
                 String bt = props.getProperty("git.build.time", null);
-                gitBuildTime = (bt == null || bt.isEmpty()) ? null : bt;
+                gitBuildTime = convertUtcToServerTimeZone(bt);
             } else {
                 gitCommitIdAbbrev = null;
                 gitBranch = null;
@@ -72,6 +76,37 @@ public class VersionController {
             gitCommitIdAbbrev = null;
             gitBranch = null;
             gitBuildTime = null;
+        }
+    }
+
+    /**
+     * Converts UTC timestamp from git.properties to server's default time zone
+     * @param utcTimestamp The UTC timestamp string (format: "yyyy-MM-dd HH:mm:ss UTC")
+     * @return Formatted timestamp in server's default time zone, or null if parsing fails
+     */
+    private String convertUtcToServerTimeZone(String utcTimestamp) {
+        if (utcTimestamp == null || utcTimestamp.isEmpty()) {
+            return null;
+        }
+
+        try {
+            // Parse the UTC timestamp (format: "yyyy-MM-dd HH:mm:ss UTC")
+            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss 'UTC'");
+            LocalDateTime localDateTime = LocalDateTime.parse(utcTimestamp, inputFormatter);
+
+            // Convert to ZonedDateTime in UTC
+            ZonedDateTime utcTime = ZonedDateTime.of(localDateTime, ZoneId.of("UTC"));
+
+            // Convert to server's default time zone
+            ZonedDateTime serverTime = utcTime.withZoneSameInstant(ZoneId.systemDefault());
+
+            // Format the output with time zone abbreviation
+            DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z");
+            return serverTime.format(outputFormatter);
+        } catch (Exception e) {
+            // If parsing fails, return the original timestamp
+            e.printStackTrace();
+            return utcTimestamp;
         }
     }
 

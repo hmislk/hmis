@@ -25,7 +25,7 @@
                  font-weight: bold!important;
                  font-size: 15px!important;
                  font-weight: bold;">
-                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+                <h:outputLabel value="#{cc.attrs.bill.department.site.name}" />
             </div>
             <div style="text-align: center!important;
                  font-weight: bold!important;
@@ -54,13 +54,69 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="Sale Bill"   />   
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true or cc.attrs.cancel eq true}" />
+                <h:outputLabel value="Sale Bill" rendered="#{cc.attrs.cancel ne true}"   />
+                <h:outputLabel value="CANCELLATION RECEIPT" rendered="#{cc.attrs.cancel eq true}"   />
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
             </div>
             <div class="billline">
-                <h:outputLabel value="-----------------------------------------------"   />                           
+                <h:outputLabel value="-----------------------------------------------"   />
             </div>
+
+            <!-- Original Bill Details Section (when cancellation) -->
+            <h:panelGroup rendered="#{cc.attrs.cancel eq true}">
+                <div class="billDetails">
+                    <table style="width: 90%; margin-left: 5%">
+                        <tr>
+                            <td colspan="3" style="text-align: center; font-weight: bold; padding: 5px 0;">
+                                <h:outputLabel value="ORIGINAL BILL DETAILS"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 30%; text-align: right;">
+                                <h:outputLabel value="Date"/>
+                            </td>
+                            <td style="width: 50px;" class="d-flex justify-content-center">:</td>
+                            <td style="width: 60%; text-align: left;">
+                                <h:outputLabel value="#{cc.attrs.bill.billedBill.createdAt}">
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 30%; text-align: right;">
+                                <h:outputLabel value="Bill No"/>
+                            </td>
+                            <td style="width: 50px;" class="d-flex justify-content-center">:</td>
+                            <td style="width: 60%; text-align: left;">
+                                <h:outputLabel value="#{cc.attrs.bill.billedBill.deptId}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 30%; text-align: right;">
+                                <h:outputLabel value="User"/>
+                            </td>
+                            <td style="width: 50px;" class="d-flex justify-content-center">:</td>
+                            <td style="width: 60%; text-align: left;">
+                                <h:outputLabel value="#{cc.attrs.bill.billedBill.creater.name}"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="billline">
+                    <h:outputLabel value="-----------------------------------------------"   />
+                </div>
+
+                <div class="billDetails">
+                    <table style="width: 90%; margin-left: 5%">
+                        <tr>
+                            <td colspan="3" style="text-align: center; font-weight: bold; padding: 5px 0;">
+                                <h:outputLabel value="CANCELLATION DETAILS"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </h:panelGroup>
 
             <div class="billDetails" >
                 <table style="width: 90%; margin-left: 5%" >
@@ -347,10 +403,8 @@
                 Return accepted within 3 days only
                 <br/>
                 THANK YOU !
-                <h:panelGroup  rendered="#{sessionController.loggedPreference.pharmacyBillFooter ne null}">
-                    <br/>
-                </h:panelGroup>
-                <h:outputLabel value="#{sessionController.loggedPreference.pharmacyBillFooter}" ></h:outputLabel>
+                <br/>
+                Powered by CareCode (Pvt) Ltd.
             </div>
 
 

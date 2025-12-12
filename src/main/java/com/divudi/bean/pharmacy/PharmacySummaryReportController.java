@@ -204,6 +204,8 @@ public class PharmacySummaryReportController implements Serializable {
     private EnumController enumController;
     @Inject
     BillController billController;
+    @Inject
+    DataAdministrationController dataAdministrationController;
     // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
@@ -287,6 +289,13 @@ public class PharmacySummaryReportController implements Serializable {
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToPharmacyIncomeReport() {
+        reportViewTypes = Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_TYPE,
+                ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
+                ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE
+        );
+        reportViewType = ReportViewType.BY_BILL;
         return "/pharmacy/reports/summary_reports/pharmacy_income_report?faces-redirect=true";
     }
 
@@ -344,6 +353,12 @@ public class PharmacySummaryReportController implements Serializable {
 // <editor-fold defaultstate="collapsed" desc="Functions">
 
     public void processDailyStockBalanceReport() {
+        System.out.println(">>> OLD REPORT processDailyStockBalanceReport START <<<");
+        System.out.println("OLD REPORT - From Date: " + fromDate);
+        System.out.println("OLD REPORT - Department: " + department);
+        System.out.println("OLD REPORT - Department ID: " + (department != null ? department.getId() : "null"));
+        System.out.println("OLD REPORT - Department Name: " + (department != null ? department.getName() : "null"));
+
 //        reportTimerController.trackReportExecution(() -> {
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
@@ -353,7 +368,7 @@ public class PharmacySummaryReportController implements Serializable {
             JsfUtil.addErrorMessage("Please select a date");
             return;
         }
-        
+
 //        Report can be generated for today as well
 //        Date today = new Date();
 //        if (!fromDate.before(today)) {
@@ -364,8 +379,10 @@ public class PharmacySummaryReportController implements Serializable {
         dailyStockBalanceReport = new DailyStockBalanceReport();
         dailyStockBalanceReport.setDate(fromDate);
         dailyStockBalanceReport.setDepartment(department);
+        // Calculate Opening Stock Value at Retail Rate
 
         // Calculate Opening Stock Value at Retail Rate
+        System.out.println("OLD REPORT - Calculating opening stock...");
         double openingStockValueAtRetailRate = calculateStockValueAtRetailRate(fromDate, department);
         dailyStockBalanceReport.setOpeningStockValue(openingStockValueAtRetailRate);
 
@@ -1448,8 +1465,8 @@ public class PharmacySummaryReportController implements Serializable {
     public void addFinancialDetailsForPharmacySaleBillsFromBillItemData() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
         List<Bill> pbis = billService.fetchBills(
-                billController.getFromDate(),
-                billController.getToDate(),
+                dataAdministrationController.getFromDate(),
+                dataAdministrationController.getToDate(),
                 null, null, null, null,
                 billTypeAtomics,
                 null, null
@@ -1576,6 +1593,429 @@ public class PharmacySummaryReportController implements Serializable {
 
             getBillFacade().edit(b);
         }
+    }
+
+    public List<BillTypeAtomic> getPharmacyPurchaseOrderBillTypes() {
+        return Arrays.asList(
+                BillTypeAtomic.PHARMACY_ORDER,
+                BillTypeAtomic.PHARMACY_ORDER_PRE,
+                BillTypeAtomic.PHARMACY_ORDER_CANCELLED,
+                BillTypeAtomic.PHARMACY_ORDER_APPROVAL,
+                BillTypeAtomic.PHARMACY_ORDER_APPROVAL_CANCELLED
+        );
+    }
+
+    public void addFinancialDetailsForPharmacyPurchaseOrdersFromBillItemData() {
+        System.out.println("=== Starting Purchase Order Financial Details Correction ===");
+        System.out.println("Date Range: " + dataAdministrationController.getFromDate() + " to " + dataAdministrationController.getToDate());
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyPurchaseOrderBillTypes();
+        List<Bill> bills = billService.fetchBills(
+                dataAdministrationController.getFromDate(),
+                dataAdministrationController.getToDate(),
+                null, null, null, null,
+                billTypeAtomics,
+                null, null
+        );
+
+        System.out.println("Found " + bills.size() + " Purchase Order bills to process");
+
+        int processedBills = 0;
+        int skippedBills = 0;
+        int processedItems = 0;
+        int skippedItems = 0;
+
+        for (Bill b : bills) {
+            if (b == null) {
+                skippedBills++;
+                continue;
+            }
+
+            System.out.println("\nProcessing Bill: " + b.getInsId() + " (ID: " + b.getId() + ")");
+
+            BillTypeAtomic bta = Optional
+                    .ofNullable(b)
+                    .map(Bill::getBillTypeAtomic)
+                    .orElse(null);
+            if (bta == null || bta.getBillCategory() == null) {
+                skippedBills++;
+                continue;
+            }
+            BillCategory bc = bta.getBillCategory();
+            System.out.println("  Bill Type: " + bta + ", Category: " + bc);
+
+            if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
+                skippedBills++;
+                continue;
+            }
+
+            System.out.println("  Bill has " + b.getBillItems().size() + " items");
+
+            double saleValue = 0.0;
+            double purchaseValue = 0.0;
+            double costValue = 0.0;
+
+            for (BillItem bi : b.getBillItems()) {
+                PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+                if (pbi == null) {
+                    skippedItems++;
+                    continue;
+                }
+
+                // For POs, get data from PBI and BillItem (no ItemBatch yet)
+                double qty = Math.abs(pbi.getQty());
+                double freeQty = Math.abs(pbi.getFreeQty());
+
+                // Get rates from BillItem since no ItemBatch exists for POs
+                double rate = Math.abs(bi.getRate());  // This is the purchase rate from supplier
+                double grossValue = Math.abs(bi.getGrossValue());
+                double netValue = Math.abs(bi.getNetValue());
+
+                System.out.println("    PO Item: " + bi.getItem().getName());
+                System.out.println("      pbi.qty: " + pbi.getQty() + ", pbi.freeQty: " + pbi.getFreeQty());
+                System.out.println("      bi.rate: " + bi.getRate() + ", bi.grossValue: " + bi.getGrossValue() + ", bi.netValue: " + bi.getNetValue());
+
+                double factor = (bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -1 : 1;
+
+                // For POs, use the rate from BillItem for all rate types
+                double itemValue = factor * rate * qty;
+
+                BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+                if (bifd == null) {
+                    bifd = new BillItemFinanceDetails();
+                    bifd.setBillItem(bi);
+                    bi.setBillItemFinanceDetails(bifd);
+                }
+
+                // Fill basic values if missing - using BillItem data
+                if (bifd.getGrossRate() == null) {
+                    bifd.setGrossRate(BigDecimal.valueOf(rate));
+                }
+                if (bifd.getQuantityByUnits() == null) {
+                    bifd.setQuantityByUnits(BigDecimal.valueOf(qty));
+                }
+                // For POs, set all value types to the same since we don't have batch data
+                if (bifd.getValueAtCostRate() == null) {
+                    bifd.setValueAtCostRate(BigDecimal.valueOf(itemValue));
+                }
+                if (bifd.getValueAtPurchaseRate() == null) {
+                    bifd.setValueAtPurchaseRate(BigDecimal.valueOf(itemValue));
+                }
+                if (bifd.getValueAtRetailRate() == null) {
+                    bifd.setValueAtRetailRate(BigDecimal.valueOf(itemValue));
+                }
+
+                // Set quantity and freeQuantity from PBI
+                if (bifd.getQuantity() == null) {
+                    bifd.setQuantity(BigDecimal.valueOf(qty));
+                }
+                if (bifd.getFreeQuantity() == null) {
+                    bifd.setFreeQuantity(BigDecimal.valueOf(freeQty));
+                }
+
+                // Set lineGrossRate and lineGrossTotal from BillItem
+                if (bifd.getLineGrossRate() == null) {
+                    bifd.setLineGrossRate(BigDecimal.valueOf(rate));
+                }
+                if (bifd.getLineGrossTotal() == null) {
+                    // Use grossValue from BillItem if available, otherwise calculate
+                    double lineTotal = (grossValue > 0) ? factor * grossValue : factor * rate * qty;
+                    bifd.setLineGrossTotal(BigDecimal.valueOf(lineTotal));
+                }
+                // Debug output for Purchase Orders
+
+                // Debug output for Purchase Orders
+                System.out.println("      BIFD values set:");
+                System.out.println("      lineGrossRate: " + bifd.getLineGrossRate());
+                System.out.println("      quantity: " + bifd.getQuantity());
+                System.out.println("      freeQuantity: " + bifd.getFreeQuantity());
+
+                // Totals
+                saleValue += itemValue;
+                purchaseValue += itemValue;
+                costValue += itemValue;
+                billItemFacade.edit(bi);
+                processedItems++;
+            }
+
+
+            BillFinanceDetails bfd = b.getBillFinanceDetails();
+            if (bfd == null) {
+                bfd = new BillFinanceDetails(b);
+                b.setBillFinanceDetails(bfd);
+            }
+
+            bfd.setTotalCostValue(BigDecimal.valueOf(costValue));
+            bfd.setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
+            bfd.setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
+
+            StockBill sb = b.getStockBill();
+            if (sb != null) {
+                sb.setStockValueAsSaleRate(saleValue);
+                sb.setStockValueAtPurchaseRates(purchaseValue);
+                sb.setStockValueAsCostRate(costValue);
+            }
+
+            // Bill Gross Total based on config
+            boolean txByCr = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate");
+            boolean txByPr = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate");
+
+            if (txByCr) {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(costValue));
+            } else if (txByPr) {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(purchaseValue));
+            } else {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(saleValue));
+            }
+
+            getBillFacade().edit(b);
+            processedBills++;
+        }
+
+        System.out.println("\n=== Purchase Order Financial Details Correction Complete ===");
+        System.out.println("Total bills found: " + bills.size());
+        System.out.println("Bills processed: " + processedBills);
+        System.out.println("Bills skipped: " + skippedBills);
+        System.out.println("Items processed: " + processedItems);
+    }
+
+    public void addFinancialDetailsForPharmacyGRNsFromBillItemData() {
+        System.out.println("=== Starting GRN Financial Details Correction ===");
+        System.out.println("Date Range: " + dataAdministrationController.getFromDate() + " to " + dataAdministrationController.getToDate());
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyProcurementBillTypes();
+        List<Bill> bills = billService.fetchBills(
+                dataAdministrationController.getFromDate(),
+                dataAdministrationController.getToDate(),
+                null, null, null, null,
+                billTypeAtomics,
+                null, null
+        );
+
+        System.out.println("Found " + bills.size() + " GRN bills to process");
+
+        int processedBills = 0;
+        int skippedBills = 0;
+        int processedItems = 0;
+        int skippedItems = 0;
+
+        for (Bill b : bills) {
+            if (b == null) {
+                skippedBills++;
+                continue;
+            }
+
+            System.out.println("\nProcessing Bill: " + b.getInsId() + " (ID: " + b.getId() + ")");
+
+            BillTypeAtomic bta = Optional
+                    .ofNullable(b)
+                    .map(Bill::getBillTypeAtomic)
+                    .orElse(null);
+            if (bta == null || bta.getBillCategory() == null) {
+                skippedBills++;
+                continue;
+            }
+            BillCategory bc = bta.getBillCategory();
+            System.out.println("  Bill Type: " + bta + ", Category: " + bc);
+
+            if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
+                skippedBills++;
+                continue;
+            }
+
+            System.out.println("  Bill has " + b.getBillItems().size() + " items");
+
+            double saleValue = 0.0;
+            double purchaseValue = 0.0;
+            double costValue = 0.0;
+
+            for (BillItem bi : b.getBillItems()) {
+                PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+                if (pbi == null) {
+                    skippedItems++;
+                    continue;
+                }
+                if (pbi.getItemBatch() == null) {
+                    skippedItems++;
+                    continue;
+                }
+
+                // Get quantities from PBI (always positive)
+                double qty = Math.abs(pbi.getQty());
+                double freeQty = Math.abs(pbi.getFreeQty());
+                double totalQty = qty + freeQty;
+
+                // Get rates from ItemBatch and PBI (always positive)
+                double retailRate = Math.abs(pbi.getRetailRate());
+                double purchaseRate = Math.abs(pbi.getItemBatch().getPurcahseRate());
+                double cRate = Math.abs(pbi.getItemBatch().getCostRate());
+
+                // Get values from BillItem - preserve original sign for netValue
+                double lineDiscount = Math.abs(bi.getDiscount());
+                double biGrossValue = bi.getGrossValue();  // Keep original sign
+                double biNetValue = bi.getNetValue();      // Keep original sign
+                double biRate = bi.getRate();              // Keep original sign
+
+                System.out.println("    GRN Item: " + bi.getItem().getName());
+                System.out.println("      pbi - qty: " + pbi.getQty() + ", freeQty: " + pbi.getFreeQty() + ", retailRate: " + pbi.getRetailRate());
+                System.out.println("      itemBatch - purchaseRate: " + pbi.getItemBatch().getPurcahseRate() + ", costRate: " + pbi.getItemBatch().getCostRate());
+                System.out.println("      bi - rate: " + bi.getRate() + ", discount: " + bi.getDiscount() + ", grossValue: " + bi.getGrossValue() + ", netValue: " + bi.getNetValue());
+
+                // For GRNs: BillCategory.BILL means expense (negative), REFUND means money back (positive)
+                // This is opposite of sales, so we need to account for it
+                double factor = (bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? 1 : -1;
+
+                double itemSaleValue = factor * retailRate * qty;
+                double itemPurchaseValue = factor * purchaseRate * qty;
+                double itemCostValue = factor * cRate * totalQty;  // Cost includes free qty
+
+                BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+                if (bifd == null) {
+                    bifd = new BillItemFinanceDetails();
+                    bifd.setBillItem(bi);
+                    bi.setBillItemFinanceDetails(bifd);
+                }
+
+                // Fill basic values if missing
+                if (bifd.getGrossRate() == null) {
+                    bifd.setGrossRate(BigDecimal.valueOf(purchaseRate));  // Use purchase rate as gross rate for GRN
+                }
+                if (bifd.getQuantityByUnits() == null) {
+                    bifd.setQuantityByUnits(BigDecimal.valueOf(qty));
+                }
+                if (bifd.getValueAtCostRate() == null) {
+                    bifd.setValueAtCostRate(BigDecimal.valueOf(itemCostValue));
+                }
+                if (bifd.getValueAtPurchaseRate() == null) {
+                    bifd.setValueAtPurchaseRate(BigDecimal.valueOf(itemPurchaseValue));
+                }
+                if (bifd.getValueAtRetailRate() == null) {
+                    bifd.setValueAtRetailRate(BigDecimal.valueOf(itemSaleValue));
+                }
+
+                // Set quantity and freeQuantity from PBI
+                if (bifd.getQuantity() == null) {
+                    bifd.setQuantity(BigDecimal.valueOf(qty));
+                }
+                if (bifd.getFreeQuantity() == null) {
+                    bifd.setFreeQuantity(BigDecimal.valueOf(freeQty));
+                }
+                if (bifd.getTotalQuantityByUnits() == null) {
+                    bifd.setTotalQuantityByUnits(BigDecimal.valueOf(totalQty));
+                }
+
+                // Set lineGrossRate (Purchase Rate from ItemBatch)
+                if (bifd.getLineGrossRate() == null) {
+                    bifd.setLineGrossRate(BigDecimal.valueOf(purchaseRate));
+                }
+
+                // Set lineDiscountRate (discount per unit)
+                if (bifd.getLineDiscountRate() == null) {
+                    double discountRate = (qty > 0) ? lineDiscount / qty : 0;
+                    bifd.setLineDiscountRate(BigDecimal.valueOf(discountRate));
+                }
+
+                // Set retailSaleRate and retailSaleRatePerUnit
+                if (bifd.getRetailSaleRate() == null) {
+                    bifd.setRetailSaleRate(BigDecimal.valueOf(retailRate));
+                }
+                if (bifd.getRetailSaleRatePerUnit() == null) {
+                    bifd.setRetailSaleRatePerUnit(BigDecimal.valueOf(retailRate));  // Assuming units, not packs
+                }
+
+                // Set lineGrossTotal (from BillItem grossValue or calculate from purchase rate)
+                if (bifd.getLineGrossTotal() == null) {
+                    double lineTotal;
+                    if (Math.abs(biGrossValue) > 0.01) {
+                        // Use existing value from BillItem if available
+                        lineTotal = biGrossValue;
+                    } else {
+                        // Calculate: for GRN (factor=-1), this will be negative
+                        lineTotal = factor * purchaseRate * qty;
+                    }
+                    bifd.setLineGrossTotal(BigDecimal.valueOf(lineTotal));
+                }
+
+                // Set lineNetTotal (from BillItem netValue or calculate)
+                if (bifd.getLineNetTotal() == null) {
+                    double lineNet;
+                    if (Math.abs(biNetValue) > 0.01) {
+                        // Use existing value from BillItem if available
+                        lineNet = biNetValue;
+                    } else {
+                        // Calculate: purchase rate * qty with factor
+                        lineNet = factor * purchaseRate * qty;
+                    }
+                    bifd.setLineNetTotal(BigDecimal.valueOf(lineNet));
+                }
+
+                // Set totalCost (cost for total qty including free - always positive)
+                if (bifd.getTotalCost() == null) {
+                    bifd.setTotalCost(BigDecimal.valueOf(Math.abs(itemCostValue)));
+                }
+                // Debug output for GRNs
+
+                // Debug output for GRNs
+                System.out.println("      Calculated values:");
+                System.out.println("        factor: " + factor + " (bc: " + bc + ")");
+                System.out.println("        itemSaleValue: " + itemSaleValue);
+                System.out.println("        itemPurchaseValue: " + itemPurchaseValue);
+                System.out.println("        itemCostValue: " + itemCostValue);
+                System.out.println("      BIFD values set:");
+                System.out.println("        lineGrossRate: " + bifd.getLineGrossRate());
+                System.out.println("        quantity: " + bifd.getQuantity());
+                System.out.println("        freeQuantity: " + bifd.getFreeQuantity());
+                System.out.println("        totalQuantityByUnits: " + bifd.getTotalQuantityByUnits());
+                System.out.println("        lineGrossTotal: " + bifd.getLineGrossTotal());
+                System.out.println("        lineDiscountRate: " + bifd.getLineDiscountRate());
+                System.out.println("        retailSaleRate: " + bifd.getRetailSaleRate());
+                System.out.println("        lineNetTotal: " + bifd.getLineNetTotal());
+
+                // Totals - for GRNs, all totals are positive (inventory values)
+                saleValue += Math.abs(itemSaleValue);
+                purchaseValue += Math.abs(itemPurchaseValue);
+                costValue += Math.abs(itemCostValue);
+                billItemFacade.edit(bi);
+                processedItems++;
+            }
+
+
+            BillFinanceDetails bfd = b.getBillFinanceDetails();
+            if (bfd == null) {
+                bfd = new BillFinanceDetails(b);
+                b.setBillFinanceDetails(bfd);
+            }
+
+            bfd.setTotalCostValue(BigDecimal.valueOf(costValue));
+            bfd.setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
+            bfd.setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
+
+            StockBill sb = b.getStockBill();
+            if (sb != null) {
+                sb.setStockValueAsSaleRate(saleValue);
+                sb.setStockValueAtPurchaseRates(purchaseValue);
+                sb.setStockValueAsCostRate(costValue);
+            }
+
+            // Bill Gross Total based on config
+            boolean txByCr = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate");
+            boolean txByPr = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate");
+
+            if (txByCr) {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(costValue));
+            } else if (txByPr) {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(purchaseValue));
+            } else {
+                bfd.setBillGrossTotal(BigDecimal.valueOf(saleValue));
+            }
+
+            getBillFacade().edit(b);
+            processedBills++;
+        }
+
+        System.out.println("\n=== GRN Financial Details Correction Complete ===");
+        System.out.println("Total bills found: " + bills.size());
+        System.out.println("Bills processed: " + processedBills);
+        System.out.println("Bills skipped: " + skippedBills);
+        System.out.println("Items processed: " + processedItems);
     }
 
     public void calPharmacyIncomeAndCostReportByBill() {

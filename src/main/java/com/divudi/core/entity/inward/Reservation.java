@@ -2,6 +2,7 @@ package com.divudi.core.entity.inward;
 
 import com.divudi.core.entity.Appointment;
 import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
@@ -30,7 +31,7 @@ public class Reservation implements Serializable {
     @ManyToOne
     private Patient patient;
     @ManyToOne
-    private RoomFacilityCharge Room;
+    private RoomFacilityCharge room;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date reservedFrom;
@@ -50,6 +51,9 @@ public class Reservation implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    
+    @ManyToOne
+    private PatientEncounter reservationEncounter;
 
     public Long getId() {
         return id;
@@ -76,11 +80,11 @@ public class Reservation implements Serializable {
     }
 
     public RoomFacilityCharge getRoom() {
-        return Room;
+        return room;
     }
 
-    public void setRoom(RoomFacilityCharge Room) {
-        this.Room = Room;
+    public void setRoom(RoomFacilityCharge room) {
+        this.room = room;
     }
 
     public Date getReservedFrom() {
@@ -145,6 +149,39 @@ public class Reservation implements Serializable {
 
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
+    }
+
+    public PatientEncounter getReservationEncounter() {
+        return reservationEncounter;
+    }
+
+    public void setReservationEncounter(PatientEncounter reservationEncounter) {
+        this.reservationEncounter = reservationEncounter;
+    }
+
+    @Override
+    public String toString() {
+        return "com.divudi.core.entity.inward.Reservation[ id=" + id + " ]";
+    }
+    
+    @Override
+    public int hashCode() {
+        int hash = 0;
+        hash += (id != null ? id.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof Reservation)) {
+            return false;
+        }
+        Reservation other = (Reservation) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
     }
 
 }

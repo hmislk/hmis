@@ -68,6 +68,15 @@ public enum Privileges {
     InwardRoom("Inward Room"),
     InwardRoomRoomOccupency("Inward Room Occupancy"),
     InwardRoomRoomChange("Inward Room Change"),
+    
+    // IP Appointment
+    InwardAppointmentMenu("IP Appointment Menu"),
+    AddInwardAppointment("Add IP Appointment"),
+    InwardAppointmentAdmission("IP Appointment to Admit"),
+    InwardAppointmentUpdate("IP Appointment Update"),
+    InwardAppointmentCancel("IP Appointment Cancel"),
+    
+    WatingRoomAdmitPatient("Wating Room Admit Patient"),
     InwardRoomGurdianRoomChange("Inward Guardian Room Change"),
     InwardRoomDischarge("Inward Room Discharge"),
     InwardServicesAndItems("Inward Services and Items"),
@@ -980,6 +989,14 @@ public enum Privileges {
             case NursingWorkBench:
             case ShowDrugCharges:
                 return "Nursing Work Bench";
+                
+            case WatingRoomAdmitPatient:
+            case InwardAppointmentMenu:
+            case AddInwardAppointment:
+            case InwardAppointmentAdmission:
+            case InwardAppointmentUpdate:
+            case InwardAppointmentCancel:
+                return "Inward";
                 
             default:
                 return this.toString();

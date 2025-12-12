@@ -133,6 +133,7 @@ import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
 import java.nio.charset.StandardCharsets;
+import com.google.gson.Gson;
 
 /**
  * @author Buddhika
@@ -236,6 +237,8 @@ public class BillSearch implements Serializable {
     SearchController searchController;
     @Inject
     CashRecieveBillController cashRecieveBillController;
+    @Inject
+    CreditCompanyBillSearch creditCompanyBillSearch;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
@@ -377,6 +380,11 @@ public class BillSearch implements Serializable {
 
     private Payment payment;
     private int billItemSize;
+
+    // Change From Institution properties
+    private Institution newFromInstitution;
+    private Department newFromDepartment;
+    private String changeFromInstitutionReason;
 
     public String navigateToBillPaymentOpdBill() {
         return "bill_payment_opd?faces-redirect=true";
@@ -2503,6 +2511,13 @@ public class BillSearch implements Serializable {
                 return;
             }
         }
+        
+        List<PatientInvestigation> investigations = billService.fetchPatientInvestigations(getBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
+
+        if (investigations != null && !investigations.isEmpty()) {
+            JsfUtil.addErrorMessage("Some Investigations's Samples Send to Out Lab.");
+            return ;
+        }
 
         if (errorsPresentOnOpdBillCancellation()) {
             return;
@@ -2635,6 +2650,14 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Saved bill");
             ccBillCancellingStarted.set(false);
             return;
+        }
+        
+        List<PatientInvestigation> investigations = billService.fetchPatientInvestigations(getBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
+
+        if (investigations != null && !investigations.isEmpty()) {
+            ccBillCancellingStarted.set(false);
+            JsfUtil.addErrorMessage("Some Investigations's Samples Send to Out Lab.");
+            return ;
         }
 
         if (!getWebUserController().hasPrivilege("BillCancel")) {
@@ -3846,6 +3869,103 @@ public class BillSearch implements Serializable {
         return "/credit/credit_compnay_bill_opd?faces-redirect=true";
     }
 
+    public String navigateToViewInpatientCreditBatchBillSettle() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to view");
+            return "";
+        }
+        creditCompanyBillSearch.setBill((BilledBill) bill);
+        creditCompanyBillSearch.setPrintPreview(true);
+        return "/credit/inpatient_credit_company_bill_reprint?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to OPD credit settlement cancellation print page.
+     * This shows the comprehensive cancellation receipt with both original settlement and cancellation details.
+     */
+    public String navigateToViewOpdCreditBatchBillCancellation() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to view");
+            return "";
+        }
+
+        // Handle both CancelledBill and regular Bill objects
+        Bill originalBill;
+        if (bill instanceof CancelledBill) {
+            // If we have a CancelledBill, get the original settlement bill
+            originalBill = bill.getBilledBill();
+            if (originalBill == null) {
+                JsfUtil.addErrorMessage("Original settlement bill not found");
+                return "";
+            }
+        } else {
+            // If we have the original bill, use it directly
+            originalBill = bill;
+        }
+
+        creditCompanyBillSearch.setBill((BilledBill) originalBill);
+        creditCompanyBillSearch.setPrintPreview(true);
+        return "/credit/credit_company_bill_cancel?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to inpatient credit settlement cancellation print page.
+     * This shows the comprehensive cancellation receipt with both original settlement and cancellation details.
+     */
+    public String navigateToViewInpatientCreditBatchBillCancellation() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to view");
+            return "";
+        }
+
+        // Handle both CancelledBill and regular Bill objects
+        Bill originalBill;
+        if (bill instanceof CancelledBill) {
+            // If we have a CancelledBill, get the original settlement bill
+            originalBill = bill.getBilledBill();
+            if (originalBill == null) {
+                JsfUtil.addErrorMessage("Original settlement bill not found");
+                return "";
+            }
+        } else {
+            // If we have the original bill, use it directly
+            originalBill = bill;
+        }
+
+        creditCompanyBillSearch.setBill((BilledBill) originalBill);
+        creditCompanyBillSearch.setPrintPreview(true);
+        return "/credit/inpatient_credit_company_bill_cancel?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to pharmacy credit settlement cancellation print page.
+     * This shows the comprehensive cancellation receipt with both original settlement and cancellation details.
+     */
+    public String navigateToViewPharmacyCreditBatchBillCancellation() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to view");
+            return "";
+        }
+
+        // Handle both CancelledBill and regular Bill objects
+        Bill originalBill;
+        if (bill instanceof CancelledBill) {
+            // If we have a CancelledBill, get the original settlement bill
+            originalBill = bill.getBilledBill();
+            if (originalBill == null) {
+                JsfUtil.addErrorMessage("Original settlement bill not found");
+                return "";
+            }
+        } else {
+            // If we have the original bill, use it directly
+            originalBill = bill;
+        }
+
+        creditCompanyBillSearch.setBill((BilledBill) originalBill);
+        creditCompanyBillSearch.setPrintPreview(true);
+        return "/credit/credit_company_bill_pharmacy_cancel?faces-redirect=true";
+    }
+
     public String navigateToViewOpdProfessionalPaymentBill() {
         if (viewingBill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
@@ -3965,7 +4085,6 @@ public class BillSearch implements Serializable {
         }
 
         Bill foundBill = billFacade.find(BillId);
-        System.out.println("foundBill = " + foundBill);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -3973,6 +4092,42 @@ public class BillSearch implements Serializable {
 
         this.bill = foundBill;
         return navigateToViewBillByAtomicBillType();
+    }
+
+    public String navigateToManageBillByAtomicBillTypeByBillId(Long BillId) {
+        System.out.println("navigateToManageBillByAtomicBillTypeByBillId");
+        System.out.println("BillId = " + BillId);
+        if (BillId == null) {
+            JsfUtil.addErrorMessage("Bill ID is required");
+            return null;
+        }
+
+        Bill foundBill = billFacade.find(BillId);
+        if (foundBill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+
+        this.bill = foundBill;
+        return navigateToManageBillByAtomicBillType();
+    }
+
+    public String navigateToAdminBillByAtomicBillTypeByBillId(Long BillId) {
+        System.out.println("navigateToAdminBillByAtomicBillTypeByBillId");
+        System.out.println("BillId = " + BillId);
+        if (BillId == null) {
+            JsfUtil.addErrorMessage("Bill ID is required");
+            return null;
+        }
+
+        Bill foundBill = billFacade.find(BillId);
+        if (foundBill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+
+        this.bill = foundBill;
+        return navigateToAdminBillByAtomicBillType();
     }
 
     public String navigateToViewBillByAtomicBillTypeBySelectedId() {
@@ -3984,7 +4139,6 @@ public class BillSearch implements Serializable {
         }
 
         Bill foundBill = billFacade.find(selectedBillId);
-        System.out.println("foundBill = " + foundBill);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found for ID: " + selectedBillId);
             return null;
@@ -4082,7 +4236,6 @@ public class BillSearch implements Serializable {
     }
 
     public String navigateToViewBillByAtomicBillType() {
-        System.out.println("navigateToViewBillByAtomicBillType");
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
             return null;
@@ -4110,6 +4263,14 @@ public class BillSearch implements Serializable {
                 return navigateToViewOpdBatchBill();
             case OPD_CREDIT_COMPANY_PAYMENT_RECEIVED:
                 return navigateToViewOpdCreditBatchBillSettle();
+            case OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                return navigateToViewOpdCreditBatchBillCancellation();
+            case INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED:
+                return navigateToViewInpatientCreditBatchBillSettle();
+            case INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                return navigateToViewInpatientCreditBatchBillCancellation();
+            case PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                return navigateToViewPharmacyCreditBatchBillCancellation();
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
                 return navigateToViewOpdProfessionalPaymentBill();
 
@@ -4282,6 +4443,9 @@ public class BillSearch implements Serializable {
 //                return navigateToPharmacyIssue();
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyDisposalIssueBill();
+            case PHARMACY_DISPOSAL_ISSUE_RETURN:
+                pharmacyBillSearch.setBill(bill);
+                return pharmacyBillSearch.navigateToViewPharmacyDisposalReturnBill();
             case PHARMACY_ISSUE_CANCELLED:
                 return navigateToPharmacyIssueCancelled();
 
@@ -4377,6 +4541,14 @@ public class BillSearch implements Serializable {
                 return navigateToViewOpdBatchBill();
             case OPD_CREDIT_COMPANY_PAYMENT_RECEIVED:
                 return navigateToViewOpdCreditBatchBillSettle();
+            case OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                return navigateToViewOpdCreditBatchBillCancellation();
+            case INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED:
+                return navigateToViewInpatientCreditBatchBillSettle();
+            case INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                return navigateToViewInpatientCreditBatchBillCancellation();
+            case PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                return navigateToViewPharmacyCreditBatchBillCancellation();
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
                 return navigateToViewOpdProfessionalPaymentBill();
 
@@ -4642,6 +4814,21 @@ public class BillSearch implements Serializable {
     public String navigateToViewPharmacySettledPreBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        pharmacyBillSearch.setBill(bill);
+        return "/pharmacy/pharmacy_reprint_bill_sale_cashier?faces-redirect=true";
+    }
+    
+    public String navigateToViewPharmacySettledPreBill(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        bill = billFacade.find(billId);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Bill not found");
             return null;
         }
         loadBillDetails(bill);
@@ -6729,6 +6916,145 @@ public class BillSearch implements Serializable {
 
     public String navigateToPharmacyStockAdjustmentBillReprint() {
         return "/pharmacy/adjustments/reprint/pharmacy_stock_adjustment_reprint?faces-redirect=true";
+    }
+
+    // Change From Institution methods
+    public String navigateToChangeFromInstitution() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill selected");
+            return "";
+        }
+        viewingBill = bill;
+        newFromInstitution = null;
+        newFromDepartment = null;
+        changeFromInstitutionReason = null;
+        return "/opd/view/bill_change_from_institution?faces-redirect=true";
+    }
+
+    public String changeFromInstitution() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill selected");
+            return "";
+        }
+        if (newFromInstitution == null) {
+            JsfUtil.addErrorMessage("Please select a new From Institution");
+            return "";
+        }
+        if (changeFromInstitutionReason == null || changeFromInstitutionReason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please provide a reason for the change");
+            return "";
+        }
+
+        try {
+            // Create audit event - Before state
+            AuditEvent auditEvent = new AuditEvent();
+            auditEvent.setEventStatus("Started");
+            Date startTime = new Date();
+            auditEvent.setEventDataTime(startTime);
+
+            if (sessionController != null && sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+            }
+            if (sessionController != null && sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            if (sessionController != null && sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+
+            auditEvent.setEventTrigger("Change From Institution: " + changeFromInstitutionReason);
+            auditEvent.setEntityType("Bill");
+            auditEvent.setObjectId(bill.getId());
+
+            // Capture before state
+            Map<String, Object> beforeState = new HashMap<>();
+            beforeState.put("billId", bill.getId());
+            beforeState.put("billNumber", bill.getDeptId());
+            beforeState.put("fromInstitutionId", bill.getFromInstitution() != null ? bill.getFromInstitution().getId() : null);
+            beforeState.put("fromInstitutionName", bill.getFromInstitution() != null ? bill.getFromInstitution().getName() : null);
+            beforeState.put("fromDepartmentId", bill.getFromDepartment() != null ? bill.getFromDepartment().getId() : null);
+            beforeState.put("fromDepartmentName", bill.getFromDepartment() != null ? bill.getFromDepartment().getName() : null);
+            beforeState.put("reason", changeFromInstitutionReason);
+
+            Gson gson = new Gson();
+            auditEvent.setBeforeJson(gson.toJson(beforeState));
+
+            // Make the change
+            Institution oldFromInstitution = bill.getFromInstitution();
+            Department oldFromDepartment = bill.getFromDepartment();
+
+            bill.setFromInstitution(newFromInstitution);
+            bill.setFromDepartment(newFromDepartment);
+
+            // Save the bill
+            billFacade.edit(bill);
+
+            // Capture after state
+            Map<String, Object> afterState = new HashMap<>();
+            afterState.put("billId", bill.getId());
+            afterState.put("billNumber", bill.getDeptId());
+            afterState.put("fromInstitutionId", bill.getFromInstitution() != null ? bill.getFromInstitution().getId() : null);
+            afterState.put("fromInstitutionName", bill.getFromInstitution() != null ? bill.getFromInstitution().getName() : null);
+            afterState.put("fromDepartmentId", bill.getFromDepartment() != null ? bill.getFromDepartment().getId() : null);
+            afterState.put("fromDepartmentName", bill.getFromDepartment() != null ? bill.getFromDepartment().getName() : null);
+            afterState.put("reason", changeFromInstitutionReason);
+
+            auditEvent.setAfterJson(gson.toJson(afterState));
+
+            // Complete audit event
+            Date endTime = new Date();
+            auditEvent.setEventEndTime(endTime);
+            auditEvent.setEventDuration(endTime.getTime() - startTime.getTime());
+            auditEvent.setEventStatus("Completed");
+
+            auditEventApplicationController.logAuditEvent(auditEvent);
+
+            String changeMessage = "From Institution changed from '"
+                + (oldFromInstitution != null ? oldFromInstitution.getName() : "None")
+                + "' to '"
+                + newFromInstitution.getName() + "'";
+
+            JsfUtil.addSuccessMessage(changeMessage);
+
+            // Update viewing bill
+            viewingBill = bill;
+
+            // Clear the change fields
+            newFromInstitution = null;
+            newFromDepartment = null;
+            changeFromInstitutionReason = null;
+
+            return navigateToAdminBill();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error changing From Institution: " + e.getMessage());
+            return "";
+        }
+    }
+
+    // Getters and Setters for change from institution properties
+    public Institution getNewFromInstitution() {
+        return newFromInstitution;
+    }
+
+    public void setNewFromInstitution(Institution newFromInstitution) {
+        this.newFromInstitution = newFromInstitution;
+    }
+
+    public Department getNewFromDepartment() {
+        return newFromDepartment;
+    }
+
+    public void setNewFromDepartment(Department newFromDepartment) {
+        this.newFromDepartment = newFromDepartment;
+    }
+
+    public String getChangeFromInstitutionReason() {
+        return changeFromInstitutionReason;
+    }
+
+    public void setChangeFromInstitutionReason(String changeFromInstitutionReason) {
+        this.changeFromInstitutionReason = changeFromInstitutionReason;
     }
 
 }

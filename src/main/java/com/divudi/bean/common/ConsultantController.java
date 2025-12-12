@@ -323,7 +323,6 @@ public class ConsultantController implements Serializable {
             Long id = Long.parseLong(idString);
             return getConsultantById(id);
         } catch (NumberFormatException e) {
-            System.err.println("Invalid consultant ID format: " + idString);
             return null;
         }
     }

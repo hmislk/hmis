@@ -91,6 +91,7 @@ public class PharmacyConfigController implements Serializable {
 
     // Direct Purchase Settings
     private boolean directPurchaseA4Paper;
+    private boolean directPurchaseA4PaperCustom1;
     private boolean directPurchaseA4Details;
     private boolean directPurchaseCustom1;
     private boolean directPurchaseCustom2;
@@ -129,6 +130,29 @@ public class PharmacyConfigController implements Serializable {
     // Retail Sale Return with Refund Payment Settings
     private boolean retailSaleReturnRefundBillA4Paper;
     private boolean retailSaleReturnRefundBillPosPaper;
+    private boolean retailSaleReturnRefundBillPosPaperCustom1;
+    
+    // Retail Sale Return Settings
+    private boolean retailSaleReturnPosPaper;
+    private boolean retailSaleReturnFiveFivePaper;
+    private boolean retailSaleReturnPosHeaderPaper;
+    private boolean retailSaleReturnFiveFiveCustom3;
+    private boolean retailSaleReturnPosPaperCustom1;
+
+    // Pharmacy Return Without Tresing Settings
+    private boolean returnWithoutTresingPosPaper;
+    private boolean returnWithoutTresingFiveFivePaper;
+    private boolean returnWithoutTresingA4Paper;
+
+    // Credit Settlement Cancellation Settings
+    private boolean creditSettlementCancellationA4;
+    private boolean creditSettlementCancellationPos;
+    private boolean creditSettlementCancellationFiveFive;
+    private boolean creditSettlementCancellationCustom1;
+    private boolean creditSettlementCancellationCustom2;
+    private boolean creditSettlementCancellationCustom3;
+    private boolean creditSettlementCancellationPosHeader;
+    private boolean creditSettlementCancellationPosCustom1;
 
     public PharmacyConfigController() {
     }
@@ -204,6 +228,7 @@ public class PharmacyConfigController implements Serializable {
         
         // Direct Purchase Settings
         directPurchaseA4Paper = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - A4", true);
+        directPurchaseA4PaperCustom1 = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - A4 (Custom 1)", true);
         directPurchaseA4Details = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - A4 Details", false);
         directPurchaseCustom1 = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - Custom 1", false);
         directPurchaseCustom2 = configOptionController.getBooleanValueByKey("Direct Purchase Bill Print - Custom 2", false);
@@ -242,6 +267,30 @@ public class PharmacyConfigController implements Serializable {
         // Retail Sale Return with Refund Payment Settings
         retailSaleReturnRefundBillA4Paper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is A4 Paper", true);
         retailSaleReturnRefundBillPosPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is POS Paper", false);
+        retailSaleReturnRefundBillPosPaperCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is POS Paper Custom 1 Paper", false);
+        
+        // Retail Sale Return Settings
+        retailSaleReturnPosPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Paper", true);
+        retailSaleReturnFiveFivePaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Bill is Five Five Paper", true);
+        retailSaleReturnPosHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Header Paper", true);
+        retailSaleReturnFiveFiveCustom3 = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Bill is Five Five Custom 3 Paper", false);
+        retailSaleReturnPosPaperCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Paper Custom 1 Paper", false);
+
+        // Pharmacy Return Without Tresing Settings
+        returnWithoutTresingPosPaper = configOptionController.getBooleanValueByKey("Pharmacy Return Without Tresing Bill is POS Paper", true);
+        returnWithoutTresingFiveFivePaper = configOptionController.getBooleanValueByKey("Pharmacy Return Without Tresing Bill is FiveFive Paper", false);
+        returnWithoutTresingA4Paper = configOptionController.getBooleanValueByKey("Pharmacy Return Without Tresing Bill is A4 Paper", true);
+
+        // Credit Settlement Cancellation Settings
+        creditSettlementCancellationA4 = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is A4 Paper", true);
+        creditSettlementCancellationPos = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Paper", false);
+        creditSettlementCancellationFiveFive = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is FiveFive Paper", true);
+        creditSettlementCancellationCustom1 = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 1", false);
+        creditSettlementCancellationCustom2 = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 2", false);
+        creditSettlementCancellationCustom3 = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 3", false);
+        creditSettlementCancellationPosHeader = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Header Paper", false);
+        creditSettlementCancellationPosCustom1 = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Custom 1", false);
+
     }
 
     /**
@@ -315,6 +364,7 @@ public class PharmacyConfigController implements Serializable {
 
             // Direct Purchase Settings
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4", directPurchaseA4Paper);
+            configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4 (Custom 1)", directPurchaseA4PaperCustom1);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4 Details", directPurchaseA4Details);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 1", directPurchaseCustom1);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 2", directPurchaseCustom2);
@@ -345,6 +395,23 @@ public class PharmacyConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is FiveFive Paper", cancelBillFiveFivePaper);
             configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is POS Header Paper", cancelBillPosHeaderPaper);
             configOptionController.setBooleanValueByKey("Pharmacy Cancel Bill Paper is Custom 3", cancelBillCustom3);
+            
+            // Retail Sale Return Settings
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Paper", retailSaleReturnPosPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is Five Five Paper", retailSaleReturnFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Header Paper", retailSaleReturnPosHeaderPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is Five Five Custom 3 Paper", retailSaleReturnFiveFiveCustom3);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Paper Custom 1 Paper", retailSaleReturnPosPaperCustom1);
+
+            // Credit Settlement Cancellation Settings
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is A4 Paper", creditSettlementCancellationA4);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Paper", creditSettlementCancellationPos);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is FiveFive Paper", creditSettlementCancellationFiveFive);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 1", creditSettlementCancellationCustom1);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 2", creditSettlementCancellationCustom2);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 3", creditSettlementCancellationCustom3);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Header Paper", creditSettlementCancellationPosHeader);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Custom 1", creditSettlementCancellationPosCustom1);
 
             JsfUtil.addSuccessMessage("Configuration saved successfully");
 
@@ -386,6 +453,7 @@ public class PharmacyConfigController implements Serializable {
         try {
             // Direct Purchase Settings
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4", directPurchaseA4Paper);
+            configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4 (Custom 1)", directPurchaseA4PaperCustom1);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - A4 Details", directPurchaseA4Details);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 1", directPurchaseCustom1);
             configOptionController.setBooleanValueByKey("Direct Purchase Bill Print - Custom 2", directPurchaseCustom2);
@@ -515,6 +583,7 @@ public class PharmacyConfigController implements Serializable {
             // Retail Sale Return Refund Bill Settings
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is A4 Paper", retailSaleReturnRefundBillA4Paper);
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is POS Paper", retailSaleReturnRefundBillPosPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is POS Paper Custom 1 Paper", retailSaleReturnRefundBillPosPaperCustom1);
 
             JsfUtil.addSuccessMessage("Return Refund Bill configuration saved successfully");
 
@@ -523,6 +592,51 @@ public class PharmacyConfigController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving Return Refund Bill configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Pharmacy Return Without Tresing configuration changes specifically
+     */
+    public void saveReturnWithoutTresingConfig() {
+        try {
+            // Pharmacy Return Without Tresing Settings
+            configOptionController.setBooleanValueByKey("Pharmacy Return Without Tresing Bill is POS Paper", returnWithoutTresingPosPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Return Without Tresing Bill is FiveFive Paper", returnWithoutTresingFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Return Without Tresing Bill is A4 Paper", returnWithoutTresingA4Paper);
+
+            JsfUtil.addSuccessMessage("Return Without Tresing configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Return Without Tresing configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Credit Settlement Cancellation configuration changes specifically
+     */
+    public void saveCreditSettlementCancellationConfig() {
+        try {
+            // Credit Settlement Cancellation Settings
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is A4 Paper", creditSettlementCancellationA4);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Paper", creditSettlementCancellationPos);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is FiveFive Paper", creditSettlementCancellationFiveFive);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 1", creditSettlementCancellationCustom1);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 2", creditSettlementCancellationCustom2);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 3", creditSettlementCancellationCustom3);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Header Paper", creditSettlementCancellationPosHeader);
+            configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Custom 1", creditSettlementCancellationPosCustom1);
+
+            JsfUtil.addSuccessMessage("Credit Settlement Cancellation configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Credit Settlement Cancellation configuration: " + e.getMessage());
         }
     }
 
@@ -1085,6 +1199,152 @@ public class PharmacyConfigController implements Serializable {
 
     public void setDisposalCancelCustom2(boolean disposalCancelCustom2) {
         this.disposalCancelCustom2 = disposalCancelCustom2;
+    }
+
+    public boolean isDirectPurchaseA4PaperCustom1() {
+        return directPurchaseA4PaperCustom1;
+    }
+
+    public void setDirectPurchaseA4PaperCustom1(boolean directPurchaseA4PaperCustom1) {
+        this.directPurchaseA4PaperCustom1 = directPurchaseA4PaperCustom1;
+    }
+
+    public boolean isRetailSaleReturnPosPaper() {
+        return retailSaleReturnPosPaper;
+    }
+
+    public void setRetailSaleReturnPosPaper(boolean retailSaleReturnPosPaper) {
+        this.retailSaleReturnPosPaper = retailSaleReturnPosPaper;
+    }
+
+    public boolean isRetailSaleReturnFiveFivePaper() {
+        return retailSaleReturnFiveFivePaper;
+    }
+
+    public void setRetailSaleReturnFiveFivePaper(boolean retailSaleReturnFiveFivePaper) {
+        this.retailSaleReturnFiveFivePaper = retailSaleReturnFiveFivePaper;
+    }
+
+    public boolean isRetailSaleReturnPosHeaderPaper() {
+        return retailSaleReturnPosHeaderPaper;
+    }
+
+    public void setRetailSaleReturnPosHeaderPaper(boolean retailSaleReturnPosHeaderPaper) {
+        this.retailSaleReturnPosHeaderPaper = retailSaleReturnPosHeaderPaper;
+    }
+
+    public boolean isRetailSaleReturnFiveFiveCustom3() {
+        return retailSaleReturnFiveFiveCustom3;
+    }
+
+    public void setRetailSaleReturnFiveFiveCustom3(boolean retailSaleReturnFiveFiveCustom3) {
+        this.retailSaleReturnFiveFiveCustom3 = retailSaleReturnFiveFiveCustom3;
+    }
+
+    public boolean isRetailSaleReturnPosPaperCustom1() {
+        return retailSaleReturnPosPaperCustom1;
+    }
+
+    public void setRetailSaleReturnPosPaperCustom1(boolean retailSaleReturnPosPaperCustom1) {
+        this.retailSaleReturnPosPaperCustom1 = retailSaleReturnPosPaperCustom1;
+    }
+
+    // Pharmacy Return Without Tresing Getters and Setters
+    public boolean isReturnWithoutTresingPosPaper() {
+        return returnWithoutTresingPosPaper;
+    }
+
+    public void setReturnWithoutTresingPosPaper(boolean returnWithoutTresingPosPaper) {
+        this.returnWithoutTresingPosPaper = returnWithoutTresingPosPaper;
+    }
+
+    public boolean isReturnWithoutTresingFiveFivePaper() {
+        return returnWithoutTresingFiveFivePaper;
+    }
+
+    public void setReturnWithoutTresingFiveFivePaper(boolean returnWithoutTresingFiveFivePaper) {
+        this.returnWithoutTresingFiveFivePaper = returnWithoutTresingFiveFivePaper;
+    }
+
+    public boolean isReturnWithoutTresingA4Paper() {
+        return returnWithoutTresingA4Paper;
+    }
+
+    public void setReturnWithoutTresingA4Paper(boolean returnWithoutTresingA4Paper) {
+        this.returnWithoutTresingA4Paper = returnWithoutTresingA4Paper;
+    }
+
+    // Credit Settlement Cancellation Getters and Setters
+    public boolean isCreditSettlementCancellationA4() {
+        return creditSettlementCancellationA4;
+    }
+
+    public void setCreditSettlementCancellationA4(boolean creditSettlementCancellationA4) {
+        this.creditSettlementCancellationA4 = creditSettlementCancellationA4;
+    }
+
+    public boolean isCreditSettlementCancellationPos() {
+        return creditSettlementCancellationPos;
+    }
+
+    public void setCreditSettlementCancellationPos(boolean creditSettlementCancellationPos) {
+        this.creditSettlementCancellationPos = creditSettlementCancellationPos;
+    }
+
+    public boolean isCreditSettlementCancellationCustom1() {
+        return creditSettlementCancellationCustom1;
+    }
+
+    public void setCreditSettlementCancellationCustom1(boolean creditSettlementCancellationCustom1) {
+        this.creditSettlementCancellationCustom1 = creditSettlementCancellationCustom1;
+    }
+
+    public boolean isCreditSettlementCancellationCustom2() {
+        return creditSettlementCancellationCustom2;
+    }
+
+    public void setCreditSettlementCancellationCustom2(boolean creditSettlementCancellationCustom2) {
+        this.creditSettlementCancellationCustom2 = creditSettlementCancellationCustom2;
+    }
+
+    public boolean isCreditSettlementCancellationPosHeader() {
+        return creditSettlementCancellationPosHeader;
+    }
+
+    public void setCreditSettlementCancellationPosHeader(boolean creditSettlementCancellationPosHeader) {
+        this.creditSettlementCancellationPosHeader = creditSettlementCancellationPosHeader;
+    }
+
+    public boolean isCreditSettlementCancellationFiveFive() {
+        return creditSettlementCancellationFiveFive;
+    }
+
+    public void setCreditSettlementCancellationFiveFive(boolean creditSettlementCancellationFiveFive) {
+        this.creditSettlementCancellationFiveFive = creditSettlementCancellationFiveFive;
+    }
+
+    public boolean isCreditSettlementCancellationCustom3() {
+        return creditSettlementCancellationCustom3;
+    }
+
+    public void setCreditSettlementCancellationCustom3(boolean creditSettlementCancellationCustom3) {
+        this.creditSettlementCancellationCustom3 = creditSettlementCancellationCustom3;
+    }
+
+    public boolean isCreditSettlementCancellationPosCustom1() {
+        return creditSettlementCancellationPosCustom1;
+    }
+
+    public void setCreditSettlementCancellationPosCustom1(boolean creditSettlementCancellationPosCustom1) {
+        this.creditSettlementCancellationPosCustom1 = creditSettlementCancellationPosCustom1;
+    }
+
+    public boolean isRetailSaleReturnRefundBillPosPaperCustom1() {
+        return retailSaleReturnRefundBillPosPaperCustom1;
+    }
+
+    public void setRetailSaleReturnRefundBillPosPaperCustom1(boolean retailSaleReturnRefundBillPosPaperCustom1) {
+        this.retailSaleReturnRefundBillPosPaperCustom1 = retailSaleReturnRefundBillPosPaperCustom1;
     }
 
 }
