@@ -107,7 +107,7 @@
                                                             accesskey="i"
                                                             id="acStock"
                                                             value="#{pharmacySaleForCashierController.stockDto}"
-                                                            completeMethod="#{pharmacySaleForCashierController.completeAvailableStockOptimized}"
+                                                            completeMethod="#{pharmacySaleForCashierController.completeAvailableStockOptimizedDto}"
                                                             converter="#{pharmacySaleForCashierController.stockDtoConverter}"
                                                             var="i"
                                                             class="w-100"
@@ -141,8 +141,8 @@
                                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                                 </h:outputLabel>
                                                             </p:column>
-                                                            <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}"  ></p:ajax>
-                                                            <p:ajax event="itemSelect" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}"  listener="#{pharmacySaleForCashierController.handleSelect}"  update="txtQty txtRate focusQty" ></p:ajax>
+                                                            <p:ajax event="focus" process="acStock"  ></p:ajax>
+                                                            <p:ajax event="itemSelect" listener="#{pharmacySaleForCashierController.handleSelect}"  update="txtQty txtRate focusQty" ></p:ajax>
                                                             <p:ajax event="query" process="acStock"></p:ajax>
                                                         </p:autoComplete>
                                                     </div>
@@ -155,8 +155,8 @@
                                                             id="txtQty"
                                                             value="#{pharmacySaleForCashierController.intQty}"
                                                             class="w-100">
-                                                            <p:ajax event="keyup"  listener="#{pharmacySaleForCashierController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" update="txtRate txtVal" ></p:ajax>
-                                                            <p:ajax event="blur"  listener="#{pharmacySaleForCashierController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" update="txtRate txtVal" ></p:ajax>
+                                                            <p:ajax event="keyup"  listener="#{pharmacySaleForCashierController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmdDiscountScheme',view).clientId}" update="txtRate txtVal" ></p:ajax>
+                                                            <p:ajax event="blur"  listener="#{pharmacySaleForCashierController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmdDiscountScheme',view).clientId}" update="txtRate txtVal" ></p:ajax>
                                                         </p:inputText>
                                                     </div>
                                                     <div class="col-md-2">
@@ -166,7 +166,7 @@
                                                             icon="fa fa-plus"
                                                             class="w-100 ui-button-success"
                                                             action="#{pharmacySaleForCashierController.addBillItem()}"
-                                                            process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}"
+                                                            process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmdDiscountScheme',view).clientId}"
                                                             update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('txtVal',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId}" >
                                                         </p:commandButton>
                                                     </div>
@@ -209,7 +209,7 @@
                                             <p:commandButton
                                                 value="Remove Selected" class="ui-button-danger" style="float: right"
                                                 action="#{pharmacySaleForCashierController.removeSelectedBillItems()}"
-                                                process="@this tblBillItem :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}"
+                                                process="@this tblBillItem :#{p:resolveFirstComponentWithId('cmdDiscountScheme',view).clientId}"
                                                 update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('txtVal',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId}"/>
                                         </f:facet>
 
@@ -380,7 +380,7 @@
                                                     value="#{pharmacySaleForCashierController.paymentScheme}">
                                                     <f:selectItem itemLabel="No Discount Scheme"/>
                                                     <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
-                                                    <p:ajax process="@this cmbPs "
+                                                    <p:ajax process="@this"
                                                             update="pBillDetails welfareStaff"
                                                             event="change"
                                                             listener="#{pharmacySaleForCashierController.changeListener()}"/>
