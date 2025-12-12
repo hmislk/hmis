@@ -5039,8 +5039,7 @@ public class ReportsController implements Serializable {
                 });
     }
 
-    private ReportTemplateRowBundle generateExternalLaboratoryWorkloadSummaryBillItems(List<BillTypeAtomic> bts,
-                                                                                       boolean externalLaboratoryOnly) {
+    private ReportTemplateRowBundle generateExternalLaboratoryWorkloadSummaryBillItems(List<BillTypeAtomic> bts, boolean externalLaboratoryOnly) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("bts", bts);
         parameters.put("fd", fromDate);
@@ -5213,9 +5212,9 @@ public class ReportsController implements Serializable {
             cancelledParameters.put("inv", investigation);
         }
 
-//        if (externalLaboratoryOnly) {
-//            jpql += "AND billItem.patientInvestigation.outsourced = true ";
-//        }
+        if (externalLaboratoryOnly) {
+            cancelledJpql += "AND billItem.patientInvestigation.outsourced = true ";
+        }
 
         cancelledJpql += "GROUP BY billItem";
 
