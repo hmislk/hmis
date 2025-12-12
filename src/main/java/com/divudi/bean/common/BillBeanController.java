@@ -2870,7 +2870,7 @@ public class BillBeanController implements Serializable {
             b.setBank(paymentMethodData.getCreditCard().getInstitution());
             b.setComments(paymentMethodData.getCreditCard().getComment());
         }
-
+        
         if (paymentMethod.equals(PaymentMethod.OnlineSettlement)) {
             b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
             b.setBank(paymentMethodData.getCreditCard().getInstitution());

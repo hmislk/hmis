@@ -944,8 +944,21 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                 getPaymentMethodData().getCheque().setComment(originalBillToReturn.getComments());
                 getPaymentMethodData().getCheque().setTotalValue(originalBillToReturn.getNetTotal());
                 break;
+            case Card:
+                getPaymentMethodData().getCreditCard().setInstitution(originalBillToReturn.getBank());
+                getPaymentMethodData().getCreditCard().setNo(originalBillToReturn.getCreditCardRefNo());
+                getPaymentMethodData().getCreditCard().setComment(originalBillToReturn.getComments());
+                break;
+            case Slip:
+                getPaymentMethodData().getSlip().setInstitution(originalBillToReturn.getBank());
+                getPaymentMethodData().getSlip().setDate(originalBillToReturn.getChequeDate());
+                getPaymentMethodData().getSlip().setComment(originalBillToReturn.getComments());
+//                getPaymentMethodData().getSlip().setReferenceNo(originalBillToReturn.getReferenceNumber());
+                break;
             default:
                 break;
         }
     }
+    
+    
 }
