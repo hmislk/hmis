@@ -113,14 +113,14 @@ If needed, drop the indexes:
 
 ```sql
 -- For Production (uppercase)
-DROP INDEX idx_psd_item ON PRICEMATRIX;
-DROP INDEX idx_psd_category ON PRICEMATRIX;
-DROP INDEX idx_psd_department ON PRICEMATRIX;
+DROP INDEX IF EXISTS idx_psd_item ON PRICEMATRIX;
+DROP INDEX IF EXISTS idx_psd_category ON PRICEMATRIX;
+DROP INDEX IF EXISTS idx_psd_department ON PRICEMATRIX;
 
 -- For Development (lowercase)
-DROP INDEX idx_psd_item ON pricematrix;
-DROP INDEX idx_psd_category ON pricematrix;
-DROP INDEX idx_psd_department ON pricematrix;
+DROP INDEX IF EXISTS idx_psd_item ON pricematrix;
+DROP INDEX IF EXISTS idx_psd_category ON pricematrix;
+DROP INDEX IF EXISTS idx_psd_department ON pricematrix;
 ```
 
 **Note**: Application will continue to work without indexes (just slower).

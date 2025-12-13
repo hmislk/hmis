@@ -836,13 +836,11 @@ SHOW VARIABLES LIKE 'max_allowed_packet';
 
 ```xml
 <!-- Batch insert optimization for UserStock -->
-<property name="hibernate.jdbc.batch_size" value="50"/>
-<property name="hibernate.order_inserts" value="true"/>
-<property name="hibernate.order_updates" value="true"/>
-<property name="hibernate.batch_versioned_data" value="true"/>
+<property name="eclipselink.jdbc.batch-writing" value="JDBC"/>
+<property name="eclipselink.jdbc.batch-writing.size" value="50"/>
 ```
 
-**Rollback**: Remove these properties from persistence.xml
+**Rollback**: Remove these EclipseLink properties from persistence.xml
 
 ---
 
