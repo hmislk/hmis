@@ -92,6 +92,8 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     PatientInvestigationController patientInvestigationController;
     @Inject
     LabTestHistoryController labTestHistoryController;
+    @Inject
+    PatientDepositController patientDepositController;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variable">
@@ -947,9 +949,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     public void setToStaff(Staff toStaff) {
         this.toStaff = toStaff;
     }
-    
-    @Inject
-    PatientDepositController patientDepositController;
     
     private void initializeRefundPaymentFromOriginalPayments(List<Payment> originalPayments) {
         if (originalPayments == null || originalPayments.isEmpty()) {
