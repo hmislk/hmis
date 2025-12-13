@@ -246,25 +246,25 @@ SELECT
     END AS usc_table_check;
 
 -- Create single column index on RETIRED for uppercase table
-CREATE INDEX idx_userstockcontainer_retired
+CREATE INDEX IF NOT EXISTS idx_userstockcontainer_retired
 ON USERSTOCKCONTAINER(RETIRED);
 
 SELECT 'Index idx_userstockcontainer_retired created on USERSTOCKCONTAINER (if table exists)' AS uppercase_usc_result;
 
 -- Create single column index on RETIRED for lowercase table
-CREATE INDEX idx_userstockcontainer_retired
+CREATE INDEX IF NOT EXISTS idx_userstockcontainer_retired
 ON userstockcontainer(RETIRED);
 
 SELECT 'Index idx_userstockcontainer_retired created on userstockcontainer (if table exists)' AS lowercase_usc_result;
 
 -- Create composite index for potential future optimizations on uppercase table
-CREATE INDEX idx_userstockcontainer_retired_created
+CREATE INDEX IF NOT EXISTS idx_userstockcontainer_retired_created
 ON USERSTOCKCONTAINER(RETIRED, CREATEDAT, CREATER_ID);
 
 SELECT 'Index idx_userstockcontainer_retired_created created on USERSTOCKCONTAINER (if table exists)' AS uppercase_usc_composite_result;
 
 -- Create composite index for potential future optimizations on lowercase table
-CREATE INDEX idx_userstockcontainer_retired_created
+CREATE INDEX IF NOT EXISTS idx_userstockcontainer_retired_created
 ON userstockcontainer(RETIRED, CREATEDAT, CREATER_ID);
 
 SELECT 'Index idx_userstockcontainer_retired_created created on userstockcontainer (if table exists)' AS lowercase_usc_composite_result;
@@ -272,13 +272,13 @@ SELECT 'Index idx_userstockcontainer_retired_created created on userstockcontain
 -- Create optimized composite index for retiredAllUserStockContainer query on uppercase table
 -- This index optimizes the query: WHERE CREATER_ID = :userId AND RETIRED = 0
 -- Column order: CREATER_ID first (most selective), then RETIRED
-CREATE INDEX idx_userstockcontainer_creater_retired
+CREATE INDEX IF NOT EXISTS idx_userstockcontainer_creater_retired
 ON USERSTOCKCONTAINER(CREATER_ID, RETIRED);
 
 SELECT 'Index idx_userstockcontainer_creater_retired created on USERSTOCKCONTAINER (if table exists)' AS uppercase_usc_creater_retired_result;
 
 -- Create optimized composite index for retiredAllUserStockContainer query on lowercase table
-CREATE INDEX idx_userstockcontainer_creater_retired
+CREATE INDEX IF NOT EXISTS idx_userstockcontainer_creater_retired
 ON userstockcontainer(CREATER_ID, RETIRED);
 
 SELECT 'Index idx_userstockcontainer_creater_retired created on userstockcontainer (if table exists)' AS lowercase_usc_creater_retired_result;
@@ -294,25 +294,25 @@ SELECT 'Step 6: Creating PriceMatrix indexes for discount calculation optimizati
 -- Optimizing these lookups significantly improves settle button performance
 
 -- Create composite index for payment scheme + department + category lookups on uppercase table
-CREATE INDEX idx_pricematrix_payment_dept_category
+CREATE INDEX IF NOT EXISTS idx_pricematrix_payment_dept_category
 ON PRICEMATRIX(PAYMENTSCHEME_ID, DEPARTMENT_ID, CATEGORY_ID, RETIRED);
 
 SELECT 'Index idx_pricematrix_payment_dept_category created on PRICEMATRIX (if table exists)' AS uppercase_pm_payment_dept_category_result;
 
 -- Create composite index for payment scheme + department + category lookups on lowercase table
-CREATE INDEX idx_pricematrix_payment_dept_category
+CREATE INDEX IF NOT EXISTS idx_pricematrix_payment_dept_category
 ON pricematrix(PAYMENTSCHEME_ID, DEPARTMENT_ID, CATEGORY_ID, RETIRED);
 
 SELECT 'Index idx_pricematrix_payment_dept_category created on pricematrix (if table exists)' AS lowercase_pm_payment_dept_category_result;
 
 -- Create composite index for payment scheme + category lookups (without department filter) on uppercase table
-CREATE INDEX idx_pricematrix_payment_category
+CREATE INDEX IF NOT EXISTS idx_pricematrix_payment_category
 ON PRICEMATRIX(PAYMENTSCHEME_ID, CATEGORY_ID, RETIRED);
 
 SELECT 'Index idx_pricematrix_payment_category created on PRICEMATRIX (if table exists)' AS uppercase_pm_payment_category_result;
 
 -- Create composite index for payment scheme + category lookups (without department filter) on lowercase table
-CREATE INDEX idx_pricematrix_payment_category
+CREATE INDEX IF NOT EXISTS idx_pricematrix_payment_category
 ON pricematrix(PAYMENTSCHEME_ID, CATEGORY_ID, RETIRED);
 
 SELECT 'Index idx_pricematrix_payment_category created on pricematrix (if table exists)' AS lowercase_pm_payment_category_result;
