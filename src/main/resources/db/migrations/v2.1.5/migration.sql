@@ -24,37 +24,42 @@ ORDER BY INDEX_NAME, SEQ_IN_INDEX;
 -- INDEX CREATION - ITEM LEVEL DISCOUNTS
 -- ==========================================
 
--- Step 3: Create index for item-level discount queries (UPPERCASE table name - Production/Ubuntu)
-CREATE INDEX idx_psd_item
-ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, ITEM_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID);
+-- Step 3 & 4: Create index for item-level discount queries
+-- Try both uppercase and lowercase table names (one will succeed based on environment)
+-- Using conditional execution to avoid errors
 
--- Step 4: Create index for item-level discount queries (lowercase table name - Development/Windows)
-CREATE INDEX idx_psd_item
-ON pricematrix(RETIRED, PAYMENTMETHOD, ITEM_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID);
+SET @table_name = (SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+                   WHERE TABLE_SCHEMA = DATABASE()
+                   AND TABLE_NAME IN ('PRICEMATRIX', 'pricematrix')
+                   LIMIT 1);
+
+SET @sql = CONCAT('CREATE INDEX IF NOT EXISTS idx_psd_item ON ', @table_name,
+                  '(RETIRED, PAYMENTMETHOD, ITEM_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- ==========================================
 -- INDEX CREATION - CATEGORY LEVEL DISCOUNTS
 -- ==========================================
 
--- Step 5: Create index for category-level discount queries (UPPERCASE - Production/Ubuntu)
-CREATE INDEX idx_psd_category
-ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, CATEGORY_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID);
-
--- Step 6: Create index for category-level discount queries (lowercase - Development/Windows)
-CREATE INDEX idx_psd_category
-ON pricematrix(RETIRED, PAYMENTMETHOD, CATEGORY_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID);
+-- Step 5 & 6: Create index for category-level discount queries
+SET @sql = CONCAT('CREATE INDEX IF NOT EXISTS idx_psd_category ON ', @table_name,
+                  '(RETIRED, PAYMENTMETHOD, CATEGORY_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- ==========================================
 -- INDEX CREATION - DEPARTMENT LEVEL DISCOUNTS
 -- ==========================================
 
--- Step 7: Create index for department-level discount queries (UPPERCASE - Production/Ubuntu)
-CREATE INDEX idx_psd_department
-ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, DEPARTMENT_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID);
-
--- Step 8: Create index for department-level discount queries (lowercase - Development/Windows)
-CREATE INDEX idx_psd_department
-ON pricematrix(RETIRED, PAYMENTMETHOD, DEPARTMENT_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID);
+-- Step 7 & 8: Create index for department-level discount queries
+SET @sql = CONCAT('CREATE INDEX IF NOT EXISTS idx_psd_department ON ', @table_name,
+                  '(RETIRED, PAYMENTMETHOD, DEPARTMENT_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- ==========================================
 -- POST-MIGRATION VERIFICATION
