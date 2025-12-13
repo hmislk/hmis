@@ -1,0 +1,112 @@
+{
+    "version": "v2.1.5",
+    "description": "Add Composite Indexes for PAYMENT_SCHEME_DISCOUNT Performance Optimization - Pharmacy Retail Sale Discount Calculation Speed Improvement (Item Selection Delay Fix)",
+    "author": "Dr M H B Ariyaratne",
+    "date": "2025-12-12",
+    "githubIssue": "16990",
+    "branch": "16990-speed-up-the-pharmacy-retail-sale",
+    "estimatedDurationMinutes": 3,
+    "requiresDowntime": false,
+    "affectedTables": ["PRICEMATRIX", "pricematrix"],
+    "affectedModules": ["Pharmacy", "Retail Sale", "Cashier Sale", "Discount Management", "Billing"],
+    "dependencies": [],
+    "preRequisites": [
+        "Database backup completed and verified",
+        "Ensure PRICEMATRIX or pricematrix table exists",
+        "No active long-running queries on PRICEMATRIX table recommended",
+        "Check current index count (SHOW INDEX FROM pricematrix)"
+    ],
+    "migrationSteps": [
+        {
+            "step": 1,
+            "description": "Pre-migration verification - check table existence and current indexes",
+            "sql": "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME IN ('PRICEMATRIX', 'pricematrix')"
+        },
+        {
+            "step": 2,
+            "description": "Check current PRICEMATRIX indexes",
+            "sql": "SELECT INDEX_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_NAME IN ('PRICEMATRIX', 'pricematrix')"
+        },
+        {
+            "step": 3,
+            "description": "Create composite index for Item-level discount queries (PRICEMATRIX - uppercase for Production/Ubuntu)",
+            "sql": "CREATE INDEX idx_psd_item ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, ITEM_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)"
+        },
+        {
+            "step": 4,
+            "description": "Create composite index for Item-level discount queries (pricematrix - lowercase for Development/Windows)",
+            "sql": "CREATE INDEX idx_psd_item ON pricematrix(RETIRED, PAYMENTMETHOD, ITEM_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)"
+        },
+        {
+            "step": 5,
+            "description": "Create composite index for Category-level discount queries (PRICEMATRIX - uppercase for Production/Ubuntu)",
+            "sql": "CREATE INDEX idx_psd_category ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, CATEGORY_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)"
+        },
+        {
+            "step": 6,
+            "description": "Create composite index for Category-level discount queries (pricematrix - lowercase for Development/Windows)",
+            "sql": "CREATE INDEX idx_psd_category ON pricematrix(RETIRED, PAYMENTMETHOD, CATEGORY_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)"
+        },
+        {
+            "step": 7,
+            "description": "Create composite index for Department-level discount queries (PRICEMATRIX - uppercase for Production/Ubuntu)",
+            "sql": "CREATE INDEX idx_psd_department ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, DEPARTMENT_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)"
+        },
+        {
+            "step": 8,
+            "description": "Create composite index for Department-level discount queries (pricematrix - lowercase for Development/Windows)",
+            "sql": "CREATE INDEX idx_psd_department ON pricematrix(RETIRED, PAYMENTMETHOD, DEPARTMENT_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID)"
+        },
+        {
+            "step": 9,
+            "description": "Verify index creation on all table name variations",
+            "sql": "SELECT TABLE_NAME, INDEX_NAME, COLUMN_NAME, SEQ_IN_INDEX FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME LIKE 'idx_psd_%' ORDER BY TABLE_NAME, INDEX_NAME, SEQ_IN_INDEX"
+        }
+    ],
+    "verificationQueries": [
+        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME LIKE 'idx_psd_%'",
+        "SELECT TABLE_NAME, INDEX_NAME, COLUMN_NAME, SEQ_IN_INDEX, CARDINALITY FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME LIKE 'idx_psd_%' ORDER BY TABLE_NAME, INDEX_NAME, SEQ_IN_INDEX",
+        "EXPLAIN SELECT DISCOUNTPERCENT FROM pricematrix WHERE RETIRED=0 AND PAYMENTMETHOD='Cash' AND PAYMENTSCHEME_ID IS NULL AND MEMBERSHIPSCHEME_ID IS NULL AND ITEM_ID=1",
+        "EXPLAIN SELECT DISCOUNTPERCENT FROM pricematrix WHERE RETIRED=0 AND PAYMENTMETHOD='Cash' AND PAYMENTSCHEME_ID IS NULL AND MEMBERSHIPSCHEME_ID IS NULL AND CATEGORY_ID=1"
+    ],
+    "rollbackNotes": [
+        "This migration only adds indexes - safe to rollback",
+        "No data modifications - schema change only",
+        "Rollback drops PRICEMATRIX indexes (instant operation)",
+        "Application will continue to work without indexes (just slower)",
+        "DTO-based discount queries remain functional without indexes"
+    ],
+    "postMigrationVerification": [
+        "Monitor PharmacySaleForCashierController.calculateBillItemDiscountRate() execution time in logs",
+        "Expected improvement: 552ms → 2-5ms per discount query",
+        "Test pharmacy cashier sale item selection lag (should be near-instant)",
+        "Test that discount calculations complete quickly after item selection",
+        "Verify index is being used: Run EXPLAIN on fetchPaymentSchemeDiscountPercent queries",
+        "Check MySQL slow query log for PaymentSchemeDiscount queries (should decrease significantly)",
+        "Monitor database index size increase (minimal impact expected)"
+    ],
+    "technicalNotes": [
+        "PRICEMATRIX index column order optimized for query selectivity:",
+        "  1. RETIRED - Boolean filter (eliminates retired records early - critical first filter)",
+        "  2. PAYMENTMETHOD - High selectivity enum (Cash, Card, Credit, etc.)",
+        "  3. ITEM_ID/CATEGORY_ID/DEPARTMENT_ID - Specific lookup field (hierarchy: Item → Category → Department)",
+        "  4. PAYMENTSCHEME_ID - Often NULL (filters null payment schemes)",
+        "  5. MEMBERSHIPSCHEME_ID - Often NULL (filters null membership schemes)",
+        "Query pattern: SELECT i.discountPercent FROM PaymentSchemeDiscount i WHERE retired=false AND paymentScheme IS NULL AND membershipScheme IS NULL AND paymentMethod=:p AND item/category/department=:x",
+        "Discount lookup hierarchy: Item-specific → Category → Parent Category → Department",
+        "Most common pattern: Category-level discounts (not item-specific)",
+        "DTO-based approach: Only fetches discountPercent (Double), not full entity",
+        "Avoids loading 12 @ManyToOne relationships in PriceMatrix entity",
+        "Compatible with new getPaymentSchemeDiscountPercent() DTO methods",
+        "Three indexes cover all discount lookup patterns in the hierarchy",
+        "Covers both PRICEMATRIX (Ubuntu/Production) and pricematrix (Windows/Development) table name variations",
+        "Expected cardinality improvement for discount lookups",
+        "Compatible with MySQL InnoDB and MyISAM engines"
+    ],
+    "performanceMetrics": {
+        "expectedQueryTimeReduction": "100x faster (552ms → 2-5ms)",
+        "expectedUserExperienceImprovement": "Eliminates noticeable item selection delay",
+        "indexSizeImpact": "Minimal (<500KB for typical discount scheme dataset)",
+        "maintenanceOverhead": "Low (automatically updated on INSERT/UPDATE)"
+    }
+}

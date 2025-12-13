@@ -1574,16 +1574,37 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void handleSelectAction() {
+        long startTime = System.currentTimeMillis();
+        System.out.println("=== REGULAR SALE handleSelectAction START at " + startTime);
+
         if (stock == null) {
+            System.out.println("=== REGULAR SALE handleSelectAction - stock is null, returning");
             return;
         }
+
+        long beforeSetStock = System.currentTimeMillis();
+        System.out.println("=== REGULAR SALE Before setStock: " + (beforeSetStock - startTime) + "ms");
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
+
+        long beforeCalculateRates = System.currentTimeMillis();
+        System.out.println("=== REGULAR SALE Before calculateRates: " + (beforeCalculateRates - beforeSetStock) + "ms");
         calculateRatesOfSelectedBillItemBeforeAddingToTheList(billItem);
+
+        long beforeAddInstructions = System.currentTimeMillis();
+        System.out.println("=== REGULAR SALE Before addInstructions: " + (beforeAddInstructions - beforeCalculateRates) + "ms");
         pharmacyService.addBillItemInstructions(billItem);
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("=== REGULAR SALE After addInstructions: " + (endTime - beforeAddInstructions) + "ms");
+        System.out.println("=== REGULAR SALE handleSelectAction TOTAL TIME: " + (endTime - startTime) + "ms");
     }
 
     public void handleSelect(SelectEvent event) {
+        long startTime = System.currentTimeMillis();
+        System.out.println("=== REGULAR SALE handleSelect EVENT START at " + startTime);
         handleSelectAction();
+        long endTime = System.currentTimeMillis();
+        System.out.println("=== REGULAR SALE handleSelect EVENT END - Total: " + (endTime - startTime) + "ms");
     }
 
     //    public void calculateRatesOfSelectedBillItemBeforeAddingToTheList(BillItem bi) {
@@ -1685,13 +1706,23 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void calculateRatesOfSelectedBillItemBeforeAddingToTheList(BillItem bi) {
+        long startTime = System.currentTimeMillis();
+        System.out.println("    === REGULAR SALE calculateRatesOfSelectedBillItemBeforeAddingToTheList START");
+
         PharmaceuticalBillItem pharmBillItem = bi.getPharmaceuticalBillItem();
         if (pharmBillItem != null && pharmBillItem.getStock() != null) {
             ItemBatch itemBatch = pharmBillItem.getStock().getItemBatch();
             if (itemBatch != null) {
                 bi.setRate(itemBatch.getRetailsaleRate());
             }
+
+            long beforeDiscount = System.currentTimeMillis();
+            System.out.println("    === REGULAR SALE Before calculateBillItemDiscountRate: " + (beforeDiscount - startTime) + "ms");
             bi.setDiscountRate(calculateBillItemDiscountRate(bi));
+
+            long afterDiscount = System.currentTimeMillis();
+            System.out.println("    === REGULAR SALE After calculateBillItemDiscountRate: " + (afterDiscount - beforeDiscount) + "ms");
+
             bi.setNetRate(bi.getRate() - bi.getDiscountRate());
 
             bi.setGrossValue(bi.getRate() * bi.getQty());
@@ -1699,6 +1730,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             bi.setNetValue(bi.getGrossValue() - bi.getDiscount());
 
         }
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("    === REGULAR SALE calculateRatesOfSelectedBillItemBeforeAddingToTheList TOTAL: " + (endTime - startTime) + "ms");
     }
 
     public void calculatePreBillTotals() {
@@ -4058,6 +4092,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     //    TO check the functionality
     public double calculateBillItemDiscountRate(BillItem bi) {
+        long startTime = System.currentTimeMillis();
+        System.out.println("        === REGULAR SALE calculateBillItemDiscountRate START");
+
         if (bi == null) {
             return 0.0;
         }
@@ -4074,6 +4111,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         double retailRate = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
         double discountRate = 0;
         boolean discountAllowed = bi.getItem().isDiscountAllowed();
+        System.out.println("        === REGULAR SALE Initial setup: " + (System.currentTimeMillis() - startTime) + "ms");
 //        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         //MEMBERSHIPSCHEME DISCOUNT
 //        if (membershipScheme != null && discountAllowed) {
@@ -4110,7 +4148,11 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         //PAYMENTSCHEME DISCOUNT
 
         if (getPaymentScheme() != null && discountAllowed) {
+            long beforePriceMatrix = System.currentTimeMillis();
+            System.out.println("        === REGULAR SALE Before getPaymentSchemeDiscount (PaymentScheme): " + (beforePriceMatrix - startTime) + "ms");
             PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPaymentMethod(), getPaymentScheme(), getSessionController().getDepartment(), bi.getItem());
+            long afterPriceMatrix = System.currentTimeMillis();
+            System.out.println("        === REGULAR SALE After getPaymentSchemeDiscount (PaymentScheme): " + (afterPriceMatrix - beforePriceMatrix) + "ms");
 
             if (priceMatrix != null) {
                 bi.setPriceMatrix(priceMatrix);
@@ -4119,13 +4161,18 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
             double dr;
             dr = (retailRate * discountRate) / 100;
+            System.out.println("        === REGULAR SALE calculateBillItemDiscountRate TOTAL: " + (System.currentTimeMillis() - startTime) + "ms");
             return dr;
 
         }
 
         //PAYMENTMETHOD DISCOUNT
         if (getPaymentMethod() != null && discountAllowed) {
+            long beforePriceMatrix = System.currentTimeMillis();
+            System.out.println("        === REGULAR SALE Before getPaymentSchemeDiscount (PaymentMethod): " + (beforePriceMatrix - startTime) + "ms");
             PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPaymentMethod(), getSessionController().getDepartment(), bi.getItem());
+            long afterPriceMatrix = System.currentTimeMillis();
+            System.out.println("        === REGULAR SALE After getPaymentSchemeDiscount (PaymentMethod): " + (afterPriceMatrix - beforePriceMatrix) + "ms");
 
             if (priceMatrix != null) {
                 bi.setPriceMatrix(priceMatrix);
@@ -4134,6 +4181,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
             double dr;
             dr = (retailRate * discountRate) / 100;
+            System.out.println("        === REGULAR SALE calculateBillItemDiscountRate TOTAL: " + (System.currentTimeMillis() - startTime) + "ms");
             return dr;
 
         }
@@ -4144,8 +4192,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
             double dr;
             dr = (retailRate * discountRate) / 100;
+            System.out.println("        === REGULAR SALE calculateBillItemDiscountRate TOTAL: " + (System.currentTimeMillis() - startTime) + "ms");
             return dr;
         }
+        System.out.println("        === REGULAR SALE calculateBillItemDiscountRate TOTAL (No discount): " + (System.currentTimeMillis() - startTime) + "ms");
         return 0;
 
     }
