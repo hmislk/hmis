@@ -574,7 +574,11 @@
                                 <p:panel header="Report Details" class="my-2" >
                                     <p:panelGrid columns="2" >
                                         <p:outputLabel for="sampleIDs" value="sampleIDs" ></p:outputLabel>
-                                        <p:inputText id="sampleIDs" value="#{patientReportController.currentPatientReport.sampleIDs}" ></p:inputText>
+                                        <p:inputText 
+                                            id="sampleIDs" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
+                                            value="#{patientReportController.currentPatientReport.sampleIDs}" >
+                                        </p:inputText>
 
                                         <p:outputLabel for="refIns" value="Referring Institution" ></p:outputLabel>
                                         <p:autoComplete 
@@ -583,6 +587,7 @@
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referenceInstitution}"
                                             completeMethod="#{institutionController.completeIns}"
                                             var="ri" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             itemLabel="#{ri.name}" 
                                             itemValue="#{ri}"
                                             scrollHeight="500"
@@ -598,6 +603,7 @@
                                             <p:autoComplete 
                                                 forceSelection="true" 
                                                 id="cmbDoc" 
+                                                readonly="#{patientReportController.currentPatientReport.approved}"
                                                 value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referredBy}" 
                                                 completeMethod="#{doctorController.completeDoctor}" var="ix" 
                                                 itemLabel="#{ix.person.nameWithTitle}" 
@@ -663,36 +669,98 @@
 
 
                                         <p:outputLabel value="Ordered Time" ></p:outputLabel>
-                                        <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
+                                        <p:calendar 
+                                            value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}"  
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                        </p:calendar>
 
                                         <p:outputLabel value="Sampelled Time" ></p:outputLabel>
-                                        <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
+                                        <p:calendar 
+                                            value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                        </p:calendar>
 
                                         <p:outputLabel value="Received to Lab At" ></p:outputLabel>
-                                        <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.receivedAt}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                        <p:calendar 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
+                                            value="#{patientReportController.currentPatientReport.patientInvestigation.receivedAt}" 
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
 
                                         <p:outputLabel value="Peformed Time" ></p:outputLabel>
-                                        <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.performedAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
+                                        <p:calendar 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
+                                            value="#{patientReportController.currentPatientReport.patientInvestigation.performedAt}" 
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                        </p:calendar>
 
                                         <p:outputLabel value="Data Entered Time" ></p:outputLabel>
-                                        <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.dataEntryAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
+                                        <p:calendar 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
+                                            value="#{patientReportController.currentPatientReport.patientInvestigation.dataEntryAt}"  
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                        </p:calendar>
 
                                         <p:outputLabel value="Reported Time" ></p:outputLabel>
-                                        <p:calendar value="#{patientReportController.currentPatientReport.createdAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
+                                        <p:calendar 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
+                                            value="#{patientReportController.currentPatientReport.createdAt}"  
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                        </p:calendar>
 
                                         <p:outputLabel value="Approved Time" ></p:outputLabel>
-                                        <p:calendar value="#{patientReportController.currentPatientReport.approveAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
+                                        <p:calendar 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
+                                            value="#{patientReportController.currentPatientReport.approveAt}"  
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                        </p:calendar>
 
                                         <p:outputLabel value="Approved By" ></p:outputLabel>
-                                        <p:outputLabel value="#{patientReportController.currentPatientReport.approveUser.webUserPerson.nameWithTitle}"
-                                                       ></p:outputLabel>
+                                        <p:outputLabel
+                                            value="#{patientReportController.currentPatientReport.approveUser.webUserPerson.nameWithTitle}">
+                                        </p:outputLabel>
 
                                         <p:outputLabel value="Report ID" ></p:outputLabel>
                                         <p:outputLabel value="#{patientReportController.currentPatientReport.id}" ></p:outputLabel>
 
                                         <p:outputLabel value="Printed Time" ></p:outputLabel>
-                                        <p:calendar value="#{patientReportController.currentPatientReport.patientInvestigation.printingAt}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:calendar>
+                                        <p:calendar 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
+                                            value="#{patientReportController.currentPatientReport.patientInvestigation.printingAt}"  
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                        </p:calendar>
+                                    </p:panelGrid>
+                                    
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}"><hr/></h:panelGroup>
+
+                                    <p:panelGrid columns="2" rendered="#{webUserController.hasPrivilege('Developers') and (patientReportController.currentPatientReport.patientName ne null or patientReportController.currentPatientReport.patientGender ne null or patientReportController.currentPatientReport.patientAge ne null)}">
+
+                                        <p:outputLabel for="PatientName" value="Patient Name" ></p:outputLabel>
+                                        <p:inputText 
+                                            id="PatientName" 
+                                            value="#{patientReportController.currentPatientReport.patientName}" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
+                                            class="w-100">
+                                        </p:inputText>
+
+                                        <p:outputLabel for="PatientAge" value="Patient Age (for Bill Date)" ></p:outputLabel>
+                                        <p:inputText 
+                                            id="PatientAge" 
+                                            value="#{patientReportController.currentPatientReport.patientAge}" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
+                                            class="w-100">
+                                        </p:inputText>
+
+                                        <p:outputLabel for="PatientGender" value="Patient Gender" ></p:outputLabel>
+                                        <p:inputText 
+                                            id="PatientGender" 
+                                            value="#{patientReportController.currentPatientReport.patientGender}" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
+                                            class="w-100">
+                                        </p:inputText>
+
                                     </p:panelGrid>
                                 </p:panel>
 
