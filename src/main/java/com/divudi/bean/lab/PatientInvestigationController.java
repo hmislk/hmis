@@ -5368,28 +5368,6 @@ public class PatientInvestigationController implements Serializable {
         getCurrent();
     }
     
-    
-    private boolean samplesMatch(PatientSample s1, PatientSample s2) {
-        return s1.getId().equals(s2.getId());
-    }
-    
-    public void replaceMatchingSamples(List<PatientSample> selectedPatientSamples, List<PatientSample> canSentSamples) {
-        System.out.println("-------- Start ReplaceMatchingSamples --------");
-        for (int i = 0; i < selectedPatientSamples.size(); i++) {
-            PatientSample selectedSample = selectedPatientSamples.get(i);
-
-            for (PatientSample canSentSample : canSentSamples) {
-                if (samplesMatch(selectedSample, canSentSample)) {
-                    PatientSample p = patientSampleFacade.find(canSentSample.getId());
-                    System.out.println("Replace = " + p.getId());
-                    selectedPatientSamples.set(i, p);
-                    break;
-                }
-            }
-        }
-        System.out.println("-------- Finish ReplaceMatchingSamples --------");
-    }
-
     public void setLstToPrint(List<PatientReport> lstToPrint) {
         this.lstToPrint = lstToPrint;
     }
