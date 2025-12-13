@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.core.data.dto.UserLoginDto;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Logins;
@@ -41,6 +42,11 @@ public class LoginController implements Serializable {
     Date toDate;
     Logins longin;
     List<Logins> logins;
+
+    // New properties for DTO-based approach
+    private String usernameFilter;
+    private List<UserLoginDto> loginDtos;
+
     @EJB
     LoginsFacade facade;
     @Inject
@@ -183,5 +189,74 @@ public class LoginController implements Serializable {
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
+    }
+
+    // New methods for DTO-based approach
+
+    /**
+     * Fill login DTOs with username filter and date range
+     */
+    public void fillLoginDtos() {
+        String jpql = "SELECT new com.divudi.core.data.dto.UserLoginDto("
+                + "l.id, l.webUser.id, l.webUser.name, l.webUser.code, "
+                + "l.webUser.webUserPerson.name, l.institution.name, "
+                + "l.department.name, l.logedAt, l.logoutAt, l.ipaddress, "
+                + "l.browser, l.operatingSystem, l.screenResolution, l.computerName) "
+                + "FROM Logins l WHERE ";
+
+        Map<String, Object> params = new HashMap<>();
+
+        // Date range filter
+        jpql += "(l.logedAt BETWEEN :fromDate AND :toDate "
+                + "OR l.logoutAt BETWEEN :fromDate AND :toDate) ";
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+
+        // Username filter
+        if (usernameFilter != null && !usernameFilter.trim().isEmpty()) {
+            jpql += "AND LOWER(l.webUser.name) LIKE :username ";
+            params.put("username", "%" + usernameFilter.toLowerCase() + "%");
+        }
+
+        jpql += "ORDER BY l.logedAt DESC, l.logoutAt DESC";
+
+        loginDtos = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Navigate to user dashboard with selected user
+     */
+    public String navigateToUserDashboard(UserLoginDto loginDto) {
+        FacesContext context = FacesContext.getCurrentInstance();
+        context.getExternalContext().getFlash().put("selectedUserId", loginDto.getWebUserId());
+        return "/admin/users/user_dashboard?faces-redirect=true";
+    }
+
+    /**
+     * Reset filters to defaults
+     */
+    public void resetFilters() {
+        usernameFilter = null;
+        fromDate = CommonFunctions.getStartOfDay();
+        toDate = CommonFunctions.getEndOfDay();
+        loginDtos = null;
+    }
+
+    // Getters and setters for new properties
+
+    public String getUsernameFilter() {
+        return usernameFilter;
+    }
+
+    public void setUsernameFilter(String usernameFilter) {
+        this.usernameFilter = usernameFilter;
+    }
+
+    public List<UserLoginDto> getLoginDtos() {
+        return loginDtos;
+    }
+
+    public void setLoginDtos(List<UserLoginDto> loginDtos) {
+        this.loginDtos = loginDtos;
     }
 }
