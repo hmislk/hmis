@@ -2868,14 +2868,14 @@ public class BillBeanController implements Serializable {
         if (paymentMethod.equals(PaymentMethod.Card)) {
             b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
             b.setBank(paymentMethodData.getCreditCard().getInstitution());
-            b.setComments(paymentMethodData.getSlip().getComment());;
+            b.setComments(paymentMethodData.getSlip().getComment());
         }
         
         if (paymentMethod.equals(PaymentMethod.OnlineSettlement)) {
             b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
             b.setBank(paymentMethodData.getCreditCard().getInstitution());
         }
-
+        
         if (paymentMethod.getPaymentType() == PaymentType.CREDIT) {
             b.setCreditBill(true);
         }

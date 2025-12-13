@@ -423,8 +423,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             return null;
         }
 
-        // fetch original bill now, checked alteady returned, cancelled, ,
-        
+        // fetch original bill now, checked alteady returned, cancelled, , 
         newlyReturnedBill.copy(originalBillToReturn);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
         newlyReturnedBill.setComments(refundComment);
@@ -536,9 +535,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 //        }
         // drawer Update
 //        drawerController.updateDrawerForOuts(returningPayment);
-
-        System.out.println("staff = " + newlyReturnedBill.getToStaff());
-
         returningStarted.set(false);
         return "/opd/bill_return_print?faces-redirect=true";
 

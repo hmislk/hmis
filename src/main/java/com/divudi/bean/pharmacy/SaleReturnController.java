@@ -228,7 +228,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         }
         if (bill.isCancelled()) {
             JsfUtil.addErrorMessage("Cancelled Bills CAN NOT BE returned");
-            return null; 
+            return null;
         }
         // Check if credit has been partially or fully settled
         if (bill.getPaymentMethod() == PaymentMethod.Credit){
