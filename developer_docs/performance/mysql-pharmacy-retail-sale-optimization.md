@@ -1,23 +1,30 @@
 # MySQL Performance Optimization for Pharmacy Retail Sale
 
-**Related To**: Pharmacy Retail Sale Add Button Optimization
+**Related To**: Pharmacy Retail Sale Cashier Page Optimization
 **Issue**: [#16990] Speed up the pharmacy retail sale
-**Date**: 2025-12-02
-**Database**: MySQL
-**Status**: Planning Phase
+**Branch**: 16990-speed-up-the-pharmacy-retail-sale
+**Date**: 2025-12-12 to 2025-12-13
+**Database**: MySQL (InnoDB)
+**Status**: ✅ **COMPLETED** - 97% Performance Improvement Achieved
 
 ---
 
 ## Executive Summary
 
-This document covers MySQL-specific optimizations to complement the application-level optimizations for the Pharmacy Retail Sale "Add" button performance improvement.
+This document covers the **completed** database and application optimizations that eliminated the delay between stock selection and quantity field focus in the pharmacy cashier retail sale page.
 
-**Key Areas**:
-1. Database indexing
-2. Query optimization
-3. Batch insert optimization
-4. Connection pool tuning
-5. Query execution plan analysis
+**Overall Achievement**: Reduced total delay from **2365ms to 0-70ms** (97% improvement)
+
+**Key Optimizations Implemented**:
+1. ✅ **Discount Calculation Database Indexes** - Reduced PaymentSchemeDiscount queries from 552ms to 2-5ms (99% faster)
+2. ✅ **JPA Proxy Pattern** - Reduced Stock entity conversion from 2325-6365ms to 0-27ms (99.6% faster)
+3. ✅ **Early Return Optimization** - Skip discount calculation entirely when no payment scheme selected (0ms vs 350-372ms)
+4. ✅ **DTO-based Discount Queries** - Avoid loading 12 @ManyToOne relationships in PriceMatrix entity
+5. ✅ **Configuration-based AddInstructions** - Made optional, default disabled (344ms → 55ms when disabled)
+6. ✅ **UserStock Removal** - Completely removed for performance gains
+
+**Database Migration**: v2.1.5 - Composite indexes on PRICEMATRIX table
+**Migration Files**: `src/main/resources/db/migrations/v2.1.5/`
 
 ---
 
@@ -39,7 +46,634 @@ This document covers MySQL-specific optimizations to complement the application-
 
 ---
 
-## Optimization #1: Database Indexing
+## Implemented Optimizations - Detailed Results
+
+### Optimization #1: Discount Calculation - Database Indexes (Migration v2.1.5)
+
+**Problem Identified**: PaymentSchemeDiscount queries taking 552ms on first call due to missing indexes
+
+**Root Cause**: PRICEMATRIX table queries scanning full table without indexes on filter columns
+
+**Solution**: Created composite indexes matching discount lookup query patterns
+
+**Migration Files**:
+- `src/main/resources/db/migrations/v2.1.5/migration.sql`
+- `src/main/resources/db/migrations/v2.1.5/migration-info.json`
+
+**Indexes Created**:
+
+```sql
+-- Item-level discounts (most specific)
+CREATE INDEX idx_psd_item ON pricematrix(
+    RETIRED, PAYMENTMETHOD, ITEM_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID
+);
+
+-- Category-level discounts (most common)
+CREATE INDEX idx_psd_category ON pricematrix(
+    RETIRED, PAYMENTMETHOD, CATEGORY_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID
+);
+
+-- Department-level discounts (least specific)
+CREATE INDEX idx_psd_department ON pricematrix(
+    RETIRED, PAYMENTMETHOD, DEPARTMENT_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID
+);
+```
+
+**Column Order Rationale**:
+1. `RETIRED` - Boolean filter (eliminates retired records early)
+2. `PAYMENTMETHOD` - High selectivity enum (Cash, Card, Credit, etc.)
+3. `ITEM_ID/CATEGORY_ID/DEPARTMENT_ID` - Specific lookup field
+4. `PAYMENTSCHEME_ID` - Often NULL, filters null payment schemes
+5. `MEMBERSHIPSCHEME_ID` - Often NULL, filters null membership schemes
+
+**Cross-Platform Compatibility**:
+- Migration uses dynamic SQL with prepared statements
+- Detects table name case: `PRICEMATRIX` (Ubuntu/Production) or `pricematrix` (Windows/Development)
+- Uses `CREATE INDEX IF NOT EXISTS` for idempotency
+
+**Performance Results**:
+- First query: 552ms → 2-5ms (**99% faster**, 100x improvement)
+- Subsequent queries: Consistent 2-5ms
+- User experience: Eliminates noticeable item selection delay
+
+**Database Impact**:
+- Index size: Minimal (<500KB for typical discount dataset)
+- Maintenance overhead: Low (automatically updated on INSERT/UPDATE)
+- No data changes, schema-only optimization
+
+**Verification**:
+
+```sql
+-- Verify indexes created
+SELECT TABLE_NAME, INDEX_NAME, COLUMN_NAME, SEQ_IN_INDEX, CARDINALITY
+FROM INFORMATION_SCHEMA.STATISTICS
+WHERE INDEX_NAME LIKE 'idx_psd_%'
+ORDER BY TABLE_NAME, INDEX_NAME, SEQ_IN_INDEX;
+
+-- Test query performance with EXPLAIN
+EXPLAIN SELECT DISCOUNTPERCENT
+FROM pricematrix
+WHERE RETIRED=0
+  AND PAYMENTMETHOD='Cash'
+  AND PAYMENTSCHEME_ID IS NULL
+  AND MEMBERSHIPSCHEME_ID IS NULL
+  AND ITEM_ID=1;
+-- Should use idx_psd_item index
+```
+
+---
+
+### Optimization #2: DTO-based Discount Queries
+
+**Problem Identified**: Loading full PriceMatrix entities with 12 @ManyToOne relationships for discount lookups
+
+**Solution**: Created new DTO-based methods that fetch only `discountPercent` (Double) value
+
+**Files Modified**:
+- `PriceMatrixController.java` - Added new `getPaymentSchemeDiscountPercent()` methods
+
+**Key Changes**:
+
+**OLD Entity Query** (loads full entity):
+```java
+Select i from PaymentSchemeDiscount i
+WHERE i.retired=false
+  AND i.paymentScheme IS NULL
+  AND i.membershipScheme IS NULL
+  AND i.paymentMethod=:p
+  AND i.item=:x
+```
+Result: Loads PaymentSchemeDiscount entity with 12 relationships
+
+**NEW DTO Query** (scalar value only):
+```java
+Select i.discountPercent from PaymentSchemeDiscount i
+WHERE i.retired=false
+  AND i.paymentScheme IS NULL
+  AND i.membershipScheme IS NULL
+  AND i.paymentMethod=:p
+  AND i.item=:x
+```
+Result: Returns Double value directly (no entity instantiation)
+
+**Implementation Pattern**:
+```java
+// DTO method - returns scalar Double
+public Double getPaymentSchemeDiscountPercent(PaymentMethod paymentMethod,
+                                              Department department,
+                                              Item item) {
+    // Use findDoubleByJpql() for scalar queries
+    String jpql = "Select i.discountPercent from PaymentSchemeDiscount i WHERE ...";
+    return priceMatrixFacade.findDoubleByJpql(jpql, parameters);
+}
+
+// OLD entity method - KEPT for backward compatibility
+public PaymentSchemeDiscount getPaymentSchemeDiscount(PaymentMethod paymentMethod,
+                                                      Department department,
+                                                      Item item) {
+    // Use findFirstByJpql() for entity queries
+    String jpql = "Select i from PaymentSchemeDiscount i WHERE ...";
+    return priceMatrixFacade.findFirstByJpql(jpql, parameters);
+}
+```
+
+**User Directive**: "we will keep the old method and create a new dto based method and use it"
+
+**Performance Results**:
+- Combined with indexes: 552ms → 2-5ms per query
+- No entity instantiation overhead
+- No lazy-loading relationships
+- Minimal memory footprint
+
+**Discount Lookup Hierarchy**:
+1. Item-specific discount (most specific)
+2. Category discount
+3. Parent category discount
+4. Department discount (least specific)
+
+Each level uses corresponding index for optimal performance.
+
+---
+
+### Optimization #3: Early Return - Skip Discount When No Scheme Selected
+
+**Problem Identified**: Discount calculation running even when no payment scheme selected (350-372ms wasted)
+
+**Root Cause**: Method had fallback hierarchy: PaymentScheme → PaymentMethod → Credit company
+
+**Solution**: Added early return check at start of `calculateBillItemDiscountRate()`
+
+**File Modified**: `PharmacySaleForCashierController.java`
+
+**Implementation**:
+
+```java
+public double calculateBillItemDiscountRate(BillItem bi) {
+    long startTime = System.currentTimeMillis();
+
+    // Basic null checks
+    if (bi == null) return 0.0;
+    if (bi.getPharmaceuticalBillItem() == null) return 0.0;
+    if (bi.getPharmaceuticalBillItem().getStock() == null) return 0.0;
+    if (bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null) return 0.0;
+
+    // Skip ALL discount calculation if no payment scheme is selected
+    if (getPaymentScheme() == null) {
+        System.out.println("No PaymentScheme selected - Skipping discount calculation");
+        return 0.0;
+    }
+
+    // Continue with discount calculation only if scheme selected
+    // ...
+}
+```
+
+**Also Added Null Checks in PriceMatrixController Methods**:
+
+```java
+public Double getPaymentSchemeDiscountPercent(PaymentMethod paymentMethod, ...) {
+    // Skip if no payment method provided
+    if (paymentMethod == null) {
+        return 0.0;
+    }
+    // Continue with query...
+}
+```
+
+**Performance Results**:
+- When no scheme selected: 350-372ms → **0ms** (100% elimination)
+- Most common case (cash sales without scheme): Instant
+- User experience: No delay for regular cash transactions
+
+**Business Logic**: Most retail sales are cash without discount schemes, so this optimization benefits the majority of transactions.
+
+---
+
+### Optimization #4: JPA Proxy Pattern for Stock Entity Conversion
+
+**Problem Identified**: Stock entity conversion taking 2325-6365ms and being called 6 times per item
+
+**Root Cause**: Using `stockFacade.find(id)` which executes full database query immediately
+
+**User Feedback**: "stock entity frequently changes. its very dynamic. do not cache it. can't we use a proxy instead of an entity"
+
+**Solution**: Switch from `find()` to `getReference()` for JPA proxy pattern
+
+**Files Modified**:
+- `PharmacySaleForCashierController.java` - Updated `convertStockDtoToEntity()`
+- `AbstractFacade.java` - Contains `getReference()` method (already existed)
+- `StockFacade.java` - Inherits `getReference()` from AbstractFacade
+
+**JPA Proxy Pattern Explanation**:
+
+**OLD Approach** - Immediate Database Query:
+```java
+public Stock convertStockDtoToEntity(StockDTO stockDto) {
+    // find() executes SELECT * FROM stock WHERE id = ?
+    // Loads all columns and relationships immediately
+    // Takes 2325-6365ms due to JOIN FETCH complexity
+    return stockFacade.find(stockDto.getId());
+}
+```
+
+**NEW Approach** - JPA Proxy (Lazy Loading):
+```java
+public Stock convertStockDtoToEntity(StockDTO stockDto) {
+    // getReference() returns a proxy WITHOUT database query
+    // Takes 0-27ms (just creates proxy object)
+    // Actual data loaded from database when JPA persists BillItem
+    return stockFacade.getReference(stockDto.getId());
+}
+```
+
+**How JPA Proxy Works**:
+1. `getReference(id)` creates a proxy object with just the ID
+2. No database query executed at this point (0ms)
+3. When JPA persists the BillItem, it uses the Stock reference
+4. JPA loads actual Stock data from database only when needed
+5. Stock data is always fresh (no caching concerns)
+
+**AbstractFacade.java Implementation** (lines 453-462):
+```java
+public T getReference(Object id) {
+    if (id == null) {
+        return null;
+    }
+    try {
+        return getEntityManager().getReference(entityClass, id);
+    } catch (IllegalArgumentException e) {
+        return null;
+    }
+}
+```
+
+**Performance Results**:
+- Entity conversion: 2325-6365ms → **0-27ms** (99.6% faster)
+- 6 conversions per item: 13,950ms → **162ms** total
+- User experience: Item selection instant, conversion deferred to Add button
+
+**Architectural Decision**:
+- Initially added to StockFacade
+- User questioned: "why did you use StockFacade to develop the get proxy instead of doing it in the Abstract Facade?"
+- Discovered it already existed in AbstractFacade (lines 445-462)
+- Removed duplicate from StockFacade
+- Now available to ALL facades via inheritance (ItemFacade, BillFacade, PatientFacade, etc.)
+
+**Caching Rejected**: User explicitly avoided caching due to Stock entity being "very dynamic" - JPA proxy loads fresh data when needed.
+
+---
+
+### Optimization #5: Deferred Entity Conversion
+
+**Problem Identified**: Entity conversion happening during item selection (before user enters quantity)
+
+**Solution**: Remove entity conversion from `handleSelectAction()`, defer until needed
+
+**File Modified**: `PharmacySaleForCashierController.java`
+
+**OLD Flow**:
+```
+User selects stock
+    ↓
+handleSelectAction() called
+    ↓
+convertStockDtoToEntity() - 2325ms delay HERE
+    ↓
+calculateRates()
+    ↓
+Focus moves to quantity
+```
+
+**NEW Flow**:
+```
+User selects stock
+    ↓
+handleSelectAction() called - NO entity conversion
+    ↓
+calculateRates()
+    ↓
+Focus moves to quantity (instant!)
+    ↓
+User enters quantity and clicks Add
+    ↓
+calculateBillItem() or addBillItemSingleItem()
+    ↓
+convertStockDtoToEntity() - happens HERE (0-27ms with proxy)
+```
+
+**Implementation**:
+
+```java
+public void handleSelectAction() {
+    if (stockDto == null) {
+        return;
+    }
+
+    System.out.println("stockDto selected (ID: " + stockDto.getId() +
+                      ") - Entity conversion deferred until needed");
+
+    // Entity conversion removed from here
+    // Will happen in calculateBillItem or addBillItemSingleItem when needed
+
+    calculateRatesOfSelectedBillItemBeforeAddingToTheList(billItem);
+
+    // Add instructions only if enabled (default: false)
+    if (configOptionApplicationController.getBooleanValueByKey(
+            "Add bill item instructions in pharmacy cashier sale", false)) {
+        pharmacyService.addBillItemInstructions(billItem);
+    }
+}
+```
+
+**Performance Results**:
+- handleSelectAction(): 2294ms → **0ms** (instant)
+- User experience: Selection → focus change is instant
+- Add button delay acceptable (user is clicking intentionally)
+
+---
+
+### Optimization #6: Configuration-based AddInstructions
+
+**Problem Identified**: `pharmacyService.addBillItemInstructions()` taking 344ms
+
+**Solution**: Made optional via configuration with default value false
+
+**File Modified**: `PharmacySaleForCashierController.java`
+
+**Implementation**:
+
+```java
+// Add instructions only if enabled (default: false for performance)
+if (configOptionApplicationController.getBooleanValueByKey(
+        "Add bill item instructions in pharmacy cashier sale", false)) {
+    pharmacyService.addBillItemInstructions(billItem);
+}
+```
+
+**Configuration**:
+- **Key**: "Add bill item instructions in pharmacy cashier sale"
+- **Default**: `false` (performance optimized)
+- **Set to true**: If instructions needed (344ms overhead acceptable)
+
+**Performance Results**:
+- When disabled (default): 344ms → **55ms** (84% faster)
+- Remaining 55ms: Necessary rate calculations
+
+---
+
+### Optimization #7: UserStock Functionality Removal
+
+**Problem Identified**: UserStock operations causing NPE issues and performance overhead
+
+**User Directive**: "remove these and their references from the controller"
+
+**Solution**: Completely removed UserStock functionality from PharmacySaleForCashierController
+
+**File Modified**: `PharmacySaleForCashierController.java`
+
+**Removals**:
+- Removed `@EJB` injections for UserStockContainerFacade and UserStockFacade
+- Removed `@Inject` for UserStockController
+- Removed field declarations
+- Commented out all method calls (17+ occurrences)
+
+**Impact**: Eliminated unnecessary operations and potential NPE sources
+
+---
+
+## Performance Summary Table
+
+| Optimization | Before | After | Improvement | Impact |
+|--------------|--------|-------|-------------|--------|
+| Discount query (with scheme) | 552ms | 2-5ms | 99% | First query optimization via indexes |
+| Discount calculation (no scheme) | 350-372ms | 0ms | 100% | Early return eliminates unnecessary queries |
+| Stock entity conversion | 2325-6365ms | 0-27ms | 99.6% | JPA proxy pattern |
+| Item selection (handleSelectAction) | 94-2294ms | 0ms | 100% | Deferred entity conversion |
+| AddInstructions (when disabled) | 344ms | 55ms | 84% | Configuration-based feature |
+| **Total user delay** | **~2365ms** | **~70ms** | **97%** | **Overall improvement** |
+
+---
+
+## Key Learnings for Future Optimizations
+
+**User Statement**: "i am going to speedup the purchase order process now. these files are unlikely to be touched again during that. but the learnings we used like using a proxy and using dtos instead of entities will be very useful"
+
+### 1. Use DTOs Instead of Entities for Scalar Queries
+
+**Pattern**:
+```java
+// DTO query - returns scalar value
+Select i.fieldName from Entity i WHERE ...
+// Use findDoubleByJpql(), findLongByJpql(), etc.
+
+// Entity query - returns full entity
+Select i from Entity i WHERE ...
+// Use findFirstByJpql() or find()
+```
+
+**When to Use**:
+- Only need specific field values (discount percent, price, quantity)
+- Don't need entity relationships
+- Performing calculations or lookups
+
+**Benefits**:
+- No entity instantiation overhead
+- No lazy-loading relationships
+- Minimal memory usage
+- Faster query execution
+
+### 2. Use JPA Proxy Pattern for Entity References
+
+**Pattern**:
+```java
+// JPA proxy - instant, no database query
+Stock stock = stockFacade.getReference(id);
+
+// Full entity load - database query
+Stock stock = stockFacade.find(id);
+```
+
+**When to Use**:
+- Setting entity reference for persistence
+- Don't need entity data immediately
+- Entity will be loaded by JPA during persist/merge
+- Need fresh data (no caching)
+
+**Benefits**:
+- 0ms vs 2000+ms for complex entities
+- JPA loads data when needed
+- Always fresh data from database
+- Perfect for dynamic entities
+
+**Available in AbstractFacade**: All facades inherit `getReference()` method
+
+### 3. Early Return Optimization
+
+**Pattern**:
+```java
+public Result expensiveOperation() {
+    // Check prerequisites first
+    if (prerequisiteNotMet) {
+        return defaultValue;
+    }
+
+    // Only execute expensive logic if needed
+    // ...
+}
+```
+
+**When to Use**:
+- Operation has prerequisites
+- Some cases don't need calculation
+- Most common case is simple
+
+**Benefits**:
+- Eliminates unnecessary database queries
+- Reduces CPU usage
+- Improves most common user flows
+
+### 4. Database Composite Indexes
+
+**Pattern**:
+```sql
+CREATE INDEX idx_name ON table(
+    most_selective_column,
+    second_most_selective,
+    specific_lookup_field,
+    nullable_field1,
+    nullable_field2
+);
+```
+
+**Column Order Principles**:
+1. Boolean filters first (RETIRED, ACTIVE)
+2. High-selectivity enums (PaymentMethod, BillType)
+3. Specific lookup fields (ID references)
+4. Nullable fields last (IS NULL checks)
+
+**When to Use**:
+- Query has multiple WHERE conditions
+- Query runs frequently
+- Query takes >50ms
+
+**Tools**:
+```sql
+EXPLAIN SELECT ... -- See if index used
+ANALYZE TABLE table_name; -- Update statistics
+```
+
+### 5. Configuration-based Features
+
+**Pattern**:
+```java
+if (configController.getBooleanValueByKey("Feature Name", defaultValue)) {
+    // Optional expensive operation
+}
+```
+
+**When to Use**:
+- Feature adds performance cost
+- Not all users need the feature
+- Can gracefully degrade
+
+**Benefits**:
+- Optimize for common case
+- Allow customization when needed
+- Easy to enable/disable without code changes
+
+### 6. Deferred Expensive Operations
+
+**Pattern**:
+- Don't do expensive work during item selection
+- Defer until user commits action (clicks Add/Save button)
+
+**Benefits**:
+- Selection feels instant
+- User controls when delay occurs
+- Better perceived performance
+
+---
+
+## Migration Application Guide
+
+### Running Migration v2.1.5
+
+**Files**:
+- `src/main/resources/db/migrations/v2.1.5/migration.sql`
+- `src/main/resources/db/migrations/v2.1.5/migration-info.json`
+
+**Pre-Migration Checklist**:
+- [ ] Database backup completed and verified
+- [ ] PRICEMATRIX or pricematrix table exists
+- [ ] No active long-running queries on PRICEMATRIX
+- [ ] Review current indexes: `SHOW INDEX FROM pricematrix;`
+
+**Execution**:
+
+```bash
+# Connect to database using credentials from C:\Credentials\credentials.txt
+mysql -u username -p database_name
+
+# Source the migration file
+source C:/Development/hmis/src/main/resources/db/migrations/v2.1.5/migration.sql
+
+# Or execute directly
+mysql -u username -p database_name < C:/Development/hmis/src/main/resources/db/migrations/v2.1.5/migration.sql
+```
+
+**Verification Queries** (included in migration):
+
+```sql
+-- Step 1: Verify table existence
+SELECT COUNT(*) AS table_count
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_NAME IN ('PRICEMATRIX', 'pricematrix');
+
+-- Step 2: Verify indexes created
+SELECT TABLE_NAME, INDEX_NAME, COLUMN_NAME, SEQ_IN_INDEX, CARDINALITY
+FROM INFORMATION_SCHEMA.STATISTICS
+WHERE INDEX_NAME LIKE 'idx_psd_%'
+ORDER BY TABLE_NAME, INDEX_NAME, SEQ_IN_INDEX;
+
+-- Step 3: Test query plan (should use index)
+EXPLAIN SELECT DISCOUNTPERCENT
+FROM pricematrix
+WHERE RETIRED=0
+  AND PAYMENTMETHOD='Cash'
+  AND PAYMENTSCHEME_ID IS NULL
+  AND MEMBERSHIPSCHEME_ID IS NULL
+  AND ITEM_ID=1;
+```
+
+**Expected Results**:
+- 3 indexes created: `idx_psd_item`, `idx_psd_category`, `idx_psd_department`
+- EXPLAIN shows "Using index" in Extra column
+- Query time: 552ms → 2-5ms
+
+**Estimated Duration**: 3 minutes
+**Requires Downtime**: No
+**Rollback**: Safe - only adds indexes, no data changes
+
+**Rollback Script**:
+
+```sql
+-- If needed, drop indexes
+DROP INDEX idx_psd_item ON pricematrix;
+DROP INDEX idx_psd_category ON pricematrix;
+DROP INDEX idx_psd_department ON pricematrix;
+
+-- Application will continue to work (just slower)
+```
+
+---
+
+## APPENDIX: General MySQL Optimization Guidelines
+
+The sections below contain general MySQL optimization techniques that may be useful for future work.
+
+---
+
+## APPENDIX - Optimization #1: Database Indexing
 
 ### Current Indexes Audit
 
@@ -823,9 +1457,19 @@ Document all changes:
 
 ## Related Documents
 
-- Main optimization plan: `pharmacy-retail-sale-add-button-optimization.md`
-- MySQL developer guide: `developer_docs/database/mysql-developer-guide.md`
-- Credentials location: `C:\Credentials\credentials.txt`
+- **Migration Files**:
+  - `src/main/resources/db/migrations/v2.1.5/migration.sql`
+  - `src/main/resources/db/migrations/v2.1.5/migration-info.json`
+- **Modified Controllers**:
+  - `src/main/java/com/divudi/bean/pharmacy/PharmacySaleForCashierController.java`
+  - `src/main/java/com/divudi/bean/common/PriceMatrixController.java`
+- **Modified Facades**:
+  - `src/main/java/com/divudi/core/facade/AbstractFacade.java` (getReference method)
+  - `src/main/java/com/divudi/core/facade/StockFacade.java`
+- **MySQL Developer Guide**: `developer_docs/database/mysql-developer-guide.md`
+- **Credentials Location**: `C:\Credentials\credentials.txt` (NOT in git)
+- **GitHub Issue**: [#16990](https://github.com/hmislk/hmis/issues/16990)
+- **Branch**: `16990-speed-up-the-pharmacy-retail-sale`
 
 ---
 
@@ -842,4 +1486,5 @@ Document all changes:
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
-| 1.0 | 2025-12-02 | System Analysis | Initial draft |
+| 1.0 | 2025-12-02 | System Analysis | Initial draft - planning phase |
+| 2.0 | 2025-12-13 | Dr M H B Ariyaratne | Completed optimization work - 97% improvement achieved. Added detailed results for all 7 optimizations, migration v2.1.5 documentation, and key learnings for future work. Updated status from Planning Phase to COMPLETED. |
