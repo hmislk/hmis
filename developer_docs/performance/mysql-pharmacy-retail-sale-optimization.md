@@ -208,9 +208,9 @@ Each level uses corresponding index for optimal performance.
 **Implementation**:
 
 ```java
-public double calculateBillItemDiscountRate(BillItem bi) {
-    long startTime = System.currentTimeMillis();
+private static final Logger logger = LoggerFactory.getLogger(PharmacySaleForCashierController.class);
 
+public double calculateBillItemDiscountRate(BillItem bi) {
     // Basic null checks
     if (bi == null) return 0.0;
     if (bi.getPharmaceuticalBillItem() == null) return 0.0;
@@ -219,7 +219,9 @@ public double calculateBillItemDiscountRate(BillItem bi) {
 
     // Skip ALL discount calculation if no payment scheme is selected
     if (getPaymentScheme() == null) {
-        System.out.println("No PaymentScheme selected - Skipping discount calculation");
+        if (logger.isDebugEnabled()) {
+            logger.debug("No PaymentScheme selected - Skipping discount calculation");
+        }
         return 0.0;
     }
 
@@ -227,6 +229,24 @@ public double calculateBillItemDiscountRate(BillItem bi) {
     // ...
 }
 ```
+
+**Logging Best Practices**:
+- ✅ Use SLF4J logger with `logger.isDebugEnabled()` guard for debug messages
+- ✅ Declare logger as `private static final Logger logger = LoggerFactory.getLogger(YourClass.class)`
+- ❌ Never use `System.out.println()` in controller code - it bypasses logging configuration and can't be controlled in production
+
+**Performance Measurement Note**:
+For hot-path performance timing in production, consider using a centralized timing/metrics utility (e.g., Micrometer, application-level performance monitoring) instead of inline timing code. During development, if you need to measure execution time:
+
+```java
+if (logger.isDebugEnabled()) {
+    long startTime = System.currentTimeMillis();
+    // ... operation ...
+    logger.debug("Operation completed in {}ms", System.currentTimeMillis() - startTime);
+}
+```
+
+This ensures timing overhead only occurs when debug logging is enabled.
 
 **Also Added Null Checks in PriceMatrixController Methods**:
 
