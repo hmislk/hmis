@@ -285,35 +285,42 @@
                                             </span>
                                         </f:facet>
 
-                                        <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem;">
-                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingItemVisible}"
-                                                                    itemLabel="Item">
-                                                <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
-                                            </p:selectBooleanCheckbox>
-                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingQtyVisible}"
-                                                                     itemLabel="Qty">
-                                                <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
-                                            </p:selectBooleanCheckbox>                                  
-                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingReturnRateVisible}"
-                                                                       itemLabel="Return Rate">
-                                                <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
-                                            </p:selectBooleanCheckbox> 
-                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingReturnValueVisible}"
-                                                                     itemLabel="Return Value">
-                                                <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
-                                            </p:selectBooleanCheckbox>
-                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingRetailRateVisible}"
-                                                                     itemLabel="Retail Rate">
-                                                <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
-                                            </p:selectBooleanCheckbox>
-                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingRetailValueVisible}"
-                                                                       itemLabel="Retail Value">
-                                                <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
-                                            </p:selectBooleanCheckbox>
-                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingExpiryVisible}"
-                                                                       itemLabel="Expiry">
-                                                <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
-                                            </p:selectBooleanCheckbox>
+                                        <div class="d-flex flex-wrap gap-2 gap-2xl-0 justify-content-between align-items-center" style="font-size: 0.8rem">
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingItemVisible}"
+                                                                        itemLabel="Item">
+                                                    <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
+                                                </p:selectBooleanCheckbox>
+                                                <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingQtyVisible}"
+                                                                         itemLabel="Qty">
+                                                    <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
+                                                </p:selectBooleanCheckbox>                                  
+                                                <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingReturnRateVisible}"
+                                                                           itemLabel="Return Rate">
+                                                    <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
+                                                </p:selectBooleanCheckbox> 
+                                                <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingReturnValueVisible}"
+                                                                         itemLabel="Return Value">
+                                                    <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
+                                                </p:selectBooleanCheckbox>
+                                                <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingRetailRateVisible}"
+                                                                         itemLabel="Retail Rate">
+                                                    <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
+                                                </p:selectBooleanCheckbox>
+                                                <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingRetailValueVisible}"
+                                                                           itemLabel="Retail Value">
+                                                    <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
+                                                </p:selectBooleanCheckbox>
+                                                <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingExpiryVisible}"
+                                                                           itemLabel="Expiry">
+                                                    <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
+                                                </p:selectBooleanCheckbox>
+                                            </div>
+                                            <div class="flex">
+                                                <p:commandButton
+                                                    value="Apply"
+                                                    ajax="false" />
+                                            </div>
                                         </div>
                                     </p:panel>
                                 </div>
