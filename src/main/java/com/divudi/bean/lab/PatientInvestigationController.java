@@ -524,7 +524,7 @@ public class PatientInvestigationController implements Serializable {
         List<PatientSample> canSentOutLabSamples = new ArrayList<>();
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                JsfUtil.addErrorMessage("This Sample ("+ps.getId()+") Bill is Already Cancel");
                 return;
             }
 
@@ -671,7 +671,7 @@ public class PatientInvestigationController implements Serializable {
         List<PatientSample> canProcessSamples = new ArrayList<>();
         for (PatientSample ps : processingSamples) {
             if (ps.getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                JsfUtil.addErrorMessage("This Sample ("+ps.getId()+") Bill is Already Cancel");
                 continue;
             }
             if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED) {
@@ -1975,7 +1975,7 @@ public class PatientInvestigationController implements Serializable {
         List<PatientSample> canCollectSamples = new ArrayList<>();
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                JsfUtil.addErrorMessage("This Sample ("+ps.getId()+") Bill is Already Cancel");
                 return;
             }
             if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED || ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTED) {
@@ -2090,7 +2090,7 @@ public class PatientInvestigationController implements Serializable {
 
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                JsfUtil.addErrorMessage("This Sample ("+ps.getId()+") Bill is Already Cancel");
                 return;
             }
 
@@ -2183,7 +2183,7 @@ public class PatientInvestigationController implements Serializable {
         List<PatientSample> canAcceptSamples = new ArrayList<>();
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                JsfUtil.addErrorMessage("This Sample ("+ps.getId()+") Bill is Already Cancel");
                 return;
             }
 
@@ -2279,7 +2279,7 @@ public class PatientInvestigationController implements Serializable {
 
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("This Bill is Already cancelled");
+                JsfUtil.addErrorMessage("This Sample ("+ps.getId()+") Bill is Already Cancel");
                 return;
             }
 
@@ -2373,7 +2373,7 @@ public class PatientInvestigationController implements Serializable {
         List<PatientSample> canRejectSamples = new ArrayList<>();
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                JsfUtil.addErrorMessage("This Sample ("+ps.getId()+") Bill is Already Cancel");
                 return;
             }
 
@@ -2501,7 +2501,7 @@ public class PatientInvestigationController implements Serializable {
         List<PatientSample> canReGenarateSamples = new ArrayList<>();
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                JsfUtil.addErrorMessage("This Sample ("+ps.getId()+") Bill is Already Cancel");
                 return;
             }
 
