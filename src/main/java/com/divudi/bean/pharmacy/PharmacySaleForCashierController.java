@@ -778,10 +778,31 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     public Stock convertStockDtoToEntity(StockDTO stockDto) {
+        long startTime = System.currentTimeMillis();
+        System.out.println("    >>> convertStockDtoToEntity START - Stock ID: " + (stockDto != null ? stockDto.getId() : "null"));
+
         if (stockDto == null || stockDto.getId() == null) {
+            System.out.println("    >>> convertStockDtoToEntity - NULL stockDto or ID, returning null");
             return null;
         }
-        return stockFacade.find(stockDto.getId());
+
+        long beforeGetReference = System.currentTimeMillis();
+        System.out.println("    >>> Before getReference: " + (beforeGetReference - startTime) + "ms");
+
+        // Use EntityManager.getReference() to get JPA proxy WITHOUT database query
+        // Returns a proxy that only loads data when you access entity properties
+        // This is instantaneous (~0ms) compared to find() which queries database
+        // Perfect for setting entity references for persistence without needing the actual data
+        try {
+            Stock result = stockFacade.getReference(stockDto.getId());
+            long afterGetReference = System.currentTimeMillis();
+            System.out.println("    >>> After getReference: " + (afterGetReference - beforeGetReference) + "ms - Result: PROXY");
+            System.out.println("    >>> convertStockDtoToEntity TOTAL: " + (afterGetReference - startTime) + "ms");
+            return result;
+        } catch (Exception e) {
+            System.err.println("Error getting stock reference: " + e.getMessage());
+            return null;
+        }
     }
 
     public StockDTO getStockDto() {
@@ -1181,22 +1202,22 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             return;
         }
 
-        long beforeSetStock = System.currentTimeMillis();
-        System.out.println("=== CASHIER Before setStockDto: " + (beforeSetStock - startTime) + "ms");
-
-        // Convert StockDTO to Stock entity only for persistence
-        Stock stockEntity = convertStockDtoToEntity(stockDto);
-        if (stockEntity != null) {
-            getBillItem().getPharmaceuticalBillItem().setStock(stockEntity);
-        }
+        System.out.println("=== CASHIER stockDto selected (ID: " + stockDto.getId() + ") - Entity conversion deferred until needed");
 
         long beforeCalculateRates = System.currentTimeMillis();
-        System.out.println("=== CASHIER Before calculateRates: " + (beforeCalculateRates - beforeSetStock) + "ms");
+        System.out.println("=== CASHIER Before calculateRates: " + (beforeCalculateRates - startTime) + "ms");
+
+        // Entity conversion removed from here - will happen in calculateBillItem or addBillItemSingleItem when needed
+        // This eliminates 2000ms+ delay during item selection
         calculateRatesOfSelectedBillItemBeforeAddingToTheList(billItem);
 
         long beforeAddInstructions = System.currentTimeMillis();
         System.out.println("=== CASHIER Before addInstructions: " + (beforeAddInstructions - beforeCalculateRates) + "ms");
-        pharmacyService.addBillItemInstructions(billItem);
+
+        // Add instructions only if enabled (default: false for performance)
+        if (configOptionApplicationController.getBooleanValueByKey("Add bill item instructions in pharmacy cashier sale", false)) {
+            pharmacyService.addBillItemInstructions(billItem);
+        }
 
         long endTime = System.currentTimeMillis();
         System.out.println("=== CASHIER After addInstructions: " + (endTime - beforeAddInstructions) + "ms");
@@ -1495,7 +1516,10 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         //UserStock us = saveUserStock(billItem);
         //billItem.setTransUserStock(us);
 
-        pharmacyService.addBillItemInstructions(billItem);
+        // Add instructions only if enabled (default: false for performance)
+        if (configOptionApplicationController.getBooleanValueByKey("Add bill item instructions in pharmacy cashier sale", false)) {
+            pharmacyService.addBillItemInstructions(billItem);
+        }
 
         clearBillItem();
         getBillItem();
@@ -3787,6 +3811,14 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         if (bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null) {
             return 0.0;
         }
+
+        // Skip ALL discount calculation if no payment scheme is selected
+        if (getPaymentScheme() == null) {
+            System.out.println("        === CASHIER No PaymentScheme selected - Skipping discount calculation");
+            System.out.println("        === CASHIER calculateBillItemDiscountRate TOTAL: " + (System.currentTimeMillis() - startTime) + "ms");
+            return 0.0;
+        }
+
         bi.setItem(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getItem());
         double retailRate = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
         double discountRate = 0;
