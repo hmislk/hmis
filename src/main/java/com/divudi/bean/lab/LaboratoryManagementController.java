@@ -548,7 +548,9 @@ public class LaboratoryManagementController implements Serializable {
 
     public String navigateToBackFormPatientReportEditingView() {
         if (sessionController.getLoggedUser().getLoginPage() == null) {
-            if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("The system uses the Old Laboratory Dashboard as its default interface", false)) {
+                return "/lab/search_for_reporting_ondemand?faces-redirect=true";
+            }else if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
                 listingEntity = ListingEntity.PATIENT_REPORTS;
                 return "/lab/laboratory_management_dashboard?faces-redirect=true";
             } else {
