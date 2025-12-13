@@ -1346,6 +1346,14 @@ public class PharmacyWholeSaleController2 implements Serializable, ControllerWit
                 }
             }
         }
+        
+        if(configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false) && 
+                configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Pharmacy from the system", false)){
+            if(getPatient() != null && getPatient().isBlacklisted()){
+                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+                return ;
+            }
+        }
 
 //        if (checkAllBillItem()) {
 //            return;

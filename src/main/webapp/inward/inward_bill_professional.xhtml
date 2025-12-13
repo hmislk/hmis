@@ -70,7 +70,7 @@
                                     </div>
                                 </p:column>
                             </p:autoComplete>  
-                            
+
                             <p:commandButton 
                                 value="Select" 
                                 ajax="false" >
@@ -216,13 +216,29 @@
                                         </p:autoComplete>
 
                                         <h:outputLabel value="Professional Fee"/>
-                                        <p:inputText 
-                                            class=" my-2 mx-4"
-                                            autocomplete="off" 
-                                            id="prof" 
-                                            value="#{inwardProfessionalBillController.currentBillFee.feeValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:inputText>
+                                        <h:panelGroup class="d-flex align-items-center">
+                                            <p:inputText 
+                                                class=" my-2 mx-4"
+                                                autocomplete="off" 
+                                                id="prof" 
+                                                disabled="#{inwardProfessionalBillController.freeOfChargeProfessionalPayment ? 'true' : 'false'}"
+                                                value="#{inwardProfessionalBillController.currentBillFee.feeValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:inputText>
+
+                                            <p:toggleSwitch 
+                                                id="freeOfCharge"
+                                                value="#{inwardProfessionalBillController.freeOfChargeProfessionalPayment}"
+                                                onIcon="✓"
+                                                offIcon="○"
+                                                style="width: 50px">
+                                                <p:ajax update="@form freeOfChargeLabel" process="@this" />
+                                            </p:toggleSwitch>
+
+                                            <p:outputLabel id="freeOfChargeLabel" style="color: #{inwardProfessionalBillController.freeOfChargeProfessionalPayment ? '#f44336': 'black'} ; font-weight: bold" value="Free Of Charge" class="mx-2" for="freeOfCharge"></p:outputLabel>
+
+                                        </h:panelGroup>
+
 
                                         <h:outputLabel value="Fee At"/>
 

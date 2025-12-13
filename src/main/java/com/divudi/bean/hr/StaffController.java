@@ -173,15 +173,12 @@ public class StaffController implements Serializable {
     public void saveSignatureUrl() {
         System.out.println("saveSignatureUrl");
         if (current.getId() == null || current.getId() == 0) {
-            System.out.println("current Null");
             JsfUtil.addErrorMessage("Please Select Staff Member");
         }
         if (getSignatureUrl() == null || getSignatureUrl().trim() == "") {
-            System.out.println("URL Null");
             JsfUtil.addErrorMessage("Add Signature Url");
         }
         System.out.println("getStaffController().getCurrent = " + getCurrent());
-        System.out.println("Signature Url = " + getSignatureUrl());
 
         current.setSignatureUrl(getSignatureUrl());
         ejbFacade.edit(getCurrent());
@@ -192,10 +189,8 @@ public class StaffController implements Serializable {
     public void removeSignatureUrl() {
         System.out.println("RemoveSignatureUrl");
         if (current.getId() == null || current.getId() == 0) {
-            System.out.println("current Null");
             JsfUtil.addErrorMessage("Please Select Staff Member");
         }
-        System.out.println("getStaffController().getCurrent = " + getCurrent());
 
         current.setSignatureUrl(null);
         ejbFacade.edit(getCurrent());
@@ -1295,7 +1290,6 @@ public class StaffController implements Serializable {
         }
 
         System.out.println(" current.getName() = " + current.getName());
-        System.out.println(" current.getPerson().getName() = " + current.getPerson().getName());
 
         updateStaffEmployment();
 
@@ -1350,7 +1344,6 @@ public class StaffController implements Serializable {
         }
 
         System.out.println(" current.getName() = " + current.getName());
-        System.out.println(" current.getPerson().getName() = " + current.getPerson().getName());
 
         recreateModel();
         getItems();

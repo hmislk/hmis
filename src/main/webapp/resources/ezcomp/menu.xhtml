@@ -360,16 +360,30 @@
                             rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" >
                         </p:menuitem>
 
+                    </p:submenu>
+
+                    <p:submenu label="Appointment" icon="fa fa-calendar-plus" rendered="#{webUserController.hasPrivilege('InwardAppointmentMenu')}">
                         <p:menuitem
                             ajax="false"
                             action="#{appointmentController.navigateToInwardAppointmentFromMenu()}"
-                            value="Inward Appointment"
-                            icon="fa fa-calendar-plus"
-                            rendered="#{webUserController.hasPrivilege('InwardAdmissionsInwardAppoinment')}" >
+                            value="Add Appointment"
+                            rendered="#{webUserController.hasPrivilege('AddInwardAppointment')}"
+                            icon="fa fa-calendar-plus" >
                         </p:menuitem>
-                    </p:submenu>
-
-                    <p:submenu label="Room" icon="fa fa-door-open" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
+                        <p:menuitem
+                            ajax="false"
+                            value="Appointment admission"
+                            action="#{appointmentController.navigateToAppointmentAdminFromMenu()}"
+                            icon="fa fa-user-plus"
+                            rendered="#{webUserController.hasPrivilege('InwardAppointmentAdmission')}">
+                        </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            value="Manage Appointment"
+                            actionListener="#{appointmentController.makeNull()}" 
+                            action="#{appointmentController.navigateToSearchAppointmentsListFromMenu()}"
+                            icon="fa fa-list" >
+                        </p:menuitem>
                         <p:menuitem 
                             ajax="false" 
                             action="#{inwardReservationController.navigateToReservationCalendarFromMenu()}" 
@@ -377,6 +391,9 @@
                             icon="fa fa-calendar-check" 
                             rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" >
                         </p:menuitem>
+                    </p:submenu>
+                    
+                    <p:submenu label="Room" icon="fa fa-door-open" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
                         <p:menuitem 
                             ajax="false" 
                             action="#{admissionController.navigateToRoomOccupancy()}" 

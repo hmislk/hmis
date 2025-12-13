@@ -13,6 +13,24 @@
     <h:body>
         <ui:composition template="/emr/settings/index.xhtml">
             <ui:define name="subcontent">
+                <!-- Header Section with Title and Wiki Link -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h:outputText value="Document Templates" styleClass="h4 mb-1"/>
+                                <p class="mb-0">Manage and configure document templates for your organization</p>
+                            </div>
+                            <div>
+                                <p:commandButton value="View Template Examples"
+                                                 icon="pi pi-external-link"
+                                                 styleClass="ui-button-secondary ui-button-outlined"
+                                                 onclick="window.open('https://github.com/hmislk/hmis/wiki/Document-Templates', '_blank'); return false;"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <h:form >
                     <p:dataTable id="documentTemplateTable"
                                  var="doc"
@@ -20,28 +38,47 @@
                                  paginator="true"
                                  rows="10"
                                  paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="5,10,15">
+                                 rowsPerPageTemplate="5,10,15"
+                                 emptyMessage="No document templates found"
+                                 striped="true">
 
-                        <p:column headerText="Name">
+                        <f:facet name="header">
+                            <h:outputText value="Document Templates List" styleClass="h5"/>
+                        </f:facet>
+
+                        <p:column headerText="Name" sortBy="#{doc.name}">
                             <h:outputText value="#{doc.name}" />
                         </p:column>
-                        <p:column headerText="Type">
+
+                        <p:column headerText="Type" sortBy="#{doc.type}">
                             <h:outputText value="#{doc.type}" />
                         </p:column>
-                        <p:column headerText="User">
+
+                        <p:column headerText="User" sortBy="#{doc.webUser.name}">
                             <h:outputText value="#{doc.webUser.name}" />
                         </p:column>
-                        <p:column headerText="Default Template">
+
+                        <p:column headerText="Default Template" sortBy="#{doc.defaultTemplate}">
                             <h:outputText value="#{doc.defaultTemplate ? 'Yes' : 'No'}" />
                         </p:column>
-                        <p:column headerText="Auto Generate">
-                           <h:outputText value="#{doc.autoGenerate ? 'Yes' : 'No'}" />
+
+                        <p:column headerText="Auto Generate" sortBy="#{doc.autoGenerate}">
+                            <h:outputText value="#{doc.autoGenerate ? 'Yes' : 'No'}" />
                         </p:column>
-                        <p:column headerText="Actions" style="width: 150px;">
-                            <p:commandButton value="Edit" action="#{documentTemplateController.navigateToEditUserDocumentTemplates()}" ajax="false">
+
+                        <p:column headerText="Actions">
+                            <p:commandButton value="Edit"
+                                             styleClass="ui-button-info"
+                                             action="#{documentTemplateController.navigateToEditUserDocumentTemplates()}"
+                                             ajax="false">
                                 <f:setPropertyActionListener target="#{documentTemplateController.current}" value="#{doc}" />
                             </p:commandButton>
-                            <p:commandButton value="Remove" action="#{documentTemplateController.removeUserDocumentTemplate()}" ajax="false">
+
+                            <p:commandButton value="Remove"
+                                             styleClass="ui-button-danger ml-2"
+                                             action="#{documentTemplateController.removeUserDocumentTemplate()}"
+                                             ajax="false"
+                                             onclick="return confirm('Are you sure you want to remove this template?');">
                                 <f:setPropertyActionListener target="#{documentTemplateController.current}" value="#{doc}" />
                             </p:commandButton>
                         </p:column>

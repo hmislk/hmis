@@ -36,15 +36,26 @@
                                         update="@all"
                                         action="#{bookingControllerViewScope.navigateToChannelBookingFromMenuByDate()}"
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Navigation Button To Channel Booking By Date From OPD Billing')}"/>
-                                    <p:commandButton 
+                                    <p:commandButton
                                         id="btnNewOpdBill"
-                                        value="New OPD Bill" 
+                                        value="New OPD Bill"
                                         class="ui-button-primary m-1"
                                         icon="fa fa-plus"
                                         action="#{opdBillController.navigateToNewOpdBill()}"
                                         process="btnNewOpdBill"
                                         update="@all">
                                     </p:commandButton>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                        <p:commandButton
+                                            value="Config"
+                                            icon="fa fa-cog"
+                                            title="Page Configuration Management"
+                                            action="#{pageAdminController.navigateToPageAdmin('opd/opd_bill_ac')}"
+                                            ajax="false"
+                                            styleClass="ui-button-secondary ui-button-sm p-button-outlined m-1"
+                                            style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                                        </p:commandButton>
+                                    </h:panelGroup>
                                 </div>
                             </div>
                         </f:facet>
@@ -1224,13 +1235,13 @@
                                                 class="row my-1"
                                                 layout="block" 
                                                 id="cheque"  rendered="#{opdBillController.paymentMethod eq 'Cheque'}" >
-                                                <pa:cheque paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             <h:panelGroup
                                                 class="row my-1"
                                                 layout="block"
                                                 id="slip"  rendered="#{opdBillController.paymentMethod eq 'Slip'}" >
-                                                <pa:slip paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                <pa:slipDetailsAsOnlyPayment paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             <h:panelGroup
                                                 class="row my-1"

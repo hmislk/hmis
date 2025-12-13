@@ -61,7 +61,6 @@ public class WebUserRoleUserController implements Serializable {
     private List<Department> departments;
 
     public void addUsersToDepartmentRoleWithPrivileges() {
-        System.out.println("addUsersToDepartmentRoleWithPrivileges");
         if (webUser == null) {
             JsfUtil.addErrorMessage("Select User");
             return;

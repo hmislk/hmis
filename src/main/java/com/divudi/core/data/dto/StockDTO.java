@@ -237,6 +237,24 @@ public class StockDTO implements Serializable {
         this.categoryId = categoryId;
     }
 
+    // Constructor for optimized retail sale autocomplete with costRate (for cashier sale)
+    public StockDTO(Long id, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, String batchNo, Double retailRate, Double stockQty,
+                    Date dateOfExpire, Boolean discountAllowed, Double costRate) {
+        this.id = id;
+        this.itemBatchId = itemBatchId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.batchNo = batchNo;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.discountAllowed = discountAllowed;
+        this.costRate = costRate;
+    }
+
     public Long getId() {
         return id;
     }

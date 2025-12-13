@@ -872,7 +872,6 @@ public class BillBhtController implements Serializable {
             System.out.println("matrixDepartment = " + billFee);
             System.out.println("paymentMethod = " + paymentMethod);
             PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment, paymentMethod);
-            System.out.println("priceMatrix = " + priceMatrix);
 
             getInwardBean().setBillFeeMargin(billFee, billItem.getItem(), priceMatrix, patientEncounter);
 

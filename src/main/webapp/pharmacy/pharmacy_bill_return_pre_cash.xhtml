@@ -362,6 +362,12 @@
                                           rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Return Refund Bill is POS Paper', false)}">
                                 <ph:saleBill bill="#{pharmacyRefundForItemReturnsController.bill}"/>
                             </h:panelGroup>
+
+                            <!-- POS Paper Custom 1 Format -->
+                            <h:panelGroup id="gpBillPreviewPosPaperCustom1"
+                                          rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Return Refund Bill is POS Paper Custom 1 Paper', false)}">
+                                <ph:saleBill_Retail_Return_Pos_paper_Custom_1 bill="#{pharmacyRefundForItemReturnsController.bill}"/>
+                            </h:panelGroup>
                         </h:panelGroup>
                     </p:panel>
 
@@ -384,6 +390,11 @@
                                     <p:selectBooleanCheckbox
                                         id="chkPosPaper"
                                         value="#{pharmacyConfigController.retailSaleReturnRefundBillPosPaper}" />
+
+                                    <h:outputLabel value="POS Paper Custom 1 Format:" />
+                                    <p:selectBooleanCheckbox
+                                        id="chkPosCustom1Paper"
+                                        value="#{pharmacyConfigController.retailSaleReturnRefundBillPosPaperCustom1}" />
                                 </p:panelGrid>
 
                                 <div class="mt-3">

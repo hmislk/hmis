@@ -36,7 +36,7 @@ public class PatientInvestigationDTO implements Serializable {
     public PatientInvestigationDTO() {
     }
 
-    public PatientInvestigationDTO(Long id, String itemName, Date billDate, String billNumber, Title patientTitle, String patientName, Long patientid, Sex gender) {
+    public PatientInvestigationDTO(Long id, String itemName, Date billDate, String billNumber, Title patientTitle, String patientName, Long patientid, Date patientDob, Sex gender) {
         this.id = id;
         this.itemName = itemName;
         this.billDate = billDate;
@@ -44,6 +44,7 @@ public class PatientInvestigationDTO implements Serializable {
         this.patientTitle = patientTitle;
         this.patientName = patientName;
         this.patientid = patientid;
+        this.patientDob = patientDob;
         this.gender = gender;
     }
 

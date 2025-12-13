@@ -581,12 +581,6 @@
                                         </p:dataTable>
                                     </p:panel>
 
-
-
-
-
-
-
                                 </div>
                                 <div class="col-md-5"  >
                                     <h:panelGrid id="sale" columns="1" class="alignTop w-100"  >
@@ -829,6 +823,24 @@
                                                                     </div>
                                                                 </div>
 
+                                                                <div class="row">
+                                                                    <div class="col-md-4 p-1">
+                                                                      
+                                                                        <div class="input-group">
+                                                                            <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{pharmacySaleController.patient.specificStatus}">
+                                                                                <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
+                                                                            </p:selectOneMenu>
+
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-8 p-1">
+                                                                        <div class="input-group">
+                                                                            <p:inputText placeholder="Comment for Patient Specific Status" value="#{pharmacySaleController.patient.specificStatusComment}" style="width: 100%;" class="form-control" />
+
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
                                                                 <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
                                                                 <p:tooltip for="txtNic" value="NIC / Passport No"  showDelay="0" hideDelay="0"></p:tooltip>
                                                                 <p:tooltip for="dpDob" value="Date Of Birth"  showDelay="0" hideDelay="0"></p:tooltip>
@@ -854,9 +866,23 @@
                                                 <h:panelGroup  rendered="#{not pharmacySaleController.patientDetailsEditable}"  >
                                                     <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
                                                         <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{pharmacySaleController.patient ne null}" >
+
                                                             <h:outputLabel value="Name " class="mx-3"/>
                                                             <h:outputLabel value=" : " class="mx-3"/>
-                                                            <h:outputText value="#{pharmacySaleController.patient.person.nameWithTitle}" />
+
+                                                            <h:panelGroup class="d-flex">
+
+                                                                <p:outputLabel class="ml-4" value="#{pharmacySaleController.patient.person.nameWithTitle}" rendered="#{not empty pharmacySaleController.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system', false)}" />
+
+                                                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system', false)}" style="transform: translate(110%, -40%);background-color: #{empty pharmacySaleController.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{pharmacySaleController.patient.specificStatus}" severity="danger">
+                                                                    <p:outputLabel value="#{pharmacySaleController.patient.person.nameWithTitle}" rendered="#{not empty pharmacySaleController.patient.person.nameWithTitle}" />
+                                                                </p:badge> 
+
+                                                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system', false) and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for Pharmacy from the system', false)}" style="transform: translate(110%, -40%);background-color: #{pharmacySaleController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{pharmacySaleController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+
+                                                                </p:badge>
+
+                                                            </h:panelGroup>
 
                                                             <h:outputLabel value="Gender " class="mx-3"/>
                                                             <h:outputLabel value=" : " class="mx-3"/>
@@ -1180,7 +1206,7 @@
                                                                         inputStyleClass="form-control">
                                                         </p:autoComplete>
                                                         <p:outputLabel value="Comments" ></p:outputLabel>
-                                                        <p:inputTextarea class="w-100 mx-4" value="#{pharmacySaleController.comment}" id="comment"/>
+                                                        <p:inputTextarea id="txtComment" class="w-100 mx-4" value="#{pharmacySaleController.comment}"/>
 
 
 
