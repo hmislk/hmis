@@ -425,7 +425,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             return null;
         }
 
-        // fetch original bill now, checked alteady returned, cancelled, , 
+        // fetch original bill now, checked already returned, cancelled, , 
         newlyReturnedBill.copy(originalBillToReturn);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
         newlyReturnedBill.setComments(refundComment);
