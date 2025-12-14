@@ -593,7 +593,11 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     public Stock getStock() {
         // Lazy loading: Load stock entity only when actually needed
         if (stock == null && selectedStockId != null) {
+            long dbLoadStart = System.currentTimeMillis();
             stock = getStockFacade().find(selectedStockId);
+            long dbLoadTime = System.currentTimeMillis() - dbLoadStart;
+        } else if (stock != null) {
+        } else {
         }
         return stock;
     }
@@ -808,34 +812,49 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     }
 
     public void handleSelect(SelectEvent event) {
+        long startTime = System.currentTimeMillis();
+
         // Get the selected item directly from the event (before JSF updates the bound property)
+        long step1Start = System.currentTimeMillis();
         StockDTO selectedDto = (StockDTO) event.getObject();
         if (selectedDto == null || selectedDto.getId() == null) {
             return;
         }
 
         // Update the bound properties with the selected item
+        long step2Start = System.currentTimeMillis();
         this.selectedStockDto = selectedDto;
         this.selectedStockId = selectedDto.getId();
 
+        long step3Start = System.currentTimeMillis();
         if (getBillItem() == null || getBillItem().getPharmaceuticalBillItem() == null) {
             return;
         }
 
         // Set stock using lazy loading (will be loaded when getStock() is called)
+        long step4Start = System.currentTimeMillis();
         getBillItem().getPharmaceuticalBillItem().setStock(getStock());
 
         // Initialize quantity to 1 if not set
+        long step5Start = System.currentTimeMillis();
         if (intQty == null || intQty == 0) {
             setIntQty(1);
         }
 
         // Only perform heavy operations if stock was successfully loaded
         if (stock != null) {
+            long step6Start = System.currentTimeMillis();
             calculateRates(billItem);
+
+            long step7Start = System.currentTimeMillis();
             calculateBillItem();
+
+            long step8Start = System.currentTimeMillis();
             pharmacyService.addBillItemInstructions(billItem);
+        } else {
         }
+
+        long totalTime = System.currentTimeMillis() - startTime;
     }
 
     //    public void calculateRates(BillItem bi) {
@@ -871,6 +890,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     }
 
     public void calculateBillItem() {
+        long calcBillItemStart = System.currentTimeMillis();
+
         if (stock == null) {
             return;
         }
@@ -894,23 +915,25 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             return;
         }
 
+        long step1Start = System.currentTimeMillis();
         //Bill Item
 //        billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setItem(getStock().getItemBatch().getItem());
         billItem.setQty(qty);
 
+        long step2Start = System.currentTimeMillis();
         //pharmaceutical Bill Item
         billItem.getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
 
+        long step3Start = System.currentTimeMillis();
         //Rates
         //Values
         billItem.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * qty);
         billItem.setNetValue(qty * billItem.getNetRate());
         billItem.setDiscount(billItem.getGrossValue() - billItem.getNetValue());
-
     }
 
     public void addBillItem() {
@@ -932,13 +955,20 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     }
 
     public void calculateRates(BillItem bi) {
+        long calcRatesStart = System.currentTimeMillis();
+
         PharmaceuticalBillItem pharmBillItem = bi.getPharmaceuticalBillItem();
         if (pharmBillItem != null && pharmBillItem.getStock() != null) {
+            long step1Start = System.currentTimeMillis();
             ItemBatch itemBatch = pharmBillItem.getStock().getItemBatch();
             if (itemBatch != null) {
                 bi.setRate(itemBatch.getRetailsaleRate());
             }
+
+            long step2Start = System.currentTimeMillis();
             bi.setDiscountRate(calculateBillItemDiscountRate(bi));
+
+            long step3Start = System.currentTimeMillis();
             bi.setNetRate(bi.getRate() - bi.getDiscountRate());
 
             bi.setGrossValue(bi.getRate() * bi.getQty());
@@ -1815,6 +1845,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
     //    TO check the functionality
     public double calculateBillItemDiscountRate(BillItem bi) {
+        long discountCalcStart = System.currentTimeMillis();
+
         if (bi == null) {
             return 0.0;
         }
@@ -1827,6 +1859,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         if (bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null) {
             return 0.0;
         }
+
+        long setupStart = System.currentTimeMillis();
         bi.setItem(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getItem());
         double retailRate = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
         double discountRate = 0;
@@ -1849,6 +1883,7 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 //
         //PAYMENTSCHEME DISCOUNT
         if (getPaymentScheme() != null && discountAllowed) {
+            long priceMatrixStart = System.currentTimeMillis();
             PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPaymentMethod(), getPaymentScheme(), getSessionController().getDepartment(), bi.getItem());
 
             if (priceMatrix != null) {
@@ -1864,6 +1899,7 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
         //PAYMENTMETHOD DISCOUNT
         if (getPaymentMethod() != null && discountAllowed) {
+            long priceMatrixStart = System.currentTimeMillis();
             PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPaymentMethod(), getSessionController().getDepartment(), bi.getItem());
 
             if (priceMatrix != null) {
@@ -1885,6 +1921,7 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             dr = (retailRate * discountRate) / 100;
             return dr;
         }
+
         return 0;
 
     }
@@ -2675,7 +2712,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
      * with simplified retail-only calculations and proper cost rate handling.
      */
     public void updateRetailSaleFinanceDetails(Bill bill) {
-        System.out.println("=== Starting updateRetailSaleFinanceDetails ===");
 
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
             return;
@@ -2692,10 +2728,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         int itemIndex = 0;
         for (BillItem billItem : bill.getBillItems()) {
             itemIndex++;
-            System.out.println("--- Processing Bill Item " + itemIndex + " ---");
-            System.out.println("BillItem ID: " + (billItem != null ? billItem.getId() : "null"));
-            System.out.println("BillItem retired: " + (billItem != null ? billItem.isRetired() : "null"));
-            System.out.println("BillItem qty: " + (billItem != null ? billItem.getQty() : "null"));
 
             if (billItem == null || billItem.isRetired()) {
                 continue;
@@ -2703,7 +2735,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
             // Get pharmaceutical bill item for rate information
             PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
-            System.out.println("PharmaceuticalBillItem: " + (pharmaItem != null ? "exists" : "null"));
             if (pharmaItem == null) {
                 continue;
             }
@@ -2712,14 +2743,12 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             BigDecimal qty = BigDecimal.valueOf(billItem.getQty());
             BigDecimal freeQty = BigDecimal.valueOf(pharmaItem.getFreeQty());
             BigDecimal totalQty = qty.add(freeQty);
-            System.out.println("Quantities - qty: " + qty + ", freeQty: " + freeQty + ", totalQty: " + totalQty);
 
             // Get rates from pharmaceutical bill item
             BigDecimal retailRate = BigDecimal.valueOf(pharmaItem.getRetailRate());
             BigDecimal purchaseRate = BigDecimal.valueOf(pharmaItem.getPurchaseRate());
             BigDecimal wholesaleRate = BigDecimal.valueOf(pharmaItem.getWholesaleRate());
 
-            System.out.println("Pharma rates - retail: " + retailRate + ", purchase: " + purchaseRate + ", wholesale: " + wholesaleRate);
 
             // Get cost rate from item batch (correct approach) with fallback to purchase rate
             BigDecimal costRate = purchaseRate; // default fallback
@@ -2734,7 +2763,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
             // Get BillItemFinanceDetails (note: getBillItemFinanceDetails() auto-creates if null)
             BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
-            System.out.println("BillItemFinanceDetails for item - ID: " + bifd.getId() + " (will be null if newly created)");
 
             // Calculate absolute quantity for calculations
             BigDecimal absQty = qty.abs();
@@ -2750,7 +2778,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             bifd.setPurchaseRate(purchaseRate);
             bifd.setRetailSaleRate(retailRate);
 
-            System.out.println("Set rates - costRate: " + costRate.doubleValue() + ", purchaseRate: " + purchaseRate.doubleValue() + ", retailSaleRate: " + retailRate.doubleValue());
 
             // UPDATE TOTAL FIELDS in BillItemFinanceDetails
             bifd.setLineGrossTotal(BigDecimal.valueOf(billItem.getGrossValue()));
@@ -2766,16 +2793,12 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             bifd.setBillCost(BigDecimal.ZERO); // Set to 0 as per user requirement
             bifd.setTotalCost(itemCostValue);
 
-            System.out.println("Cost values: lineCost: " + bifd.getLineCost() + ", totalCost: " + bifd.getTotalCost());
 
             // UPDATE VALUE FIELDS in BillItemFinanceDetails (for retail sales, use totalQty including free)
             bifd.setValueAtCostRate(costRate.multiply(totalQty));
             bifd.setValueAtPurchaseRate(purchaseRate.multiply(totalQty));
             bifd.setValueAtRetailRate(retailRate.multiply(totalQty));
 
-            System.out.println("BIFD values: valueAtCostRate: " + bifd.getValueAtCostRate()
-                    + ", valueAtPurchaseRate: " + bifd.getValueAtPurchaseRate()
-                    + ", valueAtRetailRate: " + bifd.getValueAtRetailRate());
 
             // UPDATE QUANTITIES in BillItemFinanceDetails
             bifd.setQuantity(qty);
@@ -2787,9 +2810,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             pharmaItem.setRetailValue(itemRetailValue.doubleValue());
             pharmaItem.setPurchaseValue(itemPurchaseValue.doubleValue());
 
-            System.out.println("PBI values: costValue: " + pharmaItem.getCostValue()
-                    + ", retailValue: " + pharmaItem.getRetailValue()
-                    + ", purchaseValue: " + pharmaItem.getPurchaseValue());
 
             // Accumulate bill-level totals
             totalCostValue = totalCostValue.add(itemCostValue);
@@ -2803,7 +2823,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         // UPDATE BILL-LEVEL FINANCE DETAILS (check if auto-creation happens here too)
         BillFinanceDetails bfd = bill.getBillFinanceDetails();
         if (bfd == null) {
-            System.out.println("WARNING: BillFinanceDetails missing for bill ID " + bill.getId() + " - creating new one");
             bfd = new BillFinanceDetails();
             bfd.setBill(bill);
             bill.setBillFinanceDetails(bfd);
@@ -2821,13 +2840,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         bfd.setTotalQuantity(totalQuantity);
         bfd.setTotalFreeQuantity(totalFreeQuantity);
 
-        System.out.println("Bill totals - netTotal: " + bfd.getNetTotal()
-                + ", grossTotal: " + bfd.getGrossTotal()
-                + ", totalCostValue: " + bfd.getTotalCostValue()
-                + ", totalPurchaseValue: " + bfd.getTotalPurchaseValue()
-                + ", totalRetailSaleValue: " + bfd.getTotalRetailSaleValue()
-                + ", totalQuantity: " + bfd.getTotalQuantity()
-                + ", totalFreeQuantity: " + bfd.getTotalFreeQuantity());
 
     }
 

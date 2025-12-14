@@ -176,6 +176,7 @@
                                                 icon="fa fa-check-circle"
                                                 ajax="false"
                                                 value="Admit"
+                                                rendered="#{webUserController.hasPrivilege('InwardAppointmentAdmission')}"
                                                 disabled="#{r.status eq 'CANCEL' or r.status eq 'COMPLETE'}"
                                                 action="#{appointmentController.navigatePatientAdmit(r.id)}"
                                                 class="ui-button-success" >
