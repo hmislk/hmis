@@ -5491,6 +5491,8 @@ public class PharmacyReportController implements Serializable {
             StringBuilder jpql = new StringBuilder();
 
             // Direct aggregation query using historical rates from StockHistory
+            // Note: stockQty, purchaseRate, costRate, retailRate are primitive double types in StockHistory entity,
+            // so they cannot be NULL. COALESCE is used defensively for rates in case of database inconsistencies.
             jpql.append("SELECT ")
                     .append("SUM(sh.stockQty * COALESCE(sh.purchaseRate, 0.0)), ")
                     .append("SUM(sh.stockQty * COALESCE(sh.costRate, 0.0)), ")
