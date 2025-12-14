@@ -251,12 +251,14 @@ public class CreatePoController implements Serializable {
         params.put("itemIds", itemIds);
 
         @SuppressWarnings("unchecked")
-        List<Object[]> results = itemFacade.findAggregates(jpql, params);
+        List<Object[]> results = (List<Object[]>) itemFacade.findLightsByJpql(jpql, params);
 
-        for (Object[] row : results) {
-            Long itemId = (Long) row[0];
-            Double stock = (Double) row[1];
-            stockMap.put(itemId, stock != null ? stock : 0.0);
+        if (results != null) {
+            for (Object[] row : results) {
+                Long itemId = (Long) row[0];
+                Double stock = (Double) row[1];
+                stockMap.put(itemId, stock != null ? stock : 0.0);
+            }
         }
 
         return stockMap;
@@ -290,12 +292,14 @@ public class CreatePoController implements Serializable {
         params.put("toDate", toDate);
 
         @SuppressWarnings("unchecked")
-        List<Object[]> results = itemFacade.findAggregates(jpql, params);
+        List<Object[]> results = (List<Object[]>) itemFacade.findLightsByJpql(jpql, params);
 
-        for (Object[] row : results) {
-            Long itemId = (Long) row[0];
-            Double usage = (Double) row[1];
-            usageMap.put(itemId, usage != null ? usage : 0.0);
+        if (results != null) {
+            for (Object[] row : results) {
+                Long itemId = (Long) row[0];
+                Double usage = (Double) row[1];
+                usageMap.put(itemId, usage != null ? usage : 0.0);
+            }
         }
 
         return usageMap;
@@ -329,7 +333,7 @@ public class CreatePoController implements Serializable {
         params.put("supplier", getCurrentBill().getToInstitution());
         params.put("department", sessionController.getDepartment());
 
-        dealerItemDtos = itemFacade.findByJpql(jpql, params, 500);
+        dealerItemDtos = (List<ItemSupplierDto>) itemFacade.findLightsByJpql(jpql, params, null, 500);
 
         // Batch load usage data for these items
         if (!dealerItemDtos.isEmpty()) {

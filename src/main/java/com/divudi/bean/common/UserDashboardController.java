@@ -116,8 +116,9 @@ public class UserDashboardController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("userId", selectedUserId);
 
-        List<UserDashboardDto> results = webUserFacade.findByJpql(jpql, params);
-        if (!results.isEmpty()) {
+        @SuppressWarnings("unchecked")
+        List<UserDashboardDto> results = (List<UserDashboardDto>) webUserFacade.findLightsByJpql(jpql, params);
+        if (results != null && !results.isEmpty()) {
             userDetails = results.get(0);
         }
     }
@@ -136,7 +137,9 @@ public class UserDashboardController implements Serializable {
 
         Map<String, Object> params = new HashMap<>();
         params.put("userId", selectedUserId);
-        assignedDepartments = webUserFacade.findByJpql(jpqlPrivileges, params);
+        @SuppressWarnings("unchecked")
+        List<UserDepartmentDto> assigned = (List<UserDepartmentDto>) webUserFacade.findLightsByJpql(jpqlPrivileges, params);
+        assignedDepartments = assigned != null ? assigned : new ArrayList<>();
 
         // Load accessed departments (from login history)
         String jpqlAccessed = "SELECT new com.divudi.core.data.dto.UserDepartmentDto("
@@ -146,7 +149,9 @@ public class UserDashboardController implements Serializable {
                 + "GROUP BY d.id, d.name, d.institution.name "
                 + "ORDER BY MAX(l.logedAt) DESC";
 
-        accessedDepartments = loginsFacade.findByJpql(jpqlAccessed, params);
+        @SuppressWarnings("unchecked")
+        List<UserDepartmentDto> accessed = (List<UserDepartmentDto>) loginsFacade.findLightsByJpql(jpqlAccessed, params);
+        accessedDepartments = accessed != null ? accessed : new ArrayList<>();
 
         // Merge both lists and highlight accessed departments
         mergeDepartments();
@@ -210,7 +215,9 @@ public class UserDashboardController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("userId", selectedUserId);
 
-        recentLogins = loginsFacade.findByJpql(jpql, params, recentLoginLimit);
+        @SuppressWarnings("unchecked")
+        List<UserLoginDto> logins = (List<UserLoginDto>) loginsFacade.findLightsByJpql(jpql, params, null, recentLoginLimit);
+        recentLogins = logins != null ? logins : new ArrayList<>();
     }
 
     /**
@@ -264,7 +271,9 @@ public class UserDashboardController implements Serializable {
         params.put("fromDate", getTransactionFromDate());
         params.put("toDate", getTransactionToDate());
 
-        return billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        @SuppressWarnings("unchecked")
+        List<UserTransactionDto> bills = (List<UserTransactionDto>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return bills != null ? bills : new ArrayList<>();
     }
 
     /**
@@ -285,7 +294,9 @@ public class UserDashboardController implements Serializable {
         params.put("fromDate", getTransactionFromDate());
         params.put("toDate", getTransactionToDate());
 
-        return paymentFacade.findByJpql(jpql, params, TemporalType.DATE);
+        @SuppressWarnings("unchecked")
+        List<UserTransactionDto> payments = (List<UserTransactionDto>) paymentFacade.findLightsByJpql(jpql, params, TemporalType.DATE);
+        return payments != null ? payments : new ArrayList<>();
     }
 
     /**
@@ -304,15 +315,19 @@ public class UserDashboardController implements Serializable {
         params.put("fromDate", getTransactionFromDate());
         params.put("toDate", getTransactionToDate());
 
-        return patientFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        @SuppressWarnings("unchecked")
+        List<UserTransactionDto> patients = (List<UserTransactionDto>) patientFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return patients != null ? patients : new ArrayList<>();
     }
 
     /**
      * Reset transaction filters to default (last 30 days)
      */
     public void resetTransactionFilters() {
-        transactionFromDate = CommonFunctions.getStartOfDay(
-                CommonFunctions.addDaysToDate(new Date(), -30)); // Last 30 days
+        // Set to 30 days ago
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.add(java.util.Calendar.DAY_OF_MONTH, -30);
+        transactionFromDate = CommonFunctions.getStartOfDay(cal.getTime());
         transactionToDate = CommonFunctions.getEndOfDay();
         loadTransactions();
     }
@@ -321,8 +336,10 @@ public class UserDashboardController implements Serializable {
 
     public Date getTransactionFromDate() {
         if (transactionFromDate == null) {
-            transactionFromDate = CommonFunctions.getStartOfDay(
-                    CommonFunctions.addDaysToDate(new Date(), -30));
+            // Set to 30 days ago
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.add(java.util.Calendar.DAY_OF_MONTH, -30);
+            transactionFromDate = CommonFunctions.getStartOfDay(cal.getTime());
         }
         return transactionFromDate;
     }
