@@ -5540,7 +5540,7 @@ public class PharmacyReportController implements Serializable {
                     .append("AND sh4.id IN (")
                     .append("SELECT MAX(sh5.id) FROM StockHistory sh5 ")
                     .append("WHERE sh5.retired = :ret ")
-                    .append("AND sh5.createdAt < :et3 ");
+                    .append("AND sh5.createdAt <= :et3 ");
 
             params.put("et3", date);
 
