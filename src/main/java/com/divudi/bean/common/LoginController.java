@@ -220,7 +220,9 @@ public class LoginController implements Serializable {
 
         jpql += "ORDER BY l.logedAt DESC, l.logoutAt DESC";
 
-        loginDtos = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        @SuppressWarnings("unchecked")
+        List<UserLoginDto> results = (List<UserLoginDto>) getFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        loginDtos = results != null ? results : new ArrayList<>();
     }
 
     /**
