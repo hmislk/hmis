@@ -124,6 +124,9 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
         returningStarted.set(false);
         paymentMethod = originalBillToReturn.getPaymentMethod();
+        if(paymentMethod == PaymentMethod.Staff_Welfare){
+            toStaff = originalBillToReturn.getToStaff();
+        }
         paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(originalBillToReturn);
         return "/opd/bill_return?faces-redirect=true";
     }
