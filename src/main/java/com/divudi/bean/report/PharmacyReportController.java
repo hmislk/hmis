@@ -5490,17 +5490,17 @@ public class PharmacyReportController implements Serializable {
             Map<String, Object> params = new HashMap<>();
             StringBuilder jpql = new StringBuilder();
 
-            // Direct aggregation query
+            // Direct aggregation query using historical rates from StockHistory
             jpql.append("SELECT ")
-                    .append("SUM(sh.stockQty * sh.itemBatch.purcahseRate), ")
-                    .append("SUM(sh.stockQty * COALESCE(sh.itemBatch.costRate, 0.0)), ")
-                    .append("SUM(sh.stockQty * COALESCE(sh.itemBatch.retailsaleRate, 0.0)) ")
+                    .append("SUM(sh.stockQty * COALESCE(sh.purchaseRate, 0.0)), ")
+                    .append("SUM(sh.stockQty * COALESCE(sh.costRate, 0.0)), ")
+                    .append("SUM(sh.stockQty * COALESCE(sh.retailRate, 0.0)) ")
                     .append("FROM StockHistory sh ")
                     .append("WHERE sh.retired = :ret ")
                     .append("AND sh.id IN (")
                     .append("SELECT MAX(sh2.id) FROM StockHistory sh2 ")
                     .append("WHERE sh2.retired = :ret ")
-                    .append("AND sh2.createdAt < :et ");
+                    .append("AND sh2.createdAt <= :et ");
 
             params.put("ret", false);
             params.put("et", date);
@@ -5522,7 +5522,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh3.department", "dep2", department);
             addFilter(jpql, params, "sh3.item", "itm2", item);
 
-            jpql.append("AND sh3.createdAt < :et2)) ");
+            jpql.append("AND sh3.createdAt <= :et2)) ");
             params.put("et2", date);
 
             // Add filters to main query
