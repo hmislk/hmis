@@ -1435,9 +1435,14 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             JsfUtil.addErrorMessage("Quentity Zero?");
             return addedQty;
         }
-        if (getStockDto().getStockQty() != null && getQty() > getStockDto().getStockQty()) {
+        if (getStockDto().getStockQty() == null) {
+            errorMessage = "Stock quantity not available.";
+            JsfUtil.addErrorMessage("Stock quantity not available. Please select a valid stock.");
+            return addedQty;
+        }
+        if (getQty() > getStockDto().getStockQty()) {
             errorMessage = "No sufficient stocks.";
-            JsfUtil.addErrorMessage("No Sufficient Stocks?");
+            JsfUtil.addErrorMessage("Insufficient stock. Available: " + String.format("%.0f", getStockDto().getStockQty()) + ", Requested: " + String.format("%.0f", getQty()));
             return addedQty;
         }
 
@@ -1517,12 +1522,12 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         if (billItem.getPharmaceuticalBillItem() == null) {
             return;
         }
-        if (getStock() == null) {
+        if (getStockDto() == null) {
             errorMessage = "Please select an Item Batch to Dispense?";
             JsfUtil.addErrorMessage("Please select an Item Batch to Dispense?");
             return;
         }
-        Stock userSelectedStock = stock;
+        StockDTO userSelectedStockDto = stockDto;
 //        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
 //            JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
 //            return;
@@ -1568,7 +1573,13 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         double addedQty = 0.0;
         double remainingQty = getQty();
 
-        if (getQty() <= getStock().getStock()) {
+        if (getStockDto().getStockQty() == null) {
+            errorMessage = "Stock quantity not available.";
+            JsfUtil.addErrorMessage("Stock quantity not available. Please select a valid stock.");
+            return;
+        }
+
+        if (getQty() <= getStockDto().getStockQty()) {
             double thisTimeAddingQty = addBillItemSingleItem();
             if (thisTimeAddingQty >= requestedQty) {
                 return;
@@ -1577,16 +1588,24 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 remainingQty = remainingQty - thisTimeAddingQty;
             }
         } else {
-            qty = getStock().getStock();
+            qty = getStockDto().getStockQty();
             double thisTimeAddingQty = addBillItemSingleItem();
             addedQty += thisTimeAddingQty;
             remainingQty = remainingQty - thisTimeAddingQty;
         }
 
 //        addedQty = addBillItemSingleItem();
-//        System.out.println("stock = " + userSelectedStock);
-//        System.out.println("stock item batch = " + userSelectedStock.getItemBatch());
-//        System.out.println("stock item batch item= " + userSelectedStock.getItemBatch().getItem());
+//        System.out.println("stock = " + userSelectedStockDto);
+//        System.out.println("stock item batch = " + userSelectedStockDto.getItemBatch());
+//        System.out.println("stock item batch item= " + userSelectedStockDto.getItemBatch().getItem());
+
+        // Convert DTO to entity for finding next available stocks (multiple batches feature)
+        Stock userSelectedStock = convertStockDtoToEntity(userSelectedStockDto);
+        if (userSelectedStock == null) {
+            JsfUtil.addErrorMessage("Unable to process stock information");
+            return;
+        }
+
         List<Stock> availableStocks = stockController.findNextAvailableStocks(userSelectedStock);
         for (Stock s : availableStocks) {
             stock = s;
