@@ -4506,13 +4506,13 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 Long id = Long.valueOf(value);
                 PharmacySaleForCashierController controller = (PharmacySaleForCashierController) facesContext.getApplication().getELResolver()
                         .getValue(facesContext.getELContext(), null, "pharmacySaleForCashierController");
-                if (controller != null && controller.getStockDto() != null && id.equals(controller.getStockDto().getId())) {
+                if (controller != null && controller.getStockDto() != null) {
+                    // Always return the existing stockDto if it exists, regardless of ID
+                    // This preserves the full DTO with stockQty and other fields
                     return controller.getStockDto();
                 }
-                // Create a minimal DTO with just the ID for form submission
-                StockDTO dto = new StockDTO();
-                dto.setId(id);
-                return dto;
+                // If no stockDto exists, return null to prevent creating incomplete DTOs
+                return null;
             } catch (NumberFormatException e) {
                 return null;
             }

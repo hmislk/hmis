@@ -3643,6 +3643,9 @@ public class SearchController implements Serializable {
             // Get the PreBill entity to access reference bill
             PreBill preBill = (PreBill) getBillFacade().find(dto.getId());
 
+            // Commented out for performance - reference bill details query is slow
+            // This data was used for the "Bill Details" column which has been removed from UI
+            /*
             if (preBill != null && preBill.getReferenceBill() != null) {
                 Bill refBill = preBill.getReferenceBill();
 
@@ -3661,6 +3664,7 @@ public class SearchController implements Serializable {
                 dto.setReferenceBillRefunded(refBill.isRefunded());
 
             }
+            */
 
             // Populate other missing fields from PreBill
             if (preBill != null) {
