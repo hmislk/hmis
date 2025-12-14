@@ -2485,7 +2485,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
-        setPrintBill(getBillFacade().find(getPreBill().getId()));
+        setPrintBill(getPreBill());
         // Calculate and record costing values for stock valuation after persistence
         // Using current bill directly instead of reloading to avoid transaction timing issues
         // Calculate and record costing values for stock valuation after persistence
