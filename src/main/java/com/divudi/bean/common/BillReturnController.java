@@ -413,6 +413,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         newlyReturnedBill.copy(originalBillToReturn);
         newlyReturnedBill.setPaymentMethod(paymentMethod);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
+        newlyReturnedBill.setPaymentMethod(paymentMethod);
         newlyReturnedBill.setComments(refundComment);
         newlyReturnedBill.setInstitution(sessionController.getInstitution());
         newlyReturnedBill.setDepartment(sessionController.getDepartment());
