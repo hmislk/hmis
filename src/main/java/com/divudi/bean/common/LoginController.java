@@ -232,8 +232,11 @@ public class LoginController implements Serializable {
      * Navigate to user dashboard with selected user
      */
     public String navigateToUserDashboard(UserLoginDto loginDto) {
+        System.out.println("navigateToUserDashboard called for: " + loginDto.getUsername());
+        System.out.println("WebUserId: " + loginDto.getWebUserId());
         // Prepare the dashboard with the selected user's data
         userDashboardController.prepareUserDashboard(loginDto.getWebUserId());
+        System.out.println("About to navigate to user dashboard");
         return "/admin/users/user_dashboard?faces-redirect=true";
     }
 

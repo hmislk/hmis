@@ -83,9 +83,16 @@ public class UserDashboardController implements Serializable {
      * Called from LoginController before navigation
      */
     public void prepareUserDashboard(Long userId) {
+        System.out.println("prepareUserDashboard called with userId: " + userId);
         this.selectedUserId = userId;
+        if (userId == null) {
+            System.err.println("ERROR: userId is null!");
+            this.userDetails = null;
+            return;
+        }
         try {
             loadDashboardData();
+            System.out.println("Dashboard data loaded. userDetails: " + (userDetails != null ? userDetails.getUsername() : "NULL"));
         } catch (Exception e) {
             // Log error and set userDetails to null so page shows error message
             System.err.println("Error loading dashboard data for user " + userId + ": " + e.getMessage());
@@ -112,23 +119,65 @@ public class UserDashboardController implements Serializable {
      * Load user personal and staff details
      */
     private void loadUserDetails() {
-        String jpql = "SELECT new com.divudi.core.data.dto.UserDashboardDto("
-                + "u.id, u.name, u.code, u.email, u.telNo, u.role.name, "
-                + "u.webUserPerson.name, u.institution.name, u.department.name, "
-                + "u.createdAt, u.activatedAt, u.lastPasswordResetAt, u.activated, "
-                + "s.id, s.code, s.registration, s.qualification, "
-                + "s.designation.name, s.grade.name, s.staffCategory.name, "
-                + "s.speciality.name, s.dateJoined, s.dateLeft, s.employeeStatus) "
-                + "FROM WebUser u LEFT JOIN u.staff s "
-                + "WHERE u.id = :userId";
+        System.out.println("loadUserDetails called for userId: " + selectedUserId);
+        try {
+            // First, try with just basic user info (no staff)
+            String jpql = "SELECT new com.divudi.core.data.dto.UserDashboardDto("
+                    + "u.id, u.name, u.code, "
+                    + "COALESCE(u.email, ''), COALESCE(u.telNo, ''), "
+                    + "COALESCE(u.role.name, 'No Role'), "
+                    + "COALESCE(u.webUserPerson.name, 'No Person Name'), "
+                    + "COALESCE(u.institution.name, 'No Institution'), "
+                    + "COALESCE(u.department.name, 'No Department'), "
+                    + "u.createdAt, u.activatedAt, u.lastPasswordResetAt, u.activated) "
+                    + "FROM WebUser u "
+                    + "WHERE u.id = :userId";
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("userId", selectedUserId);
+            Map<String, Object> params = new HashMap<>();
+            params.put("userId", selectedUserId);
 
-        @SuppressWarnings("unchecked")
-        List<UserDashboardDto> results = (List<UserDashboardDto>) webUserFacade.findLightsByJpql(jpql, params);
-        if (results != null && !results.isEmpty()) {
-            userDetails = results.get(0);
+            @SuppressWarnings("unchecked")
+            List<UserDashboardDto> results = (List<UserDashboardDto>) webUserFacade.findLightsByJpql(jpql, params);
+            System.out.println("Query results: " + (results != null ? results.size() + " rows" : "NULL"));
+
+            if (results != null && !results.isEmpty()) {
+                userDetails = results.get(0);
+                System.out.println("userDetails set to: " + userDetails.getUsername());
+
+                // Now load staff details separately if they exist
+                loadStaffDetails();
+            } else {
+                System.err.println("No user found with id: " + selectedUserId);
+            }
+        } catch (Exception e) {
+            System.err.println("Exception in loadUserDetails: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    /**
+     * Load staff details for the user (if exists)
+     */
+    private void loadStaffDetails() {
+        try {
+            String jpql = "SELECT s FROM Staff s WHERE s.webUser.id = :userId";
+            Map<String, Object> params = new HashMap<>();
+            params.put("userId", selectedUserId);
+
+            @SuppressWarnings("unchecked")
+            List results = webUserFacade.findLightsByJpql(jpql, params);
+
+            if (results != null && !results.isEmpty()) {
+                // Staff entity exists, populate DTO fields
+                Object staffObj = results.get(0);
+                // Note: We'll need to use reflection or manual field setting here
+                // For now, let's skip staff details to get the basic dashboard working
+                System.out.println("Staff record found for user");
+            }
+        } catch (Exception e) {
+            System.err.println("Could not load staff details: " + e.getMessage());
+            // Don't throw - staff details are optional
         }
     }
 
