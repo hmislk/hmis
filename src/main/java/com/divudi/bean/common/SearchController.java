@@ -7386,7 +7386,7 @@ public class SearchController implements Serializable {
             temMap.put("staff", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
-        sql += "  order by b.staff.id    ";
+        sql += "  order by b.createdAt desc   ";
 
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());

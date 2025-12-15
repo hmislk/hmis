@@ -1092,6 +1092,9 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Pharmacy Search Sale Bill - Legacy Method", true);
         getBooleanValueByKey("Pharmacy Search Sale Bill - Optimized Method", false);
 
+        // Inventory Reports
+        getBooleanValueByKey("Cost of Goods Sold Report - Display Stock Correction Section", true);
+
         // Analytics Reports
         getBooleanValueByKey("All Bill List Report - Legacy Method", true);
         getBooleanValueByKey("All Bill List Report - Optimized Method", false);

@@ -755,7 +755,7 @@
 
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}"><hr/></h:panelGroup>
 
-                                    <p:panelGrid columns="2" rendered="#{webUserController.hasPrivilege('Developers') and (patientReportController.currentPatientReport.patientName ne null or patientReportController.currentPatientReport.patientGender ne null or patientReportController.currentPatientReport.patientAge ne null)}">
+                                    <p:panelGrid columns="2" rendered="#{webUserController.hasPrivilege('Developers')}">
 
                                         <p:outputLabel for="PatientName" value="Patient Name" ></p:outputLabel>
                                         <p:inputText 
