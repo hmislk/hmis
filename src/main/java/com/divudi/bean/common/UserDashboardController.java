@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -36,7 +36,7 @@ import javax.persistence.TemporalType;
  * @author Claude Code
  */
 @Named(value = "userDashboardController")
-@ViewScoped
+@SessionScoped
 public class UserDashboardController implements Serializable {
 
     // Dependencies
@@ -75,13 +75,22 @@ public class UserDashboardController implements Serializable {
      */
     @PostConstruct
     public void init() {
-        // Get userId from flash scope (passed from user_logins.xhtml)
-        FacesContext context = FacesContext.getCurrentInstance();
-        Object userIdObj = context.getExternalContext().getFlash().get("selectedUserId");
+        // Initialization happens here, but data loading happens via prepareUserDashboard()
+    }
 
-        if (userIdObj != null) {
-            selectedUserId = (Long) userIdObj;
+    /**
+     * Prepare dashboard for a specific user
+     * Called from LoginController before navigation
+     */
+    public void prepareUserDashboard(Long userId) {
+        this.selectedUserId = userId;
+        try {
             loadDashboardData();
+        } catch (Exception e) {
+            // Log error and set userDetails to null so page shows error message
+            System.err.println("Error loading dashboard data for user " + userId + ": " + e.getMessage());
+            e.printStackTrace();
+            this.userDetails = null;
         }
     }
 
