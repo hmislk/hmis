@@ -256,28 +256,31 @@
                                 </h:panelGrid>
                             </div>
                             <div class="col-md-4">
-                                <p:dataTable 
-                                    id="sum"
-                                    value="#{bhtSummeryController.chargeItemTotals}"
-                                    var="c"
-                                    scrollHeight="350"
-                                    scrollable="true"
-                                    scrollRows="10"
-                                    >
+                                <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-money-bill" />
                                         <p:outputLabel value="Charges" class="mx-2"/>
                                     </f:facet>
-                                    <p:column headerText="Charge Type" rendered="#{c.total > 0}">
-                                        <h:outputLabel value="#{c.inwardChargeType.name}"/>
-                                    </p:column>
-                                    <p:column  sortBy="#{c.total}"  headerText="Total" rendered="#{c.total > 0}">
-                                        <h:outputLabel value="#{c.total}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </p:column>
-                                </p:dataTable>
 
+                                    <p:dataTable 
+                                        id="sum"
+                                        value="#{bhtSummeryController.chargeItemTotals}"
+                                        var="c"
+                                        scrollHeight="350"
+                                        scrollable="true"
+                                        scrollRows="10"
+                                        >
+
+                                        <p:column headerText="Charge Type" rendered="#{c.total > 0}">
+                                            <h:outputLabel value="#{c.inwardChargeType.name}"/>
+                                        </p:column>
+                                        <p:column  sortBy="#{c.total}"  headerText="Total" rendered="#{c.total > 0}">
+                                            <h:outputLabel value="#{c.total}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
                             </div>
                         </div>
 
@@ -445,7 +448,7 @@
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Update"
-                                                action="#{bhtSummeryController.updatePatientItem(pt)}" >
+                                                action="#{bhtSummeryController.updatePatientItem(pt, false)}" >
                                             </p:commandButton>
                                         </p:column>
                                         <p:column>
@@ -791,7 +794,7 @@
                                             <h:outputLabel value="#{pf.feeValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
-                                            
+
                                             <p:badge class="mx-2" value="Free Of Charge" rendered="#{pf.freeOfCharge}" severity="warning"></p:badge>
                                         </p:column>
                                         <p:column headerText="Fee At">
