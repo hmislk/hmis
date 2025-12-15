@@ -3531,41 +3531,72 @@ public class SearchController implements Serializable {
         StringBuilder jpql = new StringBuilder();
         Map<String, Object> params = new HashMap<>();
 
-        // Build parameters
-        params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
-        params.put("insId", getSessionController().getInstitution().getId());
-        params.put("fromDate", getFromDate());
-        params.put("toDate", getToDate());
-
-        if (getSessionController().getDepartment() != null) {
-            params.put("deptid", getSessionController().getDepartment().getId());
-        }
-
-        // Build simplified DTO constructor query with essential fields only
+        // OPTIMIZED: Use full DTO constructor with LEFT JOINs to fetch all data in ONE query
+        // This eliminates N+1 query problem (was causing 1000+ queries for 100 records)
         jpql.append("SELECT new com.divudi.core.data.dto.PharmacyCashierPreBillSearchDTO(");
-        jpql.append("b.id, ");                    // 1. Long id
-        jpql.append("b.deptId, ");               // 2. String deptId
-        jpql.append("b.department.name, ");      // 3. String departmentName
-        jpql.append("b.createdAt, ");            // 4. Date createdAt
-        jpql.append("b.refunded, ");             // 5. boolean refunded (direct)
-        jpql.append("b.cancelled, ");            // 6. boolean cancelled (direct)
-        jpql.append("b.total, ");               // 7. Double total
-        jpql.append("b.discount, ");            // 8. Double discount
-        jpql.append("b.netTotal, ");            // 9. Double netTotal
-        jpql.append("b.paymentMethod, ");       // 10. PaymentMethod paymentMethod
-        jpql.append("COALESCE(p.person.name, '')) "); // 11. String patientName (keep this COALESCE)
+        jpql.append("b.id, ");                                              // 1. Long id
+        jpql.append("b.deptId, ");                                          // 2. String deptId
+        jpql.append("b.department.name, ");                                 // 3. String departmentName
+        jpql.append("b.createdAt, ");                                       // 4. Date createdAt
+        jpql.append("COALESCE(creatorPerson.name, ''), ");                  // 5. String creatorName
+        jpql.append("b.refunded, ");                                        // 6. Boolean refunded
+        jpql.append("refBill.createdAt, ");                                 // 7. Date refundedBillCreatedAt
+        jpql.append("COALESCE(refCreatorPerson.name, ''), ");               // 8. String refundedBillCreatorName
+        jpql.append("refBill.comments, ");                                  // 9. String refundedBillComments
+        jpql.append("b.retired, ");                                         // 10. Boolean retired
+        jpql.append("b.retiredAt, ");                                       // 11. Date retiredAt
+        jpql.append("b.cancelled, ");                                       // 12. Boolean cancelled
+        jpql.append("canBill.createdAt, ");                                 // 13. Date cancelledBillCreatedAt
+        jpql.append("COALESCE(canCreatorPerson.name, ''), ");               // 14. String cancelledBillCreatorName
+        jpql.append("canBill.comments, ");                                  // 15. String cancelledBillComments
+        jpql.append("b.total, ");                                           // 16. Double total
+        jpql.append("b.discount, ");                                        // 17. Double discount
+        jpql.append("b.netTotal, ");                                        // 18. Double netTotal
+        jpql.append("b.paymentMethod, ");                                   // 19. PaymentMethod paymentMethod
+        jpql.append("COALESCE(scheme.name, ''), ");                         // 20. String paymentSchemeName
+        jpql.append("COALESCE(patientPerson.name, ''), ");                  // 21. String patientName
+        jpql.append("COALESCE(toStaffPerson.name, ''), ");                  // 22. String toStaffName
+        jpql.append("COALESCE(toDept.name, ''), ");                         // 23. String toDepartmentName
+        jpql.append("COALESCE(toInst.name, ''), ");                         // 24. String toInstitutionName
+        // Reference bill fields set to NULL (commented out in UI for performance)
+        jpql.append("CAST(NULL AS long), ");                                // 25. Long referenceBillId
+        jpql.append("CAST(NULL AS string), ");                              // 26. String referenceBillDeptId
+        jpql.append("CAST(NULL AS timestamp), ");                           // 27. Date referenceBillCreatedAt
+        jpql.append("CAST(NULL AS string), ");                              // 28. String referenceBillCreatorName
+        jpql.append("CAST(NULL AS boolean), ");                             // 29. Boolean referenceBillCancelled
+        jpql.append("CAST(NULL AS timestamp), ");                           // 30. Date referenceBillCancelledBillCreatedAt
+        jpql.append("CAST(NULL AS string), ");                              // 31. String referenceBillCancelledBillCreatorName
+        jpql.append("CAST(NULL AS boolean), ");                             // 32. Boolean referenceBillRefunded
+        jpql.append("CAST(NULL AS timestamp), ");                           // 33. Date referenceBillRefundedBillCreatedAt
+        jpql.append("CAST(NULL AS string) ");                               // 34. String referenceBillRefundedBillCreatorName
+        jpql.append(") ");
 
-        // From clause with only necessary left joins (minimal)
+        // FROM clause with LEFT JOINs for all related entities (fetch in single query)
         jpql.append("FROM PreBill b ");
-        jpql.append("LEFT JOIN b.patient p "); // Only needed for patient name
+        jpql.append("LEFT JOIN b.patient p ");
+        jpql.append("LEFT JOIN p.person patientPerson ");
+        jpql.append("LEFT JOIN b.creater creator ");
+        jpql.append("LEFT JOIN creator.webUserPerson creatorPerson ");
+        jpql.append("LEFT JOIN b.refundedBill refBill ");
+        jpql.append("LEFT JOIN refBill.creater refCreator ");
+        jpql.append("LEFT JOIN refCreator.webUserPerson refCreatorPerson ");
+        jpql.append("LEFT JOIN b.cancelledBill canBill ");
+        jpql.append("LEFT JOIN canBill.creater canCreator ");
+        jpql.append("LEFT JOIN canCreator.webUserPerson canCreatorPerson ");
+        jpql.append("LEFT JOIN b.paymentScheme scheme ");
+        jpql.append("LEFT JOIN b.toStaff toStaff ");
+        jpql.append("LEFT JOIN toStaff.person toStaffPerson ");
+        jpql.append("LEFT JOIN b.toDepartment toDept ");
+        jpql.append("LEFT JOIN b.toInstitution toInst ");
 
-        // Where clause - base filters (match Stage 1 format)
+        // WHERE clause - base filters
         jpql.append("WHERE b.billTypeAtomic = :billTypeAtomic ");
         jpql.append("AND b.institution.id = :insId ");
         jpql.append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
-        jpql.append("AND (b.retired = false or b.retired is null ) ");
+        jpql.append("AND (b.retired = false OR b.retired IS NULL) ");
         jpql.append("AND b.department.id = :deptid ");
 
+        // Set parameters
         params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         params.put("insId", getSessionController().getInstitution().getId());
         params.put("fromDate", getFromDate());
@@ -3574,7 +3605,7 @@ public class SearchController implements Serializable {
 
         // Apply search filters
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
-            jpql.append("AND UPPER(p.person.name) LIKE :patientName ");
+            jpql.append("AND UPPER(patientPerson.name) LIKE :patientName ");
             params.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
 
@@ -3583,8 +3614,6 @@ public class SearchController implements Serializable {
             params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
-        // Department filter already applied via b.department.id = :deptid above
-        // No additional department filtering needed
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
             try {
                 Double netTotal = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
@@ -3606,11 +3635,10 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
-            jpql.append("AND UPPER(p.person.phone) LIKE :phone ");
+            jpql.append("AND UPPER(patientPerson.phone) LIKE :phone ");
             params.put("phone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
         }
 
-        // Payment Method filter
         if (paymentMethod != null) {
             jpql.append("AND b.paymentMethod = :paymentMethod ");
             params.put("paymentMethod", paymentMethod);
@@ -3618,105 +3646,19 @@ public class SearchController implements Serializable {
 
         jpql.append("ORDER BY b.createdAt DESC");
 
-        // Execute query using findLightsByJpql for DTO constructor queries
+        // Execute query - NO LOOP NEEDED! All data fetched in single query
         try {
             cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()
                     .findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-            // Populate missing reference bill fields via iteration
-            if (cashierPreBillSearchDtos != null && !cashierPreBillSearchDtos.isEmpty()) {
-                populateReferenceBillFields(cashierPreBillSearchDtos);
-            }
         } catch (Exception e) {
             e.printStackTrace();
-            cashierPreBillSearchDtos = new ArrayList<>(); // Empty list to avoid NPE
+            cashierPreBillSearchDtos = new ArrayList<>();
         }
     }
 
-    /**
-     * Populate missing reference bill fields for DTOs via separate queries This
-     * method fills in the reference bill details that couldn't be captured in
-     * the main DTO query
-     */
-    private void populateReferenceBillFields(List<PharmacyCashierPreBillSearchDTO> dtos) {
-        for (PharmacyCashierPreBillSearchDTO dto : dtos) {
-            // Get the PreBill entity to access reference bill
-            PreBill preBill = (PreBill) getBillFacade().find(dto.getId());
-
-            // Commented out for performance - reference bill details query is slow
-            // This data was used for the "Bill Details" column which has been removed from UI
-            /*
-            if (preBill != null && preBill.getReferenceBill() != null) {
-                Bill refBill = preBill.getReferenceBill();
-
-                // Populate reference bill fields
-                dto.setReferenceBillId(refBill.getId());
-                dto.setReferenceBillDeptId(refBill.getDeptId());
-                dto.setReferenceBillCreatedAt(refBill.getCreatedAt());
-
-                // Reference bill creator
-                if (refBill.getCreater() != null && refBill.getCreater().getWebUserPerson() != null) {
-                    dto.setReferenceBillCreatorName(refBill.getCreater().getWebUserPerson().getName());
-                }
-
-                // Reference bill status
-                dto.setReferenceBillCancelled(refBill.isCancelled());
-                dto.setReferenceBillRefunded(refBill.isRefunded());
-
-            }
-            */
-
-            // Populate other missing fields from PreBill
-            if (preBill != null) {
-                // Pre-bill refunded details
-                if (preBill.getRefundedBill() != null) {
-                    dto.setRefundedBillCreatedAt(preBill.getRefundedBill().getCreatedAt());
-                    dto.setRefundedBillComments(preBill.getRefundedBill().getComments());
-                    if (preBill.getRefundedBill().getCreater() != null
-                            && preBill.getRefundedBill().getCreater().getWebUserPerson() != null) {
-                        dto.setRefundedBillCreatorName(
-                                preBill.getRefundedBill().getCreater().getWebUserPerson().getName());
-                    }
-                }
-
-                // Pre-bill cancelled details
-                if (preBill.getCancelledBill() != null) {
-                    dto.setCancelledBillCreatedAt(preBill.getCancelledBill().getCreatedAt());
-                    dto.setCancelledBillComments(preBill.getCancelledBill().getComments());
-                    if (preBill.getCancelledBill().getCreater() != null
-                            && preBill.getCancelledBill().getCreater().getWebUserPerson() != null) {
-                        dto.setCancelledBillCreatorName(
-                                preBill.getCancelledBill().getCreater().getWebUserPerson().getName());
-                    }
-                }
-
-                // Pre-bill retired details
-                dto.setRetired(preBill.isRetired());
-                dto.setRetiredAt(preBill.getRetiredAt());
-
-                // Creator name
-                if (preBill.getCreater() != null && preBill.getCreater().getWebUserPerson() != null) {
-                    dto.setCreatorName(preBill.getCreater().getWebUserPerson().getName());
-                }
-
-                // Payment scheme name
-                if (preBill.getPaymentScheme() != null) {
-                    dto.setPaymentSchemeName(preBill.getPaymentScheme().getName());
-                }
-
-                // Client names (staff, department, institution)
-                if (preBill.getToStaff() != null && preBill.getToStaff().getPerson() != null) {
-                    dto.setToStaffName(preBill.getToStaff().getPerson().getName());
-                }
-                if (preBill.getToDepartment() != null) {
-                    dto.setToDepartmentName(preBill.getToDepartment().getName());
-                }
-                if (preBill.getToInstitution() != null) {
-                    dto.setToInstitutionName(preBill.getToInstitution().getName());
-                }
-            }
-        }
-    }
+    // DELETED: populateReferenceBillFields() method - no longer needed
+    // All data now fetched in single optimized query using LEFT JOINs
+    // This eliminates N+1 query problem (was causing 1000+ queries for 100 records)
 
     public void listPharmacyIssue() {
         Map<String, Object> m = new HashMap<>();
