@@ -96,7 +96,7 @@
                                                 class="mx-4 my-2"
                                                 readonly="#{not webUserController.hasPrivilege('InwardAppointmentUpdate')}"
                                                 disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
-                                                value="#{appointmentController.reservedroom}" 
+                                                value="#{appointmentController.reservedRoom}" 
                                                 completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
                                                 var="rf" 
                                                 inputStyleClass="w-100"

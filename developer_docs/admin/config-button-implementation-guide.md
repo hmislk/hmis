@@ -538,10 +538,29 @@ Analyst: [NAME]
 
 ### 3.1 Add Config Button to XHTML
 
-Add this button to the page header (adjust placement for subtle positioning):
+Add this button to the page header. **RECOMMENDED APPROACH**: Place in panel header facet for optimal positioning:
 
 ```xml
-<!-- Config Button (Admin Only) - Place in page header -->
+<!-- OPTION 1: Panel Header Facet (RECOMMENDED) - Button appears to the right of title -->
+<p:panel>
+    <f:facet name="header">
+        <h:outputLabel value="Your Page Title" class="mx-1" />
+        <p:commandButton
+            rendered="#{webUserController.hasPrivilege('Admin')}"
+            value="Config"
+            icon="fa fa-cog"
+            title="Page Configuration Management"
+            action="#{pageAdminController.navigateToPageAdmin('reports/inventoryReports/your_page')}"
+            ajax="false"
+            styleClass="ui-button-secondary ms-5">
+        </p:commandButton>
+    </f:facet>
+    <!-- Panel content here -->
+</p:panel>
+```
+
+```xml
+<!-- OPTION 2: Separate Container (Alternative) - Button below header -->
 <div class="d-flex justify-content-start mb-2">
     <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
         <p:commandButton
@@ -562,19 +581,28 @@ Add this button to the page header (adjust placement for subtle positioning):
 </h:form>
 ```
 
-**Button Styling Options (choose one):**
+**Button Styling Options:**
 
 ```xml
-<!-- Option 1: Small outlined button (recommended) -->
+<!-- PREFERRED: Header Facet Style - Clean, simple -->
+styleClass="ui-button-secondary ms-5"
+
+<!-- Alternative: Small outlined button -->
 styleClass="ui-button-secondary ui-button-sm p-button-outlined"
 
-<!-- Option 2: Text-only link style -->
+<!-- Alternative: Text-only link style -->
 styleClass="ui-button-link"
 
-<!-- Option 3: Icon-only minimal -->
+<!-- Alternative: Icon-only minimal -->
 value=""
 styleClass="ui-button-secondary ui-button-sm"
 ```
+
+**Placement Guidelines:**
+- **✅ RECOMMENDED**: Use panel header facet (`<f:facet name="header">`) for professional appearance
+- **✅ BENEFIT**: Button appears inline with page title, saving vertical space
+- **✅ STYLING**: Use `ms-5` (margin-start) for proper spacing from title
+- **⚠️ ALTERNATIVE**: Separate container if header facet isn't suitable for page layout
 
 ### 3.2 Register Page Metadata in Controller
 
