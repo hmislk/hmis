@@ -249,10 +249,10 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             JsfUtil.addErrorMessage("Reserved To Date not Valid");
             return;
         }
-        
+
         Reservation res = checkRoomAvailability();
-        
-        if(res != null){
+
+        if (res != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd hh:mm a");
             String fDate = sdf.format(res.getReservedFrom());
             String tDate = sdf.format(res.getReservedTo());
@@ -493,7 +493,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             JsfUtil.addErrorMessage("Please select a patient room for the appoiment.");
             return;
         }
-        
+
         if (getReservedRoom() == null) {
             JsfUtil.addErrorMessage("Please select a patient room for the appoiment.");
             return;
@@ -513,10 +513,10 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             JsfUtil.addErrorMessage("Please select a valid Reservation todate.");
             return;
         }
-        
+
         Reservation res = checkRoomAvailability();
-        
-        if(res != null){
+
+        if (res != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd hh:mm a");
             String fDate = sdf.format(res.getReservedFrom());
             String tDate = sdf.format(res.getReservedTo());
@@ -888,27 +888,34 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     public Reservation checkRoomAvailability() {
-        if (reservedRoom == null || reservedFromDate == null ||  reservedToDate == null){
+        if (reservedRoom == null || reservedFromDate == null || reservedToDate == null) {
             JsfUtil.addErrorMessage("Reservation, room, and dates must not be null");
         }
-
+        
+        Map<String, Object> parameters = new HashMap<>();
+        
         String jpql = "SELECT r FROM Reservation r "
                 + "WHERE r.room = :room "
-                + "AND r.appointment.status =:status " // Optional: exclude cancelled reservations
-                + "AND ( "
+                + "AND r.appointment.status =:status "; // Optional: exclude cancelled reservations
+
+       if(reservation.getId() != null){
+           jpql += " AND r.id !=:id ";
+           parameters.put("id", reservation.getId());
+       }
+        
+        jpql += " AND ( "
                 + "   (r.reservedFrom < :reservedTo AND r.reservedTo > :reservedFrom) "
                 + "   OR r.reservedFrom BETWEEN :reservedFrom AND :reservedTo "
                 + "   OR r.reservedTo BETWEEN :reservedFrom AND :reservedTo "
                 + ") "
                 + "ORDER BY r.reservedFrom";
 
-        Map<String, Object> parameters = new HashMap<>();
         parameters.put("room", reservedRoom);
         parameters.put("status", AppointmentStatus.PENDING);
         parameters.put("reservedFrom", reservedFromDate);
         parameters.put("reservedTo", reservedToDate);
 
-        Reservation r = reservationFacade.findFirstByJpql(jpql, parameters,TemporalType.TIMESTAMP);
+        Reservation r = reservationFacade.findFirstByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         return r;
     }
