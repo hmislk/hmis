@@ -276,18 +276,24 @@ public class CreatePoController implements Serializable {
         cal.add(Calendar.DAY_OF_MONTH, -30);
         Date fromDate = cal.getTime();
 
+        // Create list of bill types for usage calculation
+        List<BillType> usageBillTypes = new ArrayList<>();
+        usageBillTypes.add(BillType.PharmacyBhtPre);
+        usageBillTypes.add(BillType.PharmacyPre);
+
         String jpql = "SELECT i.id, COALESCE(SUM(ABS(pbi.qty)), 0.0) "
                 + "FROM Item i "
                 + "LEFT JOIN BillItem bi ON bi.item.id = i.id "
                 + "LEFT JOIN PharmaceuticalBillItem pbi ON pbi.billItem.id = bi.id "
                 + "WHERE i.id IN :itemIds "
                 + "AND bi.retired = false "
-                + "AND bi.bill.billType IN ('PharmacyBhtPre', 'PharmacyPre') "
+                + "AND bi.bill.billType IN :billTypes "
                 + "AND bi.bill.createdAt BETWEEN :fromDate AND :toDate "
                 + "GROUP BY i.id";
 
         Map<String, Object> params = new HashMap<>();
         params.put("itemIds", itemIds);
+        params.put("billTypes", usageBillTypes);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
 
