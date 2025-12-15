@@ -231,14 +231,14 @@
                                              style="height: 310px"
                                              class="ml-4"
                                              rowStyleClass="#{c.total !=0?'':'noDisplayRow' }"
-                                             scrollable="true" scrollHeight="280"
+                                             scrollable="true" scrollHeight="310"
                                              >
                                    
                                     <p:column headerText="Charge Type" rendered="#{c.total > 0}">
                                         <h:outputLabel value="#{c.inwardChargeType.name}"/>
                                     </p:column>
                                     <p:column  style="text-align: right;" headerText="Total" rendered="#{c.total > 0}">
-                                        <h:outputLabel value="#{c.total}">
+                                        <h:outputLabel value="#{c.total}" style="font-weight: bold">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
