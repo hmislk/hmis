@@ -195,6 +195,12 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     Integer intQty;
     Stock stock;
     StockDTO stockDto;
+    /**
+     * Temporary cache of the most recent autocomplete results.
+     * Used by StockDtoConverter to preserve full DTO data during JSF lifecycle.
+     * NOT a persistent cache - cleared on each new search.
+     */
+    private List<StockDTO> lastAutocompleteResults;
     private List<ClinicalFindingValue> allergyListOfPatient;
     private boolean billSettlingStarted;
 
@@ -807,6 +813,14 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         this.stockDto = stockDto;
     }
 
+    public List<StockDTO> getLastAutocompleteResults() {
+        return lastAutocompleteResults;
+    }
+
+    public void setLastAutocompleteResults(List<StockDTO> lastAutocompleteResults) {
+        this.lastAutocompleteResults = lastAutocompleteResults;
+    }
+
     public String newSaleBillWithoutReduceStock() {
         clearBill();
         clearBillItem();
@@ -921,6 +935,10 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         clearBillItem();
 //        searchController.createPreBillsNotPaid();
         billPreview = false;
+
+        // Clear temporary cache
+        lastAutocompleteResults = null;
+        System.out.println("=== CASHIER resetAll: Cleared cache and reset all fields ===");
     }
 
     public void prepareForNewPharmacyRetailBill() {
@@ -1139,8 +1157,13 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     public List<StockDTO> completeAvailableStockOptimizedDto(String qry) {
+        System.out.println("=== CASHIER completeAvailableStockOptimizedDto START ===");
+        System.out.println("Query: " + qry);
+
         if (qry == null || qry.trim().isEmpty()) {
-            return Collections.emptyList();
+            lastAutocompleteResults = Collections.emptyList();
+            System.out.println("Query is empty, returning empty list");
+            return lastAutocompleteResults;
         }
 
         qry = qry.replaceAll("[\\n\\r]", "").trim();
@@ -1184,7 +1207,21 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
 
-        return (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+        List<StockDTO> results = (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+
+        // Store results in temporary cache for converter
+        lastAutocompleteResults = results != null ? results : Collections.emptyList();
+
+        System.out.println("=== CASHIER completeAvailableStockOptimizedDto END ===");
+        System.out.println("Returned " + lastAutocompleteResults.size() + " results");
+        if (!lastAutocompleteResults.isEmpty()) {
+            StockDTO first = lastAutocompleteResults.get(0);
+            System.out.println("First result - ID: " + first.getId() +
+                              ", ItemName: " + first.getItemName() +
+                              ", StockQty: " + first.getStockQty());
+        }
+
+        return lastAutocompleteResults;
     }
 
     public void handleSelectAction() {
@@ -1213,8 +1250,29 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     public void handleSelect(SelectEvent event) {
         long startTime = System.currentTimeMillis();
+        System.out.println("=== CASHIER handleSelect START ===");
+
+        // Get the selected StockDTO from the event to ensure we have the full DTO with all fields
+        if (event != null && event.getObject() != null && event.getObject() instanceof StockDTO) {
+            StockDTO selectedDto = (StockDTO) event.getObject();
+            System.out.println("Event object received - ID: " + selectedDto.getId() +
+                              ", StockQty: " + selectedDto.getStockQty() +
+                              ", ItemName: " + selectedDto.getItemName());
+            this.stockDto = selectedDto;
+            System.out.println("stockDto property set successfully");
+        } else {
+            System.out.println("WARNING: handleSelect called with null or invalid event object");
+        }
+
+        System.out.println("Before handleSelectAction - stockDto: " +
+                          (stockDto != null ? "ID=" + stockDto.getId() + ", Qty=" + stockDto.getStockQty() : "NULL"));
+
         handleSelectAction();
+
         long endTime = System.currentTimeMillis();
+        System.out.println("=== CASHIER handleSelect END - Time: " + (endTime - startTime) + "ms ===");
+        System.out.println("After handleSelectAction - stockDto: " +
+                          (stockDto != null ? "ID=" + stockDto.getId() + ", Qty=" + stockDto.getStockQty() : "NULL"));
     }
 
     public void showItemDetailsForSelectedStock() {
@@ -1336,6 +1394,13 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     public void addBillItem() {
+        System.out.println("=== CASHIER addBillItem CALLED ===");
+        System.out.println("Stack trace to identify caller:");
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        for (int i = 0; i < Math.min(10, stackTrace.length); i++) {
+            System.out.println("  " + stackTrace[i]);
+        }
+
         if (configOptionApplicationController.getBooleanValueByKey("Add quantity from multiple batches in pharmacy retail billing")) {
             addBillItemMultipleBatches();
         } else {
@@ -1407,20 +1472,36 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     public double addBillItemSingleItem() {
+        System.out.println("=== CASHIER addBillItemSingleItem START ===");
         editingQty = null;
         errorMessage = null;
         double addedQty = 0.0;
+
         if (billItem == null) {
+            System.out.println("Validation FAILED: billItem is null");
             return addedQty;
         }
+
         if (billItem.getPharmaceuticalBillItem() == null) {
+            System.out.println("Validation FAILED: pharmaceuticalBillItem is null");
             return addedQty;
         }
+
+        System.out.println("Checking stockDto - Current value: " + (stockDto != null ? "ID=" + stockDto.getId() : "NULL"));
+
         if (getStockDto() == null) {
             errorMessage = "Item ??";
+            System.out.println("Validation FAILED: stockDto is NULL");
             JsfUtil.addErrorMessage("Please select an Item Batch to Dispense ??");
             return addedQty;
         }
+
+        System.out.println("stockDto ID: " + getStockDto().getId());
+        System.out.println("stockDto ItemName: " + getStockDto().getItemName());
+        System.out.println("stockDto StockQty: " + getStockDto().getStockQty());
+        System.out.println("stockDto RetailRate: " + getStockDto().getRetailRate());
+        System.out.println("stockDto DateOfExpire: " + getStockDto().getDateOfExpire());
+
         if (getStockDto().getDateOfExpire() != null && getStockDto().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return addedQty;
@@ -1435,17 +1516,39 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             JsfUtil.addErrorMessage("Quentity Zero?");
             return addedQty;
         }
-        if (getStockDto().getStockQty() != null && getQty() > getStockDto().getStockQty()) {
-            errorMessage = "No sufficient stocks.";
-            JsfUtil.addErrorMessage("No Sufficient Stocks?");
+        if (getStockDto().getStockQty() == null) {
+            errorMessage = "Stock quantity not available.";
+            System.out.println("Validation FAILED: stockDto.stockQty is NULL");
+            System.out.println("This indicates converter failed to preserve full DTO");
+            JsfUtil.addErrorMessage("Stock quantity not available. Please select a valid stock.");
             return addedQty;
         }
 
-        if (checkItemBatch()) {
+        System.out.println("Validation: stockQty = " + getStockDto().getStockQty());
+        System.out.println("Validation: requested qty = " + getQty());
+
+        if (getQty() > getStockDto().getStockQty()) {
+            errorMessage = "No sufficient stocks.";
+            System.out.println("Validation FAILED: Insufficient stock. Available: " + getStockDto().getStockQty() + ", Requested: " + getQty());
+            JsfUtil.addErrorMessage("Insufficient stock. Available: " + String.format("%.0f", getStockDto().getStockQty()) + ", Requested: " + String.format("%.0f", getQty()));
+            return addedQty;
+        }
+
+        System.out.println("Validation PASSED: Stock quantity check successful");
+
+        System.out.println("Checking if item batch already exists in bill...");
+        boolean batchExists = checkItemBatch();
+        System.out.println("checkItemBatch() returned: " + batchExists);
+
+        if (batchExists) {
             errorMessage = "This batch is already there in the bill.";
+            System.out.println("ERROR: Item batch already in bill - stockDto ID: " + getStockDto().getId());
+            System.out.println("Current bill items count: " + (getPreBill() != null && getPreBill().getBillItems() != null ? getPreBill().getBillItems().size() : 0));
             JsfUtil.addErrorMessage("Already added this item batch");
             return addedQty;
         }
+
+        System.out.println("Item batch check passed, proceeding to add item...");
 //        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
 //            errorMessage = "This batch is Expire With in 31 Days.";
 //            JsfUtil.addErrorMessage("This batch is Expire With in 31 Days.");
@@ -1488,7 +1591,9 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         billItem.setBill(getPreBill());
 
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
+        System.out.println("SUCCESS: Adding item to bill - ID: " + getStockDto().getId() + ", Qty: " + qty);
         getPreBill().getBillItems().add(billItem);
+        System.out.println("Total items in bill now: " + getPreBill().getBillItems().size());
 
         // UserStock operations commented out for performance
         //if (getUserStockContainer().getId() == null) {
@@ -1508,6 +1613,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     public void addBillItemMultipleBatches() {
+        System.out.println("=== CASHIER addBillItemMultipleBatches START ===");
+        System.out.println("WARNING: Multiple batches mode is active!");
         editingQty = null;
         errorMessage = null;
 
@@ -1517,12 +1624,12 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         if (billItem.getPharmaceuticalBillItem() == null) {
             return;
         }
-        if (getStock() == null) {
+        if (getStockDto() == null) {
             errorMessage = "Please select an Item Batch to Dispense?";
             JsfUtil.addErrorMessage("Please select an Item Batch to Dispense?");
             return;
         }
-        Stock userSelectedStock = stock;
+        StockDTO userSelectedStockDto = stockDto;
 //        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
 //            JsfUtil.addErrorMessage("You are NOT allowed to select Expired Items");
 //            return;
@@ -1568,7 +1675,13 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         double addedQty = 0.0;
         double remainingQty = getQty();
 
-        if (getQty() <= getStock().getStock()) {
+        if (getStockDto().getStockQty() == null) {
+            errorMessage = "Stock quantity not available.";
+            JsfUtil.addErrorMessage("Stock quantity not available. Please select a valid stock.");
+            return;
+        }
+
+        if (getQty() <= getStockDto().getStockQty()) {
             double thisTimeAddingQty = addBillItemSingleItem();
             if (thisTimeAddingQty >= requestedQty) {
                 return;
@@ -1577,16 +1690,24 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 remainingQty = remainingQty - thisTimeAddingQty;
             }
         } else {
-            qty = getStock().getStock();
+            qty = getStockDto().getStockQty();
             double thisTimeAddingQty = addBillItemSingleItem();
             addedQty += thisTimeAddingQty;
             remainingQty = remainingQty - thisTimeAddingQty;
         }
 
 //        addedQty = addBillItemSingleItem();
-//        System.out.println("stock = " + userSelectedStock);
-//        System.out.println("stock item batch = " + userSelectedStock.getItemBatch());
-//        System.out.println("stock item batch item= " + userSelectedStock.getItemBatch().getItem());
+//        System.out.println("stock = " + userSelectedStockDto);
+//        System.out.println("stock item batch = " + userSelectedStockDto.getItemBatch());
+//        System.out.println("stock item batch item= " + userSelectedStockDto.getItemBatch().getItem());
+
+        // Convert DTO to entity for finding next available stocks (multiple batches feature)
+        Stock userSelectedStock = convertStockDtoToEntity(userSelectedStockDto);
+        if (userSelectedStock == null) {
+            JsfUtil.addErrorMessage("Unable to process stock information");
+            return;
+        }
+
         List<Stock> availableStocks = stockController.findNextAvailableStocks(userSelectedStock);
         for (Stock s : availableStocks) {
             stock = s;
@@ -1605,9 +1726,13 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
         if (addedQty < requestedQty) {
             errorMessage = "Quantity is not Enough...!";
+            System.out.println("=== MULTIPLE BATCHES: Insufficient quantity ===");
+            System.out.println("Requested: " + requestedQty + ", Added: " + addedQty);
+            System.out.println("This error should only appear when using multiple batches mode");
             JsfUtil.addErrorMessage("Only " + String.format("%.0f", addedQty) + " is Available form the Requested Quantity");
         }
 
+        System.out.println("=== CASHIER addBillItemMultipleBatches END ===");
     }
 
     private void addSingleStock() {
@@ -2485,7 +2610,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         savePreBillFinallyForRetailSaleForCashier(pt);
         savePreBillItemsFinally(tmpBillItems);
-        setPrintBill(getBillFacade().find(getPreBill().getId()));
+        setPrintBill(getPreBill());
         // Calculate and record costing values for stock valuation after persistence
         // Using current bill directly instead of reloading to avoid transaction timing issues
         // Calculate and record costing values for stock valuation after persistence
@@ -4480,22 +4605,58 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            System.out.println("=== CASHIER StockDtoConverter.getAsObject START ===");
+            System.out.println("Converting value: " + value);
+
             if (value == null || value.trim().isEmpty()) {
+                System.out.println("Converter: value is null or empty, returning null");
                 return null;
             }
+
             try {
                 Long id = Long.valueOf(value);
+                System.out.println("Converter: Parsed ID = " + id);
+
                 PharmacySaleForCashierController controller = (PharmacySaleForCashierController) facesContext.getApplication().getELResolver()
                         .getValue(facesContext.getELContext(), null, "pharmacySaleForCashierController");
-                if (controller != null && controller.getStockDto() != null && id.equals(controller.getStockDto().getId())) {
+
+                if (controller == null) {
+                    System.out.println("Converter ERROR: controller is null");
+                    return null;
+                }
+
+                // First check: Does current stockDto match?
+                if (controller.getStockDto() != null && id.equals(controller.getStockDto().getId())) {
+                    System.out.println("Converter: Found match in current stockDto");
+                    System.out.println("Converter: Returning DTO with StockQty = " + controller.getStockDto().getStockQty());
                     return controller.getStockDto();
                 }
-                // Create a minimal DTO with just the ID for form submission
-                StockDTO dto = new StockDTO();
-                dto.setId(id);
-                return dto;
-            } catch (NumberFormatException e) {
+
+                // Second check: Search in lastAutocompleteResults
+                if (controller.getLastAutocompleteResults() != null) {
+                    System.out.println("Converter: Searching in lastAutocompleteResults (" +
+                                      controller.getLastAutocompleteResults().size() + " items)");
+                    for (StockDTO dto : controller.getLastAutocompleteResults()) {
+                        if (dto != null && id.equals(dto.getId())) {
+                            System.out.println("Converter: Found match in cache - ID: " + dto.getId() +
+                                              ", StockQty: " + dto.getStockQty());
+                            return dto;
+                        }
+                    }
+                    System.out.println("Converter: No match found in cache");
+                } else {
+                    System.out.println("Converter: lastAutocompleteResults is null");
+                }
+
+                // If not found, return null (will trigger proper error message)
+                System.out.println("Converter: No match found anywhere, returning null");
                 return null;
+
+            } catch (NumberFormatException e) {
+                System.out.println("Converter ERROR: NumberFormatException - " + e.getMessage());
+                return null;
+            } finally {
+                System.out.println("=== CASHIER StockDtoConverter.getAsObject END ===");
             }
         }
 
