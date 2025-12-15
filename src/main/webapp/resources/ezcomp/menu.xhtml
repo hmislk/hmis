@@ -1072,12 +1072,19 @@
                         icon="fas fa-shopping-cart" 
                         rendered="#{webUserController.hasPrivilege('PharmacyProcurementMenu')}">
                         <!--Procurement Menu Items with Titles-->
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"  
-                            value="Create PO" 
-                            title="Create a new Purchase Order"
+                        <p:menuitem
+                            ajax="false"
+                            action="#{createPoController.navigateToCreateNewPurchaseOrder()}"
+                            value="Create PO"
+                            title="Create a new Purchase Order (Optimized)"
                             icon="fas fa-plus-circle"
+                            rendered="#{webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"
+                            value="Create PO (Legacy)"
+                            title="Create a new Purchase Order (Legacy - for comparison)"
+                            icon="fas fa-clipboard-list"
                             rendered="#{webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 

@@ -351,6 +351,81 @@ public class CreatePoController implements Serializable {
     }
 
     /**
+     * Get current bill item - creates new if doesn't exist
+     */
+    public BillItem getCurrentBillItem() {
+        if (currentBillItem == null) {
+            currentBillItem = new BillItem();
+        }
+        return currentBillItem;
+    }
+
+    /**
+     * Add item to purchase order (for any item autocomplete)
+     */
+    public void addItem() {
+        if (getCurrentBillItem().getItem() == null) {
+            JsfUtil.addErrorMessage("Please select an item");
+            return;
+        }
+
+        // Check for duplicates if config enabled
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Prevent Duplicate Items in Purchase Orders", false)) {
+            for (BillItem existingItem : getBillItems()) {
+                if (existingItem != null && !existingItem.isRetired()
+                        && existingItem.getItem() != null
+                        && existingItem.getItem().getId().equals(getCurrentBillItem().getItem().getId())) {
+                    JsfUtil.addErrorMessage("This item has already been added. Please update the existing entry.");
+                    return;
+                }
+            }
+        }
+
+        Item item = getCurrentBillItem().getItem();
+
+        // Create bill item entity
+        BillItem bi = new BillItem();
+        bi.setItem(item);
+        bi.setSearialNo(getBillItems().size());
+
+        // Create pharmaceutical bill item
+        PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
+        pbi.setBillItem(bi);
+        bi.setPharmaceuticalBillItem(pbi);
+
+        // Set last purchase and retail rates
+        pbi.setPurchaseRate(pharmacyBean.getLastPurchaseRate(item, sessionController.getDepartment()));
+        pbi.setRetailRate(pharmacyBean.getLastRetailRate(item, sessionController.getDepartment()));
+
+        // Set units per pack
+        if (item instanceof Ampp) {
+            BigDecimal unitsPerPack = BigDecimal.valueOf(item.getDblValue());
+            if (unitsPerPack == null || unitsPerPack.doubleValue() <= 0) {
+                unitsPerPack = BigDecimal.ONE;
+            }
+            bi.getBillItemFinanceDetails().setUnitsPerPack(unitsPerPack);
+        } else {
+            bi.getBillItemFinanceDetails().setUnitsPerPack(BigDecimal.ONE);
+        }
+
+        // Set purchase rate in finance details
+        bi.getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(pbi.getPurchaseRate()));
+        bi.getBillItemFinanceDetails().setLineNetRate(bi.getBillItemFinanceDetails().getLineGrossRate());
+
+        // Add to bill items
+        getBillItems().add(bi);
+
+        // Refresh DTOs
+        itemDtos = null;
+
+        // Clear current bill item
+        currentBillItem = null;
+
+        calculateBillTotals();
+    }
+
+    /**
      * Add selected dealer item to purchase order
      */
     public void addDealerItem() {
@@ -914,6 +989,10 @@ public class CreatePoController implements Serializable {
     // Getters and Setters
     public void setCurrentBill(Bill currentBill) {
         this.currentBill = currentBill;
+    }
+
+    public void setCurrentBillItem(BillItem currentBillItem) {
+        this.currentBillItem = currentBillItem;
     }
 
     public void setBillItems(List<BillItem> billItems) {
