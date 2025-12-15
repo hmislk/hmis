@@ -262,34 +262,42 @@
                                 </f:facet>
                                 
                                 <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem;">
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnListForReturnDistributorVisible}"
-                                                            itemLabel="Distributor">
-                                        <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('grnList',view).clientId}" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnListForReturnPoNoVisible}"
-                                                             itemLabel="PO No">
-                                        <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('grnList',view).clientId}" />
-                                    </p:selectBooleanCheckbox>                                  
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnListForReturnGrnNoVisible}"
-                                                               itemLabel="GRN No">
-                                        <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('grnList',view).clientId}" />
-                                    </p:selectBooleanCheckbox> 
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnListForReturnGrnAtVisible}"
-                                                             itemLabel="Grn at">
-                                        <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('grnList',view).clientId}" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnListForReturnGrnByVisible}"
-                                                             itemLabel="Grn by">
-                                        <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('grnList',view).clientId}" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnListForReturnPoValueVisible}"
-                                                               itemLabel="PO Value">
-                                        <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('grnList',view).clientId}" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnListForReturnGrnValueVisible}"
-                                                               itemLabel="GRN Value">
-                                        <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('grnList',view).clientId}" />
-                                    </p:selectBooleanCheckbox>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnListForReturnDistributorVisible}"
+                                                                itemLabel="Distributor">
+                                            <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('grnList',view).clientId}" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnListForReturnPoNoVisible}"
+                                                                 itemLabel="PO No">
+                                            <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('grnList',view).clientId}" />
+                                        </p:selectBooleanCheckbox>                                  
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnListForReturnGrnNoVisible}"
+                                                                   itemLabel="GRN No">
+                                            <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('grnList',view).clientId}" />
+                                        </p:selectBooleanCheckbox> 
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnListForReturnGrnAtVisible}"
+                                                                 itemLabel="Grn at">
+                                            <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('grnList',view).clientId}" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnListForReturnGrnByVisible}"
+                                                                 itemLabel="Grn by">
+                                            <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('grnList',view).clientId}" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnListForReturnPoValueVisible}"
+                                                                   itemLabel="PO Value">
+                                            <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('grnList',view).clientId}" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnListForReturnGrnValueVisible}"
+                                                                   itemLabel="GRN Value">
+                                            <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('grnList',view).clientId}" />
+                                        </p:selectBooleanCheckbox>
+                                    </div>
+                                    
+                                    <div class="d-flex">
+                                            <p:commandButton
+                                                value="Apply"
+                                                ajax="false" />
+                                    </div>
                                 </div>
                             </p:panel>
                         </div>
