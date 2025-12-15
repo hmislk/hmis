@@ -11,7 +11,21 @@
 
                 <h:form >
 
-                    <p:panel header="Cost Of Good Sold " >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Cost Of Goods Sold" class="mx-1" ></h:outputLabel>
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                value="Config"
+                                icon="fa fa-cog"
+                                title="Page Configuration Management"
+                                action="#{pageAdminController.navigateToPageAdmin('reports/inventoryReports/cost_of_goods_sold')}"
+                                ajax="false"
+                                styleClass="ui-button-secondary ms-5">
+                            </p:commandButton>
+                        </f:facet>
+
+
 
                         <p:panelGrid columns="6" class="w-100">
 
