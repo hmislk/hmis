@@ -3559,16 +3559,16 @@ public class SearchController implements Serializable {
         jpql.append("COALESCE(toDept.name, ''), ");                         // 23. String toDepartmentName
         jpql.append("COALESCE(toInst.name, ''), ");                         // 24. String toInstitutionName
         // Reference bill fields set to NULL (commented out in UI for performance)
-        jpql.append("CAST(NULL AS long), ");                                // 25. Long referenceBillId
-        jpql.append("CAST(NULL AS string), ");                              // 26. String referenceBillDeptId
-        jpql.append("CAST(NULL AS timestamp), ");                           // 27. Date referenceBillCreatedAt
-        jpql.append("CAST(NULL AS string), ");                              // 28. String referenceBillCreatorName
-        jpql.append("CAST(NULL AS boolean), ");                             // 29. Boolean referenceBillCancelled
-        jpql.append("CAST(NULL AS timestamp), ");                           // 30. Date referenceBillCancelledBillCreatedAt
-        jpql.append("CAST(NULL AS string), ");                              // 31. String referenceBillCancelledBillCreatorName
-        jpql.append("CAST(NULL AS boolean), ");                             // 32. Boolean referenceBillRefunded
-        jpql.append("CAST(NULL AS timestamp), ");                           // 33. Date referenceBillRefundedBillCreatedAt
-        jpql.append("CAST(NULL AS string) ");                               // 34. String referenceBillRefundedBillCreatorName
+        jpql.append("CAST(NULL AS LONG), ");                                // 25. Long referenceBillId
+        jpql.append("CAST(NULL AS STRING), ");                              // 26. String referenceBillDeptId
+        jpql.append("CAST(NULL AS TIMESTAMP), ");                           // 27. Date referenceBillCreatedAt
+        jpql.append("CAST(NULL AS STRING), ");                              // 28. String referenceBillCreatorName
+        jpql.append("CAST(NULL AS BOOLEAN), ");                             // 29. Boolean referenceBillCancelled
+        jpql.append("CAST(NULL AS TIMESTAMP), ");                           // 30. Date referenceBillCancelledBillCreatedAt
+        jpql.append("CAST(NULL AS STRING), ");                              // 31. String referenceBillCancelledBillCreatorName
+        jpql.append("CAST(NULL AS BOOLEAN), ");                             // 32. Boolean referenceBillRefunded
+        jpql.append("CAST(NULL AS TIMESTAMP), ");                           // 33. Date referenceBillRefundedBillCreatedAt
+        jpql.append("CAST(NULL AS STRING) ");                               // 34. String referenceBillRefundedBillCreatorName
         jpql.append(") ");
 
         // FROM clause with LEFT JOINs for all related entities (fetch in single query)
