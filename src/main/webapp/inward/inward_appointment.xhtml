@@ -37,8 +37,7 @@
                                         action="#{appointmentController.settleBill}" 
                                         ajax="false"
                                         icon="fa fa-check"
-                                        class="ui-button-success mx-1 "
-                                        >
+                                        class="ui-button-success mx-1 ">
                                     </p:commandButton>
 
                                     <p:commandButton 
@@ -66,17 +65,7 @@
 
                             <div class="row mt-3">
                                 <div class="col-md-6">
-                                    <h:panelGroup id="panelPatient" >
-                                        <p:panel>
-                                            <f:facet name="header" >
-                                                <h:outputText styleClass="fa fa-user-circle" />
-                                                <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
-                                            </f:facet>
-
-                                            <common:patient_details_for_appoiment editable="true" controller="#{appointmentController}"/>
-
-                                        </p:panel>
-                                    </h:panelGroup>
+                                   <common:patient_details_for_appoiment editable="true" controller="#{appointmentController}"/>
                                 </div>
 
                                 <div class="col-md-6">
@@ -158,6 +147,7 @@
                                                 value="#{appointmentController.currentBill.referredBy}"
                                                 completeMethod="#{doctorController.completeDoctor}" 
                                                 var="doc" 
+                                                placeholder="Select Referring Doctor"
                                                 maxResults="20"
                                                 itemLabel="#{doc.person.nameWithTitle}" 
                                                 itemValue="#{doc}" 
@@ -169,6 +159,7 @@
                                                 inputStyleClass="w-100"
                                                 class="w-100 my-1"
                                                 showTime="true"
+                                                placeholder="Select Appointment Date"
                                                 showButtonBar="true"
                                                 timeInput="true"
                                                 value="#{appointmentController.currentAppointment.appointmentDate}" 
@@ -189,48 +180,54 @@
                                 </f:facet>
                                 <h:panelGroup class="my-2 w-100" >
                                     <h:panelGrid columns="3" class="w-50 my-2">
+
                                         <h:outputLabel value="Room No"/>
                                         <h:outputLabel value=":"/>
-                                        <p:autoComplete  
+                                        <p:autoComplete
                                             forceSelection="true"  
                                             id="cmbRspRoom" 
                                             class="mx-4 my-2"
-                                            value="#{appointmentController.reservation.room}" 
+                                            value="#{appointmentController.reservedRoom}" 
                                             completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
                                             var="rf" 
+                                            placeholder="Select Room"
                                             inputStyleClass="w-100"
                                             itemLabel="#{rf.name}" 
                                             itemValue="#{rf}" 
                                             size="30"
-                                            maxResults="25"
-                                            >                            
+                                            maxResults="25">
                                         </p:autoComplete>
+
                                         <h:outputLabel value="Reserve From"/>
                                         <h:outputLabel value=":"/>
                                         <p:datePicker 
-                                            value="#{appointmentController.reservation.reservedFrom}" 
+                                            value="#{appointmentController.reservedFromDate}" 
                                             id="reserveFromTimeStamp"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                             styleClass="form-control w-100"
                                             showButtonBar="true"
+                                            placeholder="Select Reserve From"
                                             timeInput="true"
                                             showTime="true"
                                             class="w-50 mx-4 my-2" 
-                                            inputStyleClass="w-100" >                               
-                                        </p:datePicker>     
+                                            inputStyleClass="w-100" >
+                                        </p:datePicker>
+
                                         <h:outputLabel value="Reserve To"/>
                                         <h:outputLabel value=":"/>
                                         <p:datePicker 
-                                            value="#{appointmentController.reservation.reservedTo}" 
+                                            value="#{appointmentController.reservedToDate}" 
                                             id="reserveToTimeStamp"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                             styleClass="form-control w-100"
                                             showButtonBar="true"
+                                            placeholder="Select Reserve To"
                                             timeInput="true"
                                             showTime="true"
                                             class="w-50 mx-4 my-2" 
-                                            inputStyleClass="w-100" >                               
-                                        </p:datePicker>     
+                                            inputStyleClass="w-100" >
+                                        </p:datePicker>
+
                                     </h:panelGrid>
                                 </h:panelGroup>
                             </p:panel>
