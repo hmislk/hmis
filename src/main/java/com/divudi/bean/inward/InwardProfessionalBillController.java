@@ -570,6 +570,7 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public void addToEstProBill() {
+        getCurrent().setBillType(BillType.InwardProfessionalEstimates);
         getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_ESTIMATED_PROFESSIONAL_FEE_BILL);
         addToBill();
     }
