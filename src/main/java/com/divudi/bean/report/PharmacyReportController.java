@@ -6206,7 +6206,12 @@ public class PharmacyReportController implements Serializable {
         cogsRows.clear();
         try {
             calculateOpeningStockRow();
-            calculateStockCorrectionRow();
+
+            // Only calculate Stock Correction if enabled in configuration
+            if (configOptionApplicationController.getBooleanValueByKey("Cost of Goods Sold Report - Display Stock Correction Section", true)) {
+                calculateStockCorrectionRow();
+            }
+
             calculateGrnCashAndCreditRows();
 
             calculateDrugReturnIp();
@@ -8885,5 +8890,9 @@ public class PharmacyReportController implements Serializable {
 
     public void setBillItemRemainingCostValues(Map<Long, Double> billItemRemainingCostValues) {
         this.billItemRemainingCostValues = billItemRemainingCostValues;
+    }
+
+    public boolean isStockCorrectionDisplayEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey("Cost of Goods Sold Report - Display Stock Correction Section", true);
     }
 }
