@@ -688,7 +688,7 @@ public class UserSettingsController implements Serializable {
         savePageSize("pharmacy_grn_list_for_return", pagesize);
     }
     
-    // Pharmacy GRN List For Return Column Visibility Properties
+    // Pharmacy Return Without Tressing Column Visibility Properties
     // These properties provide JSF-compatible getter/setter pairs for the specific page
     
     public boolean isPharmacyReturnWithouttressingItemVisible(){
