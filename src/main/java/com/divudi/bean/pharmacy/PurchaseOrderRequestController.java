@@ -487,12 +487,13 @@ public class PurchaseOrderRequestController implements Serializable {
                 for (Object[] row : results) {
                     Long itemId = (Long) row[0];
                     Double purchaseRate = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
-                    if (!purchaseRateMap.containsKey(itemId) || purchaseRateMap.get(itemId) == 0.0) {
+                    if (purchaseRateMap.get(itemId) == 0.0) {
                         purchaseRateMap.put(itemId, purchaseRate);
                     }
                 }
             }
         } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to fetch last purchase rates for items. Returning default values.", e);
             // Return map with 0 values
         }
         return purchaseRateMap;
@@ -538,12 +539,13 @@ public class PurchaseOrderRequestController implements Serializable {
                 for (Object[] row : results) {
                     Long itemId = (Long) row[0];
                     Double retailRate = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
-                    if (!retailRateMap.containsKey(itemId) || retailRateMap.get(itemId) == 0.0) {
+                    if (retailRateMap.get(itemId) == 0.0) {
                         retailRateMap.put(itemId, retailRate);
                     }
                 }
             }
         } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to fetch last retail rates for items. Returning default values.", e);
             // Return map with 0 values
         }
         return retailRateMap;
