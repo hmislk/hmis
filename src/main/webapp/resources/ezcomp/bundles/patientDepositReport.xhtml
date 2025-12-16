@@ -51,30 +51,30 @@
                     <ui:repeat value="#{cc.attrs.bundle.reportTemplateRows}" var="row">
                         <tr>
                             <td>
-                                <h:outputText value="#{row.payment.bill.deptId}" rendered="#{row.payment.bill.deptId ne null}" />
-                                <h:commandLink rendered="#{row.payment.bill.deptId ne null}"
+                                <h:outputText value="#{row.bill.deptId}" rendered="#{row.bill.deptId ne null}" />
+                                <h:commandLink rendered="#{row.bill.deptId ne null}"
                                                action="#{billSearch.navigateToViewBillByAtomicBillType()}"
                                                styleClass="btn btn-link" title="View Bill Details">
-                                    <f:setPropertyActionListener value="#{row.payment.bill}" target="#{billSearch.bill}" />
+                                    <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
                                     <i class="fa fa-search" aria-hidden="true"></i>
                                 </h:commandLink>
                             </td>
 
 
                             <td>
-                                <h:outputText value="#{row.payment.bill.createdAt}">
+                                <h:outputText value="#{row.bill.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
                             </td>
 
 
                             <td>
-                                <h:outputText value="#{row.payment.bill.patient.person.name}">
+                                <h:outputText value="#{row.bill.patient.person.name}">
                                 </h:outputText>
                             </td>
 
                             <td class="text-end">
-                                <h:outputText value="#{row.payment.paidValue}">
+                                <h:outputText value="#{row.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </td>
