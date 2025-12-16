@@ -1074,17 +1074,10 @@
                         <!--Procurement Menu Items with Titles-->
                         <p:menuitem
                             ajax="false"
-                            action="#{createPoController.navigateToCreateNewPurchaseOrder()}"
-                            value="Create PO"
-                            title="Create a new Purchase Order (Optimized)"
-                            icon="fas fa-plus-circle"
-                            rendered="#{webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>
-                        <p:menuitem
-                            ajax="false"
                             action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"
-                            value="Create PO (Legacy)"
-                            title="Create a new Purchase Order (Legacy - for comparison)"
-                            icon="fas fa-clipboard-list"
+                            value="Create PO"
+                            title="Create a new Purchase Order"
+                            icon="fas fa-plus-circle"
                             rendered="#{webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
