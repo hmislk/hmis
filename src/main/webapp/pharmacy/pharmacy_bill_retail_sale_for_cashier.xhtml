@@ -309,7 +309,7 @@
 
                                             </p:column>
                                             <p:column headerText="Qty" style="width: 11%">
-                                                <p:inputText autocomplete="off" id="ipTblQty" value="#{bi.qty}" style="width:96%">
+                                                <p:inputText autocomplete="off" id="ipTblQty" value="#{bi.qty}" style="width:96%" disabled="#{!configOptionApplicationController.getBooleanValueByKey('Allow Editing Quantity of Added Items in Pharmacy Retail Sale for Cashier', false)}">
                                                     <f:convertNumber integerOnly="true" />
                                                     <p:ajax event="keyup" process="@this" update="gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" listener="#{pharmacySaleForCashierController.quantityInTableChangeEvent(bi)}"/>
                                                 </p:inputText>

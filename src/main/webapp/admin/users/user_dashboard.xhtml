@@ -1,0 +1,332 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <h:body>
+        <ui:composition template="/admin/users/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel id="dashboardPanel">
+                        <f:facet name="header">
+                            <i class="fa fa-dashboard" aria-hidden="true"/>
+                            <h:outputLabel value="User Dashboard#{userDashboardController.userDetails != null ? ' - '.concat(userDashboardController.userDetails.username) : ''}"
+                                class="mx-2"/>
+                            <p:commandButton
+                                value="Back to Logins"
+                                action="/admin/users/user_logins?faces-redirect=true"
+                                icon="fa fa-arrow-left"
+                                style="float: right;"
+                                class="ui-button-secondary"
+                                ajax="false"/>
+                        </f:facet>
+
+                        <!-- Error message if no user data -->
+                        <h:panelGroup layout="block" rendered="#{userDashboardController.userDetails == null}">
+                            <p:messages id="messages" showDetail="true" closable="true"/>
+                            <h:outputText value="No user data available. Please navigate from the User Logins page."
+                                styleClass="text-danger font-weight-bold"/>
+                        </h:panelGroup>
+
+                        <!-- Tab View for Different Sections -->
+                        <p:tabView id="userTabs" dynamic="true" cache="false" rendered="#{userDashboardController.userDetails != null}">
+
+                            <!-- Tab 1: User Details -->
+                            <p:tab title="User Details" icon="fa fa-user">
+                                <h:panelGrid columns="2" styleClass="w-100 mt-2">
+                                    <!-- Personal Information -->
+                                    <h:panelGroup layout="block" styleClass="p-3">
+                                        <h:outputText value="Personal Information"
+                                            styleClass="font-weight-bold h5"/>
+                                        <p:separator/>
+
+                                        <h:panelGrid columns="2" columnClasses="font-weight-bold," styleClass="mt-2">
+                                            <h:outputLabel value="Username:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.username}"/>
+
+                                            <h:outputLabel value="Code:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.userCode}"/>
+
+                                            <h:outputLabel value="Full Name:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.personName}"/>
+
+                                            <h:outputLabel value="Email:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.email}"/>
+
+                                            <h:outputLabel value="Telephone:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.telNo}"/>
+
+                                            <h:outputLabel value="Role:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.roleName}"/>
+
+                                            <h:outputLabel value="Institution:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.institutionName}"/>
+
+                                            <h:outputLabel value="Department:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.departmentName}"/>
+
+                                            <h:outputLabel value="Status:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.activated ? 'Active' : 'Inactive'}"
+                                                styleClass="#{userDashboardController.userDetails.activated ? 'text-success' : 'text-danger'} font-weight-bold"/>
+
+                                            <h:outputLabel value="Created At:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.createdAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputLabel>
+
+                                            <h:outputLabel value="Last Password Reset:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.lastPasswordResetAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputLabel>
+                                        </h:panelGrid>
+                                    </h:panelGroup>
+
+                                    <!-- Staff Information (if available) -->
+                                    <h:panelGroup layout="block" styleClass="p-3"
+                                        rendered="#{userDashboardController.userDetails.hasStaffRecord()}">
+                                        <h:outputText value="Staff Information"
+                                            styleClass="font-weight-bold h5"/>
+                                        <p:separator/>
+
+                                        <h:panelGrid columns="2" columnClasses="font-weight-bold," styleClass="mt-2">
+                                            <h:outputLabel value="Staff Code:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.staffCode}"/>
+
+                                            <h:outputLabel value="Registration:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.staffRegistration}"/>
+
+                                            <h:outputLabel value="Designation:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.designationName}"/>
+
+                                            <h:outputLabel value="Grade:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.gradeName}"/>
+
+                                            <h:outputLabel value="Category:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.staffCategoryName}"/>
+
+                                            <h:outputLabel value="Speciality:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.specialityName}"/>
+
+                                            <h:outputLabel value="Date Joined:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.dateJoined}">
+                                                <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                            </h:outputLabel>
+
+                                            <h:outputLabel value="Employee Status:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.employeeStatus}"/>
+
+                                            <h:outputLabel value="Qualification:"/>
+                                            <h:outputLabel value="#{userDashboardController.userDetails.staffQualification}"/>
+                                        </h:panelGrid>
+                                    </h:panelGroup>
+                                </h:panelGrid>
+                            </p:tab>
+
+                            <!-- Tab 2: Departments -->
+                            <p:tab title="Departments" icon="fa fa-building">
+                                <h:outputText value="Departments Assigned and Accessed"
+                                    styleClass="font-weight-bold h5"/>
+                                <p:separator/>
+
+                                <p:dataTable
+                                    value="#{userDashboardController.allDepartments}"
+                                    var="dept"
+                                    styleClass="mt-2"
+                                    emptyMessage="No departments found">
+
+                                    <p:column headerText="Department Name" sortBy="#{dept.departmentName}">
+                                        <h:outputLabel value="#{dept.departmentName}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Institution">
+                                        <h:outputLabel value="#{dept.institutionName}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Assigned via Privilege" width="150px">
+                                        <h:outputLabel
+                                            value="#{dept.assignedViaPrivilege ? 'Yes' : 'No'}"
+                                            styleClass="#{dept.assignedViaPrivilege ? 'text-success' : 'text-muted'} font-weight-bold"/>
+                                    </p:column>
+
+                                    <p:column headerText="Accessed" width="100px">
+                                        <h:outputLabel
+                                            value="#{dept.accessed ? 'Yes' : 'No'}"
+                                            styleClass="#{dept.accessed ? 'text-primary' : 'text-muted'} font-weight-bold"/>
+                                    </p:column>
+
+                                    <p:column headerText="Last Accessed" rendered="#{dept.accessed}">
+                                        <h:outputLabel value="#{dept.lastAccessedAt}">
+                                            <f:convertDateTime
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Access Count"
+                                        width="120px"
+                                        rendered="#{dept.accessed}">
+                                        <h:outputLabel value="#{dept.accessCount}"/>
+                                    </p:column>
+                                </p:dataTable>
+
+                                <h:panelGroup styleClass="mt-3" layout="block">
+                                    <p:panel>
+                                        <h:outputText value="Legend:" styleClass="font-weight-bold"/>
+                                        <ul>
+                                            <li><span class="text-success font-weight-bold">Green (Assigned via Privilege)</span> - Department assigned through user privileges/roles</li>
+                                            <li><span class="text-primary font-weight-bold">Blue (Accessed)</span> - Department has login history</li>
+                                        </ul>
+                                    </p:panel>
+                                </h:panelGroup>
+                            </p:tab>
+
+                            <!-- Tab 3: Login History -->
+                            <p:tab title="Login History" icon="fa fa-sign-in">
+                                <h:outputText value="Recent Logins (Last #{userDashboardController.recentLoginLimit})"
+                                    styleClass="font-weight-bold h5"/>
+                                <p:separator/>
+
+                                <p:dataTable
+                                    value="#{userDashboardController.recentLogins}"
+                                    var="login"
+                                    styleClass="mt-2"
+                                    emptyMessage="No login history found">
+
+                                    <p:column headerText="Login At" sortBy="#{login.logedAt}">
+                                        <h:outputLabel value="#{login.logedAt}">
+                                            <f:convertDateTime
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Logout At">
+                                        <h:panelGroup layout="block" rendered="#{login.logoutAt != null}">
+                                            <h:outputLabel value="#{login.logoutAt}">
+                                                <f:convertDateTime
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputLabel>
+                                        </h:panelGroup>
+                                        <h:panelGroup layout="block" rendered="#{login.logoutAt == null}">
+                                            <h:outputLabel value="Still Active"
+                                                styleClass="text-success font-weight-bold"/>
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column headerText="Institution">
+                                        <h:outputLabel value="#{login.institutionName}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Department">
+                                        <h:outputLabel value="#{login.departmentName}"/>
+                                    </p:column>
+
+                                    <p:column headerText="IP Address">
+                                        <h:outputLabel value="#{login.ipAddress}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Browser">
+                                        <h:outputLabel value="#{login.browser}"/>
+                                    </p:column>
+
+                                    <p:column headerText="OS">
+                                        <h:outputLabel value="#{login.operatingSystem}"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:tab>
+
+                            <!-- Tab 4: Transactions -->
+                            <p:tab title="Transactions" icon="fa fa-list">
+                                <!-- Date Range Filter -->
+                                <h:panelGroup layout="block" styleClass="mb-3">
+                                    <h:panelGrid columns="6">
+                                        <p:outputLabel value="From Date"/>
+                                        <p:calendar
+                                            value="#{userDashboardController.transactionFromDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                                        <p:outputLabel value="To Date"/>
+                                        <p:calendar
+                                            value="#{userDashboardController.transactionToDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                                        <p:commandButton
+                                            value="Filter"
+                                            action="#{userDashboardController.loadTransactions()}"
+                                            icon="fa fa-filter"
+                                            class="ui-button-warning"
+                                            update="transactionTable"/>
+
+                                        <p:commandButton
+                                            value="Reset"
+                                            action="#{userDashboardController.resetTransactionFilters()}"
+                                            icon="fa fa-undo"
+                                            class="ui-button-secondary"
+                                            update="transactionTable"/>
+                                    </h:panelGrid>
+                                </h:panelGroup>
+
+                                <h:outputText value="Chronological Transaction History"
+                                    styleClass="font-weight-bold h5"/>
+                                <p:separator/>
+
+                                <p:dataTable
+                                    id="transactionTable"
+                                    value="#{userDashboardController.transactions}"
+                                    var="txn"
+                                    styleClass="mt-2"
+                                    paginator="true"
+                                    rows="25"
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="25,50,100"
+                                    emptyMessage="No transactions found">
+
+                                    <p:column headerText="Type" width="120px">
+                                        <h:outputLabel value="#{txn.transactionType}"
+                                            styleClass="badge badge-info"/>
+                                    </p:column>
+
+                                    <p:column headerText="Date/Time" sortBy="#{txn.transactionDate}">
+                                        <h:outputLabel value="#{txn.transactionDate}">
+                                            <f:convertDateTime
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Number">
+                                        <h:outputLabel value="#{txn.transactionNumber}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Patient">
+                                        <h:outputLabel value="#{txn.patientName}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Description">
+                                        <h:outputLabel value="#{txn.description}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Amount" width="120px">
+                                        <h:outputLabel value="#{txn.amount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Status" width="100px">
+                                        <h:outputLabel value="#{txn.status}"
+                                            styleClass="badge #{txn.status == 'ACTIVE' ? 'badge-success' : 'badge-secondary'}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Additional Info">
+                                        <h:outputLabel value="#{txn.additionalInfo}"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:tab>
+                        </p:tabView>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
