@@ -622,7 +622,9 @@ public class CashRecieveBillController implements Serializable {
         // Use calculated balance instead of persisted balance field to ensure accuracy
         double dueAmount = getReferenceBallance(getCurrentBillItem());
 
-        if (paymentAmount > dueAmount) {
+        // Use tolerance-based comparison to handle floating-point precision issues
+        // Allow small differences (less than 0.01) to accommodate decimal precision
+        if (paymentAmount - dueAmount > 0.01) {
             String message = String.format("Payment amount (%.2f) cannot exceed the due amount (%.2f). " +
                     "Maximum payable amount is %.2f",
                     paymentAmount, dueAmount, dueAmount);
