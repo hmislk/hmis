@@ -2573,7 +2573,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         applyRefundSignToPaymentData();
 
         // Create payments using PaymentService
-        List<Payment> ps = paymentService.createPayment(cancellationBill, paymentMethod, paymentMethodData, sessionController.getLoggedUser());
+        List<Payment> ps = paymentService.createPayment(cancellationBill, paymentMethod, paymentMethodData, sessionController.getDepartment(), sessionController.getLoggedUser());
         List<BillItem> list = cancelBillItems(getBill(), cancellationBill, ps);
 
         try {
