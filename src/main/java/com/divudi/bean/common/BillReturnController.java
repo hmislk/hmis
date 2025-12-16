@@ -124,6 +124,9 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
         returningStarted.set(false);
         paymentMethod = originalBillToReturn.getPaymentMethod();
+        if(paymentMethod == PaymentMethod.Staff_Welfare){
+            toStaff = originalBillToReturn.getToStaff();
+        }
         paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(originalBillToReturn);
         return "/opd/bill_return?faces-redirect=true";
     }
@@ -411,7 +414,9 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         // fetch original bill now, checked alteady returned, cancelled, ,
         newlyReturnedBill = new RefundBill();
         newlyReturnedBill.copy(originalBillToReturn);
+        newlyReturnedBill.setPaymentMethod(paymentMethod);
         newlyReturnedBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_REFUND);
+        newlyReturnedBill.setPaymentMethod(paymentMethod);
         newlyReturnedBill.setComments(refundComment);
         newlyReturnedBill.setInstitution(sessionController.getInstitution());
         newlyReturnedBill.setDepartment(sessionController.getDepartment());
