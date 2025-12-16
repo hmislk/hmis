@@ -1,5 +1,7 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -26,7 +28,7 @@ public class UserTransactionDto implements Serializable {
     public UserTransactionDto() {
     }
 
-    // Constructor for Bill transactions (9 params)
+    // Constructor for Bill transactions - String types (9 params)
     public UserTransactionDto(String transactionType, Long billId,
                             String billNumber, Date createdAt,
                             String patientName, String billTypeAtomic,
@@ -40,6 +42,31 @@ public class UserTransactionDto implements Serializable {
         this.description = billTypeAtomic;
         this.amount = netTotal;
         this.additionalInfo = paymentMethod;
+
+        if (cancelled) {
+            this.status = "CANCELLED";
+        } else if (refunded) {
+            this.status = "REFUNDED";
+        } else {
+            this.status = "ACTIVE";
+        }
+    }
+
+    // Constructor for Bill transactions - Enum types (10 params)
+    // This constructor is used by JPQL queries that pass enums directly
+    public UserTransactionDto(String transactionType, Long billId,
+                            String billNumber, Date createdAt,
+                            String patientName, BillTypeAtomic billTypeAtomic,
+                            Double netTotal, PaymentMethod paymentMethod,
+                            boolean cancelled, boolean refunded) {
+        this.transactionType = transactionType;
+        this.transactionId = billId;
+        this.transactionNumber = billNumber;
+        this.transactionDate = createdAt;
+        this.patientName = patientName;
+        this.description = billTypeAtomic != null ? billTypeAtomic.toString() : "";
+        this.amount = netTotal;
+        this.additionalInfo = paymentMethod != null ? paymentMethod.toString() : "";
 
         if (cancelled) {
             this.status = "CANCELLED";

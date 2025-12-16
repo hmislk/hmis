@@ -1072,10 +1072,10 @@
                         icon="fas fa-shopping-cart" 
                         rendered="#{webUserController.hasPrivilege('PharmacyProcurementMenu')}">
                         <!--Procurement Menu Items with Titles-->
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"  
-                            value="Create PO" 
+                        <p:menuitem
+                            ajax="false"
+                            action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"
+                            value="Create PO"
                             title="Create a new Purchase Order"
                             icon="fas fa-plus-circle"
                             rendered="#{webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>

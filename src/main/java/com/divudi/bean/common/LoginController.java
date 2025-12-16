@@ -52,6 +52,8 @@ public class LoginController implements Serializable {
     LoginsFacade facade;
     @Inject
     SessionController sessionController;
+    @Inject
+    UserDashboardController userDashboardController;
 
     /**
      * Creates a new instance of LoginController
@@ -230,8 +232,11 @@ public class LoginController implements Serializable {
      * Navigate to user dashboard with selected user
      */
     public String navigateToUserDashboard(UserLoginDto loginDto) {
-        FacesContext context = FacesContext.getCurrentInstance();
-        context.getExternalContext().getFlash().put("selectedUserId", loginDto.getWebUserId());
+        System.out.println("navigateToUserDashboard called for: " + loginDto.getUsername());
+        System.out.println("WebUserId: " + loginDto.getWebUserId());
+        // Prepare the dashboard with the selected user's data
+        userDashboardController.prepareUserDashboard(loginDto.getWebUserId());
+        System.out.println("About to navigate to user dashboard");
         return "/admin/users/user_dashboard?faces-redirect=true";
     }
 
