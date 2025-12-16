@@ -1,5 +1,6 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.hr.EmployeeStatus;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -66,7 +67,7 @@ public class UserDashboardDto implements Serializable {
         this.activated = activated;
     }
 
-    // Constructor with staff details (for users with staff records)
+    // Constructor with staff details (for users with staff records) - String employeeStatus
     public UserDashboardDto(Long userId, String username, String userCode,
                           String email, String telNo, String roleName,
                           String personName, String institutionName,
@@ -92,6 +93,35 @@ public class UserDashboardDto implements Serializable {
         this.dateJoined = dateJoined;
         this.dateLeft = dateLeft;
         this.employeeStatus = employeeStatus;
+    }
+
+    // Constructor with staff details (for users with staff records) - EmployeeStatus enum
+    // This constructor is used by JPQL queries that pass the enum directly
+    public UserDashboardDto(Long userId, String username, String userCode,
+                          String email, String telNo, String roleName,
+                          String personName, String institutionName,
+                          String departmentName, Date createdAt,
+                          Date activatedAt, Date lastPasswordResetAt,
+                          boolean activated,
+                          Long staffId, String staffCode, String staffRegistration,
+                          String staffQualification, String designationName,
+                          String gradeName, String staffCategoryName,
+                          String specialityName, Date dateJoined,
+                          Date dateLeft, EmployeeStatus employeeStatus) {
+        this(userId, username, userCode, email, telNo, roleName,
+             personName, institutionName, departmentName, createdAt,
+             activatedAt, lastPasswordResetAt, activated);
+        this.staffId = staffId;
+        this.staffCode = staffCode;
+        this.staffRegistration = staffRegistration;
+        this.staffQualification = staffQualification;
+        this.designationName = designationName;
+        this.gradeName = gradeName;
+        this.staffCategoryName = staffCategoryName;
+        this.specialityName = specialityName;
+        this.dateJoined = dateJoined;
+        this.dateLeft = dateLeft;
+        this.employeeStatus = employeeStatus != null ? employeeStatus.toString() : null;
     }
 
     // Helper method to check if user has staff record
