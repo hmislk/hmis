@@ -40,7 +40,6 @@ import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -217,15 +216,12 @@ public class PurchaseOrderRequestController implements Serializable {
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
 
-        // PERFORMANCE: Use batch method instead of individual calls (9 seconds → 100ms!)
-        List<Long> itemIds = Arrays.asList(getCurrentBillItem().getItem().getId());
-        Map<Long, Double> purchaseRates = fetchLastPurchaseRatesForItems(itemIds);
-        Map<Long, Double> retailRates = fetchLastRetailRatesForItems(itemIds);
-
+        // PERFORMANCE: Fetch last purchase and retail rates (replaces 9-second individual calls!)
+        Long itemId = getCurrentBillItem().getItem().getId();
         getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(
-            purchaseRates.getOrDefault(getCurrentBillItem().getItem().getId(), 0.0));
+            fetchLastPurchaseRateForItem(itemId));
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(
-            retailRates.getOrDefault(getCurrentBillItem().getItem().getId(), 0.0));
+            fetchLastRetailRateForItem(itemId));
 
         if (getCurrentBillItem().getItem() instanceof Ampp) {
             BigDecimal unitsPerPack = BigDecimal.valueOf(getCurrentBillItem().getItem().getDblValue());
@@ -448,28 +444,18 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     /**
-     * PERFORMANCE OPTIMIZATION: Batch query for last purchase rates
-     * Replaces individual pharmacyBean.getLastPurchaseRate() calls (9 seconds each!)
-     *
-     * NOTE: Current implementation has a known limitation - if a single item has more
-     * transactions than MAX_RESULTS, other items may not get their rates. This is
-     * mitigated by department/billType filtering which limits transaction volume.
-     * TODO: Consider native SQL with window functions for guaranteed per-item results.
+     * PERFORMANCE OPTIMIZATION: Get last purchase rate for a single item
+     * Replaces pharmacyBean.getLastPurchaseRate() call (9 seconds!)
      */
-    private Map<Long, Double> fetchLastPurchaseRatesForItems(List<Long> itemIds) {
-        Map<Long, Double> purchaseRateMap = new HashMap<>();
-        if (itemIds == null || itemIds.isEmpty()) {
-            return purchaseRateMap;
+    private Double fetchLastPurchaseRateForItem(Long itemId) {
+        if (itemId == null) {
+            return 0.0;
         }
 
-        for (Long itemId : itemIds) {
-            purchaseRateMap.put(itemId, 0.0);
-        }
-
-        String jpql = "SELECT bi.item.id, pbi.purchaseRate "
+        String jpql = "SELECT pbi.purchaseRate "
                 + "FROM PharmaceuticalBillItem pbi "
                 + "JOIN pbi.billItem bi "
-                + "WHERE bi.item.id IN :itemIds "
+                + "WHERE bi.item.id = :itemId "
                 + "AND bi.retired = false "
                 + "AND pbi.purchaseRate > 0 "
                 + "AND bi.bill.department = :department "
@@ -481,54 +467,35 @@ public class PurchaseOrderRequestController implements Serializable {
         purchaseBillTypes.add(BillType.PharmacyPurchaseBill);
 
         Map<String, Object> params = new HashMap<>();
-        params.put("itemIds", itemIds);
+        params.put("itemId", itemId);
         params.put("department", sessionController.getDepartment());
         params.put("billTypes", purchaseBillTypes);
 
         try {
-            // Increased from 500 to 5000 to reduce likelihood of missing items
-            // when high-volume items dominate results
             @SuppressWarnings("unchecked")
-            List<Object[]> results = (List<Object[]>) itemFacade.findLightsByJpql(jpql, params, null, 5000);
-            if (results != null) {
-                for (Object[] row : results) {
-                    Long itemId = (Long) row[0];
-                    Double purchaseRate = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
-                    if (purchaseRateMap.get(itemId) == 0.0) {
-                        purchaseRateMap.put(itemId, purchaseRate);
-                    }
-                }
+            List<Double> results = (List<Double>) itemFacade.findLightsByJpql(jpql, params, null, 1);
+            if (results != null && !results.isEmpty() && results.get(0) != null) {
+                return results.get(0);
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to fetch last purchase rates for items. Returning default values.", e);
-            // Return map with 0 values
+            LOGGER.log(Level.SEVERE, "Failed to fetch last purchase rate for item " + itemId, e);
         }
-        return purchaseRateMap;
+        return 0.0;
     }
 
     /**
-     * PERFORMANCE OPTIMIZATION: Batch query for last retail rates
-     * Replaces individual pharmacyBean.getLastRetailRate() calls
-     *
-     * NOTE: Current implementation has a known limitation - if a single item has more
-     * transactions than MAX_RESULTS, other items may not get their rates. This is
-     * mitigated by department/billType filtering which limits transaction volume.
-     * TODO: Consider native SQL with window functions for guaranteed per-item results.
+     * PERFORMANCE OPTIMIZATION: Get last retail rate for a single item
+     * Replaces pharmacyBean.getLastRetailRate() call
      */
-    private Map<Long, Double> fetchLastRetailRatesForItems(List<Long> itemIds) {
-        Map<Long, Double> retailRateMap = new HashMap<>();
-        if (itemIds == null || itemIds.isEmpty()) {
-            return retailRateMap;
+    private Double fetchLastRetailRateForItem(Long itemId) {
+        if (itemId == null) {
+            return 0.0;
         }
 
-        for (Long itemId : itemIds) {
-            retailRateMap.put(itemId, 0.0);
-        }
-
-        String jpql = "SELECT bi.item.id, pbi.retailRate "
+        String jpql = "SELECT pbi.retailRate "
                 + "FROM PharmaceuticalBillItem pbi "
                 + "JOIN pbi.billItem bi "
-                + "WHERE bi.item.id IN :itemIds "
+                + "WHERE bi.item.id = :itemId "
                 + "AND bi.retired = false "
                 + "AND pbi.retailRate > 0 "
                 + "AND bi.bill.department = :department "
@@ -540,29 +507,20 @@ public class PurchaseOrderRequestController implements Serializable {
         purchaseBillTypes.add(BillType.PharmacyPurchaseBill);
 
         Map<String, Object> params = new HashMap<>();
-        params.put("itemIds", itemIds);
+        params.put("itemId", itemId);
         params.put("department", sessionController.getDepartment());
         params.put("billTypes", purchaseBillTypes);
 
         try {
-            // Increased from 500 to 5000 to reduce likelihood of missing items
-            // when high-volume items dominate results
             @SuppressWarnings("unchecked")
-            List<Object[]> results = (List<Object[]>) itemFacade.findLightsByJpql(jpql, params, null, 5000);
-            if (results != null) {
-                for (Object[] row : results) {
-                    Long itemId = (Long) row[0];
-                    Double retailRate = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
-                    if (retailRateMap.get(itemId) == 0.0) {
-                        retailRateMap.put(itemId, retailRate);
-                    }
-                }
+            List<Double> results = (List<Double>) itemFacade.findLightsByJpql(jpql, params, null, 1);
+            if (results != null && !results.isEmpty() && results.get(0) != null) {
+                return results.get(0);
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to fetch last retail rates for items. Returning default values.", e);
-            // Return map with 0 values
+            LOGGER.log(Level.SEVERE, "Failed to fetch last retail rate for item " + itemId, e);
         }
-        return retailRateMap;
+        return 0.0;
     }
 
     public void saveBill() {
@@ -664,10 +622,7 @@ public class PurchaseOrderRequestController implements Serializable {
         boolean preventDuplicates = configOptionApplicationController.getBooleanValueByKey("Prevent Duplicate Items in Purchase Orders", false);
         int skippedCount = 0;
 
-        // PERFORMANCE: Collect all item IDs first
-        List<Long> itemIdsToAdd = new ArrayList<>();
-        List<Item> itemsToAdd = new ArrayList<>();
-
+        // Create bill items and fetch rates individually (LIMIT 1 per item)
         for (Item i : items) {
             // Check for duplicate items if configuration is enabled
             if (preventDuplicates) {
@@ -686,16 +641,6 @@ public class PurchaseOrderRequestController implements Serializable {
                 }
             }
 
-            itemIdsToAdd.add(i.getId());
-            itemsToAdd.add(i);
-        }
-
-        // PERFORMANCE: Batch fetch rates for ALL items at once (instead of one-by-one!)
-        Map<Long, Double> purchaseRates = fetchLastPurchaseRatesForItems(itemIdsToAdd);
-        Map<Long, Double> retailRates = fetchLastRetailRatesForItems(itemIdsToAdd);
-
-        // Now create bill items using cached rates
-        for (Item i : itemsToAdd) {
             BillItem bi = new BillItem();
             bi.setItem(i);
 
@@ -705,9 +650,9 @@ public class PurchaseOrderRequestController implements Serializable {
 
             bi.setSearialNo(serialStart++);
 
-            // Use cached rates from batch query
-            tmp.setPurchaseRate(purchaseRates.getOrDefault(i.getId(), 0.0));
-            tmp.setRetailRate(retailRates.getOrDefault(i.getId(), 0.0));
+            // PERFORMANCE: Fetch last rates individually (LIMIT 1 query per item)
+            tmp.setPurchaseRate(fetchLastPurchaseRateForItem(i.getId()));
+            tmp.setRetailRate(fetchLastRetailRateForItem(i.getId()));
 
             getBillItems().add(bi);
         }
