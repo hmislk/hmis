@@ -711,12 +711,17 @@
                                             yearNavigator="true"
                                             monthNavigator="true"
                                             showButtonBar="true"
+                                            readonly="#{not configOptionApplicationController.getBooleanValueByKey('Allowing the user to modify the Date of Admission in BHT.',false)}"
                                             timeInput="true">
                                             <f:ajax event="dateSelect" execute="@this" />
                                         </p:datePicker>
 
                                         <p:outputLabel  value="BHT No(full)"  />
-                                        <p:inputText  class="w-100"  value="#{bhtEditController.current.bhtNo}" ></p:inputText>
+                                        <p:inputText  
+                                            class="w-100" 
+                                            value="#{bhtEditController.current.bhtNo}" 
+                                            readonly="#{not configOptionApplicationController.getBooleanValueByKey('Allowing the user to modify the BHT Number.',false)}">
+                                        </p:inputText>
 
                                         <p:outputLabel  value="Consultant"  />
                                         <p:autoComplete 
