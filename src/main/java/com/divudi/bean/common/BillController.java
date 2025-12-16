@@ -2316,7 +2316,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         applyRefundSignToPaymentData();
 
         // Create payments using PaymentService
-        List<Payment> cancelPayments = paymentService.createPayment(cancellationBatchBill, paymentMethod, paymentMethodData, sessionController.getDepartment(), sessionController.getLoggedUser());
+        List<Payment> cancelPayments = paymentService.createPayment(cancellationBatchBill, paymentMethodData);
 
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             paymentService.updateBalances(cancelPayments);
