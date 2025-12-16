@@ -16213,7 +16213,9 @@ public class SearchController implements Serializable {
                 opdServiceCollection = generateOpdServiceCollectionWithoutProfessionalFee(PaymentType.NON_CREDIT);
             }
             bundle.getBundles().add(opdServiceCollection);
-            collectionForTheDay += bundleCashierCollectionTotal(opdServiceCollection);
+            // Use getTotal() directly instead of bundleCashierCollectionTotal() because OPD service collection
+            // is built from bill items, not payments, so payment method values are not populated
+            collectionForTheDay += getSafeTotal(opdServiceCollection);
 
             // Generate pharmacy collection and add to the main bundle
             List<BillTypeAtomic> pharmacyBillTypes = new ArrayList<>();
@@ -16251,7 +16253,9 @@ public class SearchController implements Serializable {
             // Generate collecting centre collection and add to the main bundle
             ReportTemplateRowBundle ccCollection = generateCcCollection();
             bundle.getBundles().add(ccCollection);
-            collectionForTheDay += bundleCashierCollectionTotal(ccCollection);
+            // Use getTotal() directly instead of bundleCashierCollectionTotal() because CC collection
+            // is built from bills, not payments, so payment method values are not populated
+            collectionForTheDay += getSafeTotal(ccCollection);
 
             // Generate OPD Credit Company Payment Collection and add to the main bundle
             ReportTemplateRowBundle opdCreditCompanyCollection = generateCreditCompanyCollectionForOpd();

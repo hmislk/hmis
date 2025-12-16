@@ -2765,8 +2765,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     multiplePaymentMethodTotalValue += calculateSelectedPaymentTotal(cd);
                 }
             }
-            remainAmount = total - multiplePaymentMethodTotalValue;
-            return total - multiplePaymentMethodTotalValue;
+            remainAmount = netTotal - multiplePaymentMethodTotalValue;
+            return netTotal - multiplePaymentMethodTotalValue;
 
         }
         remainAmount = total;
