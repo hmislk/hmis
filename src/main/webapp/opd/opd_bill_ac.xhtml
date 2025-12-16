@@ -25,13 +25,24 @@
                                 <div>
                                     <h:outputText styleClass="fa-solid fa-circle-plus" />
                                     <h:outputLabel value="OPD Billing" class="mx-4"></h:outputLabel>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                        <p:commandButton
+                                            value="Config"
+                                            icon="fa fa-cog"
+                                            title="Page Configuration Management"
+                                            action="#{pageAdminController.navigateToPageAdmin('opd/opd_bill_ac')}"
+                                            ajax="false"
+                                            styleClass="ui-button-secondary ui-button-sm p-button-outlined"
+                                            style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                                        </p:commandButton>
+                                    </h:panelGroup>
                                 </div>
                                 <div>
-                                    <p:commandButton 
-                                        id="btnNavigateToChannelBookingByDates" 
-                                        title="Channel Booking - By Dates" 
-                                        icon="fa fa-fw fa-calendar-check" 
-                                        styleClass="ui-button-warning mx-2" 
+                                    <p:commandButton
+                                        id="btnNavigateToChannelBookingByDates"
+                                        title="Channel Booking - By Dates"
+                                        icon="fa fa-fw fa-calendar-check"
+                                        styleClass="ui-button-warning mx-2"
                                         process="btnNavigateToChannelBookingByDates"
                                         update="@all"
                                         action="#{bookingControllerViewScope.navigateToChannelBookingFromMenuByDate()}"
@@ -45,17 +56,6 @@
                                         process="btnNewOpdBill"
                                         update="@all">
                                     </p:commandButton>
-                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
-                                        <p:commandButton
-                                            value="Config"
-                                            icon="fa fa-cog"
-                                            title="Page Configuration Management"
-                                            action="#{pageAdminController.navigateToPageAdmin('opd/opd_bill_ac')}"
-                                            ajax="false"
-                                            styleClass="ui-button-secondary ui-button-sm p-button-outlined m-1"
-                                            style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
-                                        </p:commandButton>
-                                    </h:panelGroup>
                                 </div>
                             </div>
                         </f:facet>
