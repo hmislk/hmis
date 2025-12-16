@@ -256,7 +256,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         }
         
         if(currentBill.getReferredBy() == null){
-            JsfUtil.addErrorMessage("Referring Doctor Date is Missing.");
+            JsfUtil.addErrorMessage("Referring Doctor is Missing.");
             return;
         }
 
@@ -530,7 +530,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         }
         
         if(currentBill.getReferredBy() == null){
-            JsfUtil.addErrorMessage("Referring Doctor Date is Missing.");
+            JsfUtil.addErrorMessage("Referring Doctor is Missing.");
             return;
         }
 
