@@ -28,6 +28,7 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.BillNumberFacade;
+import com.divudi.core.facade.AuditDatabaseFacade;
 import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
@@ -225,6 +226,8 @@ public class DataAdministrationController implements Serializable {
     @EJB
     ItemFacade itemFacade;
     @EJB
+    AuditDatabaseFacade auditDatabaseFacade;
+    @EJB
     CategoryFacade categoryFacade;
     @EJB
     ItemBatchFacade itemBatchFacade;
@@ -302,6 +305,16 @@ public class DataAdministrationController implements Serializable {
     private String createdSql;
     private String alterSql;
     private String executionFeedback;
+
+    // Database selection and results for both databases
+    private boolean runOnMainDatabase = true;
+    private boolean runOnAuditDatabase = true;
+    private String mainDatabaseErrors;
+    private String auditDatabaseErrors;
+    private String mainDatabaseSuggestedSql;
+    private String auditDatabaseSuggestedSql;
+    private String mainDatabaseExecutionFeedback;
+    private String auditDatabaseExecutionFeedback;
 
     Date fromDate;
     Date toDate;
@@ -1747,9 +1760,27 @@ public class DataAdministrationController implements Serializable {
     }
 
     public void checkMissingFields() {
+        // Clear all previous results
         suggestedSql = "";
+        mainDatabaseSuggestedSql = "";
+        auditDatabaseSuggestedSql = "";
+        mainDatabaseErrors = "";
+        auditDatabaseErrors = "";
+        errors = "";
+
+        // Check both databases if enabled
+        if (runOnMainDatabase) {
+            checkMissingFieldsForDatabase(itemFacade, "Main Database");
+        }
+        if (runOnAuditDatabase) {
+            checkMissingFieldsForDatabase(auditDatabaseFacade, "Audit Database");
+        }
+    }
+
+    private void checkMissingFieldsForDatabase(AbstractFacade<?> facade, String databaseName) {
         List<EntityFieldError> missingFieldErrors = new ArrayList<>();
         List<EntityFieldError> missingTableErrors = new ArrayList<>();
+        String databaseErrors = "";
 
         for (Class<?> entityClass : findEntityClassNames()) {
             // Get root entity class name (skip base classes like Item if needed)
@@ -1769,7 +1800,7 @@ public class DataAdministrationController implements Serializable {
             String jpql = "SELECT e FROM " + entityName + " e";
 
             try {
-                itemFacade.executeQueryFirstResult(entityClass, jpql);
+                facade.executeQueryFirstResult(entityClass, jpql);
             } catch (Exception e) {
                 Throwable cause = e.getCause();
                 while (cause != null && !(cause instanceof SQLSyntaxErrorException)) {
@@ -1804,9 +1835,10 @@ public class DataAdministrationController implements Serializable {
         }
 
         StringBuilder outputBuilder = new StringBuilder();
+        outputBuilder.append("=== ").append(databaseName).append(" ===\n");
 
         if (!missingTableErrors.isEmpty()) {
-            outputBuilder.append("=== Missing Tables ===\n");
+            outputBuilder.append("\n=== Missing Tables ===\n");
             for (EntityFieldError error : missingTableErrors) {
                 for (String field : error.getMissingFields()) {
                     outputBuilder.append("Entity: ").append(error.getEntityName())
@@ -1822,7 +1854,21 @@ public class DataAdministrationController implements Serializable {
             }
         }
 
-        errors = outputBuilder.toString().trim();
+        String databaseResult = outputBuilder.toString().trim();
+
+        // Store results based on database type
+        if (databaseName.equals("Main Database")) {
+            mainDatabaseErrors = databaseResult;
+        } else {
+            auditDatabaseErrors = databaseResult;
+        }
+
+        // Update the combined errors field
+        if (errors.isEmpty()) {
+            errors = databaseResult;
+        } else {
+            errors += "\n\n" + databaseResult;
+        }
     }
 
     public List<Class<?>> findEntityClassNames() {
@@ -1971,10 +2017,25 @@ public class DataAdministrationController implements Serializable {
     }
 
     public void createTablesAndFieldsForAllCreateStatements() {
+        // Clear previous execution feedback
+        executionFeedback = "";
+        mainDatabaseExecutionFeedback = "";
+        auditDatabaseExecutionFeedback = "";
+
+        // Run on both databases if enabled
+        if (runOnMainDatabase) {
+            createTablesOnDatabase(itemFacade, "Main Database");
+        }
+        if (runOnAuditDatabase) {
+            createTablesOnDatabase(auditDatabaseFacade, "Audit Database");
+        }
+    }
+
+    private void createTablesOnDatabase(AbstractFacade<?> facade, String databaseName) {
         StringBuilder executionResults = new StringBuilder();
+        executionResults.append("=== ").append(databaseName).append(" ===<br/>");
 
         String[] rawParts = allCreateStetements.split("(?i)CREATE TABLE");
-        int counter = 0;
 
         for (String part : rawParts) {
             part = part.trim();
@@ -1987,7 +2048,7 @@ public class DataAdministrationController implements Serializable {
             try {
                 // First execute the CREATE TABLE
                 try {
-                    itemFacade.executeNativeSql(createStatement);
+                    facade.executeNativeSql(createStatement);
                     executionResults.append("<br/>Successfully executed: ").append(createStatement);
                 } catch (Exception e) {
                     executionResults.append("<br/>CREATE TABLE failed (likely already exists): ").append(e.getMessage());
@@ -2011,7 +2072,7 @@ public class DataAdministrationController implements Serializable {
 
                     try {
                         if (isValidSqlStatement(sql)) {
-                            itemFacade.executeNativeSql(sql);
+                            facade.executeNativeSql(sql);
                             executionResults.append("<br/>Successfully executed: ").append(sql);
                         } else {
                             executionResults.append("<br/>Rejected potentially harmful SQL: ").append(sql);
@@ -2027,8 +2088,21 @@ public class DataAdministrationController implements Serializable {
             }
         }
 
-        executionFeedback = executionResults.toString();
+        String databaseResult = executionResults.toString();
 
+        // Store results based on database type
+        if (databaseName.equals("Main Database")) {
+            mainDatabaseExecutionFeedback = databaseResult;
+        } else {
+            auditDatabaseExecutionFeedback = databaseResult;
+        }
+
+        // Update the combined execution feedback
+        if (executionFeedback.isEmpty()) {
+            executionFeedback = databaseResult;
+        } else {
+            executionFeedback += "<br/><br/>" + databaseResult;
+        }
     }
 
     // Add this method to validate SQL statements
@@ -2045,31 +2119,60 @@ public class DataAdministrationController implements Serializable {
     }
 
     public void runSqlToCreateFields() {
+        // Clear previous execution feedback
+        executionFeedback = "";
+        mainDatabaseExecutionFeedback = "";
+        auditDatabaseExecutionFeedback = "";
+
+        // Run on both databases if enabled
+        if (runOnMainDatabase) {
+            runSqlOnDatabase(itemFacade, suggestedSql, "Main Database");
+        }
+        if (runOnAuditDatabase) {
+            runSqlOnDatabase(auditDatabaseFacade, suggestedSql, "Audit Database");
+        }
+    }
+
+    private void runSqlOnDatabase(AbstractFacade<?> facade, String sql, String databaseName) {
         // Adjust the split pattern based on your actual SQL string format
         // Assuming statements end with semicolons
-        String[] sqlStatements = suggestedSql.split(";");
+        String[] sqlStatements = sql.split(";");
         StringBuilder executionResults = new StringBuilder();
+        executionResults.append("=== ").append(databaseName).append(" ===<br/>");
 
-        for (String sql : sqlStatements) {
-            sql = sql.trim();
-            if (sql.isEmpty()) {
+        for (String sqlStatement : sqlStatements) {
+            sqlStatement = sqlStatement.trim();
+            if (sqlStatement.isEmpty()) {
                 continue; // Skip empty statements
             }
             try {
                 // Execute the SQL statement
-                itemFacade.executeNativeSql(sql);
+                facade.executeNativeSql(sqlStatement);
 
                 // Append success message
-                executionResults.append("<br/>Successfully executed: ").append(sql);
+                executionResults.append("<br/>Successfully executed: ").append(sqlStatement);
             } catch (Exception e) {
                 // Append error message with exception details
-                executionResults.append("<br/>Failed to execute: ").append(sql);
+                executionResults.append("<br/>Failed to execute: ").append(sqlStatement);
                 executionResults.append("<br/>Error: ").append(e.getMessage());
             }
         }
 
-        // Update the execution feedback
-        executionFeedback = executionResults.toString();
+        String databaseResult = executionResults.toString();
+
+        // Store results based on database type
+        if (databaseName.equals("Main Database")) {
+            mainDatabaseExecutionFeedback = databaseResult;
+        } else {
+            auditDatabaseExecutionFeedback = databaseResult;
+        }
+
+        // Update the combined execution feedback
+        if (executionFeedback.isEmpty()) {
+            executionFeedback = databaseResult;
+        } else {
+            executionFeedback += "<br/><br/>" + databaseResult;
+        }
     }
 
     public void addBillFeesToProfessionalCancelBills() {
@@ -3413,6 +3516,71 @@ public class DataAdministrationController implements Serializable {
 
     public void setExecutionFeedback(String executionFeedback) {
         this.executionFeedback = executionFeedback;
+    }
+
+    // Getters and setters for dual database support
+    public boolean isRunOnMainDatabase() {
+        return runOnMainDatabase;
+    }
+
+    public void setRunOnMainDatabase(boolean runOnMainDatabase) {
+        this.runOnMainDatabase = runOnMainDatabase;
+    }
+
+    public boolean isRunOnAuditDatabase() {
+        return runOnAuditDatabase;
+    }
+
+    public void setRunOnAuditDatabase(boolean runOnAuditDatabase) {
+        this.runOnAuditDatabase = runOnAuditDatabase;
+    }
+
+    public String getMainDatabaseErrors() {
+        return mainDatabaseErrors;
+    }
+
+    public void setMainDatabaseErrors(String mainDatabaseErrors) {
+        this.mainDatabaseErrors = mainDatabaseErrors;
+    }
+
+    public String getAuditDatabaseErrors() {
+        return auditDatabaseErrors;
+    }
+
+    public void setAuditDatabaseErrors(String auditDatabaseErrors) {
+        this.auditDatabaseErrors = auditDatabaseErrors;
+    }
+
+    public String getMainDatabaseSuggestedSql() {
+        return mainDatabaseSuggestedSql;
+    }
+
+    public void setMainDatabaseSuggestedSql(String mainDatabaseSuggestedSql) {
+        this.mainDatabaseSuggestedSql = mainDatabaseSuggestedSql;
+    }
+
+    public String getAuditDatabaseSuggestedSql() {
+        return auditDatabaseSuggestedSql;
+    }
+
+    public void setAuditDatabaseSuggestedSql(String auditDatabaseSuggestedSql) {
+        this.auditDatabaseSuggestedSql = auditDatabaseSuggestedSql;
+    }
+
+    public String getMainDatabaseExecutionFeedback() {
+        return mainDatabaseExecutionFeedback;
+    }
+
+    public void setMainDatabaseExecutionFeedback(String mainDatabaseExecutionFeedback) {
+        this.mainDatabaseExecutionFeedback = mainDatabaseExecutionFeedback;
+    }
+
+    public String getAuditDatabaseExecutionFeedback() {
+        return auditDatabaseExecutionFeedback;
+    }
+
+    public void setAuditDatabaseExecutionFeedback(String auditDatabaseExecutionFeedback) {
+        this.auditDatabaseExecutionFeedback = auditDatabaseExecutionFeedback;
     }
 
     public String getCreatedSql() {
