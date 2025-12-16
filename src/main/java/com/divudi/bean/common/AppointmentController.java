@@ -249,6 +249,16 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             JsfUtil.addErrorMessage("Reserved To Date not Valid");
             return;
         }
+        
+        if(currentAppointment.getAppointmentDate() == null){
+            JsfUtil.addErrorMessage("Appointment Date is Missing.");
+            return;
+        }
+        
+        if(currentBill.getReferredBy() == null){
+            JsfUtil.addErrorMessage("Referring Doctor Date is Missing.");
+            return;
+        }
 
         Reservation res = checkRoomAvailability();
 
@@ -511,6 +521,16 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
         if (getReservedToDate() != null && (!getReservedToDate().after(new Date()) || !getReservedToDate().after(getReservedFromDate()))) {
             JsfUtil.addErrorMessage("Please select a valid Reservation todate.");
+            return;
+        }
+        
+        if(currentAppointment.getAppointmentDate() == null){
+            JsfUtil.addErrorMessage("Appointment Date is Missing.");
+            return;
+        }
+        
+        if(currentBill.getReferredBy() == null){
+            JsfUtil.addErrorMessage("Referring Doctor Date is Missing.");
             return;
         }
 
