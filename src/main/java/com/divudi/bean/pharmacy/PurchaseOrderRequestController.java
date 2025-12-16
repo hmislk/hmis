@@ -450,6 +450,11 @@ public class PurchaseOrderRequestController implements Serializable {
     /**
      * PERFORMANCE OPTIMIZATION: Batch query for last purchase rates
      * Replaces individual pharmacyBean.getLastPurchaseRate() calls (9 seconds each!)
+     *
+     * NOTE: Current implementation has a known limitation - if a single item has more
+     * transactions than MAX_RESULTS, other items may not get their rates. This is
+     * mitigated by department/billType filtering which limits transaction volume.
+     * TODO: Consider native SQL with window functions for guaranteed per-item results.
      */
     private Map<Long, Double> fetchLastPurchaseRatesForItems(List<Long> itemIds) {
         Map<Long, Double> purchaseRateMap = new HashMap<>();
@@ -481,8 +486,10 @@ public class PurchaseOrderRequestController implements Serializable {
         params.put("billTypes", purchaseBillTypes);
 
         try {
+            // Increased from 500 to 5000 to reduce likelihood of missing items
+            // when high-volume items dominate results
             @SuppressWarnings("unchecked")
-            List<Object[]> results = (List<Object[]>) itemFacade.findLightsByJpql(jpql, params, null, 500);
+            List<Object[]> results = (List<Object[]>) itemFacade.findLightsByJpql(jpql, params, null, 5000);
             if (results != null) {
                 for (Object[] row : results) {
                     Long itemId = (Long) row[0];
@@ -502,6 +509,11 @@ public class PurchaseOrderRequestController implements Serializable {
     /**
      * PERFORMANCE OPTIMIZATION: Batch query for last retail rates
      * Replaces individual pharmacyBean.getLastRetailRate() calls
+     *
+     * NOTE: Current implementation has a known limitation - if a single item has more
+     * transactions than MAX_RESULTS, other items may not get their rates. This is
+     * mitigated by department/billType filtering which limits transaction volume.
+     * TODO: Consider native SQL with window functions for guaranteed per-item results.
      */
     private Map<Long, Double> fetchLastRetailRatesForItems(List<Long> itemIds) {
         Map<Long, Double> retailRateMap = new HashMap<>();
@@ -533,8 +545,10 @@ public class PurchaseOrderRequestController implements Serializable {
         params.put("billTypes", purchaseBillTypes);
 
         try {
+            // Increased from 500 to 5000 to reduce likelihood of missing items
+            // when high-volume items dominate results
             @SuppressWarnings("unchecked")
-            List<Object[]> results = (List<Object[]>) itemFacade.findLightsByJpql(jpql, params, null, 500);
+            List<Object[]> results = (List<Object[]>) itemFacade.findLightsByJpql(jpql, params, null, 5000);
             if (results != null) {
                 for (Object[] row : results) {
                     Long itemId = (Long) row[0];
