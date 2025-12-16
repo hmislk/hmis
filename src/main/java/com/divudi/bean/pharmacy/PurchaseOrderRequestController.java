@@ -215,8 +215,13 @@ public class PurchaseOrderRequestController implements Serializable {
         }
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
-        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(getPharmacyBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
-        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(getPharmacyBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+
+        // PERFORMANCE: Fetch last purchase and retail rates (replaces 9-second individual calls!)
+        Long itemId = getCurrentBillItem().getItem().getId();
+        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(
+            fetchLastPurchaseRateForItem(itemId));
+        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(
+            fetchLastRetailRateForItem(itemId));
 
         if (getCurrentBillItem().getItem() instanceof Ampp) {
             BigDecimal unitsPerPack = BigDecimal.valueOf(getCurrentBillItem().getItem().getDblValue());
@@ -438,6 +443,86 @@ public class PurchaseOrderRequestController implements Serializable {
         getPharmacyController().fillItemDetails(bi.getItem());
     }
 
+    /**
+     * PERFORMANCE OPTIMIZATION: Get last purchase rate for a single item
+     * Replaces pharmacyBean.getLastPurchaseRate() call (9 seconds!)
+     */
+    private Double fetchLastPurchaseRateForItem(Long itemId) {
+        if (itemId == null) {
+            return 0.0;
+        }
+
+        String jpql = "SELECT pbi.purchaseRate "
+                + "FROM PharmaceuticalBillItem pbi "
+                + "JOIN pbi.billItem bi "
+                + "WHERE bi.item.id = :itemId "
+                + "AND bi.retired = false "
+                + "AND pbi.purchaseRate > 0 "
+                + "AND bi.bill.department = :department "
+                + "AND bi.bill.billType IN :billTypes "
+                + "ORDER BY bi.bill.createdAt DESC";
+
+        List<BillType> purchaseBillTypes = new ArrayList<>();
+        purchaseBillTypes.add(BillType.PharmacyGrnBill);
+        purchaseBillTypes.add(BillType.PharmacyPurchaseBill);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("itemId", itemId);
+        params.put("department", sessionController.getDepartment());
+        params.put("billTypes", purchaseBillTypes);
+
+        try {
+            @SuppressWarnings("unchecked")
+            List<Double> results = (List<Double>) itemFacade.findLightsByJpql(jpql, params, null, 1);
+            if (results != null && !results.isEmpty() && results.get(0) != null) {
+                return results.get(0);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to fetch last purchase rate for item " + itemId, e);
+        }
+        return 0.0;
+    }
+
+    /**
+     * PERFORMANCE OPTIMIZATION: Get last retail rate for a single item
+     * Replaces pharmacyBean.getLastRetailRate() call
+     */
+    private Double fetchLastRetailRateForItem(Long itemId) {
+        if (itemId == null) {
+            return 0.0;
+        }
+
+        String jpql = "SELECT pbi.retailRate "
+                + "FROM PharmaceuticalBillItem pbi "
+                + "JOIN pbi.billItem bi "
+                + "WHERE bi.item.id = :itemId "
+                + "AND bi.retired = false "
+                + "AND pbi.retailRate > 0 "
+                + "AND bi.bill.department = :department "
+                + "AND bi.bill.billType IN :billTypes "
+                + "ORDER BY bi.bill.createdAt DESC";
+
+        List<BillType> purchaseBillTypes = new ArrayList<>();
+        purchaseBillTypes.add(BillType.PharmacyGrnBill);
+        purchaseBillTypes.add(BillType.PharmacyPurchaseBill);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("itemId", itemId);
+        params.put("department", sessionController.getDepartment());
+        params.put("billTypes", purchaseBillTypes);
+
+        try {
+            @SuppressWarnings("unchecked")
+            List<Double> results = (List<Double>) itemFacade.findLightsByJpql(jpql, params, null, 1);
+            if (results != null && !results.isEmpty() && results.get(0) != null) {
+                return results.get(0);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to fetch last retail rate for item " + itemId, e);
+        }
+        return 0.0;
+    }
+
     public void saveBill() {
         if (getCurrentBill().getId() == null) {
             getCurrentBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_PRE);
@@ -537,6 +622,7 @@ public class PurchaseOrderRequestController implements Serializable {
         boolean preventDuplicates = configOptionApplicationController.getBooleanValueByKey("Prevent Duplicate Items in Purchase Orders", false);
         int skippedCount = 0;
 
+        // Create bill items and fetch rates individually (LIMIT 1 per item)
         for (Item i : items) {
             // Check for duplicate items if configuration is enabled
             if (preventDuplicates) {
@@ -563,8 +649,10 @@ public class PurchaseOrderRequestController implements Serializable {
             bi.setPharmaceuticalBillItem(tmp);
 
             bi.setSearialNo(serialStart++);
-            tmp.setPurchaseRate(getPharmacyBean().getLastPurchaseRate(i, getSessionController().getDepartment()));
-            tmp.setRetailRate(getPharmacyBean().getLastRetailRate(i, getSessionController().getDepartment()));
+
+            // PERFORMANCE: Fetch last rates individually (LIMIT 1 query per item)
+            tmp.setPurchaseRate(fetchLastPurchaseRateForItem(i.getId()));
+            tmp.setRetailRate(fetchLastRetailRateForItem(i.getId()));
 
             getBillItems().add(bi);
         }

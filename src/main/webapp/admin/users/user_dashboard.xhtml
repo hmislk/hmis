@@ -13,7 +13,7 @@
                     <p:panel id="dashboardPanel">
                         <f:facet name="header">
                             <i class="fa fa-dashboard" aria-hidden="true"/>
-                            <h:outputLabel value="User Dashboard - #{userDashboardController.userDetails.username}"
+                            <h:outputLabel value="User Dashboard#{userDashboardController.userDetails != null ? ' - '.concat(userDashboardController.userDetails.username) : ''}"
                                 class="mx-2"/>
                             <p:commandButton
                                 value="Back to Logins"
@@ -24,8 +24,15 @@
                                 ajax="false"/>
                         </f:facet>
 
+                        <!-- Error message if no user data -->
+                        <h:panelGroup layout="block" rendered="#{userDashboardController.userDetails == null}">
+                            <p:messages id="messages" showDetail="true" closable="true"/>
+                            <h:outputText value="No user data available. Please navigate from the User Logins page."
+                                styleClass="text-danger font-weight-bold"/>
+                        </h:panelGroup>
+
                         <!-- Tab View for Different Sections -->
-                        <p:tabView id="userTabs" dynamic="true" cache="false">
+                        <p:tabView id="userTabs" dynamic="true" cache="false" rendered="#{userDashboardController.userDetails != null}">
 
                             <!-- Tab 1: User Details -->
                             <p:tab title="User Details" icon="fa fa-user">
@@ -302,8 +309,7 @@
 
                                     <p:column headerText="Amount" width="120px">
                                         <h:outputLabel value="#{txn.amount}">
-                                            <f:convertNumber type="currency"
-                                                currencySymbol="#{sessionController.applicationPreference.currencySymbol}"/>
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
 
