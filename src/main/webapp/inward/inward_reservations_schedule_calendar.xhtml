@@ -21,22 +21,24 @@
                 </f:facet>
 
                 <div class="d-flex gap-2 mb-3 w-100 justify-content-center">
-                    <p:datePicker value="#{inwardReservationController.fromDate}"
-                                  id="reserveFromTimeStamp"
-                                  pattern="dd/MMM/yyyy"
-                                  styleClass="form-control w-100"
-                                  showButtonBar="true"
-                                  timeInput="true"
-                                  inputStyleClass="w-100" >
+                    <p:datePicker 
+                        value="#{inwardReservationController.fromDate}"
+                        id="reserveFromTimeStamp"
+                        pattern="dd/MMM/yyyy"
+                        styleClass="form-control w-100"
+                        showButtonBar="true"
+                        timeInput="true"
+                        inputStyleClass="w-100" >
                     </p:datePicker>
 
-                    <p:datePicker value="#{inwardReservationController.toDate}"
-                                  id="reserveToTimeStamp"
-                                  pattern="dd/MMM/yyyy"
-                                  styleClass="form-control w-100"
-                                  showButtonBar="true"
-                                  timeInput="true"
-                                  inputStyleClass="w-100" >
+                    <p:datePicker 
+                        value="#{inwardReservationController.toDate}"
+                        id="reserveToTimeStamp"
+                        pattern="dd/MMM/yyyy"
+                        styleClass="form-control w-100"
+                        showButtonBar="true"
+                        timeInput="true"
+                        inputStyleClass="w-100" >
                     </p:datePicker>
 
                     <p:commandButton
@@ -46,21 +48,9 @@
                         icon="fa fa-search">
                         <p:ajax process="@this" update="schedule test"/>
                     </p:commandButton>
-
                 </div>
-                <h:panelGroup id="test">
-                    #{inwardReservationController.reservationModel.events.size()}
-                    <ui:repeat value="#{inwardReservationController.reservationModel.events}" var="ev" rendered="false" >
-                        <div class="d-flex gap-5">
-                            <h:outputLabel value="#{ev.startDate}" ></h:outputLabel>
-                            <h:outputLabel value="#{ev.endDate}" ></h:outputLabel>
-                        </div>
-
-                    </ui:repeat>
-
-                </h:panelGroup>
-
-                <div style="margin-left: 4%; margin-right: 4%;">
+                
+                <div style="margin-left: 4%; margin-right: 4%;" class="mb-3">
                     <p:schedule
                         id="schedule"
                         styleClass="ui-button-warning"
@@ -69,15 +59,11 @@
                         timeZone="#{inwardReservationController.serverTimeZone}"
                         clientTimeZone="#{inwardReservationController.serverTimeZone}">
                         <p:ajax
-                            event="dateSelect"
-                            listener="#{inwardReservationController.onDateSelect(selectEvent)}"
-                            update="eventDetails"
-                            oncomplete="PF('eventDialog').show();"/>
-                        <p:ajax
                             event="eventSelect"
                             listener="#{inwardReservationController.onEventSelectCal}"
                             update="eventDetails"
-                            oncomplete="PF('eventDialog').show();"/>
+                            oncomplete="PF('eventDialog').show();">
+                        </p:ajax>
 
                     </p:schedule>
                 </div>
@@ -89,7 +75,7 @@
 
                         // Set the dialog position at the top middle of the window
                         dialog.css({
-                            'top': '15px', // Adjust this value to control how far from the top you want the dialog
+                            'top': '150px', // Adjust this value to control how far from the top you want the dialog
                             'left': (win.width() - dialog.outerWidth()) / 2 + 'px'
                         });
                     }
@@ -100,61 +86,81 @@
                     widgetVar="eventDialog"
                     header="Reservations Details"
                     position="center"
+                    modal=""
                     onShow="centerTopDialog()"
                     showEffect="fade"
-                    width="450"
+                    width="650"
                     hideEffect="fade"  >
                     <h:panelGroup id="eventDetails"  >
-<!--                        <h:panelGrid  columns="2" cellpadding="7" rendered="#{inwardReservationController.sEvent.data ne null}">
-                            <p:outputLabel style="width: 150px;"  value="Session Name" styleClass="font-bold"/>
-                            <h:outputLabel value="#{commonFunctionsProxy.convertToSessionInstance(bookingControllerViewScope.sEvent.data).name}"/>
 
-                            <p:outputLabel value="Session Date" />
-                            <h:outputLabel  value="#{commonFunctionsProxy.convertToSessionInstance(bookingControllerViewScope.sEvent.data).sessionDate}">
+                        <h:panelGrid  columns="2" cellpadding="7" rendered="#{inwardReservationController.currentReservationDTO ne null}">
+
+                            <p:outputLabel style="width: 150px;"  value="Appointment No" styleClass="font-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.appointmentNumber}"/>
+
+                            <p:outputLabel value="Reserve From" />
+                            <h:outputLabel  value="#{inwardReservationController.currentReservationDTO.reservedFrom}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
 
-                            <p:outputLabel value="Start Time" styleClass="font-bold"/>
-                            <h:outputLabel value="#{commonFunctionsProxy.convertToSessionInstance(bookingControllerViewScope.sEvent.data).startingTime}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                            <p:outputLabel value="Reserve To" styleClass="font-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.reservedTo}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
 
-                            <p:outputLabel  value="Speciality" styleClass="font-bold"/>
-                            <h:outputLabel value="#{commonFunctionsProxy.convertToSessionInstance(bookingControllerViewScope.sEvent.data).staff.speciality.name}"/>
+                            <p:outputLabel  value="Referring Doctor" styleClass="font-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.refDoctorNameWithTitle}"/>
 
 
-                            <p:outputLabel  value="Counsultant" styleClass="font-bold"/>
-                            <h:outputLabel value="#{commonFunctionsProxy.convertToSessionInstance(bookingControllerViewScope.sEvent.data).staff.person.nameWithTitle}"/>
+                            <p:outputLabel  value="Room No" styleClass="font-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.roomNo}"/>
 
-                            <p:outputLabel  value="Bookings" styleClass="font-bold"/>
-                            <h:outputLabel value="#{commonFunctionsProxy.convertToSessionInstance(bookingControllerViewScope.sEvent.data).bookedPatientCount == null ? '0' : commonFunctionsProxy.convertToSessionInstance(bookingControllerViewScope.sEvent.data).bookedPatientCount}"/>
+                            <p:outputLabel  value="Patient" styleClass="font-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.patientNameWithTitle}"/>
+
+                            <p:outputLabel  value="Age / Gender" styleClass="font-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.ageAndGender}"/>
+
+                            <p:outputLabel  value="Mobile" styleClass="font-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.patientMobile}"/>
 
 
                             <p:outputLabel value="Status" />
                             <h:panelGroup>
-                                <p:badge size="large" value="Cancelled" severity="danger" style="width: 60px;" rendered="#{commonFunctionsProxy.convertToSessionInstance(bookingControllerViewScope.sEvent.data).cancelled}"></p:badge>
-                                <p:badge size="large" class="px-1" value="Arrived" severity="info" rendered="#{commonFunctionsProxy.convertToSessionInstance(bookingControllerViewScope.sEvent.data).arrived and !commonFunctionsProxy.convertToSessionInstance(bookingControllerViewScope.sEvent.data).started}"/>
-                                <p:badge size="large" class="px-1" value="On Going" severity="warning" rendered="#{commonFunctionsProxy.convertToSessionInstance(bookingControllerViewScope.sEvent.data).started and !commonFunctionsProxy.convertToSessionInstance(bookingControllerViewScope.sEvent.data).completed}"/>
-                                <p:badge size="large" class="px-1" value="Completed" severity="success" rendered="#{commonFunctionsProxy.convertToSessionInstance(bookingControllerViewScope.sEvent.data).completed}"/>
+                                <p:badge 
+                                    rendered="#{inwardReservationController.currentReservationDTO.status eq'PENDING'}" 
+                                    severity="warning" 
+                                    value="#{inwardReservationController.currentReservationDTO.status.name}">
+                                </p:badge>
+                                <p:badge 
+                                    rendered="#{inwardReservationController.currentReservationDTO.status eq'COMPLETE'}" 
+                                    severity="success" 
+                                    value="#{inwardReservationController.currentReservationDTO.status.name}">
+                                </p:badge>
+                                <p:badge 
+                                    rendered="#{inwardReservationController.currentReservationDTO.status eq'CANCEL'}" 
+                                    severity="danger" 
+                                    value="#{inwardReservationController.currentReservationDTO.status.name}">
+                                </p:badge>
                             </h:panelGroup>
+                        </h:panelGrid>
 
-                        #{bookingControllerViewScope.selectedSessionInstance.staff}
-
-
-
-
-                    </h:panelGrid>-->
+                        <div class="d-flex justify-content-end mt-3">
+                            <p:commandButton
+                                icon="fa fa-check-circle"
+                                ajax="false"
+                                value="Admit"
+                                style="width: 250px;"
+                                rendered="#{webUserController.hasPrivilege('InwardAppointmentAdmission')}"
+                                disabled="#{inwardReservationController.currentReservationDTO.status eq 'CANCEL' or inwardReservationController.currentReservationDTO.status eq 'COMPLETE'}"
+                                action="#{appointmentController.navigatePatientAdmit(inwardReservationController.currentReservationDTO.id)}"
+                                class="ui-button-success" >
+                            </p:commandButton>
+                        </div>
 
                     </h:panelGroup>
-
-                    <div class="d-flex justify-content-end mt-3">
-<!--                        <p:commandButton value="To Booking" accesskey="-"  class="font-bold ui-button-warning"/>-->
-                    </div>
                 </p:dialog>
-
-
             </p:panel>
-
         </h:form>
     </ui:define>
 </ui:composition>
