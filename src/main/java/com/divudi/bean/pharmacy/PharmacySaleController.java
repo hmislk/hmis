@@ -152,6 +152,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     private DrawerController drawerController;
     @Inject
     private PageMetadataRegistry pageMetadataRegistry;
+    @Inject
+    private PharmacySaleForCashierController pharmacySaleForCashierController;
     @EJB
     private ConfigOptionFacade configOptionFacade;
     @EJB
@@ -1274,16 +1276,15 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             JsfUtil.addErrorMessage("No Membership");
             return "";
         }
-        if (patient == null) {
-            JsfUtil.addErrorMessage("No patient selected");
-            patient = new Patient();
-            patientDetailsEditable = true;
-        }
-        resetAll();
-        patient = pt;
-        paymentScheme = ps;
-        setPatient(getPatient());
-        setBillSettlingStarted(false);
+
+        // Clear all existing data in the PharmacySaleForCashierController first
+        pharmacySaleForCashierController.resetAll();
+
+        // Then set the patient and payment scheme in PharmacySaleForCashierController
+        pharmacySaleForCashierController.setPatient(pt);
+        pharmacySaleForCashierController.setPaymentScheme(ps);
+        pharmacySaleForCashierController.setBillSettlingStarted(false);
+
         return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
     }
 
