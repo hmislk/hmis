@@ -208,7 +208,7 @@
                                                     timeInput="true"
                                                     placeholder="Date of Birth (dd/mm/yyyy - hh:mm:ss a)"
                                                     >
-                                                    <f:ajax event="dateSelect" execute="@this" render="year month day" />
+                                                    <p:ajax event="dateSelect" process="@this" update="year month day" />
                                                 </p:datePicker>
                                             </div>
                                         </div>

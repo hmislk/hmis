@@ -84,6 +84,7 @@ public class BillFee implements Serializable, RetirableEntity {
     private double feeDiscount;
     private double feeVat;
     private double feeVatPlusValue;
+    private boolean freeOfCharge;
 
     @Transient
     private double absoluteFeeValue;
@@ -122,6 +123,14 @@ public class BillFee implements Serializable, RetirableEntity {
 
     @Transient
     private final String uuid;
+
+    public boolean isFreeOfCharge() {
+        return freeOfCharge;
+    }
+
+    public void setFreeOfCharge(boolean freeOfCharge) {
+        this.freeOfCharge = freeOfCharge;
+    }
 
     public BillFee(String uuid) {
         this.uuid = uuid;

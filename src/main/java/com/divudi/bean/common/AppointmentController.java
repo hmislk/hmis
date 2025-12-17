@@ -48,11 +48,13 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.ejb.NumberGenerator;
 import com.divudi.service.StaffService;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -144,7 +146,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     private Date reservedFromDate;
     private Date reservedToDate;
-    private RoomFacilityCharge reservedroom;
+    private RoomFacilityCharge reservedRoom;
     private String comment;
     // </editor-fold>
 
@@ -155,20 +157,17 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         return "/inward/view_appointment?faces-redirect=true";
     }
 
+    public String navigateToAppointmentAdminFromMenu() {
+        makeNull();
+        return "/inward/appointment_admit?faces-redirect=true";
+    }
+
     public String navigateToSearchAppointmentsListFromViewAppointments() {
         searchAppointments();
         return "/inward/view_appointment?faces-redirect=true";
     }
 
-    public String navigatePatientAdmit(Long reservationId) {
-
-        if (reservationId == null) {
-            JsfUtil.addErrorMessage("Error in Reservation");
-            return "";
-        }
-
-        reservation = reservationFacade.find(reservationId);
-
+    public String navigatePatientAdmit() {
         if (reservation == null) {
             JsfUtil.addErrorMessage("No Reservation Found");
             return "";
@@ -180,7 +179,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         }
 
         Admission ad = new Admission();
-
         if (ad.getDateOfAdmission() == null) {
             ad.setDateOfAdmission(CommonFunctions.getCurrentDateTime());
         }
@@ -192,16 +190,25 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         admissionController.setAppointmentBill(reservation.getAppointment().getBill());
         admissionController.setPatientAllergies(null);
         admissionController.setCurrentReservation(reservation);
-
         admissionController.setBhtText("");
-
         admissionController.listnerForAppoimentSelect(reservation.getAppointment().getBill());
 
         return "/inward/inward_admission?faces-redirect=true";
     }
 
+    public String navigatePatientAdmit(Long reservationId) {
+
+        if (reservationId == null) {
+            JsfUtil.addErrorMessage("Error in Reservation");
+            return "";
+        }
+
+        reservation = reservationFacade.find(reservationId);
+
+        return navigatePatientAdmit();
+    }
+
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public AppointmentController() {
     }
@@ -211,6 +218,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         toDate = null;
         appointmentNo = null;
         patientName = null;
+        reservation = null;
         appointmentstatus = null;
         reservationDTOs = new ArrayList<>();
         comment = null;
@@ -227,7 +235,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return;
         }
 
-        if (reservedroom == null) {
+        if (reservedRoom == null) {
             JsfUtil.addErrorMessage("No Reserved Room Found");
             return;
         }
@@ -239,6 +247,26 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
         if (reservedToDate.before(reservedFromDate)) {
             JsfUtil.addErrorMessage("Reserved To Date not Valid");
+            return;
+        }
+        
+        if(currentAppointment.getAppointmentDate() == null){
+            JsfUtil.addErrorMessage("Appointment Date is Missing.");
+            return;
+        }
+        
+        if(currentBill.getReferredBy() == null){
+            JsfUtil.addErrorMessage("Referring Doctor is Missing.");
+            return;
+        }
+
+        Reservation res = checkRoomAvailability();
+
+        if (res != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd hh:mm a");
+            String fDate = sdf.format(res.getReservedFrom());
+            String tDate = sdf.format(res.getReservedTo());
+            JsfUtil.addErrorMessage("This room is already booked from " + fDate + " to " + tDate + ".");
             return;
         }
 
@@ -268,7 +296,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     private void updateReservation() {
         reservation.setReservedFrom(reservedFromDate);
         reservation.setReservedTo(reservedToDate);
-        reservation.setRoom(reservedroom);
+        reservation.setRoom(reservedRoom);
 
         if (reservation.getId() == null) {
             reservationFacade.create(reservation);
@@ -290,7 +318,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return "";
         }
 
-        reservedroom = reservation.getRoom();
+        reservedRoom = reservation.getRoom();
         reservedFromDate = reservation.getReservedFrom();
         reservedToDate = reservation.getReservedTo();
 
@@ -354,6 +382,30 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
         reservationDTOs = reservationFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
 
+    }
+
+    public List<Reservation> searcheservations(String quary) {
+
+        HashMap params = new HashMap();
+
+        String jpql = "SELECT res "
+                + " FROM Reservation res "
+                + " WHERE res.retired =:ret"
+                + " AND res.appointment.status = :status "
+                + " AND "
+                + " (res.appointment.appointmentNumber like :number "
+                + " or res.patient.person.name like :name )"
+                + " and res.appointment.appointmentType =:type";
+
+        jpql += " ORDER BY res.createdAt";
+
+        params.put("ret", false);
+        params.put("number", "%" + quary + "%");
+        params.put("name", "%" + quary + "%");
+        params.put("type", AppointmentType.IP_APPOINTMENT);
+        params.put("status", AppointmentStatus.PENDING);
+
+        return reservationFacade.findByJpql(jpql, params);
     }
 
     private Patient savePatient(Patient p) {
@@ -424,6 +476,9 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         reservation.setPatient(p);
         reservation.setCreatedAt(new Date());
         reservation.setCreater(sessionController.getLoggedUser());
+        reservation.setRoom(reservedRoom);
+        reservation.setReservedFrom(reservedFromDate);
+        reservation.setReservedTo(reservedToDate);
 
         if (reservation.getId() == null) {
             getReservationFacade().create(reservation);
@@ -444,23 +499,48 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return;
         }
 
-        if (reservation == null || reservation.getRoom() == null) {
+        if (reservation == null) {
             JsfUtil.addErrorMessage("Please select a patient room for the appoiment.");
             return;
         }
 
-        if (reservation.getReservedFrom() == null) {
+        if (getReservedRoom() == null) {
+            JsfUtil.addErrorMessage("Please select a patient room for the appoiment.");
+            return;
+        }
+
+        if (getReservedFromDate() == null) {
             JsfUtil.addErrorMessage("Please select a Reservation date for the appoiment.");
             return;
         }
 
-        if (!reservation.getReservedFrom().after(new Date())) {
+        if (!getReservedFromDate().after(new Date())) {
             JsfUtil.addErrorMessage("Please select a valid Reservation from date and time without now.");
             return;
         }
 
-        if (reservation.getReservedTo() != null && (!reservation.getReservedTo().after(new Date()) || !reservation.getReservedTo().after(reservation.getReservedFrom()))) {
+        if (getReservedToDate() != null && (!getReservedToDate().after(new Date()) || !getReservedToDate().after(getReservedFromDate()))) {
             JsfUtil.addErrorMessage("Please select a valid Reservation todate.");
+            return;
+        }
+        
+        if(currentAppointment.getAppointmentDate() == null){
+            JsfUtil.addErrorMessage("Appointment Date is Missing.");
+            return;
+        }
+        
+        if(currentBill.getReferredBy() == null){
+            JsfUtil.addErrorMessage("Referring Doctor is Missing.");
+            return;
+        }
+
+        Reservation res = checkRoomAvailability();
+
+        if (res != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd hh:mm a");
+            String fDate = sdf.format(res.getReservedFrom());
+            String tDate = sdf.format(res.getReservedTo());
+            JsfUtil.addErrorMessage("This room is already booked from " + fDate + " to " + tDate + ".");
             return;
         }
 
@@ -470,7 +550,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         saveAppointment(p);
         saveReservation(p, currentAppointment);
         createPayment(getCurrentBill(), getCurrentBill().getPaymentMethod());
-
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
@@ -683,7 +762,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         } else {
             getFacade().edit(newCancelBill);
         }
-        
+
         //Update Original Bill
         originalBill.setCancelled(true);
         originalBill.setCancelledBill(newCancelBill);
@@ -828,6 +907,39 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         return reservations;
     }
 
+    public Reservation checkRoomAvailability() {
+        if (reservedRoom == null || reservedFromDate == null || reservedToDate == null) {
+            JsfUtil.addErrorMessage("Reservation, room, and dates must not be null");
+        }
+        
+        Map<String, Object> parameters = new HashMap<>();
+        
+        String jpql = "SELECT r FROM Reservation r "
+                + "WHERE r.room = :room "
+                + "AND r.appointment.status =:status "; // Optional: exclude cancelled reservations
+
+       if(reservation.getId() != null){
+           jpql += " AND r.id !=:id ";
+           parameters.put("id", reservation.getId());
+       }
+        
+        jpql += " AND ( "
+                + "   (r.reservedFrom < :reservedTo AND r.reservedTo > :reservedFrom) "
+                + "   OR r.reservedFrom BETWEEN :reservedFrom AND :reservedTo "
+                + "   OR r.reservedTo BETWEEN :reservedFrom AND :reservedTo "
+                + ") "
+                + "ORDER BY r.reservedFrom";
+
+        parameters.put("room", reservedRoom);
+        parameters.put("status", AppointmentStatus.PENDING);
+        parameters.put("reservedFrom", reservedFromDate);
+        parameters.put("reservedTo", reservedToDate);
+
+        Reservation r = reservationFacade.findFirstByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        return r;
+    }
+
     public String prepareNewBill() {
 
         currentBill = null;
@@ -849,6 +961,9 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         currentBill = null;
         currentAppointment = null;
         reservation = null;
+        reservedFromDate = null;
+        reservedToDate = null;
+        reservedRoom = null;
         getCurrentBill();
         getCurrentAppointment();
         getReservation();
@@ -864,7 +979,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setters">
     public Title[] getTitle() {
         return Title.values();
@@ -1177,12 +1291,12 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         this.reservedToDate = reservedToDate;
     }
 
-    public RoomFacilityCharge getReservedroom() {
-        return reservedroom;
+    public RoomFacilityCharge getReservedRoom() {
+        return reservedRoom;
     }
 
-    public void setReservedroom(RoomFacilityCharge reservedroom) {
-        this.reservedroom = reservedroom;
+    public void setReservedRoom(RoomFacilityCharge reservedRoom) {
+        this.reservedRoom = reservedRoom;
     }
 
     public String getComment() {
@@ -1283,4 +1397,50 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         }
     }
 
+    /**
+     * Converter for Reservation entity
+     */
+    @FacesConverter(forClass = Reservation.class)
+    public static class ReservationControllerConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.isEmpty() || value.equals("null")) {
+                return null;
+            }
+            AppointmentController controller = (AppointmentController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "appointmentController");
+            Long key = getKey(value);
+            if (key == null) {
+                return null;
+            }
+            return controller.getReservationFacade().find(key);
+        }
+
+        java.lang.Long getKey(String value) {
+            java.lang.Long key;
+            key = Long.valueOf(value);
+            return key;
+        }
+
+        String getStringKey(java.lang.Long value) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof Reservation) {
+                Reservation o = (Reservation) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + Reservation.class.getName());
+            }
+        }
+    }
 }

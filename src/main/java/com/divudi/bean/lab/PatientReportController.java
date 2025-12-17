@@ -53,6 +53,7 @@ import com.divudi.core.entity.lab.PatientSample;
 import com.divudi.core.entity.lab.PatientSampleComponant;
 import com.divudi.core.entity.lab.ReportFormat;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
+import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.UploadFacade;
 import java.io.IOException;
 import java.io.Serializable;
@@ -441,9 +442,11 @@ public class PatientReportController implements Serializable {
 
     public List<PatientReport> patientReports(PatientInvestigation pi) {
         String j = "select r from PatientReport r "
-                + " where r.patientInvestigation=:pi";
+                + " where r.patientInvestigation=:pi "
+                + " and r.retired =:ret ";
         Map m = new HashMap();
         m.put("pi", pi);
+        m.put("ret", false);
         return getFacade().findByJpql(j, m);
     }
     
@@ -2636,12 +2639,16 @@ public class PatientReportController implements Serializable {
             receipientEmail = person.getEmail();
         }
     }
+    
+    @EJB
+    PatientFacade patientFacade;
 
     public PatientReport createNewPatientReportForRequests(PatientInvestigation pi, Investigation ix) {
         PatientReport r = null;
         if (pi != null && ix != null) {
             r = new PatientReport();
-            Patient pt = pi.getPatient();
+            Patient pt = patientFacade.find(pi.getPatient().getId());
+            
             r.setPatientName(pt.getPerson().getNameWithTitle());
             r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
             r.setPatientGender(pt.getPerson().getSex().getLabel());
@@ -2707,7 +2714,8 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
-            Patient pt = pi.getPatient();
+            Patient pt = patientFacade.find(pi.getPatient().getId());
+            
             r.setPatientName(pt.getPerson().getNameWithTitle());
             r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
             r.setPatientGender(pt.getPerson().getSex().getLabel());
@@ -2758,7 +2766,8 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
-            Patient pt = pi.getPatient();
+            Patient pt = patientFacade.find(pi.getPatient().getId());
+            
             r.setPatientName(pt.getPerson().getNameWithTitle());
             r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
             r.setPatientGender(pt.getPerson().getSex().getLabel());
@@ -2812,6 +2821,11 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
+            Patient pt = patientFacade.find(pi.getPatient().getId());
+            
+            r.setPatientName(pt.getPerson().getNameWithTitle());
+            r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
+            r.setPatientGender(pt.getPerson().getSex().getLabel());
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             r.setCreater(getSessionController().getLoggedUser());
             r.setItem(ix);
@@ -2842,7 +2856,8 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
-            Patient pt = pi.getPatient();
+            Patient pt = patientFacade.find(pi.getPatient().getId());
+            
             r.setPatientName(pt.getPerson().getNameWithTitle());
             r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
             r.setPatientGender(pt.getPerson().getSex().getLabel());
@@ -2852,6 +2867,9 @@ public class PatientReportController implements Serializable {
             r.setItem(ix);
             if (r.getTransInvestigation() != null) {
                 r.setReportFormat(r.getTransInvestigation().getReportFormat());
+            } else {
+                ReportFormat nrf = reportFormatController.getValidReportFormat();
+                r.setReportFormat(nrf);
             }
             getFacade().create(r);
             r.setPatientInvestigation(pi);

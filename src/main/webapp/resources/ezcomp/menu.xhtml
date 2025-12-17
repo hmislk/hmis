@@ -362,17 +362,20 @@
 
                     </p:submenu>
 
-                    <p:submenu label="Appointment" icon="fa fa-calendar-plus" rendered="true">
+                    <p:submenu label="Appointment" icon="fa fa-calendar-plus" rendered="#{webUserController.hasPrivilege('InwardAppointmentMenu')}">
                         <p:menuitem
                             ajax="false"
                             action="#{appointmentController.navigateToInwardAppointmentFromMenu()}"
                             value="Add Appointment"
+                            rendered="#{webUserController.hasPrivilege('AddInwardAppointment')}"
                             icon="fa fa-calendar-plus" >
                         </p:menuitem>
                         <p:menuitem
                             ajax="false"
                             value="Appointment admission"
-                            icon="fa fa-user-plus" >
+                            action="#{appointmentController.navigateToAppointmentAdminFromMenu()}"
+                            icon="fa fa-user-plus"
+                            rendered="#{webUserController.hasPrivilege('InwardAppointmentAdmission')}">
                         </p:menuitem>
                         <p:menuitem
                             ajax="false"
@@ -381,9 +384,6 @@
                             action="#{appointmentController.navigateToSearchAppointmentsListFromMenu()}"
                             icon="fa fa-list" >
                         </p:menuitem>
-                    </p:submenu>
-                    
-                    <p:submenu label="Room" icon="fa fa-door-open" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
                         <p:menuitem 
                             ajax="false" 
                             action="#{inwardReservationController.navigateToReservationCalendarFromMenu()}" 
@@ -391,6 +391,9 @@
                             icon="fa fa-calendar-check" 
                             rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" >
                         </p:menuitem>
+                    </p:submenu>
+                    
+                    <p:submenu label="Room" icon="fa fa-door-open" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
                         <p:menuitem 
                             ajax="false" 
                             action="#{admissionController.navigateToRoomOccupancy()}" 
@@ -1069,10 +1072,10 @@
                         icon="fas fa-shopping-cart" 
                         rendered="#{webUserController.hasPrivilege('PharmacyProcurementMenu')}">
                         <!--Procurement Menu Items with Titles-->
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"  
-                            value="Create PO" 
+                        <p:menuitem
+                            ajax="false"
+                            action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"
+                            value="Create PO"
                             title="Create a new Purchase Order"
                             icon="fas fa-plus-circle"
                             rendered="#{webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>

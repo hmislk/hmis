@@ -576,6 +576,7 @@
                                         <p:outputLabel for="sampleIDs" value="sample IDs" ></p:outputLabel>
                                         <p:inputText 
                                             id="sampleIDs" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             value="#{patientReportController.currentPatientReport.sampleIDs}"
                                             class="w-100">
                                         </p:inputText>
@@ -584,6 +585,7 @@
                                         <p:autoComplete 
                                             id="refIns" 
                                             forceSelection="true" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referenceInstitution}"
                                             completeMethod="#{institutionController.completeIns}"
                                             var="ri" 
@@ -602,6 +604,7 @@
                                             <p:autoComplete 
                                                 forceSelection="true" 
                                                 id="cmbDoc" 
+                                                readonly="#{patientReportController.currentPatientReport.approved}"
                                                 value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referredBy}" 
                                                 completeMethod="#{doctorController.completeDoctor}" var="ix" 
                                                 itemLabel="#{ix.person.nameWithTitle}" 
@@ -669,6 +672,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -677,6 +681,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -685,6 +690,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.receivedAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -693,6 +699,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.performedAt}"  
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -701,6 +708,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.dataEntryAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -709,6 +717,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.createdAt}" 
                                             class="w-100"
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -717,6 +726,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.approveAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -737,6 +747,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.printingAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
 
@@ -744,11 +755,12 @@
 
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}"><hr/></h:panelGroup>
 
-                                    <p:panelGrid columns="2" rendered="#{webUserController.hasPrivilege('Developers') and (patientReportController.currentPatientReport.patientName ne null or patientReportController.currentPatientReport.patientGender ne null or patientReportController.currentPatientReport.patientAge ne null)}">
+                                    <p:panelGrid columns="2" rendered="#{webUserController.hasPrivilege('Developers')}">
 
                                         <p:outputLabel for="PatientName" value="Patient Name" ></p:outputLabel>
                                         <p:inputText 
                                             id="PatientName" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             value="#{patientReportController.currentPatientReport.patientName}" 
                                             class="w-100">
                                         </p:inputText>
@@ -756,6 +768,7 @@
                                         <p:outputLabel for="PatientAge" value="Patient Age (for Bill Date)" ></p:outputLabel>
                                         <p:inputText 
                                             id="PatientAge" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             value="#{patientReportController.currentPatientReport.patientAge}" 
                                             class="w-100">
                                         </p:inputText>
@@ -763,6 +776,7 @@
                                         <p:outputLabel for="PatientGender" value="Patient Gender" ></p:outputLabel>
                                         <p:inputText 
                                             id="PatientGender" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             value="#{patientReportController.currentPatientReport.patientGender}" 
                                             class="w-100">
                                         </p:inputText>
@@ -773,7 +787,7 @@
                             </div>
 
                             <div class="col-7 ">
-                                <h:panelGroup class="mb-3 gap-2 d-flex justify-content-end">
+                                <h:panelGroup class="mb-3 gap-2 d-flex justify-content-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('The system uses the Laboratory Dashboard as its default interface', false)}">
                                     <p:commandButton 
                                         value="Back to Other patient Investigations" 
                                         icon="fa-solid fa-circle-left"

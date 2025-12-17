@@ -122,6 +122,12 @@ import java.util.stream.Collectors;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
+import javax.annotation.PostConstruct;
+
 /**
  * @author Pubudu Piyankara
  */
@@ -170,6 +176,8 @@ public class PharmacyReportController implements Serializable {
     WebUserController webUserController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
     @Inject
     SessionController sessionController;
     @Inject
@@ -347,6 +355,51 @@ public class PharmacyReportController implements Serializable {
     private Map<Long, Double> billItemRemainingRetailValues = new HashMap<>();
     private Map<Long, Double> billItemRemainingPurchaseValues = new HashMap<>();
     private Map<Long, Double> billItemRemainingCostValues = new HashMap<>();
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("reports/inventoryReports/cost_of_goods_sold");
+        metadata.setPageName("Cost of Goods Sold Report");
+        metadata.setDescription("Comprehensive financial report showing cost of goods sold calculations including stock movements and adjustments");
+        metadata.setControllerClass("PharmacyReportController");
+
+        // Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Cost of Goods Sold Report - Display Stock Correction Section",
+            "Controls whether the Stock Correction section is displayed and calculated in the Cost of Goods Sold report",
+            "Line 6211: processCostOfGoodSoldReport() method - conditionally calculates stock correction",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Short Date Format",
+            "Date formatting pattern used in report generation and PDF exports",
+            "Line 5224: SimpleDateFormat creation for report date formatting",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to system configuration and page management",
+            "Config button visibility - allows access to page configuration interface"
+        ));
+
+        // Register the metadata
+        pageMetadataRegistry.registerPage(metadata);
+    }
 
     //Constructor
     public PharmacyReportController() {
@@ -5490,17 +5543,19 @@ public class PharmacyReportController implements Serializable {
             Map<String, Object> params = new HashMap<>();
             StringBuilder jpql = new StringBuilder();
 
-            // Direct aggregation query
+            // Direct aggregation query using historical rates from StockHistory
+            // Note: stockQty, purchaseRate, costRate, retailRate are primitive double types in StockHistory entity,
+            // so they cannot be NULL. COALESCE is used defensively for rates in case of database inconsistencies.
             jpql.append("SELECT ")
-                    .append("SUM(sh.stockQty * sh.itemBatch.purcahseRate), ")
-                    .append("SUM(sh.stockQty * COALESCE(sh.itemBatch.costRate, 0.0)), ")
-                    .append("SUM(sh.stockQty * COALESCE(sh.itemBatch.retailsaleRate, 0.0)) ")
+                    .append("SUM(sh.stockQty * COALESCE(sh.purchaseRate, 0.0)), ")
+                    .append("SUM(sh.stockQty * COALESCE(sh.costRate, 0.0)), ")
+                    .append("SUM(sh.stockQty * COALESCE(sh.retailRate, 0.0)) ")
                     .append("FROM StockHistory sh ")
                     .append("WHERE sh.retired = :ret ")
                     .append("AND sh.id IN (")
                     .append("SELECT MAX(sh2.id) FROM StockHistory sh2 ")
                     .append("WHERE sh2.retired = :ret ")
-                    .append("AND sh2.createdAt < :et ");
+                    .append("AND sh2.createdAt <= :et ");
 
             params.put("ret", false);
             params.put("et", date);
@@ -5522,7 +5577,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "sh3.department", "dep2", department);
             addFilter(jpql, params, "sh3.item", "itm2", item);
 
-            jpql.append("AND sh3.createdAt < :et2)) ");
+            jpql.append("AND sh3.createdAt <= :et2)) ");
             params.put("et2", date);
 
             // Add filters to main query
@@ -5538,7 +5593,7 @@ public class PharmacyReportController implements Serializable {
                     .append("AND sh4.id IN (")
                     .append("SELECT MAX(sh5.id) FROM StockHistory sh5 ")
                     .append("WHERE sh5.retired = :ret ")
-                    .append("AND sh5.createdAt < :et3 ");
+                    .append("AND sh5.createdAt <= :et3 ");
 
             params.put("et3", date);
 
@@ -6204,7 +6259,12 @@ public class PharmacyReportController implements Serializable {
         cogsRows.clear();
         try {
             calculateOpeningStockRow();
-            calculateStockCorrectionRow();
+
+            // Only calculate Stock Correction if enabled in configuration
+            if (configOptionApplicationController.getBooleanValueByKey("Cost of Goods Sold Report - Display Stock Correction Section", true)) {
+                calculateStockCorrectionRow();
+            }
+
             calculateGrnCashAndCreditRows();
 
             calculateDrugReturnIp();
@@ -6392,9 +6452,9 @@ public class PharmacyReportController implements Serializable {
             Map<String, Object> paramsIssue = new HashMap<>();
             StringBuilder jpqlIssue = new StringBuilder();
             jpqlIssue.append("SELECT ")
-                    .append("SUM(ABS(bi.pharmaceuticalBillItem.qty) * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
-                    .append("SUM(ABS(bi.pharmaceuticalBillItem.qty) * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
-                    .append("SUM(ABS(bi.pharmaceuticalBillItem.qty) * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
                     .append("FROM BillItem bi ")
                     .append("WHERE bi.retired = :ret ")
                     .append("AND bi.bill.billType IN :btas ")
@@ -8883,5 +8943,9 @@ public class PharmacyReportController implements Serializable {
 
     public void setBillItemRemainingCostValues(Map<Long, Double> billItemRemainingCostValues) {
         this.billItemRemainingCostValues = billItemRemainingCostValues;
+    }
+
+    public boolean isStockCorrectionDisplayEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey("Cost of Goods Sold Report - Display Stock Correction Section", true);
     }
 }
