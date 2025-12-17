@@ -24,6 +24,7 @@ import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.dto.MovementOutStockReportByItemDto;
 import com.divudi.core.data.dto.MovementOutStockReportDto;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
@@ -1157,6 +1158,76 @@ public class BillService {
         jpql += " order by b.createdAt desc  ";
         List<BillItem> fetchedBillItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBillItems;
+    }
+    
+    public List<MovementOutStockReportByItemDto> fetchPharmaceuticalBillItemsForMovementOutStockReportByItemDto(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme) {
+    
+        StringBuilder sql = new StringBuilder(" select new com.divudi.core.data.dto.MovementOutStockReportByItemDto("
+                + " pbi.id, "
+                + " bi.id, "
+                + " i.id,"
+                + " b.id, "
+                + " b.createdAt, "
+                + " i.name, "
+                + " COALESCE(bi.qty, 0), "
+                + " COALESCE(bi.grossValue, 0), "
+                + " COALESCE(bi.marginValue, 0), "
+                + " COALESCE(bi.discount, 0), "
+                + " COALESCE(bi.netValue, 0)) "
+                + " from PharmaceuticalBillItem pbi "
+                + " left join pbi.billItem bi"
+                + " left join bi.item i "
+                + " join bi.bill b "
+                + " where COALESCE(b.retired, false) = false "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate");
+        
+        Map params = new HashMap();
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        
+         if (institution != null) {
+            sql.append(" and b.institution=:ins ");
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            sql.append(" and b.creater=:user ");
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            sql.append(" and b.department=:dep ");
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            sql.append(" and b.department.site=:site ");
+            params.put("site", site);
+        }
+
+        if (admissionType != null) {
+            sql.append(" and b.patientEncounter.admissionType=:admissionType ");
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            sql.append(" and b.paymentScheme=:paymentScheme ");
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        sql.append(" order by b.createdAt desc ");
+        
+        return pharmaceuticalBillItemFacade.findByJpql(sql.toString(), params, TemporalType.TIMESTAMP);
     }
 
     public List<PharmaceuticalBillItem> fetchPharmaceuticalBillItems(Date fromDate,

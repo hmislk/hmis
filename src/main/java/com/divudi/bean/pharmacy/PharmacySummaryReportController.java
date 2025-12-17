@@ -67,6 +67,8 @@ import static com.divudi.core.data.ReportViewType.BY_BILL;
 import static com.divudi.core.data.ReportViewType.BY_BILL_TYPE;
 import static com.divudi.core.data.ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE;
 import static com.divudi.core.data.ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE;
+import static com.divudi.core.data.ReportViewType.BY_ITEM;
+import com.divudi.core.data.dto.MovementOutStockReportByItemDto;
 import com.divudi.core.data.dto.MovementOutStockReportDto;
 import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.core.entity.Bill;
@@ -80,6 +82,7 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.DrawerFacade;
+import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.ejb.PharmacyService;
@@ -266,6 +269,10 @@ public class PharmacySummaryReportController implements Serializable {
     private int maxResult = 50;
     
     private MovementOutStockReportWrapperDto wrapperDto;
+    private MovementOutStockReportByItemWrapperDto wrapperDtoByItem;
+        
+    @EJB
+    private ItemFacade itemFacade;
 
     //transferOuts;
     //adjustments;
@@ -276,6 +283,7 @@ public class PharmacySummaryReportController implements Serializable {
     }
     
     private void clearData(){
+        wrapperDtoByItem = null;
         wrapperDto = null;
         bundle = null;
         institution = null;
@@ -298,8 +306,8 @@ public class PharmacySummaryReportController implements Serializable {
     public String navigateToPharmacyMovementOutBySaleIssueAndConsumptionWithCurrentStockReportOptimized() {
         clearData();
         reportViewTypes = Arrays.asList(
-                ReportViewType.BY_BILL
-//                ReportViewType.BY_ITEM
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_ITEM
         );
         reportViewType = ReportViewType.BY_BILL;
         return "/pharmacy/reports/movement_reports/movement_out_by_sale_issue_and_consumption_with_current_stock_report_optimized?faces-redirect=true";
@@ -593,6 +601,27 @@ public class PharmacySummaryReportController implements Serializable {
             }
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
+    
+    public void processMovementOutBySaleIssueAndConsumptionWithCurrentStockReportOptimized() {
+      
+            if (reportViewType == null) {
+                JsfUtil.addErrorMessage("Please select a report view type.");
+                return;
+            }
+            switch (reportViewType) {
+                case BY_BILL:
+                    processMovementOutWithStocksReportByBillDto();
+                    break;
+                case BY_ITEM:
+                    processMovementOutWithStockReportByItemDto();
+                    addCurrentItemStock(wrapperDtoByItem.getPbis());
+                    break;
+                default:
+                    JsfUtil.addErrorMessage("Unsupported report view type: " + reportViewType.getLabel());
+                    break;
+            }
+        
+    }
 
     public void processMovementOutBySaleIssueAndConsumptionWithCurrentStockReport() {
         reportTimerController.trackReportExecution(() -> {
@@ -831,7 +860,6 @@ public class PharmacySummaryReportController implements Serializable {
         private List<MovementOutStockReportDto> reportDataRows;
 
         private double sumOfCashValues = 0.0;
-        private boolean hasCashValues;
         private double sumOfCardValues = 0.0;
         private double sumOfMultiplePaymentMethodsValues = 0.0;
         private double sumOfStaffValues = 0.0;
@@ -1309,6 +1337,99 @@ public class PharmacySummaryReportController implements Serializable {
         List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
         pharmacyBundle = new PharmacyBundle(pbis);
         pharmacyBundle.groupSaleDetailsByItems();
+    }
+    
+    public static class MovementOutStockReportByItemWrapperDto{
+        
+        private List<com.divudi.core.data.dto.MovementOutStockReportByItemDto> pbis;
+        private double grossSaleValue;
+        private double marginValue;
+        private double discountValue;
+        private double netSaleValue;
+        private double quantity;
+
+        public List<MovementOutStockReportByItemDto> getPbis() {
+            return pbis;
+        }
+
+        public void setPbis(List<MovementOutStockReportByItemDto> pbis) {
+            this.pbis = pbis;
+        }
+
+        public double getGrossSaleValue() {
+            return grossSaleValue;
+        }
+
+        public void setGrossSaleValue(double grossSaleValue) {
+            this.grossSaleValue = grossSaleValue;
+        }
+
+        public double getMarginValue() {
+            return marginValue;
+        }
+
+        public void setMarginValue(double marginValue) {
+            this.marginValue = marginValue;
+        }
+
+        public double getDiscountValue() {
+            return discountValue;
+        }
+
+        public void setDiscountValue(double discountValue) {
+            this.discountValue = discountValue;
+        }
+
+        public double getNetSaleValue() {
+            return netSaleValue;
+        }
+
+        public void setNetSaleValue(double netSaleValue) {
+            this.netSaleValue = netSaleValue;
+        }
+
+        public double getQuantity() {
+            return quantity;
+        }
+
+        public void setQuantity(double quantity) {
+            this.quantity = quantity;
+        }
+        
+    }
+
+    public MovementOutStockReportByItemWrapperDto getWrapperDtoByItem() {
+        return wrapperDtoByItem;
+    }
+
+    public void setWrapperDtoByItem(MovementOutStockReportByItemWrapperDto wrapperDtoByItem) {
+        this.wrapperDtoByItem = wrapperDtoByItem;
+    }
+    
+    private void calculateTheDtoSummeryForMovementOutWithStockReportByItemDto(List<MovementOutStockReportByItemDto> pbis, MovementOutStockReportByItemWrapperDto wrapperDto){
+        
+        if(pbis == null || wrapperDto == null){
+            return;
+        }
+        
+        for(MovementOutStockReportByItemDto dto : pbis){
+            wrapperDto.setGrossSaleValue(wrapperDto.getGrossSaleValue() + dto.getGrossSaleValue());
+            wrapperDto.setDiscountValue(wrapperDto.getDiscountValue() + dto.getDiscountValue());
+            wrapperDto.setMarginValue(wrapperDto.getMarginValue() + dto.getMarginValue());
+            wrapperDto.setNetSaleValue(wrapperDto.getNetSaleValue() + dto.getNetSaleValue());
+            
+        }
+        
+    }
+    
+    public void processMovementOutWithStockReportByItemDto() {
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyMovementOutBillTypes();
+        List<MovementOutStockReportByItemDto> pbis = billService.fetchPharmaceuticalBillItemsForMovementOutStockReportByItemDto(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        
+        wrapperDtoByItem = new MovementOutStockReportByItemWrapperDto();
+        wrapperDtoByItem.setPbis(pbis);
+        
+        calculateTheDtoSummeryForMovementOutWithStockReportByItemDto(pbis, wrapperDtoByItem);
     }
 
     public void processPharmacyIncomeAndCostReportByBill() {
@@ -2454,6 +2575,26 @@ public class PharmacySummaryReportController implements Serializable {
                 continue;
             }
             pr.setStockQty(stockController.findStock(institution, site, department, pr.getItem()));
+        }
+    }
+    
+    private void addCurrentItemStock(List<MovementOutStockReportByItemDto> dtoList) {
+        if (pharmacyBundle == null) {
+            return;
+        }
+        for (MovementOutStockReportByItemDto dto : dtoList) {
+            if (dto.getItemId() > 0) {
+                continue;
+            }
+            
+            Item item = itemFacade.find(dto.getItemId());
+            
+            if(item == null){
+                return;
+            }
+            
+            dto.setQuantity(stockController.findStock(institution, site, department, item));
+            
         }
     }
 

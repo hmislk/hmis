@@ -199,7 +199,7 @@
                         <p:commandButton 
                             value="Process" 
                             ajax="false"
-                            action="#{pharmacySummaryReportController.processMovementOutWithStocksReportByBillDto()}" 
+                            action="#{pharmacySummaryReportController.processMovementOutBySaleIssueAndConsumptionWithCurrentStockReportOptimized()}" 
                             styleClass="ui-button-success m-1" 
                             icon="pi pi-cog">
                         </p:commandButton>
@@ -233,9 +233,13 @@
                                 styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
                                 value="#{pharmacySummaryReportController.wrapperDto.reportDataRows}" var="row"
                                 paginator="true" 
+                                rowIndexVar="n"
                                 rows="#{pharmacySummaryReportController.rowsPerPageForScreen}" 
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100,500,1000,2000,5000,10000"
                                 paginatorPosition="bottom">
+                                <p:column headerText="No">
+                                    <h:outputLabel value="#{n+1}"></h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Bill No" width="16em" style="padding: 0px!important; margin: 0px!important;" >
                                     <h:outputText value="#{row.billNo}"  style="padding: 0px!important; margin: 0px!important;" />
                                     <f:facet name="footer" >
@@ -421,15 +425,26 @@
 
                             <p:dataTable
                                 id="tblItem"
-                                value="#{pharmacySummaryReportController.pharmacyBundle.rows}" 
+                                value="#{pharmacySummaryReportController.wrapperDtoByItem.pbis}" 
                                 var="rowi"
+                                rowIndexVar="n"
                                 paginator="true"
-                                rows="#{pharmacySummaryReportController.rowsPerPageForScreen}" 
-                                rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100"
+                                rows="10"
+                                rowsPerPageTemplate="5,10,15,50,100, #{pharmacySummaryReportController.wrapperDtoByItem.pbis.size()}"
                                 paginatorPosition="bottom">
 
-                                <p:column headerText="Item">
-                                    <h:outputText value="#{rowi.item.name}" />
+                                <p:column headerText="No" style="text-align: center" width="2em">
+                                    <h:outputLabel value="#{n+1}"></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Item" width="25em">
+                                    <h:outputText value="#{rowi.itemName}" style="font-weight: bold"/>
+                                </p:column>
+
+                                <p:column headerText="Date" width="12em">
+                                    <h:outputLabel value="#{rowi.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Qty" width="8em" class="text-end">
@@ -440,7 +455,7 @@
 
 
                                 <p:column headerText="Current Stock" width="8em" class="text-end">
-                                    <h:outputText value="#{rowi.stockQty}">
+                                    <h:outputText value="#{rowi.quantity}">
                                         <f:convertNumber pattern="#,##0.#" />
                                     </h:outputText>
                                 </p:column>
@@ -451,7 +466,7 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer">
-                                        <h:outputText value="#{pharmacySummaryReportController.pharmacyBundle.summaryRow.grossSaleValue}" style="font-weight: bold">
+                                        <h:outputText value="#{pharmacySummaryReportController.wrapperDtoByItem.grossSaleValue}" style="font-weight: bold">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </f:facet>
@@ -462,7 +477,7 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer">
-                                        <h:outputText value="#{pharmacySummaryReportController.pharmacyBundle.summaryRow.discountValue}" style="font-weight: bold">
+                                        <h:outputText value="#{pharmacySummaryReportController.wrapperDtoByItem.discountValue}" style="font-weight: bold">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </f:facet>
@@ -473,7 +488,7 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer">
-                                        <h:outputText value="#{pharmacySummaryReportController.pharmacyBundle.summaryRow.marginValue}" style="font-weight: bold">
+                                        <h:outputText value="#{pharmacySummaryReportController.wrapperDtoByItem.marginValue}" style="font-weight: bold">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </f:facet>
@@ -484,7 +499,7 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer">
-                                        <h:outputText value="#{pharmacySummaryReportController.pharmacyBundle.summaryRow.netSaleValue}" style="font-weight: bold">
+                                        <h:outputText value="#{pharmacySummaryReportController.wrapperDtoByItem.netSaleValue}" style="font-weight: bold">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </f:facet>
