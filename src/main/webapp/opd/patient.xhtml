@@ -237,31 +237,31 @@
                                         </div>
                                     </div> 
 
-                                    <h:panelGroup id="groupPatientCard" style="text-align: center; width: 4.8cm; border: 1px solid red;" layout="block">
-                                        <div style="line-height: 0.7; padding: 0; margin: 0;">
+                                    <h:panelGroup id="groupPatientCard" style="text-align: center; width: 5cm; border: 1px solid red;" layout="block">
+                                        <div style="line-height: 0.5; padding: 0; margin: 0;">
                                             <div class="mt-1" style="height: 0.9cm;  overflow-x: hidden; overflow-y: hidden">
                                                 <p:barcode format="svg" hrp="none" width="185" value="#{patientController.current.phn}" type="code128" cache="false" rendered="true" />
                                             </div>
                                             <div>
-                                                <p:outputLabel value="#{patientController.current.phn}" style="font-size: 10px;font-weight: 600;" />
+                                                <p:outputLabel value="#{patientController.current.phn}" style="font-size: 8px;font-weight: 600;" />
                                             </div>
                                         </div>
 
-                                        <div class="mt-1 mb-1" style="line-height: 0.7; padding: 0; margin: 0;">
+                                        <div class="mt-1 mb-1" style="line-height: 0.6; padding: 0; margin: 0;">
                                             <div class="w-100">
-                                                <h:outputText value="#{patientController.current.person.nameWithTitle}" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
-                                                <p:outputLabel value="&#160;&#124;&#160;" style="font-size: 10px;" />
-                                                <h:outputText value="#{patientController.current.person.sex eq 'Male' ? 'M' : 'F'}" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;" class="w-100"/>
+                                                <h:outputText value="#{patientController.current.person.nameWithTitle}" style="font-size: 8px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
+                                                <p:outputLabel value="&#160;&#124;&#160;" style="font-size: 8px;" />
+                                                <h:outputText value="#{patientController.current.person.sex eq 'Male' ? 'M' : 'F'}" style="font-size: 8px; font-family: 'Libre Barcode 128 Text', sans-serif;" class="w-100"/>
                                             </div>
                                             <div class="w-100">
-                                                <h:outputText value="#{patientController.current.person.dob}" class="mx-2" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;">
+                                                <h:outputText value="#{patientController.current.person.dob}" class="mx-2" style="font-size: 8px; font-family: 'Libre Barcode 128 Text', sans-serif;">
                                                     <f:convertDateTime pattern="dd/MM/yyyy" />
                                                 </h:outputText>
-                                                <p:outputLabel value="&#160;&#124;&#160;&#160;" style="font-size: 10px;" rendered="#{patientController.current.person.nic ne null}"/>
-                                                <h:outputText value="#{patientController.current.person.nic}" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
+                                                <p:outputLabel value="&#160;&#124;&#160;&#160;" style="font-size: 8px;" rendered="#{patientController.current.person.nic ne null}"/>
+                                                <h:outputText value="#{patientController.current.person.nic}" style="font-size: 8px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
                                             </div>
                                             <div class="w-100">
-                                                <h:outputText value="#{patientController.current.person.phone}" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
+                                                <h:outputText value="#{patientController.current.person.phone}" style="font-size: 8px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
                                             </div>
                                         </div>
                                     </h:panelGroup>
