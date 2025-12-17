@@ -357,6 +357,10 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Patient Address is required in Pharmacy Retail Sale", false);
         getBooleanValueByKey("Patient Area is required in Pharmacy Retail Sale", false);
         getBooleanValueByKey("Referring Doctor is required in Pharmacy Retail Sale", false);
+
+        // Pharmacy Sale UI Configuration Options
+        // These options control UI behavior in pharmacy retail sales
+        getBooleanValueByKey("Allow Editing Quantity of Added Items in Pharmacy Retail Sale for Cashier", false);
     }
 
     private void loadPharmacyIssueReceiptConfigurationDefaults() {
