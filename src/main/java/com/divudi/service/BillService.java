@@ -24,6 +24,7 @@ import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.dto.MovementOutStockReportDto;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillFinanceDetails;
@@ -49,6 +50,7 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.google.common.collect.HashBiMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.ejb.EJB;
@@ -694,6 +696,21 @@ public class BillService {
             }
         }
     }
+    
+    public List<com.divudi.bean.pharmacy.PharmacySummaryReportController.PaymentData> fetchBillPaymentsFromBillId(Long billId) {
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select new  com.divudi.bean.pharmacy.PharmacySummaryReportController.PaymentData("
+                + " p.paymentMethod, "
+                + " p.paidValue, "
+                + " p.createdAt)"
+                + " from Payment p "
+                + " join p.bill b"
+                + " where b.id=:billId "
+                + " order by p.id";
+        params.put("billId", billId);
+        return paymentFacade.findByJpql(jpql, params);
+    }
 
     public List<Payment> fetchBillPayments(Bill bill) {
         List<Payment> fetchingBillComponents;
@@ -922,6 +939,105 @@ public class BillService {
         return fetchBills(fromDate, toDate, institution, site, department, webUser,
                 billTypeAtomic != null ? Collections.singletonList(billTypeAtomic) : null);
     }
+    
+    public List<MovementOutStockReportDto> fetchMovementOutStockReportData(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme){
+        
+        StringBuilder sql = new StringBuilder();
+        Map params = new HashMap();
+        
+        sql.append(" select new com.divudi.core.data.dto.MovementOutStockReportDto("
+                + " bill.id, "
+                + " bill.deptId,"
+                + " bill.paymentMethod, "
+                + " bill.createdAt, "
+                + " COALESCE(c.name, 'N/A'), "
+                + " bill.billType, "
+                + " bill.billTypeAtomic, "
+                + " COALESCE(pp.name, 'N/A'), "
+                + " (CASE WHEN bill.paymentMethod = com.divudi.core.data.PaymentMethod.OnCall THEN bill.netTotal ELSE 0 END),"
+                + " (CASE WHEN bill.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN bill.netTotal ELSE 0 END),"
+                + " (CASE WHEN bill.paymentMethod = com.divudi.core.data.PaymentMethod.Card THEN bill.netTotal ELSE 0 END), "
+                + " (CASE WHEN bill.paymentMethod = com.divudi.core.data.PaymentMethod.MultiplePaymentMethods THEN bill.netTotal ELSE 0 END), "
+                + " (CASE WHEN bill.paymentMethod = com.divudi.core.data.PaymentMethod.Staff THEN bill.netTotal ELSE 0 END), "
+                + " (CASE WHEN bill.paymentMethod = com.divudi.core.data.PaymentMethod.Credit THEN bill.netTotal ELSE 0 END), "
+                + " (CASE WHEN bill.paymentMethod = com.divudi.core.data.PaymentMethod.Staff_Welfare THEN bill.netTotal ELSE 0 END),"
+                + " (CASE WHEN bill.paymentMethod = com.divudi.core.data.PaymentMethod.Voucher THEN bill.netTotal ELSE 0 END), "
+                + " (CASE WHEN bill.paymentMethod = com.divudi.core.data.PaymentMethod.IOU THEN bill.netTotal ELSE 0 END), "
+                + " (CASE WHEN bill.paymentMethod = com.divudi.core.data.PaymentMethod.Agent THEN bill.netTotal ELSE 0 END), "
+                + " (CASE WHEN bill.paymentMethod = com.divudi.core.data.PaymentMethod.Cheque THEN bill.netTotal ELSE 0 END) ,"
+                + " (CASE WHEN bill.paymentMethod = com.divudi.core.data.PaymentMethod.Slip THEN bill.netTotal ELSE 0 END), "
+                + " (CASE WHEN bill.paymentMethod = com.divudi.core.data.PaymentMethod.ewallet THEN bill.netTotal ELSE 0 END), "
+                + " (CASE WHEN bill.paymentMethod = com.divudi.core.data.PaymentMethod.PatientDeposit THEN bill.netTotal ELSE 0 END), "
+                + " (CASE WHEN bill.paymentMethod = com.divudi.core.data.PaymentMethod.PatientPoints THEN bill.netTotal ELSE 0 END), "
+                + " (CASE WHEN bill.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement THEN bill.netTotal ELSE 0 END), "
+                + " (CASE WHEN bill.paymentMethod = com.divudi.core.data.PaymentMethod.None THEN bill.netTotal ELSE 0 END),"
+                + " COALESCE(bill.total, 0), "
+                + " COALESCE(bill.discount, 0), "
+                + " COALESCE(bill.margin, 0), "
+                + " COALESCE(bill.tax, 0), "
+                + " (COALESCE(bill.total, 0) - COALESCE(bill.serviceCharge, 0)), "
+                + " COALESCE(bill.netTotal, 0), "
+                + " COALESCE(bill.paidAmount, 0)) "
+                + " from Bill bill "
+                + " left join bill.creater c"
+                + " left join bill.patient p "
+                + " left join p.person pp"
+                + " where bill.retired = :ret "
+                + " and bill.createdAt between :fromDate and :toDate "
+                + " and bill.billTypeAtomic in :bta ");
+        
+        
+        params.put("ret", false);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("bta", billTypeAtomics);
+
+        
+        if (institution != null) {
+            sql.append(" and bill.institution=:ins ");
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            sql.append(" and bill.creater=:user ");
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            sql.append(" and bill.department=:dep ");
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            sql.append(" and bill.department.site=:site ");
+            params.put("site", site);
+        }
+
+        if (admissionType != null) {
+            sql.append(" and bill.patientEncounter.admissionType=:admissionType ");
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            sql.append(" and bill.paymentScheme=:paymentScheme ");
+            params.put("paymentScheme", paymentScheme);
+        }
+        
+        sql.append(" order by bill.createdAt desc ");
+        
+        List<MovementOutStockReportDto> fetchedData = billFacade.findByJpql(sql.toString(), params, TemporalType.TIMESTAMP);
+        
+        return fetchedData;
+        
+    }
 
     public List<Bill> fetchBills(Date fromDate,
             Date toDate,
@@ -980,6 +1096,7 @@ public class BillService {
         System.out.println("params = " + params);
         System.out.println("jpql = " + jpql);
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("line 1085 bills" +fetchedBills.size());
         return fetchedBills;
     }
 
