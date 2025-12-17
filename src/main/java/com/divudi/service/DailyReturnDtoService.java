@@ -241,10 +241,13 @@ public class DailyReturnDtoService {
         String jpql = "select new com.divudi.core.data.dto.PaymentDetailDTO("
                 + "b.deptId, b.billType, b.paymentMethod, b.netTotal, b.createdAt, "
                 + "'', "  // creditCardRefNo - not applicable for patient deposits
-                + "coalesce(b.patient.person.name, ''), "  // bankName field used for patient name
+                + "coalesce(p.name, ''), "  // bankName field used for patient name
                 + "'', "  // institutionName - not applicable
-                + "coalesce(b.department.name, '')) "  // departmentName
+                + "coalesce(d.name, '')) "  // departmentName
                 + "from Bill b "
+                + "left join b.patient pt "
+                + "left join pt.person p "
+                + "left join b.department d "
                 + "where b.retired = false "
                 + "and b.createdAt between :fd and :td "
                 + "and b.billTypeAtomic in :bts "
