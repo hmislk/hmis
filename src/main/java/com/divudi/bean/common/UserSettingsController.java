@@ -1239,4 +1239,80 @@ public class UserSettingsController implements Serializable {
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
+    
+    // page: pharmacy_purchase_order_list_to_cancel.xhtml
+    // column: Requested At
+    public boolean isPharmacyPurchaseOrderListToCancelRequestedAtVisible() {
+        return isColumnVisible("pharmacy_purchase_order_list_to_cancel", "requestedAt");
+    }
+    
+    public void setPharmacyPurchaseOrderListToCancelRequestedAtVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_purchase_order_list_to_cancel");
+        settings.setColumnVisible("requestedAt", visible);
+        saveColumnVisibility("pharmacy_purchase_order_list_to_cancel", settings);
+    }
+    
+    //column: PO Number
+    public boolean isPharmacyPurchaseOrderListToCancelPoNumberVisible() {
+        return isColumnVisible("pharmacy_purchase_order_list_to_cancel", "poNumber");
+    }
+    
+    public void setPharmacyPurchaseOrderListToCancelPoNumberVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_purchase_order_list_to_cancel");
+        settings.setColumnVisible("poNumber", visible);
+        saveColumnVisibility("pharmacy_purchase_order_list_to_cancel", settings);
+    }
+    
+    //column: RequestedBy
+    public boolean isPharmacyPurchaseOrderListToCancelRequestedByVisible() {
+        return isColumnVisible("pharmacy_purchase_order_list_to_cancel", "requestedBy");
+    }
+    
+    public void setPharmacyPurchaseOrderListToCancelRequestedByVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_purchase_order_list_to_cancel");
+        settings.setColumnVisible("requestedBy", visible);
+        saveColumnVisibility("pharmacy_purchase_order_list_to_cancel", settings);
+    }
+    
+    //column: Supplier
+    public boolean isPharmacyPurchaseOrderListToCancelSupplierVisible() {
+        return isColumnVisible("pharmacy_purchase_order_list_to_cancel", "supplier");
+    }
+    
+    public void setPharmacyPurchaseOrderListToCancelSupplierVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_purchase_order_list_to_cancel");
+        settings.setColumnVisible("supplier", visible);
+        saveColumnVisibility("pharmacy_purchase_order_list_to_cancel", settings);
+    }
+    
+    //column: Requested Department
+    public boolean isPharmacyPurchaseOrderListToCancelRequestedDepartmentVisible() {
+        return isColumnVisible("pharmacy_purchase_order_list_to_cancel", "requestedDepartment");
+    }
+    
+    public void setPharmacyPurchaseOrderListToCancelRequestedDepartmentVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_purchase_order_list_to_cancel");
+        settings.setColumnVisible("requestedDepartment", visible);
+        saveColumnVisibility("pharmacy_purchase_order_list_to_cancel", settings);
+    }
+    
+    //column: Requested Value
+    public boolean isPharmacyPurchaseOrderListToCancelRequestedValueVisible() {
+        return isColumnVisible("pharmacy_purchase_order_list_to_cancel", "requestedValue");
+    }
+    
+    public void setPharmacyPurchaseOrderListToCancelRequestedValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_purchase_order_list_to_cancel");
+        settings.setColumnVisible("requestedValue", visible);
+        saveColumnVisibility("pharmacy_purchase_order_list_to_cancel", settings);
+    }
+    
+    // page size
+    public int getPharmacyPurchaseOrderListToCancelPageSize() {
+        return getPageSize("pharmacy_purchase_order_list_to_cancel", 10);
+    }
+
+    public void setPharmacyPurchaseOrderListToCancelPageSize(int pagesize) {
+        savePageSize("pharmacy_purchase_order_list_to_cancel", pagesize);
+    }
 }
