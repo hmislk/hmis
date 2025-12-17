@@ -1037,7 +1037,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         
         if (originalPayments != null && !originalPayments.isEmpty()) {
             // Initialize payment method data based on original payments
-            initializeRefundPaymentFromOriginalPayments(originalPayments);
+            initializePaymentFromOriginalPayments(originalPayments);
         } else {
             // Fallback: just set payment method enum if no payment details found
             cancelBill.setPaymentMethod(bill.getPaymentMethod());
@@ -4713,7 +4713,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         this.searchPatientAddress = searchPatientAddress;
     }
     
-    private void initializeRefundPaymentFromOriginalPayments(List<Payment> originalPayments) {
+    private void initializePaymentFromOriginalPayments(List<Payment> originalPayments) {
         if (originalPayments == null || originalPayments.isEmpty()) {
             return;
         }
