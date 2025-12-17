@@ -15,8 +15,15 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h:outputText styleClass="fas fa-search" />
-                                    <h:outputLabel value="Appointment Search " class="mx-4"/>
+                                    <h:outputLabel value="Appointment Search " class="mt-2 mx-4"/>
                                 </div>
+                                <p:commandButton
+                                    icon="fa fa-calendar"
+                                    ajax="false"
+                                    value="To Appointment Calendar"
+                                    class="ui-button-administration "
+                                    action="#{inwardReservationController.navigateToReservationCalendarFromMenu()}" >
+                                </p:commandButton>
                             </div>
                         </f:facet>
 
@@ -136,7 +143,7 @@
                                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Room" width="12em;" style="padding: 8px;">
                                         <h:outputLabel value="#{r.roomNo}" />
                                     </p:column>
@@ -145,7 +152,7 @@
                                         <i class="fas fa-user text-primary" style="width: 27px;"></i> <!-- Name Icon -->
                                         <h:outputLabel value="#{r.patientNameWithTitle}" />
                                     </p:column>
-                                    
+
                                     <p:column headerText="Age / Gender"  width="15em;" style="padding: 8px;">
                                         <i class="fas fa-birthday-cake text-info" style="width: 27px;"></i> <!-- Age Icon -->
                                         <h:outputLabel value="#{r.patientAge}" />
@@ -153,14 +160,14 @@
                                         <i class="fas fa-venus-mars text-danger" style="width: 27px;"></i> <!-- Sex Icon -->
                                         <h:outputLabel value="#{r.patientGender}" />
                                     </p:column>
-                                    
+
                                     <p:column headerText="Mobile"  width="10em;" style="padding: 8px;">
                                         <h:panelGroup rendered="#{not empty r.patientMobile.blank}">
                                             <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
                                             <h:outputLabel value="#{r.patientMobile}" />
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{empty r.patientMobile}">
-                                             <h:outputLabel value="N/A" />
+                                            <h:outputLabel value="N/A" />
                                         </h:panelGroup>
                                     </p:column>
 
