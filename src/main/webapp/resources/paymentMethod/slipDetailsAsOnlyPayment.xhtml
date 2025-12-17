@@ -14,59 +14,60 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="row">
-            <div class="col-md-4">
-                <p:outputLabel for="bank" value="Bank:" style="font-weight: 500;"/>
-                <p:selectOneMenu
-                    id="bank"
-                    value="#{cc.attrs.paymentMethodData.slip.institution}"
-                    styleClass="form-control"
-                    style="width: 100%"
-                    required="#{cc.attrs.valueRequired}"
-                    requiredMessage="Please select a bank">
-                    <f:selectItem itemLabel="Select Bank"/>
-                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                    <p:ajax process="@this" />
-                </p:selectOneMenu>
-            </div>
+        <h:panelGroup layout="block" styleClass="ui-fluid">
+            <div class="row">
+                <div class="col-md-4">
+                    <p:outputLabel for="bank" value="Bank:" style="font-weight: 500;"/>
+                    <p:selectOneMenu
+                        id="bank"
+                        value="#{cc.attrs.paymentMethodData.slip.institution}"
+                        styleClass="form-control"
+                        required="#{cc.attrs.valueRequired}"
+                        requiredMessage="Please select a bank">
+                        <f:selectItem itemLabel="Select Bank"/>
+                        <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                        <p:ajax process="@this" />
+                    </p:selectOneMenu>
+                </div>
 
-            <div class="col-md-6">
-                <p:outputLabel for="date" value="Date:" style="font-weight: 500;"/>
-                <p:calendar
-                    id="date"
-                    styleClass="w-100"
-                    inputStyleClass="w-100"
-                    value="#{cc.attrs.paymentMethodData.slip.date}"
-                    placeholder="Select date"
-                    pattern="#{sessionController.applicationPreference.longDateFormat}"
-                    showButtonPanel="true">
-                    <p:ajax process="@this" />
-                </p:calendar>
-            </div>
+                <div class="col-md-6">
+                    <p:outputLabel for="date" value="Date:" style="font-weight: 500;"/>
+                    <p:calendar
+                        id="date"
+                        styleClass="w-100"
+                        inputStyleClass="w-100"
+                        value="#{cc.attrs.paymentMethodData.slip.date}"
+                        placeholder="Select date"
+                        pattern="#{sessionController.applicationPreference.longDateFormat}"
+                        showButtonPanel="true">
+                        <p:ajax process="@this" />
+                    </p:calendar>
+                </div>
 
-            <div class="col-md-4">
-                <p:outputLabel for="refNo" value="Ref No:" style="font-weight: 500;"/>
-                <p:inputText
-                    id="refNo"
-                    value="#{cc.attrs.paymentMethodData.slip.referenceNo}"
-                    placeholder="Reference No"
-                    styleClass="form-control"
-                    required="#{cc.attrs.valueRequired}"
-                    requiredMessage="Please enter the reference number">
-                    <p:ajax process="@this" />
-                </p:inputText>
-            </div>
+                <div class="col-md-4">
+                    <p:outputLabel for="refNo" value="Ref No:" style="font-weight: 500;"/>
+                    <p:inputText
+                        id="refNo"
+                        value="#{cc.attrs.paymentMethodData.slip.referenceNo}"
+                        placeholder="Reference No"
+                        styleClass="form-control"
+                        required="#{cc.attrs.valueRequired}"
+                        requiredMessage="Please enter the reference number">
+                        <p:ajax process="@this" />
+                    </p:inputText>
+                </div>
 
-            <div class="col-md-8">
-                <p:outputLabel for="comment" value="Comment:" style="font-weight: 500;"/>
-                <p:inputText
-                    id="comment"
-                    value="#{cc.attrs.paymentMethodData.slip.comment}"
-                    placeholder="Comments"
-                    styleClass="form-control">
-                    <p:ajax process="@this" />
-                </p:inputText>
+                <div class="col-md-8">
+                    <p:outputLabel for="comment" value="Comment:" style="font-weight: 500;"/>
+                    <p:inputText
+                        id="comment"
+                        value="#{cc.attrs.paymentMethodData.slip.comment}"
+                        placeholder="Comments"
+                        styleClass="form-control">
+                        <p:ajax process="@this" />
+                    </p:inputText>
+                </div>
             </div>
-        </div>
+        </h:panelGroup>
     </cc:implementation>
 </html>
