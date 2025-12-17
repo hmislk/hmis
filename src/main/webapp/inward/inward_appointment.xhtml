@@ -40,32 +40,20 @@
                                         class="ui-button-success mx-1 ">
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        value="Patient Lookup"
-                                        ajax="false" 
-                                        icon="fa fa-search"
-                                        action="#{opdBillController.navigateToSearchPatients()}"
-                                        class="ui-button-warning mx-1 ">
+                                    <p:commandButton
+                                        icon="fa fa-calendar"
+                                        ajax="false"
+                                        value="To Appointment Calendar"
+                                        class="ui-button-administration "
+                                        action="#{inwardReservationController.navigateToReservationCalendarFromMenu()}" >
                                     </p:commandButton>
-
-                                    <p:commandButton 
-                                        value="Profile"
-                                        ajax="false" 
-                                        icon="fa fa-user"
-                                        action="#{patientController.navigateToOpdPatientProfile()}"
-                                        class="ui-button-secondary mx-1 ">
-                                        <f:setPropertyActionListener 
-                                            target="#{patientController.current}" 
-                                            value="#{appointmentController.patient}">
-
-                                        </f:setPropertyActionListener>
-                                    </p:commandButton>
+                                    
                                 </div>
                             </f:facet>
 
                             <div class="row mt-3">
                                 <div class="col-md-6">
-                                   <common:patient_details_for_appoiment editable="true" controller="#{appointmentController}"/>
+                                    <common:patient_details_for_appoiment editable="true" controller="#{appointmentController}"/>
                                 </div>
 
                                 <div class="col-md-6">
@@ -84,7 +72,7 @@
                                                     class="mx-0"
                                                     value="#{appointmentController.currentBill.paymentMethod}">                                                                     
                                                     <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                    <f:selectItems value="#{enumController.getPaymentMethodsForIwardDeposit}" />
+                                                    <f:selectItems value="#{enumController.getPaymentMethodsForIwardDeposit()}" />
                                                     <p:ajax process="cmbPs @this" update="paymentMethods" event="change" />
                                                 </p:selectOneMenu>
                                                 <br></br>
