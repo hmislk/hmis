@@ -56,24 +56,12 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
-import static com.divudi.core.data.PaymentMethod.Card;
-import static com.divudi.core.data.PaymentMethod.Cash;
-import static com.divudi.core.data.PaymentMethod.Cheque;
-import static com.divudi.core.data.PaymentMethod.Credit;
-import static com.divudi.core.data.PaymentMethod.PatientDeposit;
-import static com.divudi.core.data.PaymentMethod.Slip;
-import static com.divudi.core.data.PaymentMethod.Staff_Welfare;
-import static com.divudi.core.data.PaymentMethod.ewallet;
 import com.divudi.core.data.SpecificPatientStatus;
-import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientDeposit;
-import com.divudi.core.entity.Payment;
-import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.util.CommonFunctions;
-import com.divudi.service.BillService;
 import com.divudi.service.MembershipService;
 
 import java.io.ByteArrayInputStream;
@@ -158,8 +146,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private PatientInvestigationFacade patientInvestigationFacade;
     @EJB
     MembershipService membershipService;
-    @EJB
-    BillService billService;
     /**
      *
      * Controllers
@@ -1032,17 +1018,13 @@ public class PatientController implements Serializable, ControllerWithPatient {
         cancelBill = new CancelledBill();
         current = getBill().getPatient();
         
-        // Fetch and intialize payment data from original bill
-        List<Payment> originalPayments = billService.fetchBillPayments(getBill());
+        PaymentMethod pm = getBill().getPaymentMethod();
         
-        if (originalPayments != null && !originalPayments.isEmpty()) {
-            // Initialize payment method data based on original payments
-            initializePaymentFromOriginalPayments(originalPayments);
-        } else {
-            // Fallback: just set payment method enum if no payment details found
-            cancelBill.setPaymentMethod(bill.getPaymentMethod());
+        if (pm == PaymentMethod.MultiplePaymentMethods) {
+            cancelBill.setPaymentMethod(PaymentMethod.Cash);
+            return;
         }
-    
+        cancelBill.setPaymentMethod(pm);
     }
 
     public void clearDataForPatientRefund() {
@@ -4713,59 +4695,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         this.searchPatientAddress = searchPatientAddress;
     }
     
-    private void initializePaymentFromOriginalPayments(List<Payment> originalPayments) {
-        if (originalPayments == null || originalPayments.isEmpty()) {
-            return;
-        }
-
-        // If single payment method
-        if (originalPayments.size() == 1) {
-            Payment originalPayment = originalPayments.get(0);
-            cancelBill.setPaymentMethod(originalPayment.getPaymentMethod());
-
-            // Initialize paymentMethodData based on payment method (using absolute values for UI display)
-            switch (originalPayment.getPaymentMethod()) {
-                case Card:
-                    getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
-                    getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
-                    getPaymentMethodData().getCreditCard().setComment(originalPayment.getComments());
-                    getPaymentMethodData().getCreditCard().setTotalValue(Math.abs(getBill().getNetTotal()));
-                    break;
-                case Cheque:
-                    getPaymentMethodData().getCheque().setInstitution(originalPayment.getBank());
-                    getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
-                    getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
-                    getPaymentMethodData().getCheque().setComment(originalPayment.getComments());
-                    getPaymentMethodData().getCheque().setTotalValue(Math.abs(getBill().getNetTotal()));
-                    break;
-                case Slip:
-                    getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
-                    getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate());
-                    getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
-                    getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
-                    getPaymentMethodData().getSlip().setTotalValue(Math.abs(getBill().getNetTotal()));
-                    break;
-                case ewallet:
-                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
-                    getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
-                    getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
-                    getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
-                    getPaymentMethodData().getEwallet().setTotalValue(Math.abs(getBill().getNetTotal()));
-                    getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
-                    break;
-                default:
-                    // For other payment methods, just set the total value
-                    break;
-            }
-        } // If multiple payment methods
-        else {
-            // Multiple payments - set to MultiplePaymentMethods
-            cancelBill.setPaymentMethod(PaymentMethod.MultiplePaymentMethods);
-            // Note: For multiple payments, the user would need to manually configure them
-            // This is a complex scenario that may require additional UI handling
-        }
-    }
-
     /**
      *
      * Set all Patients to null
