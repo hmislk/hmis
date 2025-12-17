@@ -2268,40 +2268,64 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
         // Apply negative sign to each payment method's total value
         if (pmd.getCash() != null && pmd.getCash().getTotalValue() != 0) {
+            double oldValue = pmd.getCash().getTotalValue();
             pmd.getCash().setTotalValue(-Math.abs(pmd.getCash().getTotalValue()));
+            System.out.println("DEBUG Cash: " + oldValue + " -> " + pmd.getCash().getTotalValue());
         }
         if (pmd.getCreditCard() != null && pmd.getCreditCard().getTotalValue() != 0) {
+            double oldValue = pmd.getCreditCard().getTotalValue();
             pmd.getCreditCard().setTotalValue(-Math.abs(pmd.getCreditCard().getTotalValue()));
+            System.out.println("DEBUG Card: " + oldValue + " -> " + pmd.getCreditCard().getTotalValue());
         }
         if (pmd.getCheque() != null && pmd.getCheque().getTotalValue() != 0) {
+            double oldValue = pmd.getCheque().getTotalValue();
             pmd.getCheque().setTotalValue(-Math.abs(pmd.getCheque().getTotalValue()));
+            System.out.println("DEBUG Cheque: " + oldValue + " -> " + pmd.getCheque().getTotalValue());
         }
         if (pmd.getSlip() != null && pmd.getSlip().getTotalValue() != 0) {
+            double oldValue = pmd.getSlip().getTotalValue();
             pmd.getSlip().setTotalValue(-Math.abs(pmd.getSlip().getTotalValue()));
+            System.out.println("DEBUG Slip: " + oldValue + " -> " + pmd.getSlip().getTotalValue());
         }
         if (pmd.getEwallet() != null && pmd.getEwallet().getTotalValue() != 0) {
+            double oldValue = pmd.getEwallet().getTotalValue();
             pmd.getEwallet().setTotalValue(-Math.abs(pmd.getEwallet().getTotalValue()));
+            System.out.println("DEBUG Ewallet: " + oldValue + " -> " + pmd.getEwallet().getTotalValue());
         }
         if (pmd.getPatient_deposit() != null && pmd.getPatient_deposit().getTotalValue() != 0) {
+            double oldValue = pmd.getPatient_deposit().getTotalValue();
             pmd.getPatient_deposit().setTotalValue(-Math.abs(pmd.getPatient_deposit().getTotalValue()));
+            System.out.println("DEBUG PatientDeposit: " + oldValue + " -> " + pmd.getPatient_deposit().getTotalValue());
         }
         if (pmd.getCredit() != null && pmd.getCredit().getTotalValue() != 0) {
+            double oldValue = pmd.getCredit().getTotalValue();
             pmd.getCredit().setTotalValue(-Math.abs(pmd.getCredit().getTotalValue()));
+            System.out.println("DEBUG Credit: " + oldValue + " -> " + pmd.getCredit().getTotalValue());
         }
         if (pmd.getStaffCredit() != null && pmd.getStaffCredit().getTotalValue() != 0) {
+            double oldValue = pmd.getStaffCredit().getTotalValue();
             pmd.getStaffCredit().setTotalValue(-Math.abs(pmd.getStaffCredit().getTotalValue()));
+            System.out.println("DEBUG StaffCredit: " + oldValue + " -> " + pmd.getStaffCredit().getTotalValue());
         }
         if (pmd.getStaffWelfare() != null && pmd.getStaffWelfare().getTotalValue() != 0) {
+            double oldValue = pmd.getStaffWelfare().getTotalValue();
             pmd.getStaffWelfare().setTotalValue(-Math.abs(pmd.getStaffWelfare().getTotalValue()));
+            System.out.println("DEBUG StaffWelfare: " + oldValue + " -> " + pmd.getStaffWelfare().getTotalValue());
         }
         if (pmd.getOnlineSettlement() != null && pmd.getOnlineSettlement().getTotalValue() != 0) {
+            double oldValue = pmd.getOnlineSettlement().getTotalValue();
             pmd.getOnlineSettlement().setTotalValue(-Math.abs(pmd.getOnlineSettlement().getTotalValue()));
+            System.out.println("DEBUG OnlineSettlement: " + oldValue + " -> " + pmd.getOnlineSettlement().getTotalValue());
         }
     }
 
     private List<Bill> cancelSingleBills = new ArrayList<>();
 
     public String cancelOpdBatchBill() {
+        System.out.println("=== DEBUG: cancelOpdBatchBill() called ===");
+        System.out.println("Payment Method: " + paymentMethod);
+        System.out.println("Batch Bill Payment Method: " + (batchBill != null ? batchBill.getPaymentMethod() : "null"));
+
         batchBillCancellationStarted = true;
         if (getBatchBill() == null) {
             JsfUtil.addErrorMessage("No bill");
@@ -2425,6 +2449,23 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
         // Apply refund sign to payment data
         applyRefundSignToPaymentData();
+
+        // Debug: Log payment data values after applying refund sign
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            System.out.println("=== DEBUG: Multiple Payment Methods ===");
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                System.out.println("Payment Method: " + cd.getPaymentMethod());
+                if (cd.getPaymentMethodData().getCash() != null) {
+                    System.out.println("  Cash: " + cd.getPaymentMethodData().getCash().getTotalValue());
+                }
+                if (cd.getPaymentMethodData().getCreditCard() != null) {
+                    System.out.println("  Card: " + cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                }
+                if (cd.getPaymentMethodData().getCheque() != null) {
+                    System.out.println("  Cheque: " + cd.getPaymentMethodData().getCheque().getTotalValue());
+                }
+            }
+        }
 
         // Create payments using PaymentService
         List<Payment> cancelPayments = paymentService.createPayment(cancellationBatchBill, paymentMethodData);
