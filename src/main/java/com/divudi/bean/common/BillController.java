@@ -2241,36 +2241,61 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             return;
         }
 
+        // Handle multiple payment methods
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            if (paymentMethodData.getPaymentMethodMultiple() != null
+                && paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null) {
+                for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    if (cd.getPaymentMethodData() != null) {
+                        applyRefundSignToSinglePaymentMethodData(cd.getPaymentMethodData());
+                    }
+                }
+            }
+        } else {
+            // Handle single payment method
+            applyRefundSignToSinglePaymentMethodData(paymentMethodData);
+        }
+    }
+
+    /**
+     * Helper method to apply refund sign to a single PaymentMethodData object.
+     * This ensures all payment amounts are negative (cash going out).
+     */
+    private void applyRefundSignToSinglePaymentMethodData(PaymentMethodData pmd) {
+        if (pmd == null) {
+            return;
+        }
+
         // Apply negative sign to each payment method's total value
-        if (paymentMethodData.getCash() != null && paymentMethodData.getCash().getTotalValue() > 0) {
-            paymentMethodData.getCash().setTotalValue(-Math.abs(paymentMethodData.getCash().getTotalValue()));
+        if (pmd.getCash() != null && pmd.getCash().getTotalValue() != 0) {
+            pmd.getCash().setTotalValue(-Math.abs(pmd.getCash().getTotalValue()));
         }
-        if (paymentMethodData.getCreditCard() != null && paymentMethodData.getCreditCard().getTotalValue() > 0) {
-            paymentMethodData.getCreditCard().setTotalValue(-Math.abs(paymentMethodData.getCreditCard().getTotalValue()));
+        if (pmd.getCreditCard() != null && pmd.getCreditCard().getTotalValue() != 0) {
+            pmd.getCreditCard().setTotalValue(-Math.abs(pmd.getCreditCard().getTotalValue()));
         }
-        if (paymentMethodData.getCheque() != null && paymentMethodData.getCheque().getTotalValue() > 0) {
-            paymentMethodData.getCheque().setTotalValue(-Math.abs(paymentMethodData.getCheque().getTotalValue()));
+        if (pmd.getCheque() != null && pmd.getCheque().getTotalValue() != 0) {
+            pmd.getCheque().setTotalValue(-Math.abs(pmd.getCheque().getTotalValue()));
         }
-        if (paymentMethodData.getSlip() != null && paymentMethodData.getSlip().getTotalValue() > 0) {
-            paymentMethodData.getSlip().setTotalValue(-Math.abs(paymentMethodData.getSlip().getTotalValue()));
+        if (pmd.getSlip() != null && pmd.getSlip().getTotalValue() != 0) {
+            pmd.getSlip().setTotalValue(-Math.abs(pmd.getSlip().getTotalValue()));
         }
-        if (paymentMethodData.getEwallet() != null && paymentMethodData.getEwallet().getTotalValue() > 0) {
-            paymentMethodData.getEwallet().setTotalValue(-Math.abs(paymentMethodData.getEwallet().getTotalValue()));
+        if (pmd.getEwallet() != null && pmd.getEwallet().getTotalValue() != 0) {
+            pmd.getEwallet().setTotalValue(-Math.abs(pmd.getEwallet().getTotalValue()));
         }
-        if (paymentMethodData.getPatient_deposit() != null && paymentMethodData.getPatient_deposit().getTotalValue() > 0) {
-            paymentMethodData.getPatient_deposit().setTotalValue(-Math.abs(paymentMethodData.getPatient_deposit().getTotalValue()));
+        if (pmd.getPatient_deposit() != null && pmd.getPatient_deposit().getTotalValue() != 0) {
+            pmd.getPatient_deposit().setTotalValue(-Math.abs(pmd.getPatient_deposit().getTotalValue()));
         }
-        if (paymentMethodData.getCredit() != null && paymentMethodData.getCredit().getTotalValue() > 0) {
-            paymentMethodData.getCredit().setTotalValue(-Math.abs(paymentMethodData.getCredit().getTotalValue()));
+        if (pmd.getCredit() != null && pmd.getCredit().getTotalValue() != 0) {
+            pmd.getCredit().setTotalValue(-Math.abs(pmd.getCredit().getTotalValue()));
         }
-        if (paymentMethodData.getStaffCredit() != null && paymentMethodData.getStaffCredit().getTotalValue() > 0) {
-            paymentMethodData.getStaffCredit().setTotalValue(-Math.abs(paymentMethodData.getStaffCredit().getTotalValue()));
+        if (pmd.getStaffCredit() != null && pmd.getStaffCredit().getTotalValue() != 0) {
+            pmd.getStaffCredit().setTotalValue(-Math.abs(pmd.getStaffCredit().getTotalValue()));
         }
-        if (paymentMethodData.getStaffWelfare() != null && paymentMethodData.getStaffWelfare().getTotalValue() > 0) {
-            paymentMethodData.getStaffWelfare().setTotalValue(-Math.abs(paymentMethodData.getStaffWelfare().getTotalValue()));
+        if (pmd.getStaffWelfare() != null && pmd.getStaffWelfare().getTotalValue() != 0) {
+            pmd.getStaffWelfare().setTotalValue(-Math.abs(pmd.getStaffWelfare().getTotalValue()));
         }
-        if (paymentMethodData.getOnlineSettlement() != null && paymentMethodData.getOnlineSettlement().getTotalValue() > 0) {
-            paymentMethodData.getOnlineSettlement().setTotalValue(-Math.abs(paymentMethodData.getOnlineSettlement().getTotalValue()));
+        if (pmd.getOnlineSettlement() != null && pmd.getOnlineSettlement().getTotalValue() != 0) {
+            pmd.getOnlineSettlement().setTotalValue(-Math.abs(pmd.getOnlineSettlement().getTotalValue()));
         }
     }
 
