@@ -35,11 +35,12 @@ public class DailyReturnDtoService {
     }
 
     public List<DailyReturnItemDTO> fetchDailyReturnItems(Date fromDate, Date toDate) {
-        String jpql = "select new com.divudi.core.data.dto.DailyReturnItemDTO(b.department.name, sum(b.netTotal)) "
+        String jpql = "select new com.divudi.core.data.dto.DailyReturnItemDTO(d.name, sum(b.netTotal)) "
                 + "from Bill b "
+                + "left join b.department d "
                 + "where b.retired=false "
                 + "and b.createdAt between :fd and :td "
-                + "group by b.department.name";
+                + "group by d.name";
         Map<String, Object> params = new HashMap<>();
         params.put("fd", fromDate);
         params.put("td", toDate);
@@ -184,12 +185,16 @@ public class DailyReturnDtoService {
         
         // 1. Get regular Card payments
         String paymentJpql = "select new com.divudi.core.data.dto.PaymentDetailDTO("
-                + "p.bill.deptId, p.bill.billType, p.paymentMethod, p.paidValue, p.createdAt, "
+                + "pb.deptId, pb.billType, p.paymentMethod, p.paidValue, p.createdAt, "
                 + "p.creditCardRefNo, "
-                + "case when p.bank is null then '' else p.bank.name end, "
-                + "case when p.institution is null then '' else p.institution.name end, "
-                + "case when p.bill.department is null then '' else p.bill.department.name end) "
+                + "coalesce(bank.name, ''), "
+                + "coalesce(inst.name, ''), "
+                + "coalesce(pd.name, '')) "
                 + "from Payment p "
+                + "left join p.bill pb "
+                + "left join pb.department pd "
+                + "left join p.bank bank "
+                + "left join p.institution inst "
                 + "where p.retired = false "
                 + "and p.createdAt between :fd and :td "
                 + "and p.paymentMethod = :paymentMethod "
@@ -209,8 +214,9 @@ public class DailyReturnDtoService {
                 + "'', "  // creditCardRefNo - not applicable for refunds
                 + "'', "  // bankName - not applicable for refunds
                 + "'', "  // institutionName - not applicable
-                + "coalesce(b.department.name, '')) "  // departmentName
+                + "coalesce(bd.name, '')) "  // departmentName
                 + "from Bill b "
+                + "left join b.department bd "
                 + "where b.retired = false "
                 + "and b.createdAt between :fd and :td "
                 + "and b.paymentMethod = :paymentMethod "
