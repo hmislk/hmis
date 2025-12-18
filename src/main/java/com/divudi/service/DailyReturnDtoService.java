@@ -31,7 +31,7 @@ public class DailyReturnDtoService {
         Map<String, Object> params = new HashMap<>();
         params.put("fd", fromDate);
         params.put("td", toDate);
-        return (List<DailyReturnDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return (List<DailyReturnDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, true);
     }
 
     public List<DailyReturnItemDTO> fetchDailyReturnItems(Date fromDate, Date toDate) {
@@ -43,7 +43,7 @@ public class DailyReturnDtoService {
         Map<String, Object> params = new HashMap<>();
         params.put("fd", fromDate);
         params.put("td", toDate);
-        return (List<DailyReturnItemDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return (List<DailyReturnItemDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, true);
     }
 
     public List<DailyReturnDetailDTO> fetchDetailedDailyReturnBills(Date fromDate, Date toDate) {
@@ -58,7 +58,7 @@ public class DailyReturnDtoService {
         Map<String, Object> params = new HashMap<>();
         params.put("fd", fromDate);
         params.put("td", toDate);
-        return (List<DailyReturnDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return (List<DailyReturnDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, true);
     }
     
     public List<BillItemDetailDTO> fetchOpdBillItemsForDailyReturn(Date fromDate, Date toDate) {
@@ -87,7 +87,7 @@ public class DailyReturnDtoService {
             params.put("bts", btas);
         }
         
-        return (List<BillItemDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return (List<BillItemDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, true);
     }
     
     public List<BillItemDetailDTO> fetchCcCollectionBillItemsForDailyReturn(Date fromDate, Date toDate) {
@@ -117,7 +117,7 @@ public class DailyReturnDtoService {
         params.put("td", toDate);
         params.put("bts", ccBillTypes);
         
-        List<BillItemDetailDTO> result = (List<BillItemDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<BillItemDetailDTO> result = (List<BillItemDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, true);
         
         return result;
     }
@@ -163,7 +163,7 @@ public class DailyReturnDtoService {
                 + "and b.billTypeAtomic in :bts "
                 + "order by b.createdAt";
                 
-        List<DailyReturnDetailDTO> testResult = (List<DailyReturnDetailDTO>) billFacade.findLightsByJpql(testJpql, params, TemporalType.TIMESTAMP);
+        List<DailyReturnDetailDTO> testResult = (List<DailyReturnDetailDTO>) billFacade.findLightsByJpql(testJpql, params, TemporalType.TIMESTAMP, true);
         System.out.println("DEBUG: CC Collection - Test without fromDepartment: " + (testResult != null ? testResult.size() : "null"));
         
         if (testResult != null && testResult.size() > 0) {
@@ -183,7 +183,7 @@ public class DailyReturnDtoService {
         
         System.out.println("DEBUG: CC Collection Bill-level - looking for billTypeAtomics: " + ccBillTypes);
         
-        List<DailyReturnDetailDTO> result = (List<DailyReturnDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<DailyReturnDetailDTO> result = (List<DailyReturnDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, true);
         
         return result;
     }
@@ -209,7 +209,7 @@ public class DailyReturnDtoService {
         paymentParams.put("td", toDate);
         paymentParams.put("paymentMethod", com.divudi.core.data.PaymentMethod.Card);
         
-        List<PaymentDetailDTO> paymentResults = (List<PaymentDetailDTO>) billFacade.findLightsByJpql(paymentJpql, paymentParams, TemporalType.TIMESTAMP);
+        List<PaymentDetailDTO> paymentResults = (List<PaymentDetailDTO>) billFacade.findLightsByJpql(paymentJpql, paymentParams, TemporalType.TIMESTAMP, true);
         allResults.addAll(paymentResults);
         
         // 2. Get Card refund bills (Bills with Card payment method and negative amounts)
@@ -231,7 +231,7 @@ public class DailyReturnDtoService {
         refundParams.put("td", toDate);
         refundParams.put("paymentMethod", com.divudi.core.data.PaymentMethod.Card);
         
-        List<PaymentDetailDTO> refundResults = (List<PaymentDetailDTO>) billFacade.findLightsByJpql(refundJpql, refundParams, TemporalType.TIMESTAMP);
+        List<PaymentDetailDTO> refundResults = (List<PaymentDetailDTO>) billFacade.findLightsByJpql(refundJpql, refundParams, TemporalType.TIMESTAMP, true);
         allResults.addAll(refundResults);
         
         return allResults;
@@ -261,7 +261,7 @@ public class DailyReturnDtoService {
         params.put("td", toDate);
         params.put("bts", patientDepositBillTypes);
         
-        List<PaymentDetailDTO> result = (List<PaymentDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<PaymentDetailDTO> result = (List<PaymentDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, true);
         
         return result;
     }
