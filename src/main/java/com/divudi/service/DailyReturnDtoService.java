@@ -50,9 +50,11 @@ public class DailyReturnDtoService {
     public List<DailyReturnDetailDTO> fetchDetailedDailyReturnBills(Date fromDate, Date toDate) {
         String jpql = "select new com.divudi.core.data.dto.DailyReturnDetailDTO("
                 + "b.deptId, b.billType, b.billClassType, b.netTotal, b.createdAt, "
-                + "b.paymentMethod, b.department.name, "
-                + "case when b.fromDepartment is null then '' else b.fromDepartment.name end) "
+                + "b.paymentMethod, coalesce(d.name, ''), "
+                + "coalesce(fd.name, '')) "
                 + "from Bill b "
+                + "left join b.department d "
+                + "left join b.fromDepartment fd "
                 + "where b.retired=false "
                 + "and b.createdAt between :fd and :td "
                 + "order by b.createdAt";
@@ -64,22 +66,26 @@ public class DailyReturnDtoService {
     
     public List<BillItemDetailDTO> fetchOpdBillItemsForDailyReturn(Date fromDate, Date toDate) {
         String jpql = "select new com.divudi.core.data.dto.BillItemDetailDTO("
-                + "bi.item.category.name, bi.item.name, bi.item.category.id, bi.item.id, "
+                + "ic.name, i.name, ic.id, i.id, "
                 + "bi.grossValue, bi.hospitalFee, bi.discount, bi.staffFee, "
-                + "bi.netValue, bi.qty, bi.bill.paymentMethod, bi.bill.billTypeAtomic, "
-                + "bi.bill.billClassType, bi.bill.department.name, bi.bill.createdAt) "
+                + "bi.netValue, bi.qty, b.paymentMethod, b.billTypeAtomic, "
+                + "b.billClassType, coalesce(d.name, ''), b.createdAt) "
                 + "from BillItem bi "
-                + "where bi.bill.retired = false "
+                + "left join bi.bill b "
+                + "left join b.department d "
+                + "left join bi.item i "
+                + "left join i.category ic "
+                + "where b.retired = false "
                 + "and bi.retired = false "
-                + "and bi.bill.createdAt between :fd and :td ";
-        
+                + "and b.createdAt between :fd and :td ";
+
         // Add OPD service types filter
         List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
         if (!btas.isEmpty()) {
-            jpql += "and bi.bill.billTypeAtomic in :bts ";
+            jpql += "and b.billTypeAtomic in :bts ";
         }
         
-        jpql += "order by bi.item.category.name, bi.item.name";
+        jpql += "order by ic.name, i.name";
         
         Map<String, Object> params = new HashMap<>();
         params.put("fd", fromDate);
@@ -94,16 +100,20 @@ public class DailyReturnDtoService {
     public List<BillItemDetailDTO> fetchCcCollectionBillItemsForDailyReturn(Date fromDate, Date toDate) {
         
         String jpql = "select new com.divudi.core.data.dto.BillItemDetailDTO("
-                + "bi.item.category.name, bi.item.name, bi.item.category.id, bi.item.id, "
+                + "ic.name, i.name, ic.id, i.id, "
                 + "bi.grossValue, bi.hospitalFee, bi.discount, bi.staffFee, "
-                + "bi.netValue, bi.qty, bi.bill.paymentMethod, bi.bill.billTypeAtomic, "
-                + "bi.bill.billClassType, bi.bill.department.name, bi.bill.createdAt) "
+                + "bi.netValue, bi.qty, b.paymentMethod, b.billTypeAtomic, "
+                + "b.billClassType, coalesce(d.name, ''), b.createdAt) "
                 + "from BillItem bi "
-                + "where bi.bill.retired = false "
+                + "left join bi.bill b "
+                + "left join b.department d "
+                + "left join bi.item i "
+                + "left join i.category ic "
+                + "where b.retired = false "
                 + "and bi.retired = false "
-                + "and bi.bill.createdAt between :fd and :td "
-                + "and bi.bill.billTypeAtomic in :bts "
-                + "order by bi.item.category.name, bi.item.name";
+                + "and b.createdAt between :fd and :td "
+                + "and b.billTypeAtomic in :bts "
+                + "order by ic.name, i.name";
         
         // CC specific BillTypeAtomic values from the original generateCcCollection method
         List<BillTypeAtomic> ccBillTypes = new ArrayList<>();
@@ -150,8 +160,9 @@ public class DailyReturnDtoService {
         // Try without fromDepartment.name entirely first
         String testJpql = "select new com.divudi.core.data.dto.DailyReturnDetailDTO("
                 + "b.deptId, b.billType, b.billClassType, b.netTotal, b.createdAt, "
-                + "b.paymentMethod, b.department.name, '') "
+                + "b.paymentMethod, coalesce(d.name, ''), '') "
                 + "from Bill b "
+                + "left join b.department d "
                 + "where b.retired = false "
                 + "and b.createdAt between :fd and :td "
                 + "and b.billTypeAtomic in :bts "
@@ -166,9 +177,11 @@ public class DailyReturnDtoService {
         // If that doesn't work, try COALESCE instead of CASE
         String jpql = "select new com.divudi.core.data.dto.DailyReturnDetailDTO("
                 + "b.deptId, b.billType, b.billClassType, b.netTotal, b.createdAt, "
-                + "b.paymentMethod, b.department.name, "
-                + "coalesce(b.fromDepartment.name, '')) "
+                + "b.paymentMethod, coalesce(d.name, ''), "
+                + "coalesce(fd.name, '')) "
                 + "from Bill b "
+                + "left join b.department d "
+                + "left join b.fromDepartment fd "
                 + "where b.retired = false "
                 + "and b.createdAt between :fd and :td "
                 + "and b.billTypeAtomic in :bts "
