@@ -102,7 +102,7 @@
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item Description">
+                                <p:column headerText="Item Description" filterMatchMode="contains" filterBy="#{i.item.name}">
                                     <h:outputLabel value="#{i.item.name}" />
                                 </p:column>
 

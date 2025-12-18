@@ -40,6 +40,24 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.IncomeBundle;
 import com.divudi.core.data.IncomeRow;
+import static com.divudi.core.data.PaymentMethod.Agent;
+import static com.divudi.core.data.PaymentMethod.Card;
+import static com.divudi.core.data.PaymentMethod.Cash;
+import static com.divudi.core.data.PaymentMethod.Cheque;
+import static com.divudi.core.data.PaymentMethod.Credit;
+import static com.divudi.core.data.PaymentMethod.IOU;
+import static com.divudi.core.data.PaymentMethod.MultiplePaymentMethods;
+import static com.divudi.core.data.PaymentMethod.None;
+import static com.divudi.core.data.PaymentMethod.OnCall;
+import static com.divudi.core.data.PaymentMethod.OnlineSettlement;
+import static com.divudi.core.data.PaymentMethod.PatientDeposit;
+import static com.divudi.core.data.PaymentMethod.PatientPoints;
+import static com.divudi.core.data.PaymentMethod.Slip;
+import static com.divudi.core.data.PaymentMethod.Staff;
+import static com.divudi.core.data.PaymentMethod.Staff_Welfare;
+import static com.divudi.core.data.PaymentMethod.Voucher;
+import static com.divudi.core.data.PaymentMethod.YouOweMe;
+import static com.divudi.core.data.PaymentMethod.ewallet;
 import com.divudi.core.data.PharmacyBundle;
 import com.divudi.core.data.PharmacyRow;
 import com.divudi.core.data.ReportTemplateRow;
@@ -49,17 +67,22 @@ import static com.divudi.core.data.ReportViewType.BY_BILL;
 import static com.divudi.core.data.ReportViewType.BY_BILL_TYPE;
 import static com.divudi.core.data.ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE;
 import static com.divudi.core.data.ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE;
+import static com.divudi.core.data.ReportViewType.BY_ITEM;
+import com.divudi.core.data.dto.MovementOutStockReportByItemDto;
+import com.divudi.core.data.dto.MovementOutStockReportDto;
 import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.HistoricalRecord;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.DrawerFacade;
+import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.ejb.PharmacyService;
@@ -244,6 +267,12 @@ public class PharmacySummaryReportController implements Serializable {
 
     // Numeric variables
     private int maxResult = 50;
+    
+    private MovementOutStockReportWrapperDto wrapperDto;
+    private MovementOutStockReportByItemWrapperDto wrapperDtoByItem;
+        
+    @EJB
+    private ItemFacade itemFacade;
 
     //transferOuts;
     //adjustments;
@@ -252,14 +281,36 @@ public class PharmacySummaryReportController implements Serializable {
     public String navigateToPharmacyIncomeReport() {
         return "/pharmacy/reports/summary_reports/pharmacy_income_report?faces-redirect=true";
     }
+    
+    private void clearData(){
+        wrapperDtoByItem = null;
+        wrapperDto = null;
+        bundle = null;
+        institution = null;
+        site = null;
+        department = null;
+        admissionType = null;
+        paymentScheme = null;
+    }
 
     public String navigateToPharmacyMovementOutBySaleIssueAndConsumptionWithCurrentStockReport() {
+        clearData();
         reportViewTypes = Arrays.asList(
                 ReportViewType.BY_BILL,
                 ReportViewType.BY_ITEM
         );
         reportViewType = ReportViewType.BY_ITEM;
         return "/pharmacy/reports/movement_reports/movement_out_by_sale_issue_and_consumption_with_current_stock_report?faces-redirect=true";
+    }
+    
+    public String navigateToPharmacyMovementOutBySaleIssueAndConsumptionWithCurrentStockReportOptimized() {
+        clearData();
+        reportViewTypes = Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_ITEM
+        );
+        reportViewType = ReportViewType.BY_BILL;
+        return "/pharmacy/reports/movement_reports/movement_out_by_sale_issue_and_consumption_with_current_stock_report_optimized?faces-redirect=true";
     }
 
     public String navigateToPharmacyProcurementReport() {
@@ -550,6 +601,27 @@ public class PharmacySummaryReportController implements Serializable {
             }
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
+    
+    public void processMovementOutBySaleIssueAndConsumptionWithCurrentStockReportOptimized() {
+      
+            if (reportViewType == null) {
+                JsfUtil.addErrorMessage("Please select a report view type.");
+                return;
+            }
+            switch (reportViewType) {
+                case BY_BILL:
+                    processMovementOutWithStocksReportByBillDto();
+                    break;
+                case BY_ITEM:
+                    processMovementOutWithStockReportByItemDto();
+                    addCurrentItemStock(wrapperDtoByItem.getPbis());
+                    break;
+                default:
+                    JsfUtil.addErrorMessage("Unsupported report view type: " + reportViewType.getLabel());
+                    break;
+            }
+        
+    }
 
     public void processMovementOutBySaleIssueAndConsumptionWithCurrentStockReport() {
         reportTimerController.trackReportExecution(() -> {
@@ -783,6 +855,429 @@ public class PharmacySummaryReportController implements Serializable {
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
+    public static class MovementOutStockReportWrapperDto {
+
+        private List<MovementOutStockReportDto> reportDataRows;
+
+        private double sumOfCashValues = 0.0;
+        private double sumOfCardValues = 0.0;
+        private double sumOfMultiplePaymentMethodsValues = 0.0;
+        private double sumOfStaffValues = 0.0;
+        private double sumOfCreditValues = 0.0;
+        private double sumOfStaffWelfareValues = 0.0;
+        private double sumOfVoucherValues = 0.0;
+        private double sumOfIouValues = 0.0;
+        private double sumOfAgentValues = 0.0;
+        private double sumOfChequeValues = 0.0;
+        private double sumOfSlipValues = 0.0;
+        private double sumOfEWalletValues = 0.0;
+        private double sumOfPatientDepositValues = 0.0;
+        private double sumOfPatientPointsValues = 0.0;
+        private double sumOfOnlineSettlementValues = 0.0;
+        private double sumOfNoneValues = 0.0;
+        private double sumOfOpdCreditValues = 0.0;
+        private double sumOfInpatientCreditValues = 0.0;
+
+        private double sumOfGrossTotal = 0.0;
+        private double sumOfDiscount = 0.0;
+        private double sumOfServiceCharge = 0.0;
+        private double sumOfTax = 0.0;
+        private double sumOfActualTotal = 0.0;
+        private double sumOfNetTotal = 0.0;
+
+        public List<MovementOutStockReportDto> getReportDataRows() {
+            return reportDataRows;
+        }
+
+        public void setReportDataRows(List<MovementOutStockReportDto> reportDataRows) {
+            this.reportDataRows = reportDataRows;
+        }
+
+        public double getSumOfCashValues() {
+            return sumOfCashValues;
+        }
+
+        public void setSumOfCashValues(double sumOfCashValues) {
+            this.sumOfCashValues = sumOfCashValues;
+        }
+
+        public double getSumOfCardValues() {
+            return sumOfCardValues;
+        }
+
+        public void setSumOfCardValues(double sumOfCardValues) {
+            this.sumOfCardValues = sumOfCardValues;
+        }
+
+        public double getSumOfMultiplePaymentMethodsValues() {
+            return sumOfMultiplePaymentMethodsValues;
+        }
+
+        public void setSumOfMultiplePaymentMethodsValues(double sumOfMultiplePaymentMethodsValues) {
+            this.sumOfMultiplePaymentMethodsValues = sumOfMultiplePaymentMethodsValues;
+        }
+
+        public double getSumOfStaffValues() {
+            return sumOfStaffValues;
+        }
+
+        public void setSumOfStaffValues(double sumOfStaffValues) {
+            this.sumOfStaffValues = sumOfStaffValues;
+        }
+
+        public double getSumOfCreditValues() {
+            return sumOfCreditValues;
+        }
+
+        public void setSumOfCreditValues(double sumOfCreditValues) {
+            this.sumOfCreditValues = sumOfCreditValues;
+        }
+
+        public double getSumOfStaffWelfareValues() {
+            return sumOfStaffWelfareValues;
+        }
+
+        public void setSumOfStaffWelfareValues(double sumOfStaffWelfareValues) {
+            this.sumOfStaffWelfareValues = sumOfStaffWelfareValues;
+        }
+
+        public double getSumOfVoucherValues() {
+            return sumOfVoucherValues;
+        }
+
+        public void setSumOfVoucherValues(double sumOfVoucherValues) {
+            this.sumOfVoucherValues = sumOfVoucherValues;
+        }
+
+        public double getSumOfIouValues() {
+            return sumOfIouValues;
+        }
+
+        public void setSumOfIouValues(double sumOfIouValues) {
+            this.sumOfIouValues = sumOfIouValues;
+        }
+
+        public double getSumOfAgentValues() {
+            return sumOfAgentValues;
+        }
+
+        public void setSumOfAgentValues(double sumOfAgentValues) {
+            this.sumOfAgentValues = sumOfAgentValues;
+        }
+
+        public double getSumOfChequeValues() {
+            return sumOfChequeValues;
+        }
+
+        public void setSumOfChequeValues(double sumOfChequeValues) {
+            this.sumOfChequeValues = sumOfChequeValues;
+        }
+
+        public double getSumOfSlipValues() {
+            return sumOfSlipValues;
+        }
+
+        public void setSumOfSlipValues(double sumOfSlipValues) {
+            this.sumOfSlipValues = sumOfSlipValues;
+        }
+
+        public double getSumOfEWalletValues() {
+            return sumOfEWalletValues;
+        }
+
+        public void setSumOfEWalletValues(double sumOfEWalletValues) {
+            this.sumOfEWalletValues = sumOfEWalletValues;
+        }
+
+        public double getSumOfPatientDepositValues() {
+            return sumOfPatientDepositValues;
+        }
+
+        public void setSumOfPatientDepositValues(double sumOfPatientDepositValues) {
+            this.sumOfPatientDepositValues = sumOfPatientDepositValues;
+        }
+
+        public double getSumOfPatientPointsValues() {
+            return sumOfPatientPointsValues;
+        }
+
+        public void setSumOfPatientPointsValues(double sumOfPatientPointsValues) {
+            this.sumOfPatientPointsValues = sumOfPatientPointsValues;
+        }
+
+        public double getSumOfOnlineSettlementValues() {
+            return sumOfOnlineSettlementValues;
+        }
+
+        public void setSumOfOnlineSettlementValues(double sumOfOnlineSettlementValues) {
+            this.sumOfOnlineSettlementValues = sumOfOnlineSettlementValues;
+        }
+
+        public double getSumOfNoneValues() {
+            return sumOfNoneValues;
+        }
+
+        public void setSumOfNoneValues(double sumOfNoneValues) {
+            this.sumOfNoneValues = sumOfNoneValues;
+        }
+
+        public double getSumOfOpdCreditValues() {
+            return sumOfOpdCreditValues;
+        }
+
+        public void setSumOfOpdCreditValues(double sumOfOpdCreditValues) {
+            this.sumOfOpdCreditValues = sumOfOpdCreditValues;
+        }
+
+        public double getSumOfInpatientCreditValues() {
+            return sumOfInpatientCreditValues;
+        }
+
+        public void setSumOfInpatientCreditValues(double sumOfInpatientCreditValues) {
+            this.sumOfInpatientCreditValues = sumOfInpatientCreditValues;
+        }
+
+        public double getSumOfGrossTotal() {
+            return sumOfGrossTotal;
+        }
+
+        public void setSumOfGrossTotal(double sumOfGrossTotal) {
+            this.sumOfGrossTotal = sumOfGrossTotal;
+        }
+
+        public double getSumOfDiscount() {
+            return sumOfDiscount;
+        }
+
+        public void setSumOfDiscount(double sumOfDiscount) {
+            this.sumOfDiscount = sumOfDiscount;
+        }
+
+        public double getSumOfServiceCharge() {
+            return sumOfServiceCharge;
+        }
+
+        public void setSumOfServiceCharge(double sumOfServiceCharge) {
+            this.sumOfServiceCharge = sumOfServiceCharge;
+        }
+
+        public double getSumOfTax() {
+            return sumOfTax;
+        }
+
+        public void setSumOfTax(double sumOfTax) {
+            this.sumOfTax = sumOfTax;
+        }
+
+        public double getSumOfActualTotal() {
+            return sumOfActualTotal;
+        }
+
+        public void setSumOfActualTotal(double sumOfActualTotal) {
+            this.sumOfActualTotal = sumOfActualTotal;
+        }
+
+        public double getSumOfNetTotal() {
+            return sumOfNetTotal;
+        }
+
+        public void setSumOfNetTotal(double sumOfNetTotal) {
+            this.sumOfNetTotal = sumOfNetTotal;
+        }
+    }
+
+    private void calculatePaymentsFromMultiplePayment(MovementOutStockReportDto dto, List<PaymentData> payments) {
+
+        if (dto == null && payments == null) {
+            return;
+        }
+
+        for (PaymentData p : payments) {
+            if (p.getPaymentMethod() == null) {
+                dto.setNoneValue(dto.getNoneValue() + p.getPaidValue());
+            } else {
+                double paidValue = p.getPaidValue();
+
+                switch (p.getPaymentMethod()) {
+                    case Agent:
+                        dto.setAgentValue(dto.getAgentValue() + paidValue);
+                        break;
+                    case Card:
+                        dto.setCardValue(dto.getCardValue() + paidValue);
+                        break;
+                    case Cash:
+                        dto.setCashValue(dto.getCashValue() + paidValue);
+                        break;
+                    case Cheque:
+                        dto.setChequeValue(dto.getChequeValue() + paidValue);
+                        break;
+                    case Credit:
+                        dto.setCreditValue(dto.getCreditValue() + paidValue);
+                        
+                        Bill bill = billFacade.find(dto.getBillId());
+                        
+                        if (bill != null && bill.getPatientEncounter() != null) {
+                            dto.setInpatientCreditValue(dto.getInpatientCreditValue() + paidValue);
+                        } else {
+                            dto.setOpdCreditValue(dto.getOpdCreditValue() + paidValue);
+                        }
+                        break;
+                    case IOU:
+                        dto.setIouValue(dto.getIouValue() + paidValue);
+                        break;
+                    case OnCall:
+                        dto.setOnCallValue(dto.getOnCallValue() + paidValue);
+                        break;
+                    case OnlineSettlement:
+                        dto.setOnlineSettlementValue(dto.getOnlineSettlementValue() + paidValue);
+                        break;
+                    case PatientDeposit:
+                        dto.setPatientDepositValue(dto.getPatientDepositValue() + paidValue);
+                        break;
+                    case PatientPoints:
+                        dto.setPatientPointsValue(dto.getPatientPointsValue() + paidValue);
+                        break;
+                    case Slip:
+                        dto.setSlipValue(dto.getSlipValue() + paidValue);
+                        break;
+                    case Staff:
+                        dto.setStaffValue(dto.getStaffValue() + paidValue);
+                        break;
+                    case Staff_Welfare:
+                        dto.setStaffWelfareValue(dto.getStaffWelfareValue() + paidValue);
+                        break;
+                    case Voucher:
+                        dto.setVoucherValue(dto.getVoucherValue() + paidValue);
+                        break;
+                    case ewallet:
+                        dto.seteWalletValue(dto.geteWalletValue() + paidValue);
+                        break;
+                    case YouOweMe:
+                        break;
+                    case None:
+                    case MultiplePaymentMethods:
+                        break;
+                    default:
+                        dto.setNoneValue(dto.getNoneValue() + paidValue);
+                }
+            }
+        }
+
+    }
+    
+    public Bill fetchBillFromId(Long billId){
+        if(billId == null){
+            return null;
+        }
+        
+        return billFacade.find(billId);
+    }
+    
+    public static class PaymentData{
+        private PaymentMethod paymentMethod;
+        private double paidValue;
+        private Date createdAt;
+
+        public PaymentData(PaymentMethod paymentMethod, double paidValue, Date createdAt) {
+            this.paymentMethod = paymentMethod;
+            this.paidValue = paidValue;
+            this.createdAt = createdAt;
+        }
+
+        public PaymentMethod getPaymentMethod() {
+            return paymentMethod;
+        }
+
+        public void setPaymentMethod(PaymentMethod paymentMethod) {
+            this.paymentMethod = paymentMethod;
+        }
+
+        public double getPaidValue() {
+            return paidValue;
+        }
+
+        public void setPaidValue(double paidValue) {
+            this.paidValue = paidValue;
+        }
+
+        public Date getCreatedAt() {
+            return createdAt;
+        }
+
+        public void setCreatedAt(Date createdAt) {
+            this.createdAt = createdAt;
+        }
+    }
+
+    private void fetchMultiplePaymentMovementOutWithStocksReportByBillDto(List<MovementOutStockReportDto> reportDataRows) {
+
+        for (MovementOutStockReportDto dto : reportDataRows) {
+            if (dto.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+                List<PaymentData> payments = billService.fetchBillPaymentsFromBillId(dto.getBillId());
+
+                if(payments != null && !payments.isEmpty()){
+                    calculatePaymentsFromMultiplePayment(dto, payments);
+                }
+            }
+        }
+
+    }
+    
+    private void createSummeryForMovementOutWithStocksReportByBillDto(List<MovementOutStockReportDto> reportDataRows, MovementOutStockReportWrapperDto wrapperDto){
+        
+        for (MovementOutStockReportDto r : reportDataRows) {
+            wrapperDto.sumOfCashValues += r.getCashValue();
+            wrapperDto.sumOfCardValues += r.getCardValue();
+            wrapperDto.sumOfMultiplePaymentMethodsValues += r.getMultiplePaymentMethodsValue();
+            wrapperDto.sumOfStaffValues += r.getStaffValue();
+            wrapperDto.sumOfCreditValues += r.getCreditValue();
+            wrapperDto.sumOfStaffWelfareValues += r.getStaffWelfareValue();
+            wrapperDto.sumOfVoucherValues += r.getVoucherValue();
+            wrapperDto.sumOfIouValues += r.getIouValue();
+            wrapperDto.sumOfAgentValues += r.getAgentValue();
+            wrapperDto.sumOfChequeValues += r.getChequeValue();
+            wrapperDto.sumOfSlipValues += r.getSlipValue();
+            wrapperDto.sumOfEWalletValues += r.geteWalletValue();
+            wrapperDto.sumOfPatientDepositValues += r.getPatientDepositValue();
+            wrapperDto.sumOfPatientPointsValues += r.getPatientPointsValue();
+            wrapperDto.sumOfOnlineSettlementValues += r.getOnlineSettlementValue();
+            wrapperDto.sumOfNoneValues += r.getNoneValue();
+            wrapperDto.sumOfOpdCreditValues += r.getOpdCreditValue();
+            wrapperDto.sumOfInpatientCreditValues += r.getInpatientCreditValue();
+
+            wrapperDto.sumOfGrossTotal += r.getGrossTotal();
+            wrapperDto.sumOfDiscount += r.getDiscount();
+            wrapperDto.sumOfServiceCharge += r.getServiceCharge();
+            wrapperDto.sumOfTax += r.getTax();
+            wrapperDto.sumOfActualTotal += r.getActualTotal();
+            wrapperDto.sumOfNetTotal += r.getNetTotal();
+        }
+  
+    }
+
+    public void processMovementOutWithStocksReportByBillDto() {
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyMovementOutBillTypes();
+        List<MovementOutStockReportDto> reportDataRows = billService.fetchMovementOutStockReportData(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        
+        fetchMultiplePaymentMovementOutWithStocksReportByBillDto(reportDataRows);
+        
+        wrapperDto = new MovementOutStockReportWrapperDto();
+        
+        wrapperDto.setReportDataRows(reportDataRows);
+        
+        createSummeryForMovementOutWithStocksReportByBillDto(reportDataRows, wrapperDto);
+        
+       
+    }
+
+    public MovementOutStockReportWrapperDto getWrapperDto() {
+        return wrapperDto;
+    }
+
+    public void setWrapperDto(MovementOutStockReportWrapperDto wrapperDto) {
+        this.wrapperDto = wrapperDto;
+    }
+
     public void processMovementOutWithStocksReportByBill() {
         reportTimerController.trackReportExecution(() -> {
             List<BillTypeAtomic> billTypeAtomics = getPharmacyMovementOutBillTypes();
@@ -841,6 +1336,99 @@ public class PharmacySummaryReportController implements Serializable {
         List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
         pharmacyBundle = new PharmacyBundle(pbis);
         pharmacyBundle.groupSaleDetailsByItems();
+    }
+    
+    public static class MovementOutStockReportByItemWrapperDto{
+        
+        private List<com.divudi.core.data.dto.MovementOutStockReportByItemDto> pbis;
+        private double grossSaleValue;
+        private double marginValue;
+        private double discountValue;
+        private double netSaleValue;
+        private double quantity;
+
+        public List<MovementOutStockReportByItemDto> getPbis() {
+            return pbis;
+        }
+
+        public void setPbis(List<MovementOutStockReportByItemDto> pbis) {
+            this.pbis = pbis;
+        }
+
+        public double getGrossSaleValue() {
+            return grossSaleValue;
+        }
+
+        public void setGrossSaleValue(double grossSaleValue) {
+            this.grossSaleValue = grossSaleValue;
+        }
+
+        public double getMarginValue() {
+            return marginValue;
+        }
+
+        public void setMarginValue(double marginValue) {
+            this.marginValue = marginValue;
+        }
+
+        public double getDiscountValue() {
+            return discountValue;
+        }
+
+        public void setDiscountValue(double discountValue) {
+            this.discountValue = discountValue;
+        }
+
+        public double getNetSaleValue() {
+            return netSaleValue;
+        }
+
+        public void setNetSaleValue(double netSaleValue) {
+            this.netSaleValue = netSaleValue;
+        }
+
+        public double getQuantity() {
+            return quantity;
+        }
+
+        public void setQuantity(double quantity) {
+            this.quantity = quantity;
+        }
+        
+    }
+
+    public MovementOutStockReportByItemWrapperDto getWrapperDtoByItem() {
+        return wrapperDtoByItem;
+    }
+
+    public void setWrapperDtoByItem(MovementOutStockReportByItemWrapperDto wrapperDtoByItem) {
+        this.wrapperDtoByItem = wrapperDtoByItem;
+    }
+    
+    private void calculateTheDtoSummeryForMovementOutWithStockReportByItemDto(List<MovementOutStockReportByItemDto> pbis, MovementOutStockReportByItemWrapperDto wrapperDto){
+        
+        if(pbis == null || wrapperDto == null){
+            return;
+        }
+        
+        for(MovementOutStockReportByItemDto dto : pbis){
+            wrapperDto.setGrossSaleValue(wrapperDto.getGrossSaleValue() + dto.getGrossSaleValue());
+            wrapperDto.setDiscountValue(wrapperDto.getDiscountValue() + dto.getDiscountValue());
+            wrapperDto.setMarginValue(wrapperDto.getMarginValue() + dto.getMarginValue());
+            wrapperDto.setNetSaleValue(wrapperDto.getNetSaleValue() + dto.getNetSaleValue());
+            
+        }
+        
+    }
+    
+    public void processMovementOutWithStockReportByItemDto() {
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyMovementOutBillTypes();
+        List<MovementOutStockReportByItemDto> pbis = billService.fetchPharmaceuticalBillItemsForMovementOutStockReportByItemDto(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        
+        wrapperDtoByItem = new MovementOutStockReportByItemWrapperDto();
+        wrapperDtoByItem.setPbis(pbis);
+        
+        calculateTheDtoSummeryForMovementOutWithStockReportByItemDto(pbis, wrapperDtoByItem);
     }
 
     public void processPharmacyIncomeAndCostReportByBill() {
@@ -1986,6 +2574,21 @@ public class PharmacySummaryReportController implements Serializable {
                 continue;
             }
             pr.setStockQty(stockController.findStock(institution, site, department, pr.getItem()));
+        }
+    }
+    
+    private void addCurrentItemStock(List<MovementOutStockReportByItemDto> dtoList) {
+        if (dtoList == null) {
+            return;
+        }
+
+        for (MovementOutStockReportByItemDto dto : dtoList) {
+            if (dto.getItemId() == 0) {
+                continue;
+            }
+
+            dto.setCurrentStock(stockController.findStock(institution, site, department, dto.getItemId()));
+            
         }
     }
 
