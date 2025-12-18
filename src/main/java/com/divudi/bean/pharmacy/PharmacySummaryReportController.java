@@ -1166,7 +1166,6 @@ public class PharmacySummaryReportController implements Serializable {
     }
     
     public Bill fetchBillFromId(Long billId){
-        System.out.println("line 1140");
         if(billId == null){
             return null;
         }
