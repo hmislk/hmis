@@ -1392,13 +1392,21 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
 
-        //Rates
-        //Values
+        //Rates - Calculate rate and discount before calculating values
         if (stockDto.getRetailRate() != null) {
-            billItem.setGrossValue(stockDto.getRetailRate() * qty);
+            billItem.setRate(stockDto.getRetailRate());
         }
-        billItem.setNetValue(qty * billItem.getNetRate());
-        billItem.setDiscount(billItem.getGrossValue() - billItem.getNetValue());
+
+        // Calculate discount rate based on current payment scheme
+        billItem.setDiscountRate(calculateBillItemDiscountRate(billItem));
+
+        // Calculate net rate after applying discount
+        billItem.setNetRate(billItem.getRate() - billItem.getDiscountRate());
+
+        //Values
+        billItem.setGrossValue(billItem.getRate() * qty);
+        billItem.setDiscount(billItem.getDiscountRate() * qty);
+        billItem.setNetValue(billItem.getGrossValue() - billItem.getDiscount());
 
     }
 
