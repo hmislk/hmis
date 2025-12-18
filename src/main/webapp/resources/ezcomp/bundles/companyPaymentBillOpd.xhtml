@@ -31,7 +31,7 @@
             <table class="table w-100">
                 <thead>
                     <tr class="text-light bg-dark">
-                        <th class="text-light bg-dark" colspan="4">
+                        <th class="text-light bg-dark" colspan="3">
                             <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
                         </th>
                         <th class="text-end text-light bg-dark">
@@ -43,7 +43,6 @@
                     <tr>
                         <th>Bill No</th>
                         <th>Company</th>
-                        <th>Bill Type</th>
                         <th>Payment Method</th>
                         <th class="text-end">Value</th>
                     </tr>
@@ -56,9 +55,6 @@
                             </td>
                             <td>
                                 <h:outputText value="#{row.bill.fromInstitution.name}" />
-                            </td>
-                            <td>
-                                <h:outputText value="#{row.bill.billTypeAtomic.label}" />
                             </td>
                             <td>
                                 <h:outputText value="#{row.bill.paymentMethod}" />

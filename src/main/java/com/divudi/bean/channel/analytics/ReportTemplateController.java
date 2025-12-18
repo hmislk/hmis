@@ -276,6 +276,8 @@ public class ReportTemplateController implements Serializable {
         String jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + " bill) "
                 + " from Bill bill "
+                + " left join fetch bill.patient "
+                + " left join fetch bill.patient.person "
                 + " where bill.retired=false ";
 
         if (excludeCredit != null && excludeCredit) {
@@ -320,8 +322,6 @@ public class ReportTemplateController implements Serializable {
             jpql += " and bill.department.site = :site ";
             parameters.put("site", paramSite);
         }
-
-        jpql += " group by bill";
 
         System.out.println("jpql = " + jpql);
 

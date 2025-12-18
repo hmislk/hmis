@@ -43,8 +43,8 @@
                     </tr>
                     <tr>
                         <th>Bill No</th>
+                        <th>Date &amp; Time</th>
                         <th>Patient</th>
-                        <th>Payment Method</th>
                         <th class="text-end">Value</th>
                     </tr>
                 </thead>
@@ -55,10 +55,12 @@
                                 <h:outputText value="#{row.bill.deptId}" />
                             </td>
                             <td>
-                                <h:outputText value="#{row.bill.patient.person.nameWithTitle}" />
+                                <h:outputText value="#{row.bill.billTime}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
                             </td>
                             <td>
-                                <h:outputText value="#{row.bill.paymentMethod}" />
+                                <h:outputText value="#{row.bill.patient.person.nameWithTitle}" />
                             </td>
                             <td class="text-end">
                                 <h:outputText value="#{row.bill.netTotal}">
