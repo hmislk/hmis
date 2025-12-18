@@ -109,7 +109,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Item Descreption">
+                                <p:column headerText="Item Descreption" filterMatchMode="contains" filterBy="#{i.item.name}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Item Description"/>
                                     </f:facet>
