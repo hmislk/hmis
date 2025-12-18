@@ -2579,21 +2579,16 @@ public class PharmacySummaryReportController implements Serializable {
     }
     
     private void addCurrentItemStock(List<MovementOutStockReportByItemDto> dtoList) {
-        if (pharmacyBundle == null) {
+        if (dtoList == null) {
             return;
         }
+
         for (MovementOutStockReportByItemDto dto : dtoList) {
-            if (dto.getItemId() > 0) {
+            if (dto.getItemId() == 0) {
                 continue;
             }
-            
-            Item item = itemFacade.find(dto.getItemId());
-            
-            if(item == null){
-                return;
-            }
-            
-            dto.setQuantity(stockController.findStock(institution, site, department, item));
+
+            dto.setCurrentStock(stockController.findStock(institution, site, department, dto.getItemId()));
             
         }
     }

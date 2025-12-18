@@ -26,6 +26,7 @@ public class MovementOutStockReportByItemDto {
     private double marginValue;
     private double discountValue;
     private double netSaleValue;
+    private double currentStock;
 
     public MovementOutStockReportByItemDto(long pharmaceuticalBillItemId, long billItemId, long itemId, long billId, Date createdAt, String itemName, double quantity, double grossSaleValue, double marginValue, double discountValue, double netSaleValue) {
         this.pharmaceuticalBillItemId = pharmaceuticalBillItemId;
@@ -39,6 +40,14 @@ public class MovementOutStockReportByItemDto {
         this.marginValue = marginValue;
         this.discountValue = discountValue;
         this.netSaleValue = netSaleValue;
+    }
+
+    public double getCurrentStock() {
+        return currentStock;
+    }
+
+    public void setCurrentStock(double currentStock) {
+        this.currentStock = currentStock;
     }
 
     public long getBillId() {
