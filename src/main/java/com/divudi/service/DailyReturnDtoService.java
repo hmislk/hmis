@@ -31,175 +31,219 @@ public class DailyReturnDtoService {
         Map<String, Object> params = new HashMap<>();
         params.put("fd", fromDate);
         params.put("td", toDate);
-        return (List<DailyReturnDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return (List<DailyReturnDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, true);
     }
 
     public List<DailyReturnItemDTO> fetchDailyReturnItems(Date fromDate, Date toDate) {
-        String jpql = "select new com.divudi.core.data.dto.DailyReturnItemDTO(b.department.name, sum(b.netTotal)) "
+        String jpql = "select new com.divudi.core.data.dto.DailyReturnItemDTO(d.name, sum(b.netTotal)) "
                 + "from Bill b "
+                + "left join b.department d "
                 + "where b.retired=false "
                 + "and b.createdAt between :fd and :td "
-                + "group by b.department.name";
+                + "group by d.name";
         Map<String, Object> params = new HashMap<>();
         params.put("fd", fromDate);
         params.put("td", toDate);
-        return (List<DailyReturnItemDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return (List<DailyReturnItemDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, true);
     }
 
     public List<DailyReturnDetailDTO> fetchDetailedDailyReturnBills(Date fromDate, Date toDate) {
         String jpql = "select new com.divudi.core.data.dto.DailyReturnDetailDTO("
                 + "b.deptId, b.billType, b.billClassType, b.netTotal, b.createdAt, "
-                + "b.paymentMethod, b.department.name, "
-                + "case when b.fromDepartment is null then '' else b.fromDepartment.name end) "
+                + "b.paymentMethod, coalesce(d.name, ''), "
+                + "coalesce(fd.name, '')) "
                 + "from Bill b "
+                + "left join b.department d "
+                + "left join b.fromDepartment fd "
                 + "where b.retired=false "
                 + "and b.createdAt between :fd and :td "
                 + "order by b.createdAt";
         Map<String, Object> params = new HashMap<>();
         params.put("fd", fromDate);
         params.put("td", toDate);
-        return (List<DailyReturnDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return (List<DailyReturnDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, true);
     }
     
     public List<BillItemDetailDTO> fetchOpdBillItemsForDailyReturn(Date fromDate, Date toDate) {
         String jpql = "select new com.divudi.core.data.dto.BillItemDetailDTO("
-                + "cat.name, item.name, cat.id, item.id, "
+                + "ic.name, i.name, ic.id, i.id, "
                 + "bi.grossValue, bi.hospitalFee, bi.discount, bi.staffFee, "
-                + "bi.netValue, bi.qty, bill.paymentMethod, bill.billTypeAtomic, "
-                + "bill.billClassType, coalesce(dept.name, ''), bill.createdAt) "
+                + "bi.netValue, bi.qty, b.paymentMethod, b.billTypeAtomic, "
+                + "b.billClassType, coalesce(d.name, ''), b.createdAt) "
                 + "from BillItem bi "
-                + "left join bi.item item "
-                + "left join item.category cat "
-                + "left join bi.bill bill "
-                + "left join bill.department dept "
-                + "where bill.retired = false "
+                + "left join bi.bill b "
+                + "left join b.department d "
+                + "left join bi.item i "
+                + "left join i.category ic "
+                + "where b.retired = false "
                 + "and bi.retired = false "
-                + "and bill.createdAt between :fd and :td ";
+                + "and b.createdAt between :fd and :td ";
 
         // Add OPD service types filter
         List<BillTypeAtomic> btas = BillTypeAtomic.findByServiceType(ServiceType.OPD);
         if (!btas.isEmpty()) {
-            jpql += "and bill.billTypeAtomic in :bts ";
+            jpql += "and b.billTypeAtomic in :bts ";
         }
-
-        jpql += "order by cat.name, item.name";
-
+        
+        jpql += "order by ic.name, i.name";
+        
         Map<String, Object> params = new HashMap<>();
         params.put("fd", fromDate);
         params.put("td", toDate);
         if (!btas.isEmpty()) {
             params.put("bts", btas);
         }
-
-        return (List<BillItemDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        
+        return (List<BillItemDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, true);
     }
     
     public List<BillItemDetailDTO> fetchCcCollectionBillItemsForDailyReturn(Date fromDate, Date toDate) {
+        
         String jpql = "select new com.divudi.core.data.dto.BillItemDetailDTO("
-                + "cat.name, item.name, cat.id, item.id, "
+                + "ic.name, i.name, ic.id, i.id, "
                 + "bi.grossValue, bi.hospitalFee, bi.discount, bi.staffFee, "
-                + "bi.netValue, bi.qty, bill.paymentMethod, bill.billTypeAtomic, "
-                + "bill.billClassType, coalesce(dept.name, ''), bill.createdAt) "
+                + "bi.netValue, bi.qty, b.paymentMethod, b.billTypeAtomic, "
+                + "b.billClassType, coalesce(d.name, ''), b.createdAt) "
                 + "from BillItem bi "
-                + "left join bi.item item "
-                + "left join item.category cat "
-                + "left join bi.bill bill "
-                + "left join bill.department dept "
-                + "where bill.retired = false "
+                + "left join bi.bill b "
+                + "left join b.department d "
+                + "left join bi.item i "
+                + "left join i.category ic "
+                + "where b.retired = false "
                 + "and bi.retired = false "
-                + "and bill.createdAt between :fd and :td "
-                + "and bill.billTypeAtomic in :bts "
-                + "order by cat.name, item.name";
-
+                + "and b.createdAt between :fd and :td "
+                + "and b.billTypeAtomic in :bts "
+                + "order by ic.name, i.name";
+        
         // CC specific BillTypeAtomic values from the original generateCcCollection method
         List<BillTypeAtomic> ccBillTypes = new ArrayList<>();
         ccBillTypes.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
         ccBillTypes.add(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
-
+        
+        
         Map<String, Object> params = new HashMap<>();
         params.put("fd", fromDate);
         params.put("td", toDate);
         params.put("bts", ccBillTypes);
-
-        return (List<BillItemDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        
+        List<BillItemDetailDTO> result = (List<BillItemDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, true);
+        
+        return result;
     }
     
     public List<DailyReturnDetailDTO> fetchCcCollectionBillsForDailyReturn(Date fromDate, Date toDate) {
-        String jpql = "select new com.divudi.core.data.dto.DailyReturnDetailDTO("
+        // First, let's check if ANY bills exist in the date range
+        String countJpql = "select count(b) from Bill b where b.retired = false and b.createdAt between :fd and :td";
+        Map<String, Object> countParams = new HashMap<>();
+        countParams.put("fd", fromDate);
+        countParams.put("td", toDate);
+        Long totalBills = (Long) billFacade.findSingleScalar(countJpql, countParams);
+        
+        // Check if any bills have CC BillTypeAtomic
+        String ccCountJpql = "select count(b) from Bill b where b.retired = false and b.createdAt between :fd and :td and b.billTypeAtomic in :bts";
+        List<BillTypeAtomic> ccBillTypes = new ArrayList<>();
+        ccBillTypes.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
+        ccBillTypes.add(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
+        
+        Map<String, Object> ccCountParams = new HashMap<>();
+        ccCountParams.put("fd", fromDate);
+        ccCountParams.put("td", toDate);
+        ccCountParams.put("bts", ccBillTypes);
+        Long ccBills = (Long) billFacade.findSingleScalar(ccCountJpql, ccCountParams);
+        
+        Map<String, Object> params = new HashMap<>();
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("bts", ccBillTypes);
+        
+        
+        // Try without fromDepartment.name entirely first
+        String testJpql = "select new com.divudi.core.data.dto.DailyReturnDetailDTO("
                 + "b.deptId, b.billType, b.billClassType, b.netTotal, b.createdAt, "
-                + "b.paymentMethod, coalesce(dept.name, ''), "
-                + "coalesce(fromDept.name, '')) "
+                + "b.paymentMethod, coalesce(d.name, ''), '') "
                 + "from Bill b "
-                + "left join b.department dept "
-                + "left join b.fromDepartment fromDept "
+                + "left join b.department d "
                 + "where b.retired = false "
                 + "and b.createdAt between :fd and :td "
                 + "and b.billTypeAtomic in :bts "
                 + "order by b.createdAt";
-
-        List<BillTypeAtomic> ccBillTypes = new ArrayList<>();
-        ccBillTypes.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
-        ccBillTypes.add(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("fd", fromDate);
-        params.put("td", toDate);
-        params.put("bts", ccBillTypes);
-
-        return (List<DailyReturnDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+                
+        List<DailyReturnDetailDTO> testResult = (List<DailyReturnDetailDTO>) billFacade.findLightsByJpql(testJpql, params, TemporalType.TIMESTAMP, true);
+        
+        if (testResult != null && testResult.size() > 0) {
+            return testResult;
+        }
+        
+        // If that doesn't work, try COALESCE instead of CASE
+        String jpql = "select new com.divudi.core.data.dto.DailyReturnDetailDTO("
+                + "b.deptId, b.billType, b.billClassType, b.netTotal, b.createdAt, "
+                + "b.paymentMethod, coalesce(d.name, ''), "
+                + "coalesce(fd.name, '')) "
+                + "from Bill b "
+                + "left join b.department d "
+                + "left join b.fromDepartment fd "
+                + "where b.retired = false "
+                + "and b.createdAt between :fd and :td "
+                + "and b.billTypeAtomic in :bts "
+                + "order by b.createdAt";
+        
+        
+        List<DailyReturnDetailDTO> result = (List<DailyReturnDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, true);
+        
+        return result;
     }
     
     public List<PaymentDetailDTO> fetchCreditCardPaymentsForDailyReturn(Date fromDate, Date toDate) {
         List<PaymentDetailDTO> allResults = new ArrayList<>();
-
+        
         // 1. Get regular Card payments
         String paymentJpql = "select new com.divudi.core.data.dto.PaymentDetailDTO("
-                + "bill.deptId, bill.billType, p.paymentMethod, p.paidValue, p.createdAt, "
+                + "pb.deptId, pb.billType, p.paymentMethod, p.paidValue, p.createdAt, "
                 + "p.creditCardRefNo, "
                 + "coalesce(bank.name, ''), "
                 + "coalesce(inst.name, ''), "
-                + "coalesce(dept.name, '')) "
+                + "coalesce(pd.name, '')) "
                 + "from Payment p "
-                + "left join p.bill bill "
+                + "left join p.bill pb "
+                + "left join pb.department pd "
                 + "left join p.bank bank "
                 + "left join p.institution inst "
-                + "left join bill.department dept "
                 + "where p.retired = false "
                 + "and p.createdAt between :fd and :td "
                 + "and p.paymentMethod = :paymentMethod "
                 + "order by p.createdAt";
-
+        
         Map<String, Object> paymentParams = new HashMap<>();
         paymentParams.put("fd", fromDate);
         paymentParams.put("td", toDate);
         paymentParams.put("paymentMethod", com.divudi.core.data.PaymentMethod.Card);
-
-        List<PaymentDetailDTO> paymentResults = (List<PaymentDetailDTO>) billFacade.findLightsByJpql(paymentJpql, paymentParams, TemporalType.TIMESTAMP);
+        
+        List<PaymentDetailDTO> paymentResults = (List<PaymentDetailDTO>) billFacade.findLightsByJpql(paymentJpql, paymentParams, TemporalType.TIMESTAMP, true);
         allResults.addAll(paymentResults);
-
+        
         // 2. Get Card refund bills (Bills with Card payment method and negative amounts)
         String refundJpql = "select new com.divudi.core.data.dto.PaymentDetailDTO("
                 + "b.deptId, b.billType, b.paymentMethod, b.netTotal, b.createdAt, "
                 + "'', "  // creditCardRefNo - not applicable for refunds
                 + "'', "  // bankName - not applicable for refunds
                 + "'', "  // institutionName - not applicable
-                + "coalesce(dept.name, '')) "  // departmentName
+                + "coalesce(bd.name, '')) "  // departmentName
                 + "from Bill b "
-                + "left join b.department dept "
+                + "left join b.department bd "
                 + "where b.retired = false "
                 + "and b.createdAt between :fd and :td "
                 + "and b.paymentMethod = :paymentMethod "
                 + "and b.netTotal < 0 "
                 + "order by b.createdAt";
-
+        
         Map<String, Object> refundParams = new HashMap<>();
         refundParams.put("fd", fromDate);
         refundParams.put("td", toDate);
         refundParams.put("paymentMethod", com.divudi.core.data.PaymentMethod.Card);
-
-        List<PaymentDetailDTO> refundResults = (List<PaymentDetailDTO>) billFacade.findLightsByJpql(refundJpql, refundParams, TemporalType.TIMESTAMP);
+        
+        List<PaymentDetailDTO> refundResults = (List<PaymentDetailDTO>) billFacade.findLightsByJpql(refundJpql, refundParams, TemporalType.TIMESTAMP, true);
         allResults.addAll(refundResults);
-
+        
         return allResults;
     }
     
@@ -207,28 +251,28 @@ public class DailyReturnDtoService {
         String jpql = "select new com.divudi.core.data.dto.PaymentDetailDTO("
                 + "b.deptId, b.billType, b.paymentMethod, b.netTotal, b.createdAt, "
                 + "'', "  // creditCardRefNo - not applicable for patient deposits
-                + "coalesce(pers.name, ''), "  // bankName field used for patient name - using JOIN to avoid UnitOfWork issue
+                + "coalesce(p.name, ''), "  // bankName field used for patient name
                 + "'', "  // institutionName - not applicable
-                + "coalesce(dept.name, '')) "  // departmentName
+                + "coalesce(d.name, '')) "  // departmentName
                 + "from Bill b "
-                + "left join b.patient pat "
-                + "left join pat.person pers "
-                + "left join b.department dept "
+                + "left join b.patient pt "
+                + "left join pt.person p "
+                + "left join b.department d "
                 + "where b.retired = false "
                 + "and b.createdAt between :fd and :td "
                 + "and b.billTypeAtomic in :bts "
                 + "order by b.createdAt";
-
+        
         // Patient Deposit specific BillTypeAtomic values
         List<BillTypeAtomic> patientDepositBillTypes = BillTypeAtomic.findByServiceType(ServiceType.PATIENT_DEPOSIT);
-
+        
         Map<String, Object> params = new HashMap<>();
         params.put("fd", fromDate);
         params.put("td", toDate);
         params.put("bts", patientDepositBillTypes);
-
-        List<PaymentDetailDTO> result = (List<PaymentDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-
+        
+        List<PaymentDetailDTO> result = (List<PaymentDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, true);
+        
         return result;
     }
 }
