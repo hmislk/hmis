@@ -9,6 +9,7 @@ import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
@@ -19,6 +20,8 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Consultant;
+import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.RefundBill;
@@ -39,6 +42,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -46,6 +50,18 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.primefaces.model.charts.bar.BarChartModel;
+import org.primefaces.model.charts.line.LineChartModel;
+import org.primefaces.model.charts.ChartData;
+import org.primefaces.model.charts.axes.cartesian.CartesianScales;
+import org.primefaces.model.charts.axes.cartesian.linear.CartesianLinearAxes;
+import org.primefaces.model.charts.axes.cartesian.linear.CartesianLinearTicks;
+import org.primefaces.model.charts.bar.BarChartDataSet;
+import org.primefaces.model.charts.bar.BarChartOptions;
+import org.primefaces.model.charts.line.LineChartDataSet;
+import org.primefaces.model.charts.line.LineChartOptions;
+import org.primefaces.model.charts.optionconfig.legend.Legend;
+import org.primefaces.model.charts.optionconfig.title.Title;
 
 /**
  *
@@ -199,14 +215,49 @@ public class InwardReportController implements Serializable {
     }
 
     private List<SurgeryCountDoctorWiseDTO> billList;
-    
 
+//    public void processSurgeryCountDoctorWiseReport() {
+//
+//        billList = new ArrayList<>();
+//
+//        Map<String, Object> params = new HashMap<>();
+//        StringBuilder jpql = new StringBuilder();
+//        jpql.append(" Select new com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO(")
+//                .append(" b.staff, ")
+//                .append(" b.staff.person.name, ")
+//                .append(" b.staff.speciality.name, ")
+//                .append(" b.createdAt")
+//                .append(") ")
+//                .append(" from BillFee b ")
+//                .append(" Where b.retired = false ")
+//                .append(" And b.fee.feeType = :feeType ")
+//                .append(" And b.bill.billTypeAtomic = :bta ")
+//                .append(" And type(b.staff) = :staffClass ")
+//                //                .append(" And (type(b.staff) = :doctorClass OR type(b.staff) = :consultantClass) ")
+//                .append(" AND b.createdAt BETWEEN :fromDate AND :toDate ");
+//
+//        params.put("bta", BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL);
+//        params.put("fromDate", fromYearStartDate);
+//        params.put("toDate", toYearEndDate);
+//        params.put("staffClass", Consultant.class);
+//        params.put("feeType", FeeType.Staff);  // Ensures we're looking at staff professional fees
+//
+////        params.put("doctorClass", Doctor.class);
+////        params.put("consultantClass", Consultant.class);
+//        if (currentSpeciality != null) {
+//            jpql.append(" AND b.staff.speciality = :spe ");
+//            params.put("spe", currentSpeciality);
+//        }
+//
+//        billList = (List<SurgeryCountDoctorWiseDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+//
+////        double febCount = billList.stream().mapToDouble(SurgeryCountDoctorWiseDTO::getFebruary).count();
+//    }
     public void processSurgeryCountDoctorWiseReport() {
-
         billList = new ArrayList<>();
-
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
+
         jpql.append(" Select new com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO(")
                 .append(" b.staff, ")
                 .append(" b.staff.person.name, ")
@@ -216,21 +267,324 @@ public class InwardReportController implements Serializable {
                 .append(" from BillFee b ")
                 .append(" Where b.retired = false ")
                 .append(" And b.bill.billTypeAtomic = :bta ")
+                .append(" And (type(b.staff) = :doctorClass OR type(b.staff) = :consultantClass) ")
                 .append(" AND b.createdAt BETWEEN :fromDate AND :toDate ");
 
         params.put("bta", BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL);
         params.put("fromDate", fromYearStartDate);
         params.put("toDate", toYearEndDate);
-        
+        params.put("doctorClass", Doctor.class);
+        params.put("consultantClass", Consultant.class);
+
         if (currentSpeciality != null) {
             jpql.append(" AND b.staff.speciality = :spe ");
             params.put("spe", currentSpeciality);
         }
 
-        billList = (List<SurgeryCountDoctorWiseDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        
-        double febCount = billList.stream().mapToDouble(SurgeryCountDoctorWiseDTO::getFebruary).count();
+        jpql.append(" ORDER BY b.staff.speciality.name, b.staff.person.name ");
 
+        List<SurgeryCountDoctorWiseDTO> rawList = (List<SurgeryCountDoctorWiseDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        // Group by specialty and doctor, count surgeries month-wise
+        Map<String, Map<Long, SurgeryCountDoctorWiseDTO>> specialtyDoctorMap = new LinkedHashMap<>();
+        Calendar cal = Calendar.getInstance();
+
+        for (SurgeryCountDoctorWiseDTO dto : rawList) {
+            String speciality = dto.getSpecialityName();
+            Long staffId = dto.getStaff().getId();
+
+            // Get or create specialty map
+            Map<Long, SurgeryCountDoctorWiseDTO> doctorMap = specialtyDoctorMap.get(speciality);
+            if (doctorMap == null) {
+                doctorMap = new LinkedHashMap<>();
+                specialtyDoctorMap.put(speciality, doctorMap);
+            }
+
+            // Get or create doctor aggregation
+            SurgeryCountDoctorWiseDTO aggregated = doctorMap.get(staffId);
+            if (aggregated == null) {
+                aggregated = new SurgeryCountDoctorWiseDTO(
+                        dto.getStaff(),
+                        dto.getDoctorName(),
+                        dto.getSpecialityName(),
+                        null
+                );
+                doctorMap.put(staffId, aggregated);
+            }
+
+            // Increment month counter
+            cal.setTime(dto.getCreatedAt());
+            int month = cal.get(Calendar.MONTH);
+            aggregated.addMonthCount(month, 1);
+        }
+
+        // Build final list with subtotals and grand total
+        billList = new ArrayList<>();
+        SurgeryCountDoctorWiseDTO grandTotal = new SurgeryCountDoctorWiseDTO();
+
+        for (Map.Entry<String, Map<Long, SurgeryCountDoctorWiseDTO>> specialtyEntry : specialtyDoctorMap.entrySet()) {
+            String speciality = specialtyEntry.getKey();
+            Map<Long, SurgeryCountDoctorWiseDTO> doctorMap = specialtyEntry.getValue();
+
+            SurgeryCountDoctorWiseDTO subtotal = new SurgeryCountDoctorWiseDTO(speciality);
+
+            // Add all doctors for this specialty
+            for (SurgeryCountDoctorWiseDTO doctor : doctorMap.values()) {
+                billList.add(doctor);
+                subtotal.addAllCounts(doctor);
+                grandTotal.addAllCounts(doctor);
+            }
+
+            // Add subtotal row
+            billList.add(subtotal);
+        }
+
+        // Add grand total row
+        billList.add(grandTotal);
+
+        createChartModels();
+    }
+
+    private LineChartModel lineChartModel;
+    private BarChartModel barChartModel;
+    private LineChartModel specialtyLineChartModel;
+    private BarChartModel specialtyBarChartModel;
+
+    public void createChartModels() {
+        createDoctorCharts();
+        createSpecialtyCharts();
+    }
+
+    private void createDoctorCharts() {
+        lineChartModel = new LineChartModel();
+        barChartModel = new BarChartModel();
+
+        // Define color palette
+        String[] colors = {
+            "75, 192, 192", "255, 99, 132", "54, 162, 235", "255, 206, 86",
+            "153, 102, 255", "255, 159, 64", "199, 199, 199", "83, 102, 255",
+            "255, 99, 255", "99, 255, 132"
+        };
+
+        int colorIndex = 0;
+
+        // Create JSON-compatible data structure for Chart.js
+        StringBuilder lineDataJson = new StringBuilder("{\"labels\":[");
+        lineDataJson.append("\"Jan\",\"Feb\",\"Mar\",\"Apr\",\"May\",\"Jun\",");
+        lineDataJson.append("\"Jul\",\"Aug\",\"Sep\",\"Oct\",\"Nov\",\"Dec\"],");
+        lineDataJson.append("\"datasets\":[");
+
+        StringBuilder barDataJson = new StringBuilder("{\"labels\":[");
+        barDataJson.append("\"Jan\",\"Feb\",\"Mar\",\"Apr\",\"May\",\"Jun\",");
+        barDataJson.append("\"Jul\",\"Aug\",\"Sep\",\"Oct\",\"Nov\",\"Dec\"],");
+        barDataJson.append("\"datasets\":[");
+
+        boolean firstDataset = true;
+
+        for (SurgeryCountDoctorWiseDTO dto : billList) {
+            if (dto.isSubtotal() || dto.isGrandTotal()) {
+                continue;
+            }
+
+            String color = colors[colorIndex % colors.length];
+            colorIndex++;
+
+            if (!firstDataset) {
+                lineDataJson.append(",");
+                barDataJson.append(",");
+            }
+            firstDataset = false;
+
+            // Line dataset
+            lineDataJson.append("{")
+                    .append("\"label\":\"").append(escapeJson(dto.getDoctorName())).append("\",")
+                    .append("\"data\":[")
+                    .append(dto.getJanuary()).append(",")
+                    .append(dto.getFebruary()).append(",")
+                    .append(dto.getMarch()).append(",")
+                    .append(dto.getApril()).append(",")
+                    .append(dto.getMay()).append(",")
+                    .append(dto.getJune()).append(",")
+                    .append(dto.getJuly()).append(",")
+                    .append(dto.getAugust()).append(",")
+                    .append(dto.getSeptember()).append(",")
+                    .append(dto.getOctober()).append(",")
+                    .append(dto.getNovember()).append(",")
+                    .append(dto.getDecember())
+                    .append("],")
+                    .append("\"borderColor\":\"rgb(").append(color).append(")\",")
+                    .append("\"fill\":false,")
+                    .append("\"tension\":0.4")
+                    .append("}");
+
+            // Bar dataset
+            barDataJson.append("{")
+                    .append("\"label\":\"").append(escapeJson(dto.getDoctorName())).append("\",")
+                    .append("\"data\":[")
+                    .append(dto.getJanuary()).append(",")
+                    .append(dto.getFebruary()).append(",")
+                    .append(dto.getMarch()).append(",")
+                    .append(dto.getApril()).append(",")
+                    .append(dto.getMay()).append(",")
+                    .append(dto.getJune()).append(",")
+                    .append(dto.getJuly()).append(",")
+                    .append(dto.getAugust()).append(",")
+                    .append(dto.getSeptember()).append(",")
+                    .append(dto.getOctober()).append(",")
+                    .append(dto.getNovember()).append(",")
+                    .append(dto.getDecember())
+                    .append("],")
+                    .append("\"backgroundColor\":\"rgba(").append(color).append(",0.7)\",")
+                    .append("\"borderColor\":\"rgb(").append(color).append(")\",")
+                    .append("\"borderWidth\":1")
+                    .append("}");
+        }
+
+        lineDataJson.append("]}");
+        barDataJson.append("]}");
+
+        // Configure options
+        String lineOptions = "{\"plugins\":{\"title\":{\"display\":true,\"text\":\"Doctor Wise Surgery Count - Year " + getSelectedYear() + "\"},\"legend\":{\"display\":true,\"position\":\"right\"}},\"scales\":{\"y\":{\"beginAtZero\":true,\"ticks\":{\"stepSize\":1}}}}";
+        String barOptions = "{\"plugins\":{\"title\":{\"display\":true,\"text\":\"Doctor Wise Surgery Count - Year " + getSelectedYear() + "\"},\"legend\":{\"display\":true,\"position\":\"top\"}},\"scales\":{\"y\":{\"beginAtZero\":true,\"ticks\":{\"stepSize\":1}}}}";
+
+        // Set the extender functions to apply data and options
+        lineChartModel.setExtender("doctorLineChartExtender");
+        barChartModel.setExtender("doctorBarChartExtender");
+
+        // Store JSON in request scope for JavaScript access
+        javax.faces.context.FacesContext.getCurrentInstance().getExternalContext()
+                .getRequestMap().put("doctorLineData", lineDataJson.toString());
+        javax.faces.context.FacesContext.getCurrentInstance().getExternalContext()
+                .getRequestMap().put("doctorLineOptions", lineOptions);
+        javax.faces.context.FacesContext.getCurrentInstance().getExternalContext()
+                .getRequestMap().put("doctorBarData", barDataJson.toString());
+        javax.faces.context.FacesContext.getCurrentInstance().getExternalContext()
+                .getRequestMap().put("doctorBarOptions", barOptions);
+    }
+
+    private void createSpecialtyCharts() {
+        specialtyLineChartModel = new LineChartModel();
+        specialtyBarChartModel = new BarChartModel();
+
+        // Define color palette for specialties
+        String[] colors = {
+            "220, 20, 60", "65, 105, 225", "255, 140, 0",
+            "34, 139, 34", "138, 43, 226", "255, 215, 0"
+        };
+
+        int colorIndex = 0;
+
+        // Create JSON-compatible data structure
+        StringBuilder lineDataJson = new StringBuilder("{\"labels\":[");
+        lineDataJson.append("\"Jan\",\"Feb\",\"Mar\",\"Apr\",\"May\",\"Jun\",");
+        lineDataJson.append("\"Jul\",\"Aug\",\"Sep\",\"Oct\",\"Nov\",\"Dec\"],");
+        lineDataJson.append("\"datasets\":[");
+
+        StringBuilder barDataJson = new StringBuilder("{\"labels\":[");
+        barDataJson.append("\"Jan\",\"Feb\",\"Mar\",\"Apr\",\"May\",\"Jun\",");
+        barDataJson.append("\"Jul\",\"Aug\",\"Sep\",\"Oct\",\"Nov\",\"Dec\"],");
+        barDataJson.append("\"datasets\":[");
+
+        boolean firstDataset = true;
+
+        for (SurgeryCountDoctorWiseDTO dto : billList) {
+            if (!dto.isSubtotal()) {
+                continue;
+            }
+
+            String color = colors[colorIndex % colors.length];
+            colorIndex++;
+
+            if (!firstDataset) {
+                lineDataJson.append(",");
+                barDataJson.append(",");
+            }
+            firstDataset = false;
+
+            // Line dataset
+            lineDataJson.append("{")
+                    .append("\"label\":\"").append(escapeJson(dto.getSpecialityName())).append("\",")
+                    .append("\"data\":[")
+                    .append(dto.getJanuary()).append(",")
+                    .append(dto.getFebruary()).append(",")
+                    .append(dto.getMarch()).append(",")
+                    .append(dto.getApril()).append(",")
+                    .append(dto.getMay()).append(",")
+                    .append(dto.getJune()).append(",")
+                    .append(dto.getJuly()).append(",")
+                    .append(dto.getAugust()).append(",")
+                    .append(dto.getSeptember()).append(",")
+                    .append(dto.getOctober()).append(",")
+                    .append(dto.getNovember()).append(",")
+                    .append(dto.getDecember())
+                    .append("],")
+                    .append("\"borderColor\":\"rgb(").append(color).append(")\",")
+                    .append("\"borderWidth\":3,")
+                    .append("\"fill\":false,")
+                    .append("\"tension\":0.4")
+                    .append("}");
+
+            // Bar dataset
+            barDataJson.append("{")
+                    .append("\"label\":\"").append(escapeJson(dto.getSpecialityName())).append("\",")
+                    .append("\"data\":[")
+                    .append(dto.getJanuary()).append(",")
+                    .append(dto.getFebruary()).append(",")
+                    .append(dto.getMarch()).append(",")
+                    .append(dto.getApril()).append(",")
+                    .append(dto.getMay()).append(",")
+                    .append(dto.getJune()).append(",")
+                    .append(dto.getJuly()).append(",")
+                    .append(dto.getAugust()).append(",")
+                    .append(dto.getSeptember()).append(",")
+                    .append(dto.getOctober()).append(",")
+                    .append(dto.getNovember()).append(",")
+                    .append(dto.getDecember())
+                    .append("],")
+                    .append("\"backgroundColor\":\"rgba(").append(color).append(",0.7)\",")
+                    .append("\"borderColor\":\"rgb(").append(color).append(")\",")
+                    .append("\"borderWidth\":2")
+                    .append("}");
+        }
+
+        lineDataJson.append("]}");
+        barDataJson.append("]}");
+
+        // Configure options
+        String lineOptions = "{\"plugins\":{\"title\":{\"display\":true,\"text\":\"Specialty Wise Surgery Count - Year " + getSelectedYear() + "\"},\"legend\":{\"display\":true,\"position\":\"right\"}},\"scales\":{\"y\":{\"beginAtZero\":true,\"ticks\":{\"stepSize\":5}}}}";
+        String barOptions = "{\"plugins\":{\"title\":{\"display\":true,\"text\":\"Specialty Wise Surgery Count - Year " + getSelectedYear() + "\"},\"legend\":{\"display\":true,\"position\":\"top\"}},\"scales\":{\"y\":{\"beginAtZero\":true,\"ticks\":{\"stepSize\":5}}}}";
+
+        // Set the extender functions
+        specialtyLineChartModel.setExtender("specialtyLineChartExtender");
+        specialtyBarChartModel.setExtender("specialtyBarChartExtender");
+
+        // Store JSON in request scope
+        javax.faces.context.FacesContext.getCurrentInstance().getExternalContext()
+                .getRequestMap().put("specialtyLineData", lineDataJson.toString());
+        javax.faces.context.FacesContext.getCurrentInstance().getExternalContext()
+                .getRequestMap().put("specialtyLineOptions", lineOptions);
+        javax.faces.context.FacesContext.getCurrentInstance().getExternalContext()
+                .getRequestMap().put("specialtyBarData", barDataJson.toString());
+        javax.faces.context.FacesContext.getCurrentInstance().getExternalContext()
+                .getRequestMap().put("specialtyBarOptions", barOptions);
+    }
+
+    private String escapeJson(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r");
+    }
+
+    public int getSelectedYear() {
+        Calendar cal = Calendar.getInstance();
+        if (fromYearStartDate != null) {
+            cal.setTime(fromYearStartDate);
+        }
+        return cal.get(Calendar.YEAR);
     }
 
     public void fillAdmissions(Boolean discharged, Boolean finalized) {
@@ -1519,6 +1873,38 @@ public class InwardReportController implements Serializable {
 
     public void setCurrentSpeciality(Speciality currentSpeciality) {
         this.currentSpeciality = currentSpeciality;
+    }
+
+    public LineChartModel getLineChartModel() {
+        return lineChartModel;
+    }
+
+    public void setLineChartModel(LineChartModel lineChartModel) {
+        this.lineChartModel = lineChartModel;
+    }
+
+    public BarChartModel getBarChartModel() {
+        return barChartModel;
+    }
+
+    public void setBarChartModel(BarChartModel barChartModel) {
+        this.barChartModel = barChartModel;
+    }
+
+    public LineChartModel getSpecialtyLineChartModel() {
+        return specialtyLineChartModel;
+    }
+
+    public void setSpecialtyLineChartModel(LineChartModel specialtyLineChartModel) {
+        this.specialtyLineChartModel = specialtyLineChartModel;
+    }
+
+    public BarChartModel getSpecialtyBarChartModel() {
+        return specialtyBarChartModel;
+    }
+
+    public void setSpecialtyBarChartModel(BarChartModel specialtyBarChartModel) {
+        this.specialtyBarChartModel = specialtyBarChartModel;
     }
 
     public class IncomeByCategoryRecord {
