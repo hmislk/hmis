@@ -209,6 +209,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public AppointmentController() {
     }
@@ -353,6 +354,8 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                 + " res.patient.person.dob, "
                 + " COALESCE(res.patient.person.sex, ''), "
                 + " COALESCE(res.patient.person.mobile, ''), "
+                + " res.appointment.bill.referredBy.person.title, "
+                + " COALESCE(res.appointment.bill.referredBy.person.name, ''), "
                 + " res.appointment.status "
                 + " ) "
                 + " FROM Reservation res "
@@ -979,6 +982,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setters">
     public Title[] getTitle() {
         return Title.values();
