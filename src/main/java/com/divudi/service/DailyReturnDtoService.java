@@ -91,7 +91,6 @@ public class DailyReturnDtoService {
     }
     
     public List<BillItemDetailDTO> fetchCcCollectionBillItemsForDailyReturn(Date fromDate, Date toDate) {
-        System.out.println("DEBUG: CC Collection - fromDate: " + fromDate + ", toDate: " + toDate);
         
         String jpql = "select new com.divudi.core.data.dto.BillItemDetailDTO("
                 + "bi.item.category.name, bi.item.name, bi.item.category.id, bi.item.id, "
@@ -110,7 +109,6 @@ public class DailyReturnDtoService {
         ccBillTypes.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
         ccBillTypes.add(BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
         
-        System.out.println("DEBUG: CC Collection - looking for billTypeAtomics: " + ccBillTypes);
         
         Map<String, Object> params = new HashMap<>();
         params.put("fd", fromDate);
@@ -123,15 +121,12 @@ public class DailyReturnDtoService {
     }
     
     public List<DailyReturnDetailDTO> fetchCcCollectionBillsForDailyReturn(Date fromDate, Date toDate) {
-        System.out.println("DEBUG: CC Collection Bill-level - fromDate: " + fromDate + ", toDate: " + toDate);
-        
         // First, let's check if ANY bills exist in the date range
         String countJpql = "select count(b) from Bill b where b.retired = false and b.createdAt between :fd and :td";
         Map<String, Object> countParams = new HashMap<>();
         countParams.put("fd", fromDate);
         countParams.put("td", toDate);
         Long totalBills = (Long) billFacade.findSingleScalar(countJpql, countParams);
-        System.out.println("DEBUG: CC Collection - Total bills in date range: " + totalBills);
         
         // Check if any bills have CC BillTypeAtomic
         String ccCountJpql = "select count(b) from Bill b where b.retired = false and b.createdAt between :fd and :td and b.billTypeAtomic in :bts";
@@ -144,14 +139,12 @@ public class DailyReturnDtoService {
         ccCountParams.put("td", toDate);
         ccCountParams.put("bts", ccBillTypes);
         Long ccBills = (Long) billFacade.findSingleScalar(ccCountJpql, ccCountParams);
-        System.out.println("DEBUG: CC Collection - CC bills in date range: " + ccBills);
         
         Map<String, Object> params = new HashMap<>();
         params.put("fd", fromDate);
         params.put("td", toDate);
         params.put("bts", ccBillTypes);
         
-        System.out.println("DEBUG: CC Collection - Fixed fromDepartment.name issue, testing DTO constructor now...");
         
         // Try without fromDepartment.name entirely first
         String testJpql = "select new com.divudi.core.data.dto.DailyReturnDetailDTO("
@@ -164,7 +157,6 @@ public class DailyReturnDtoService {
                 + "order by b.createdAt";
                 
         List<DailyReturnDetailDTO> testResult = (List<DailyReturnDetailDTO>) billFacade.findLightsByJpql(testJpql, params, TemporalType.TIMESTAMP, true);
-        System.out.println("DEBUG: CC Collection - Test without fromDepartment: " + (testResult != null ? testResult.size() : "null"));
         
         if (testResult != null && testResult.size() > 0) {
             return testResult;
@@ -181,7 +173,6 @@ public class DailyReturnDtoService {
                 + "and b.billTypeAtomic in :bts "
                 + "order by b.createdAt";
         
-        System.out.println("DEBUG: CC Collection Bill-level - looking for billTypeAtomics: " + ccBillTypes);
         
         List<DailyReturnDetailDTO> result = (List<DailyReturnDetailDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, true);
         
