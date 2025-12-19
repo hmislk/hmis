@@ -22,6 +22,13 @@
                 color: white;
                 font-weight: bold;
             }
+            .chart-container {
+                margin: 20px 0;
+                padding: 20px;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
         </style>
     </h:head>
 
@@ -97,77 +104,6 @@
                         </div>
 
                         <p:separator/>
-
-                        <!-- Charts Section -->
-                        <p:panel header="Surgery Count Visual Reports" rendered="#{not empty inwardReportController.billList}">
-                            <h:outputScript>
-                                function doctorLineChartExtender() {
-                                var data = JSON.parse('#{doctorLineData}');
-                                var options = JSON.parse('#{doctorLineOptions}');
-                                this.cfg.data = data;
-                                this.cfg.options = options;
-                                }
-
-                                function doctorBarChartExtender() {
-                                var data = JSON.parse('#{doctorBarData}');
-                                var options = JSON.parse('#{doctorBarOptions}');
-                                this.cfg.data = data;
-                                this.cfg.options = options;
-                                }
-
-                                function specialtyLineChartExtender() {
-                                var data = JSON.parse('#{specialtyLineData}');
-                                var options = JSON.parse('#{specialtyLineOptions}');
-                                this.cfg.data = data;
-                                this.cfg.options = options;
-                                }
-
-                                function specialtyBarChartExtender() {
-                                var data = JSON.parse('#{specialtyBarData}');
-                                var options = JSON.parse('#{specialtyBarOptions}');
-                                this.cfg.data = data;
-                                this.cfg.options = options;
-                                }
-                            </h:outputScript>
-
-                            <p:tabView id="chartTabs">
-                                <p:tab title="Specialty-wise Line Chart">
-                                    <p:panel header="Specialty Wise Surgery Trend">
-                                        <p:chart type="line" 
-                                                 model="#{inwardReportController.specialtyLineChartModel}" 
-                                                 style="height:500px;"
-                                                 responsive="true"/>
-                                    </p:panel>
-                                </p:tab>
-
-                                <p:tab title="Specialty-wise Bar Chart">
-                                    <p:panel header="Specialty Wise Surgery Count">
-                                        <p:chart type="bar" 
-                                                 model="#{inwardReportController.specialtyBarChartModel}" 
-                                                 style="height:500px;"
-                                                 responsive="true"/>
-                                    </p:panel>
-                                </p:tab>
-
-                                <p:tab title="Doctor-wise Line Chart">
-                                    <p:panel header="Doctor Wise Surgery Trend">
-                                        <p:chart type="line" 
-                                                 model="#{inwardReportController.lineChartModel}" 
-                                                 style="height:500px;"
-                                                 responsive="true"/>
-                                    </p:panel>
-                                </p:tab>
-
-                                <p:tab title="Doctor-wise Bar Chart">
-                                    <p:panel header="Doctor Wise Surgery Count">
-                                        <p:chart type="bar" 
-                                                 model="#{inwardReportController.barChartModel}" 
-                                                 style="height:500px;"
-                                                 responsive="true"/>
-                                    </p:panel>
-                                </p:tab>
-                            </p:tabView>
-                        </p:panel>
 
                         <!-- Data Table Section -->
                         <p:panel header="Surgery Count Summary - Year #{inwardReportController.selectedYear}" 
@@ -256,9 +192,37 @@
                             </p:dataTable>
                         </p:panel>
 
+                        <!-- Charts Section -->
+                        <p:panel header="Surgery Count Visual Reports" rendered="#{not empty inwardReportController.billList}">
+                            <p:tabView id="chartTabs" dynamic="true" cache="true">
+                                <p:tab title="Specialty-wise Line Chart" onTabShow="PF('specialtyLineWV').reinit();">
+                                    <p:panel header="Specialty Wise Surgery Trend">
+                                        <p:chart value="#{inwardReportController.specialtyLineChartModel}" widgetVar="specialtyLineWV" style="width:100%; height:500px;" />
+                                    </p:panel>
+                                </p:tab>
+                                <p:tab title="Specialty-wise Bar Chart" onTabShow="PF('specialtyBarWV').reinit();">
+                                    <p:panel header="Specialty Wise Surgery Count">
+                                        <p:chart value="#{inwardReportController.specialtyBarChartModel}" widgetVar="specialtyBarWV" style="width:100%; height:500px;" />
+                                    </p:panel>
+                                </p:tab>
+                                <p:tab title="Doctor-wise Line Chart" onTabShow="PF('doctorLineWV').reinit();">
+                                    <p:panel header="Doctor Wise Surgery Trend">
+                                        <p:chart value="#{inwardReportController.lineChartModel}" widgetVar="doctorLineWV" style="width:100%; height:500px;" />
+                                    </p:panel>
+                                </p:tab>
+                                <p:tab title="Doctor-wise Bar Chart" onTabShow="PF('doctorBarWV').reinit();">
+                                    <p:panel header="Doctor Wise Surgery Count">
+                                        <p:chart value="#{inwardReportController.barChartModel}" widgetVar="doctorBarWV" style="width:100%; height:500px;" />
+                                    </p:panel>
+                                </p:tab>
+                            </p:tabView>
+                        </p:panel>
+
                     </p:panel>
 
                 </h:form>
+
+                
 
             </ui:define>
         </ui:composition>
