@@ -48,7 +48,7 @@
                                                  filterMatchMode="contains"
                                                  class="w-100 my-1" value="#{consultantController.current}">
                                 <f:selectItems  value="#{consultantController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.person.nameWithTitle}"  ></f:selectItems>
-                                <f:ajax render="gpDetail" execute="lstSelect" />                                        
+                                <f:ajax render="gpDetail" execute="lstSelect" listener="#{consultantController.changeStaff()}"/>                                        
                             </p:selectOneListbox>
 
                             >

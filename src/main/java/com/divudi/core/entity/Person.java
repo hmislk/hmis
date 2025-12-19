@@ -718,4 +718,27 @@ public class Person implements Serializable, RetirableEntity  {
     public void setSmsNumber(String smsNumber) {
         this.smsNumber = smsNumber;
     }
+
+    public Person cloneAuditPerson() {
+        // only the data recorded in the audit event is cloned.
+        Person p = new Person();
+        p.setName(this.getName());
+        p.setAddress(this.getAddress());
+        p.setDob(this.getDob());
+        p.setEmail(this.getEmail());
+        p.setFax(this.getFax());
+        p.setSex(this.getSex());
+        p.setMobile(this.getMobile());
+        p.setNic(this.getNic());
+        p.setPhone(this.getPhone());
+        p.setTitle(this.getTitle());
+        p.setId(this.getId());
+        p.setSurName(this.getSurName());
+        p.setPhone(this.getPhone());
+        p.setInitials(this.getInitials());
+        p.setFullName(this.getFullName());
+        p.setLastName(this.getLastName());
+        p.setArea(this.getArea());
+        return p;
+    }
 }

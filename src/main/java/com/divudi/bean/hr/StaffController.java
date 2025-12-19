@@ -41,6 +41,7 @@ import com.divudi.core.facade.StaffEmploymentFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.facade.StaffSalaryFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.PersonService;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -89,6 +90,8 @@ public class StaffController implements Serializable {
     private CommonReportItemFacade criFacade;
     @EJB
     FormItemValueFacade fivFacade;
+    @EJB
+    PersonService personService;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -111,6 +114,7 @@ public class StaffController implements Serializable {
     private Staff selectedStaff;
     private Staff current;
     private Person currentPerson;
+    private Person originalPerson;
     private List<Staff> staffWithCode;
     private List<Staff> items = null;
     private String selectText = "";
@@ -1270,7 +1274,8 @@ public class StaffController implements Serializable {
             getPersonFacade().createAndFlush(current.getPerson());
             JsfUtil.addSuccessMessage("New Person Created");
         } else {
-            getPersonFacade().editAndFlush(current.getPerson());
+            personService.editAndFlushPerson(getOriginalPerson(), current.getPerson());
+//            getPersonFacade().editAndFlush(current.getPerson());
             JsfUtil.addSuccessMessage("Person Updated");
         }
 
@@ -1484,6 +1489,11 @@ public class StaffController implements Serializable {
     }
 
     public void changeStaff() {
+        // for Audit Event Recording for Person Entity Update
+        if (current.getPerson() != null) {
+            setOriginalPerson(current.getPerson().cloneAuditPerson());
+        }
+        
         formItems = null;
         tempRetireDate = null;
         removeResign = false;
@@ -1703,6 +1713,14 @@ public class StaffController implements Serializable {
 
     public void setCurrentPerson(Person currentPerson) {
         this.currentPerson = currentPerson;
+    }
+
+    public Person getOriginalPerson() {
+        return originalPerson;
+    }
+
+    public void setOriginalPerson(Person originalPerson) {
+        this.originalPerson = originalPerson;
     }
 
     public String getSignatureUrl() {

@@ -63,6 +63,7 @@ import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.MembershipService;
+import com.divudi.service.PersonService;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -146,6 +147,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private PatientInvestigationFacade patientInvestigationFacade;
     @EJB
     MembershipService membershipService;
+    @EJB
+    PersonService personService;
     /**
      *
      * Controllers
@@ -210,6 +213,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private static final long serialVersionUID = 1L;
     private Patient current;
     private Person currentPerson;
+    private Person originalPerson;
     Long patientId;
     private FamilyMember familyMember;
     private List<FamilyMember> familyMembers;
@@ -1041,11 +1045,13 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToOpdPatientEdit() {
-        if (current == null) {
+        if (current == null && current.getPerson() == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
         reGenerateePhn = webUserController.hasPrivilege("EditData");
+
+        setOriginalPerson(current.getPerson().cloneAuditPerson());
 
         return "/opd/patient_edit?faces-redirect=true";
     }
@@ -3333,7 +3339,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
             p.getPerson().setCreater(getSessionController().getLoggedUser());
             getPersonFacade().create(p.getPerson());
         } else {
-            getPersonFacade().edit(p.getPerson());
+            personService.editPerson(getOriginalPerson(), current.getPerson());
+            // getPersonFacade().edit(p.getPerson());
         }
 
         // Save Patient with immediate flush (flushes both Person and Patient)
@@ -4515,6 +4522,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (currentPerson != null) {
             current = findPatientOfAPerson(currentPerson);
         }
+    }
+
+    public Person getOriginalPerson() {
+        return originalPerson;
+    }
+
+    public void setOriginalPerson(Person originalPerson) {
+        this.originalPerson = originalPerson;
     }
 
     public Patient findPatientOfAPerson(Person p) {

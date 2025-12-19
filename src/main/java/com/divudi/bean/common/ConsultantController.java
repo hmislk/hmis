@@ -14,6 +14,7 @@ import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.facade.ConsultantFacade;
 import com.divudi.core.facade.PersonFacade;
+import com.divudi.service.PersonService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,9 +51,13 @@ public class ConsultantController implements Serializable {
     private ConsultantFacade ejbFacade;
     @EJB
     private PersonFacade personFacade;
+    @EJB
+    PersonService personService;
+    
     List<Consultant> selectedItems;
 
     private Consultant current;
+    private Person originalPerson;
     private List<Consultant> items = null;
     String selectText = "";
     private Speciality speciality;
@@ -208,7 +213,7 @@ public class ConsultantController implements Serializable {
         if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
             getPersonFacade().create(current.getPerson());
         } else {
-            getPersonFacade().edit(current.getPerson());
+            personService.editPerson(getOriginalPerson(), current.getPerson());
         }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -386,7 +391,24 @@ public class ConsultantController implements Serializable {
     public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
     }
+    
+    public Person getOriginalPerson() {
+        return originalPerson;
+    }
 
+    public void setOriginalPerson(Person originalPerson) {
+        this.originalPerson = originalPerson;
+    }
+    
+    // lsitener to set the originalPerson values
+    public void changeStaff() {
+        // for Audit Event Recording for Person Entity Update
+        if (current.getPerson() != null) {
+            setOriginalPerson(current.getPerson().cloneAuditPerson());
+        }
+       
+    }
+    
     /**
      *
      */
