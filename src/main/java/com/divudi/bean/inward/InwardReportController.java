@@ -222,43 +222,6 @@ public class InwardReportController implements Serializable {
 
     private List<SurgeryCountDoctorWiseDTO> billList;
 
-//    public void processSurgeryCountDoctorWiseReport() {
-//
-//        billList = new ArrayList<>();
-//
-//        Map<String, Object> params = new HashMap<>();
-//        StringBuilder jpql = new StringBuilder();
-//        jpql.append(" Select new com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO(")
-//                .append(" b.staff, ")
-//                .append(" b.staff.person.name, ")
-//                .append(" b.staff.speciality.name, ")
-//                .append(" b.createdAt")
-//                .append(") ")
-//                .append(" from BillFee b ")
-//                .append(" Where b.retired = false ")
-//                .append(" And b.fee.feeType = :feeType ")
-//                .append(" And b.bill.billTypeAtomic = :bta ")
-//                .append(" And type(b.staff) = :staffClass ")
-//                //                .append(" And (type(b.staff) = :doctorClass OR type(b.staff) = :consultantClass) ")
-//                .append(" AND b.createdAt BETWEEN :fromDate AND :toDate ");
-//
-//        params.put("bta", BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL);
-//        params.put("fromDate", fromYearStartDate);
-//        params.put("toDate", toYearEndDate);
-//        params.put("staffClass", Consultant.class);
-//        params.put("feeType", FeeType.Staff);  // Ensures we're looking at staff professional fees
-//
-////        params.put("doctorClass", Doctor.class);
-////        params.put("consultantClass", Consultant.class);
-//        if (currentSpeciality != null) {
-//            jpql.append(" AND b.staff.speciality = :spe ");
-//            params.put("spe", currentSpeciality);
-//        }
-//
-//        billList = (List<SurgeryCountDoctorWiseDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-//
-////        double febCount = billList.stream().mapToDouble(SurgeryCountDoctorWiseDTO::getFebruary).count();
-//    }
     public void processSurgeryCountDoctorWiseReport() {
         billList = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
