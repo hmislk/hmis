@@ -130,6 +130,7 @@ public class PharmacyConfigController implements Serializable {
     // Retail Sale Return with Refund Payment Settings
     private boolean retailSaleReturnRefundBillA4Paper;
     private boolean retailSaleReturnRefundBillPosPaper;
+    private boolean retailSaleReturnRefundBillPosPaperCustom1;
     
     // Retail Sale Return Settings
     private boolean retailSaleReturnPosPaper;
@@ -266,6 +267,7 @@ public class PharmacyConfigController implements Serializable {
         // Retail Sale Return with Refund Payment Settings
         retailSaleReturnRefundBillA4Paper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is A4 Paper", true);
         retailSaleReturnRefundBillPosPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is POS Paper", false);
+        retailSaleReturnRefundBillPosPaperCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is POS Paper Custom 1 Paper", false);
         
         // Retail Sale Return Settings
         retailSaleReturnPosPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Return Bill is POS Paper", true);
@@ -581,6 +583,7 @@ public class PharmacyConfigController implements Serializable {
             // Retail Sale Return Refund Bill Settings
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is A4 Paper", retailSaleReturnRefundBillA4Paper);
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is POS Paper", retailSaleReturnRefundBillPosPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Return Refund Bill is POS Paper Custom 1 Paper", retailSaleReturnRefundBillPosPaperCustom1);
 
             JsfUtil.addSuccessMessage("Return Refund Bill configuration saved successfully");
 
@@ -1334,6 +1337,14 @@ public class PharmacyConfigController implements Serializable {
 
     public void setCreditSettlementCancellationPosCustom1(boolean creditSettlementCancellationPosCustom1) {
         this.creditSettlementCancellationPosCustom1 = creditSettlementCancellationPosCustom1;
+    }
+
+    public boolean isRetailSaleReturnRefundBillPosPaperCustom1() {
+        return retailSaleReturnRefundBillPosPaperCustom1;
+    }
+
+    public void setRetailSaleReturnRefundBillPosPaperCustom1(boolean retailSaleReturnRefundBillPosPaperCustom1) {
+        this.retailSaleReturnRefundBillPosPaperCustom1 = retailSaleReturnRefundBillPosPaperCustom1;
     }
 
 }

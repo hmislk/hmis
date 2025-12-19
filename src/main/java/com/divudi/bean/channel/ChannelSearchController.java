@@ -286,7 +286,6 @@ public class ChannelSearchController implements Serializable {
         p.setBill(bill);
         double valueToSet = Math.abs(bill.getNetTotal());
         p.setPaidValue(valueToSet);
-        System.out.println("value To Set " + valueToSet);
         setPaymentMethodData(p, pm);
         return p;
     }

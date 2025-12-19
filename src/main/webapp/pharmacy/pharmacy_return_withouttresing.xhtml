@@ -202,13 +202,15 @@
                                     var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
                                     <p:ajax event="rowEdit" listener="#{pharmacyReturnwithouttresing.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />
                                     <p:ajax event="rowEditCancel" listener="#{pharmacyReturnwithouttresing.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />
-                                    <p:column headerText="Item">
+                                    <p:column headerText="Item"
+                                              rendered="#{userSettingsController.pharmacyReturnWithouttressingItemVisible}">
                                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
                                     </p:column>
                                     <p:column
                                         width="3em"
                                         class="text-end"
-                                        headerText="Qty">
+                                        headerText="Qty"
+                                        rendered="#{userSettingsController.pharmacyReturnWithouttressingQtyVisible}">
                                         <p:cellEditor>
                                             <f:facet name="output">
                                                 <h:outputText value="#{bi.qty}" >
@@ -223,7 +225,8 @@
                                     <p:column
                                         class="text-end"
                                         headerText="Return Rate"
-                                        width="6em">
+                                        width="6em"
+                                        rendered="#{userSettingsController.pharmacyReturnWithouttressingReturnRateVisible}">
                                         <h:outputLabel value="#{bi.rate}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
@@ -231,21 +234,24 @@
                                     <p:column
                                         width="6em"
                                         headerText="Return Value"
-                                        class="text-end">
+                                        class="text-end"
+                                        rendered="#{userSettingsController.pharmacyReturnWithouttressingReturnValueVisible}">
                                         <h:outputLabel value="#{bi.netValue}" id="gros" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column
                                         width="6em"
-                                        headerText="Retail Rate">
+                                        headerText="Retail Rate"
+                                        rendered="#{userSettingsController.pharmacyReturnWithouttressingRetailRateVisible}">
                                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column
                                         width="6em"
-                                        headerText="Retail Value">
+                                        headerText="Retail Value"
+                                        rendered="#{userSettingsController.pharmacyReturnWithouttressingRetailValueVisible}">
                                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate * bi.qty}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
@@ -253,7 +259,8 @@
                                     <p:column
                                         headerText="Expiry"
                                         width="6em"
-                                        class="text-end">
+                                        class="text-end"
+                                        rendered="#{userSettingsController.pharmacyReturnWithouttressingExpiryVisible}">
                                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
@@ -266,6 +273,50 @@
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
+                         
+                                
+                                <!-- Column Visibility Settings - Subtle placement -->
+                                <div class="mt-3 pt-2" style="border-top: 1px solid #e9ecef;">
+                                    <p:panel id="panelColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                        <f:facet name="header">
+                                            <span style="font-size: 0.85rem; color: #6c757d;">
+                                                <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                                Customize Columns
+                                            </span>
+                                        </f:facet>
+
+                                        <div class="d-flex flex-wrap gap-2 gap-2xl-0 justify-content-between align-items-center" style="font-size: 0.8rem">
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingItemVisible}"
+                                                                        itemLabel="Item">
+                                                </p:selectBooleanCheckbox>
+                                                <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingQtyVisible}"
+                                                                         itemLabel="Qty">
+                                                </p:selectBooleanCheckbox>                                  
+                                                <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingReturnRateVisible}"
+                                                                           itemLabel="Return Rate">
+                                                </p:selectBooleanCheckbox> 
+                                                <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingReturnValueVisible}"
+                                                                         itemLabel="Return Value">
+                                                </p:selectBooleanCheckbox>
+                                                <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingRetailRateVisible}"
+                                                                         itemLabel="Retail Rate">
+                                                </p:selectBooleanCheckbox>
+                                                <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingRetailValueVisible}"
+                                                                           itemLabel="Retail Value">
+                                                </p:selectBooleanCheckbox>
+                                                <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyReturnWithouttressingExpiryVisible}"
+                                                                           itemLabel="Expiry">
+                                                </p:selectBooleanCheckbox>
+                                            </div>
+                                            <div class="flex">
+                                                <p:commandButton
+                                                    value="Apply"
+                                                    ajax="false" />
+                                            </div>
+                                        </div>
+                                    </p:panel>
+                                </div>
 
 
                             </p:panel>

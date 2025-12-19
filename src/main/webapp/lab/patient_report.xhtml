@@ -15,6 +15,10 @@
             <ui:define name="content" rendered="#{webUserController.hasPrivilege('LabAutherizing') eq true or webUserController.hasPrivilege('LabDataentry') eq true or webUserController.hasPrivilege('LabPrinting') eq true   }" >
                 <h:form>
                     <h:outputStylesheet library="css" name="lab.css" ></h:outputStylesheet>
+                    
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+                    
                     <p:panel>
                         <f:facet  name="header" >
                             <div class="row d-flex align-items-center">
@@ -103,6 +107,16 @@
                                         </div>
 
                                         <div class="d-flex gap-2">
+
+                                            <p:commandButton 
+                                                value="Export PDF" 
+                                                class="ui-button-channelling" 
+                                                icon="fas fa-file-pdf" 
+                                                disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}"
+                                                onclick="downloadPdf()" 
+                                                type="button"  
+                                                ajax="false">
+                                            </p:commandButton>
 
                                             <p:commandButton   
                                                 ajax="false" 
@@ -576,6 +590,7 @@
                                         <p:outputLabel for="sampleIDs" value="sample IDs" ></p:outputLabel>
                                         <p:inputText 
                                             id="sampleIDs" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             value="#{patientReportController.currentPatientReport.sampleIDs}"
                                             class="w-100">
                                         </p:inputText>
@@ -584,6 +599,7 @@
                                         <p:autoComplete 
                                             id="refIns" 
                                             forceSelection="true" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referenceInstitution}"
                                             completeMethod="#{institutionController.completeIns}"
                                             var="ri" 
@@ -602,6 +618,7 @@
                                             <p:autoComplete 
                                                 forceSelection="true" 
                                                 id="cmbDoc" 
+                                                readonly="#{patientReportController.currentPatientReport.approved}"
                                                 value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referredBy}" 
                                                 completeMethod="#{doctorController.completeDoctor}" var="ix" 
                                                 itemLabel="#{ix.person.nameWithTitle}" 
@@ -669,6 +686,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -677,6 +695,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -685,6 +704,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.receivedAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -693,6 +713,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.performedAt}"  
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -701,6 +722,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.dataEntryAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -709,6 +731,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.createdAt}" 
                                             class="w-100"
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -717,6 +740,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.approveAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             inputStyleClass="form-control"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
@@ -737,6 +761,7 @@
                                         <p:calendar 
                                             value="#{patientReportController.currentPatientReport.patientInvestigation.printingAt}" 
                                             class="w-100" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         </p:calendar>
 
@@ -744,11 +769,12 @@
 
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}"><hr/></h:panelGroup>
 
-                                    <p:panelGrid columns="2" rendered="#{webUserController.hasPrivilege('Developers') and (patientReportController.currentPatientReport.patientName ne null or patientReportController.currentPatientReport.patientGender ne null or patientReportController.currentPatientReport.patientAge ne null)}">
+                                    <p:panelGrid columns="2" rendered="#{webUserController.hasPrivilege('Developers')}">
 
                                         <p:outputLabel for="PatientName" value="Patient Name" ></p:outputLabel>
                                         <p:inputText 
                                             id="PatientName" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             value="#{patientReportController.currentPatientReport.patientName}" 
                                             class="w-100">
                                         </p:inputText>
@@ -756,6 +782,7 @@
                                         <p:outputLabel for="PatientAge" value="Patient Age (for Bill Date)" ></p:outputLabel>
                                         <p:inputText 
                                             id="PatientAge" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             value="#{patientReportController.currentPatientReport.patientAge}" 
                                             class="w-100">
                                         </p:inputText>
@@ -763,6 +790,7 @@
                                         <p:outputLabel for="PatientGender" value="Patient Gender" ></p:outputLabel>
                                         <p:inputText 
                                             id="PatientGender" 
+                                            readonly="#{patientReportController.currentPatientReport.approved}"
                                             value="#{patientReportController.currentPatientReport.patientGender}" 
                                             class="w-100">
                                         </p:inputText>
@@ -773,7 +801,7 @@
                             </div>
 
                             <div class="col-7 ">
-                                <h:panelGroup class="mb-3 gap-2 d-flex justify-content-end">
+                                <h:panelGroup class="mb-3 gap-2 d-flex justify-content-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('The system uses the Laboratory Dashboard as its default interface', false)}">
                                     <p:commandButton 
                                         value="Back to Other patient Investigations" 
                                         icon="fa-solid fa-circle-left"
@@ -810,6 +838,30 @@
 
                                 </style>
 
+                                <script>
+                                    function downloadPdf() {
+                                        console.log("Downloading PDF...");
+                                        const element = document.getElementById('pdf');
+                                        element.classList.remove('print-only');
+
+                                        const opt = {
+                                            margin: [0, 0, 0, 0], // top, left, bottom, right
+                                            filename: '#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patient.person.nameWithTitle} - #{patientReportController.currentPatientReport.patientInvestigation.investigation.name}.pdf',
+                                            image: {type: 'jpeg', quality: 1.00},
+                                            html2canvas: {
+                                                scale: 2
+                                            },
+                                            jsPDF: {unit: 'mm', format: [210, 280], orientation: 'portrait'}
+                                        };
+
+                                        html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
+                                            pdf.deletePage(2); // Remove the second page if it exists
+                                        }).save().then(() => {
+                                            element.classList.add('print-only');
+                                        });
+                                    }
+                                </script>
+
                                 <div class="d-flex justify-content-end m-3">
                                     <h:outputLabel value="Show Background" class="mt-2" style="font-weight: bold; font-size: 20px;"></h:outputLabel>
                                     <p:selectBooleanButton class="mt-1 mx-4" offLabel="No" onLabel="Yes"  value="#{patientReportController.showBackground}" >
@@ -820,17 +872,20 @@
                                 <div class="d-flex justify-content-center">
                                     <h:panelGroup  id="divPrint" >
 
-                                        <!--HtmlTemplate-->
-                                        <lab:html_patient_report/>
+                                        <div id="pdf">
+                                            <!--HtmlTemplate-->
+                                            <lab:html_patient_report/>
 
-                                        <!--General-->
-                                        <lab:general_patient_report/>
+                                            <!--General-->
+                                            <lab:general_patient_report/>
 
-                                        <!--Microbiology-->
-                                        <lab:microbiology_patient_report/>
+                                            <!--Microbiology-->
+                                            <lab:microbiology_patient_report/>
 
-                                        <!--PathologyOrHaematology-->
-                                        <lab:pathology_patient_report/>
+                                            <!--PathologyOrHaematology-->
+                                            <lab:pathology_patient_report/>
+                                        </div>
+                                        
 
                                     </h:panelGroup>
                                 </div>

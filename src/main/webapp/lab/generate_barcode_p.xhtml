@@ -118,7 +118,11 @@
                                     <h:panelGrid columns="1" class="w-100">
 
                                         <h:outputLabel class="w-100" value="By Route"/>
-                                        <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" value="#{patientInvestigationController.route}">
+                                        <p:selectOneMenu 
+                                            filter="true" 
+                                            filterMatchMode="contains" 
+                                            class="w-100" 
+                                            value="#{patientInvestigationController.route}">
                                             <f:selectItem itemLabel="Any" />
                                             <f:selectItems value="#{routeController.items}" var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
                                         </p:selectOneMenu>
@@ -145,15 +149,28 @@
                                     </h:panelGrid>
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel class="w-100" value="Ordered Institution"/>
-                                        <p:autoComplete class="w-100" id="acOins" value="#{patientInvestigationController.orderedInstitution}" inputStyleClass="w-100"
-                                                        completeMethod="#{institutionController.completeIns}" var="oi" itemLabel="#{oi.name}" itemValue="#{oi}">
+                                        <p:autoComplete 
+                                            class="w-100" 
+                                            id="acOins" 
+                                            value="#{patientInvestigationController.orderedInstitution}" 
+                                            inputStyleClass="w-100"
+                                            maxResults="15" 
+                                            completeMethod="#{institutionController.completeIns}" 
+                                            var="oi" 
+                                            itemLabel="#{oi.name}" 
+                                            itemValue="#{oi}">
                                             <p:ajax process="acOins" update="gpOdept" ></p:ajax>
                                         </p:autoComplete>
                                     </h:panelGrid>
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel class="w-100" value="Ordered Department"/>
                                         <h:panelGroup id="gpOdept">
-                                            <p:selectOneMenu value="#{patientInvestigationController.orderedDepartment}" class="w-100" style="max-width: 100%">
+                                            <p:selectOneMenu 
+                                                value="#{patientInvestigationController.orderedDepartment}" 
+                                                filter="true" 
+                                                filterMatchMode="contains"
+                                                class="w-100" 
+                                                style="max-width: 100%">
                                                 <f:selectItem itemLabel="Any"></f:selectItem>
                                                 <f:selectItems value="#{departmentController.getInstitutionDepartments(patientInvestigationController.orderedInstitution)}" var="odpt" itemLabel="#{odpt.name}" itemValue="#{odpt}"></f:selectItems>
                                             </p:selectOneMenu>
@@ -168,6 +185,7 @@
                                             inputStyleClass="w-100"
                                             completeMethod="#{institutionController.completeIns}" 
                                             var="pi" 
+                                            maxResults="15" 
                                             itemLabel="#{pi.name}" 
                                             itemValue="#{pi}">
                                             <p:ajax process="acPIns" update="gpPDept"></p:ajax>
@@ -176,7 +194,12 @@
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel class="w-100" value="Performing Department"/>
                                         <h:panelGroup id="gpPDept">
-                                            <p:selectOneMenu value="#{patientInvestigationController.performingDepartment}" class="w-100" style="max-width: 100%">
+                                            <p:selectOneMenu 
+                                                filter="true" 
+                                                filterMatchMode="contains"
+                                                value="#{patientInvestigationController.performingDepartment}" 
+                                                class="w-100" 
+                                                style="max-width: 100%">
                                                 <f:selectItem itemLabel="Any"></f:selectItem>
                                                 <f:selectItems 
                                                     value="#{departmentController.getInstitutionDepartments(patientInvestigationController.performingInstitution)}" 
@@ -363,7 +386,7 @@
                                         id="btnSendToLab"
                                         value="Send to Lab"
                                         ajax="false"
-                                        action="#{patientInvestigationController.sendSamplesToLab()}"
+                                        action="#{patientInvestigationController.sendSamplesToLab(true)}"
                                         title="Send to Lab"
                                         icon="pi pi-external-link"
                                         styleClass="w-100 ui-button-warning" >

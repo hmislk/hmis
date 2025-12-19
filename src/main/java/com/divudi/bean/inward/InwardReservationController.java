@@ -2,6 +2,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.dto.ReservationDTO;
 import com.divudi.core.data.inward.InwardReservationEvent;
 
 import com.divudi.core.entity.PatientEncounter;
@@ -25,6 +26,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.schedule.ScheduleEntryMoveEvent;
 import org.primefaces.event.schedule.ScheduleEntryResizeEvent;
@@ -47,7 +49,7 @@ public class InwardReservationController implements Serializable {
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
     @EJB
-    ReservationFacade ReservationFacade;
+    ReservationFacade reservationFacade;
     ////////////////////////////
     @Inject
     private SessionController sessionController;
@@ -64,8 +66,35 @@ public class InwardReservationController implements Serializable {
     private List<Reservation> selectedReservations;
     private ScheduleEvent<?> sEvent = new DefaultScheduleEvent<>();
     private InwardReservationEvent event = new InwardReservationEvent();
+    
+    private ReservationDTO currentReservationDTO;
+    
+    private ReservationDTO convertToReservationDTO(Reservation r){
+        Reservation reloadReservation = reservationFacade.find(r.getId());
+        if(reloadReservation == null){
+            return null;
+        }
+        currentReservationDTO = new ReservationDTO(
+                reloadReservation.getId(), 
+                reloadReservation.getReservedFrom(), 
+                reloadReservation.getReservedTo(), 
+                reloadReservation.getAppointment().getAppointmentNumber(), 
+                reloadReservation.getCreatedAt(), 
+                reloadReservation.getRoom().getName(), 
+                reloadReservation.getAppointment().getPatient().getPerson().getTitle(), 
+                reloadReservation.getAppointment().getPatient().getPerson().getName(), 
+                reloadReservation.getAppointment().getPatient().getPerson().getDob(), 
+                reloadReservation.getAppointment().getPatient().getPerson().getSex().getLabel(), 
+                reloadReservation.getAppointment().getPatient().getPerson().getMobile(),
+                reloadReservation.getAppointment().getBill().getReferredBy().getPerson().getTitle(),
+                reloadReservation.getAppointment().getBill().getReferredBy().getPerson().getName(),
+                reloadReservation.getAppointment().getStatus()
+        );
+        return currentReservationDTO;
+    }
 
     public String navigateToReservationCalendarFromMenu() {
+        currentReservationDTO = null;
         fromDate = new Date();
         Long noOfMonths = configOptionApplicationController.getLongValueByKey("Number of Months to Load During Reservation Calendar", 6L);
         Calendar calendar = Calendar.getInstance();
@@ -82,15 +111,19 @@ public class InwardReservationController implements Serializable {
      */
     public void onEventSelectCal(SelectEvent<ScheduleEvent<?>> selectEvent) {
         sEvent = selectEvent.getObject();
+        convertToReservationDTO((Reservation) sEvent.getData());
     }
 
+    @Deprecated
     public void onDateSelect(SelectEvent<LocalDateTime> selectEvent) {
         event = (InwardReservationEvent) DefaultScheduleEvent.builder()
-                .startDate(selectEvent.getObject())
+                .startDate(selectEvent.getObject().plusHours(0))
                 .endDate(selectEvent.getObject().plusHours(1))
                 .build();
+
     }
 
+    
     public void onEventMove(ScheduleEntryMoveEvent event) {
         FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Event moved",
                 "Delta:" + event.getDeltaAsDuration());
@@ -123,15 +156,13 @@ public class InwardReservationController implements Serializable {
             m.put("td", toDate);
         }
 
-        selectedReservations = ReservationFacade.findByJpql(jpql, m);
-        System.out.println("selectedReservations = " + selectedReservations);
+        selectedReservations = reservationFacade.findByJpqlWithoutCache(jpql, m, TemporalType.TIMESTAMP);
         generateReservationsEvents(selectedReservations);
     }
 
     public void generateReservationsEvents(List<Reservation> lsi) {
         reservationModel = new DefaultScheduleModel();
         for (Reservation si : lsi) {
-            System.out.println("Name = " + si.getRoom().getName());
 
             // Dates
             Date startDate = si.getReservedFrom();
@@ -141,8 +172,9 @@ public class InwardReservationController implements Serializable {
             String uniqueBorderColor = generateColor(si.getRoom().getName());
             String uniqueBackgroundColor = generateColor(si.getPatient().getPerson().getName());
 
-            DefaultScheduleEvent event;
-            event = new DefaultScheduleEvent<SessionInstance>().builder()
+            DefaultScheduleEvent tempEvent;
+            tempEvent = new DefaultScheduleEvent<SessionInstance>()
+                    .builder()
                     .title(si.getRoom().getName() + " - " + si.getPatient().getPerson().getName())
                     .borderColor(uniqueBorderColor)
                     .backgroundColor(uniqueBackgroundColor)
@@ -151,7 +183,7 @@ public class InwardReservationController implements Serializable {
                     .data(si)
                     .build();
 
-            reservationModel.addEvent(event);
+            reservationModel.addEvent(tempEvent);
         }
     }
 
@@ -228,5 +260,13 @@ public class InwardReservationController implements Serializable {
 
     public void setEvent(InwardReservationEvent event) {
         this.event = event;
+    }
+
+    public ReservationDTO getCurrentReservationDTO() {
+        return currentReservationDTO;
+    }
+
+    public void setCurrentReservationDTO(ReservationDTO currentReservationDTO) {
+        this.currentReservationDTO = currentReservationDTO;
     }
 }

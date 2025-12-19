@@ -76,7 +76,7 @@ public class UserSettingsController implements Serializable {
             });
         } catch (Exception e) {
             // Graceful degradation - if settings can't be loaded, continue with defaults
-            System.err.println("Error loading user settings: " + e.getMessage());
+
         }
     }
 
@@ -152,7 +152,6 @@ public class UserSettingsController implements Serializable {
         try {
             return deserializeFromJson(jsonString, clazz);
         } catch (Exception e) {
-            System.err.println("Error deserializing JSON setting " + key + ": " + e.getMessage());
             return defaultValue;
         }
     }
@@ -198,7 +197,6 @@ public class UserSettingsController implements Serializable {
             settingsCache.put(key, option);
 
         } catch (Exception e) {
-            System.err.println("Error saving user setting " + key + ": " + e.getMessage());
         }
     }
 
@@ -230,7 +228,6 @@ public class UserSettingsController implements Serializable {
             String jsonString = serializeToJson(value);
             saveUserSetting(key, jsonString, OptionValueType.LONG_TEXT);
         } catch (Exception e) {
-            System.err.println("Error serializing JSON setting " + key + ": " + e.getMessage());
         }
     }
 
@@ -333,7 +330,6 @@ public class UserSettingsController implements Serializable {
                 JsfUtil.addSuccessMessage("Settings reset to defaults");
             }
         } catch (Exception e) {
-            System.err.println("Error resetting page settings: " + e.getMessage());
             JsfUtil.addErrorMessage("Error resetting settings");
         }
     }
@@ -607,6 +603,160 @@ public class UserSettingsController implements Serializable {
         saveColumnVisibility("pharmacy_grn_return_request", settings);
     }
 
+    // Pharmacy GRN List For Return Column Visibility Properties
+    // These properties provide JSF-compatible getter/setter pairs for the specific page
+
+    public boolean isPharmacyGrnListForReturnDistributorVisible() {
+        return isColumnVisible("pharmacy_grn_list_for_return", "distributor");
+    }
+
+    public void setPharmacyGrnListForReturnDistributorVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_list_for_return");
+        settings.setColumnVisible("distributor", visible);
+        saveColumnVisibility("pharmacy_grn_list_for_return", settings);
+    }
+
+    public boolean isPharmacyGrnListForReturnPoNoVisible() {
+        return isColumnVisible("pharmacy_grn_list_for_return", "poNo");
+    }
+
+    public void setPharmacyGrnListForReturnPoNoVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_list_for_return");
+        settings.setColumnVisible("poNo", visible);
+        saveColumnVisibility("pharmacy_grn_list_for_return", settings);
+    }
+
+    public boolean isPharmacyGrnListForReturnGrnNoVisible() {
+        return isColumnVisible("pharmacy_grn_list_for_return", "grnNo");
+    }
+
+    public void setPharmacyGrnListForReturnGrnNoVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_list_for_return");
+        settings.setColumnVisible("grnNo", visible);
+        saveColumnVisibility("pharmacy_grn_list_for_return", settings);
+    }
+
+    public boolean isPharmacyGrnListForReturnGrnAtVisible() {
+        return isColumnVisible("pharmacy_grn_list_for_return", "grnAt");
+    }
+
+    public void setPharmacyGrnListForReturnGrnAtVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_list_for_return");
+        settings.setColumnVisible("grnAt", visible);
+        saveColumnVisibility("pharmacy_grn_list_for_return", settings);
+    }
+
+    public boolean isPharmacyGrnListForReturnGrnByVisible() {
+        return isColumnVisible("pharmacy_grn_list_for_return", "grnBy");
+    }
+
+    public void setPharmacyGrnListForReturnGrnByVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_list_for_return");
+        settings.setColumnVisible("grnBy", visible);
+        saveColumnVisibility("pharmacy_grn_list_for_return", settings);
+    }
+    
+    public boolean isPharmacyGrnListForReturnPoValueVisible() {
+        return isColumnVisible("pharmacy_grn_list_for_return", "poValue");
+    }
+
+    public void setPharmacyGrnListForReturnPoValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_list_for_return");
+        settings.setColumnVisible("poValue", visible);
+        saveColumnVisibility("pharmacy_grn_list_for_return", settings);
+    }
+
+    public boolean isPharmacyGrnListForReturnGrnValueVisible() {
+        return isColumnVisible("pharmacy_grn_list_for_return", "grnValue");
+    }
+
+    public void setPharmacyGrnListForReturnGrnValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_list_for_return");
+        settings.setColumnVisible("grnValue", visible);
+        saveColumnVisibility("pharmacy_grn_list_for_return", settings);
+    }
+
+    public int getPharmacyGrnListForReturnPageSize() {
+        return getPageSize("pharmacy_grn_list_for_return", 10);
+    }
+
+    public void setPharmacyGrnListForReturnPageSize(int pagesize) {
+        savePageSize("pharmacy_grn_list_for_return", pagesize);
+    }
+    
+    // Pharmacy Return Without Tressing Column Visibility Properties
+    // These properties provide JSF-compatible getter/setter pairs for the specific page
+    
+    public boolean isPharmacyReturnWithouttressingItemVisible(){
+        return isColumnVisible("pharmacy_return_withouttressing", "item");
+    }
+    
+    public void setPharmacyReturnWithouttressingItemVisible(boolean visible){
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_return_withouttressing");
+        settings.setColumnVisible("item", visible);
+        saveColumnVisibility("pharmacy_return_withouttressing", settings);
+    }
+    
+    public boolean isPharmacyReturnWithouttressingQtyVisible(){
+        return isColumnVisible("pharmacy_return_withouttressing", "qty");
+    }
+    
+    public void setPharmacyReturnWithouttressingQtyVisible(boolean visible){
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_return_withouttressing");
+        settings.setColumnVisible("qty", visible);
+        saveColumnVisibility("pharmacy_return_withouttressing", settings);
+    }
+    
+    public boolean isPharmacyReturnWithouttressingReturnRateVisible(){
+        return isColumnVisible("pharmacy_return_withouttressing", "returnRate");
+    }
+    
+    public void setPharmacyReturnWithouttressingReturnRateVisible(boolean visible){
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_return_withouttressing");
+        settings.setColumnVisible("returnRate", visible);
+        saveColumnVisibility("pharmacy_return_withouttressing", settings);
+    }
+    
+    public boolean isPharmacyReturnWithouttressingReturnValueVisible(){
+        return isColumnVisible("pharmacy_return_withouttressing", "returnValue");
+    }
+    
+    public void setPharmacyReturnWithouttressingReturnValueVisible(boolean visible){
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_return_withouttressing");
+        settings.setColumnVisible("returnValue", visible);
+        saveColumnVisibility("pharmacy_return_withouttressing", settings);
+    }
+    
+    public boolean isPharmacyReturnWithouttressingRetailRateVisible(){
+        return isColumnVisible("pharmacy_return_withouttressing", "retailRate");
+    }
+    
+    public void setPharmacyReturnWithouttresingRetailRateVisible(boolean visible){
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_return_withouttresing");
+        settings.setColumnVisible("retailRate", visible);
+        saveColumnVisibility("pharmacy_return_withouttresing", settings);
+    }
+    
+    public boolean isPharmacyReturnWithouttresingRetailValueVisible(){
+        return isColumnVisible("pharmacy_return_withouttresing", "retailValue");
+    }
+    
+    public void setPharmacyReturnWithouttresingRetailValueVisible(boolean visible){
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_return_withouttresing");
+        settings.setColumnVisible("retailValue", visible);
+        saveColumnVisibility("pharmacy_return_withouttresing", settings);
+    }
+    
+    public boolean isPharmacyReturnWithouttresingExpiryVisible(){
+        return isColumnVisible("pharmacy_return_withouttresing", "expiry");
+    }
+    
+    public void setPharmacyReturnWithouttresingExpiryVisible(boolean visible){
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_return_withouttresing");
+        settings.setColumnVisible("expiry", visible);
+        saveColumnVisibility("pharmacy_return_withouttresing", settings);
+    }
+    
     // Stock Ledger Column Visibility Properties
     // These properties provide JSF-compatible getter/setter pairs for the stock ledger report page
 
@@ -1088,5 +1238,81 @@ public class UserSettingsController implements Serializable {
 
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
+    }
+    
+    // page: pharmacy_purchase_order_list_to_cancel.xhtml
+    // column: Requested At
+    public boolean isPharmacyPurchaseOrderListToCancelRequestedAtVisible() {
+        return isColumnVisible("pharmacy_purchase_order_list_to_cancel", "requestedAt");
+    }
+    
+    public void setPharmacyPurchaseOrderListToCancelRequestedAtVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_purchase_order_list_to_cancel");
+        settings.setColumnVisible("requestedAt", visible);
+        saveColumnVisibility("pharmacy_purchase_order_list_to_cancel", settings);
+    }
+    
+    //column: PO Number
+    public boolean isPharmacyPurchaseOrderListToCancelPoNumberVisible() {
+        return isColumnVisible("pharmacy_purchase_order_list_to_cancel", "poNumber");
+    }
+    
+    public void setPharmacyPurchaseOrderListToCancelPoNumberVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_purchase_order_list_to_cancel");
+        settings.setColumnVisible("poNumber", visible);
+        saveColumnVisibility("pharmacy_purchase_order_list_to_cancel", settings);
+    }
+    
+    //column: RequestedBy
+    public boolean isPharmacyPurchaseOrderListToCancelRequestedByVisible() {
+        return isColumnVisible("pharmacy_purchase_order_list_to_cancel", "requestedBy");
+    }
+    
+    public void setPharmacyPurchaseOrderListToCancelRequestedByVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_purchase_order_list_to_cancel");
+        settings.setColumnVisible("requestedBy", visible);
+        saveColumnVisibility("pharmacy_purchase_order_list_to_cancel", settings);
+    }
+    
+    //column: Supplier
+    public boolean isPharmacyPurchaseOrderListToCancelSupplierVisible() {
+        return isColumnVisible("pharmacy_purchase_order_list_to_cancel", "supplier");
+    }
+    
+    public void setPharmacyPurchaseOrderListToCancelSupplierVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_purchase_order_list_to_cancel");
+        settings.setColumnVisible("supplier", visible);
+        saveColumnVisibility("pharmacy_purchase_order_list_to_cancel", settings);
+    }
+    
+    //column: Requested Department
+    public boolean isPharmacyPurchaseOrderListToCancelRequestedDepartmentVisible() {
+        return isColumnVisible("pharmacy_purchase_order_list_to_cancel", "requestedDepartment");
+    }
+    
+    public void setPharmacyPurchaseOrderListToCancelRequestedDepartmentVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_purchase_order_list_to_cancel");
+        settings.setColumnVisible("requestedDepartment", visible);
+        saveColumnVisibility("pharmacy_purchase_order_list_to_cancel", settings);
+    }
+    
+    //column: Requested Value
+    public boolean isPharmacyPurchaseOrderListToCancelRequestedValueVisible() {
+        return isColumnVisible("pharmacy_purchase_order_list_to_cancel", "requestedValue");
+    }
+    
+    public void setPharmacyPurchaseOrderListToCancelRequestedValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_purchase_order_list_to_cancel");
+        settings.setColumnVisible("requestedValue", visible);
+        saveColumnVisibility("pharmacy_purchase_order_list_to_cancel", settings);
+    }
+    
+    // page size
+    public int getPharmacyPurchaseOrderListToCancelPageSize() {
+        return getPageSize("pharmacy_purchase_order_list_to_cancel", 10);
+    }
+
+    public void setPharmacyPurchaseOrderListToCancelPageSize(int pagesize) {
+        savePageSize("pharmacy_purchase_order_list_to_cancel", pagesize);
     }
 }

@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      template="/resources/template/template.xhtml"
+<html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:na="http://xmlns.jcp.org/jsf/composite/template">
 
     <h:head>
+        <title>Patient Profile</title>
         <!-- Include the font link in the <head> section of your JSF page -->
         <h:outputStylesheet name="https://fonts.googleapis.com/css2?family=Libre+Barcode+128+Text&amp;display=swap" />
     </h:head>
@@ -23,341 +23,498 @@
                     <h:form id="mainForm">
                         <p:panel>
                             <f:facet name="header">
-                                <p:outputLabel value="Patient Profile" class="my-2"/>
-                                <p:commandButton 
-                                    icon="fas fa-pencil"
-                                    ajax="false" 
-                                    value="Edit" 
-                                    action="#{patientController.navigateToOpdPatientEdit()}" 
-                                    class="mx-2 ui-button-success" 
-                                    style="float: right;">
-                                </p:commandButton>
-                                <p:commandButton 
-                                    icon="fas fa-search" 
-                                    value="Search" 
-                                    ajax="false" 
-                                    action="#{opdBillController.navigateToSearchPatients()}"  
-                                    class="mx-2 ui-button-warning" 
-                                    style="float: right;">
-                                </p:commandButton>
-                                <p:commandButton 
-                                    icon="pi pi-print" 
-                                    value="Print" 
-                                    class="p-0 m-1 ui-button-info" >
-                                    <p:printer target="groupPatientCard"/>
-                                </p:commandButton>
-                                <p:commandButton 
-                                    icon="fas fa-plus" 
-                                    value="New Patient" 
-                                    ajax="false"
-                                    action="#{patientController.navigateToAddNewPatientForOpd()}"  
-                                    class="mx-2 ui-button-info" 
-                                    style="float: right;">
-                                </p:commandButton>
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <h:outputText value="Patient Profile" styleClass="fw-bold"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            icon="pi pi-print"
+                                            value="Print Card"
+                                            styleClass="ui-button-info"
+                                            title="Print patient card" >
+                                            <p:printer target="groupPatientCard"/>
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            icon="pi pi-search"
+                                            value="Search Patients"
+                                            ajax="false"
+                                            action="#{opdBillController.navigateToSearchPatients()}"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            title="Search for patients">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            icon="pi pi-user-plus"
+                                            value="New Patient"
+                                            ajax="false"
+                                            action="#{patientController.navigateToAddNewPatientForOpd()}"
+                                            styleClass="ui-button-success"
+                                            title="Add new patient">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            icon="pi pi-pencil"
+                                            ajax="false"
+                                            value="Edit"
+                                            action="#{patientController.navigateToOpdPatientEdit()}"
+                                            styleClass="ui-button-warning"
+                                            title="Edit patient information">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
                             </f:facet>
                             <div class="row" >
 
                                 <div class="col-md-8" >
-                                    <p:panelGrid columns="2" class="w-100 table table-striped" >
+                                    <!-- Primary Patient Information -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-primary text-white">
+                                            <h:outputText value="Patient Information" styleClass="fw-bold"/>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
 
-                                        <p:outputLabel value="Name:" rendered="#{not empty patientController.current.person.nameWithTitle}" />
-                                        <p:outputLabel value="#{patientController.current.person.nameWithTitle}" rendered="#{not empty patientController.current.person.nameWithTitle}" />
+                                                    <h:panelGroup rendered="#{not empty patientController.current.person.nameWithTitle}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">Name:</strong><br/>
+                                                        <p:outputLabel class="ml-4" value="#{patientController.current.person.nameWithTitle}" rendered="#{not empty patientController.current.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
 
-                                        <p:outputLabel value="Age:" rendered="#{not empty patientController.current.person.ageAsString}" />
-                                        <p:outputLabel value="#{patientController.current.person.ageAsString}" rendered="#{not empty patientController.current.person.ageAsString}" />
+                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty patientController.current.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{patientController.current.specificStatus}" severity="danger">
+                                                            <p:outputLabel value="#{patientController.current.person.nameWithTitle}" rendered="#{not empty patientController.current.person.nameWithTitle}" />
+                                                        </p:badge> 
 
-                                        <p:outputLabel value="Sex:" rendered="#{not empty patientController.current.person.sex}" />
-                                        <p:outputLabel value="#{patientController.current.person.sex}" rendered="#{not empty patientController.current.person.sex}" />
+                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system')}" style="transform: translate(110%, -40%);background-color: #{patientController.current.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{patientController.current.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
 
-                                        <p:outputLabel value="PHN Number:" rendered="#{not empty patientController.current.phn}" />
-                                        <p:outputLabel value="#{patientController.current.phn}" rendered="#{not empty patientController.current.phn}" />
+                                                        </p:badge>
+                                                    </h:panelGroup>
 
-                                        <p:outputLabel value="Date of Birth:" rendered="#{not empty patientController.current.person.dob}" />
-                                        <p:outputLabel value="#{patientController.current.person.dob}" rendered="#{not empty patientController.current.person.dob}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                        </p:outputLabel>
+                                                    <h:panelGroup rendered="#{not empty patientController.current.phn}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">PHN Number:</strong><br/>
+                                                        <h:outputText value="#{patientController.current.phn}" styleClass="fw-bold text-primary"/>
+                                                    </h:panelGroup>
 
-                                        <p:outputLabel value="Race:" rendered="#{not empty patientController.current.person.race.name}" />
-                                        <p:outputLabel value="#{patientController.current.person.race.name}" rendered="#{not empty patientController.current.person.race.name}" />
+                                                    <h:panelGroup rendered="#{not empty patientController.current.code}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">Patient Code:</strong><br/>
+                                                        <h:outputText value="#{patientController.current.code}"/>
+                                                    </h:panelGroup>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex gap-4 mb-3">
+                                                        <h:panelGroup rendered="#{not empty patientController.current.person.ageAsString}">
+                                                            <strong class="text-muted">Age:</strong><br/>
+                                                            <h:outputText value="#{patientController.current.person.ageAsString}" styleClass="fw-bold"/>
+                                                        </h:panelGroup>
 
-                                        <p:outputLabel value="Religion:" rendered="#{not empty patientController.current.person.religion.name}" />
-                                        <p:outputLabel value="#{patientController.current.person.religion.name}" rendered="#{not empty patientController.current.person.religion.name}" />
+                                                        <h:panelGroup rendered="#{not empty patientController.current.person.sex}">
+                                                            <strong class="text-muted">Sex:</strong><br/>
+                                                            <h:outputText value="#{patientController.current.person.sex}" styleClass="fw-bold"/>
+                                                        </h:panelGroup>
+                                                    </div>
 
-                                        <p:outputLabel value="Occupation:" rendered="#{not empty patientController.current.person.occupation.name}" />
-                                        <p:outputLabel value="#{patientController.current.person.occupation.name}" rendered="#{not empty patientController.current.person.occupation.name}" />
+                                                    <h:panelGroup rendered="#{not empty patientController.current.person.dob}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">Date of Birth:</strong><br/>
+                                                        <h:outputText value="#{patientController.current.person.dob}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                        </h:outputText>
+                                                    </h:panelGroup>
 
-                                        <p:outputLabel value="Civil Status:" rendered="#{not empty patientController.current.person.civilStatus.name}" />
-                                        <p:outputLabel value="#{patientController.current.person.civilStatus.name}" rendered="#{not empty patientController.current.person.civilStatus.name}" />
+                                                    <h:panelGroup rendered="#{not empty patientController.current.person.bloodGroup.name}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">Blood Group:</strong><br/>
+                                                        <p:badge value="#{patientController.current.person.bloodGroup.name}" severity="danger"/>
+                                                    </h:panelGroup>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                        <p:outputLabel value="Phone:" rendered="#{not empty patientController.current.person.phone}" />
-                                        <p:outputLabel value="#{patientController.current.phoneNumberStringTransient}" rendered="#{not empty patientController.current.person.phone}" />
+                                    <!-- Contact Information -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-info text-white">
+                                            <h:outputText value="Contact Information" styleClass="fw-bold"/>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h:panelGroup rendered="#{not empty patientController.current.person.phone}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">Phone:</strong><br/>
+                                                        <i class="pi pi-phone mr-2"></i>
+                                                        <h:outputText value="#{patientController.current.phoneNumberStringTransient}"/>
+                                                    </h:panelGroup>
 
-                                        <p:outputLabel value="Additional Contact Number:" rendered="#{not empty patientController.current.person.mobile}" />
-                                        <p:outputLabel value="#{patientController.current.mobileNumberStringTransient}" rendered="#{not empty patientController.current.person.mobile}" />
+                                                    <h:panelGroup rendered="#{not empty patientController.current.person.mobile}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">Mobile:</strong><br/>
+                                                        <i class="pi pi-mobile mr-2"></i>
+                                                        <h:outputText value="#{patientController.current.mobileNumberStringTransient}"/>
+                                                    </h:panelGroup>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h:panelGroup rendered="#{not empty patientController.current.person.email}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">Email:</strong><br/>
+                                                        <i class="pi pi-envelope mr-2"></i>
+                                                        <h:outputText value="#{patientController.current.person.email}"/>
+                                                    </h:panelGroup>
 
-                                        <p:outputLabel value="Email:" rendered="#{not empty patientController.current.person.email}" />
-                                        <p:outputLabel value="#{patientController.current.person.email}" rendered="#{not empty patientController.current.person.email}" />
+                                                    <h:panelGroup rendered="#{not empty patientController.current.person.address}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">Address:</strong><br/>
+                                                        <i class="pi pi-home mr-2"></i>
+                                                        <h:outputText value="#{patientController.current.person.address}"/>
+                                                    </h:panelGroup>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                        <p:outputLabel value="NIC / Passport:" rendered="#{not empty patientController.current.person.nic}" />
-                                        <p:outputLabel value="#{patientController.current.person.nic}" rendered="#{not empty patientController.current.person.nic}" />
+                                    <!-- Personal Details -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-secondary text-white">
+                                            <h:outputText value="Personal Details" styleClass="fw-bold"/>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h:panelGroup rendered="#{not empty patientController.current.person.nic}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">NIC / Passport:</strong><br/>
+                                                        <h:outputText value="#{patientController.current.person.nic}" styleClass="fw-bold"/>
+                                                    </h:panelGroup>
 
-                                        <p:outputLabel value="Code:" rendered="#{not empty patientController.current.code}" />
-                                        <p:outputLabel value="#{patientController.current.code}" rendered="#{not empty patientController.current.code}" />
+                                                    <h:panelGroup rendered="#{not empty patientController.current.person.race.name}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">Race:</strong><br/>
+                                                        <h:outputText value="#{patientController.current.person.race.name}"/>
+                                                    </h:panelGroup>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h:panelGroup rendered="#{not empty patientController.current.person.religion.name}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">Religion:</strong><br/>
+                                                        <h:outputText value="#{patientController.current.person.religion.name}"/>
+                                                    </h:panelGroup>
 
-                                        <p:outputLabel value="Address:" rendered="#{not empty patientController.current.person.address}" />
-                                        <p:outputLabel value="#{patientController.current.person.address}" rendered="#{not empty patientController.current.person.address}" />
+                                                    <h:panelGroup rendered="#{not empty patientController.current.person.occupation.name}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">Occupation:</strong><br/>
+                                                        <h:outputText value="#{patientController.current.person.occupation.name}"/>
+                                                    </h:panelGroup>
 
-                                        <p:outputLabel value="Blood Group:" rendered="#{not empty patientController.current.person.bloodGroup.name}" />
-                                        <p:outputLabel value="#{patientController.current.person.bloodGroup.name}" rendered="#{not empty patientController.current.person.bloodGroup.name}" />
+                                                    <h:panelGroup rendered="#{not empty patientController.current.person.civilStatus.name}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">Civil Status:</strong><br/>
+                                                        <h:outputText value="#{patientController.current.person.civilStatus.name}"/>
+                                                    </h:panelGroup>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                        <p:outputLabel value="Patient Status :" rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"/>
-                                        <p:badge 
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"
-                                            value="#{patientController.current.person.foreigner?'Patient is Forigner':'Patient is Local'}" 
-                                            severity="#{patientController.current.person.foreigner?'warning':'success'}" 
-                                            styleClass="mr-2">
-                                        </p:badge>
-                                        <p:outputLabel value="Has an Account:"  />
-                                        <p:outputLabel value="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null ?'Has an account':'No Account'}" />
+                                    <!-- Account &amp; Status Information -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-success text-white">
+                                            <h:outputText value="Account &amp; Status" styleClass="fw-bold"/>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <strong class="text-muted">Account Status:</strong><br/>
+                                                        <p:badge value="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null ?'Has Account':'No Account'}"
+                                                                 severity="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null ?'success':'warning'}"/>
+                                                    </div>
 
-                                        <p:outputLabel value="Account Balance:" rendered="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null}" />
-                                        <p:outputLabel value="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()).balance}" rendered="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:outputLabel>
-                                        
-                                        <p:outputLabel value="Patient Active Status:" />
-                                        <p:outputLabel value="#{patientController.current.blacklisted eq true ? 'Blacklist Patient' : 'Active Patient'}" style="color: #{patientController.current.blacklisted eq true ? 'red' : 'green'}; font-weight: bold" >
-                                           
-                                        </p:outputLabel>
+                                                    <h:panelGroup rendered="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">Account Balance:</strong><br/>
+                                                        <h:outputText value="Rs. #{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()).balance}" styleClass="fw-bold text-success">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </h:panelGroup>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <strong class="text-muted">Patient Status:</strong><br/>
+                                                        <p:badge value="#{patientController.current.blacklisted eq true ? 'Blacklisted' : 'Active'}"
+                                                                 severity="#{patientController.current.blacklisted eq true ? 'danger' : 'success'}"/>
+                                                    </div>
 
-<!--                                        <p:outputLabel value="Credit Limit:" rendered="#{patientController.current.hasAnAccount}" />
-                                        <p:outputLabel value="#{patientController.current.creditLimit}" rendered="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null}" />-->
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">Residency Status:</strong><br/>
+                                                        <p:badge value="#{patientController.current.person.foreigner?'Foreigner':'Local'}"
+                                                                 severity="#{patientController.current.person.foreigner?'warning':'info'}"/>
+                                                    </h:panelGroup>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> 
 
-                                    </p:panelGrid> 
-
-                                    <h:panelGroup id="groupPatientCard" style="text-align: center; width: 4.8cm; border: 1px solid red;" layout="block">
-                                        <div style="line-height: 0.7; padding: 0; margin: 0;">
+                                    <h:panelGroup id="groupPatientCard" style="text-align: center; width: 5cm;" layout="block">
+                                        <div style="line-height: 0.5; padding: 0; margin: 0;">
                                             <div class="mt-1" style="height: 0.9cm;  overflow-x: hidden; overflow-y: hidden">
                                                 <p:barcode format="svg" hrp="none" width="185" value="#{patientController.current.phn}" type="code128" cache="false" rendered="true" />
                                             </div>
                                             <div>
-                                                <p:outputLabel value="#{patientController.current.phn}" style="font-size: 10px;font-weight: 600;" />
+                                                <p:outputLabel value="#{patientController.current.phn}" style="font-size: 8px;font-weight: 600;" />
                                             </div>
                                         </div>
 
-                                        <div class="mt-1 mb-1" style="line-height: 0.7; padding: 0; margin: 0;">
+                                        <div class="mt-1 mb-1" style="line-height: 0.6; padding: 0; margin: 0;">
                                             <div class="w-100">
-                                                <h:outputText value="#{patientController.current.person.nameWithTitle}" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
-                                                <p:outputLabel value="&#160;&#124;&#160;" style="font-size: 10px;" />
-                                                <h:outputText value="#{patientController.current.person.sex eq 'Male' ? 'M' : 'F'}" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;" class="w-100"/>
+                                                <h:outputText value="#{patientController.current.person.nameWithTitle}" style="font-size: 8px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
+                                                <p:outputLabel value="&#160;&#124;&#160;" style="font-size: 8px;" />
+                                                <h:outputText value="#{patientController.current.person.sex eq 'Male' ? 'M' : 'F'}" style="font-size: 8px; font-family: 'Libre Barcode 128 Text', sans-serif;" class="w-100"/>
                                             </div>
                                             <div class="w-100">
-                                                <h:outputText value="#{patientController.current.person.dob}" class="mx-2" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;">
+                                                <h:outputText value="#{patientController.current.person.dob}" class="mx-2" style="font-size: 8px; font-family: 'Libre Barcode 128 Text', sans-serif;">
                                                     <f:convertDateTime pattern="dd/MM/yyyy" />
                                                 </h:outputText>
-                                                <p:outputLabel value="&#160;&#124;&#160;&#160;" style="font-size: 10px;" rendered="#{patientController.current.person.nic ne null}"/>
-                                                <h:outputText value="#{patientController.current.person.nic}" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
+                                                <p:outputLabel value="&#160;&#124;&#160;&#160;" style="font-size: 8px;" rendered="#{patientController.current.person.nic ne null}"/>
+                                                <h:outputText value="#{patientController.current.person.nic}" style="font-size: 8px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
                                             </div>
                                             <div class="w-100">
-                                                <h:outputText value="#{patientController.current.person.phone}" style="font-size: 10px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
+                                                <h:outputText value="#{patientController.current.person.phone}" style="font-size: 8px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
                                             </div>
                                         </div>
                                     </h:panelGroup>
 
                                 </div>
 
-                                <div id="test" class="col-md-4 d-flex flex-column gap-2">
+                                <div class="col-md-4">
 
+                                    <!-- Clinical &amp; OPD Actions -->
+                                    <h:outputText value="Clinical &amp; OPD Services" styleClass="h6 fw-bold text-muted mb-2 d-block"/>
+                                    <div class="d-flex flex-column gap-2 mb-3">
+                                        <p:commandButton
+                                            value="Clinical Dashboard"
+                                            action="#{patientController.toEmrPatientProfile}"
+                                            ajax="false"
+                                            styleClass="ui-button-info"
+                                            style="min-width: 180px"
+                                            icon="pi pi-chart-bar"
+                                            title="View clinical dashboard">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="OPD Visit"
+                                            action="#{patientController.navigateToNewOpdVisitFromSearch}"
+                                            ajax="false"
+                                            styleClass="ui-button-success"
+                                            style="min-width: 180px"
+                                            icon="pi pi-user-plus"
+                                            title="Create new OPD visit">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="Lab Reports"
+                                            action="#{searchController.navigateToPatientLabReports}"
+                                            ajax="false"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            style="min-width: 180px"
+                                            icon="pi pi-file"
+                                            title="View lab reports">
+                                            <f:setPropertyActionListener value="#{patientController.current}" target="#{searchController.patient}"></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="Admit Patient"
+                                            action="#{patientController.navigateToAdmitFromPatientProfile()}"
+                                            ajax="false"
+                                            styleClass="ui-button-warning"
+                                            style="min-width: 180px"
+                                            icon="pi pi-home"
+                                            title="Admit patient to inward">
+                                        </p:commandButton>
+                                    </div>
 
-                                    <p:commandButton 
-                                        value="Clinical Dashboard" 
-                                        action="#{patientController.toEmrPatientProfile}" 
-                                        ajax="false" 
-                                        styleClass="mx-2 btn btn-primary"
-                                        icon="fa fa-tachometer">
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        value="Lab Reports"
-                                        action="#{searchController.navigateToPatientLabReports}"
-                                        ajax="false"
-                                        styleClass="mx-2 btn btn-success"
-                                        icon="fa fa-flask">
-                                        <f:setPropertyActionListener value="#{patientController.current}" target="#{searchController.patient}"></f:setPropertyActionListener>
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        value="OPD Bill" 
-                                        action="#{patientController.navigateToOpdBillFromOpdPatient()}" 
-                                        ajax="false"
-                                        styleClass="mx-2 btn btn-info"
-                                        icon="fa fa-file-invoice">
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        value="Admit" 
-                                        action="#{patientController.navigateToAdmitFromPatientProfile()}" 
-                                        ajax="false" 
-                                        styleClass="mx-2"
-                                        icon="fa fa-hospital">
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        value="Collecting Centre Billing" 
-                                        action="#{patientController.navigateToCollectingCenterBillingFromPatientProfile()}" 
-                                        ajax="false"
-                                        styleClass="mx-2"
-                                        icon="fa fa-dollar-sign">
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        value="OPD Bill for Cashier"
-                                        action="#{patientController.navigateToBillingForCashierFromPatientProfile()}" 
-                                        ajax="false" 
-                                        styleClass="mx-2"
-                                        icon="fa fa-money-check-alt">
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        value="OPD Packages" 
-                                        action="#{patientController.navigateToOpdPackageBillFromOpdPatient()}" 
-                                        ajax="false"
-                                        styleClass="mx-2"
-                                        icon="fa fa-box">
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        value="Accept Payments" 
-                                        action="#{searchController.navigateToPatientAcceptPayment()}" 
-                                        ajax="false" 
-                                        styleClass="mx-2"
-                                        icon="fa fa-credit-card">
-                                        <f:setPropertyActionListener value="#{patientController.current}" target="#{searchController.patient}"></f:setPropertyActionListener>
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        value="Refunds"
-                                        action="#{patientController.navigateToPatientRefundPayment}" 
-                                        ajax="false" 
-                                        styleClass="mx-2"
-                                        icon="fa fa-undo">
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        value="Inward Appointments"
-                                        action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
-                                        ajax="false"
-                                        styleClass="mx-2"
-                                        icon="fa fa-calendar-alt">
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        value="Receive Deposits"
-                                        action="#{patientDepositController.navigateToReciveDepositWithPatient(patientController.current)}"
-                                        ajax="false"
-                                        styleClass="mx-2"
-                                        icon="fa fa-coins">
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        value="Patient Deposit History"
-                                        action="/patient_deposit/patient_deposit_history?faces-redirect=true"
-                                        actionListener="#{patientDepositController.clearDataForPatientDepositHistory()}"
-                                        ajax="false"
-                                        styleClass="mx-2"
-                                        icon="fa fa-coins">
-                                        <f:setPropertyActionListener target="#{patientController.current}" value="#{patientController.current}" />
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        value="Blacklist Patient"
-                                        ajax="true"
-                                        rendered="#{!patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for inward from the system', false)}"
-                                        styleClass="mx-2 ui-button-danger"
-                                        icon="fa fa-ban"
-                                        onclick="PF('blacklistModal').show()">
-                                   
-                                    </p:commandButton>
+                                    <!-- Billing &amp; Financial Services -->
+                                    <h:outputText value="Billing &amp; Financial Services" styleClass="h6 fw-bold text-muted mb-2 d-block"/>
+                                    <div class="d-flex flex-column gap-2 mb-3">
+                                        <p:commandButton
+                                            value="OPD Bill"
+                                            action="#{patientController.navigateToOpdBillFromOpdPatient()}"
+                                            ajax="false"
+                                            styleClass="ui-button-info"
+                                            style="min-width: 180px"
+                                            icon="pi pi-file-o"
+                                            title="Create OPD bill">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="OPD Bill for Cashier"
+                                            action="#{patientController.navigateToBillingForCashierFromPatientProfile()}"
+                                            ajax="false"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            style="min-width: 180px"
+                                            icon="pi pi-calculator"
+                                            title="Process cashier billing">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="OPD Packages"
+                                            action="#{patientController.navigateToOpdPackageBillFromOpdPatient()}"
+                                            ajax="false"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            style="min-width: 180px"
+                                            icon="pi pi-box"
+                                            title="Create package bill">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="Pharmacy Retail Sale"
+                                            action="#{patientController.navigateToPharmacyRetailSaleFromOpdPatient()}"
+                                            ajax="false"
+                                            styleClass="ui-button-success ui-button-outlined"
+                                            style="min-width: 180px"
+                                            icon="pi pi-shopping-cart"
+                                            title="Create pharmacy retail sale bill">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="Collecting Centre Billing"
+                                            action="#{patientController.navigateToCollectingCenterBillingFromPatientProfile()}"
+                                            ajax="false"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            style="min-width: 180px"
+                                            icon="pi pi-building"
+                                            title="Process collecting centre billing">
+                                        </p:commandButton>
+                                    </div>
 
-                                    <p:commandButton 
-                                        value="Revert Blacklist Patient"
-                                        ajax="true"
-                                        rendered="#{patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for inward from the system', false)}"
-                                        styleClass="mx-2 ui-button-danger"
-                                        icon="fa fa-ban"
-                                        onclick="PF('blacklistModal').show();">
-                                       
-                                    </p:commandButton>
+                                    <!-- Payment Services -->
+                                    <h:outputText value="Payment Services" styleClass="h6 fw-bold text-muted mb-2 d-block"/>
+                                    <div class="d-flex flex-column gap-2 mb-3">
+                                        <p:commandButton
+                                            value="Accept Payments"
+                                            action="#{searchController.navigateToPatientAcceptPayment()}"
+                                            ajax="false"
+                                            styleClass="ui-button-success"
+                                            style="min-width: 180px"
+                                            icon="pi pi-credit-card"
+                                            title="Accept patient payments">
+                                            <f:setPropertyActionListener value="#{patientController.current}" target="#{searchController.patient}"></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="Refunds"
+                                            action="#{patientController.navigateToPatientRefundPayment}"
+                                            ajax="false"
+                                            styleClass="ui-button-warning ui-button-outlined"
+                                            style="min-width: 180px"
+                                            icon="pi pi-undo"
+                                            title="Process patient refunds">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="Receive Deposits"
+                                            action="#{patientDepositController.navigateToReciveDepositWithPatient(patientController.current)}"
+                                            ajax="false"
+                                            styleClass="ui-button-success ui-button-outlined"
+                                            style="min-width: 180px"
+                                            icon="pi pi-money-bill"
+                                            title="Receive patient deposits">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="Deposit History"
+                                            action="/patient_deposit/patient_deposit_history?faces-redirect=true"
+                                            actionListener="#{patientDepositController.clearDataForPatientDepositHistory()}"
+                                            ajax="false"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            style="min-width: 180px"
+                                            icon="pi pi-history"
+                                            title="View patient deposit history">
+                                            <f:setPropertyActionListener target="#{patientController.current}" value="#{patientController.current}" />
+                                        </p:commandButton>
+                                    </div>
 
-                                    <p:dialog 
-                                        header="Blacklist Patient" 
-                                        widgetVar="blacklistModal" 
-                                        id="blacklistDlg"
-                                        minHeight="100" 
-                                        width="400" 
-                                        showEffect="fade" 
-                                        modal="true" 
-                                        
-                                        closeOnEscape="true">
-
-
-                                        <h:panelGrid id="test2" columns="2" columnClasses="label, value" styleClass="p-fluid" cellpadding="5">
-
-                                            <!-- Date -->
-                                            <h:outputLabel for="blacklistby" value="Process By:" />
-                                            <p:outputLabel id="blacklistby" 
-                                                           value="#{sessionController.loggedUser.name}" 
-                                                           />
-
-                                            <!-- Comment -->
-                                            <h:outputLabel for="blacklistComment" value="Comment:" />
-                                            <p:inputTextarea id="blacklistComment" 
-                                                             value="#{patientController.blacklistComment}" 
-                                                             rows="4" 
-                                                             
-                                                             autoResize="false" 
-                                                             maxlength="500" 
-                                                             placeholder="Enter reason" />
-                                        </h:panelGrid>
-
-                                        <p:separator/>
-
-                                        <!-- Action Buttons -->
-                                        <p:commandButton 
-                                            value="Blacklist" 
-                                            icon="pi pi-ban" 
-                                            class="ui-button-danger"
-                                            rendered="#{!patientController.current.blacklisted}"
-                                            process="blacklistDlg"
-                                            oncomplete="PF('blacklistModal').hide(); "
-                                            action="#{patientController.toggleBlacklistPatient(true)}" 
-                                            update="@form msg"
-
-                                            />
-
-                                        <p:commandButton 
-                                            value="Revert" 
-                                            class="ui-button-danger"
+                                    <!-- Appointments &amp; Administration -->
+                                    <h:outputText value="Appointments &amp; Administration" styleClass="h6 fw-bold text-muted mb-2 d-block"/>
+                                    <div class="d-flex flex-column gap-2 mb-3">
+                                        <p:commandButton
+                                            value="Inward Appointments"
+                                            action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
+                                            ajax="false"
+                                            styleClass="ui-button-info"
+                                            style="min-width: 180px"
+                                            icon="pi pi-calendar"
+                                            title="Manage inward appointments">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="Blacklist Patient"
+                                            ajax="true"
+                                            rendered="#{!patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system', false)}"
+                                            styleClass="ui-button-danger"
+                                            style="min-width: 180px"
                                             icon="pi pi-ban"
-                                            rendered="#{patientController.current.blacklisted}"
-                                            process="blacklistDlg"
-                                            oncomplete="PF('blacklistModal').hide(); "
-                                            action="#{patientController.toggleBlacklistPatient(false)}" 
-                                            update="@form msg"
+                                            title="Blacklist this patient"
+                                            onclick="PF('blacklistModal').show()">
+                                        </p:commandButton>
 
-                                            />
+                                        <p:commandButton
+                                            value="Revert Blacklist"
+                                            ajax="true"
+                                            rendered="#{patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system', false)}"
+                                            styleClass="ui-button-warning"
+                                            style="min-width: 180px"
+                                            icon="pi pi-ban"
+                                            title="Remove patient from blacklist"
+                                            onclick="PF('blacklistModal').show();">
+                                        </p:commandButton>
 
-                                        <p:commandButton 
-                                            value="Cancel" 
-                                            icon="pi pi-times" 
-                                            class="mx-4 ui-button-secondary"
-                                            onclick="PF('blacklistModal').hide()" 
-                                            type="button" 
-                                            />
+                                        <p:commandButton
+                                            value="Delete Patient"
+                                            action="#{patientController.deletePatient()}"
+                                            ajax="false"
+                                            styleClass="ui-button-danger ui-button-outlined"
+                                            style="min-width: 180px"
+                                            icon="pi pi-trash"
+                                            title="Delete patient record"
+                                            onclick="return confirm('Are you sure you want to delete this patient?');">
+                                        </p:commandButton>
+                                    </div>
 
+                                    <!-- Blacklist Patient Dialog -->
+                                    <p:dialog
+                                        header="Patient Blacklist Management"
+                                        widgetVar="blacklistModal"
+                                        id="blacklistDlg"
+                                        width="500"
+                                        showEffect="fade"
+                                        modal="true"
+                                        closeOnEscape="true"
+                                        resizable="false">
 
+                                        <div class="p-4">
+                                            <h:panelGrid columns="2" styleClass="w-100" columnClasses="col-4,col-8" cellpadding="8">
+                                                <p:outputLabel value="Processed By:" styleClass="fw-bold"/>
+                                                <p:outputLabel value="#{sessionController.loggedUser.name}"/>
+
+                                                <p:outputLabel for="blacklistComment" value="Reason:" styleClass="fw-bold"/>
+                                                <p:inputTextarea id="blacklistComment"
+                                                                 value="#{patientController.blacklistComment}"
+                                                                 rows="4"
+                                                                 autoResize="false"
+                                                                 maxlength="500"
+                                                                 styleClass="w-100"
+                                                                 placeholder="Enter the reason for blacklisting/reverting..." />
+                                            </h:panelGrid>
+
+                                            <div class="d-flex gap-2 justify-content-end mt-4">
+                                                <p:commandButton
+                                                    value="Confirm Blacklist"
+                                                    icon="pi pi-ban"
+                                                    styleClass="ui-button-danger"
+                                                    rendered="#{!patientController.current.blacklisted}"
+                                                    process="blacklistDlg"
+                                                    oncomplete="PF('blacklistModal').hide();"
+                                                    action="#{patientController.toggleBlacklistPatient(true)}"
+                                                    update="@form msg"
+                                                    title="Confirm blacklist action" />
+
+                                                <p:commandButton
+                                                    value="Confirm Revert"
+                                                    styleClass="ui-button-warning"
+                                                    icon="pi pi-check"
+                                                    rendered="#{patientController.current.blacklisted}"
+                                                    process="blacklistDlg"
+                                                    oncomplete="PF('blacklistModal').hide();"
+                                                    action="#{patientController.toggleBlacklistPatient(false)}"
+                                                    update="@form msg"
+                                                    title="Confirm revert action" />
+
+                                                <p:commandButton
+                                                    value="Cancel"
+                                                    icon="pi pi-times"
+                                                    styleClass="ui-button-secondary"
+                                                    onclick="PF('blacklistModal').hide()"
+                                                    type="button"
+                                                    title="Cancel action" />
+                                            </div>
+                                        </div>
                                     </p:dialog>
 
-                                    <p:commandButton 
-                                        value="Delete Patient"
-                                        action="#{patientController.deletePatient()}"
-                                        ajax="false"
-                                        styleClass="mx-2 ui-button-danger"
-                                        icon="pi pi-trash"
-                                        onclick="return confirm('Are you sure you want to delete this patient?');">
-                                    </p:commandButton>
                                     <p:growl id="msg" showDetail="false" showSummary="true"></p:growl>
-                                    
                                 </div>
-                            
+
 
                             </div>  
 

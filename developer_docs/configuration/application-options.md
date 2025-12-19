@@ -32,3 +32,9 @@ This document lists the configuration options used in the application and their 
 | `Pharmacy Transfer Issue Bill Footer CSS`                        | String    | `''`    | CSS for the footer of the transfer issue bill.                                                            |
 | `Pharmacy Transfer Issue Bill Footer Text`                       | String    | `''`    | Text for the footer of the transfer issue bill.                                                             |
 
+## Inventory Reports
+
+| Key                                                              | Type      | Default | Description                                                                                             |
+| ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `Cost of Goods Sold Report - Display Stock Correction Section`  | Boolean   | `true`  | Controls whether the Stock Correction section is displayed and calculated in the Cost of Goods Sold report. |
+

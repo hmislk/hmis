@@ -60,6 +60,7 @@ import java.util.TreeSet;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -141,6 +142,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private Doctor referingDoctor;
     private Staff toStaff;
     private WebUser webUser;
+
 
     private double investigationResult;
     private double hospitalFeeTotal;
@@ -1552,6 +1554,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     public String navigateToCCBillItemListReport() {
         setReportTemplateFileIndexName("/reports/index.xhtml");
         return "/reports/collectionCenterReports/cc_bill_item_list?faces-redirect=true";
+    }
+    
+    public String navigateToDashboard() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/dashboard/dashboard?faces-redirect=true";
     }
 
     private Person person;
@@ -3103,6 +3110,12 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         return "/reports/inpatientReports/ip_unsettled_invoices?faces-redirect=true";
     }
+    
+    
+    public String navigateToRoomChange() {
+
+        return "/reports/inpatientReports/room_change?faces-redirect=true";
+    }
 
     public String navigateToconsumption() {
         return "/reports/inventoryReports/consumption?faces-redirect=true";
@@ -3637,6 +3650,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     public void setDoctor(Doctor doctor) {
         this.doctor = doctor;
     }
+    
+    
 
     /**
      * Aggregates test-wise count report data for collecting centres by

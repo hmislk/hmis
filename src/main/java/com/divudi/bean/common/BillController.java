@@ -775,7 +775,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             if (qry != null) {
                 // Try simple version first without COALESCE
                 System.out.println("Trying simple query without COALESCE...");
-                sql = "select c from BilledBill c "
+// Try simple version first without COALESCE
+                                sql = "select c from BilledBill c "
                         + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
                         + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount)) > :val) "
                         + " and c.billTypeAtomic in :btas "
@@ -789,7 +790,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                         + " order by c.deptId";
 
                 List<BillTypeAtomic> btas = new ArrayList<>();
-                btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+//                btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
                 btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
                 btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
                 hash.put("btas", btas);
@@ -804,13 +805,11 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 a = getFacade().findByJpql(sql, hash);
 
                 System.out.println("Query executed successfully");
-                System.out.println("Result count: " + (a != null ? a.size() : "NULL"));
                 if (a != null && !a.isEmpty()) {
                     for (Bill bill : a) {
                         Double balance = bill.getBalance();
                         double dueAmount = (balance != null) ? balance.doubleValue() :
                                           (bill.getNetTotal() + bill.getVat() - bill.getPaidAmount());
-                        System.out.println("Found bill ID: " + bill.getId() + ", deptId: " + bill.getDeptId() + ", due amount: " + dueAmount);
                     }
                 } else {
                     System.out.println("No results found - trying fallback query...");
@@ -834,27 +833,21 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     System.out.println("Fallback JPQL: " + simpleSql);
                     System.out.println("Fallback parameters: " + fallbackHash);
                     a = getFacade().findByJpql(simpleSql, fallbackHash);
-                    System.out.println("Fallback result count: " + (a != null ? a.size() : "NULL"));
                 }
             } else {
-                System.out.println("Query parameter is NULL - skipping query execution");
             }
         } catch (Exception e) {
-            System.out.println("ERROR in completeOpdCreditPackageBatchBill: " + e.getMessage());
             e.printStackTrace();
         }
 
         if (a == null) {
             a = new ArrayList<>();
-            System.out.println("Result was null, returning empty list");
         }
 
-        System.out.println("=================== completeOpdCreditPackageBatchBill END ===================");
         return a;
     }
 
     public List<Bill> completeOpdCreditBatchBill(String qry) {
-        System.out.println("completeOpdCreditBatchBill");
         List<Bill> a = null;
         String jpql;
         HashMap params = new HashMap();
@@ -872,7 +865,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     + " or (c.creditCompany.name) like :q ) "
                     + " order by c.deptId";
             List<BillTypeAtomic> btas = new ArrayList<>();
-            btas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+//            btas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
             btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
             btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             params.put("btas", btas);
@@ -882,7 +875,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             a = getFacade().findByJpql(jpql, params);
             System.out.println("jpql = " + jpql);
             System.out.println("params = " + params);
-            System.out.println("a = " + a);
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -891,7 +883,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     }
 
     public List<Bill> completeInwardCreditCompanyPaymentBill(String qry) {
-        System.out.println("completeInwardCreditCompanyPaymentBill");
         List<Bill> a = null;
         String jpql;
         HashMap params = new HashMap();
@@ -916,7 +907,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             a = getFacade().findByJpql(jpql, params);
             System.out.println("jpql = " + jpql);
             System.out.println("params = " + params);
-            System.out.println("a = " + a);
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -935,7 +925,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             if (qry != null) {
                 // Try simple version first without COALESCE
                 System.out.println("Trying simple query without COALESCE...");
-                sql = "select b from BilledBill b "
+// Try simple version first without COALESCE
+                                sql = "select b from BilledBill b "
                         + " where ((b.balance IS NOT NULL AND abs(b.balance) > :val) "
                         + " OR (abs(b.netTotal) + abs(b.vat) - abs(b.paidAmount)) > :val) "
                         + " and b.billType in :btps "
@@ -961,13 +952,11 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 a = getFacade().findByJpql(sql, hash);
 
                 System.out.println("Query executed successfully");
-                System.out.println("Result count: " + (a != null ? a.size() : "NULL"));
                 if (a != null && !a.isEmpty()) {
                     for (Bill bill : a) {
                         Double balance = bill.getBalance();
                         double dueAmount = (balance != null) ? balance.doubleValue() :
                                           (bill.getNetTotal() + bill.getVat() - bill.getPaidAmount());
-                        System.out.println("Found bill ID: " + bill.getId() + ", deptId: " + bill.getDeptId() + ", due amount: " + dueAmount);
                     }
                 } else {
                     System.out.println("No results found - trying fallback query...");
@@ -994,22 +983,17 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     System.out.println("Fallback JPQL: " + simpleSql);
                     System.out.println("Fallback parameters: " + fallbackHash);
                     a = getFacade().findByJpql(simpleSql, fallbackHash);
-                    System.out.println("Fallback result count: " + (a != null ? a.size() : "NULL"));
                 }
             } else {
-                System.out.println("Query parameter is NULL - skipping query execution");
             }
         } catch (Exception e) {
-            System.out.println("ERROR in completePharmacyCreditBill: " + e.getMessage());
             e.printStackTrace();
         }
 
         if (a == null) {
             a = new ArrayList<>();
-            System.out.println("Result was null, returning empty list");
         }
 
-        System.out.println("=================== completePharmacyCreditBill END ===================");
         return a;
     }
 
@@ -2029,6 +2013,13 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                         patient = batchBill.getPatient();
                         paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
                         comment = currentRequest.getRequestReason();
+
+                        // Initialize payment method data from original batch bill payments
+                        List<Payment> batchBillPayments = billBean.fetchBillPayments(batchBill);
+                        if (batchBillPayments != null && !batchBillPayments.isEmpty()) {
+                            initializePaymentDataFromOriginalPayments(batchBillPayments);
+                        }
+
                         printPreview = false;
                         batchBillCancellationStarted = false;
 
@@ -2043,15 +2034,298 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             patient = batchBill.getPatient();
             paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
             comment = null;
+
+            // Initialize payment method data from original batch bill payments
+            List<Payment> batchBillPayments = billBean.fetchBillPayments(batchBill);
+            if (batchBillPayments != null && !batchBillPayments.isEmpty()) {
+                initializePaymentDataFromOriginalPayments(batchBillPayments);
+            }
+
             printPreview = false;
             batchBillCancellationStarted = false;
             return "/opd/batch_bill_cancel?faces-redirect=true";
         }
     }
 
+    /**
+     * Initializes payment method data from the original bill's payment records.
+     * This method populates payment method details (card numbers, reference numbers, etc.)
+     * based on how the original bill was paid.
+     *
+     * @param originalPayments List of Payment objects from the original bill
+     */
+    private void initializePaymentDataFromOriginalPayments(List<Payment> originalPayments) {
+        if (originalPayments == null || originalPayments.isEmpty()) {
+            return;
+        }
+
+        // For single payment method
+        if (originalPayments.size() == 1) {
+            Payment originalPayment = originalPayments.get(0);
+            paymentMethod = originalPayment.getPaymentMethod();
+
+            // Initialize paymentMethodData based on payment method (using absolute values for UI display)
+            switch (originalPayment.getPaymentMethod()) {
+                case Cash:
+                    getPaymentMethodData().getCash().setTotalValue(Math.abs(batchBill.getNetTotal()));
+                    break;
+                case Card:
+                    getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
+                    getPaymentMethodData().getCreditCard().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getCreditCard().setTotalValue(Math.abs(batchBill.getNetTotal()));
+                    break;
+                case Cheque:
+                    getPaymentMethodData().getCheque().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
+                    getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
+                    getPaymentMethodData().getCheque().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getCheque().setTotalValue(Math.abs(batchBill.getNetTotal()));
+                    break;
+                case Slip:
+                    getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate());
+                    getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getSlip().setTotalValue(Math.abs(batchBill.getNetTotal()));
+                    break;
+                case ewallet:
+                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                    getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
+                    getPaymentMethodData().getEwallet().setTotalValue(Math.abs(batchBill.getNetTotal()));
+                    getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
+                    break;
+                case PatientDeposit:
+                    getPaymentMethodData().getPatient_deposit().setTotalValue(Math.abs(batchBill.getNetTotal()));
+                    getPaymentMethodData().getPatient_deposit().setPatient(batchBill.getPatient());
+                    getPaymentMethodData().getPatient_deposit().setComment(originalPayment.getComments());
+                    break;
+                case Credit:
+                    getPaymentMethodData().getCredit().setInstitution(originalPayment.getCreditCompany());
+                    getPaymentMethodData().getCredit().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getCredit().setReferralNo(originalPayment.getPolicyNo());
+                    getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getCredit().setTotalValue(Math.abs(batchBill.getNetTotal()));
+                    break;
+                case Staff:
+                    com.divudi.core.entity.Staff staffForCredit = originalPayment.getToStaff();
+                    if (staffForCredit == null && batchBill != null) {
+                        staffForCredit = batchBill.getToStaff();
+                    }
+                    getPaymentMethodData().getStaffCredit().setToStaff(staffForCredit);
+                    getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getStaffCredit().setTotalValue(Math.abs(batchBill.getNetTotal()));
+                    break;
+                case Staff_Welfare:
+                    com.divudi.core.entity.Staff staffForWelfare = originalPayment.getToStaff();
+                    if (staffForWelfare == null && batchBill != null) {
+                        staffForWelfare = batchBill.getToStaff();
+                    }
+                    getPaymentMethodData().getStaffWelfare().setToStaff(staffForWelfare);
+                    getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getStaffWelfare().setTotalValue(Math.abs(batchBill.getNetTotal()));
+                    break;
+                case OnlineSettlement:
+                    getPaymentMethodData().getOnlineSettlement().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                    getPaymentMethodData().getOnlineSettlement().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getOnlineSettlement().setDate(originalPayment.getPaymentDate());
+                    getPaymentMethodData().getOnlineSettlement().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getOnlineSettlement().setTotalValue(Math.abs(batchBill.getNetTotal()));
+                    break;
+                default:
+                    // For any other payment method, just set the total value
+                    break;
+            }
+        } else {
+            // Multiple payments - set to MultiplePaymentMethods
+            paymentMethod = PaymentMethod.MultiplePaymentMethods;
+
+            // Initialize multiple payment method structure with original payment details
+            getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().clear();
+
+            for (Payment originalPayment : originalPayments) {
+                ComponentDetail cd = new ComponentDetail();
+                cd.setPaymentMethod(originalPayment.getPaymentMethod());
+
+                // Set payment details based on method - use absolute value for UI display
+                double refundAmount = Math.abs(originalPayment.getPaidValue());
+
+                switch (originalPayment.getPaymentMethod()) {
+                    case Cash:
+                        cd.getPaymentMethodData().getCash().setTotalValue(refundAmount);
+                        break;
+                    case Card:
+                        cd.getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
+                        cd.getPaymentMethodData().getCreditCard().setComment(originalPayment.getComments());
+                        cd.getPaymentMethodData().getCreditCard().setTotalValue(refundAmount);
+                        break;
+                    case Cheque:
+                        cd.getPaymentMethodData().getCheque().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
+                        cd.getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
+                        cd.getPaymentMethodData().getCheque().setComment(originalPayment.getComments());
+                        cd.getPaymentMethodData().getCheque().setTotalValue(refundAmount);
+                        break;
+                    case Slip:
+                        cd.getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate() != null ? originalPayment.getPaymentDate() : originalPayment.getRealizedAt());
+                        cd.getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
+                        cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
+                        break;
+                    case ewallet:
+                        cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                        cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
+                        cd.getPaymentMethodData().getEwallet().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
+                        break;
+                    case PatientDeposit:
+                        cd.getPaymentMethodData().getPatient_deposit().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getPatient_deposit().setPatient(batchBill.getPatient());
+                        cd.getPaymentMethodData().getPatient_deposit().setComment(originalPayment.getComments());
+                        break;
+                    case Credit:
+                        cd.getPaymentMethodData().getCredit().setInstitution(originalPayment.getCreditCompany());
+                        cd.getPaymentMethodData().getCredit().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getCredit().setReferralNo(originalPayment.getPolicyNo());
+                        cd.getPaymentMethodData().getCredit().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
+                        break;
+                    case Staff:
+                        com.divudi.core.entity.Staff staffForCredit = originalPayment.getToStaff();
+                        if (staffForCredit == null && batchBill != null) {
+                            staffForCredit = batchBill.getToStaff();
+                        }
+                        cd.getPaymentMethodData().getStaffCredit().setToStaff(staffForCredit);
+                        cd.getPaymentMethodData().getStaffCredit().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
+                        break;
+                    case Staff_Welfare:
+                        com.divudi.core.entity.Staff staffForWelfare = originalPayment.getToStaff();
+                        if (staffForWelfare == null && batchBill != null) {
+                            staffForWelfare = batchBill.getToStaff();
+                        }
+                        cd.getPaymentMethodData().getStaffWelfare().setToStaff(staffForWelfare);
+                        cd.getPaymentMethodData().getStaffWelfare().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
+                        break;
+                    case OnlineSettlement:
+                        cd.getPaymentMethodData().getOnlineSettlement().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                        cd.getPaymentMethodData().getOnlineSettlement().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getOnlineSettlement().setDate(originalPayment.getPaymentDate());
+                        cd.getPaymentMethodData().getOnlineSettlement().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getOnlineSettlement().setComment(originalPayment.getComments());
+                        break;
+                    default:
+                        // For any other payment method, just set the total value
+                        break;
+                }
+
+                // Add this component detail to the multiple payment method structure
+                getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().add(cd);
+            }
+        }
+    }
+
+    /**
+     * Applies refund sign (negative values) to all payment method data.
+     * This ensures that payment records for refunds/cancellations are stored with negative amounts.
+     */
+    private void applyRefundSignToPaymentData() {
+        if (paymentMethodData == null) {
+            return;
+        }
+
+        // Handle multiple payment methods
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            if (paymentMethodData.getPaymentMethodMultiple() != null
+                && paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null) {
+                for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    if (cd.getPaymentMethodData() != null) {
+                        applyRefundSignToSinglePaymentMethodData(cd.getPaymentMethodData());
+                    }
+                }
+            }
+        } else {
+            // Handle single payment method
+            applyRefundSignToSinglePaymentMethodData(paymentMethodData);
+        }
+    }
+
+    /**
+     * Helper method to apply refund sign to a single PaymentMethodData object.
+     * This ensures all payment amounts are negative (cash going out).
+     */
+    private void applyRefundSignToSinglePaymentMethodData(PaymentMethodData pmd) {
+        if (pmd == null) {
+            return;
+        }
+
+        // Apply negative sign to each payment method's total value
+        if (pmd.getCash() != null && pmd.getCash().getTotalValue() != 0) {
+            double oldValue = pmd.getCash().getTotalValue();
+            pmd.getCash().setTotalValue(-Math.abs(pmd.getCash().getTotalValue()));
+            System.out.println("DEBUG Cash: " + oldValue + " -> " + pmd.getCash().getTotalValue());
+        }
+        if (pmd.getCreditCard() != null && pmd.getCreditCard().getTotalValue() != 0) {
+            double oldValue = pmd.getCreditCard().getTotalValue();
+            pmd.getCreditCard().setTotalValue(-Math.abs(pmd.getCreditCard().getTotalValue()));
+            System.out.println("DEBUG Card: " + oldValue + " -> " + pmd.getCreditCard().getTotalValue());
+        }
+        if (pmd.getCheque() != null && pmd.getCheque().getTotalValue() != 0) {
+            double oldValue = pmd.getCheque().getTotalValue();
+            pmd.getCheque().setTotalValue(-Math.abs(pmd.getCheque().getTotalValue()));
+            System.out.println("DEBUG Cheque: " + oldValue + " -> " + pmd.getCheque().getTotalValue());
+        }
+        if (pmd.getSlip() != null && pmd.getSlip().getTotalValue() != 0) {
+            double oldValue = pmd.getSlip().getTotalValue();
+            pmd.getSlip().setTotalValue(-Math.abs(pmd.getSlip().getTotalValue()));
+            System.out.println("DEBUG Slip: " + oldValue + " -> " + pmd.getSlip().getTotalValue());
+        }
+        if (pmd.getEwallet() != null && pmd.getEwallet().getTotalValue() != 0) {
+            double oldValue = pmd.getEwallet().getTotalValue();
+            pmd.getEwallet().setTotalValue(-Math.abs(pmd.getEwallet().getTotalValue()));
+            System.out.println("DEBUG Ewallet: " + oldValue + " -> " + pmd.getEwallet().getTotalValue());
+        }
+        if (pmd.getPatient_deposit() != null && pmd.getPatient_deposit().getTotalValue() != 0) {
+            double oldValue = pmd.getPatient_deposit().getTotalValue();
+            pmd.getPatient_deposit().setTotalValue(-Math.abs(pmd.getPatient_deposit().getTotalValue()));
+            System.out.println("DEBUG PatientDeposit: " + oldValue + " -> " + pmd.getPatient_deposit().getTotalValue());
+        }
+        if (pmd.getCredit() != null && pmd.getCredit().getTotalValue() != 0) {
+            double oldValue = pmd.getCredit().getTotalValue();
+            pmd.getCredit().setTotalValue(-Math.abs(pmd.getCredit().getTotalValue()));
+            System.out.println("DEBUG Credit: " + oldValue + " -> " + pmd.getCredit().getTotalValue());
+        }
+        if (pmd.getStaffCredit() != null && pmd.getStaffCredit().getTotalValue() != 0) {
+            double oldValue = pmd.getStaffCredit().getTotalValue();
+            pmd.getStaffCredit().setTotalValue(-Math.abs(pmd.getStaffCredit().getTotalValue()));
+            System.out.println("DEBUG StaffCredit: " + oldValue + " -> " + pmd.getStaffCredit().getTotalValue());
+        }
+        if (pmd.getStaffWelfare() != null && pmd.getStaffWelfare().getTotalValue() != 0) {
+            double oldValue = pmd.getStaffWelfare().getTotalValue();
+            pmd.getStaffWelfare().setTotalValue(-Math.abs(pmd.getStaffWelfare().getTotalValue()));
+            System.out.println("DEBUG StaffWelfare: " + oldValue + " -> " + pmd.getStaffWelfare().getTotalValue());
+        }
+        if (pmd.getOnlineSettlement() != null && pmd.getOnlineSettlement().getTotalValue() != 0) {
+            double oldValue = pmd.getOnlineSettlement().getTotalValue();
+            pmd.getOnlineSettlement().setTotalValue(-Math.abs(pmd.getOnlineSettlement().getTotalValue()));
+            System.out.println("DEBUG OnlineSettlement: " + oldValue + " -> " + pmd.getOnlineSettlement().getTotalValue());
+        }
+    }
+
     private List<Bill> cancelSingleBills = new ArrayList<>();
 
     public String cancelOpdBatchBill() {
+        System.out.println("=== DEBUG: cancelOpdBatchBill() called ===");
+        System.out.println("Payment Method: " + paymentMethod);
+        System.out.println("Batch Bill Payment Method: " + (batchBill != null ? batchBill.getPaymentMethod() : "null"));
+
         batchBillCancellationStarted = true;
         if (getBatchBill() == null) {
             JsfUtil.addErrorMessage("No bill");
@@ -2173,7 +2447,28 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             }
         }
 
-        List<Payment> cancelPayments = createPaymentForOpdBatchBillCancellation(cancellationBatchBill, paymentMethod);
+        // Apply refund sign to payment data
+        applyRefundSignToPaymentData();
+
+        // Debug: Log payment data values after applying refund sign
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            System.out.println("=== DEBUG: Multiple Payment Methods ===");
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                System.out.println("Payment Method: " + cd.getPaymentMethod());
+                if (cd.getPaymentMethodData().getCash() != null) {
+                    System.out.println("  Cash: " + cd.getPaymentMethodData().getCash().getTotalValue());
+                }
+                if (cd.getPaymentMethodData().getCreditCard() != null) {
+                    System.out.println("  Card: " + cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                }
+                if (cd.getPaymentMethodData().getCheque() != null) {
+                    System.out.println("  Cheque: " + cd.getPaymentMethodData().getCheque().getTotalValue());
+                }
+            }
+        }
+
+        // Create payments using PaymentService
+        List<Payment> cancelPayments = paymentService.createPayment(cancellationBatchBill, paymentMethodData);
 
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             paymentService.updateBalances(cancelPayments);
@@ -2465,7 +2760,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 }
             }
         } catch (Exception e) {
-            System.out.println("Error = " + e);
         }
 
         try {
@@ -3169,10 +3463,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (omitPaymentGeneratedBills != null && omitPaymentGeneratedBills) {
             jpql += " AND (b.paymentGenerated = false OR b.paymentGenerated = 0 OR b.paymentGenerated IS NULL)";
         }
+        // Logging
 
         // Logging
         System.out.println("JPQL Query: " + jpql);
-        System.out.println("Parameters: " + params);
 
         return getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -3259,7 +3553,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         List<Bill> bills = getFacade().findByJpql(jpql, params, 1000);
 
         if (bills == null || bills.isEmpty()) {
-            System.out.println("No matching bills found for type: " + billTypeAtomic);
             return;
         }
 
@@ -3283,18 +3576,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             }
 
             System.out.println("Calculated Gross Total: " + total + " | Existing: " + b.getTotal());
-            System.out.println("Calculated Net Total: " + netTotal + " | Existing: " + b.getNetTotal());
 
             if (Math.abs(b.getNetTotal() - netTotal) >= 1.0) {
-                System.out.println("Skipping bill ID: " + b.getId() + ". Net total mismatch suggests deeper issue.");
             } else {
-                System.out.println("Updating gross total for bill ID: " + b.getId());
                 b.setTotal(total);
                 getFacade().edit(b);
             }
         }
 
-        System.out.println("Completed processing for bill type: " + billTypeAtomic);
     }
 
     /**
@@ -3316,14 +3605,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
         List<Bill> bills = getFacade().findByJpql(jpql, params, 1000);
         if (bills == null || bills.isEmpty()) {
-            System.out.println("No matching bills found.");
             return;
         }
 
         System.out.println("Number of bills found: " + bills.size());
 
         for (Bill bill : bills) {
-            System.out.println("Processing bill ID: " + bill.getId());
             for (BillItem bi : bill.getBillItems()) {
                 boolean updated = false;
 
@@ -3349,14 +3636,11 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
                 if (updated) {
                     billItemFacade.edit(bi);
-                    System.out.println("Updated BillItem ID: " + bi.getId());
                 } else {
-                    System.out.println("No update needed for BillItem ID: " + bi.getId());
                 }
             }
         }
 
-        System.out.println("Completed correction of BillItem values.");
     }
 
     /**
@@ -3380,14 +3664,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
         List<Bill> bills = getFacade().findByJpql(jpql, params, 1000);
         if (bills == null || bills.isEmpty()) {
-            System.out.println("No matching bills found.");
             return;
         }
 
         System.out.println("Number of bills found: " + bills.size());
 
         for (Bill bill : bills) {
-            System.out.println("Processing bill ID: " + bill.getId());
             for (BillItem bi : bill.getBillItems()) {
                 boolean updated = false;
 
@@ -3447,14 +3729,11 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
                 if (updated) {
                     billItemFacade.edit(bi);
-                    System.out.println("Updated BillItem ID: " + bi.getId());
                 } else {
-                    System.out.println("No update needed for BillItem ID: " + bi.getId());
                 }
             }
         }
 
-        System.out.println("Completed correction of BillItem and PharmaceuticalBillItem values.");
     }
 
     public void addMissingBillTypeAtomics() {
@@ -3468,10 +3747,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         m.put("ret", false);
         List<Bill> billsWithoutBillTypeAtomic = getFacade().findByJpql(jpql, m, 1000);
         if (billsWithoutBillTypeAtomic == null) {
-            System.out.println("No Bills");
             return;
         }
-        System.out.println("billsWithoutBillTypeAtomic = " + billsWithoutBillTypeAtomic.size());
         for (Bill b : billsWithoutBillTypeAtomic) {
             if (b.getBillTypeAtomic() != null) {
                 continue;
@@ -3495,7 +3772,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
      */
     public void convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBillForAllBills() {
         if (getFromDate() == null || getToDate() == null) {
-            System.out.println("FromDate or ToDate is null. Aborting process.");
             return;
         }
 
@@ -3511,7 +3787,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         List<Bill> pharmacyRetailSaleCancellationBills = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         if (pharmacyRetailSaleCancellationBills == null || pharmacyRetailSaleCancellationBills.isEmpty()) {
-            System.out.println("No matching bills found for type: " + billTypeAtomic);
             return;
         }
 
@@ -3530,12 +3805,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             Long billId = cancelledBill.getId() != null ? cancelledBill.getId() : -1L;
 
             if (pbis == null || pbis.isEmpty()) {
-                System.out.println("Cancelled bill ID " + billId + " has no pharmaceutical bill items.");
                 continue;
             }
 
             if (bis == null || bis.isEmpty()) {
-                System.out.println("Cancelled bill ID " + billId + " has no bill items.");
                 continue;
             }
 
@@ -3543,9 +3816,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             int numberOfPharmaceuticalBillItems = pbis.size();
 
             if (numberOfPharmaceuticalBillItems != (numberOfBillItems * 2)) {
-                System.out.println("Cancelled bill ID " + billId
-                        + " skipped: Expected PBI count = " + (numberOfBillItems * 2)
-                        + ", Found = " + numberOfPharmaceuticalBillItems);
                 continue;
             }
 
@@ -3563,7 +3833,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             }
         }
 
-        System.out.println("Completed batch correction of wrongly assigned PharmaceuticalBillItems.");
     }
 
     /**
@@ -3644,31 +3913,28 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         PharmaceuticalBillItem pbiFromCancelledBill = null;
 
         if (pbi == null) {
-            System.out.println("No Selected Pharmaceutical Bill Item - returning");
             return;
         } else {
             pbiFromCancelledBill = pbi;
-            System.out.println("Selected Pharmaceutical Bill Item ID: " + pbiFromCancelledBill.getId());
         }
 
         if (pbiFromCancelledBill.getBillItem() == null) {
-            System.out.println("Cancelled BillItem is null - returning");
             return;
         } else {
             originalBillItemNowWonglyAssignedToCancelledBill = pbi.getBillItem();
-            System.out.println("Original BillItem ID: " + originalBillItemNowWonglyAssignedToCancelledBill.getId());
         }
 
         if (originalBillItemNowWonglyAssignedToCancelledBill.getBill() == null) {
-            System.out.println("Cancelled Bill is null - returning");
             return;
         } else {
             cancelledBill = pbi.getBillItem().getBill();
-            System.out.println("Cancelled Bill ID: " + cancelledBill.getId());
         }
 
         Long cancelledBillId = originalBillItemNowWonglyAssignedToCancelledBill.getId();
         Long pbiFromCancelledBillId = pbiFromCancelledBill.getId();
+        // Sampbple cancelledtion bill id is 542424
+        // Sample Correct PBI ID is 542428
+        // Sample Wrong PBI ID is 542417
 
         // Sampbple cancelledtion bill id is 542424
         // Sample Correct PBI ID is 542428
@@ -3677,34 +3943,27 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         System.out.println("Selected PBI ID: " + pbiFromCancelledBillId);
 
         if (pbiFromCancelledBillId < cancelledBillId) {
-            System.out.println("Clicking on the wrong Pharmaceutical Bill Item. Select the other one - returning");
             return;
         }
 
         if (cancelledBill.getBillTypeAtomic() == null) {
-            System.out.println("Cancelled BillTypeAtomic is null - returning");
             return;
         }
 
         if (cancelledBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED) {
-            System.out.println("Cancelled bill type is not PHARMACY_RETAIL_SALE_CANCELLED - returning");
             return;
         }
 
         if (cancelledBill.getBilledBill() == null) {
-            System.out.println("Cancelled bill has no billed bill - returning");
             return;
         } else {
             originalBill = cancelledBill.getBilledBill();
-            System.out.println("Original Bill ID: " + originalBill.getId());
         }
 
         if (originalBillItemNowWonglyAssignedToCancelledBill.getPharmaceuticalBillItem() == null) {
-            System.out.println("Original BillItem has no PBI - returning");
             return;
         } else {
             pbiFromOriginalBillItem = originalBillItemNowWonglyAssignedToCancelledBill.getPharmaceuticalBillItem();
-            System.out.println("Original PBI ID: " + pbiFromOriginalBillItem.getId());
         }
 
         System.out.println("Creating new BillItem for cancelled bill");
@@ -3722,7 +3981,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         originalBillItemNowWonglyAssignedToCancelledBill.setBill(originalBill);
         originalBillItemNowWonglyAssignedToCancelledBill.setPharmaceuticalBillItem(null);
         billItemFacade.edit(originalBillItemNowWonglyAssignedToCancelledBill);
-        System.out.println("Reassigned original BillItem to Original Bill ID: " + originalBill.getId());
 
         pbiFromCancelledBill.setBillItem(billItemNeededToCreateForCancellationBill);
         pharmaceuticalBillItemFacade.edit(pbiFromCancelledBill);
@@ -4004,7 +4262,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         Map m = new HashMap();
         m.put("bta", BillTypeAtomic.CC_BILL_REFUND);
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, 1000);
-        System.out.println("bis = " + bis);
         if (bis == null) {
             return;
         }
@@ -4018,7 +4275,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             billItemFacade.edit(originalBilItem);
             System.out.println("3 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
             billItemFacade.editAndCommit(originalBilItem);
-            System.out.println("4 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
         }
     }
 
@@ -4034,7 +4290,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         Map m = new HashMap();
         m.put("bta", BillTypeAtomic.CC_BILL_CANCELLATION);
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, 10000);
-        System.out.println("bis = " + bis);
         if (bis == null) {
             return;
         }
@@ -4047,7 +4302,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             Double ccFee = netTotal * collectingCentreMargin / 100;
             System.out.println("ccFee = " + ccFee);
             Double hosFee = netTotal - ccFee;
-            System.out.println("hosFee = " + hosFee);
             if (bi.getHospitalFee() == 0.0) {
                 bi.setHospitalFee(hosFee);
                 billItemFacade.edit(bi);

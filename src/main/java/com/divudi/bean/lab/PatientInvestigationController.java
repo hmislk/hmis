@@ -88,6 +88,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import kotlin.random.RandomKt;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -308,19 +309,19 @@ public class PatientInvestigationController implements Serializable {
         }
         return sampleComponentName;
     }
-    
+
     public String navigateToManageInvestigation(Long patientInvestigationId) {
-        if(patientInvestigationId == null){
+        if (patientInvestigationId == null) {
             JsfUtil.addErrorMessage("Error in ID");
             return "";
         }
         PatientInvestigation pi = ejbFacade.findWithoutCache(patientInvestigationId);
-        if(pi == null){
+        if (pi == null) {
             JsfUtil.addErrorMessage("PatientInvestigation is Null");
             return "";
         }
         investigationController.setCurrent(pi.getInvestigation());
-        
+
         return "/admin/lims/investigation?faces-redirect=true";
     }
 
@@ -523,31 +524,33 @@ public class PatientInvestigationController implements Serializable {
 
         List<PatientSample> canSentOutLabSamples = new ArrayList<>();
         for (PatientSample ps : selectedPatientSamples) {
-            if (ps.getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+            PatientSample reloadSample = patientSampleFacade.find(ps.getId());
+                    
+            if (reloadSample.getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("This Sample ("+reloadSample.getId()+") Bill is Already Cancel");
                 return;
             }
 
-            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(ps.getId()))) {
+            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(reloadSample.getId()))) {
                 if (pi.getBillItem().isRefunded()) {
-                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + ps.getId() + ") has already been refunded.");
+                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + reloadSample.getId() + ") has already been refunded.");
                     return;
                 }
             }
 
-            if (!ps.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
-                JsfUtil.addErrorMessage("Sample (" + ps.getId() + ") belongs to " + ps.getDepartment().getName() + " department. You cannot process samples from other departments.");
+            if (!reloadSample.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+                JsfUtil.addErrorMessage("Sample (" + reloadSample.getId() + ") belongs to " + reloadSample.getDepartment().getName() + " department. You cannot process samples from other departments.");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB || ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT) {
-                JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Sent OutLab");
+            if (reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB || reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT) {
+                JsfUtil.addErrorMessage("This Sample (" + reloadSample.getId() + ") is Already Sent OutLab");
                 return;
             }
 
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED
-                    || ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTED
-                    || ps.getStatus() == PatientInvestigationStatus.SAMPLE_ACCEPTED
-                    || ps.getStatus() == PatientInvestigationStatus.SENT_SAMPLE_RETRIEVING) {
+            if (reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED
+                    || reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTED
+                    || reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_ACCEPTED
+                    || reloadSample.getStatus() == PatientInvestigationStatus.SENT_SAMPLE_RETRIEVING) {
                 canSentOutLabSamples.add(ps);
             }
         }
@@ -670,11 +673,12 @@ public class PatientInvestigationController implements Serializable {
 
         List<PatientSample> canProcessSamples = new ArrayList<>();
         for (PatientSample ps : processingSamples) {
-            if (ps.getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+            PatientSample reloadSample = patientSampleFacade.find(ps.getId());
+            if (reloadSample.getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("This Sample ("+ reloadSample.getId() +") Bill is Already Cancel");
                 continue;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED) {
+            if (reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED) {
                 canProcessSamples.add(ps);
             }
         }
@@ -734,7 +738,7 @@ public class PatientInvestigationController implements Serializable {
         //Update Bill Data
         bill.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
         billFacade.edit(bill);
-
+        
     }
 
     public String navigateToSampleManagementFromOPDBatchBillView(Bill bill) {
@@ -1974,23 +1978,24 @@ public class PatientInvestigationController implements Serializable {
 
         List<PatientSample> canCollectSamples = new ArrayList<>();
         for (PatientSample ps : selectedPatientSamples) {
-            if (ps.getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+            PatientSample reloadSample = patientSampleFacade.find(ps.getId());
+            if (reloadSample.getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("This Sample ("+ reloadSample.getId()+") Bill is Already Cancel");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED || ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTED) {
-                JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") is already colleted.");
+            if (reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED || reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTED) {
+                JsfUtil.addErrorMessage("This sample (" + reloadSample.getId() + ") is already colleted.");
                 return;
             }
 
-            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(ps.getId()))) {
+            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(reloadSample.getId()))) {
                 if (pi.getBillItem().isRefunded()) {
-                    JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") is already Refunded.");
+                    JsfUtil.addErrorMessage("This sample (" + reloadSample.getId() + ") is already Refunded.");
                     return;
                 }
             }
 
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED || ps.getStatus() == PatientInvestigationStatus.SAMPLE_REGENERATED || ps.getStatus() == PatientInvestigationStatus.SEPARATE_AND_SAMPLE_GENERATED) {
+            if (reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED || reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_REGENERATED || reloadSample.getStatus() == PatientInvestigationStatus.SEPARATE_AND_SAMPLE_GENERATED) {
                 canCollectSamples.add(ps);
             }
         }
@@ -2070,40 +2075,48 @@ public class PatientInvestigationController implements Serializable {
                 }
             }
         }
-
+        
         JsfUtil.addSuccessMessage("Selected Samples Collected");
     }
 
-    public void sendSamplesToLab() {
+    public void sendSamplesToLab(boolean transporterMandatory) {
         List<PatientSample> canSentSamples = new ArrayList<>();
 
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
+        if (transporterMandatory == true) {
+            if (sampleTransportedToLabByStaff == null) {
+                JsfUtil.addErrorMessage("Transporter is Missing");
+                return;
+            }
+        }
 
         for (PatientSample ps : selectedPatientSamples) {
-            if (ps.getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+            PatientSample reloadSample = patientSampleFacade.find(ps.getId());
+            
+            if (reloadSample.getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("This Sample ("+reloadSample.getId()+") Bill is Already Cancel");
                 return;
             }
 
-            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(ps.getId()))) {
+            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(reloadSample.getId()))) {
                 if (pi.getBillItem().isRefunded()) {
-                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + ps.getId() + ") has already been refunded.");
+                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + reloadSample.getId() + ") has already been refunded.");
                     return;
                 }
             }
 
-            if (ps.getOutsourced()) {
-                JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Sent Outsource Lab");
+            if (reloadSample.getOutsourced()) {
+                JsfUtil.addErrorMessage("This Sample (" + reloadSample.getId() + ") is Already Sent Outsource Lab");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT) {
-                JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") is already Sent.");
+            if (reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT) {
+                JsfUtil.addErrorMessage("This sample (" + reloadSample.getId() + ") is already Sent.");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED || ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTED || ps.getStatus() == PatientInvestigationStatus.SENT_SAMPLE_RETRIEVING) {
+            if (reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED || reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTED || reloadSample.getStatus() == PatientInvestigationStatus.SENT_SAMPLE_RETRIEVING) {
                 canSentSamples.add(ps);
             }
         }
@@ -2157,14 +2170,14 @@ public class PatientInvestigationController implements Serializable {
             tb.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
             billFacade.edit(tb);
         }
-
+        
         sampleTransportedToLabByStaff = null;
         JsfUtil.addSuccessMessage("Selected Samples Sent to Lab");
     }
 
     public void collectAndReceiveSamplesAtLab() {
         collectSamples();
-        sendSamplesToLab();
+        sendSamplesToLab(false);
         receiveSamplesAtLab();
     }
 
@@ -2176,27 +2189,29 @@ public class PatientInvestigationController implements Serializable {
         }
         List<PatientSample> canAcceptSamples = new ArrayList<>();
         for (PatientSample ps : selectedPatientSamples) {
-            if (ps.getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+            PatientSample reloadSample = patientSampleFacade.find(ps.getId());
+            
+            if (reloadSample.getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("This Sample ("+ reloadSample.getId() +") Bill is Already Cancel");
                 return;
             }
 
-            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(ps.getId()))) {
+            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(reloadSample.getId()))) {
                 if (pi.getBillItem().isRefunded()) {
-                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + ps.getId() + ") has already been refunded.");
+                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + reloadSample.getId() + ") has already been refunded.");
                     return;
                 }
             }
 
-            if (ps.getOutsourced() && ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
-                JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Sent Outsource Lab");
+            if (reloadSample.getOutsourced() && reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
+                JsfUtil.addErrorMessage("This Sample (" + reloadSample.getId() + ") is Already Sent Outsource Lab");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_ACCEPTED) {
-                JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Accepted");
+            if (reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_ACCEPTED) {
+                JsfUtil.addErrorMessage("This Sample (" + reloadSample.getId() + ") is Already Accepted");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT || ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_INTERNAL_LAB) {
+            if (reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT || reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_INTERNAL_LAB) {
                 canAcceptSamples.add(ps);
             }
         }
@@ -2256,12 +2271,11 @@ public class PatientInvestigationController implements Serializable {
             tb.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
             billFacade.edit(tb);
         }
-
+        
         JsfUtil.addSuccessMessage("Selected Samples are Received at Lab");
     }
 
     public void retrievingTheSentSampleToLab() {
-        System.out.println("retrievingTheSentSampleToLab");
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
             JsfUtil.addErrorMessage("No samples selected");
             return;
@@ -2273,12 +2287,13 @@ public class PatientInvestigationController implements Serializable {
         List<PatientSample> canRetrievingSamples = new ArrayList<>();
 
         for (PatientSample ps : selectedPatientSamples) {
-            if (ps.getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("This Bill is Already cancelled");
+            PatientSample reloadSample = patientSampleFacade.find(ps.getId());
+            if (reloadSample.getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("This Sample ("+reloadSample.getId()+") Bill is Already Cancel");
                 return;
             }
 
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT || ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB || ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_INTERNAL_LAB) {
+            if (reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT || reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB || reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_INTERNAL_LAB) {
                 canRetrievingSamples.add(ps);
             }
         }
@@ -2367,31 +2382,32 @@ public class PatientInvestigationController implements Serializable {
 
         List<PatientSample> canRejectSamples = new ArrayList<>();
         for (PatientSample ps : selectedPatientSamples) {
-            if (ps.getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+            PatientSample reloadSample = patientSampleFacade.find(ps.getId());
+            if (reloadSample.getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("This Sample ("+ reloadSample.getId()+") Bill is Already Cancel");
                 return;
             }
-            
-            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(ps.getId()))) {
+
+            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(reloadSample.getId()))) {
                 if (pi.getBillItem().isRefunded()) {
-                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + ps.getId() + ") has already been refunded.");
+                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + reloadSample.getId() + ") has already been refunded.");
                     return;
                 }
             }
-            
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_REJECTED
-                    || ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_REQUESTED
-                    || ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_PENDING
-                    || ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_COMPLETE) {
-                JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Rejected");
+
+            if (reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_REJECTED
+                    || reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_REQUESTED
+                    || reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_PENDING
+                    || reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_COMPLETE) {
+                JsfUtil.addErrorMessage("This Sample (" + reloadSample.getId() + ") is Already Rejected");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
-                JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Sent OutLab");
+            if (reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB) {
+                JsfUtil.addErrorMessage("This Sample (" + reloadSample.getId() + ") is Already Sent OutLab");
                 return;
             }
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_INTERNAL_LAB) {
-                JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is Already Sent Internal Lab");
+            if (reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_SENT_TO_INTERNAL_LAB) {
+                JsfUtil.addErrorMessage("This Sample (" + reloadSample.getId() + ") is Already Sent Internal Lab");
                 return;
             }
 
@@ -2401,18 +2417,18 @@ public class PatientInvestigationController implements Serializable {
                     + " AND r.patientInvestigation in ( select ps.patientInvestigation from PatientSampleComponant ps where ps.patientSample=:pts and ps.retired=false and ps.separated =:sept ) ";
 
             Map<String, Object> params = new HashMap<>();
-            params.put("pts", ps);
+            params.put("pts", reloadSample);
             params.put("ret", false);
             params.put("sept", false);
             PatientReport pr = patientReportFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
 
             if (pr != null) {
-                JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") has Already Report Created");
+                JsfUtil.addErrorMessage("This Sample (" + reloadSample.getId() + ") has Already Report Created");
                 return;
             }
 
-            if (!ps.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
-                JsfUtil.addErrorMessage("This Sample (" + ps.getId() + ") is not in your Department. You Can't Reject.");
+            if (!reloadSample.getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+                JsfUtil.addErrorMessage("This Sample (" + reloadSample.getId() + ") is not in your Department. You Can't Reject.");
                 return;
             }
 
@@ -2463,7 +2479,7 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-            for (PatientSample ps : selectedPatientSamples) {
+            for (PatientSample ps : canRejectSamples) {
                 for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
                     labTestHistoryController.addSampleRejectHistory(pi, ps, sampleRejectionComment);
 
@@ -2479,6 +2495,7 @@ public class PatientInvestigationController implements Serializable {
             tb.setStatus(PatientInvestigationStatus.SAMPLE_REJECTED);
             billFacade.edit(tb);
         }
+        
         sampleRejectionComment = null;
         requestReCollected = true;
 
@@ -2492,37 +2509,38 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
-
+        
         List<PatientSample> canReGenarateSamples = new ArrayList<>();
         for (PatientSample ps : selectedPatientSamples) {
-            if (ps.getBill().isCancelled()) {
-                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+            PatientSample reloadSample = patientSampleFacade.find(ps.getId());
+            if (reloadSample.getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("This Sample ("+reloadSample.getId()+") Bill is Already Cancel");
                 return;
             }
 
-            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(ps.getId()))) {
+            for (PatientInvestigation pi : getPatientInvestigations(getPatientSampleComponentsUsingSampleId(reloadSample.getId()))) {
                 if (pi.getBillItem().isRefunded()) {
-                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + ps.getId() + ") has already been refunded.");
+                    JsfUtil.addErrorMessage("The " + pi.getBillItem().getItem().getName() + " investigation for this sample (" + reloadSample.getId() + ") has already been refunded.");
                     return;
                 }
             }
 
-            if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_REJECTED && !ps.getRequestReCollected()) {
-                JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") is not Rejected.");
+            if (reloadSample.getStatus() != PatientInvestigationStatus.SAMPLE_REJECTED && !reloadSample.getRequestReCollected()) {
+                JsfUtil.addErrorMessage("This sample (" + reloadSample.getId() + ") is not Rejected.");
                 return;
             }
-            
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_PENDING || ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_COMPLETE) {
-                JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") has already been recreated for this sample.");
+
+            if (reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_PENDING || reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_COMPLETE) {
+                JsfUtil.addErrorMessage("This sample (" + reloadSample.getId() + ") has already been recreated for this sample.");
                 return;
             }
-            
-            if (!ps.getRequestReCollected()) {
-                JsfUtil.addErrorMessage("This sample (" + ps.getId() + ") is not not Requesr to Recollect.");
+
+            if (!reloadSample.getRequestReCollected()) {
+                JsfUtil.addErrorMessage("This sample (" + reloadSample.getId() + ") is not not Requesr to Recollect.");
                 return;
             }
-            
-            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_REQUESTED && ps.getRequestReCollected()) {
+
+            if (reloadSample.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTION_REQUESTED && reloadSample.getRequestReCollected()) {
                 canReGenarateSamples.add(ps);
             }
         }
@@ -2573,6 +2591,7 @@ public class PatientInvestigationController implements Serializable {
                 for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
                     labTestHistoryController.addBarcodeGenerateHistory(pi, ps);
                 }
+                
             }
             // Create Old Sample Lab Test History
             for (PatientSample ps : canReGenarateSamples) {
@@ -2590,7 +2609,7 @@ public class PatientInvestigationController implements Serializable {
             patientSamples.addAll(0, reGenarateSamples);
             listingEntity = ListingEntity.PATIENT_SAMPLES;
         }
-
+        
         JsfUtil.addSuccessMessage("Selected Samples Recreated");
     }
 
@@ -2827,7 +2846,7 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (orderedDepartment != null) {
-            jpql += " AND pi.billItem.bill.toDepartment = :orderedDepartment";
+            jpql += " AND pi.billItem.bill.department = :orderedDepartment";
             params.put("orderedDepartment", getOrderedDepartment());
         }
 
@@ -3021,12 +3040,12 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (orderedInstitution != null) {
-            jpql += " AND b.fromInstitution = :orderedInstitution";
+            jpql += " AND b.institution = :orderedInstitution";
             params.put("orderedInstitution", getOrderedInstitution());
         }
 
         if (orderedDepartment != null) {
-            jpql += " AND b.fromDepartment = :orderedDepartment";
+            jpql += " AND b.department = :orderedDepartment";
             params.put("orderedDepartment", getOrderedDepartment());
         }
 
@@ -4608,24 +4627,24 @@ public class PatientInvestigationController implements Serializable {
         List<PatientSample> patientSamples = patientSampleFacade.findByJpql(jpql, params);
         return patientSamples;
     }
-    
+
     public String getActivePatientSamplesByInvestigation(PatientInvestigation patientInvestigation) {
         List<PatientSampleComponant> pscs = getPatientSampleComponentsByInvestigation(patientInvestigation);
-        
+
         if (pscs == null || pscs.isEmpty()) {
             return "Not generated yet.";
         }
-        
+
         return pscs.stream()
                 .map(psc -> psc.getPatientSample() != null ? psc.getPatientSample().getIdStr() : "N/A")
                 .filter(Objects::nonNull)
                 .collect(Collectors.joining(" | "));
-        
+
     }
 
     public String getPatientSamplesByInvestigationAsString(PatientInvestigation patientInvestigation) {
         return getActivePatientSamplesByInvestigation(patientInvestigation);
-        
+
     }
 
     public List<PatientInvestigation> getPatientInvestigationsBySample(PatientSample patientSample) {
@@ -5348,7 +5367,7 @@ public class PatientInvestigationController implements Serializable {
         current = null;
         getCurrent();
     }
-
+    
     public void setLstToPrint(List<PatientReport> lstToPrint) {
         this.lstToPrint = lstToPrint;
     }

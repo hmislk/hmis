@@ -178,7 +178,6 @@ public class PackageItemController implements Serializable {
         }
         PackageItem pi = current;
         pi.setPackege(getCurrentPackege());
-        System.out.println("pi.getId() = " + pi.getId());
         if(pi.getId() != null){
             packageItemFacade.edit(pi);
         }else{
