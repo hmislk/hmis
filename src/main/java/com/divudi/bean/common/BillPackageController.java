@@ -805,6 +805,13 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             cancellationBatchBill.setPaymentMethod(paymentMethod);
         }
         cancellationBatchBill.setBilledBill(batchBill);
+
+        // Transfer staff data to paymentMethodData before creating payments
+        transferStaffDataToPaymentMethodData();
+
+        // Apply negative signs for cancellation
+        applyCancellationSignToPaymentData();
+
         getBillFacade().create(cancellationBatchBill);
 
         batchBill.setCancelled(true);
@@ -826,22 +833,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
 
         }
-        if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-            PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
-            patientDepositController.updateBalance(cancellationBatchBill, pd);
-        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit) {
-            if (cancellationBatchBill.getToStaff() != null) {
-                staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + cancellationBatchBill.getVat()));
-                JsfUtil.addSuccessMessage("Staff Credit Updated");
-                cancellationBatchBill.setFromStaff(cancellationBatchBill.getToStaff());
-                getBillFacade().edit(cancellationBatchBill);
-            }
-        }
-        payments = paymentService.createPaymentsForCancelling(cancellationBatchBill);
 
-        if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
-            paymentService.updateBalances(payments);
-        }
+        // Create payments using modern PaymentService with paymentMethodData
+        payments = paymentService.createPayment(cancellationBatchBill, paymentMethodData);
+
+        // Update all balances automatically
+        paymentService.updateBalances(payments);
         printPreview = true;
         batchBillCancellationStarted = false;
         return "/opd/opd_package_batch_bill_print?faces-redirect=true";
@@ -930,6 +927,160 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
         printPreview = false;
         return "/opd/opd_package_bill_cancel?faces-redirect=true";
+    }
+
+    /**
+     * Initialize payment method data from original payments for cancellation
+     * Overloaded version that accepts a specific bill to use for net total
+     * Used for batch bill cancellations where batchBill is used instead of bill
+     */
+    private void initializeCancellationPaymentFromOriginalPayments(List<Payment> originalPayments, Bill billToUse) {
+        if (originalPayments == null || originalPayments.isEmpty()) {
+            return;
+        }
+
+        if (billToUse == null) {
+            return;
+        }
+
+        // Initialize payment method data if not already done
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+
+        // Handle single payment method scenario
+        if (originalPayments.size() == 1) {
+            Payment originalPayment = originalPayments.get(0);
+
+            // Initialize payment method data based on original payment method (using absolute values for UI display)
+            switch (originalPayment.getPaymentMethod()) {
+                case Cash:
+                    paymentMethodData.getCash().setTotalValue(Math.abs(billToUse.getNetTotal()));
+                    break;
+                case Card:
+                    paymentMethodData.getCreditCard().setInstitution(originalPayment.getBank());
+                    paymentMethodData.getCreditCard().setNo(originalPayment.getCreditCardRefNo());
+                    paymentMethodData.getCreditCard().setComment(originalPayment.getComments());
+                    paymentMethodData.getCreditCard().setTotalValue(Math.abs(billToUse.getNetTotal()));
+                    break;
+                case Cheque:
+                    paymentMethodData.getCheque().setInstitution(originalPayment.getBank());
+                    paymentMethodData.getCheque().setDate(originalPayment.getChequeDate());
+                    paymentMethodData.getCheque().setNo(originalPayment.getChequeRefNo());
+                    paymentMethodData.getCheque().setComment(originalPayment.getComments());
+                    paymentMethodData.getCheque().setTotalValue(Math.abs(billToUse.getNetTotal()));
+                    break;
+                case Slip:
+                    paymentMethodData.getSlip().setInstitution(originalPayment.getBank());
+                    paymentMethodData.getSlip().setDate(originalPayment.getPaymentDate());
+                    paymentMethodData.getSlip().setReferenceNo(originalPayment.getReferenceNo());
+                    paymentMethodData.getSlip().setComment(originalPayment.getComments());
+                    paymentMethodData.getSlip().setTotalValue(Math.abs(billToUse.getNetTotal()));
+                    break;
+                case ewallet:
+                    paymentMethodData.getEwallet().setInstitution(
+                        originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                    paymentMethodData.getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                    paymentMethodData.getEwallet().setNo(originalPayment.getReferenceNo());
+                    paymentMethodData.getEwallet().setReferralNo(originalPayment.getPolicyNo());
+                    paymentMethodData.getEwallet().setTotalValue(Math.abs(billToUse.getNetTotal()));
+                    paymentMethodData.getEwallet().setComment(originalPayment.getComments());
+                    break;
+                case PatientDeposit:
+                    paymentMethodData.getPatient_deposit().setTotalValue(Math.abs(billToUse.getNetTotal()));
+                    paymentMethodData.getPatient_deposit().setComment(originalPayment.getComments());
+                    // Load and set the PatientDeposit object for displaying balance
+                    if (billToUse.getPatient() != null) {
+                        paymentMethodData.getPatient_deposit().setPatient(billToUse.getPatient());
+                        com.divudi.core.entity.PatientDeposit pd = patientDepositController.getDepositOfThePatient(
+                                billToUse.getPatient(), sessionController.getDepartment());
+                        if (pd != null && pd.getId() != null) {
+                            paymentMethodData.getPatient_deposit().getPatient().setHasAnAccount(true);
+                            paymentMethodData.getPatient_deposit().setPatientDepost(pd);
+                        }
+                    }
+                    break;
+                case Credit:
+                    paymentMethodData.getCredit().setInstitution(originalPayment.getCreditCompany());
+                    paymentMethodData.getCredit().setReferenceNo(originalPayment.getReferenceNo());
+                    paymentMethodData.getCredit().setReferralNo(originalPayment.getPolicyNo());
+                    paymentMethodData.getCredit().setTotalValue(Math.abs(billToUse.getNetTotal()));
+                    paymentMethodData.getCredit().setComment(originalPayment.getComments());
+                    break;
+                case Staff:
+                    Staff staffForCredit = originalPayment.getToStaff();
+                    if (staffForCredit == null) {
+                        staffForCredit = billToUse.getToStaff();
+                    }
+
+                    // Set staff member details for Staff Credit
+                    paymentMethodData.getStaffCredit().setToStaff(staffForCredit);
+                    paymentMethodData.getStaffCredit().setTotalValue(Math.abs(billToUse.getNetTotal()));
+                    paymentMethodData.getStaffCredit().setComment(originalPayment.getComments());
+                    break;
+                case Staff_Welfare:
+                    Staff staffForWelfare = originalPayment.getToStaff();
+                    if (staffForWelfare == null) {
+                        staffForWelfare = billToUse.getToStaff();
+                    }
+
+                    // Set staff member details for Staff Welfare
+                    paymentMethodData.getStaffWelfare().setToStaff(staffForWelfare);
+                    paymentMethodData.getStaffWelfare().setTotalValue(Math.abs(billToUse.getNetTotal()));
+                    paymentMethodData.getStaffWelfare().setComment(originalPayment.getComments());
+                    break;
+                default:
+                    // For other payment methods, just set the total value
+                    break;
+            }
+        } else {
+            // Handle multiple payment methods scenario
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().clear();
+
+            // Create ComponentDetail for each original payment
+            for (Payment originalPayment : originalPayments) {
+                com.divudi.core.data.dataStructure.ComponentDetail cd = new com.divudi.core.data.dataStructure.ComponentDetail();
+                cd.setPaymentMethod(originalPayment.getPaymentMethod());
+                cd.setPaymentMethodData(new PaymentMethodData());
+                double refundAmount = Math.abs(originalPayment.getPaidValue());
+                cd.setTotalValue(refundAmount);
+
+                // Populate payment method data for this component
+                switch (originalPayment.getPaymentMethod()) {
+                    case Cash:
+                        cd.getPaymentMethodData().getCash().setTotalValue(refundAmount);
+                        break;
+                    case Card:
+                        cd.getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
+                        cd.getPaymentMethodData().getCreditCard().setComment(originalPayment.getComments());
+                        cd.getPaymentMethodData().getCreditCard().setTotalValue(refundAmount);
+                        break;
+                    case PatientDeposit:
+                        cd.getPaymentMethodData().getPatient_deposit().setTotalValue(refundAmount);
+                        if (billToUse.getPatient() != null) {
+                            cd.getPaymentMethodData().getPatient_deposit().setPatient(billToUse.getPatient());
+                        }
+                        break;
+                    case Staff:
+                        cd.getPaymentMethodData().getStaffCredit().setToStaff(originalPayment.getToStaff());
+                        cd.getPaymentMethodData().getStaffCredit().setTotalValue(refundAmount);
+                        break;
+                    case Staff_Welfare:
+                        cd.getPaymentMethodData().getStaffWelfare().setToStaff(originalPayment.getToStaff());
+                        cd.getPaymentMethodData().getStaffWelfare().setTotalValue(refundAmount);
+                        break;
+                    case Credit:
+                        cd.getPaymentMethodData().getCredit().setInstitution(originalPayment.getCreditCompany());
+                        cd.getPaymentMethodData().getCredit().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getCredit().setTotalValue(refundAmount);
+                        break;
+                    // Add more payment methods as needed
+                }
+
+                paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().add(cd);
+            }
+        }
     }
 
     /**
@@ -2214,9 +2365,27 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             return "";
         }
         bills = billService.fetchIndividualBillsOfBatchBill(batchBill);
-        paymentMethod = null;
+
+        // Load original payment details from batch bill
+        originalBillPayments = billService.fetchBillPayments(batchBill);
+
+        // Initialize cancellation payment data from original payments using batchBill for net total
+        initializeCancellationPaymentFromOriginalPayments(originalBillPayments, batchBill);
+
+        // Allow all payment methods (remove restriction)
+        paymentMethods = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            paymentMethods.add(pm);
+        }
+
+        // Set default payment method to original or Cash as fallback
+        if (originalBillPayments != null && !originalBillPayments.isEmpty()) {
+            paymentMethod = originalBillPayments.get(0).getPaymentMethod();
+        } else {
+            paymentMethod = PaymentMethod.Cash;
+        }
+
         patient = batchBill.getPatient();
-        paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
         comment = null;
         printPreview = false;
         batchBillCancellationStarted = false;
