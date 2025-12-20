@@ -1174,15 +1174,11 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 case Staff_Welfare:
                     paymentMethodData.getStaffWelfare().setToStaff(toStaff);
                     paymentMethodData.getStaffWelfare().setTotalValue(batchBill.getNetTotal());
-                    System.out.println("Transferred Staff Welfare: " + toStaff.getPerson().getName() +
-                                       " with amount: " + batchBill.getNetTotal());
                     break;
                 case Staff:
                 case OnCall:
                     paymentMethodData.getStaffCredit().setToStaff(toStaff);
                     paymentMethodData.getStaffCredit().setTotalValue(batchBill.getNetTotal());
-                    System.out.println("Transferred Staff Credit: " + toStaff.getPerson().getName() +
-                                       " with amount: " + batchBill.getNetTotal());
                     break;
                 default:
                     // For other payment methods, toStaff might be used differently or not at all
@@ -1194,7 +1190,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (paymentMethod == PaymentMethod.Credit && creditCompany != null) {
             paymentMethodData.getCredit().setInstitution(creditCompany);
             paymentMethodData.getCredit().setTotalValue(batchBill.getNetTotal());
-            System.out.println("Transferred Credit Company: " + creditCompany.getName());
         }
     }
 
