@@ -58,8 +58,8 @@
                                 </f:facet>
 
                                 <!-- Original Payment Details Panel -->
-                                <div class="row" rendered="#{not empty billPackageController.originalBillPayments}">
-                                    <div class="col-12">
+                                <h:panelGroup layout="block" styleClass="row" rendered="#{not empty billPackageController.originalBillPayments}">
+                                    <h:panelGroup layout="block" styleClass="col-12">
                                         <p:panel class="mb-2">
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fas fa-money-check-alt me-2"></h:outputText>
@@ -119,13 +119,13 @@
 
                                                 <p:column headerText="Staff"
                                                     rendered="#{op.paymentMethod eq 'Staff' or op.paymentMethod eq 'Staff_Welfare' or op.paymentMethod eq 'OnCall'}">
-                                                    <h:outputText value="#{op.toStaff.person.displayName}" rendered="#{op.toStaff ne null and op.toStaff.person ne null}"/>
+                                                    <h:outputText value="#{op.toStaff.person.name}" rendered="#{op.toStaff ne null and op.toStaff.person ne null}"/>
                                                 </p:column>
 
                                             </p:dataTable>
                                         </p:panel>
-                                    </div>
-                                </div>
+                                    </h:panelGroup>
+                                </h:panelGroup>
 
                                 <!--Payment Mode, Patient Details and Bill Details Panels -->
                                 <div class="row">

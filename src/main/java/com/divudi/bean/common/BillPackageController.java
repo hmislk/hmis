@@ -65,6 +65,7 @@ import com.divudi.service.BillService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1179,7 +1180,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     cancellationBill.getPatient(), sessionController.getDepartment());
                 if (pd != null) {
                     // Only update if we're not just reversing to the same payment method
-                    boolean wasOriginallyPatientDeposit = originalBillPayments.stream()
+                    boolean wasOriginallyPatientDeposit = (originalBillPayments != null ? originalBillPayments : Collections.<Payment>emptyList()).stream()
                         .anyMatch(p -> p.getPaymentMethod() == PaymentMethod.PatientDeposit);
 
                     if (!wasOriginallyPatientDeposit) {
@@ -1193,7 +1194,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             case Staff_Welfare:
                 // Deduct from staff welfare (if not already handled by original reversal)
                 if (cancellationBill.getToStaff() != null) {
-                    boolean wasOriginallyStaffWelfare = originalBillPayments.stream()
+                    boolean wasOriginallyStaffWelfare = (originalBillPayments != null ? originalBillPayments : Collections.<Payment>emptyList()).stream()
                         .anyMatch(p -> p.getPaymentMethod() == PaymentMethod.Staff_Welfare &&
                                      p.getToStaff() != null &&
                                      p.getToStaff().equals(cancellationBill.getToStaff()));
@@ -1211,7 +1212,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             case OnCall:
                 // Deduct from staff credit (if not already handled by original reversal)
                 if (cancellationBill.getToStaff() != null) {
-                    boolean wasOriginallyStaffCredit = originalBillPayments.stream()
+                    boolean wasOriginallyStaffCredit = (originalBillPayments != null ? originalBillPayments : Collections.<Payment>emptyList()).stream()
                         .anyMatch(p -> (p.getPaymentMethod() == PaymentMethod.Staff ||
                                        p.getPaymentMethod() == PaymentMethod.OnCall) &&
                                      p.getToStaff() != null &&
