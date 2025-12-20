@@ -2503,45 +2503,45 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
         if (getPaymentMethod() == PaymentMethod.Card) {
             if (getPaymentMethodData() != null && getPaymentMethodData().getCreditCard() != null) {
-                if (getPaymentMethodData().getCreditCard().getComment() != null &&
-                    getPaymentMethodData().getCreditCard().getComment().trim().equals("") &&
-                    configOptionApplicationController.getBooleanValueByKey("OPD Billing - CreditCard Comment is Mandatory", false)) {
+                String comment = getPaymentMethodData().getCreditCard().getComment();
+                if ((comment == null || comment.trim().isEmpty())
+                        && configOptionApplicationController.getBooleanValueByKey("OPD Billing - CreditCard Comment is Mandatory", false)) {
                     JsfUtil.addErrorMessage("Please Enter a Credit Card Comment..");
                     error = true;
                 }
             }
         } else if (getPaymentMethod() == PaymentMethod.Cheque) {
             if (getPaymentMethodData() != null && getPaymentMethodData().getCheque() != null) {
-                if (getPaymentMethodData().getCheque().getComment() != null &&
-                    getPaymentMethodData().getCheque().getComment().trim().equals("") &&
-                    configOptionApplicationController.getBooleanValueByKey("OPD Billing - Cheque Comment is Mandatory", false)) {
+                String comment = getPaymentMethodData().getCheque().getComment();
+                if ((comment == null || comment.trim().isEmpty())
+                        && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Cheque Comment is Mandatory", false)) {
                     JsfUtil.addErrorMessage("Please Enter a Cheque Comment..");
                     error = true;
                 }
             }
         } else if (getPaymentMethod() == PaymentMethod.ewallet) {
             if (getPaymentMethodData() != null && getPaymentMethodData().getEwallet() != null) {
-                if (getPaymentMethodData().getEwallet().getComment() != null &&
-                    getPaymentMethodData().getEwallet().getComment().trim().equals("") &&
-                    configOptionApplicationController.getBooleanValueByKey("OPD Billing - E-Wallet Comment is Mandatory", false)) {
+                String comment = getPaymentMethodData().getEwallet().getComment();
+                if ((comment == null || comment.trim().isEmpty())
+                        && configOptionApplicationController.getBooleanValueByKey("OPD Billing - E-Wallet Comment is Mandatory", false)) {
                     JsfUtil.addErrorMessage("Please Enter a E-Wallet Comment..");
                     error = true;
                 }
             }
         } else if (getPaymentMethod() == PaymentMethod.Slip) {
             if (getPaymentMethodData() != null && getPaymentMethodData().getSlip() != null) {
-                if (getPaymentMethodData().getSlip().getComment() != null &&
-                    getPaymentMethodData().getSlip().getComment().trim().equals("") &&
-                    configOptionApplicationController.getBooleanValueByKey("OPD Billing - Slip Comment is Mandatory", false)) {
+                String comment = getPaymentMethodData().getSlip().getComment();
+                if ((comment == null || comment.trim().isEmpty())
+                        && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Slip Comment is Mandatory", false)) {
                     JsfUtil.addErrorMessage("Please Enter a Slip Comment..");
                     error = true;
                 }
             }
         } else if (getPaymentMethod() == PaymentMethod.Credit) {
             if (getPaymentMethodData() != null && getPaymentMethodData().getCredit() != null) {
-                if (getPaymentMethodData().getCredit().getComment() != null &&
-                    getPaymentMethodData().getCredit().getComment().trim().equals("") &&
-                    configOptionApplicationController.getBooleanValueByKey("OPD Billing - Credit Comment is Mandatory", false)) {
+                String comment = getPaymentMethodData().getCredit().getComment();
+                if ((comment == null || comment.trim().isEmpty())
+                        && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Credit Comment is Mandatory", false)) {
                     JsfUtil.addErrorMessage("Please Enter a Credit Comment..");
                     error = true;
                 }
