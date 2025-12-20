@@ -15,6 +15,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Staff;
