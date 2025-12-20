@@ -1803,14 +1803,30 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                if (cd.getPaymentMethodData().getCash() != null) {
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                }
+                if (cd.getPaymentMethodData().getCreditCard() != null) {
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                }
+                if (cd.getPaymentMethodData().getCheque() != null) {
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                }
+                if (cd.getPaymentMethodData().getEwallet() != null) {
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                }
+                if (cd.getPaymentMethodData().getPatient_deposit() != null) {
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                }
+                if (cd.getPaymentMethodData().getSlip() != null) {
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                }
+                if (cd.getPaymentMethodData().getStaffCredit() != null) {
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                }
+                if (cd.getPaymentMethodData().getOnlineSettlement() != null) {
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                }
 
             }
             remainAmount = total - multiplePaymentMethodTotalValue;

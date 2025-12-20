@@ -90,14 +90,14 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputText>
                                             </p:column>
-                                            <p:column headerText="Staff" rendered="#{op.paymentMethod eq 'Staff_Welfare' or op.paymentMethod eq 'Staff' or op.paymentMethod eq 'OnCall'}">
-                                                <h:outputText value="#{op.toStaff.person.name}" />
+                                            <p:column headerText="Staff">
+                                                <h:outputText value="#{op.toStaff.person.name}" rendered="#{op.paymentMethod eq 'Staff_Welfare' or op.paymentMethod eq 'Staff' or op.paymentMethod eq 'OnCall'}" />
                                             </p:column>
-                                            <p:column headerText="Institution" rendered="#{op.paymentMethod eq 'Credit' or op.paymentMethod eq 'Card'}">
+                                            <p:column headerText="Institution">
                                                 <h:outputText value="#{op.creditCompany.name}" rendered="#{op.paymentMethod eq 'Credit'}"/>
                                                 <h:outputText value="#{op.bank.name}" rendered="#{op.paymentMethod eq 'Card'}"/>
                                             </p:column>
-                                            <p:column headerText="Reference" rendered="#{op.paymentMethod eq 'Credit' or op.paymentMethod eq 'Card' or op.paymentMethod eq 'Cheque'}">
+                                            <p:column headerText="Reference">
                                                 <h:outputText value="#{op.referenceNo}" rendered="#{op.paymentMethod eq 'Credit'}"/>
                                                 <h:outputText value="#{op.creditCardRefNo}" rendered="#{op.paymentMethod eq 'Card'}"/>
                                                 <h:outputText value="#{op.chequeRefNo}" rendered="#{op.paymentMethod eq 'Cheque'}"/>
@@ -123,7 +123,7 @@
                                                         itemLabel="#{pm.label}"
                                                         itemValue="#{pm}"/>
                                                     <p:ajax
-                                                        process="@this cmbPs"
+                                                        process="@this"
                                                         update="paymentDetails"
                                                         event="change"/>
                                                 </p:selectOneMenu>
