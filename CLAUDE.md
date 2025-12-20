@@ -35,7 +35,7 @@
 - **Target Audience**: Developers implementing similar features
 
 ### Testing & Build
-- **🚨 COMPILE RULE**: Do NOT run `./detect-maven.sh compile` or Maven compile commands unless explicitly requested by user. Ask your to compile and give a feedback first.
+- **🚨 COMPILE RULE**: Do NOT run `./detect-maven.sh compile` or Maven compile commands unless explicitly requested by user. Ask the user to compile and provide feedback first.
 - **Maven Commands**: [Environment Setup](developer_docs/testing/maven-commands.md)
 - **Preferred**: Use `./detect-maven.sh test` auto-detection script
 - **Fallback**: Machine-specific Maven paths
