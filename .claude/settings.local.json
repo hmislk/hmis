@@ -33,7 +33,8 @@
       "Bash(git branch:*)",
       "Bash(git submodule:*)",
       "Bash(git rm:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git show:*)"
     ],
     "deny": [],
     "ask": [],

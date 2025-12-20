@@ -1056,26 +1056,69 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                         cd.getPaymentMethodData().getCreditCard().setComment(originalPayment.getComments());
                         cd.getPaymentMethodData().getCreditCard().setTotalValue(refundAmount);
                         break;
+                    case Cheque:
+                        cd.getPaymentMethodData().getCheque().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
+                        cd.getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
+                        cd.getPaymentMethodData().getCheque().setComment(originalPayment.getComments());
+                        cd.getPaymentMethodData().getCheque().setTotalValue(refundAmount);
+                        break;
+                    case Slip:
+                        cd.getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate());
+                        cd.getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
+                        cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
+                        break;
+                    case ewallet:
+                        cd.getPaymentMethodData().getEwallet().setInstitution(
+                            originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                        cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
+                        cd.getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
+                        cd.getPaymentMethodData().getEwallet().setTotalValue(refundAmount);
+                        break;
                     case PatientDeposit:
                         cd.getPaymentMethodData().getPatient_deposit().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getPatient_deposit().setComment(originalPayment.getComments());
                         if (billToUse.getPatient() != null) {
                             cd.getPaymentMethodData().getPatient_deposit().setPatient(billToUse.getPatient());
+                            // Load and set the PatientDeposit object for displaying balance
+                            com.divudi.core.entity.PatientDeposit pd = patientDepositController.getDepositOfThePatient(
+                                    billToUse.getPatient(), sessionController.getDepartment());
+                            if (pd != null && pd.getId() != null) {
+                                cd.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                                cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                            }
                         }
                         break;
                     case Staff:
                         cd.getPaymentMethodData().getStaffCredit().setToStaff(originalPayment.getToStaff());
                         cd.getPaymentMethodData().getStaffCredit().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
                         break;
                     case Staff_Welfare:
                         cd.getPaymentMethodData().getStaffWelfare().setToStaff(originalPayment.getToStaff());
                         cd.getPaymentMethodData().getStaffWelfare().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
                         break;
                     case Credit:
                         cd.getPaymentMethodData().getCredit().setInstitution(originalPayment.getCreditCompany());
                         cd.getPaymentMethodData().getCredit().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getCredit().setReferralNo(originalPayment.getPolicyNo());
+                        cd.getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
                         cd.getPaymentMethodData().getCredit().setTotalValue(refundAmount);
                         break;
-                    // Add more payment methods as needed
+                    case OnlineSettlement:
+                        cd.getPaymentMethodData().getOnlineSettlement().setTotalValue(refundAmount);
+                        break;
+                    case IOU:
+                        cd.getPaymentMethodData().getIou().setTotalValue(refundAmount);
+                        break;
+                    default:
+                        // For any other payment methods not explicitly handled
+                        break;
                 }
 
                 paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().add(cd);

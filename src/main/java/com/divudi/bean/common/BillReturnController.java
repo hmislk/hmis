@@ -96,6 +96,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variable">
     private Staff toStaff;
+    private Institution creditCompany;
     private Bill originalBillToReturn;
     private List<BillItem> originalBillItemsAvailableToReturn;
     private List<BillItem> originalBillItemsToSelectedToReturn;
@@ -128,6 +129,10 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         if(paymentMethod == PaymentMethod.Staff_Welfare){
             toStaff = originalBillToReturn.getToStaff();
         }
+
+        // Set controller properties from original bill for proper return processing
+        toStaff = originalBillToReturn.getToStaff();
+        creditCompany = originalBillToReturn.getCreditCompany();
         paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(originalBillToReturn);
 
         // Initialize payment method data from original bill payments
@@ -307,6 +312,57 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             paymentMethodData.getOnlineSettlement().setTotalValue(-Math.abs(paymentMethodData.getOnlineSettlement().getTotalValue()));
         }
     }
+
+    /**
+     * Transfer controller properties (staff, credit company) to payment method data
+     * This ensures payment details are properly set in payment data before creating payments
+     */
+    private void transferPaymentDataFromControllerProperties() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+
+        // Transfer staff data for staff-related payment methods
+        if (toStaff != null) {
+            switch (paymentMethod) {
+                case Staff_Welfare:
+                    paymentMethodData.getStaffWelfare().setToStaff(toStaff);
+                    if (paymentMethodData.getStaffWelfare().getTotalValue() == 0) {
+                        paymentMethodData.getStaffWelfare().setTotalValue(Math.abs(refundingTotalAmount));
+                    }
+                    break;
+                case Staff:
+                case OnCall:
+                    paymentMethodData.getStaffCredit().setToStaff(toStaff);
+                    if (paymentMethodData.getStaffCredit().getTotalValue() == 0) {
+                        paymentMethodData.getStaffCredit().setTotalValue(Math.abs(refundingTotalAmount));
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // Transfer credit company for credit payment method
+        if (paymentMethod == PaymentMethod.Credit && creditCompany != null) {
+            paymentMethodData.getCredit().setInstitution(creditCompany);
+            if (paymentMethodData.getCredit().getTotalValue() == 0) {
+                paymentMethodData.getCredit().setTotalValue(Math.abs(refundingTotalAmount));
+            }
+        }
+
+        // Debug logging
+        if (paymentMethod == PaymentMethod.Credit && creditCompany != null) {
+            System.out.println("DEBUG: transferPaymentDataFromControllerProperties - Credit Company: " + creditCompany.getName());
+            System.out.println("DEBUG: Credit Institution set to: " +
+                (paymentMethodData.getCredit().getInstitution() != null ?
+                paymentMethodData.getCredit().getInstitution().getName() : "null"));
+        }
+        if (toStaff != null && (paymentMethod == PaymentMethod.Staff_Welfare || paymentMethod == PaymentMethod.Staff)) {
+            System.out.println("DEBUG: transferPaymentDataFromControllerProperties - Staff: " + toStaff.getPerson().getName());
+        }
+    }
+
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Method">
@@ -659,6 +715,9 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
         // Apply refund sign to payment data
         applyRefundSignToPaymentData();
+
+        // Transfer controller properties to payment method data before creating payments
+        transferPaymentDataFromControllerProperties();
 
         returningBillPayments = paymentService.createPayment(newlyReturnedBill, getPaymentMethodData());
 
@@ -1153,5 +1212,13 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
     public void setToStaff(Staff toStaff) {
         this.toStaff = toStaff;
+    }
+
+    public Institution getCreditCompany() {
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
     }
 }
