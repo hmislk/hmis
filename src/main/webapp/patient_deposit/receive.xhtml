@@ -480,18 +480,18 @@
                                 <div class="d-flex flex-wrap w-100 gap-2">
                                     <h:panelGroup id="gpPaymentDetails" >
                                         <h:panelGroup id="creditCard" class="m-1" rendered="#{patientDepositController.bill.paymentMethod eq 'Card'}">
-                                            <pa:creditCard paymentMethodData="#{patientDepositController.paymentMethodData}"/>
+                                            <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{patientDepositController.paymentMethodData}"/>
                                         </h:panelGroup>
-                                        <h:panelGroup id="cheque"  rendered="#{patientDepositController.bill.paymentMethod eq 'Cheque'}" >
-                                            <pa:cheque paymentMethodData="#{patientDepositController.paymentMethodData}"/>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup id="slip"   rendered="#{patientDepositController.bill.paymentMethod eq 'Slip'}" >
-                                            <pa:slip paymentMethodData="#{patientDepositController.paymentMethodData}"/>
+                                        <h:panelGroup layout="block" styleClass="mt-2" id="cheque"  rendered="#{patientDepositController.bill.paymentMethod eq 'Cheque'}" >
+                                            <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{patientDepositController.paymentMethodData}"/>
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="eWallet"   rendered="#{patientDepositController.bill.paymentMethod eq 'ewallet'}" >
-                                            <pa:ewallet_collect class="m-2" paymentMethodData="#{patientDepositController.paymentMethodData}" />
+                                        <h:panelGroup layout="block" styleClass="mt-2" id="slip"   rendered="#{patientDepositController.bill.paymentMethod eq 'Slip'}" >
+                                            <pa:slipDetailsAsOnlyPayment paymentMethodData="#{patientDepositController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup layout="block" styleClass="mt-2" id="eWallet"   rendered="#{patientDepositController.bill.paymentMethod eq 'ewallet'}" >
+                                            <pa:ewalletDetailsAsOnlyPayment class="m-2" paymentMethodData="#{patientDepositController.paymentMethodData}" />
                                         </h:panelGroup>
                                     </h:panelGroup>
 
