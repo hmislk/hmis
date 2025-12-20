@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 
@@ -54,6 +55,8 @@ import javax.inject.Inject;
 @Named
 @SessionScoped
 public class BillReturnController implements Serializable, ControllerWithMultiplePayments {
+
+    private static final Logger logger = Logger.getLogger(BillReturnController.class.getName());
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -134,7 +137,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         }
 
         // Set controller properties from original bill for proper return processing
-        toStaff = originalBillToReturn.getToStaff();
         creditCompany = originalBillToReturn.getCreditCompany();
         paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(originalBillToReturn);
 
@@ -393,13 +395,13 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
         // Debug logging
         if (paymentMethod == PaymentMethod.Credit && creditCompany != null) {
-            System.out.println("DEBUG: transferPaymentDataFromControllerProperties - Credit Company: " + creditCompany.getName());
-            System.out.println("DEBUG: Credit Institution set to: " +
+            logger.fine("transferPaymentDataFromControllerProperties - Credit Company: " + creditCompany.getName());
+            logger.fine("Credit Institution set to: " +
                 (paymentMethodData.getCredit().getInstitution() != null ?
                 paymentMethodData.getCredit().getInstitution().getName() : "null"));
         }
         if (toStaff != null && (paymentMethod == PaymentMethod.Staff_Welfare || paymentMethod == PaymentMethod.Staff)) {
-            System.out.println("DEBUG: transferPaymentDataFromControllerProperties - Staff: " + toStaff.getPerson().getName());
+            logger.fine("transferPaymentDataFromControllerProperties - Staff: " + toStaff.getPerson().getName());
         }
     }
 
