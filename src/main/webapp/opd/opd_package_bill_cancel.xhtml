@@ -184,23 +184,34 @@
                                                     id="slip"  rendered="#{billPackageController.paymentMethod eq 'Slip'}" >
                                                     <pa:slipDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
                                                 </h:panelGroup>
+                                                <!-- Patient Deposit: Use simple display since no AsOnlyPayment component exists -->
                                                 <h:panelGroup
                                                     class="row my-1"
                                                     layout="block"
                                                     id="patientDeposit"  rendered="#{billPackageController.paymentMethod eq 'PatientDeposit'}" >
-                                                    <pa:patientDepositDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                                    <div class="col-12">
+                                                        <div class="alert alert-info">
+                                                            Patient Deposit refund: #{billPackageController.bill.netTotal}
+                                                        </div>
+                                                    </div>
                                                 </h:panelGroup>
+                                                <!-- Staff Credit: Use simple display since no AsOnlyPayment component exists -->
                                                 <h:panelGroup
                                                     class="row my-1"
                                                     layout="block"
                                                     id="staffCredit"  rendered="#{billPackageController.paymentMethod eq 'Staff' or billPackageController.paymentMethod eq 'OnCall'}" >
-                                                    <pa:staffCreditDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                                    <div class="col-12">
+                                                        <div class="alert alert-info">
+                                                            Staff Credit refund: #{billPackageController.bill.netTotal}
+                                                            <br/>Staff: #{billPackageController.bill.toStaff.person.name}
+                                                        </div>
+                                                    </div>
                                                 </h:panelGroup>
                                                 <h:panelGroup
                                                     class="row my-1"
                                                     layout="block"
                                                     id="staffWelfare"  rendered="#{billPackageController.paymentMethod eq 'Staff_Welfare'}" >
-                                                    <pa:staffWelfareDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                                    <pa:staff_welfare_asOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup
                                                     class="row my-1 w-100"
@@ -210,11 +221,16 @@
                                                         controller="#{billPackageController}"
                                                         paymentMethods="#{enumController.paymentMethodsUnderMultipleForOPDPackageBilling}"/>
                                                 </h:panelGroup>
+                                                <!-- Online Settlement: Use simple display since no AsOnlyPayment component exists -->
                                                 <h:panelGroup
                                                     class="row my-1"
                                                     layout="block"
                                                     id="onlineSettlement"  rendered="#{billPackageController.paymentMethod eq 'OnlineSettlement'}" >
-                                                    <pa:onlineSettlementDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                                    <h:panelGroup layout="block" styleClass="col-12">
+                                                        <div class="alert alert-info">
+                                                            Online Settlement refund: #{billPackageController.bill.netTotal}
+                                                        </div>
+                                                    </h:panelGroup>
                                                 </h:panelGroup>
                                             </h:panelGroup>
                                         </p:panel>
