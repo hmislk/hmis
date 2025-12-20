@@ -72,7 +72,7 @@
                                 var="p"
                                 class="w-100 va-top"
                                 paginator="true"
-                                rows="10"
+                                rows="#{userSettingsController.pharmacyGrnReturnRequestPageSize}"
                                 rowIndexVar="n"
                                 paginatorPosition="bottom"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -307,39 +307,46 @@
                                             Customize Columns
                                         </span>
                                     </f:facet>
-                                    <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem;">
-                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestSupplierVisible}"
-                                                                 itemLabel="Supplier">
-                                            <p:ajax update="tblBills" />
-                                        </p:selectBooleanCheckbox>
-                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestPoNoVisible}"
-                                                                 itemLabel="PO No">
-                                            <p:ajax update="tblBills" />
-                                        </p:selectBooleanCheckbox>
-                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestGrnNoVisible}"
-                                                                 itemLabel="GRN No">
-                                            <p:ajax update="tblBills" />
-                                        </p:selectBooleanCheckbox>
-                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestInvoiceNoVisible}"
-                                                                 itemLabel="Invoice No">
-                                            <p:ajax update="tblBills" />
-                                        </p:selectBooleanCheckbox>
-                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestPoDetailsVisible}"
-                                                                 itemLabel="PO Details">
-                                            <p:ajax update="tblBills" />
-                                        </p:selectBooleanCheckbox>
-                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestGrnDetailsVisible}"
-                                                                 itemLabel="GRN Details">
-                                            <p:ajax update="tblBills" />
-                                        </p:selectBooleanCheckbox>
-                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestPoValueVisible}"
-                                                                 itemLabel="PO Value">
-                                            <p:ajax update="tblBills" />
-                                        </p:selectBooleanCheckbox>
-                                        <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestGrnValueVisible}"
-                                                                 itemLabel="GRN Value">
-                                            <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tblBills',view).clientId}" />
-                                        </p:selectBooleanCheckbox>
+                                    <div class="d-flex flex-wrap gap-2 gap-2xl-0 justify-content-between align-items-center" style="font-size: 0.8rem">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestSupplierVisible}"
+                                                                     itemLabel="Supplier">
+                                                <p:ajax update="tblBills" />
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestPoNoVisible}"
+                                                                     itemLabel="PO No">
+                                                <p:ajax update="tblBills" />
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestGrnNoVisible}"
+                                                                     itemLabel="GRN No">
+                                                <p:ajax update="tblBills" />
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestInvoiceNoVisible}"
+                                                                     itemLabel="Invoice No">
+                                                <p:ajax update="tblBills" />
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestPoDetailsVisible}"
+                                                                     itemLabel="PO Details">
+                                                <p:ajax update="tblBills" />
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestGrnDetailsVisible}"
+                                                                     itemLabel="GRN Details">
+                                                <p:ajax update="tblBills" />
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestPoValueVisible}"
+                                                                     itemLabel="PO Value">
+                                                <p:ajax update="tblBills" />
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyGrnReturnRequestGrnValueVisible}"
+                                                                     itemLabel="GRN Value">
+                                                <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tblBills',view).clientId}" />
+                                            </p:selectBooleanCheckbox>
+                                        </div>
+                                        <div class="flex">
+                                            <p:commandButton
+                                                value="Apply"
+                                                ajax="false" />
+                                        </div>
                                     </div>
                                 </p:panel>
                             </div>
