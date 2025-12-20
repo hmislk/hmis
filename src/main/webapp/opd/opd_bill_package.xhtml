@@ -22,14 +22,46 @@
                         <f:facet name="header" >
                             <h:outputText styleClass="pi pi-slack" />
                             <h:outputLabel value="OPD Packages" class="mx-4"></h:outputLabel>
-                            <p:commandButton 
-                                value="New Package Bill" 
-                                style="float: right;"
-                                icon="fas fa-plus"
-                                ajax="false" 
-                                action="/opd/opd_bill_package" 
-                                actionListener="#{billPackageController.prepareNewBill()}" >
-                            </p:commandButton>
+                            <h:panelGrid columns="4" style="float: right" class="">
+                                <p:commandButton
+                                    value="Settle"
+                                    style="float: right;"
+                                    ajax="false"
+                                    icon="fa fa-check"
+                                    action="#{billPackageController.settleBill()}"
+                                    onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                return false;"
+                                    class="ui-button-success mx-1"
+                                    >
+                                </p:commandButton>
+                                <p:commandButton
+                                    style="float: right;"
+                                    value="Lookup"
+                                    ajax="false"
+                                    icon="fa fa-search"
+                                    class="ui-button-warning mx-1"
+                                    >
+                                </p:commandButton>
+                                <p:commandButton
+                                    style="float: right;"
+                                    value="Profile"
+                                    ajax="false"
+                                    icon="fa fa-user"
+                                    class="ui-button-warning mx-1"
+                                    >
+                                    <f:setPropertyActionListener
+                                        value="#{billPackageController.patient}"
+                                        target="#{patientController.current}" ></f:setPropertyActionListener>
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="New Package Bill"
+                                    style="float: right;"
+                                    icon="fas fa-plus"
+                                    ajax="false"
+                                    action="/opd/opd_bill_package"
+                                    actionListener="#{billPackageController.prepareNewBill()}" >
+                                </p:commandButton>
+                            </h:panelGrid>
                         </f:facet>
 
                         <div class="row">
@@ -678,39 +710,8 @@
                                                                 listener="#{billPackageController.listnerForPaymentMethodChange}"/>
                                                     </p:selectOneMenu>
                                                 </div>
-                                                <div class="col-6 d-flex justify-content-end">
-                                                    <h:panelGrid columns="3" >
-                                                        <p:commandButton  
-                                                            value="Settle"
-                                                            style="float: right;"
-                                                            ajax="false"
-                                                            icon="fa fa-check"
-                                                            action="#{billPackageController.settleBill()}" 
-                                                            onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                                                        return false;"
-                                                            class="ui-button-success mx-1"
-                                                            >
-                                                        </p:commandButton>
-                                                        <p:commandButton 
-                                                            style="float: right;"
-                                                            value="Lookup" 
-                                                            ajax="false"
-                                                            icon="fa fa-search"
-                                                            class="ui-button-warning mx-1" 
-                                                            >
-                                                        </p:commandButton>
-                                                        <p:commandButton 
-                                                            style="float: right;"
-                                                            value="Profile" 
-                                                            ajax="false"
-                                                            icon="fa fa-user"
-                                                            class="ui-button-warning mx-1" 
-                                                            >
-                                                            <f:setPropertyActionListener 
-                                                                value="#{billPackageController.patient}" 
-                                                                target="#{patientController.current}" ></f:setPropertyActionListener>
-                                                        </p:commandButton>
-                                                    </h:panelGrid>
+                                                <div class="col-6">
+                                                    <!-- Buttons moved to header -->
                                                 </div>
                                             </div>
                                             <div class="my-2 row w-100 ">
@@ -843,12 +844,12 @@
                                                     </h:panelGroup>
                                                     <h:panelGroup
                                                         class="row my-1 w-100"
-                                                        layout="block" 
-                                                        id="multiplePaymentMethods"  rendered="#{billPackageController.paymentMethod eq 'MultiplePaymentMethods'}" 
+                                                        layout="block"
+                                                        id="multiplePaymentMethods"  rendered="#{billPackageController.paymentMethod eq 'MultiplePaymentMethods'}"
                                                         >
-                                                        <pa:multiple_payment_methods 
+                                                        <pa:multiple_payment_methods
                                                             paymentMethods="#{enumController.paymentMethodsForPackageBilling}"
-                                                            controller="#{billPackageController}" 
+                                                            controller="#{billPackageController}"
                                                             class="w-100"/>
 
                                                     </h:panelGroup>
@@ -1144,7 +1145,7 @@
 
                                     <h:panelGroup id="packageBillView">
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
-                                            <prints:bill_template_of_5x5_C1_package_PackageBill bill="#{billPackageController.batchBill}" payments="#{opdBillController.payments}"/>                        
+                                            <prints:bill_template_of_5x5_C1_package_PackageBill bill="#{billPackageController.batchBill}" payments="#{billPackageController.payments}"/>
                                         </h:panelGroup>
                                     </h:panelGroup>
 
@@ -1167,7 +1168,7 @@
 
                                     <h:panelGroup id="batchBillView">
                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
-                                            <prints:bill_template_of_5x5_C1_package_BatchBill bill="#{billPackageController.batchBill}" payments="#{opdBillController.payments}"/>                        
+                                            <prints:bill_template_of_5x5_C1_package_BatchBill bill="#{billPackageController.batchBill}" payments="#{billPackageController.payments}"/>
                                         </h:panelGroup>
                                     </h:panelGroup>
 

@@ -15,6 +15,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Staff;
@@ -43,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 
@@ -53,6 +55,8 @@ import javax.inject.Inject;
 @Named
 @SessionScoped
 public class BillReturnController implements Serializable, ControllerWithMultiplePayments {
+
+    private static final Logger logger = Logger.getLogger(BillReturnController.class.getName());
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -92,10 +96,13 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     PatientInvestigationController patientInvestigationController;
     @Inject
     LabTestHistoryController labTestHistoryController;
+    @Inject
+    private com.divudi.bean.common.PatientDepositController patientDepositController;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variable">
     private Staff toStaff;
+    private Institution creditCompany;
     private Bill originalBillToReturn;
     private List<BillItem> originalBillItemsAvailableToReturn;
     private List<BillItem> originalBillItemsToSelectedToReturn;
@@ -128,14 +135,24 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         if(paymentMethod == PaymentMethod.Staff_Welfare){
             toStaff = originalBillToReturn.getToStaff();
         }
+
+        // Set controller properties from original bill for proper return processing
+        creditCompany = originalBillToReturn.getCreditCompany();
         paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(originalBillToReturn);
 
-        // Initialize payment method data from original bill payments
-        originalBillPayments = billBeanController.fetchBillPayments(originalBillToReturn);
+      
+
+        // Check if this is an individual bill that references a batch bill (has payments)
+        Bill billToFetchPaymentsFrom = originalBillToReturn;
+        if (originalBillToReturn.getBackwardReferenceBill() != null) {
+            billToFetchPaymentsFrom = originalBillToReturn.getBackwardReferenceBill();
+        }
+
+        originalBillPayments = billBeanController.fetchBillPayments(billToFetchPaymentsFrom);
+      
         if (originalBillPayments != null && !originalBillPayments.isEmpty()) {
             initializePaymentDataFromOriginalPayments(originalBillPayments);
         }
-
         return "/opd/bill_return?faces-redirect=true";
     }
 
@@ -183,6 +200,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             Payment originalPayment = originalPayments.get(0);
             paymentMethod = originalPayment.getPaymentMethod();
 
+
             // Initialize paymentMethodData based on payment method (using absolute values for UI display)
             // Note: Total value will be updated later when user selects items to refund
             switch (originalPayment.getPaymentMethod()) {
@@ -210,17 +228,44 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                     getPaymentMethodData().getSlip().setTotalValue(Math.abs(originalBillToReturn.getNetTotal()));
                     break;
                 case ewallet:
-                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                    System.out.println("=== EWALLET CASE DEBUG ===");
+                    System.out.println("Original Payment ID: " + originalPayment.getId());
+                    System.out.println("Bank: " + (originalPayment.getBank() != null ? originalPayment.getBank().getName() + " (ID: " + originalPayment.getBank().getId() + ")" : "null"));
+                    System.out.println("Institution: " + (originalPayment.getInstitution() != null ? originalPayment.getInstitution().getName() + " (ID: " + originalPayment.getInstitution().getId() + ")" : "null"));
+                    System.out.println("ReferenceNo: " + originalPayment.getReferenceNo());
+                    System.out.println("Comments: " + originalPayment.getComments());
+
+                    Institution selectedInstitution = originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution();
+                    System.out.println("Selected Institution: " + (selectedInstitution != null ? selectedInstitution.getName() + " (ID: " + selectedInstitution.getId() + ")" : "null"));
+
+                    getPaymentMethodData().getEwallet().setInstitution(selectedInstitution);
                     getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
                     getPaymentMethodData().getEwallet().setTotalValue(Math.abs(originalBillToReturn.getNetTotal()));
                     getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
+
+                    System.out.println("After setting - PaymentMethodData eWallet Institution: " +
+                        (getPaymentMethodData().getEwallet().getInstitution() != null ?
+                         getPaymentMethodData().getEwallet().getInstitution().getName() + " (ID: " + getPaymentMethodData().getEwallet().getInstitution().getId() + ")" :
+                         "null"));
+                    System.out.println("=== END EWALLET CASE DEBUG ===");
                     break;
                 case PatientDeposit:
                     getPaymentMethodData().getPatient_deposit().setTotalValue(Math.abs(originalBillToReturn.getNetTotal()));
                     getPaymentMethodData().getPatient_deposit().setPatient(originalBillToReturn.getPatient());
                     getPaymentMethodData().getPatient_deposit().setComment(originalPayment.getComments());
+                    // Load and set the PatientDeposit object for displaying balance
+                    if (originalBillToReturn.getPatient() != null) {
+                        com.divudi.core.entity.PatientDeposit pd = patientDepositController.getDepositOfThePatient(
+                                originalBillToReturn.getPatient(),
+                                sessionController.getDepartment()
+                        );
+                        if (pd != null && pd.getId() != null) {
+                            getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                            getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                        }
+                    }
                     break;
                 case Credit:
                     getPaymentMethodData().getCredit().setInstitution(originalPayment.getCreditCompany());
@@ -263,7 +308,9 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             paymentMethod = PaymentMethod.MultiplePaymentMethods;
             // Note: For multiple payments, the user would need to manually configure them
             // This is a complex scenario that may require additional UI handling
+            System.out.println("Multiple payments detected - set to MultiplePaymentMethods");
         }
+        System.out.println("=== END initializePaymentDataFromOriginalPayments DEBUG ===");
     }
 
     /**
@@ -307,6 +354,57 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             paymentMethodData.getOnlineSettlement().setTotalValue(-Math.abs(paymentMethodData.getOnlineSettlement().getTotalValue()));
         }
     }
+
+    /**
+     * Transfer controller properties (staff, credit company) to payment method data
+     * This ensures payment details are properly set in payment data before creating payments
+     */
+    private void transferPaymentDataFromControllerProperties() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+
+        // Transfer staff data for staff-related payment methods
+        if (toStaff != null) {
+            switch (paymentMethod) {
+                case Staff_Welfare:
+                    paymentMethodData.getStaffWelfare().setToStaff(toStaff);
+                    if (paymentMethodData.getStaffWelfare().getTotalValue() == 0) {
+                        paymentMethodData.getStaffWelfare().setTotalValue(Math.abs(refundingTotalAmount));
+                    }
+                    break;
+                case Staff:
+                case OnCall:
+                    paymentMethodData.getStaffCredit().setToStaff(toStaff);
+                    if (paymentMethodData.getStaffCredit().getTotalValue() == 0) {
+                        paymentMethodData.getStaffCredit().setTotalValue(Math.abs(refundingTotalAmount));
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // Transfer credit company for credit payment method
+        if (paymentMethod == PaymentMethod.Credit && creditCompany != null) {
+            paymentMethodData.getCredit().setInstitution(creditCompany);
+            if (paymentMethodData.getCredit().getTotalValue() == 0) {
+                paymentMethodData.getCredit().setTotalValue(Math.abs(refundingTotalAmount));
+            }
+        }
+
+        // Debug logging
+        if (paymentMethod == PaymentMethod.Credit && creditCompany != null) {
+            logger.fine("transferPaymentDataFromControllerProperties - Credit Company: " + creditCompany.getName());
+            logger.fine("Credit Institution set to: " +
+                (paymentMethodData.getCredit().getInstitution() != null ?
+                paymentMethodData.getCredit().getInstitution().getName() : "null"));
+        }
+        if (toStaff != null && (paymentMethod == PaymentMethod.Staff_Welfare || paymentMethod == PaymentMethod.Staff)) {
+            logger.fine("transferPaymentDataFromControllerProperties - Staff: " + toStaff.getPerson().getName());
+        }
+    }
+
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Method">
@@ -659,6 +757,9 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
         // Apply refund sign to payment data
         applyRefundSignToPaymentData();
+
+        // Transfer controller properties to payment method data before creating payments
+        transferPaymentDataFromControllerProperties();
 
         returningBillPayments = paymentService.createPayment(newlyReturnedBill, getPaymentMethodData());
 
@@ -1153,5 +1254,13 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
     public void setToStaff(Staff toStaff) {
         this.toStaff = toStaff;
+    }
+
+    public Institution getCreditCompany() {
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
     }
 }

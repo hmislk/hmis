@@ -33,7 +33,9 @@
       "Bash(git branch:*)",
       "Bash(git submodule:*)",
       "Bash(git rm:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git show:*)",
+      "Bash(timeout 5 mysql:*)"
     ],
     "deny": [],
     "ask": [],

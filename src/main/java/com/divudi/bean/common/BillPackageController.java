@@ -1056,26 +1056,69 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                         cd.getPaymentMethodData().getCreditCard().setComment(originalPayment.getComments());
                         cd.getPaymentMethodData().getCreditCard().setTotalValue(refundAmount);
                         break;
+                    case Cheque:
+                        cd.getPaymentMethodData().getCheque().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
+                        cd.getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
+                        cd.getPaymentMethodData().getCheque().setComment(originalPayment.getComments());
+                        cd.getPaymentMethodData().getCheque().setTotalValue(refundAmount);
+                        break;
+                    case Slip:
+                        cd.getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate());
+                        cd.getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
+                        cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
+                        break;
+                    case ewallet:
+                        cd.getPaymentMethodData().getEwallet().setInstitution(
+                            originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                        cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
+                        cd.getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
+                        cd.getPaymentMethodData().getEwallet().setTotalValue(refundAmount);
+                        break;
                     case PatientDeposit:
                         cd.getPaymentMethodData().getPatient_deposit().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getPatient_deposit().setComment(originalPayment.getComments());
                         if (billToUse.getPatient() != null) {
                             cd.getPaymentMethodData().getPatient_deposit().setPatient(billToUse.getPatient());
+                            // Load and set the PatientDeposit object for displaying balance
+                            com.divudi.core.entity.PatientDeposit pd = patientDepositController.getDepositOfThePatient(
+                                    billToUse.getPatient(), sessionController.getDepartment());
+                            if (pd != null && pd.getId() != null) {
+                                cd.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                                cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                            }
                         }
                         break;
                     case Staff:
                         cd.getPaymentMethodData().getStaffCredit().setToStaff(originalPayment.getToStaff());
                         cd.getPaymentMethodData().getStaffCredit().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
                         break;
                     case Staff_Welfare:
                         cd.getPaymentMethodData().getStaffWelfare().setToStaff(originalPayment.getToStaff());
                         cd.getPaymentMethodData().getStaffWelfare().setTotalValue(refundAmount);
+                        cd.getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
                         break;
                     case Credit:
                         cd.getPaymentMethodData().getCredit().setInstitution(originalPayment.getCreditCompany());
                         cd.getPaymentMethodData().getCredit().setReferenceNo(originalPayment.getReferenceNo());
+                        cd.getPaymentMethodData().getCredit().setReferralNo(originalPayment.getPolicyNo());
+                        cd.getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
                         cd.getPaymentMethodData().getCredit().setTotalValue(refundAmount);
                         break;
-                    // Add more payment methods as needed
+                    case OnlineSettlement:
+                        cd.getPaymentMethodData().getOnlineSettlement().setTotalValue(refundAmount);
+                        break;
+                    case IOU:
+                        cd.getPaymentMethodData().getIou().setTotalValue(refundAmount);
+                        break;
+                    default:
+                        // For any other payment methods not explicitly handled
+                        break;
                 }
 
                 paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().add(cd);
@@ -1803,31 +1846,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                if (cd.getPaymentMethodData().getCash() != null) {
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                }
-                if (cd.getPaymentMethodData().getCreditCard() != null) {
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                }
-                if (cd.getPaymentMethodData().getCheque() != null) {
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                }
-                if (cd.getPaymentMethodData().getEwallet() != null) {
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                }
-                if (cd.getPaymentMethodData().getPatient_deposit() != null) {
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                }
-                if (cd.getPaymentMethodData().getSlip() != null) {
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                }
-                if (cd.getPaymentMethodData().getStaffCredit() != null) {
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
-                }
-                if (cd.getPaymentMethodData().getOnlineSettlement() != null) {
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
-                }
-
+                // Fixed: Sum only the selected payment method's value for this component
+                multiplePaymentMethodTotalValue += calculateSelectedPaymentTotal(cd);
             }
             remainAmount = total - multiplePaymentMethodTotalValue;
             return total - multiplePaymentMethodTotalValue;
@@ -1888,6 +1908,19 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     break;
                 case OnlineSettlement:
                     pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
+                    break;
+                case Staff_Welfare:
+                    pm.getPaymentMethodData().getStaffWelfare().setTotalValue(remainAmount);
+                    break;
+                case IOU:
+                    pm.getPaymentMethodData().getIou().setTotalValue(remainAmount);
+                    break;
+                case YouOweMe:
+                    // YouOweMe maps to the same IOU field in PaymentMethodData
+                    pm.getPaymentMethodData().getIou().setTotalValue(remainAmount);
+                    break;
+                case OnCall:
+                    pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
                     break;
                 default:
                     throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());
@@ -2092,14 +2125,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                         return true;
                     }
                 }
-                //TODO - filter only relavant value
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                // Fixed: Sum only the selected payment method's value for this component
+                multiplePaymentMethodTotalValue += calculateSelectedPaymentTotal(cd);
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
@@ -2111,6 +2138,51 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
 
         return false;
+    }
+
+    /**
+     * Calculates the total payment value for the selected payment method only.
+     * This ensures accurate validation by summing only the relevant payment method value.
+     * Copied from OpdBillController.java to fix multiple payment validation error.
+     *
+     * @param cd ComponentDetail containing payment method and associated data
+     * @return Total value for the selected payment method, or 0.0 if invalid
+     */
+    private double calculateSelectedPaymentTotal(ComponentDetail cd) {
+        if (cd == null || cd.getPaymentMethodData() == null || cd.getPaymentMethod() == null) {
+            return 0.0;
+        }
+
+        switch (cd.getPaymentMethod()) {
+            case Cash:
+                return cd.getPaymentMethodData().getCash().getTotalValue();
+            case Card:
+                return cd.getPaymentMethodData().getCreditCard().getTotalValue();
+            case Cheque:
+                return cd.getPaymentMethodData().getCheque().getTotalValue();
+            case ewallet:
+                return cd.getPaymentMethodData().getEwallet().getTotalValue();
+            case PatientDeposit:
+                return cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+            case Slip:
+                return cd.getPaymentMethodData().getSlip().getTotalValue();
+            case Staff:
+                return cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+            case Staff_Welfare:
+                return cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+            case Credit:
+                return cd.getPaymentMethodData().getCredit().getTotalValue();
+            case OnlineSettlement:
+                return cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+            case IOU:
+                return cd.getPaymentMethodData().getIou().getTotalValue();
+            case YouOweMe:
+                // YouOweMe maps to the same IOU field in PaymentMethodData
+                return cd.getPaymentMethodData().getIou().getTotalValue();
+            default:
+                // Return 0.0 for unexpected or unsupported payment methods
+                return 0.0;
+        }
     }
 
     private void addEntry(BillItem bi) {
@@ -2604,7 +2676,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     @Override
     public void listnerForPaymentMethodChange() {
-        System.out.println("listnerForPaymentMethodChange for BillPackageController ");
+        System.out.println("listenerForPaymentMethodChange for BillPackageController ");
         System.out.println("paymentMethod = " + paymentMethod);
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
@@ -2617,6 +2689,18 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         } else if (paymentMethod == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
             System.out.println("this = " + this);
+        } else if (paymentMethod == PaymentMethod.Staff) {
+            // Initialize staff credit payment method
+            getPaymentMethodData().getStaffCredit().setTotalValue(netTotal);
+            if (toStaff != null) {
+                getPaymentMethodData().getStaffCredit().setToStaff(toStaff);
+            }
+        } else if (paymentMethod == PaymentMethod.Staff_Welfare) {
+            // Initialize staff welfare payment method
+            getPaymentMethodData().getStaffWelfare().setTotalValue(netTotal);
+            if (toStaff != null) {
+                getPaymentMethodData().getStaffWelfare().setToStaff(toStaff);
+            }
         } else if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             if (getPaymentMethodData().getPatient_deposit().getTotalValue() < 0.01) {
