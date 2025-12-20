@@ -104,6 +104,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     private List<BillItem> newlyReturnedBillItems;
     private List<BillFee> newlyReturnedBillFees;
     private List<Payment> returningBillPayments;
+    private List<Payment> originalBillPayments;
 
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
@@ -130,9 +131,9 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(originalBillToReturn);
 
         // Initialize payment method data from original bill payments
-        List<Payment> originalPayments = billBeanController.fetchBillPayments(originalBillToReturn);
-        if (originalPayments != null && !originalPayments.isEmpty()) {
-            initializePaymentDataFromOriginalPayments(originalPayments);
+        originalBillPayments = billBeanController.fetchBillPayments(originalBillToReturn);
+        if (originalBillPayments != null && !originalBillPayments.isEmpty()) {
+            initializePaymentDataFromOriginalPayments(originalBillPayments);
         }
 
         return "/opd/bill_return?faces-redirect=true";
@@ -690,10 +691,63 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         for (BillItem selectedBillItemToReturn : originalBillItemsToSelectedToReturn) {
             refundingTotalAmount += selectedBillItemToReturn.getNetValue();
         }
+
+        // Update payment method data with calculated amount for partial returns
+        updatePaymentMethodDataWithRefundingAmount();
+
         if (originalBillItemsToSelectedToReturn.size() == 0) {
             selectAll = true;
         } else {
             selectAll = false;
+        }
+    }
+
+    /**
+     * Updates payment method data with calculated refunding amount when items are selected.
+     * This ensures the payment form shows the correct amount for partial returns.
+     */
+    private void updatePaymentMethodDataWithRefundingAmount() {
+        if (paymentMethodData == null || refundingTotalAmount == 0.0) {
+            return;
+        }
+
+        // Update the total value for the selected payment method
+        // Use absolute value because negatives are applied later in applyRefundSignToPaymentData()
+        double absoluteAmount = Math.abs(refundingTotalAmount);
+
+        switch (paymentMethod) {
+            case Cash:
+                paymentMethodData.getCash().setTotalValue(absoluteAmount);
+                break;
+            case Card:
+                paymentMethodData.getCreditCard().setTotalValue(absoluteAmount);
+                break;
+            case Cheque:
+                paymentMethodData.getCheque().setTotalValue(absoluteAmount);
+                break;
+            case Slip:
+                paymentMethodData.getSlip().setTotalValue(absoluteAmount);
+                break;
+            case ewallet:
+                paymentMethodData.getEwallet().setTotalValue(absoluteAmount);
+                break;
+            case PatientDeposit:
+                paymentMethodData.getPatient_deposit().setTotalValue(absoluteAmount);
+                break;
+            case Credit:
+                paymentMethodData.getCredit().setTotalValue(absoluteAmount);
+                break;
+            case Staff:
+                paymentMethodData.getStaffCredit().setTotalValue(absoluteAmount);
+                break;
+            case Staff_Welfare:
+                paymentMethodData.getStaffWelfare().setTotalValue(absoluteAmount);
+                break;
+            case OnlineSettlement:
+                paymentMethodData.getOnlineSettlement().setTotalValue(absoluteAmount);
+                break;
+            default:
+                break;
         }
     }
 
@@ -962,6 +1016,14 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             paymentMethodData = new PaymentMethodData();
         }
         return paymentMethodData;
+    }
+
+    public List<Payment> getOriginalBillPayments() {
+        return originalBillPayments;
+    }
+
+    public void setOriginalBillPayments(List<Payment> originalBillPayments) {
+        this.originalBillPayments = originalBillPayments;
     }
 
     public void setOriginalBillToReturn(Bill originalBillToReturn) {
