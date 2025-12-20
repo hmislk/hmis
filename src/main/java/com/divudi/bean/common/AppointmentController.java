@@ -896,28 +896,127 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return false;
         }
 
-        // For ALL payment methods, check if bill total is valid
-        if (getCurrentBill().getTotal() <= 0.0) {
-            switch (pm) {
-                case Cash:
-                    JsfUtil.addErrorMessage("Please enter a valid amount for Cash payment");
-                    break;
-                case Card:
-                    JsfUtil.addErrorMessage("Please enter a valid amount for Card payment");
-                    break;
-                case Cheque:
-                    JsfUtil.addErrorMessage("Please enter a valid amount for Cheque payment");
-                    break;
-                case Slip:
-                    JsfUtil.addErrorMessage("Please enter a valid amount for Slip payment");
-                    break;
-                case MultiplePaymentMethods:
-                    JsfUtil.addErrorMessage("Please configure valid payment amounts");
-                    break;
-                default:
-                    JsfUtil.addErrorMessage("Please enter a valid payment amount");
-            }
-            return false;
+        double amountToCheck = 0.0;
+
+        switch (pm) {
+            case Cash:
+                // For cash payment, check if bill total is greater than 0
+                amountToCheck = getCurrentBill().getTotal();
+                if (amountToCheck <= 0.0) {
+                    JsfUtil.addErrorMessage("Please enter a payment amount");
+                    return false;
+                }
+                break;
+
+            case Card:
+                // For card payment, check paymentMethodData
+                if (paymentMethodData == null || paymentMethodData.getCreditCard() == null
+                        || paymentMethodData.getCreditCard().getTotalValue() <= 0.0) {
+                    JsfUtil.addErrorMessage("Please enter card payment details");
+                    return false;
+                }
+                amountToCheck = paymentMethodData.getCreditCard().getTotalValue();
+                break;
+
+            case Cheque:
+                // For cheque payment
+                if (paymentMethodData == null || paymentMethodData.getCheque() == null
+                        || paymentMethodData.getCheque().getTotalValue() <= 0.0) {
+                    JsfUtil.addErrorMessage("Please enter cheque payment details");
+                    return false;
+                }
+                amountToCheck = paymentMethodData.getCheque().getTotalValue();
+                break;
+
+            case Slip:
+                // For slip payment
+                if (paymentMethodData == null || paymentMethodData.getSlip() == null
+                        || paymentMethodData.getSlip().getTotalValue() <= 0.0) {
+                    JsfUtil.addErrorMessage("Please enter slip payment details");
+                    return false;
+                }
+                amountToCheck = paymentMethodData.getSlip().getTotalValue();
+                break;
+
+            case MultiplePaymentMethods:
+                // For multiple payment methods - check if it's properly configured
+                if (paymentMethodData == null || paymentMethodData.getPaymentMethodMultiple() == null
+                        || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null
+                        || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+                    JsfUtil.addErrorMessage("Please configure payment amounts");
+                    return false;
+                }
+
+                // Calculate total from all components
+                double multipleTotal = 0.0;
+                for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    if (cd != null && cd.getPaymentMethodData() != null) {
+                        // Check based on payment method type in the component
+                        switch (cd.getPaymentMethod()) {
+                            case Cash:
+                                if (cd.getPaymentMethodData().getCash() != null) {
+                                    multipleTotal += cd.getPaymentMethodData().getCash().getTotalValue();
+                                }
+                                break;
+                            case Card:
+                                if (cd.getPaymentMethodData().getCreditCard() != null) {
+                                    multipleTotal += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                                }
+                                break;
+                            case Cheque:
+                                if (cd.getPaymentMethodData().getCheque() != null) {
+                                    multipleTotal += cd.getPaymentMethodData().getCheque().getTotalValue();
+                                }
+                                break;
+                            case Slip:
+                                if (cd.getPaymentMethodData().getSlip() != null) {
+                                    multipleTotal += cd.getPaymentMethodData().getSlip().getTotalValue();
+                                }
+                                break;
+                        }
+                    }
+                }
+
+                if (multipleTotal <= 0.0) {
+                    JsfUtil.addErrorMessage("Please enter valid payment amounts");
+                    return false;
+                }
+                amountToCheck = multipleTotal;
+                break;
+
+            // other payment methods as needed
+            case ewallet:
+                if (paymentMethodData == null || paymentMethodData.getEwallet() == null
+                        || paymentMethodData.getEwallet().getTotalValue() <= 0.0) {
+                    JsfUtil.addErrorMessage("Please enter eWallet payment details");
+                    return false;
+                }
+                amountToCheck = paymentMethodData.getEwallet().getTotalValue();
+                break;
+
+            case Credit:
+                if (paymentMethodData == null || paymentMethodData.getCredit() == null
+                        || paymentMethodData.getCredit().getTotalValue() <= 0.0) {
+                    JsfUtil.addErrorMessage("Please enter credit payment details");
+                    return false;
+                }
+                amountToCheck = paymentMethodData.getCredit().getTotalValue();
+                break;
+
+            default:
+                // For other payment methods, just check that bill total is valid
+                amountToCheck = getCurrentBill().getTotal();
+                if (amountToCheck <= 0.0) {
+                    JsfUtil.addErrorMessage("Please enter a payment amount");
+                    return false;
+                }
+        }
+
+        // Update bill total with the validated amount
+        //  ensures bill.total matches the payment amount
+        if (getCurrentBill().getTotal() != amountToCheck) {
+            getCurrentBill().setTotal(amountToCheck);
+            getCurrentBill().setNetTotal(amountToCheck);
         }
 
         return true;
