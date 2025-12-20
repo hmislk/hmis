@@ -387,14 +387,14 @@ public void testOriginalPaymentRetrieval() {
 // Test that balances are updated correctly during cancellation
 @Test
 public void testStaffWelfareBalanceUpdate() {
-    double initialBalance = staff.getCurrentWelfare(); // TODO: Wrong, there is no attribute like this 
+    double initialBalance = staff.getAnnualWelfareQualified() - staff.getAnnualWelfareUtilized();
     double billAmount = 500.0;
 
     // Cancel bill with Staff_Welfare payment
     controller.cancelBill();
 
     // Verify balance increased by bill amount
-    assertEquals(initialBalance + billAmount, staff.getCurrentWelfare(), 0.01);
+    assertEquals(initialBalance + billAmount, staff.getAnnualWelfareQualified() - staff.getAnnualWelfareUtilized(), 0.01);
 }
 ```
 
