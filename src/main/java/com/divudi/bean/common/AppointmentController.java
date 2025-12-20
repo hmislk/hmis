@@ -209,7 +209,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public AppointmentController() {
     }
@@ -250,13 +249,13 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             JsfUtil.addErrorMessage("Reserved To Date not Valid");
             return;
         }
-        
-        if(currentAppointment.getAppointmentDate() == null){
+
+        if (currentAppointment.getAppointmentDate() == null) {
             JsfUtil.addErrorMessage("Appointment Date is Missing.");
             return;
         }
-        
-        if(currentBill.getReferredBy() == null){
+
+        if (currentBill.getReferredBy() == null) {
             JsfUtil.addErrorMessage("Referring Doctor is Missing.");
             return;
         }
@@ -526,13 +525,13 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             JsfUtil.addErrorMessage("Please select a valid Reservation todate.");
             return;
         }
-        
-        if(currentAppointment.getAppointmentDate() == null){
+
+        if (currentAppointment.getAppointmentDate() == null) {
             JsfUtil.addErrorMessage("Appointment Date is Missing.");
             return;
         }
-        
-        if(currentBill.getReferredBy() == null){
+
+        if (currentBill.getReferredBy() == null) {
             JsfUtil.addErrorMessage("Referring Doctor is Missing.");
             return;
         }
@@ -879,11 +878,49 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return true;
         }
 
+        if (!isPaymentAmountValid()) {
+            return true;
+        }
+
         if (getPaymentSchemeController().checkPaymentMethodError(getCurrentBill().getPaymentMethod(), paymentMethodData)) {
             return true;
         }
-//
+
         return false;
+    }
+
+    private boolean isPaymentAmountValid() {
+        PaymentMethod pm = getCurrentBill().getPaymentMethod();
+
+        if (pm == null) {
+            return false;
+        }
+
+        // For ALL payment methods, check if bill total is valid
+        if (getCurrentBill().getTotal() <= 0.0) {
+            switch (pm) {
+                case Cash:
+                    JsfUtil.addErrorMessage("Please enter a valid amount for Cash payment");
+                    break;
+                case Card:
+                    JsfUtil.addErrorMessage("Please enter a valid amount for Card payment");
+                    break;
+                case Cheque:
+                    JsfUtil.addErrorMessage("Please enter a valid amount for Cheque payment");
+                    break;
+                case Slip:
+                    JsfUtil.addErrorMessage("Please enter a valid amount for Slip payment");
+                    break;
+                case MultiplePaymentMethods:
+                    JsfUtil.addErrorMessage("Please configure valid payment amounts");
+                    break;
+                default:
+                    JsfUtil.addErrorMessage("Please enter a valid payment amount");
+            }
+            return false;
+        }
+
+        return true;
     }
 
     public List<Reservation> checkAppointmentsForRoom(RoomFacilityCharge r) {
@@ -914,18 +951,18 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         if (reservedRoom == null || reservedFromDate == null || reservedToDate == null) {
             JsfUtil.addErrorMessage("Reservation, room, and dates must not be null");
         }
-        
+
         Map<String, Object> parameters = new HashMap<>();
-        
+
         String jpql = "SELECT r FROM Reservation r "
                 + "WHERE r.room = :room "
                 + "AND r.appointment.status =:status "; // Optional: exclude cancelled reservations
 
-       if(reservation.getId() != null){
-           jpql += " AND r.id !=:id ";
-           parameters.put("id", reservation.getId());
-       }
-        
+        if (reservation.getId() != null) {
+            jpql += " AND r.id !=:id ";
+            parameters.put("id", reservation.getId());
+        }
+
         jpql += " AND ( "
                 + "   (r.reservedFrom < :reservedTo AND r.reservedTo > :reservedFrom) "
                 + "   OR r.reservedFrom BETWEEN :reservedFrom AND :reservedTo "
@@ -982,7 +1019,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setters">
     public Title[] getTitle() {
         return Title.values();
