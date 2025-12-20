@@ -92,28 +92,23 @@
                                             </h:outputText>
                                         </p:column>
 
-                                        <p:column headerText="Staff"
-                                                  rendered="#{origPayment.paymentMethod eq 'Staff_Welfare' or origPayment.paymentMethod eq 'Staff'}">
+                                        <p:column headerText="Staff">
                                             <h:outputText value="#{origPayment.toStaff.person.nameWithTitle}"
-                                                          rendered="#{origPayment.toStaff != null}"/>
+                                                          rendered="#{origPayment.toStaff != null and (origPayment.paymentMethod eq 'Staff_Welfare' or origPayment.paymentMethod eq 'Staff')}"/>
                                             <h:outputText value="-"
-                                                          rendered="#{origPayment.toStaff == null}"
+                                                          rendered="#{origPayment.toStaff == null and (origPayment.paymentMethod eq 'Staff_Welfare' or origPayment.paymentMethod eq 'Staff')}"
                                                           styleClass="text-muted"/>
                                         </p:column>
 
-                                        <p:column headerText="Company"
-                                                  rendered="#{origPayment.paymentMethod eq 'Credit'}">
+                                        <p:column headerText="Company">
                                             <h:outputText value="#{origPayment.creditCompany.name}"
-                                                          rendered="#{origPayment.creditCompany != null}"/>
+                                                          rendered="#{origPayment.creditCompany != null and origPayment.paymentMethod eq 'Credit'}"/>
                                             <h:outputText value="-"
-                                                          rendered="#{origPayment.creditCompany == null}"
+                                                          rendered="#{origPayment.creditCompany == null and origPayment.paymentMethod eq 'Credit'}"
                                                           styleClass="text-muted"/>
                                         </p:column>
 
-                                        <p:column headerText="Reference"
-                                                  rendered="#{origPayment.paymentMethod eq 'Card' or
-                                                              origPayment.paymentMethod eq 'Cheque' or
-                                                              origPayment.paymentMethod eq 'Slip'}">
+                                        <p:column headerText="Reference">
                                             <h:outputText value="#{origPayment.creditCardRefNo}"
                                                           rendered="#{origPayment.paymentMethod eq 'Card'}"/>
                                             <h:outputText value="#{origPayment.chequeRefNo}"

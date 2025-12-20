@@ -43,7 +43,9 @@
                     requiredMessage="Bank is required">
                     <f:selectItem itemLabel="Select Bank"/>
                     <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                    <p:ajax process="@this" />
+                    <p:ajax
+                        event="change"
+                        process="@this" />
                 </p:selectOneMenu>
             </div>
 
@@ -59,7 +61,9 @@
                     showButtonPanel="true"
                     required="true"
                     requiredMessage="Date is required">
-                    <p:ajax process="@this" />
+                    <p:ajax
+                        event="dateSelect"
+                        process="@this" />
                 </p:calendar>
             </div>
 
