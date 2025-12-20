@@ -1119,6 +1119,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                         Bill depositReversalBill = new Bill();
                         depositReversalBill.setPatient(originalBill.getPatient());
                         depositReversalBill.setNetTotal(Math.abs(originalPayment.getPaidValue()));
+                        depositReversalBill.setBillTypeAtomic(BillTypeAtomic.PATIENT_DEPOSIT); // Add money to deposit
                         patientDepositController.updateBalance(depositReversalBill, pd);
                         JsfUtil.addSuccessMessage("Patient Deposit Balance Restored: " +
                             String.format("%.2f", Math.abs(originalPayment.getPaidValue())));
