@@ -15,23 +15,16 @@
     <cc:implementation>
         <div class="row">
             <div class="col-md-6">
-                <p:outputLabel for="staffWelfareRefundStaff" value="Staff Member: " />
-                <p:autoComplete id="staffWelfareRefundStaff"
-                               value="#{cc.attrs.paymentMethodData.staffWelfare.toStaff}"
-                               completeMethod="#{staffController.completeStaff}"
-                               converter="staffConverter"
-                               var="stf" itemLabel="#{stf.person.name}"
-                               itemValue="#{stf}"
-                               forceSelection="true"
-                               placeholder="Select Staff Member">
-                    <p:column>#{stf.person.name} - #{stf.speciality.name}</p:column>
-                </p:autoComplete>
+                <p:outputLabel for="patientDepositRefundPatient" value="Patient: " />
+                <h:outputText id="patientDepositRefundPatient"
+                             value="#{cc.attrs.paymentMethodData.patient_deposit.patient.person.name}"
+                             styleClass="form-control-static" />
             </div>
 
             <div class="col-md-6">
                 <p:outputLabel for="refundAmount" value="Refund Amount: " />
                 <p:inputNumber id="refundAmount"
-                              value="#{cc.attrs.paymentMethodData.staffWelfare.totalValue}"
+                              value="#{cc.attrs.paymentMethodData.patient_deposit.totalValue}"
                               symbol=" "
                               decimalSeparator="."
                               thousandSeparator=","
@@ -43,45 +36,49 @@
             </div>
         </div>
 
-        <!-- Staff Information Panel (when staff is selected) -->
+        <!-- Patient Deposit Information Panel -->
         <h:panelGroup layout="block"
-                     rendered="#{cc.attrs.paymentMethodData.staffWelfare.toStaff ne null}"
+                     rendered="#{cc.attrs.paymentMethodData.patient_deposit.patient ne null}"
                      styleClass="mt-3">
             <div class="row">
                 <div class="col-12">
-                    <div class="card border-success">
+                    <div class="card border-info">
                         <div class="card-body p-3">
                             <div class="row">
-                                <!-- Staff Information Column -->
+                                <!-- Patient Information Column -->
                                 <div class="col-md-4">
-                                    <h6 class="card-title text-success">
-                                        <i class="fas fa-user me-2"></i>Staff Information
+                                    <h6 class="card-title text-info">
+                                        <i class="fas fa-user me-2"></i>Patient Information
                                     </h6>
                                     <p class="mb-1">
                                         <strong>Name:</strong>
-                                        #{cc.attrs.paymentMethodData.staffWelfare.toStaff.person.name}
+                                        #{cc.attrs.paymentMethodData.patient_deposit.patient.person.name}
                                     </p>
                                     <p class="mb-1">
-                                        <strong>Code:</strong>
-                                        #{cc.attrs.paymentMethodData.staffWelfare.toStaff.code}
+                                        <strong>HN:</strong>
+                                        #{cc.attrs.paymentMethodData.patient_deposit.patient.phn}
                                     </p>
                                     <p class="mb-0">
-                                        <strong>Designation:</strong>
-                                        #{cc.attrs.paymentMethodData.staffWelfare.toStaff.speciality.name}
+                                        <strong>NIC:</strong>
+                                        #{cc.attrs.paymentMethodData.patient_deposit.patient.person.nic}
                                     </p>
                                 </div>
 
-                                <!-- Current Welfare Balance Column -->
+                                <!-- Current Deposit Balance Column -->
                                 <div class="col-md-4">
                                     <h6 class="card-title text-info">
-                                        <i class="fas fa-wallet me-2"></i>Current Welfare Balance
+                                        <i class="fas fa-piggy-bank me-2"></i>Current Deposit Balance
                                     </h6>
                                     <p class="mb-1">
                                         <strong>Available:</strong>
                                         <span class="text-primary fw-bold">
-                                            <h:outputText value="#{cc.attrs.paymentMethodData.staffWelfare.toStaff.currentWelfare}">
-                                                <f:convertNumber pattern="Rs. #,##0.00" />
+                                            <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost.balance}"
+                                                         rendered="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost ne null}">
+                                                <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
+                                            <span class="text-muted" rendered="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost eq null}">
+                                                No deposit account
+                                            </span>
                                         </span>
                                     </p>
                                     <small class="text-muted">Current balance before refund</small>
@@ -95,16 +92,16 @@
                                     <p class="mb-1">
                                         <strong>Refund Amount:</strong>
                                         <span class="text-success fw-bold">
-                                            <h:outputText value="#{cc.attrs.paymentMethodData.staffWelfare.totalValue}">
+                                            <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.totalValue}">
                                                 <f:convertNumber pattern="+ Rs. #,##0.00" />
                                             </h:outputText>
                                         </span>
                                     </p>
-                                    <p class="mb-0">
+                                    <p class="mb-0" rendered="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost ne null}">
                                         <strong>New Balance:</strong>
                                         <span class="text-success fw-bold">
-                                            <h:outputText value="#{cc.attrs.paymentMethodData.staffWelfare.toStaff.currentWelfare + cc.attrs.paymentMethodData.staffWelfare.totalValue}">
-                                                <f:convertNumber pattern="Rs. #,##0.00" />
+                                            <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost.balance + cc.attrs.paymentMethodData.patient_deposit.totalValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                         </span>
                                     </p>
@@ -119,7 +116,20 @@
                                         <div>
                                             <strong>Refund Processing:</strong>
                                             This amount will be <strong>added back</strong> to
-                                            #{cc.attrs.paymentMethodData.staffWelfare.toStaff.person.name}'s welfare account upon cancellation.
+                                            #{cc.attrs.paymentMethodData.patient_deposit.patient.person.name}'s deposit account upon cancellation.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Account Creation Notice (if no deposit account exists) -->
+                            <div class="row mt-2" rendered="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost eq null}">
+                                <div class="col-12">
+                                    <div class="alert alert-info d-flex align-items-center mb-0" role="alert">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <div>
+                                            <strong>Account Creation:</strong>
+                                            A deposit account will be automatically created for this patient to process the refund.
                                         </div>
                                     </div>
                                 </div>
@@ -135,7 +145,7 @@
             <div class="col-12">
                 <p:outputLabel for="refundComments" value="Refund Comments (Optional): " />
                 <p:inputTextarea id="refundComments"
-                                value="#{cc.attrs.paymentMethodData.staffWelfare.comment}"
+                                value="#{cc.attrs.paymentMethodData.patient_deposit.comment}"
                                 rows="3"
                                 cols="50"
                                 placeholder="Enter any comments about this refund..."

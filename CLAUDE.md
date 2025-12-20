@@ -27,6 +27,13 @@
 - **Writing Guidelines**: [Content Standards](developer_docs/github/wiki-writing-guidelines.md)
 - **Target Audience if not explicitly mentioned**: End users (pharmacy staff, nurses, doctors, administrators)
 
+### Developer Documentation Guidelines
+- **🚨 TECHNICAL FOCUS ONLY**: Developer documentation should contain only technical implementation patterns, not narrative "before/after" stories
+- **🚨 NO PROGRESS STORIES**: Avoid "we implemented this because...", "the user requested...", "this fixes the issue..." - focus on HOW to implement
+- **🚨 IMPLEMENTATION PATTERNS**: Show code examples, method signatures, component usage, configuration patterns
+- **🚨 CURRENT STATE ONLY**: Document the final implementation state, not the journey to get there
+- **Target Audience**: Developers implementing similar features
+
 ### Testing & Build
 - **🚨 COMPILE RULE**: Do NOT run `./detect-maven.sh compile` or Maven compile commands unless explicitly requested by user. Ask your to compile and give a feedback first.
 - **Maven Commands**: [Environment Setup](developer_docs/testing/maven-commands.md)

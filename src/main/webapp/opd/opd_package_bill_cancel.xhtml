@@ -184,16 +184,12 @@
                                                     id="slip"  rendered="#{billPackageController.paymentMethod eq 'Slip'}" >
                                                     <pa:slipDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
                                                 </h:panelGroup>
-                                                <!-- Patient Deposit: Use simple display since no AsOnlyPayment component exists -->
+                                                <!-- Patient Deposit: Use refund-specific component (no balance warnings) -->
                                                 <h:panelGroup
                                                     class="row my-1"
                                                     layout="block"
                                                     id="patientDeposit"  rendered="#{billPackageController.paymentMethod eq 'PatientDeposit'}" >
-                                                    <div class="col-12">
-                                                        <div class="alert alert-info">
-                                                            Patient Deposit refund: #{billPackageController.bill.netTotal}
-                                                        </div>
-                                                    </div>
+                                                    <pa:patientDepositAsRefundPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
                                                 </h:panelGroup>
                                                 <!-- Staff Credit: Use refund-specific component (no balance warnings) -->
                                                 <h:panelGroup

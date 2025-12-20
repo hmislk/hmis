@@ -19,7 +19,6 @@
                 <p:autoComplete id="staffCreditRefundStaff"
                                value="#{cc.attrs.paymentMethodData.staffCredit.toStaff}"
                                completeMethod="#{staffController.completeStaff}"
-                               converter="staffConverter"
                                var="stf" itemLabel="#{stf.person.name}"
                                itemValue="#{stf}"
                                forceSelection="true"
@@ -80,7 +79,7 @@
                                         <strong>Available:</strong>
                                         <span class="text-primary fw-bold">
                                             <h:outputText value="#{cc.attrs.paymentMethodData.staffCredit.toStaff.currentCredit}">
-                                                <f:convertNumber pattern="Rs. #,##0.00" />
+                                                <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                         </span>
                                     </p>
@@ -104,7 +103,7 @@
                                         <strong>New Balance:</strong>
                                         <span class="text-success fw-bold">
                                             <h:outputText value="#{cc.attrs.paymentMethodData.staffCredit.toStaff.currentCredit + cc.attrs.paymentMethodData.staffCredit.totalValue}">
-                                                <f:convertNumber pattern="Rs. #,##0.00" />
+                                                <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                         </span>
                                     </p>
