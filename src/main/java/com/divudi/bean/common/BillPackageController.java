@@ -985,13 +985,15 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     paymentMethodData.getEwallet().setComment(originalPayment.getComments());
                     break;
                 case PatientDeposit:
-                    paymentMethodData.getPatient_deposit().setTotalValue(Math.abs(bill.getNetTotal()));
-                    paymentMethodData.getPatient_deposit().setPatient(bill.getPatient());
+                    if (bill != null) {
+                        paymentMethodData.getPatient_deposit().setTotalValue(Math.abs(bill.getNetTotal()));
+                    }
                     paymentMethodData.getPatient_deposit().setComment(originalPayment.getComments());
                     // Load and set the PatientDeposit object for displaying balance
-                    if (bill.getPatient() != null) {
+                    if (bill != null && bill.getPatient() != null) {
+                        paymentMethodData.getPatient_deposit().setPatient(bill.getPatient());
                         com.divudi.core.entity.PatientDeposit pd = patientDepositController.getDepositOfThePatient(
-                            bill.getPatient(), sessionController.getDepartment());
+                                bill.getPatient(), sessionController.getDepartment());
                         if (pd != null && pd.getId() != null) {
                             paymentMethodData.getPatient_deposit().getPatient().setHasAnAccount(true);
                             paymentMethodData.getPatient_deposit().setPatientDepost(pd);
@@ -1074,7 +1076,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                         break;
                     case PatientDeposit:
                         cd.getPaymentMethodData().getPatient_deposit().setTotalValue(refundAmount);
-                        cd.getPaymentMethodData().getPatient_deposit().setPatient(bill.getPatient());
+                        if (bill != null && bill.getPatient() != null) {
+                            cd.getPaymentMethodData().getPatient_deposit().setPatient(bill.getPatient());
+                        }
                         break;
                     case Staff:
                         cd.getPaymentMethodData().getStaffCredit().setToStaff(originalPayment.getToStaff());
