@@ -76,9 +76,11 @@
                                                          rendered="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost ne null}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
-                                            <span class="text-muted" rendered="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost eq null}">
+                                            <h:panelGroup layout="inline"
+                                                          styleClass="text-muted"
+                                                          rendered="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost eq null}">
                                                 No deposit account
-                                            </span>
+                                            </h:panelGroup>
                                         </span>
                                     </p>
                                     <small class="text-muted">Current balance before refund</small>
@@ -97,14 +99,14 @@
                                             </h:outputText>
                                         </span>
                                     </p>
-                                    <p class="mb-0" rendered="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost ne null}">
+                                    <h:panelGroup layout="block" styleClass="mb-0" rendered="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost ne null}">
                                         <strong>New Balance:</strong>
                                         <span class="text-success fw-bold">
                                             <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost.balance + cc.attrs.paymentMethodData.patient_deposit.totalValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                         </span>
-                                    </p>
+                                    </h:panelGroup>
                                 </div>
                             </div>
 
@@ -123,8 +125,9 @@
                             </div>
 
                             <!-- Account Creation Notice (if no deposit account exists) -->
-                            <div class="row mt-2" rendered="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost eq null}">
-                                <div class="col-12">
+                            <h:panelGroup layout="block" styleClass="row mt-2"
+                                          rendered="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost eq null}">
+                                <h:panelGroup layout="block" styleClass="col-12">
                                     <div class="alert alert-info d-flex align-items-center mb-0" role="alert">
                                         <i class="fas fa-info-circle me-2"></i>
                                         <div>
@@ -132,8 +135,8 @@
                                             A deposit account will be automatically created for this patient to process the refund.
                                         </div>
                                     </div>
-                                </div>
-                            </div>
+                                </h:panelGroup>
+                            </h:panelGroup>
                         </div>
                     </div>
                 </div>
