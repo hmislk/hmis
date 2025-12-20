@@ -195,23 +195,20 @@
                                                         </div>
                                                     </div>
                                                 </h:panelGroup>
-                                                <!-- Staff Credit: Use simple display since no AsOnlyPayment component exists -->
+                                                <!-- Staff Credit: Use refund-specific component (no balance warnings) -->
                                                 <h:panelGroup
                                                     class="row my-1"
                                                     layout="block"
                                                     id="staffCredit"  rendered="#{billPackageController.paymentMethod eq 'Staff' or billPackageController.paymentMethod eq 'OnCall'}" >
-                                                    <div class="col-12">
-                                                        <div class="alert alert-info">
-                                                            Staff Credit refund: #{billPackageController.bill.netTotal}
-                                                            <br/>Staff: #{billPackageController.bill.toStaff.person.name}
-                                                        </div>
-                                                    </div>
+                                                    <pa:staffCreditAsRefundPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
                                                 </h:panelGroup>
+
+                                                <!-- Staff Welfare: Use refund-specific component (no balance warnings) -->
                                                 <h:panelGroup
                                                     class="row my-1"
                                                     layout="block"
                                                     id="staffWelfare"  rendered="#{billPackageController.paymentMethod eq 'Staff_Welfare'}" >
-                                                    <pa:staff_welfare_asOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                                    <pa:staffWelfareAsRefundPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup
                                                     class="row my-1 w-100"

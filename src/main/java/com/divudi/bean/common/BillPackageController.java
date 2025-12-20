@@ -862,11 +862,57 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             paymentMethods.add(pm);
         }
 
-        // Retrieve original payments for display and initialization
-        originalBillPayments = billService.fetchBillPayments(bill.getBackwardReferenceBill());
+        // Debug bill relationships to understand batch vs individual bills
+        System.out.println("=== BILL RELATIONSHIP DEBUGGING ===");
+        System.out.println("Current bill ID: " + bill.getId());
+        System.out.println("Current bill type: " + bill.getBillType());
+        System.out.println("Current bill atomic: " + bill.getBillTypeAtomic());
+        System.out.println("Backward reference bill ID: " + (bill.getBackwardReferenceBill() != null ? bill.getBackwardReferenceBill().getId() : "null"));
+        System.out.println("Backward reference bill type: " + (bill.getBackwardReferenceBill() != null ? bill.getBackwardReferenceBill().getBillType() : "null"));
+        System.out.println("Backward reference bill atomic: " + (bill.getBackwardReferenceBill() != null ? bill.getBackwardReferenceBill().getBillTypeAtomic() : "null"));
 
-        // Set credit bill flag for UI behavior
-        originalBillCredit = (bill.getBackwardReferenceBill().getPaymentMethod() == PaymentMethod.Credit);
+        // Check if backward reference has a forward reference (batch bill)
+        if (bill.getBackwardReferenceBill() != null && bill.getBackwardReferenceBill().getForwardReferenceBill() != null) {
+            Bill batchBill = bill.getBackwardReferenceBill().getForwardReferenceBill();
+            System.out.println("Found BATCH BILL - ID: " + batchBill.getId());
+            System.out.println("Batch bill type: " + batchBill.getBillType());
+            System.out.println("Batch bill atomic: " + batchBill.getBillTypeAtomic());
+            System.out.println("Batch bill payment method: " + batchBill.getPaymentMethod());
+
+            // Try to get payments from batch bill instead of individual bill
+            List<Payment> batchBillPayments = billService.fetchBillPayments(batchBill);
+            System.out.println("Batch bill payments count: " + (batchBillPayments != null ? batchBillPayments.size() : 0));
+
+            if (batchBillPayments != null && !batchBillPayments.isEmpty()) {
+                for (Payment p : batchBillPayments) {
+                    System.out.println("Batch bill payment: " + p.getPaymentMethod() +
+                                     " | Amount: " + p.getPaidValue() +
+                                     " | Staff: " + (p.getToStaff() != null ? p.getToStaff().getPerson().getName() : "null"));
+                }
+                System.out.println("Using BATCH BILL payments for cancellation");
+                originalBillPayments = batchBillPayments;
+                originalBillCredit = (batchBill.getPaymentMethod() == PaymentMethod.Credit);
+            } else {
+                System.out.println("No payments on batch bill, trying individual bill");
+                originalBillPayments = billService.fetchBillPayments(bill.getBackwardReferenceBill());
+                originalBillCredit = (bill.getBackwardReferenceBill().getPaymentMethod() == PaymentMethod.Credit);
+            }
+        } else {
+            System.out.println("No batch bill found, using backward reference bill");
+            originalBillPayments = billService.fetchBillPayments(bill.getBackwardReferenceBill());
+            originalBillCredit = (bill.getBackwardReferenceBill().getPaymentMethod() == PaymentMethod.Credit);
+        }
+
+        // Debug final payment details
+        System.out.println("Final payment count: " + (originalBillPayments != null ? originalBillPayments.size() : 0));
+        if (originalBillPayments != null) {
+            for (Payment p : originalBillPayments) {
+                System.out.println("Final payment: " + p.getPaymentMethod() +
+                                 " | Amount: " + p.getPaidValue() +
+                                 " | Staff: " + (p.getToStaff() != null ? p.getToStaff().getPerson().getName() : "null"));
+            }
+        }
+        System.out.println("=== END BILL RELATIONSHIP DEBUGGING ===");
 
         // Initialize payment data from original payments
         initializeCancellationPaymentFromOriginalPayments(originalBillPayments);
@@ -964,18 +1010,40 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     if (staffForCredit == null && bill != null) {
                         staffForCredit = bill.getToStaff();
                     }
+
+                    // Debug logging for Staff Credit
+                    System.out.println("Staff Credit - Final Staff: " +
+                        (staffForCredit != null ? staffForCredit.getPerson().getName() : "null"));
+
+                    // Set staff member details for Staff Credit
                     paymentMethodData.getStaffCredit().setToStaff(staffForCredit);
                     paymentMethodData.getStaffCredit().setTotalValue(Math.abs(bill.getNetTotal()));
                     paymentMethodData.getStaffCredit().setComment(originalPayment.getComments());
+
+                    JsfUtil.addSuccessMessage("Auto-populated Staff Credit: " +
+                        (staffForCredit != null ? staffForCredit.getPerson().getName() : "No staff found"));
                     break;
                 case Staff_Welfare:
                     Staff staffForWelfare = originalPayment.getToStaff();
                     if (staffForWelfare == null && bill != null) {
                         staffForWelfare = bill.getToStaff();
                     }
+
+                    // Debug logging
+                    System.out.println("Staff Welfare - Original Payment ToStaff: " +
+                        (originalPayment.getToStaff() != null ? originalPayment.getToStaff().getPerson().getName() : "null"));
+                    System.out.println("Staff Welfare - Bill ToStaff: " +
+                        (bill.getToStaff() != null ? bill.getToStaff().getPerson().getName() : "null"));
+                    System.out.println("Staff Welfare - Final Staff: " +
+                        (staffForWelfare != null ? staffForWelfare.getPerson().getName() : "null"));
+
+                    // Set staff member details for Staff Welfare
                     paymentMethodData.getStaffWelfare().setToStaff(staffForWelfare);
                     paymentMethodData.getStaffWelfare().setTotalValue(Math.abs(bill.getNetTotal()));
                     paymentMethodData.getStaffWelfare().setComment(originalPayment.getComments());
+
+                    JsfUtil.addSuccessMessage("Auto-populated Staff Welfare: " +
+                        (staffForWelfare != null ? staffForWelfare.getPerson().getName() : "No staff found"));
                     break;
                 default:
                     // For other payment methods, just set the total value
@@ -1015,6 +1083,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     case Staff_Welfare:
                         cd.getPaymentMethodData().getStaffWelfare().setToStaff(originalPayment.getToStaff());
                         cd.getPaymentMethodData().getStaffWelfare().setTotalValue(refundAmount);
+                        System.out.println("Multiple Payment - Staff Welfare: " +
+                            (originalPayment.getToStaff() != null ? originalPayment.getToStaff().getPerson().getName() : "null"));
                         break;
                     // Add more payment methods as needed
                 }
@@ -1084,6 +1154,44 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             return;
         }
         componentDetail.setTotalValue(0 - Math.abs(componentDetail.getTotalValue()));
+    }
+
+    /**
+     * Transfer staff member data from toStaff property to paymentMethodData
+     * This fixes the issue where staff member wasn't being saved to Payment records
+     */
+    private void transferStaffDataToPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+
+        if (toStaff != null) {
+            switch (paymentMethod) {
+                case Staff_Welfare:
+                    paymentMethodData.getStaffWelfare().setToStaff(toStaff);
+                    paymentMethodData.getStaffWelfare().setTotalValue(batchBill.getNetTotal());
+                    System.out.println("Transferred Staff Welfare: " + toStaff.getPerson().getName() +
+                                       " with amount: " + batchBill.getNetTotal());
+                    break;
+                case Staff:
+                case OnCall:
+                    paymentMethodData.getStaffCredit().setToStaff(toStaff);
+                    paymentMethodData.getStaffCredit().setTotalValue(batchBill.getNetTotal());
+                    System.out.println("Transferred Staff Credit: " + toStaff.getPerson().getName() +
+                                       " with amount: " + batchBill.getNetTotal());
+                    break;
+                default:
+                    // For other payment methods, toStaff might be used differently or not at all
+                    break;
+            }
+        }
+
+        // Also transfer credit company if using Credit payment method
+        if (paymentMethod == PaymentMethod.Credit && creditCompany != null) {
+            paymentMethodData.getCredit().setInstitution(creditCompany);
+            paymentMethodData.getCredit().setTotalValue(batchBill.getNetTotal());
+            System.out.println("Transferred Credit Company: " + creditCompany.getName());
+        }
     }
 
     public void cancelSingleBillWhenCancellingPackageBatchBill(Bill originalBill, Bill cancellationBatchBill) {
@@ -1322,6 +1430,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
 
         saveBatchBill();
+
+        // Transfer staff member data to paymentMethodData before payment creation
+        transferStaffDataToPaymentMethodData();
+
         List<Payment> ps = paymentService.createPayment(getBatchBill(), paymentMethodData);
         paymentService.updateBalances(ps);
         payments = ps;
