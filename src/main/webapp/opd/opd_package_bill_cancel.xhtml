@@ -57,6 +57,76 @@
                                     </h:panelGrid>
                                 </f:facet>
 
+                                <!-- Original Payment Details Panel -->
+                                <h:panelGroup layout="block" styleClass="row" rendered="#{not empty billPackageController.originalBillPayments}">
+                                    <h:panelGroup layout="block" styleClass="col-12">
+                                        <p:panel class="mb-2">
+                                            <f:facet name="header">
+                                                <h:outputText styleClass="fas fa-money-check-alt me-2"></h:outputText>
+                                                <h:outputLabel value="Original Payment Details"></h:outputLabel>
+                                            </f:facet>
+                                            <p:dataTable
+                                                value="#{billPackageController.originalBillPayments}"
+                                                var="op"
+                                                styleClass="table table-sm"
+                                                emptyMessage="No original payments found">
+
+                                                <p:column headerText="Method" width="120">
+                                                    <h:outputText value="#{op.paymentMethod}" />
+                                                </p:column>
+
+                                                <p:column headerText="Amount" styleClass="text-end" width="100">
+                                                    <h:outputText value="#{op.paidValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:column>
+
+                                                <p:column headerText="Bank"
+                                                    rendered="#{op.paymentMethod eq 'Card' or op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'ewallet' or op.paymentMethod eq 'OnlineSettlement'}">
+                                                    <h:outputText value="#{op.bank.name}" rendered="#{op.bank ne null}"/>
+                                                    <h:outputText value="#{op.institution.name}" rendered="#{op.bank eq null and op.institution ne null}"/>
+                                                </p:column>
+
+                                                <p:column headerText="Reference"
+                                                    rendered="#{op.paymentMethod eq 'Card' or op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'ewallet' or op.paymentMethod eq 'OnlineSettlement'}">
+                                                    <h:outputText value="#{op.referenceNo}" rendered="#{op.referenceNo ne null and op.referenceNo ne ''}"/>
+                                                    <h:outputText value="#{op.chequeRefNo}" rendered="#{(op.referenceNo eq null or op.referenceNo eq '') and op.chequeRefNo ne null and op.chequeRefNo ne ''}"/>
+                                                    <h:outputText value="#{op.creditCardRefNo}" rendered="#{(op.referenceNo eq null or op.referenceNo eq '') and op.creditCardRefNo ne null and op.creditCardRefNo ne ''}"/>
+                                                </p:column>
+
+                                                <p:column headerText="Date"
+                                                    rendered="#{op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'OnlineSettlement'}">
+                                                    <h:outputText value="#{op.realizedAt}" rendered="#{op.realizedAt ne null}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                    </h:outputText>
+                                                    <h:outputText value="#{op.paymentDate}" rendered="#{op.realizedAt eq null and op.paymentDate ne null}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                    </h:outputText>
+                                                    <h:outputText value="#{op.chequeDate}" rendered="#{op.realizedAt eq null and op.paymentDate eq null and op.chequeDate ne null}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                    </h:outputText>
+                                                </p:column>
+
+                                                <p:column headerText="Credit Company"
+                                                    rendered="#{op.paymentMethod eq 'Credit'}">
+                                                    <h:outputText value="#{op.creditCompany.name}" rendered="#{op.creditCompany ne null}"/>
+                                                </p:column>
+
+                                                <p:column headerText="Policy No"
+                                                    rendered="#{op.paymentMethod eq 'Credit' or op.paymentMethod eq 'ewallet'}">
+                                                    <h:outputText value="#{op.policyNo}" rendered="#{op.policyNo ne null and op.policyNo ne ''}"/>
+                                                </p:column>
+
+                                                <p:column headerText="Staff"
+                                                    rendered="#{op.paymentMethod eq 'Staff' or op.paymentMethod eq 'Staff_Welfare' or op.paymentMethod eq 'OnCall'}">
+                                                    <h:outputText value="#{op.toStaff.person.name}" rendered="#{op.toStaff ne null and op.toStaff.person ne null}"/>
+                                                </p:column>
+
+                                            </p:dataTable>
+                                        </p:panel>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
                                 <!--Payment Mode, Patient Details and Bill Details Panels -->
                                 <div class="row">
                                     <div class="col-3">
@@ -66,8 +136,17 @@
                                                 <h:outputLabel value="Payment Method" class="mx-2"></h:outputLabel>
                                             </f:facet>
                                             <p:outputLabel value="Payment Method" ></p:outputLabel>
-                                            <p:selectOneMenu 
-                                                id="cmbPs" 
+                                            <!-- Warning for Credit payment bills -->
+                                            <h:panelGroup rendered="#{billPackageController.originalBillCredit}">
+                                                <div class="alert alert-warning mb-2" role="alert">
+                                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                                    <strong>Credit Bill Notice:</strong> This bill was originally paid using Credit method.
+                                                    You can now select any payment method for the refund.
+                                                </div>
+                                            </h:panelGroup>
+
+                                            <p:selectOneMenu
+                                                id="cmbPs"
                                                 value="#{billPackageController.paymentMethod}" >
                                                 <f:selectItem itemLabel="Select paymentMethod"/>
                                                 <f:selectItems value="#{billPackageController.paymentMethods}"/>
@@ -99,11 +178,52 @@
                                                     id="cheque"  rendered="#{billPackageController.paymentMethod eq 'Cheque'}" >
                                                     <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
                                                 </h:panelGroup>
-                                                <h:panelGroup 
+                                                <h:panelGroup
                                                     class="row my-1"
-                                                    layout="block" 
+                                                    layout="block"
                                                     id="slip"  rendered="#{billPackageController.paymentMethod eq 'Slip'}" >
                                                     <pa:slipDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                                </h:panelGroup>
+                                                <!-- Patient Deposit: Use refund-specific component (no balance warnings) -->
+                                                <h:panelGroup
+                                                    class="row my-1"
+                                                    layout="block"
+                                                    id="patientDeposit"  rendered="#{billPackageController.paymentMethod eq 'PatientDeposit'}" >
+                                                    <pa:patientDepositAsRefundPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                                </h:panelGroup>
+                                                <!-- Staff Credit: Use refund-specific component (no balance warnings) -->
+                                                <h:panelGroup
+                                                    class="row my-1"
+                                                    layout="block"
+                                                    id="staffCredit"  rendered="#{billPackageController.paymentMethod eq 'Staff' or billPackageController.paymentMethod eq 'OnCall'}" >
+                                                    <pa:staffCreditAsRefundPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                                </h:panelGroup>
+
+                                                <!-- Staff Welfare: Use refund-specific component (no balance warnings) -->
+                                                <h:panelGroup
+                                                    class="row my-1"
+                                                    layout="block"
+                                                    id="staffWelfare"  rendered="#{billPackageController.paymentMethod eq 'Staff_Welfare'}" >
+                                                    <pa:staffWelfareAsRefundPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup
+                                                    class="row my-1 w-100"
+                                                    layout="block"
+                                                    id="multiplePaymentMethods"  rendered="#{billPackageController.paymentMethod eq 'MultiplePaymentMethods'}" >
+                                                    <pa:multiple_payment_methods id="panelMultiplePaymentDetails" class="w-100"
+                                                        controller="#{billPackageController}"
+                                                        paymentMethods="#{enumController.paymentMethodsUnderMultipleForOPDPackageBilling}"/>
+                                                </h:panelGroup>
+                                                <!-- Online Settlement: Use simple display since no AsOnlyPayment component exists -->
+                                                <h:panelGroup
+                                                    class="row my-1"
+                                                    layout="block"
+                                                    id="onlineSettlement"  rendered="#{billPackageController.paymentMethod eq 'OnlineSettlement'}" >
+                                                    <h:panelGroup layout="block" styleClass="col-12">
+                                                        <div class="alert alert-info">
+                                                            Online Settlement refund: #{billPackageController.bill.netTotal}
+                                                        </div>
+                                                    </h:panelGroup>
                                                 </h:panelGroup>
                                             </h:panelGroup>
                                         </p:panel>
