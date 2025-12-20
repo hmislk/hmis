@@ -2499,7 +2499,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             }
         }
 
-        // Apply refund sign to payment data
+        // Transfer staff data to payment method data first (before applying refund signs)
+        transferStaffDataToPaymentMethodData();
+
+        // Apply refund sign to payment data after staff data is transferred
         applyRefundSignToPaymentData();
 
         // Debug: Log payment data values after applying refund sign
@@ -2518,9 +2521,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 }
             }
         }
-
-        // Transfer staff data to payment method data before creating payments
-        transferStaffDataToPaymentMethodData();
 
         // Create payments using PaymentService
         List<Payment> cancelPayments = paymentService.createPayment(cancellationBatchBill, paymentMethodData);
