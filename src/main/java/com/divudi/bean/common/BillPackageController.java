@@ -702,10 +702,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         // Apply negative signs to payment data for cancellation (reversal)
         applyCancellationSignToPaymentData();
 
-        // Handle comprehensive payment method balance updates for all scenarios
-        handlePaymentMethodBalanceReversals(bill.getBackwardReferenceBill(), cancellationBill);
-
+        // Create payments with negated values for cancellation
         payments = paymentService.createPayment(cancellationBill, getPaymentMethodData());
+
+        // Update patient deposit balances and create proper history records using modern service
+        paymentService.updateBalances(payments);
+
         printPreview = true;
         batchBillCancellationStarted = false;
         return null;
@@ -1082,163 +1084,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             return;
         }
         componentDetail.setTotalValue(0 - Math.abs(componentDetail.getTotalValue()));
-    }
-
-    /**
-     * Handle comprehensive payment method balance reversals for cancellation
-     * Reverses original payments and handles new payment method balances
-     */
-    private void handlePaymentMethodBalanceReversals(Bill originalBill, Bill cancellationBill) {
-        if (originalBill == null || cancellationBill == null) {
-            return;
-        }
-
-        // First, reverse the original payment method balances
-        reverseOriginalPaymentMethodBalances(originalBill);
-
-        // Then, handle the cancellation payment method balances if different from original
-        handleCancellationPaymentMethodBalances(cancellationBill);
-    }
-
-    /**
-     * Reverse original payment method balances (add money back to accounts)
-     */
-    private void reverseOriginalPaymentMethodBalances(Bill originalBill) {
-        if (originalBillPayments == null || originalBillPayments.isEmpty()) {
-            return;
-        }
-
-        for (Payment originalPayment : originalBillPayments) {
-            switch (originalPayment.getPaymentMethod()) {
-                case PatientDeposit:
-                    // Add money back to patient deposit
-                    PatientDeposit pd = patientDepositController.getDepositOfThePatient(
-                        originalBill.getPatient(), sessionController.getDepartment());
-                    if (pd != null) {
-                        // Create a mock bill with positive values for deposit reversal
-                        Bill depositReversalBill = new Bill();
-                        depositReversalBill.setPatient(originalBill.getPatient());
-                        depositReversalBill.setNetTotal(Math.abs(originalPayment.getPaidValue()));
-                        depositReversalBill.setBillTypeAtomic(BillTypeAtomic.PATIENT_DEPOSIT); // Add money to deposit
-                        patientDepositController.updateBalance(depositReversalBill, pd);
-                        JsfUtil.addSuccessMessage("Patient Deposit Balance Restored: " +
-                            String.format("%.2f", Math.abs(originalPayment.getPaidValue())));
-                    }
-                    break;
-
-                case Staff_Welfare:
-                    // Add money back to staff welfare account
-                    if (originalPayment.getToStaff() != null) {
-                        staffService.updateStaffWelfare(originalPayment.getToStaff(),
-                            Math.abs(originalPayment.getPaidValue()));
-                        JsfUtil.addSuccessMessage("Staff Welfare Balance Restored for " +
-                            originalPayment.getToStaff().getPerson().getName() + ": " +
-                            String.format("%.2f", Math.abs(originalPayment.getPaidValue())));
-                    }
-                    break;
-
-                case Staff:
-                case OnCall:
-                    // Add money back to staff credit account
-                    if (originalPayment.getToStaff() != null) {
-                        staffService.updateStaffCredit(originalPayment.getToStaff(),
-                            Math.abs(originalPayment.getPaidValue()));
-                        JsfUtil.addSuccessMessage("Staff Credit Balance Restored for " +
-                            originalPayment.getToStaff().getPerson().getName() + ": " +
-                            String.format("%.2f", Math.abs(originalPayment.getPaidValue())));
-                    }
-                    break;
-
-                case Credit:
-                    // Note: Credit company balance reversals are typically handled by PaymentService
-                    // during payment creation, but we can add logging here
-                    if (originalPayment.getCreditCompany() != null) {
-                        JsfUtil.addSuccessMessage("Credit Company Balance will be updated for " +
-                            originalPayment.getCreditCompany().getName());
-                    }
-                    break;
-
-                // Other payment methods (Cash, Card, etc.) don't affect account balances directly
-                default:
-                    break;
-            }
-        }
-    }
-
-    /**
-     * Handle cancellation payment method balances (deduct money from accounts)
-     */
-    private void handleCancellationPaymentMethodBalances(Bill cancellationBill) {
-        PaymentMethod cancellationPaymentMethod = cancellationBill.getPaymentMethod();
-        if (cancellationPaymentMethod == null) {
-            return;
-        }
-
-        switch (cancellationPaymentMethod) {
-            case PatientDeposit:
-                // Deduct from patient deposit (if not already handled by original reversal)
-                PatientDeposit pd = patientDepositController.getDepositOfThePatient(
-                    cancellationBill.getPatient(), sessionController.getDepartment());
-                if (pd != null) {
-                    // Only update if we're not just reversing to the same payment method
-                    boolean wasOriginallyPatientDeposit = (originalBillPayments != null ? originalBillPayments : Collections.<Payment>emptyList()).stream()
-                        .anyMatch(p -> p.getPaymentMethod() == PaymentMethod.PatientDeposit);
-
-                    if (!wasOriginallyPatientDeposit) {
-                        patientDepositController.updateBalance(cancellationBill, pd);
-                        JsfUtil.addSuccessMessage("Patient Deposit Used for Refund: " +
-                            String.format("%.2f", Math.abs(cancellationBill.getNetTotal())));
-                    }
-                }
-                break;
-
-            case Staff_Welfare:
-                // Deduct from staff welfare (if not already handled by original reversal)
-                if (cancellationBill.getToStaff() != null) {
-                    boolean wasOriginallyStaffWelfare = (originalBillPayments != null ? originalBillPayments : Collections.<Payment>emptyList()).stream()
-                        .anyMatch(p -> p.getPaymentMethod() == PaymentMethod.Staff_Welfare &&
-                                     p.getToStaff() != null &&
-                                     p.getToStaff().equals(cancellationBill.getToStaff()));
-
-                    if (!wasOriginallyStaffWelfare) {
-                        staffService.updateStaffWelfare(cancellationBill.getToStaff(),
-                            0 - Math.abs(cancellationBill.getNetTotal()));
-                        JsfUtil.addSuccessMessage("Staff Welfare Used for Refund: " +
-                            String.format("%.2f", Math.abs(cancellationBill.getNetTotal())));
-                    }
-                }
-                break;
-
-            case Staff:
-            case OnCall:
-                // Deduct from staff credit (if not already handled by original reversal)
-                if (cancellationBill.getToStaff() != null) {
-                    boolean wasOriginallyStaffCredit = (originalBillPayments != null ? originalBillPayments : Collections.<Payment>emptyList()).stream()
-                        .anyMatch(p -> (p.getPaymentMethod() == PaymentMethod.Staff ||
-                                       p.getPaymentMethod() == PaymentMethod.OnCall) &&
-                                     p.getToStaff() != null &&
-                                     p.getToStaff().equals(cancellationBill.getToStaff()));
-
-                    if (!wasOriginallyStaffCredit) {
-                        staffService.updateStaffCredit(cancellationBill.getToStaff(),
-                            0 - Math.abs(cancellationBill.getNetTotal() + cancellationBill.getVat()));
-                        JsfUtil.addSuccessMessage("Staff Credit Used for Refund: " +
-                            String.format("%.2f", Math.abs(cancellationBill.getNetTotal())));
-                        cancellationBill.setFromStaff(cancellationBill.getToStaff());
-                        getBillFacade().edit(cancellationBill);
-                    }
-                }
-                break;
-
-            case Credit:
-                // Credit company balance handled by PaymentService
-                JsfUtil.addSuccessMessage("Credit Company will process the refund");
-                break;
-
-            // Other payment methods (Cash, Card, etc.) don't affect account balances directly
-            default:
-                break;
-        }
     }
 
     public void cancelSingleBillWhenCancellingPackageBatchBill(Bill originalBill, Bill cancellationBatchBill) {
