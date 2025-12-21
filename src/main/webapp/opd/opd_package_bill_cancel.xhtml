@@ -139,13 +139,16 @@
 
                                             <p:selectOneMenu
                                                 id="cmbPs"
-                                                value="#{billPackageController.paymentMethod}" >
+                                                value="#{billPackageController.paymentMethod}"
+                                                disabled="#{billPackageController.paymentMethod eq 'Credit'}">
                                                 <f:selectItem itemLabel="Select paymentMethod"/>
                                                 <f:selectItems value="#{billPackageController.paymentMethods}"/>
                                                 <p:ajax event="change" process="cmbPs" update="paymentDetails" ></p:ajax>
                                             </p:selectOneMenu>
 
-                                            <h:panelGroup id="paymentDetails"  >
+                                            <h:panelGroup id="paymentDetails">
+                                                <fieldset disabled="#{billPackageController.paymentMethod eq 'Credit'}"
+                                                         style="border: none; padding: 0; margin: 0;">
                                                 <h:panelGroup
                                                     class="row my-1"
                                                     layout="block"  
@@ -217,6 +220,8 @@
                                                         </div>
                                                     </h:panelGroup>
                                                 </h:panelGroup>
+                                                </h:panelGroup>
+                                                </fieldset>
                                             </h:panelGroup>
                                         </p:panel>
                                     </div>
