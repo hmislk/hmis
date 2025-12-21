@@ -69,6 +69,7 @@ public class ConfigOptionController implements Serializable {
     private List<ConfigOption> selectedOptions = new ArrayList<>();
     private List<ConfigOptionDuplicateGroup> duplicateGroups;
     private UploadedFile uploadedFile;
+    private boolean importReplaceMode = true; // Default to replace mode (current behavior)
 
     private String key;
     private String value;
@@ -331,6 +332,7 @@ public class ConfigOptionController implements Serializable {
 
             int importedCount = 0;
             int updatedCount = 0;
+            int skippedCount = 0;
 
             for (int i = 1; i < lines.length; i++) {
                 String line = lines[i].trim();
@@ -356,23 +358,29 @@ public class ConfigOptionController implements Serializable {
                         ConfigOption existingOption = getOptionValueByKey(optionKey, OptionScope.APPLICATION, null, null, null);
 
                         if (existingOption != null) {
-                            Map<String, Object> before = new HashMap<>();
-                            before.put("optionKey", existingOption.getOptionKey());
-                            before.put("optionValue", existingOption.getOptionValue());
+                            if (importReplaceMode) {
+                                // Replace mode: Update existing option
+                                Map<String, Object> before = new HashMap<>();
+                                before.put("optionKey", existingOption.getOptionKey());
+                                before.put("optionValue", existingOption.getOptionValue());
 
-                            existingOption.setOptionValue(optionValue);
-                            existingOption.setValueType(valueType);
-                            if (enumType != null && !enumType.trim().isEmpty()) {
-                                existingOption.setEnumType(enumType);
+                                existingOption.setOptionValue(optionValue);
+                                existingOption.setValueType(valueType);
+                                if (enumType != null && !enumType.trim().isEmpty()) {
+                                    existingOption.setEnumType(enumType);
+                                }
+                                saveOption(existingOption);
+
+                                Map<String, Object> after = new HashMap<>();
+                                after.put("optionKey", existingOption.getOptionKey());
+                                after.put("optionValue", existingOption.getOptionValue());
+
+                                auditService.logAudit(before, after, sessionController.getLoggedUser(), ConfigOption.class.getSimpleName(), "Import Update Config Option");
+                                updatedCount++;
+                            } else {
+                                // Import missing only mode: Skip existing options
+                                skippedCount++;
                             }
-                            saveOption(existingOption);
-
-                            Map<String, Object> after = new HashMap<>();
-                            after.put("optionKey", existingOption.getOptionKey());
-                            after.put("optionValue", existingOption.getOptionValue());
-
-                            auditService.logAudit(before, after, sessionController.getLoggedUser(), ConfigOption.class.getSimpleName(), "Import Update Config Option");
-                            updatedCount++;
                         } else {
                             ConfigOption newOption = new ConfigOption();
                             newOption.setOptionKey(optionKey);
@@ -400,18 +408,32 @@ public class ConfigOptionController implements Serializable {
             configOptionApplicationController.loadApplicationOptions();
             listApplicationOptions();
 
-            String message = "Import completed. ";
+            String mode = importReplaceMode ? "Import and Replace" : "Import Missing Only";
+            String message = mode + " completed. ";
             if (importedCount > 0) {
                 message += importedCount + " new options created. ";
             }
             if (updatedCount > 0) {
-                message += updatedCount + " options updated.";
+                message += updatedCount + " options updated. ";
+            }
+            if (skippedCount > 0) {
+                message += skippedCount + " existing options skipped.";
             }
             JsfUtil.addSuccessMessage(message);
 
         } catch (IOException e) {
             JsfUtil.addErrorMessage("Error processing file: " + e.getMessage());
         }
+    }
+
+    public String importAndReplaceOptionsFromCsv() {
+        importReplaceMode = true;
+        return importOptionsFromCsv();
+    }
+
+    public String importMissingOnlyOptionsFromCsv() {
+        importReplaceMode = false;
+        return importOptionsFromCsv();
     }
 
     private String[] parseCsvLine(String line) {
@@ -988,6 +1010,14 @@ public class ConfigOptionController implements Serializable {
         detectDuplicateOptions();
         configOptionApplicationController.loadApplicationOptions();
         JsfUtil.addSuccessMessage("Duplicates retired for " + keep.getOptionKey());
+    }
+
+    public boolean isImportReplaceMode() {
+        return importReplaceMode;
+    }
+
+    public void setImportReplaceMode(boolean importReplaceMode) {
+        this.importReplaceMode = importReplaceMode;
     }
 
     public static class ConfigOptionDuplicateGroup {
