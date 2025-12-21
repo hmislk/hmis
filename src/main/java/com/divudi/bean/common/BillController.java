@@ -2014,6 +2014,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                         paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
                         comment = currentRequest.getRequestReason();
 
+                        // Set toStaff and creditCompany from batchBill for proper cancellation
+                        toStaff = batchBill.getToStaff();
+                        creditCompany = batchBill.getCreditCompany();
+
                         // Initialize payment method data from original batch bill payments
                         List<Payment> batchBillPayments = billBean.fetchBillPayments(batchBill);
                         if (batchBillPayments != null && !batchBillPayments.isEmpty()) {
@@ -2034,6 +2038,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             patient = batchBill.getPatient();
             paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
             comment = null;
+
+            // Set toStaff and creditCompany from batchBill for proper cancellation
+            toStaff = batchBill.getToStaff();
+            creditCompany = batchBill.getCreditCompany();
 
             // Initialize payment method data from original batch bill payments
             List<Payment> batchBillPayments = billBean.fetchBillPayments(batchBill);
@@ -2319,6 +2327,50 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
     }
 
+    /**
+     * Transfer staff data from controller properties to payment method data
+     * This ensures staff information is properly set in payment data before creating payments
+     */
+    private void transferStaffDataToPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+
+        if (toStaff != null) {
+            switch (paymentMethod) {
+                case Staff_Welfare:
+                    paymentMethodData.getStaffWelfare().setToStaff(toStaff);
+                    paymentMethodData.getStaffWelfare().setTotalValue(batchBill.getNetTotal());
+                    break;
+                case Staff:
+                case OnCall:
+                    paymentMethodData.getStaffCredit().setToStaff(toStaff);
+                    paymentMethodData.getStaffCredit().setTotalValue(batchBill.getNetTotal());
+                    break;
+                default:
+                    // For other payment methods, toStaff might be used differently or not at all
+                    break;
+            }
+        }
+
+        // Also transfer credit company if using Credit payment method
+        if (paymentMethod == PaymentMethod.Credit && creditCompany != null) {
+            paymentMethodData.getCredit().setInstitution(creditCompany);
+            paymentMethodData.getCredit().setTotalValue(batchBill.getNetTotal());
+        }
+
+        // Debug logging
+        if (toStaff != null) {
+            System.out.println("DEBUG: transferStaffDataToPaymentMethodData - Payment Method: " + paymentMethod);
+            System.out.println("DEBUG: transferStaffDataToPaymentMethodData - Staff: " + toStaff.getPerson().getName());
+            if (paymentMethod == PaymentMethod.Staff_Welfare) {
+                System.out.println("DEBUG: Staff Welfare ToStaff set to: " +
+                    (paymentMethodData.getStaffWelfare().getToStaff() != null ?
+                    paymentMethodData.getStaffWelfare().getToStaff().getPerson().getName() : "null"));
+            }
+        }
+    }
+
     private List<Bill> cancelSingleBills = new ArrayList<>();
 
     public String cancelOpdBatchBill() {
@@ -2447,7 +2499,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             }
         }
 
-        // Apply refund sign to payment data
+        // Transfer staff data to payment method data first (before applying refund signs)
+        transferStaffDataToPaymentMethodData();
+
+        // Apply refund sign to payment data after staff data is transferred
         applyRefundSignToPaymentData();
 
         // Debug: Log payment data values after applying refund sign

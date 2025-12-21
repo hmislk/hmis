@@ -33,7 +33,7 @@
                         <p:growl ></p:growl>
 
                         <div class="row" >
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
@@ -42,7 +42,7 @@
                                     <common:patient patient="#{billReturnController.originalBillToReturn.patient}" class="w-100"/>
                                 </p:panel>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-list-alt"></h:outputText>
@@ -69,7 +69,63 @@
                                 </p:panel>
 
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
+                                <!-- Original Payment Details Panel -->
+                                <p:panel rendered="#{not empty billReturnController.originalBillPayments}">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-receipt"></h:outputText>
+                                        <h:outputLabel value="Original Payment Details" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+
+                                    <p:dataTable value="#{billReturnController.originalBillPayments}"
+                                                 var="origPayment"
+                                                 styleClass="table table-sm"
+                                                 emptyMessage="No payment details available">
+
+                                        <p:column headerText="Method">
+                                            <h:outputText value="#{origPayment.paymentMethod}" />
+                                        </p:column>
+
+                                        <p:column headerText="Amount" styleClass="text-end">
+                                            <h:outputText value="#{origPayment.paidValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Staff">
+                                            <h:outputText value="#{origPayment.toStaff.person.nameWithTitle}"
+                                                          rendered="#{origPayment.toStaff != null and (origPayment.paymentMethod eq 'Staff_Welfare' or origPayment.paymentMethod eq 'Staff')}"/>
+                                            <h:outputText value="-"
+                                                          rendered="#{origPayment.toStaff == null and (origPayment.paymentMethod eq 'Staff_Welfare' or origPayment.paymentMethod eq 'Staff')}"
+                                                          styleClass="text-muted"/>
+                                        </p:column>
+
+                                        <p:column headerText="Company">
+                                            <h:outputText value="#{origPayment.creditCompany.name}"
+                                                          rendered="#{origPayment.creditCompany != null and origPayment.paymentMethod eq 'Credit'}"/>
+                                            <h:outputText value="-"
+                                                          rendered="#{origPayment.creditCompany == null and origPayment.paymentMethod eq 'Credit'}"
+                                                          styleClass="text-muted"/>
+                                        </p:column>
+
+                                        <p:column headerText="Reference">
+                                            <h:outputText value="#{origPayment.creditCardRefNo}"
+                                                          rendered="#{origPayment.paymentMethod eq 'Card'}"/>
+                                            <h:outputText value="#{origPayment.chequeRefNo}"
+                                                          rendered="#{origPayment.paymentMethod eq 'Cheque'}"/>
+                                            <h:outputText value="#{origPayment.referenceNo}"
+                                                          rendered="#{origPayment.paymentMethod eq 'Slip'}"/>
+                                        </p:column>
+
+                                    </p:dataTable>
+
+                                    <div class="alert alert-info mt-2" role="alert" style="font-size: 0.85em;">
+                                        <i class="fas fa-info-circle"></i>
+                                        <strong>Note:</strong> You can refund using a different payment method if needed.
+                                    </div>
+                                </p:panel>
+                            </div>
+                            <div class="col-md-3">
                                 <p:panel >
                                     <f:facet name="header" >
                                         <h:outputText value="Return Details" class="mt-2" ></h:outputText>

@@ -2492,6 +2492,64 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         return canCancelBill;
     }
 
+    /**
+     * Validates payment method data for bill cancellation operations.
+     * Checks if mandatory fields are provided based on configuration settings.
+     *
+     * @return true if validation errors exist, false if validation passes
+     */
+    public boolean validatePaymentMethodData() {
+        boolean error = false;
+
+        if (getPaymentMethod() == PaymentMethod.Card) {
+            if (getPaymentMethodData() != null && getPaymentMethodData().getCreditCard() != null) {
+                String comment = getPaymentMethodData().getCreditCard().getComment();
+                if ((comment == null || comment.trim().isEmpty())
+                        && configOptionApplicationController.getBooleanValueByKey("OPD Billing - CreditCard Comment is Mandatory", false)) {
+                    JsfUtil.addErrorMessage("Please Enter a Credit Card Comment..");
+                    error = true;
+                }
+            }
+        } else if (getPaymentMethod() == PaymentMethod.Cheque) {
+            if (getPaymentMethodData() != null && getPaymentMethodData().getCheque() != null) {
+                String comment = getPaymentMethodData().getCheque().getComment();
+                if ((comment == null || comment.trim().isEmpty())
+                        && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Cheque Comment is Mandatory", false)) {
+                    JsfUtil.addErrorMessage("Please Enter a Cheque Comment..");
+                    error = true;
+                }
+            }
+        } else if (getPaymentMethod() == PaymentMethod.ewallet) {
+            if (getPaymentMethodData() != null && getPaymentMethodData().getEwallet() != null) {
+                String comment = getPaymentMethodData().getEwallet().getComment();
+                if ((comment == null || comment.trim().isEmpty())
+                        && configOptionApplicationController.getBooleanValueByKey("OPD Billing - E-Wallet Comment is Mandatory", false)) {
+                    JsfUtil.addErrorMessage("Please Enter a E-Wallet Comment..");
+                    error = true;
+                }
+            }
+        } else if (getPaymentMethod() == PaymentMethod.Slip) {
+            if (getPaymentMethodData() != null && getPaymentMethodData().getSlip() != null) {
+                String comment = getPaymentMethodData().getSlip().getComment();
+                if ((comment == null || comment.trim().isEmpty())
+                        && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Slip Comment is Mandatory", false)) {
+                    JsfUtil.addErrorMessage("Please Enter a Slip Comment..");
+                    error = true;
+                }
+            }
+        } else if (getPaymentMethod() == PaymentMethod.Credit) {
+            if (getPaymentMethodData() != null && getPaymentMethodData().getCredit() != null) {
+                String comment = getPaymentMethodData().getCredit().getComment();
+                if ((comment == null || comment.trim().isEmpty())
+                        && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Credit Comment is Mandatory", false)) {
+                    JsfUtil.addErrorMessage("Please Enter a Credit Comment..");
+                    error = true;
+                }
+            }
+        }
+        return error;
+    }
+
     public void cancelOpdBill() {
         if (getBill() == null) {
             JsfUtil.addErrorMessage("No Original Bill Selected To Cancel");
@@ -2505,6 +2563,15 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             JsfUtil.addErrorMessage("No Batch Bill found for the Individual Bill which is selected to Cancel");
             return;
         }
+        if (paymentMethod == null) {
+            JsfUtil.addErrorMessage("Select a Payment Method");
+            return;
+        }
+
+        // Validate payment method data
+        if (validatePaymentMethodData()) {
+            return;
+        }
 
         if (getBill().getBackwardReferenceBill().getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBill().getBackwardReferenceBill());
@@ -2513,12 +2580,12 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return;
             }
         }
-        
+
         List<PatientInvestigation> investigations = billService.fetchPatientInvestigations(getBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
 
         if (investigations != null && !investigations.isEmpty()) {
             JsfUtil.addErrorMessage("Some Investigations's Samples Send to Out Lab.");
-            return ;
+            return;
         }
 
         if (errorsPresentOnOpdBillCancellation()) {
@@ -2658,13 +2725,13 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             ccBillCancellingStarted.set(false);
             return;
         }
-        
+
         List<PatientInvestigation> investigations = billService.fetchPatientInvestigations(getBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
 
         if (investigations != null && !investigations.isEmpty()) {
             ccBillCancellingStarted.set(false);
             JsfUtil.addErrorMessage("Some Investigations's Samples Send to Out Lab.");
-            return ;
+            return;
         }
 
         if (!getWebUserController().hasPrivilege("BillCancel")) {
@@ -3472,8 +3539,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
     /**
      * Initializes payment method data from the original bill's payment records.
-     * This method populates payment method details (card numbers, reference numbers, etc.)
-     * based on how the original bill was paid.
+     * This method populates payment method details (card numbers, reference
+     * numbers, etc.) based on how the original bill was paid.
      *
      * @param originalPayments List of Payment objects from the original bill
      */
@@ -3570,8 +3637,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     /**
-     * Applies refund sign (negative values) to all payment method data.
-     * This ensures that payment records for refunds/cancellations are stored with negative amounts.
+     * Applies refund sign (negative values) to all payment method data. This
+     * ensures that payment records for refunds/cancellations are stored with
+     * negative amounts.
      */
     private void applyRefundSignToPaymentData() {
         if (paymentMethodData == null) {
@@ -4050,8 +4118,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     /**
-     * Navigate to OPD credit settlement cancellation print page.
-     * This shows the comprehensive cancellation receipt with both original settlement and cancellation details.
+     * Navigate to OPD credit settlement cancellation print page. This shows the
+     * comprehensive cancellation receipt with both original settlement and
+     * cancellation details.
      */
     public String navigateToViewOpdCreditBatchBillCancellation() {
         if (bill == null) {
@@ -4079,8 +4148,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     /**
-     * Navigate to inpatient credit settlement cancellation print page.
-     * This shows the comprehensive cancellation receipt with both original settlement and cancellation details.
+     * Navigate to inpatient credit settlement cancellation print page. This
+     * shows the comprehensive cancellation receipt with both original
+     * settlement and cancellation details.
      */
     public String navigateToViewInpatientCreditBatchBillCancellation() {
         if (bill == null) {
@@ -4108,8 +4178,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     /**
-     * Navigate to pharmacy credit settlement cancellation print page.
-     * This shows the comprehensive cancellation receipt with both original settlement and cancellation details.
+     * Navigate to pharmacy credit settlement cancellation print page. This
+     * shows the comprehensive cancellation receipt with both original
+     * settlement and cancellation details.
      */
     public String navigateToViewPharmacyCreditBatchBillCancellation() {
         if (bill == null) {
@@ -4990,7 +5061,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         pharmacyBillSearch.setBill(bill);
         return "/pharmacy/pharmacy_reprint_bill_sale_cashier?faces-redirect=true";
     }
-    
+
     public String navigateToViewPharmacySettledPreBill(Long billId) {
         if (billId == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
@@ -6806,8 +6877,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods && paymentMethodData != null) {
             if (paymentMethodData.getPaymentMethodMultiple() != null
                     && paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null) {
-                for (com.divudi.core.data.dataStructure.ComponentDetail cd :
-                        paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                for (com.divudi.core.data.dataStructure.ComponentDetail cd
+                        : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                     multiplePaymentMethodTotalValue += Math.abs(cd.getTotalValue());
                 }
             }
@@ -6828,8 +6899,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                     return;
                 }
 
-                com.divudi.core.data.dataStructure.ComponentDetail pm =
-                        paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+                com.divudi.core.data.dataStructure.ComponentDetail pm
+                        = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
 
                 if (pm.getPaymentMethod() == PaymentMethod.Cash) {
                     pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
@@ -7249,9 +7320,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             auditEventApplicationController.logAuditEvent(auditEvent);
 
             String changeMessage = "From Institution changed from '"
-                + (oldFromInstitution != null ? oldFromInstitution.getName() : "None")
-                + "' to '"
-                + newFromInstitution.getName() + "'";
+                    + (oldFromInstitution != null ? oldFromInstitution.getName() : "None")
+                    + "' to '"
+                    + newFromInstitution.getName() + "'";
 
             JsfUtil.addSuccessMessage(changeMessage);
 

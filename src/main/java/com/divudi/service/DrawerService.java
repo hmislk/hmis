@@ -175,7 +175,7 @@ public class DrawerService {
     }
 
     public void drawerEntryUpdate(Payment payment, Drawer currentDrawer) {
-        drawerEntryUpdate(payment, currentDrawer,payment.getCreater() );
+        drawerEntryUpdate(payment, currentDrawer, payment.getCreater());
     }
 
     public void drawerEntryUpdate(Payment payment, Drawer currentDrawer, WebUser user) {
@@ -282,7 +282,6 @@ public class DrawerService {
         //System.out.println("Drawer Entry Created = " + drawerEntry);
     }
 
-
     public void drawerEntryUpdate(Bill bill, Drawer currentDrawer, PaymentMethod paymentMethod, WebUser user, Double value) {
         if (bill == null) {
             return;
@@ -388,7 +387,6 @@ public class DrawerService {
 
         //System.out.println("Drawer Entry Created = " + drawerEntry);
     }
-
 
     public void updateDrawerForOuts(List<Payment> payments) {
         for (Payment payment : payments) {
@@ -601,6 +599,11 @@ public class DrawerService {
                 break;
             case Card:
                 canReturn = true;
+                break;
+            case ewallet:
+                if (drawer.getEwalletInHandValue() != null) {
+                    canReturn = drawer.getEwalletInHandValue() >= refundAmount;
+                }
                 break;
             case MultiplePaymentMethods:
                 canReturn = true;

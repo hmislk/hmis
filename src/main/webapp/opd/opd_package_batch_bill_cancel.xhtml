@@ -75,26 +75,55 @@
                                     </p:panel>
                                 </div>
                                 <div class="col-6">
-                                    <p:panel class="mb-2" id="payment">
+                                    <!-- Original Payment Details Panel -->
+                                    <p:panel class="mb-2" rendered="#{not empty billPackageController.originalBillPayments}">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa fa-history" />
+                                            <h:outputText value="Original Payment Details" class="mx-2" />
+                                        </f:facet>
+                                        <p:dataTable value="#{billPackageController.originalBillPayments}" var="op">
+                                            <p:column headerText="Method">
+                                                <h:outputText value="#{op.paymentMethod}" />
+                                            </p:column>
+                                            <p:column headerText="Amount">
+                                                <h:outputText value="#{op.paidValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Staff">
+                                                <h:outputText value="#{op.toStaff.person.name}" rendered="#{op.paymentMethod eq 'Staff_Welfare' or op.paymentMethod eq 'Staff' or op.paymentMethod eq 'OnCall'}" />
+                                            </p:column>
+                                            <p:column headerText="Institution">
+                                                <h:outputText value="#{op.creditCompany.name}" rendered="#{op.paymentMethod eq 'Credit'}"/>
+                                                <h:outputText value="#{op.bank.name}" rendered="#{op.paymentMethod eq 'Card'}"/>
+                                            </p:column>
+                                            <p:column headerText="Reference">
+                                                <h:outputText value="#{op.referenceNo}" rendered="#{op.paymentMethod eq 'Credit'}"/>
+                                                <h:outputText value="#{op.creditCardRefNo}" rendered="#{op.paymentMethod eq 'Card'}"/>
+                                                <h:outputText value="#{op.chequeRefNo}" rendered="#{op.paymentMethod eq 'Cheque'}"/>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:panel>
+
+                                    <p:panel class="mb-2" id="cancellationPayments">
                                         <f:facet name="header" >
-                                            <h:outputText styleClass="fa fa-money-bill-wave" /> 
-                                            <h:outputText value="Payment Details" class="mx-4"></h:outputText>
+                                            <h:outputText styleClass="fa fa-money-bill-wave" />
+                                            <h:outputText value="Cancelling Payment Details" class="mx-4"></h:outputText>
                                         </f:facet>
                                         <div class="row my-1"  >
                                             <div class="col-5" >
-                                                <p:selectOneMenu   
+                                                <p:selectOneMenu
                                                     id="pay"
                                                     class="w-100"
                                                     value="#{billPackageController.paymentMethod}"
-                                                    >   
-                                                    <f:selectItem itemLabel="Same as Billed" ></f:selectItem>
-                                                    <f:selectItems 
-                                                        value="#{billPackageController.paymentMethods}"  
+                                                    >
+                                                    <f:selectItems
+                                                        value="#{billPackageController.paymentMethods}"
                                                         var="pm"
                                                         itemLabel="#{pm.label}"
                                                         itemValue="#{pm}"/>
-                                                    <p:ajax 
-                                                        process="@this cmbPs" 
+                                                    <p:ajax
+                                                        process="@this"
                                                         update="paymentDetails"
                                                         event="change"/>
                                                 </p:selectOneMenu>
