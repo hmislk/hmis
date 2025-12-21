@@ -91,6 +91,11 @@ import com.divudi.service.BillService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
 import com.divudi.service.StaffService;
+import com.divudi.bean.common.PageMetadataRegistry;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
+import javax.annotation.PostConstruct;
 
 import java.io.Serializable;
 import java.io.ByteArrayInputStream;
@@ -228,6 +233,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     ConfigOptionController configOptionController;
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
     @Inject
     PharmacyBillSearch pharmacyBillSearch;
     @Inject
@@ -387,6 +394,125 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     private Institution newFromInstitution;
     private Department newFromDepartment;
     private String changeFromInstitutionReason;
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("opd/bill_reprint");
+        metadata.setPageName("OPD Bill Reprint");
+        metadata.setDescription("Reprint OPD bills with various paper formats, cancel bills, and refund fees");
+        metadata.setControllerClass("BillSearch");
+
+        // Configuration Options - Bill Operations
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Refund Allow for OPD Bill",
+            "Enables the 'To Refund Fees' button for OPD bill refunds",
+            "Line 76: Refund Fees button visibility",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Return Allow for OPD Bill",
+            "Enables the 'To Return Items' button for OPD bill item returns",
+            "Line 85: Return Items button visibility",
+            OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - Bill Paper Formats
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "OPD Sale Bill is FiveFiveCustom3",
+            "Uses FiveFiveCustom3 format for OPD sale bill printing",
+            "Line 204: Custom3 bill format rendering",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "OPD Bill Paper Size is FiveFivePaper",
+            "Uses 5x5 inch paper with headings for OPD bills",
+            "Line 210: FiveFive paper format",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "OPD Bill Paper Size is FiveFivePrintedPaper",
+            "Uses 5x5 inch pre-printed paper without headings for OPD bills",
+            "Line 216: FiveFive printed paper format",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "OPD Bill Paper Size is PosPaper",
+            "Uses POS (Point of Sale) paper format for OPD bills",
+            "Lines 222, 251: POS paper format for bills and refunds",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "OPD Bill Paper Size is FiveFivePaperCoustom1",
+            "Uses 5x5 inch custom format 1 for OPD bills",
+            "Lines 228, 259: Custom 1 format for bills and refunds",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "OPD Bill Paper Size is FiveFiveCustom3",
+            "Uses 5x5 inch custom format 3 for OPD bills",
+            "Lines 234, 275: Custom 3 format for bills and refunds",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "OPD Bill Paper Size is 5x8 inch Paper",
+            "Uses 5x8 inch paper format for OPD bills",
+            "Lines 240, 283: 5x8 paper format for bills and refunds",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration",
+            "Config button visibility"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "OpdReprintOriginalBill",
+            "Access to reprint original OPD bills",
+            "Line 40: 'Print to Original Bill' button"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "OpdIndividualCancel",
+            "Ability to cancel individual OPD bills",
+            "Line 57: 'To Cancel' button"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "EditData",
+            "Edit bill data including referring doctor information",
+            "Line 122: Edit bill button and dialog"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ChangeProfessionalFee",
+            "Change the staff member assigned to professional fees",
+            "Line 449: Professional fee staff assignment dropdown"
+        ));
+
+        // Register the metadata
+        pageMetadataRegistry.registerPage(metadata);
+    }
 
     public String navigateToBillPaymentOpdBill() {
         return "bill_payment_opd?faces-redirect=true";
