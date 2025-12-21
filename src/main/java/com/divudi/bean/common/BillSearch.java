@@ -4460,7 +4460,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
     public String navigateToViewBillByAtomicBillTypeByBillId(Long BillId) {
         System.out.println("navigateToViewBillByAtomicBillTypeByBillId");
-        System.out.println("BillId = " + BillId);
         if (BillId == null) {
             JsfUtil.addErrorMessage("Bill ID is required");
             return null;
@@ -4478,7 +4477,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
     public String navigateToManageBillByAtomicBillTypeByBillId(Long BillId) {
         System.out.println("navigateToManageBillByAtomicBillTypeByBillId");
-        System.out.println("BillId = " + BillId);
         if (BillId == null) {
             JsfUtil.addErrorMessage("Bill ID is required");
             return null;
@@ -4496,7 +4494,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
     public String navigateToAdminBillByAtomicBillTypeByBillId(Long BillId) {
         System.out.println("navigateToAdminBillByAtomicBillTypeByBillId");
-        System.out.println("BillId = " + BillId);
         if (BillId == null) {
             JsfUtil.addErrorMessage("Bill ID is required");
             return null;
@@ -4514,7 +4511,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
     public String navigateToViewBillByAtomicBillTypeBySelectedId() {
         System.out.println("navigateToViewBillByAtomicBillTypeBySelectedId called");
-        System.out.println("selectedBillId = " + selectedBillId);
         if (selectedBillId == null) {
             JsfUtil.addErrorMessage("No Bill ID is selected");
             return null;
@@ -7598,7 +7594,28 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         try {
             // Save the updated bill
             billFacade.edit(batchBill);
-
+            // Create audit log entry after successful update (commented out - needs auditEventApplicationController)
+            // TODO: Add audit trail logging when auditEventApplicationController is available
+            /*
+            auditEventApplicationController.logAuditEvent(
+            "Individual Bill Cancellation - Batch Bill Balance Adjustment",
+            String.format(
+            "Batch Bill: %s | Individual Bill: %s | Cancellation Bill: %s | " +
+            "Old Balance: %.2f → New Balance: %.2f | Refund: +%.2f | " +
+            "Old Paid: %.2f → New Paid: %.2f | Old Refund: %.2f → New Refund: %.2f | " +
+            "Adjusted By: %s",
+            batchBill.getInsId(),
+            individualBill.getInsId(),
+            cancellationBill.getInsId(),
+            oldBalance, batchBill.getBalance(),
+            refundAmount,
+            oldPaidAmount, batchBill.getPaidAmount(),
+            oldRefundAmount, batchBill.getRefundAmount(),
+            sessionController.getLoggedUser().getName()
+            ),
+            batchBill
+            );
+             */
             // Create audit log entry after successful update (commented out - needs auditEventApplicationController)
             // TODO: Add audit trail logging when auditEventApplicationController is available
             /*
@@ -7627,11 +7644,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             System.out.println("Individual Bill: " + individualBill.getInsId());
             System.out.println("Refund Amount: " + refundAmount);
             System.out.println("Old Balance: " + oldBalance + " → New Balance: " + batchBill.getBalance());
-            System.out.println("Old Paid: " + oldPaidAmount + " → New Paid: " + batchBill.getPaidAmount());
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error updating batch bill balance: " + e.getMessage());
-            System.err.println("Failed to update batch bill balance: " + e.getMessage());
             e.printStackTrace();
             // Don't re-throw to prevent cancellation from failing completely
             // The individual bill cancellation should still succeed
