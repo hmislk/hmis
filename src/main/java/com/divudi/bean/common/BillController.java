@@ -2470,6 +2470,17 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
         batchBill.setCancelled(true);
         batchBill.setCancelledBill(cancellationBatchBill);
+
+        // Reset balance to 0 for credit payment batch bill cancellations
+        if (batchBill.getPaymentMethod() == PaymentMethod.Credit && batchBill.getBalance() > 0) {
+            double oldBalance = batchBill.getBalance();
+            batchBill.setBalance(0);
+
+            System.out.println("=== OPD Batch Bill Cancellation - Balance Reset ===");
+            System.out.println("Batch Bill: " + batchBill.getInsId());
+            System.out.println("Old Balance: " + oldBalance + " → New Balance: 0.0");
+        }
+
         getBillFacade().edit(batchBill);
 
         bills = billService.fetchIndividualBillsOfBatchBill(batchBill);
@@ -2605,6 +2616,17 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
         batchBill.setCancelled(true);
         batchBill.setCancelledBill(cancellationBatchBill);
+
+        // Reset balance to 0 for credit payment batch bill cancellations
+        if (batchBill.getPaymentMethod() == PaymentMethod.Credit && batchBill.getBalance() > 0) {
+            double oldBalance = batchBill.getBalance();
+            batchBill.setBalance(0);
+
+            System.out.println("=== Package Batch Bill Cancellation - Balance Reset ===");
+            System.out.println("Batch Bill: " + batchBill.getInsId());
+            System.out.println("Old Balance: " + oldBalance + " → New Balance: 0.0");
+        }
+
         getBillFacade().edit(batchBill);
 
         bills = billService.fetchIndividualBillsOfBatchBill(batchBill);

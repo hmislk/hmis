@@ -615,6 +615,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             getBillFacade().edit(bill);
         }
 
+        // Update batch bill balance for credit payment method
+        updateBatchBillFinancialFieldsForPackageCancellation(bill, cancellationBill);
+
         List<BillItem> originalBillItem = getBillBean().fillBillItems(bill);
 
         for (BillItem bi : originalBillItem) {
@@ -824,6 +827,17 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
         batchBill.setCancelled(true);
         batchBill.setCancelledBill(cancellationBatchBill);
+
+        // Reset balance to 0 for credit payment batch bill cancellations
+        if (batchBill.getPaymentMethod() == PaymentMethod.Credit && batchBill.getBalance() > 0) {
+            double oldBalance = batchBill.getBalance();
+            batchBill.setBalance(0);
+
+            System.out.println("=== Package Batch Bill Cancellation - Balance Reset ===");
+            System.out.println("Batch Bill: " + batchBill.getInsId());
+            System.out.println("Old Balance: " + oldBalance + " → New Balance: 0.0");
+        }
+
         getBillFacade().edit(batchBill);
 
         bills = billService.fetchIndividualBillsOfBatchBill(batchBill);
@@ -3241,6 +3255,113 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public void setWebUserController(WebUserController webUserController) {
         this.webUserController = webUserController;
+    }
+
+    /**
+     * Updates the batch bill's financial tracking fields when an individual package bill
+     * is cancelled within a credit payment batch.
+     *
+     * <p>This method ensures accurate credit balance tracking for partial batch bill
+     * cancellations by reducing the batch bill's balance, paidAmount, and increasing
+     * refundAmount proportionally to the cancelled individual package bill's net total.</p>
+     *
+     * <p><b>Healthcare Domain Context:</b> When package bills are paid using Credit payment
+     * method, the net total becomes the "due amount" (stored in balance field). Credit
+     * companies settle these dues periodically. Accurate balance tracking is critical
+     * for credit company settlement reports and financial reconciliation.</p>
+     *
+     * <p><b>Pattern:</b> Mirrors pharmacy implementation and BillSearch implementation
+     * for individual OPD bill cancellations.</p>
+     *
+     * @param individualPackageBill The individual package bill being cancelled
+     * @param cancellationBill The cancellation bill created for the individual package bill
+     * @throws IllegalArgumentException if bills are null
+     * @throws IllegalStateException if financial data is invalid
+     * @see <a href="https://github.com/hmislk/hmis/issues/17138">GitHub Issue #17138</a>
+     */
+    private void updateBatchBillFinancialFieldsForPackageCancellation(Bill individualPackageBill, Bill cancellationBill) {
+        // Validate inputs
+        if (individualPackageBill == null) {
+            throw new IllegalArgumentException("Individual package bill cannot be null");
+        }
+
+        if (cancellationBill == null) {
+            throw new IllegalArgumentException("Cancellation bill cannot be null");
+        }
+
+        Bill batchBill = individualPackageBill.getBackwardReferenceBill();
+
+        // Not all individual bills have batch bills (e.g., direct package bills)
+        if (batchBill == null) {
+            return;
+        }
+
+        // Only update balance for Credit payment method bills
+        if (batchBill.getPaymentMethod() != PaymentMethod.Credit) {
+            return;
+        }
+
+        // Validate numeric fields
+        if (cancellationBill.getNetTotal() == null || Double.isNaN(cancellationBill.getNetTotal())) {
+            throw new IllegalStateException("Cancellation bill net total is invalid");
+        }
+
+        // Refresh batch bill from database to ensure latest data and trigger optimistic locking
+        batchBill = billFacade.find(batchBill.getId());
+
+        if (batchBill == null) {
+            throw new IllegalStateException("Batch bill not found in database");
+        }
+
+        // Calculate refund amount (always positive)
+        double refundAmount = Math.abs(cancellationBill.getNetTotal());
+
+        // Validate refund amount doesn't exceed original batch bill total
+        if (refundAmount > batchBill.getNetTotal()) {
+            throw new IllegalStateException(
+                String.format("CRITICAL: Refund amount (%.2f) exceeds batch bill total (%.2f). " +
+                             "Batch Bill: %s, Individual Package Bill: %s",
+                             refundAmount, batchBill.getNetTotal(),
+                             batchBill.getInsId(), individualPackageBill.getInsId())
+            );
+        }
+
+        // Store old values for audit trail
+        double oldBalance = batchBill.getBalance();
+        double oldPaidAmount = batchBill.getPaidAmount();
+        double oldRefundAmount = batchBill.getRefundAmount();
+
+        // Update refundAmount - add the return amount
+        batchBill.setRefundAmount(batchBill.getRefundAmount() + refundAmount);
+
+        // Update paidAmount - deduct the return amount (only if payment exists)
+        if (batchBill.getPaidAmount() > 0) {
+            batchBill.setPaidAmount(Math.max(0d, batchBill.getPaidAmount() - refundAmount));
+        }
+
+        // Update balance (due amount) - deduct the return amount (only if balance > 0)
+        if (batchBill.getBalance() > 0) {
+            batchBill.setBalance(Math.max(0d, batchBill.getBalance() - refundAmount));
+        }
+
+        try {
+            // Save the updated bill
+            billFacade.edit(batchBill);
+
+            System.out.println("=== Package Batch Bill Balance Updated ===");
+            System.out.println("Batch Bill ID: " + batchBill.getInsId());
+            System.out.println("Individual Package Bill: " + individualPackageBill.getInsId());
+            System.out.println("Refund Amount: " + refundAmount);
+            System.out.println("Old Balance: " + oldBalance + " → New Balance: " + batchBill.getBalance());
+            System.out.println("Old Paid: " + oldPaidAmount + " → New Paid: " + batchBill.getPaidAmount());
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error updating batch bill balance: " + e.getMessage());
+            System.err.println("Failed to update batch bill balance: " + e.getMessage());
+            e.printStackTrace();
+            // Don't re-throw to prevent cancellation from failing completely
+            // The individual package bill cancellation should still succeed
+        }
     }
 
 }
