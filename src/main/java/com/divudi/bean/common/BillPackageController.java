@@ -2546,6 +2546,73 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public BillPackageController() {
     }
 
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("opd/opd_bill_package");
+        metadata.setPageName("OPD Bill Package");
+        metadata.setDescription("OPD package billing with gender-based package selection and multiple payment methods");
+        metadata.setControllerClass("BillPackageController");
+
+        // Configuration Options - Patient Management
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Save the Patient with Patient Status",
+            "Enables patient status field for local/foreign classification",
+            "Lines 347, 357, 466-470: Patient status field visibility and display",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Enable patient specific status management in the system",
+            "Shows patient-specific status badges and management features",
+            "Lines 419-423: Patient specific status badge display",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Enable blacklist patient management in the system",
+            "Enables blacklist patient management features globally",
+            "Line 425: Blacklist patient badge rendering (combined with OPD-specific setting)",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Enable blacklist patient management for OPD from the system",
+            "Enables blacklist patient management specifically for OPD modules",
+            "Line 425: Combined with global blacklist setting for OPD blacklist badge",
+            OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - Package Management
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Package bill – Reloading of Packages with Consideration of Gender",
+            "Shows gender badges in package selection and filters packages by patient gender",
+            "Line 540: Gender badge column visibility in package selection",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration",
+            "Config button visibility"
+        ));
+
+        // Register the metadata
+        pageMetadataRegistry.registerPage(metadata);
+    }
+
     private BillFacade getFacade() {
         return billFacade;
     }
