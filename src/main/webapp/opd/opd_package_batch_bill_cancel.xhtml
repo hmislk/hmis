@@ -172,9 +172,9 @@
                                                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                         </h:outputText>
                                                                     </p:column>
-                                                                    <p:ajax process="@this" 
-                                                                            update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
-                                                                            event="itemSelect"  
+                                                                    <p:ajax process="@this"
+                                                                            update=":#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('cancellationPayments',view).clientId}"
+                                                                            event="itemSelect"
                                                                             listener="#{billPackageController.calTotals()}" />
                                                                 </p:autoComplete>
                                                             </div>
@@ -217,9 +217,9 @@
                                                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                         </h:outputText>
                                                                     </p:column>
-                                                                    <p:ajax process="@this" 
-                                                                            update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
-                                                                            event="itemSelect"  
+                                                                    <p:ajax process="@this"
+                                                                            update=":#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('cancellationPayments',view).clientId}"
+                                                                            event="itemSelect"
                                                                             listener="#{billPackageController.calTotals()}" />
                                                                 </p:autoComplete>
                                                             </div>
