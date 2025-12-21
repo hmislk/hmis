@@ -63,6 +63,12 @@ import com.divudi.core.facade.BillFeePaymentFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.service.BillService;
 import com.divudi.service.PaymentService;
+import com.divudi.bean.common.PageMetadataRegistry;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
+import javax.annotation.PostConstruct;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -144,6 +150,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     ItemController itemController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
     @Inject
     OpdBillController opdBillController;
     @Inject
@@ -607,6 +615,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             getBillFacade().edit(bill);
         }
 
+        // Update batch bill balance for credit payment method
+        updateBatchBillFinancialFieldsForPackageCancellation(bill, cancellationBill);
+
         List<BillItem> originalBillItem = getBillBean().fillBillItems(bill);
 
         for (BillItem bi : originalBillItem) {
@@ -816,6 +827,17 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
         batchBill.setCancelled(true);
         batchBill.setCancelledBill(cancellationBatchBill);
+
+        // Reset balance to 0 for credit payment batch bill cancellations
+        if (batchBill.getPaymentMethod() == PaymentMethod.Credit && batchBill.getBalance() > 0) {
+            double oldBalance = batchBill.getBalance();
+            batchBill.setBalance(0);
+
+            System.out.println("=== Package Batch Bill Cancellation - Balance Reset ===");
+            System.out.println("Batch Bill: " + batchBill.getInsId());
+            System.out.println("Old Balance: " + oldBalance + " → New Balance: 0.0");
+        }
+
         getBillFacade().edit(batchBill);
 
         bills = billService.fetchIndividualBillsOfBatchBill(batchBill);
@@ -2538,6 +2560,73 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public BillPackageController() {
     }
 
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("opd/opd_bill_package");
+        metadata.setPageName("OPD Bill Package");
+        metadata.setDescription("OPD package billing with gender-based package selection and multiple payment methods");
+        metadata.setControllerClass("BillPackageController");
+
+        // Configuration Options - Patient Management
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Save the Patient with Patient Status",
+            "Enables patient status field for local/foreign classification",
+            "Lines 347, 357, 466-470: Patient status field visibility and display",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Enable patient specific status management in the system",
+            "Shows patient-specific status badges and management features",
+            "Lines 419-423: Patient specific status badge display",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Enable blacklist patient management in the system",
+            "Enables blacklist patient management features globally",
+            "Line 425: Blacklist patient badge rendering (combined with OPD-specific setting)",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Enable blacklist patient management for OPD from the system",
+            "Enables blacklist patient management specifically for OPD modules",
+            "Line 425: Combined with global blacklist setting for OPD blacklist badge",
+            OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - Package Management
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Package bill – Reloading of Packages with Consideration of Gender",
+            "Shows gender badges in package selection and filters packages by patient gender",
+            "Line 540: Gender badge column visibility in package selection",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration",
+            "Config button visibility"
+        ));
+
+        // Register the metadata
+        pageMetadataRegistry.registerPage(metadata);
+    }
+
     private BillFacade getFacade() {
         return billFacade;
     }
@@ -3166,6 +3255,113 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public void setWebUserController(WebUserController webUserController) {
         this.webUserController = webUserController;
+    }
+
+    /**
+     * Updates the batch bill's financial tracking fields when an individual package bill
+     * is cancelled within a credit payment batch.
+     *
+     * <p>This method ensures accurate credit balance tracking for partial batch bill
+     * cancellations by reducing the batch bill's balance, paidAmount, and increasing
+     * refundAmount proportionally to the cancelled individual package bill's net total.</p>
+     *
+     * <p><b>Healthcare Domain Context:</b> When package bills are paid using Credit payment
+     * method, the net total becomes the "due amount" (stored in balance field). Credit
+     * companies settle these dues periodically. Accurate balance tracking is critical
+     * for credit company settlement reports and financial reconciliation.</p>
+     *
+     * <p><b>Pattern:</b> Mirrors pharmacy implementation and BillSearch implementation
+     * for individual OPD bill cancellations.</p>
+     *
+     * @param individualPackageBill The individual package bill being cancelled
+     * @param cancellationBill The cancellation bill created for the individual package bill
+     * @throws IllegalArgumentException if bills are null
+     * @throws IllegalStateException if financial data is invalid
+     * @see <a href="https://github.com/hmislk/hmis/issues/17138">GitHub Issue #17138</a>
+     */
+    private void updateBatchBillFinancialFieldsForPackageCancellation(Bill individualPackageBill, Bill cancellationBill) {
+        // Validate inputs
+        if (individualPackageBill == null) {
+            throw new IllegalArgumentException("Individual package bill cannot be null");
+        }
+
+        if (cancellationBill == null) {
+            throw new IllegalArgumentException("Cancellation bill cannot be null");
+        }
+
+        Bill batchBill = individualPackageBill.getBackwardReferenceBill();
+
+        // Not all individual bills have batch bills (e.g., direct package bills)
+        if (batchBill == null) {
+            return;
+        }
+
+        // Only update balance for Credit payment method bills
+        if (batchBill.getPaymentMethod() != PaymentMethod.Credit) {
+            return;
+        }
+
+        // Validate numeric fields
+        if (cancellationBill.getNetTotal() == 0.0) {
+            throw new IllegalStateException("Cancellation bill net total is invalid");
+        }
+
+        // Refresh batch bill from database to ensure latest data and trigger optimistic locking
+        batchBill = billFacade.find(batchBill.getId());
+
+        if (batchBill == null) {
+            throw new IllegalStateException("Batch bill not found in database");
+        }
+
+        // Calculate refund amount (always positive)
+        double refundAmount = Math.abs(cancellationBill.getNetTotal());
+
+        // Validate refund amount doesn't exceed original batch bill total
+        if (refundAmount > batchBill.getNetTotal()) {
+            throw new IllegalStateException(
+                String.format("CRITICAL: Refund amount (%.2f) exceeds batch bill total (%.2f). " +
+                             "Batch Bill: %s, Individual Package Bill: %s",
+                             refundAmount, batchBill.getNetTotal(),
+                             batchBill.getInsId(), individualPackageBill.getInsId())
+            );
+        }
+
+        // Store old values for audit trail
+        double oldBalance = batchBill.getBalance();
+        double oldPaidAmount = batchBill.getPaidAmount();
+        double oldRefundAmount = batchBill.getRefundAmount();
+
+        // Update refundAmount - add the return amount
+        batchBill.setRefundAmount(batchBill.getRefundAmount() + refundAmount);
+
+        // Update paidAmount - deduct the return amount (only if payment exists)
+        if (batchBill.getPaidAmount() > 0) {
+            batchBill.setPaidAmount(Math.max(0d, batchBill.getPaidAmount() - refundAmount));
+        }
+
+        // Update balance (due amount) - deduct the return amount (only if balance > 0)
+        if (batchBill.getBalance() > 0) {
+            batchBill.setBalance(Math.max(0d, batchBill.getBalance() - refundAmount));
+        }
+
+        try {
+            // Save the updated bill
+            billFacade.edit(batchBill);
+
+            System.out.println("=== Package Batch Bill Balance Updated ===");
+            System.out.println("Batch Bill ID: " + batchBill.getInsId());
+            System.out.println("Individual Package Bill: " + individualPackageBill.getInsId());
+            System.out.println("Refund Amount: " + refundAmount);
+            System.out.println("Old Balance: " + oldBalance + " → New Balance: " + batchBill.getBalance());
+            System.out.println("Old Paid: " + oldPaidAmount + " → New Paid: " + batchBill.getPaidAmount());
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error updating batch bill balance: " + e.getMessage());
+            System.err.println("Failed to update batch bill balance: " + e.getMessage());
+            e.printStackTrace();
+            // Don't re-throw to prevent cancellation from failing completely
+            // The individual package bill cancellation should still succeed
+        }
     }
 
 }
