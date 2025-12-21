@@ -20,8 +20,21 @@
                 <h:panelGroup rendered="#{!billPackageController.printPreview}" styleClass="alignTop" >
                     <p:panel class="w-100" >
                         <f:facet name="header" >
-                            <h:outputText styleClass="pi pi-slack" />
-                            <h:outputLabel value="OPD Packages" class="mx-4"></h:outputLabel>
+                            <div class="d-flex align-items-center gap-3">
+                                <h:outputText styleClass="pi pi-slack" />
+                                <h:outputLabel value="OPD Packages" class="mx-4"></h:outputLabel>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                    <p:commandButton
+                                        value="Config"
+                                        icon="fa fa-cog"
+                                        title="Page Configuration Management"
+                                        action="#{pageAdminController.navigateToPageAdmin('opd/opd_bill_package')}"
+                                        ajax="false"
+                                        styleClass="ui-button-secondary ui-button-sm p-button-outlined"
+                                        style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </div>
                             <h:panelGrid columns="4" style="float: right" class="">
                                 <p:commandButton
                                     value="Settle"
