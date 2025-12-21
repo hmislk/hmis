@@ -684,6 +684,29 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             OptionScope.DEPARTMENT
         ));
 
+        // Patient Management and Security Configurations
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Enable blacklist patient management in the system",
+            "Enables global blacklist functionality for patients across the entire system",
+            "OpdBillController.java line 3022: Global blacklist check in settleOpdBill()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Enable blacklist patient management for OPD from the system",
+            "Enables blacklist validation specifically for OPD billing to prevent billing blacklisted patients",
+            "OpdBillController.java line 3023: OPD-specific blacklist check in settleOpdBill()",
+            OptionScope.APPLICATION
+        ));
+
+        // Item Listing Strategy Configuration
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "OPD Item Listing Strategy",
+            "Determines how OPD items are listed and filtered in autocompletes and selection lists. Available strategies: ALL_ITEMS, SITE_FEE_ITEMS, ITEMS_OF_LOGGED_DEPARTMENT, ITEMS_OF_LOGGED_INSTITUTION, ITEMS_MAPPED_TO_LOGGED_DEPARTMENT, ITEMS_MAPPED_TO_LOGGED_INSTITUTION",
+            "OpdBillController.java lines 855, 828: Item listing strategy in fillOpdItems() and completeOpdItems() methods via UserPreference.getOpdItemListingStrategy()",
+            OptionScope.DEPARTMENT
+        ));
+
         // PRIVILEGES
         metadata.addPrivilege(new PrivilegeInfo(
             "OpdBilling",

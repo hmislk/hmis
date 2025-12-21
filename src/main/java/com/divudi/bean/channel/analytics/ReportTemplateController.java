@@ -276,8 +276,8 @@ public class ReportTemplateController implements Serializable {
         String jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + " bill) "
                 + " from Bill bill "
-                + " left join fetch bill.patient "
-                + " left join fetch bill.patient.person "
+                + " left join fetch bill.patient patient "
+                + " left join fetch patient.person "
                 + " where bill.retired=false ";
 
         if (excludeCredit != null && excludeCredit) {
@@ -327,11 +327,17 @@ public class ReportTemplateController implements Serializable {
         System.out.println("DEBUG: Parameters = " + parameters);
 
         // First, let's count how many bills match the criteria
-        String countJpql = jpql.replace("select new com.divudi.core.data.ReportTemplateRow( bill) from Bill bill left join fetch bill.patient left join fetch bill.patient.person", "select count(bill) from Bill bill");
+        // Use regex to handle variable spacing in the JPQL
+        String countJpql = jpql.replaceFirst(
+            "select\\s+new\\s+com\\.divudi\\.core\\.data\\.ReportTemplateRow\\s*\\(\\s*bill\\s*\\)\\s+from\\s+Bill\\s+bill\\s+left\\s+join\\s+fetch\\s+bill\\.patient\\s+patient\\s+left\\s+join\\s+fetch\\s+patient\\.person",
+            "select count(bill) from Bill bill"
+        );
+        System.out.println("DEBUG: Original JPQL = " + jpql);
         System.out.println("DEBUG: Count JPQL = " + countJpql);
+        System.out.println("DEBUG: String replacement " + (countJpql.equals(jpql) ? "FAILED" : "SUCCESSFUL"));
 
         try {
-            Long billCount = (Long) ejbFacade.findSingleByJpql(countJpql, parameters, TemporalType.TIMESTAMP);
+            long billCount = ejbFacade.findLongByJpql(countJpql, parameters, TemporalType.TIMESTAMP);
             System.out.println("DEBUG: Bills matching criteria count = " + billCount);
 
             if (billCount == 0) {

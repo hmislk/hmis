@@ -36,7 +36,10 @@
       "Bash(grep:*)",
       "Bash(git show:*)",
       "Bash(timeout 5 mysql:*)",
-      "Bash(timeout 10 mysql:*)"
+      "Bash(timeout 10 mysql:*)",
+      "Bash(gh issue create:*)",
+      "Bash(gh label:*)",
+      "Bash(gh issue edit:*)"
     ],
     "deny": [],
     "ask": [],
