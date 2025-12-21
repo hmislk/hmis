@@ -125,7 +125,8 @@
                                                     <p:ajax
                                                         process="@this"
                                                         update="paymentDetails"
-                                                        event="change"/>
+                                                        event="change"
+                                                        listener="#{billPackageController.onPaymentMethodChange()}"/>
                                                 </p:selectOneMenu>
                                             </div>
                                         </div>
