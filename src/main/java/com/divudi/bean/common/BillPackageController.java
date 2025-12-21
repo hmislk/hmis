@@ -3302,7 +3302,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
 
         // Validate numeric fields
-        if (cancellationBill.getNetTotal() == null || Double.isNaN(cancellationBill.getNetTotal())) {
+        if (cancellationBill.getNetTotal() == 0.0) {
             throw new IllegalStateException("Cancellation bill net total is invalid");
         }
 
