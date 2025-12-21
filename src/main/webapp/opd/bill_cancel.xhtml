@@ -65,7 +65,8 @@
                                         </f:facet>
                                         <p:selectOneMenu
                                             id="cmbPs"
-                                            value="#{billSearch.paymentMethod}" >
+                                            value="#{billSearch.paymentMethod}"
+                                            disabled="#{billSearch.paymentMethod eq 'Credit'}" >
                                             <f:selectItem itemLabel="Select a Cancellation Payment Method" ></f:selectItem>
                                             <f:selectItems value="#{enumController.paymentMethodsForOpdBillCanceling}"/>
                                             <p:ajax process="@this" update="paymentDetails" event="change" />
@@ -79,6 +80,8 @@
                                         </f:facet>
 
                                         <h:panelGroup id="paymentDetails">
+                                            <fieldset disabled="#{billSearch.paymentMethod eq 'Credit'}"
+                                                     style="border: none; padding: 0; margin: 0;">
                                             <h:panelGroup
                                                 class="row"
                                                 layout="block"
@@ -148,6 +151,7 @@
                                                     No additional payment details required for Cash payment.
                                                 </div>
                                             </h:panelGroup>
+                                            </fieldset>
                                         </h:panelGroup>
                                     </p:panel>
                                 </div>

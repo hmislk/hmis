@@ -136,24 +136,19 @@
                                                 <h:outputLabel value="Payment Method" class="mx-2"></h:outputLabel>
                                             </f:facet>
                                             <p:outputLabel value="Payment Method" ></p:outputLabel>
-                                            <!-- Warning for Credit payment bills -->
-                                            <h:panelGroup rendered="#{billPackageController.originalBillCredit}">
-                                                <div class="alert alert-warning mb-2" role="alert">
-                                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                                    <strong>Credit Bill Notice:</strong> This bill was originally paid using Credit method.
-                                                    You can now select any payment method for the refund.
-                                                </div>
-                                            </h:panelGroup>
 
                                             <p:selectOneMenu
                                                 id="cmbPs"
-                                                value="#{billPackageController.paymentMethod}" >
+                                                value="#{billPackageController.paymentMethod}"
+                                                disabled="#{billPackageController.paymentMethod eq 'Credit'}">
                                                 <f:selectItem itemLabel="Select paymentMethod"/>
                                                 <f:selectItems value="#{billPackageController.paymentMethods}"/>
                                                 <p:ajax event="change" process="cmbPs" update="paymentDetails" ></p:ajax>
                                             </p:selectOneMenu>
 
-                                            <h:panelGroup id="paymentDetails"  >
+                                            <h:panelGroup id="paymentDetails">
+                                                <fieldset disabled="#{billPackageController.paymentMethod eq 'Credit'}"
+                                                         style="border: none; padding: 0; margin: 0;">
                                                 <h:panelGroup
                                                     class="row my-1"
                                                     layout="block"  
@@ -225,6 +220,7 @@
                                                         </div>
                                                     </h:panelGroup>
                                                 </h:panelGroup>
+                                                </fieldset>
                                             </h:panelGroup>
                                         </p:panel>
                                     </div>

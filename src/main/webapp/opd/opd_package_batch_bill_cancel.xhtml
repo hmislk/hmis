@@ -116,7 +116,7 @@
                                                     id="pay"
                                                     class="w-100"
                                                     value="#{billPackageController.paymentMethod}"
-                                                    >
+                                                    disabled="#{billPackageController.paymentMethod eq 'Credit'}">
                                                     <f:selectItems
                                                         value="#{billPackageController.paymentMethods}"
                                                         var="pm"
@@ -131,7 +131,9 @@
                                         </div>
 
                                         <div>
-                                            <h:panelGroup id="paymentDetails"  >
+                                            <h:panelGroup id="paymentDetails">
+                                                <fieldset disabled="#{billPackageController.paymentMethod eq 'Credit'}"
+                                                         style="border: none; padding: 0; margin: 0;">
 
                                                 <h:panelGroup
                                                     class="row"
@@ -268,6 +270,8 @@
 
                                                 </h:panelGroup>
 
+                                                </h:panelGroup>
+                                                </fieldset>
                                             </h:panelGroup>
                                         </div>
 

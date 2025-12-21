@@ -1312,7 +1312,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         }
 
         // Validate numeric fields
-        if (newlyReturnedBill.getNetTotal() == null || Double.isNaN(newlyReturnedBill.getNetTotal())) {
+        if (newlyReturnedBill.getNetTotal() == 0.0) {
             throw new IllegalStateException("Return bill net total is invalid");
         }
 
