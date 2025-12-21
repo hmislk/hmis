@@ -822,19 +822,19 @@
                                                         class="row my-1"
                                                         layout="block" 
                                                         id="eWallet"  rendered="#{billPackageController.paymentMethod eq 'ewallet'}" >
-                                                        <pa:ewallet paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                                        <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
                                                     </h:panelGroup>
                                                     <h:panelGroup
                                                         class="row my-1"
                                                         layout="block" 
                                                         id="cheque"  rendered="#{billPackageController.paymentMethod eq 'Cheque'}" >
-                                                        <pa:cheque paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                                        <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
                                                     </h:panelGroup>
                                                     <h:panelGroup 
                                                         class="row my-1"
                                                         layout="block" 
                                                         id="slip"  rendered="#{billPackageController.paymentMethod eq 'Slip'}" >
-                                                        <pa:slip paymentMethodData="#{billPackageController.paymentMethodData}"/>
+                                                        <pa:slipDetailsAsOnlyPayment paymentMethodData="#{billPackageController.paymentMethodData}"/>
                                                     </h:panelGroup>
                                                     <h:panelGroup 
                                                         class="row my-1"
