@@ -112,7 +112,8 @@
                                                     <p:ajax
                                                         process="@this cmbPs"
                                                         update="paymentDetails"
-                                                        event="change"/>
+                                                        event="change"
+                                                        listener="#{billController.onPaymentMethodChange()}"/>
                                                 </p:selectOneMenu>
                                             </div>
                                         </div>

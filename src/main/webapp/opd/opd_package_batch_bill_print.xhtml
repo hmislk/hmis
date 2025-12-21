@@ -20,8 +20,24 @@
             <h:panelGroup  >
                 <p:panel class="w-100" >
                     <f:facet name="header" >
-                        <h:outputText styleClass="pi pi-slack" />
-                        <h:outputLabel value="OPD Package Bill" class="mx-4"></h:outputLabel>
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div class="d-flex align-items-center">
+                                <h:outputText styleClass="pi pi-slack" />
+                                <h:outputLabel value="OPD Package Bill" class="mx-4"></h:outputLabel>
+                            </div>
+                            <div>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                    <p:commandButton
+                                        value="Config"
+                                        icon="fa fa-cog"
+                                        title="Page Configuration Management"
+                                        action="#{pageAdminController.navigateToPageAdmin('opd/opd_package_batch_bill_print')}"
+                                        ajax="false"
+                                        styleClass="ui-button-secondary ui-button-sm p-button-outlined">
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </div>
+                        </div>
                     </f:facet>
 
                     <div class="row">
@@ -235,7 +251,7 @@
                                         class="ui-button-danger m-1"
                                         icon="fa fa-times"
                                         action="#{billPackageController.navigateToCancelOpdPackageBill()}"
-                                        rendered="#{webUserController.hasPrivilege('OpdPackageBillCancel')}">
+                                        rendered="#{webUserController.hasPrivilege('OpdPackageBillCancel') and configOptionApplicationController.getBooleanValueByKey('Allow Individual Bill Cancellation in Package Bills', true)}">
                                         <f:setPropertyActionListener value="#{b}" target="#{billPackageController.bill}"/>
                                     </p:commandButton>
 

@@ -1881,6 +1881,64 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         this.paymentMethod = paymentMethod;
     }
 
+    /**
+     * Called when user changes payment method in individual bill cancellation form.
+     * Resets paymentMethodData to prevent using old payment method data.
+     */
+    public void onPaymentMethodChange() {
+        // Reset payment method data to prevent using old payment method data
+        paymentMethodData = new PaymentMethodData();
+
+        // Initialize basic payment data based on newly selected payment method
+        if (paymentMethod != null && getBill() != null) {
+            double netTotal = Math.abs(getBill().getNetTotal());
+
+            switch (paymentMethod) {
+                case Cash:
+                    paymentMethodData.getCash().setTotalValue(netTotal);
+                    break;
+                case Card:
+                    paymentMethodData.getCreditCard().setTotalValue(netTotal);
+                    break;
+                case Cheque:
+                    paymentMethodData.getCheque().setTotalValue(netTotal);
+                    break;
+                case Slip:
+                    paymentMethodData.getSlip().setTotalValue(netTotal);
+                    break;
+                case ewallet:
+                    paymentMethodData.getEwallet().setTotalValue(netTotal);
+                    break;
+                case Staff_Welfare:
+                    paymentMethodData.getStaffWelfare().setTotalValue(netTotal);
+                    // Note: toStaff property may need to be set separately in UI
+                    break;
+                case Staff:
+                case OnCall:
+                    paymentMethodData.getStaffCredit().setTotalValue(netTotal);
+                    // Note: toStaff property may need to be set separately in UI
+                    break;
+                case Credit:
+                    paymentMethodData.getCredit().setTotalValue(netTotal);
+                    // Note: creditCompany property may need to be set separately in UI
+                    break;
+                case PatientDeposit:
+                    paymentMethodData.getPatient_deposit().setTotalValue(netTotal);
+                    if (getBill().getPatient() != null) {
+                        paymentMethodData.getPatient_deposit().setPatient(getBill().getPatient());
+                    }
+                    break;
+                case MultiplePaymentMethods:
+                    // For multiple payments, clear the component details
+                    paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().clear();
+                    break;
+                default:
+                    // For other payment methods, just initialize with net total
+                    break;
+            }
+        }
+    }
+
     public String refundCollectingCenterBill() {
         if (refundingItems.isEmpty()) {
             JsfUtil.addErrorMessage("There is no item to Refund");

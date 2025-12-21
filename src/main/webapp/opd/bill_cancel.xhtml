@@ -69,7 +69,7 @@
                                             disabled="#{billSearch.paymentMethod eq 'Credit'}" >
                                             <f:selectItem itemLabel="Select a Cancellation Payment Method" ></f:selectItem>
                                             <f:selectItems value="#{enumController.paymentMethodsForOpdBillCanceling}"/>
-                                            <p:ajax process="@this" update="paymentDetails" event="change" />
+                                            <p:ajax process="@this" update="paymentDetails" event="change" listener="#{billSearch.onPaymentMethodChange()}" />
                                         </p:selectOneMenu>
                                     </p:panel>
                                     <!-- Cancellation Payment Details Panel -->

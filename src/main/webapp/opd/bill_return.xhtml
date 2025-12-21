@@ -146,7 +146,7 @@
                                             disabled="#{billReturnController.paymentMethod eq 'Credit'}">
                                             <f:selectItem itemLabel="Select paymentMethod"/>
                                             <f:selectItems value="#{billReturnController.paymentMethods}"/>
-                                            <p:ajax process="cmbPs" update="paymentDetails" ></p:ajax>
+                                            <p:ajax process="cmbPs" update="paymentDetails" listener="#{billReturnController.onPaymentMethodChange()}" ></p:ajax>
                                         </p:selectOneMenu>
                                     </p:panelGrid>
 

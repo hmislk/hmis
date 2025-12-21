@@ -867,6 +867,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public String navigateToCancelOpdPackageBill() {
+        // Check if individual bill cancellation is allowed
+        if (!configOptionApplicationController.getBooleanValueByKey("Allow Individual Bill Cancellation in Package Bills", true)) {
+            JsfUtil.addErrorMessage("Individual bill cancellation within package bills is not allowed in this system. Please cancel the entire batch bill instead.");
+            return "";
+        }
+
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is selected to cancel");
             return "";
@@ -1406,6 +1412,70 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (paymentMethod == PaymentMethod.Credit && creditCompany != null) {
             paymentMethodData.getCredit().setInstitution(creditCompany);
             paymentMethodData.getCredit().setTotalValue(batchBill.getNetTotal());
+        }
+    }
+
+    /**
+     * Called when user changes payment method in cancellation form.
+     * Resets paymentMethodData to prevent using old payment method data.
+     */
+    public void onPaymentMethodChange() {
+        // Reset payment method data to prevent using old payment method data
+        paymentMethodData = new PaymentMethodData();
+
+        // Initialize basic payment data based on newly selected payment method
+        if (paymentMethod != null && batchBill != null) {
+            double netTotal = Math.abs(batchBill.getNetTotal());
+
+            switch (paymentMethod) {
+                case Cash:
+                    paymentMethodData.getCash().setTotalValue(netTotal);
+                    break;
+                case Card:
+                    paymentMethodData.getCreditCard().setTotalValue(netTotal);
+                    break;
+                case Cheque:
+                    paymentMethodData.getCheque().setTotalValue(netTotal);
+                    break;
+                case Slip:
+                    paymentMethodData.getSlip().setTotalValue(netTotal);
+                    break;
+                case ewallet:
+                    paymentMethodData.getEwallet().setTotalValue(netTotal);
+                    break;
+                case Staff_Welfare:
+                    paymentMethodData.getStaffWelfare().setTotalValue(netTotal);
+                    if (toStaff != null) {
+                        paymentMethodData.getStaffWelfare().setToStaff(toStaff);
+                    }
+                    break;
+                case Staff:
+                case OnCall:
+                    paymentMethodData.getStaffCredit().setTotalValue(netTotal);
+                    if (toStaff != null) {
+                        paymentMethodData.getStaffCredit().setToStaff(toStaff);
+                    }
+                    break;
+                case Credit:
+                    paymentMethodData.getCredit().setTotalValue(netTotal);
+                    if (creditCompany != null) {
+                        paymentMethodData.getCredit().setInstitution(creditCompany);
+                    }
+                    break;
+                case PatientDeposit:
+                    paymentMethodData.getPatient_deposit().setTotalValue(netTotal);
+                    if (patient != null) {
+                        paymentMethodData.getPatient_deposit().setPatient(patient);
+                    }
+                    break;
+                case MultiplePaymentMethods:
+                    // For multiple payments, clear the component details
+                    paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().clear();
+                    break;
+                default:
+                    // For other payment methods, just initialize with net total
+                    break;
+            }
         }
     }
 
@@ -2616,6 +2686,28 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             OptionScope.APPLICATION
         ));
 
+        // Configuration Options - Package Bill Cancellation and Returns
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Individual Bill Cancellation in Package Bills",
+            "Allows individual bills within a package to be cancelled independently. When disabled, only batch bill cancellation is permitted",
+            "BillPackageController.java line 546: navigateToCancelOpdPackageBill() method and opd_package_batch_bill_print.xhtml cancel button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Individual Bill Returns in Package Bills",
+            "Allows individual bills within a package to be returned independently",
+            "package_bill_reprint.xhtml: To Return button availability for individual package bills",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Individual Bill Refunds in Package Bills",
+            "Allows individual bills within a package to be refunded independently",
+            "package_bill_reprint.xhtml: To Refund button availability for individual package bills",
+            OptionScope.APPLICATION
+        ));
+
         // Privileges
         metadata.addPrivilege(new PrivilegeInfo(
             "Admin",
@@ -2625,6 +2717,84 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
         // Register the metadata
         pageMetadataRegistry.registerPage(metadata);
+
+        // Register metadata for Package Batch Bill Print page
+        PageMetadata batchBillPrintMetadata = new PageMetadata();
+        batchBillPrintMetadata.setPagePath("opd/opd_package_batch_bill_print");
+        batchBillPrintMetadata.setPageName("OPD Package Batch Bill Print");
+        batchBillPrintMetadata.setDescription("Display and manage package batch bills with individual bill cancellation controls");
+        batchBillPrintMetadata.setControllerClass("BillPackageController");
+
+        batchBillPrintMetadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Individual Bill Cancellation in Package Bills",
+            "Allows individual bills within a package to be cancelled independently. When disabled, only batch bill cancellation is permitted",
+            "opd_package_batch_bill_print.xhtml: To Cancel button for individual bills in the dataTable",
+            OptionScope.APPLICATION
+        ));
+
+        batchBillPrintMetadata.addPrivilege(new PrivilegeInfo(
+            "OpdPackageBillCancel",
+            "Permission to cancel package bills (both individual and batch)",
+            "opd_package_batch_bill_print.xhtml: To Cancel button visibility"
+        ));
+
+        batchBillPrintMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration",
+            "Config button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(batchBillPrintMetadata);
+
+        // Register metadata for Package Bill Reprint page
+        PageMetadata packageReprintMetadata = new PageMetadata();
+        packageReprintMetadata.setPagePath("opd/package_bill_reprint");
+        packageReprintMetadata.setPageName("Package Bill Reprint");
+        packageReprintMetadata.setDescription("Reprint package bills with cancellation, return, and refund controls");
+        packageReprintMetadata.setControllerClass("BillSearch");
+
+        packageReprintMetadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Individual Bill Cancellation in Package Bills",
+            "Allows individual bills within a package to be cancelled independently",
+            "package_bill_reprint.xhtml: To Cancel button availability",
+            OptionScope.APPLICATION
+        ));
+
+        packageReprintMetadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Individual Bill Returns in Package Bills",
+            "Allows individual bills within a package to be returned independently",
+            "package_bill_reprint.xhtml: To Return button availability",
+            OptionScope.APPLICATION
+        ));
+
+        packageReprintMetadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Individual Bill Refunds in Package Bills",
+            "Allows individual bills within a package to be refunded independently",
+            "package_bill_reprint.xhtml: To Refund button availability",
+            OptionScope.APPLICATION
+        ));
+
+        packageReprintMetadata.addConfigOption(new ConfigOptionInfo(
+            "Refund Allow for OPD Bill",
+            "Global setting to allow refunds for OPD bills (applies to both individual and package bills)",
+            "package_bill_reprint.xhtml: To Refund button base control",
+            OptionScope.APPLICATION
+        ));
+
+        packageReprintMetadata.addConfigOption(new ConfigOptionInfo(
+            "Return Allow for OPD Bill",
+            "Global setting to allow returns for OPD bills (applies to both individual and package bills)",
+            "package_bill_reprint.xhtml: To Return button base control",
+            OptionScope.APPLICATION
+        ));
+
+        packageReprintMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration",
+            "Config button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(packageReprintMetadata);
     }
 
     private BillFacade getFacade() {
