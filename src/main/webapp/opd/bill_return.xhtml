@@ -144,16 +144,19 @@
                                         <p:outputLabel value="Return Comments" ></p:outputLabel>
                                         <p:inputText value="#{billReturnController.refundComment}"  class="w-100"></p:inputText>
                                         <p:outputLabel value="Payment Method" ></p:outputLabel>
-                                        <p:selectOneMenu   
-                                            id="cmbPs" 
-                                            value="#{billReturnController.paymentMethod}">
+                                        <p:selectOneMenu
+                                            id="cmbPs"
+                                            value="#{billReturnController.paymentMethod}"
+                                            disabled="#{billReturnController.paymentMethod eq 'Credit'}">
                                             <f:selectItem itemLabel="Select paymentMethod"/>
                                             <f:selectItems value="#{billReturnController.paymentMethods}"/>
                                             <p:ajax process="cmbPs" update="paymentDetails" ></p:ajax>
                                         </p:selectOneMenu>
                                     </p:panelGrid>
 
-                                    <h:panelGroup id="paymentDetails"  >
+                                    <h:panelGroup id="paymentDetails">
+                                        <fieldset disabled="#{billReturnController.paymentMethod eq 'Credit'}"
+                                                 style="border: none; padding: 0; margin: 0;">
                                         <h:panelGroup
                                             class="row"
                                             layout="block"  
@@ -278,6 +281,7 @@
                                             id="patientDeposit"  rendered="#{billReturnController.paymentMethod eq 'PatientDeposit'}" >
                                             <pa:patient_deposit paymentMethodData="#{billReturnController.paymentMethodData}"/>
                                         </h:panelGroup>
+                                        </fieldset>
                                     </h:panelGroup>
                                 </p:panel>
 
