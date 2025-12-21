@@ -755,6 +755,9 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         newlyReturnedBill.setDiscount(0 - returningDiscount);
         billController.save(newlyReturnedBill);
 
+        // Update batch bill balance for credit payment method returns
+        updateBatchBillFinancialFieldsForIndividualReturn(originalBillToReturn, newlyReturnedBill);
+
         // Apply refund sign to payment data
         applyRefundSignToPaymentData();
 
@@ -1263,4 +1266,114 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     public void setCreditCompany(Institution creditCompany) {
         this.creditCompany = creditCompany;
     }
+
+    /**
+     * Updates the batch bill's financial tracking fields when individual OPD bill items
+     * are returned within a credit payment batch.
+     *
+     * <p>This method ensures accurate credit balance tracking for partial item returns by
+     * reducing the batch bill's balance, paidAmount, and increasing refundAmount proportionally
+     * to the returned items' net total value.</p>
+     *
+     * <p><b>Healthcare Domain Context:</b> When OPD bills are paid using Credit payment
+     * method, the net total becomes the "due amount" (stored in balance field). Credit
+     * companies settle these dues periodically. Accurate balance tracking is critical
+     * for credit company settlement reports and financial reconciliation.</p>
+     *
+     * <p><b>Pattern:</b> Mirrors pharmacy implementation and individual bill cancellation
+     * patterns for consistent balance management across all return scenarios.</p>
+     *
+     * @param originalBillToReturn The original individual OPD bill being partially/fully returned
+     * @param newlyReturnedBill The return bill created for the returned items
+     * @throws IllegalArgumentException if bills are null
+     * @throws IllegalStateException if financial data is invalid
+     * @see <a href="https://github.com/hmislk/hmis/issues/17138">GitHub Issue #17138</a>
+     */
+    private void updateBatchBillFinancialFieldsForIndividualReturn(Bill originalBillToReturn, Bill newlyReturnedBill) {
+        // Validate inputs
+        if (originalBillToReturn == null) {
+            throw new IllegalArgumentException("Original bill to return cannot be null");
+        }
+
+        if (newlyReturnedBill == null) {
+            throw new IllegalArgumentException("Newly returned bill cannot be null");
+        }
+
+        Bill batchBill = originalBillToReturn.getBackwardReferenceBill();
+
+        // Not all individual bills have batch bills (e.g., direct OPD bills)
+        if (batchBill == null) {
+            return;
+        }
+
+        // Only update balance for Credit payment method bills
+        if (batchBill.getPaymentMethod() != PaymentMethod.Credit) {
+            return;
+        }
+
+        // Validate numeric fields
+        if (newlyReturnedBill.getNetTotal() == 0.0) {
+            throw new IllegalStateException("Return bill net total is invalid");
+        }
+
+        // Refresh batch bill from database to ensure latest data and trigger optimistic locking
+        batchBill = billFacade.find(batchBill.getId());
+
+        if (batchBill == null) {
+            throw new IllegalStateException("Batch bill not found in database");
+        }
+
+        // Calculate refund amount (always positive) - return bills have negative values
+        double refundAmount = Math.abs(newlyReturnedBill.getNetTotal());
+
+        // Validate refund amount doesn't exceed original batch bill total
+        if (refundAmount > Math.abs(batchBill.getNetTotal())) {
+            throw new IllegalStateException(
+                String.format("CRITICAL: Refund amount (%.2f) exceeds batch bill total (%.2f). " +
+                             "Batch Bill: %s, Original Bill: %s",
+                             refundAmount, Math.abs(batchBill.getNetTotal()),
+                             batchBill.getInsId(), originalBillToReturn.getInsId())
+            );
+        }
+
+        // Store old values for audit trail
+        double oldBalance = batchBill.getBalance();
+        double oldPaidAmount = batchBill.getPaidAmount();
+        double oldRefundAmount = batchBill.getRefundAmount();
+
+        // Update refundAmount - add the return amount
+        batchBill.setRefundAmount(batchBill.getRefundAmount() + refundAmount);
+
+        // Update paidAmount - deduct the return amount (only if payment exists)
+        if (batchBill.getPaidAmount() > 0) {
+            batchBill.setPaidAmount(Math.max(0d, batchBill.getPaidAmount() - refundAmount));
+        }
+
+        // Update balance (due amount) - deduct the return amount (only if balance > 0)
+        if (batchBill.getBalance() > 0) {
+            batchBill.setBalance(Math.max(0d, batchBill.getBalance() - refundAmount));
+        }
+
+        try {
+            // Save the updated bill
+            billFacade.edit(batchBill);
+
+            System.out.println("=== OPD Return - Batch Bill Balance Updated ===");
+            System.out.println("Batch Bill ID: " + batchBill.getInsId());
+            System.out.println("Original Bill: " + originalBillToReturn.getInsId());
+            System.out.println("Return Bill: " + newlyReturnedBill.getInsId());
+            System.out.println("Refund Amount: " + refundAmount);
+            System.out.println("Old Balance: " + oldBalance + " → New Balance: " + batchBill.getBalance());
+            System.out.println("Old Paid: " + oldPaidAmount + " → New Paid: " + batchBill.getPaidAmount());
+            System.out.println("Old Refund: " + oldRefundAmount + " → New Refund: " + batchBill.getRefundAmount());
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error updating batch bill balance: " + e.getMessage());
+            System.err.println("Failed to update batch bill balance: " + e.getMessage());
+            e.printStackTrace();
+            // Don't re-throw to prevent return process from failing completely
+            // The individual bill return should still succeed
+        }
+    }
+
 }
