@@ -199,21 +199,49 @@ SELECT 'Step 4: Performance verification with EXPLAIN...' AS progress;
 -- This simulates the actual query used in UserStockController.isStockAvailable()
 SELECT 'Testing index usage with EXPLAIN...' AS test_status;
 
--- Sample EXPLAIN for uppercase table (if exists)
-EXPLAIN SELECT SUM(us.UPDATIONQTY)
-FROM USER_STOCK us
-WHERE us.RETIRED = 0
-  AND us.STOCK_ID = 1
-  AND us.CREATER_ID != 1
-  AND us.CREATEDAT BETWEEN DATE_SUB(NOW(), INTERVAL 30 MINUTE) AND NOW();
+-- Determine which table name case to use
+SET @use_uppercase_userstock = (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'USER_STOCK'
+);
 
--- Sample EXPLAIN for lowercase table (if exists)
-EXPLAIN SELECT SUM(us.UPDATIONQTY)
-FROM userstock us
-WHERE us.RETIRED = 0
-  AND us.STOCK_ID = 1
-  AND us.CREATER_ID != 1
-  AND us.CREATEDAT BETWEEN DATE_SUB(NOW(), INTERVAL 30 MINUTE) AND NOW();
+SET @use_lowercase_userstock = (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'userstock'
+);
+
+-- Only run EXPLAIN if tables exist
+SELECT
+    CASE WHEN @use_uppercase_userstock > 0
+         THEN 'Running EXPLAIN for USER_STOCK (uppercase)...'
+         WHEN @use_lowercase_userstock > 0
+         THEN 'Running EXPLAIN for userstock (lowercase)...'
+         ELSE 'No USER_STOCK/userstock table found - skipping EXPLAIN'
+    END AS explain_status;
+
+-- Sample EXPLAIN for uppercase table (only if exists)
+SET @sql = CASE WHEN @use_uppercase_userstock > 0 THEN
+    'EXPLAIN SELECT SUM(us.UPDATIONQTY) FROM USER_STOCK us WHERE us.RETIRED = 0 AND us.STOCK_ID = 1 AND us.CREATER_ID != 1 AND us.CREATEDAT BETWEEN DATE_SUB(NOW(), INTERVAL 30 MINUTE) AND NOW()'
+ELSE
+    'SELECT "USER_STOCK table not found - skipping EXPLAIN" AS explain_result'
+END;
+
+PREPARE explain_stmt FROM @sql;
+EXECUTE explain_stmt;
+DEALLOCATE PREPARE explain_stmt;
+
+-- Sample EXPLAIN for lowercase table (only if exists and uppercase doesn't)
+SET @sql = CASE WHEN @use_lowercase_userstock > 0 AND @use_uppercase_userstock = 0 THEN
+    'EXPLAIN SELECT SUM(us.UPDATIONQTY) FROM userstock us WHERE us.RETIRED = 0 AND us.STOCK_ID = 1 AND us.CREATER_ID != 1 AND us.CREATEDAT BETWEEN DATE_SUB(NOW(), INTERVAL 30 MINUTE) AND NOW()'
+ELSE
+    'SELECT "userstock table not found or uppercase already processed - skipping EXPLAIN" AS explain_result'
+END;
+
+PREPARE explain_stmt FROM @sql;
+EXECUTE explain_stmt;
+DEALLOCATE PREPARE explain_stmt;
 
 -- ==========================================
 -- STEP 5: CREATE INDEXES ON USERSTOCKCONTAINER TABLE
