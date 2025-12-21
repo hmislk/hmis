@@ -324,12 +324,40 @@ public class ReportTemplateController implements Serializable {
         }
 
         System.out.println("jpql = " + jpql);
+        System.out.println("DEBUG: Parameters = " + parameters);
 
-        // Assuming you have an EJB or similar service to run the query
-        List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        // First, let's count how many bills match the criteria
+        String countJpql = jpql.replace("select new com.divudi.core.data.ReportTemplateRow( bill) from Bill bill left join fetch bill.patient left join fetch bill.patient.person", "select count(bill) from Bill bill");
+        System.out.println("DEBUG: Count JPQL = " + countJpql);
+
+        try {
+            Long billCount = (Long) ejbFacade.findSingleByJpql(countJpql, parameters, TemporalType.TIMESTAMP);
+            System.out.println("DEBUG: Bills matching criteria count = " + billCount);
+
+            if (billCount == 0) {
+                System.out.println("DEBUG: No bills found matching criteria - returning empty bundle");
+                return pb;
+            }
+        } catch (Exception e) {
+            System.out.println("DEBUG: Error getting count: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        // Now get the actual results
+        System.out.println("DEBUG: Executing main query to get ReportTemplateRow DTOs");
+        List<ReportTemplateRow> results = null;
+        try {
+            results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+            System.out.println("DEBUG: Query executed successfully. Results size = " + (results != null ? results.size() : "null"));
+        } catch (Exception e) {
+            System.out.println("DEBUG: Error executing DTO query: " + e.getMessage());
+            e.printStackTrace();
+            return pb;
+        }
 
         // Properly handle empty or null results
         if (results == null || results.isEmpty()) {
+            System.out.println("DEBUG: Results are null or empty - returning empty bundle");
             return pb; // Consider returning an empty ReportTemplateRowBundle instead
         }
         pb.setReportTemplateRows(results);

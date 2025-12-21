@@ -458,6 +458,120 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             OptionScope.APPLICATION
         ));
 
+        // Payment Method Availability Configurations
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "All Departments Use Same Payment Methods for OPD Billing",
+            "When enabled, all departments use the same global payment method settings. When disabled, each department can have separate payment method configurations",
+            "ConfigOptionController.java lines 86-87: Global payment method configuration switch in getPaymentMethodsForOpdBilling()",
+            OptionScope.APPLICATION
+        ));
+
+        // Individual Payment Method Availability Controls
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Cash is available for OPD Billing",
+            "Enables/disables Cash payment method in OPD billing payment method dropdown",
+            "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Credit Card is available for OPD Billing",
+            "Enables/disables Credit Card payment method in OPD billing payment method dropdown",
+            "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Multiple Payment Methods is available for OPD Billing",
+            "Enables/disables Multiple Payment Methods option in OPD billing payment method dropdown",
+            "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Staff Credit is available for OPD Billing",
+            "Enables/disables Staff Credit payment method in OPD billing payment method dropdown",
+            "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Credit is available for OPD Billing",
+            "Enables/disables Credit payment method in OPD billing payment method dropdown",
+            "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Staff Welfare is available for OPD Billing",
+            "Enables/disables Staff Welfare payment method in OPD billing payment method dropdown",
+            "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Voucher is available for OPD Billing",
+            "Enables/disables Voucher payment method in OPD billing payment method dropdown",
+            "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "IOU is available for OPD Billing",
+            "Enables/disables IOU payment method in OPD billing payment method dropdown",
+            "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Agent Payment is available for OPD Billing",
+            "Enables/disables Agent Payment method in OPD billing payment method dropdown",
+            "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Cheque is available for OPD Billing",
+            "Enables/disables Cheque payment method in OPD billing payment method dropdown",
+            "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Slip Payment is available for OPD Billing",
+            "Enables/disables Slip Payment method in OPD billing payment method dropdown",
+            "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "e-Wallet Payment is available for OPD Billing",
+            "Enables/disables e-Wallet Payment method in OPD billing payment method dropdown",
+            "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Patient Deposit is available for OPD Billing",
+            "Enables/disables Patient Deposit payment method in OPD billing payment method dropdown",
+            "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Patient Points is available for OPD Billing",
+            "Enables/disables Patient Points payment method in OPD billing payment method dropdown",
+            "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Online Settlement is available for OPD Billing",
+            "Enables/disables Online Settlement payment method in OPD billing payment method dropdown",
+            "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+            OptionScope.APPLICATION
+        ));
+
         // SMS Notification Configurations
         metadata.addConfigOption(new ConfigOptionInfo(
             "Send SMS after OPD Billing",
