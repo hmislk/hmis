@@ -83,7 +83,7 @@
         "JSF will now display decimal places naturally without formatters",
         "BigDecimal handling in Java remains unchanged",
         "Compatible with existing application code",
-        "Storage overhead: minimal (4 bytes per decimal place)"
+        "Storage overhead: None - precision (38) unchanged, only scale increased"
     ],
     "performanceMetrics": {
         "expectedQueryTimeReduction": "No impact - same query patterns",
