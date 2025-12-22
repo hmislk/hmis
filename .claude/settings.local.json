@@ -40,7 +40,8 @@
       "Bash(gh issue create:*)",
       "Bash(gh label:*)",
       "Bash(gh issue edit:*)",
-      "Bash(gh pr diff:*)"
+      "Bash(gh pr diff:*)",
+      "Bash(timeout 15 mysql:*)"
     ],
     "deny": [],
     "ask": [],
