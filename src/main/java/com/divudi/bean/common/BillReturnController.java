@@ -384,7 +384,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                 // For multiple payment methods, apply refund sign to all component payment methods
                 if (paymentMethodData.getPaymentMethodMultiple() != null
                         && paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null) {
-                    for (com.divudi.core.entity.ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                         if (cd.getPaymentMethodData() != null) {
                             // Recursively apply refund sign to each component
                             PaymentMethod originalPaymentMethod = paymentMethod;
