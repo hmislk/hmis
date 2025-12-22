@@ -1981,4 +1981,91 @@ public class UserSettingsController implements Serializable {
     public void setPharmacyDisposalReturnFinalizePageSize(int pagesize) {
         savePageSize("pharmacy_disposal_return_finalize", pagesize);
     }
+    
+    // page: pharmacy_disposal_return_approve.xhtml
+    // column: Finalized At
+    public boolean isPharmacyDisposalReturnApproveFinalizedAtVisible() {
+        return isColumnVisible("pharmacy_disposal_return_approve", "finalizedAt");
+    }
+    
+    public void setPharmacyDisposalReturnApproveFinalizedAtVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_disposal_return_approve");
+        settings.setColumnVisible("finalizedAt", visible);
+        saveColumnVisibility("pharmacy_disposal_return_approve", settings);
+    }
+    
+    //column: Finalized By
+    public boolean isPharmacyDisposalReturnApproveFinalizedByVisible() {
+        return isColumnVisible("pharmacy_disposal_return_approve", "finalizedBy");
+    }
+    
+    public void setPharmacyDisposalReturnApproveFinalizedByVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_disposal_return_approve");
+        settings.setColumnVisible("finalizedBy", visible);
+        saveColumnVisibility("pharmacy_disposal_return_approve", settings);
+    }
+    
+    //column: Patient
+    public boolean isPharmacyDisposalReturnApprovePatientVisible() {
+        return isColumnVisible("pharmacy_disposal_return_approve", "patient");
+    }
+    
+    public void setPharmacyDisposalReturnApprovePatientVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_disposal_return_approve");
+        settings.setColumnVisible("patient", visible);
+        saveColumnVisibility("pharmacy_disposal_return_approve", settings);
+    }
+    
+    //column: return No
+    public boolean isPharmacyDisposalReturnApproveReturnNoVisible() {
+        return isColumnVisible("pharmacy_disposal_return_approve", "returnNo");
+    }
+    
+    public void setPharmacyDisposalReturnApproveReturnNoVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_disposal_return_approve");
+        settings.setColumnVisible("returnNo", visible);
+        saveColumnVisibility("pharmacy_disposal_return_approve", settings);
+    }
+    
+    //column: Original Issue Bill
+    public boolean isPharmacyDisposalReturnApproveOriginalIssueBillVisible() {
+        return isColumnVisible("pharmacy_disposal_return_approve", "originalIssueBill");
+    }
+    
+    public void setPharmacyDisposalReturnApproveOriginalIssueBillVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_disposal_return_approve");
+        settings.setColumnVisible("originalIssueBill", visible);
+        saveColumnVisibility("pharmacy_disposal_return_approve", settings);
+    }
+    
+    //column: Department
+    public boolean isPharmacyDisposalReturnApproveDepartmentVisible() {
+        return isColumnVisible("pharmacy_disposal_return_approve", "department");
+    }
+    
+    public void setPharmacyDisposalReturnApproveDepartmentVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_disposal_return_approve");
+        settings.setColumnVisible("department", visible);
+        saveColumnVisibility("pharmacy_disposal_return_approve", settings);
+    }
+    
+    //column: Return Value
+    public boolean isPharmacyDisposalReturnApproveReturnValueVisible() {
+        return isColumnVisible("pharmacy_disposal_return_approve", "returnValue");
+    }
+    
+    public void setPharmacyDisposalReturnApproveReturnValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_disposal_return_approve");
+        settings.setColumnVisible("returnValue", visible);
+        saveColumnVisibility("pharmacy_disposal_return_approve", settings);
+    }
+    
+    // page size
+    public int getPharmacyDisposalReturnApprovePageSize() {
+        return getPageSize("pharmacy_disposal_return_approve", 10);
+    }
+
+    public void setPharmacyDisposalReturnApprovePageSize(int pagesize) {
+        savePageSize("pharmacy_disposal_return_approve", pagesize);
+    }
 }
