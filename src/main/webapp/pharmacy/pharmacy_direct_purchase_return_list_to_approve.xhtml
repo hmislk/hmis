@@ -160,7 +160,7 @@
                                 id="tbl" 
                                 value="#{directPurchaseReturnWorkflowController.directPurchaseReturnsToApprove}" 
                                 var="b"
-                                rows="15"
+                                rows="#{userSettingsController.pharmacyDirectPurchaseReturnListToApprovePageSize}"
                                 paginator="true"
                                 paginatorPosition="bottom"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -171,7 +171,7 @@
                                 sortMode="multiple"
                                 resizableColumns="true"
                                 reflow="true">
-                            <p:column headerText="Requested At">
+                                <p:column headerText="Requested At" rendered="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveRequestedAtVisible}">
                                 <h:commandLink action="pharmacy_reprint_direct_purchase_return_request">
                                     <h:outputLabel value="#{b.createdAt}">
                                         <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -188,7 +188,7 @@
                                 </h:panelGroup>                       
                             </p:column> 
 
-                            <p:column headerText="Requested By">
+                                <p:column headerText="Requested By" rendered="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveRequestedByVisible}">
                                 <h:commandLink action="pharmacy_reprint_direct_purchase_return_request">
                                     <h:outputLabel value="#{b.creater.webUserPerson.name}">                                      
                                     </h:outputLabel>
@@ -203,29 +203,29 @@
                                 </h:panelGroup>
                             </p:column>    
 
-                            <p:column headerText="Supplier">
+                                <p:column headerText="Supplier" rendered="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveSupplierVisible}">
                                 <h:commandLink action="pharmacy_reprint_direct_purchase_return_request">
                                     #{b.toInstitution.name}
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                 </h:commandLink>
                             </p:column>
 
-                            <p:column headerText="Return No">
+                                <p:column headerText="Return No" rendered="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveReturnNoVisible}">
                                 <h:outputText value="#{b.deptId}"></h:outputText>
                             </p:column>
 
-                            <p:column headerText="Original Purchase">
+                                <p:column headerText="Original Purchase" rendered="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveOriginalPurchaseVisible}">
                                 <h:outputText value="#{b.referenceBill.deptId}"></h:outputText>
                             </p:column>
 
-                            <p:column headerText="Requested Department">
+                                <p:column headerText="Requested Department" rendered="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveRequestedDepartmentVisible}">
                                 <h:commandLink action="pharmacy_reprint_direct_purchase_return_request">
                                     #{b.department.name}
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                 </h:commandLink>
                             </p:column> 
 
-                            <p:column headerText="Requested Value" sortBy="#{b.netTotal}" styleClass="text-end">
+                                <p:column headerText="Requested Value" sortBy="#{b.netTotal}" styleClass="text-end" rendered="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveRequestedValueVisible}">
                                 <div class="d-flex align-items-center justify-content-end">
                                     <i class="fas fa-coins text-success me-2"></i>
                                     <span class="fw-bold text-success fs-6">
@@ -236,7 +236,7 @@
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Approved Person">
+                                <p:column headerText="Approved Person" rendered="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveApprovedPersonVisible}">
                                 <h:commandLink 
                                     action="pharmacy_reprint_direct_purchase_return_request" 
                                     value="#{b.completedBy.webUserPerson.nameWithTitle}"
@@ -245,7 +245,7 @@
                                 </h:commandLink>
                             </p:column> 
 
-                            <p:column headerText="Approved Value" sortBy="#{b.netTotal}" styleClass="text-end">
+                                <p:column headerText="Approved Value" sortBy="#{b.netTotal}" styleClass="text-end" rendered="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveApprovedValueVisible}">
                                 <div class="d-flex align-items-center justify-content-end" rendered="#{b.completed eq true}">
                                     <i class="fas fa-coins text-info me-2"></i>
                                     <span class="fw-bold text-info fs-6">
@@ -256,7 +256,7 @@
                                 </div>
                             </p:column>
 
-                            <p:column headerText="Status" width="8em">
+                                <p:column headerText="Status" width="8em" rendered="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveStatusVisible}">
                                 <h:panelGroup rendered="#{b.checkedBy ne null and (b.completed eq false or b.completed eq null)}">
                                     <span class="badge bg-warning text-dark">Pending Approval</span>
                                 </h:panelGroup>
@@ -312,6 +312,58 @@
                                 </div>
                             </p:column>
                         </p:dataTable>
+                            
+                            <!-- Column Visibility Settings -->
+                            <div class="mt-3 pt-2" style="border-top: 1px solid #e9ecef;">
+                                <p:panel id="panelColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                    <f:facet name="header">
+                                        <span style="font-size: 0.85rem; color: #6c757d;">
+                                            <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                            Customize Columns
+                                        </span>
+                                    </f:facet>
+
+                                    <div class="d-flex flex-wrap gap-2 gap-2xl-0 justify-content-between align-items-center" style="font-size: 0.8rem">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveRequestedAtVisible}"
+                                                                        itemLabel="Requested At">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveRequestedByVisible}"
+                                                                         itemLabel="Requested By">
+                                            </p:selectBooleanCheckbox>                                  
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveSupplierVisible}"
+                                                                           itemLabel="Supplier">
+                                            </p:selectBooleanCheckbox> 
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveReturnNoVisible}"
+                                                                         itemLabel="Return No">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveOriginalPurchaseVisible}"
+                                                                         itemLabel="Original Purchase">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveRequestedDepartmentVisible}"
+                                                                           itemLabel="Requested Department">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveRequestedValueVisible}"
+                                                                           itemLabel="Requested Value">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveApprovedPersonVisible}"
+                                                                           itemLabel="Approved Person">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveApprovedValueVisible}"
+                                                                           itemLabel="Approved Value">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDirectPurchaseReturnListToApproveStatusVisible}"
+                                                                           itemLabel="Status">
+                                            </p:selectBooleanCheckbox>
+                                        </div>
+                                        <div class="flex">
+                                            <p:commandButton
+                                                value="Apply"
+                                                ajax="false" />
+                                        </div>
+                                    </div>
+                                </p:panel>
+                             </div>
                         </p:panel>
                     </div>
                 </div>
