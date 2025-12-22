@@ -2861,21 +2861,21 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         drawerController.updateDrawerForOuts(ps);
         JsfUtil.addSuccessMessage("Cancelled");
 
-        if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
+        if (cancellationBill.getPaymentMethod() == PaymentMethod.Credit) {
             //TODO: Manage Credit Balances for Company, Staff
-            if (getBill().getToStaff() != null) {
-                staffBean.updateStaffCredit(getBill().getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
+            if (cancellationBill.getToStaff() != null) {
+                staffBean.updateStaffCredit(cancellationBill.getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
-                cancellationBill.setFromStaff(getBill().getToStaff());
+                cancellationBill.setFromStaff(cancellationBill.getToStaff());
                 getBillFacade().edit(cancellationBill);
             }
         }
 
-        if (getBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
-            if (getBill().getToStaff() != null) {
-                staffBean.updateStaffWelfare(getBill().getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
+        if (cancellationBill.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+            if (cancellationBill.getToStaff() != null) {
+                staffBean.updateStaffWelfare(cancellationBill.getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
                 JsfUtil.addSuccessMessage("Staff Welfare Updated");
-                cancellationBill.setFromStaff(getBill().getToStaff());
+                cancellationBill.setFromStaff(cancellationBill.getToStaff());
                 getBillFacade().edit(cancellationBill);
             }
         }
