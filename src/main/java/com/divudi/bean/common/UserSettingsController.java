@@ -1521,4 +1521,81 @@ public class UserSettingsController implements Serializable {
     public void setPharmacyGrnReturnListToApprovePageSize(int pagesize) {
         savePageSize("pharmacy_grn_return_list_to_approve", pagesize);
     }
+    
+    
+    // page: pharmacy_direct_purchase_return_request.xhtml
+    // column: Distributor
+    public boolean isPharmacyDirectPurchaseReturnRequestDistributorVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_request", "distributor");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnRequestDistributorVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_request");
+        settings.setColumnVisible("distributor", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_request", settings);
+    }
+    
+    //column: Purchase No
+    public boolean isPharmacyDirectPurchaseReturnRequestPurchaseNoVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_request", "purchaseNo");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnRequestPurchaseNoVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_request");
+        settings.setColumnVisible("purchaseNo", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_request", settings);
+    }
+    
+    //column: Invoice No
+    public boolean isPharmacyDirectPurchaseReturnRequestInvoiceNoVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_request", "invoiceNo");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnRequestInvoiceNoVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_request");
+        settings.setColumnVisible("invoiceNo", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_request", settings);
+    }
+    
+    //column: purchase Details
+    public boolean isPharmacyDirectPurchaseReturnRequestPurchaseDetailsVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_request", "purchaseDetails");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnRequestPurchaseDetailsVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_request");
+        settings.setColumnVisible("purchaseDetails", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_request", settings);
+    }
+    
+    //column: Purchase Value
+    public boolean isPharmacyDirectPurchaseReturnRequestPurchaseValueVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_request", "purchaseValue");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnRequestPurchaseValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_request");
+        settings.setColumnVisible("purchaseValue", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_request", settings);
+    }
+    
+    //column: Previously Return
+    public boolean isPharmacyDirectPurchaseReturnRequestPreviousReturnsVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_request", "previousReturns");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnRequestPreviousReturnsVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_request");
+        settings.setColumnVisible("previousReturns", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_request", settings);
+    }
+    
+    // page size
+    public int getPharmacyDirectPurchaseReturnRequestPageSize() {
+        return getPageSize("pharmacy_direct_purchase_return_request", 10);
+    }
+
+    public void setPharmacyDirectPurchaseReturnRequestPageSize(int pagesize) {
+        savePageSize("pharmacy_direct_purchase_return_request", pagesize);
+    }
 }
