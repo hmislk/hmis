@@ -901,7 +901,7 @@ public class ConfigOptionController implements Serializable {
         return globalFilter;
     }
 
-    public void setGlobalFilter(String globalFilterV) {
+    public void setGlobalFilter(String globalFilter) {
         this.globalFilter = globalFilter;
     }
     
