@@ -1598,4 +1598,92 @@ public class UserSettingsController implements Serializable {
     public void setPharmacyDirectPurchaseReturnRequestPageSize(int pagesize) {
         savePageSize("pharmacy_direct_purchase_return_request", pagesize);
     }
+    
+    // page: pharmacy_direct_purchase_return_list_to_finalize.xhtml
+    // column: Requested At
+    public boolean isPharmacyDirectPurchaseReturnListToFinalizeRequestedAtVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_list_to_finalize", "requestedAt");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnListToFinalizeRequestedAtVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_list_to_finalize");
+        settings.setColumnVisible("requestedAt", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_list_to_finalize", settings);
+    }
+    
+    //column: RequestedBy
+    public boolean isPharmacyDirectPurchaseReturnListToFinalizeRequestedByVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_list_to_finalize", "requestedBy");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnListToFinalizeRequestedByVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_list_to_finalize");
+        settings.setColumnVisible("requestedBy", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_list_to_finalize", settings);
+    }
+    
+    //column: Supplier
+    public boolean isPharmacyDirectPurchaseReturnListToFinalizeSupplierVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_list_to_finalize", "supplier");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnListToFinalizeSupplierVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_list_to_finalize");
+        settings.setColumnVisible("supplier", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_list_to_finalize", settings);
+    }
+    
+    //column: Return No
+    public boolean isPharmacyDirectPurchaseReturnListToFinalizeReturnNoVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_list_to_finalize", "returnNo");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnListToFinalizeReturnNoVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_list_to_finalize");
+        settings.setColumnVisible("returnNo", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_list_to_finalize", settings);
+    }
+    
+    //column: Original Purhcase
+    public boolean isPharmacyDirectPurchaseReturnListToFinalizeOriginalPurchaseVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_list_to_finalize", "originalPurchase");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnListToFinalizeOriginalPurchaseVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_list_to_finalize");
+        settings.setColumnVisible("originalPurchase", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_list_to_finalize", settings);
+    }
+    
+    //column: Department
+    public boolean isPharmacyDirectPurchaseReturnListToFinalizeDepartmentVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_list_to_finalize", "department");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnListToFinalizeDepartmentVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_list_to_finalize");
+        settings.setColumnVisible("department", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_list_to_finalize", settings);
+    }
+    
+    //column: Return Value
+    public boolean isPharmacyDirectPurchaseReturnListToFinalizeReturnValueVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_list_to_finalize", "returnValue");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnListToFinalizeReturnValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_list_to_finalize");
+        settings.setColumnVisible("returnValue", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_list_to_finalize", settings);
+    }
+    
+    
+    // page size
+    public int getPharmacyDirectPurchaseReturnListToFinalizePageSize() {
+        return getPageSize("pharmacy_direct_purchase_return_list_to_finalize", 10);
+    }
+
+    public void setPharmacyDirectPurchaseReturnListToFinalizePageSize(int pagesize) {
+        savePageSize("pharmacy_direct_purchase_return_list_to_finalize", pagesize);
+    }
 }
