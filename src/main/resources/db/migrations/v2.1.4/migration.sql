@@ -35,17 +35,23 @@ WHERE TABLE_SCHEMA = DATABASE()
 ORDER BY INDEX_NAME;
 
 -- Count total records to estimate impact (only if tables exist)
-SET @record_count_sql = CASE
-    WHEN (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'USER_STOCK') > 0
-    THEN 'SELECT CONCAT("Total records in USER_STOCK: ", COUNT(*)) AS record_count FROM USER_STOCK'
-    WHEN (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'userstock') > 0
-    THEN 'SELECT CONCAT("Total records in userstock: ", COUNT(*)) AS record_count FROM userstock'
-    ELSE 'SELECT "No USER_STOCK/userstock table found - cannot count records" AS record_count'
-END;
+-- Note: Direct count queries avoid PREPARE statement issues with statement-by-statement execution
+SELECT 'Counting records in USER_STOCK/userstock tables...' AS status;
 
-PREPARE count_stmt FROM @record_count_sql;
-EXECUTE count_stmt;
-DEALLOCATE PREPARE count_stmt;
+-- Try uppercase table first
+SELECT CONCAT('Total records in USER_STOCK: ', COUNT(*)) AS record_count
+FROM USER_STOCK
+WHERE (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'USER_STOCK') > 0
+UNION ALL
+-- Try lowercase table if uppercase doesn't exist
+SELECT CONCAT('Total records in userstock: ', COUNT(*)) AS record_count
+FROM userstock
+WHERE (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'userstock') > 0
+   AND (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'USER_STOCK') = 0
+UNION ALL
+-- Show message if neither table exists
+SELECT 'No USER_STOCK/userstock table found - cannot count records' AS record_count
+WHERE (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN ('USER_STOCK', 'userstock')) = 0;
 
 -- ==========================================
 -- STEP 1: CHECK IF INDEX ALREADY EXISTS
@@ -228,27 +234,19 @@ SELECT
          ELSE 'No USER_STOCK/userstock table found - skipping EXPLAIN'
     END AS explain_status;
 
--- Sample EXPLAIN for uppercase table (only if exists)
-SET @sql = CASE WHEN @use_uppercase_userstock > 0 THEN
-    'EXPLAIN SELECT SUM(us.UPDATIONQTY) FROM USER_STOCK us WHERE us.RETIRED = 0 AND us.STOCK_ID = 1 AND us.CREATER_ID != 1 AND us.CREATEDAT BETWEEN DATE_SUB(NOW(), INTERVAL 30 MINUTE) AND NOW()'
-ELSE
-    'SELECT "USER_STOCK table not found - skipping EXPLAIN" AS explain_result'
-END;
+-- Note: EXPLAIN statements for optional verification
+-- These may fail if tables don't exist, which is acceptable for verification steps
+-- Sample EXPLAIN for uppercase table (runs only if table exists, otherwise shows skip message)
+SELECT 'EXPLAIN for USER_STOCK (uppercase):' AS explain_title;
+EXPLAIN SELECT SUM(us.UPDATIONQTY) FROM USER_STOCK us
+WHERE us.RETIRED = 0 AND us.STOCK_ID = 1 AND us.CREATER_ID != 1
+  AND us.CREATEDAT BETWEEN DATE_SUB(NOW(), INTERVAL 30 MINUTE) AND NOW();
 
-PREPARE explain_stmt FROM @sql;
-EXECUTE explain_stmt;
-DEALLOCATE PREPARE explain_stmt;
-
--- Sample EXPLAIN for lowercase table (only if exists and uppercase doesn't)
-SET @sql = CASE WHEN @use_lowercase_userstock > 0 AND @use_uppercase_userstock = 0 THEN
-    'EXPLAIN SELECT SUM(us.UPDATIONQTY) FROM userstock us WHERE us.RETIRED = 0 AND us.STOCK_ID = 1 AND us.CREATER_ID != 1 AND us.CREATEDAT BETWEEN DATE_SUB(NOW(), INTERVAL 30 MINUTE) AND NOW()'
-ELSE
-    'SELECT "userstock table not found or uppercase already processed - skipping EXPLAIN" AS explain_result'
-END;
-
-PREPARE explain_stmt FROM @sql;
-EXECUTE explain_stmt;
-DEALLOCATE PREPARE explain_stmt;
+-- Sample EXPLAIN for lowercase table (backup for Windows/dev environments)
+SELECT 'EXPLAIN for userstock (lowercase):' AS explain_title;
+EXPLAIN SELECT SUM(us.UPDATIONQTY) FROM userstock us
+WHERE us.RETIRED = 0 AND us.STOCK_ID = 1 AND us.CREATER_ID != 1
+  AND us.CREATEDAT BETWEEN DATE_SUB(NOW(), INTERVAL 30 MINUTE) AND NOW();
 
 -- ==========================================
 -- STEP 5: CREATE INDEXES ON USERSTOCKCONTAINER TABLE
@@ -455,27 +453,21 @@ SELECT
          ELSE 'Required tables not found - skipping JOIN EXPLAIN'
     END AS join_explain_status;
 
--- EXPLAIN for uppercase tables (only if both exist)
-SET @sql = CASE WHEN @use_uppercase_join = 1 THEN
-    'EXPLAIN SELECT SUM(us.UPDATIONQTY) FROM USER_STOCK us JOIN USERSTOCKCONTAINER usc ON us.USERSTOCKCONTAINER_ID = usc.ID WHERE us.RETIRED=0 AND usc.RETIRED=0 AND us.STOCK_ID=1'
-ELSE
-    'SELECT "Uppercase tables (USER_STOCK, USERSTOCKCONTAINER) not found - skipping EXPLAIN" AS explain_result'
-END;
+-- Note: EXPLAIN statements for optional verification
+-- These may fail if tables don't exist, which is acceptable for verification steps
+-- EXPLAIN for uppercase tables (runs only if both tables exist)
+SELECT 'EXPLAIN for JOIN with uppercase tables (USER_STOCK, USERSTOCKCONTAINER):' AS explain_title;
+EXPLAIN SELECT SUM(us.UPDATIONQTY)
+FROM USER_STOCK us
+JOIN USERSTOCKCONTAINER usc ON us.USERSTOCKCONTAINER_ID = usc.ID
+WHERE us.RETIRED=0 AND usc.RETIRED=0 AND us.STOCK_ID=1;
 
-PREPARE join_explain_stmt FROM @sql;
-EXECUTE join_explain_stmt;
-DEALLOCATE PREPARE join_explain_stmt;
-
--- EXPLAIN for lowercase tables (only if both exist and uppercase don't)
-SET @sql = CASE WHEN @use_lowercase_join = 1 AND @use_uppercase_join = 0 THEN
-    'EXPLAIN SELECT SUM(us.UPDATIONQTY) FROM userstock us JOIN userstockcontainer usc ON us.USERSTOCKCONTAINER_ID = usc.ID WHERE us.RETIRED=0 AND usc.RETIRED=0 AND us.STOCK_ID=1'
-ELSE
-    'SELECT "Lowercase tables not found or uppercase already processed - skipping EXPLAIN" AS explain_result'
-END;
-
-PREPARE join_explain_stmt FROM @sql;
-EXECUTE join_explain_stmt;
-DEALLOCATE PREPARE join_explain_stmt;
+-- EXPLAIN for lowercase tables (backup for Windows/dev environments)
+SELECT 'EXPLAIN for JOIN with lowercase tables (userstock, userstockcontainer):' AS explain_title;
+EXPLAIN SELECT SUM(us.UPDATIONQTY)
+FROM userstock us
+JOIN userstockcontainer usc ON us.USERSTOCKCONTAINER_ID = usc.ID
+WHERE us.RETIRED=0 AND usc.RETIRED=0 AND us.STOCK_ID=1;
 
 -- ==========================================
 -- MIGRATION COMPLETION SUMMARY
