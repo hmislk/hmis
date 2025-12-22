@@ -6,7 +6,7 @@ package com.divudi.core.data;
 
 public enum AppointmentType {
     IP_APPOINTMENT("Inpatient Appointment", "IPA" ),
-    IP_APPOINTMENT_CANCELATION("Cancel Inpatient Appointment ", "IPA/CAN" );
+    IP_APPOINTMENT_CANCELATION("Cancel Inpatient Appointment", "IPA/CAN" );
     
     private final String displayName;
     private final String code;
@@ -23,5 +23,4 @@ public enum AppointmentType {
     public String getCode() {
         return code;
     }
-
 }

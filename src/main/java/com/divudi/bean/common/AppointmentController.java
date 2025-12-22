@@ -1095,7 +1095,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                                         JsfUtil.addErrorMessage("Error in card payment Details");
                                         return true;
                                     } else {
-                                        checkAmount = cd.getPaymentMethodData().getCash().getTotalValue();
+                                        checkAmount = cd.getPaymentMethodData().getCreditCard().getTotalValue();
 
                                         if (checkAmount <= 0.0) {
                                             JsfUtil.addErrorMessage("Please enter the amount to be paid from Card.");
