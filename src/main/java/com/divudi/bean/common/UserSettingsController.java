@@ -1686,4 +1686,125 @@ public class UserSettingsController implements Serializable {
     public void setPharmacyDirectPurchaseReturnListToFinalizePageSize(int pagesize) {
         savePageSize("pharmacy_direct_purchase_return_list_to_finalize", pagesize);
     }
+    
+    // page: pharmacy_direct_purchase_return_list_to_approve.xhtml
+    // column: Requested At
+    public boolean isPharmacyDirectPurchaseReturnListToApproveRequestedAtVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_list_to_approve", "requestedAt");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnListToApproveRequestedAtVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_list_to_approve");
+        settings.setColumnVisible("requestedAt", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_list_to_approve", settings);
+    }
+    
+    //column: Requested By
+    public boolean isPharmacyDirectPurchaseReturnListToApproveRequestedByVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_list_to_approve", "requestedBy");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnListToApproveRequestedByVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_list_to_approve");
+        settings.setColumnVisible("requestedBy", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_list_to_approve", settings);
+    }
+    
+    //column: Supplier
+    public boolean isPharmacyDirectPurchaseReturnListToApproveSupplierVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_list_to_approve", "supplier");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnListToApproveSupplierVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_list_to_approve");
+        settings.setColumnVisible("supplier", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_list_to_approve", settings);
+    }
+    
+    //column: Return No
+    public boolean isPharmacyDirectPurchaseReturnListToApproveReturnNoVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_list_to_approve", "returnNo");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnListToApproveReturnNoVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_list_to_approve");
+        settings.setColumnVisible("returnNo", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_list_to_approve", settings);
+    }
+    
+    //column: Original Purchase
+    public boolean isPharmacyDirectPurchaseReturnListToApproveOriginalPurchaseVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_list_to_approve", "originalPurchase");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnListToApproveOriginalPurchaseVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_list_to_approve");
+        settings.setColumnVisible("originalPurchase", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_list_to_approve", settings);
+    }
+    
+    //column: Requested Department
+    public boolean isPharmacyDirectPurchaseReturnListToApproveRequestedDepartmentVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_list_to_approve", "requestedDepartment");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnListToApproveRequestedDepartmentVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_list_to_approve");
+        settings.setColumnVisible("requestedDepartment", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_list_to_approve", settings);
+    }
+    
+    //column: Requested Value
+    public boolean isPharmacyDirectPurchaseReturnListToApproveRequestedValueVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_list_to_approve", "requestedValue");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnListToApproveRequestedValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_list_to_approve");
+        settings.setColumnVisible("requestedValue", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_list_to_approve", settings);
+    }
+    
+    //column: Approved Person
+    public boolean isPharmacyDirectPurchaseReturnListToApproveApprovedPersonVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_list_to_approve", "approvedPerson");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnListToApproveApprovedPersonVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_list_to_approve");
+        settings.setColumnVisible("approvedPerson", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_list_to_approve", settings);
+    }
+    
+    //column: Approved Value
+    public boolean isPharmacyDirectPurchaseReturnListToApproveApprovedValueVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_list_to_approve", "approvedValue");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnListToApproveApprovedValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_list_to_approve");
+        settings.setColumnVisible("approvedValue", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_list_to_approve", settings);
+    }
+    
+    //column: Status
+    public boolean isPharmacyDirectPurchaseReturnListToApproveStatusVisible() {
+        return isColumnVisible("pharmacy_direct_purchase_return_list_to_approve", "status");
+    }
+    
+    public void setPharmacyDirectPurchaseReturnListToApproveStatusVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_direct_purchase_return_list_to_approve");
+        settings.setColumnVisible("status", visible);
+        saveColumnVisibility("pharmacy_direct_purchase_return_list_to_approve", settings);
+    }
+    
+    
+    // page size
+    public int getPharmacyDirectPurchaseReturnListToApprovePageSize() {
+        return getPageSize("pharmacy_direct_purchase_return_list_to_approve", 10);
+    }
+
+    public void setPharmacyDirectPurchaseReturnListToApprovePageSize(int pagesize) {
+        savePageSize("pharmacy_direct_purchase_return_list_to_approve", pagesize);
+    }
 }
