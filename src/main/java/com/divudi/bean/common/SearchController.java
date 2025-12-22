@@ -6825,6 +6825,84 @@ public class SearchController implements Serializable {
         createPoTable(billTypesToList, billTypesToAttachedToEachBillInTheList);
     }
 
+    /**
+     * DTO-based version of createPoTablePharmacy for optimized performance.
+     * Uses direct DTO query to avoid N+1 problem and entity graph loading.
+     * Does NOT include GRN details (nested table) for maximum performance.
+     */
+    public void createPoTablePharmacyDto() {
+        pharmacyPurchaseOrderDtos = null;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderDTO("
+                + "b.id, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.netTotal, "
+                + "COALESCE(b.creater.webUserPerson.name, ''), "
+                + "COALESCE(b.toInstitution.name, ''), "
+                + "COALESCE(b.fromDepartment.name, ''), "
+                + "b.consignment, "
+                + "b.cancelled, "
+                + "b.billClosed, "
+                + "b.fullyIssued, "
+                + "b.cancelledBill.createdAt, "
+                + "COALESCE(b.cancelledBill.creater.webUserPerson.name, '')) "
+                + "FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.referenceBill.institution = :ins "
+                + "AND b.department = :dept "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
+
+        if (getSearchKeyword() != null) {
+            if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
+                jpql += "AND UPPER(b.deptId) LIKE :billNo ";
+                params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+            }
+
+            if (getSearchKeyword().getToInstitution() != null && !getSearchKeyword().getToInstitution().trim().isEmpty()) {
+                jpql += "AND UPPER(b.toInstitution.name) LIKE :toIns ";
+                params.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
+            }
+
+            if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().isEmpty()) {
+                try {
+                    BigDecimal netTotalValue = new BigDecimal(getSearchKeyword().getNetTotal().trim());
+                    jpql += "AND b.netTotal = :netTotal ";
+                    params.put("netTotal", netTotalValue);
+                } catch (NumberFormatException e) {
+                    // Ignore invalid number format
+                }
+            }
+
+            if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().isEmpty()) {
+                jpql += "AND b.id IN (SELECT bItem.bill.id "
+                        + "FROM BillItem bItem "
+                        + "WHERE bItem.retired = false "
+                        + "AND UPPER(bItem.item.name) LIKE :itm) ";
+                params.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+            }
+        }
+
+        jpql += "ORDER BY b.createdAt DESC";
+
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        params.put("ins", getSessionController().getInstitution());
+        params.put("dept", sessionController.getDepartment());
+        params.put("bta", BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
+
+        if (getReportKeyWord() != null && getReportKeyWord().isAdditionalDetails()) {
+            pharmacyPurchaseOrderDtos = (List<PharmacyPurchaseOrderDTO>) getBillFacade()
+                    .findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        } else {
+            pharmacyPurchaseOrderDtos = (List<PharmacyPurchaseOrderDTO>) getBillFacade()
+                    .findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+        }
+    }
+
     public void createPoTableStore() {
         Date startTime = new Date();
 
@@ -15930,6 +16008,16 @@ public class SearchController implements Serializable {
     public String navigateToListPurchaseOrdersToReceive() {
         makeListNull();
         return "/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to the DTO-optimized list of Purchase Orders available for receiving (GRN).
+     * This version uses DTOs for better performance and does not include nested GRN details.
+     * Ensures any previous search state and bill lists are cleared.
+     */
+    public String navigateToListPurchaseOrdersToReceiveDto() {
+        makeListNull();
+        return "/pharmacy/pharmacy_purchase_order_list_for_recieve_dto?faces-redirect=true";
     }
 
     /**

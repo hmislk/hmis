@@ -53,6 +53,10 @@ public class PharmacyPurchaseOrderDTO implements Serializable {
     private String cancellerName;
     private Date cancelledAt;
 
+    // Bill status fields (for GRN page actions)
+    private Boolean billClosed;
+    private Boolean fullyIssued;
+
     // Default constructor required for JPA
     public PharmacyPurchaseOrderDTO() {
     }
@@ -269,6 +273,38 @@ public class PharmacyPurchaseOrderDTO implements Serializable {
         this.referenceBillCancelled = referenceBillCancelled != null ? (Boolean) referenceBillCancelled : false;
         this.checkedById = checkedById;
         this.checkedByName = checkedByName;
+    }
+
+    // Constructor for GRN PO listing page (13 parameters - JPQL compatible)
+    // Used for pharmacy_purchase_order_list_for_recieve_dto.xhtml - optimized for approved POs awaiting GRN
+    public PharmacyPurchaseOrderDTO(
+            Long billId,
+            String deptId,
+            Date createdAt,
+            Double netTotal,
+            String creatorName,
+            String supplierName,
+            String departmentName,
+            Object consignment,
+            Object cancelled,
+            Object billClosed,
+            Object fullyIssued,
+            Date cancelledBillCreatedAt,
+            String cancellerName) {
+        this.billId = billId;
+        this.billNumber = deptId; // Use deptId as billNumber for display
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.netTotal = netTotal;
+        this.creatorName = creatorName;
+        this.supplierName = supplierName;
+        this.departmentName = departmentName;
+        this.consignment = consignment != null ? (Boolean) consignment : false;
+        this.cancelled = cancelled != null ? (Boolean) cancelled : false;
+        this.billClosed = billClosed != null ? (Boolean) billClosed : false;
+        this.fullyIssued = fullyIssued != null ? (Boolean) fullyIssued : false;
+        this.cancelledAt = cancelledBillCreatedAt;
+        this.cancellerName = cancellerName;
     }
 
     // Status check methods
@@ -511,6 +547,22 @@ public class PharmacyPurchaseOrderDTO implements Serializable {
 
     public void setCancelledAt(Date cancelledAt) {
         this.cancelledAt = cancelledAt;
+    }
+
+    public Boolean getBillClosed() {
+        return billClosed;
+    }
+
+    public void setBillClosed(Boolean billClosed) {
+        this.billClosed = billClosed;
+    }
+
+    public Boolean getFullyIssued() {
+        return fullyIssued;
+    }
+
+    public void setFullyIssued(Boolean fullyIssued) {
+        this.fullyIssued = fullyIssued;
     }
 
     @Override
