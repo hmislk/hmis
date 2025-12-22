@@ -47,13 +47,71 @@
                                         class="ui-button-administration "
                                         action="#{inwardReservationController.navigateToReservationCalendarFromMenu()}" >
                                     </p:commandButton>
-                                    
+
                                 </div>
                             </f:facet>
 
                             <div class="row mt-3">
                                 <div class="col-md-6">
                                     <common:patient_details_for_appoiment editable="true" controller="#{appointmentController}"/>
+
+                                    <p:panel class="my-2">
+                                        <f:facet name="header" >
+                                            <h:outputLabel value="Reservation Details" />
+                                        </f:facet>
+                                        <h:panelGroup class="my-2 w-100" >
+                                            <h:panelGrid columns="3" class="w-50 my-2">
+
+                                                <h:outputLabel value="Room No"/>
+                                                <h:outputLabel value=":"/>
+                                                <p:autoComplete
+                                                    forceSelection="true"  
+                                                    id="cmbRspRoom" 
+                                                    class="mx-4 my-2"
+                                                    value="#{appointmentController.reservedRoom}" 
+                                                    completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
+                                                    var="rf" 
+                                                    placeholder="Select Room"
+                                                    inputStyleClass="w-100"
+                                                    itemLabel="#{rf.name}" 
+                                                    itemValue="#{rf}" 
+                                                    size="30"
+                                                    maxResults="25">
+                                                </p:autoComplete>
+
+                                                <h:outputLabel value="Reserve From"/>
+                                                <h:outputLabel value=":"/>
+                                                <p:datePicker 
+                                                    value="#{appointmentController.reservedFromDate}" 
+                                                    id="reserveFromTimeStamp"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    styleClass="form-control w-100"
+                                                    showButtonBar="true"
+                                                    placeholder="Select Reserve From"
+                                                    timeInput="true"
+                                                    showTime="true"
+                                                    class="w-50 mx-4 my-2" 
+                                                    inputStyleClass="w-100" >
+                                                </p:datePicker>
+
+                                                <h:outputLabel value="Reserve To"/>
+                                                <h:outputLabel value=":"/>
+                                                <p:datePicker 
+                                                    value="#{appointmentController.reservedToDate}" 
+                                                    id="reserveToTimeStamp"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    styleClass="form-control w-100"
+                                                    showButtonBar="true"
+                                                    placeholder="Select Reserve To"
+                                                    timeInput="true"
+                                                    showTime="true"
+                                                    class="w-50 mx-4 my-2" 
+                                                    inputStyleClass="w-100" >
+                                                </p:datePicker>
+
+                                            </h:panelGrid>
+                                        </h:panelGroup>
+                                    </p:panel>
                                 </div>
 
                                 <div class="col-md-6">
@@ -73,7 +131,7 @@
                                                     value="#{appointmentController.currentBill.paymentMethod}">                                                                     
                                                     <f:selectItem itemLabel="Select" ></f:selectItem>
                                                     <f:selectItems value="#{enumController.getPaymentMethodsForIwardDeposit()}" />
-                                                    <p:ajax process="cmbPs @this" update="paymentMethods" event="change" />
+                                                    <p:ajax process="cmbPs @this" update="paymentMethods" event="change" listener="#{appointmentController.updatePaymentData()}"/>
                                                 </p:selectOneMenu>
                                                 <br></br>
                                             </div>
@@ -112,6 +170,33 @@
                                                     id="slip" 
                                                     rendered="#{appointmentController.currentBill.paymentMethod eq 'Slip'}">
                                                     <pa:slip paymentMethodData="#{appointmentController.paymentMethodData}"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup
+                                                    id="eWallet"  
+                                                    rendered="#{appointmentController.currentBill.paymentMethod eq 'ewallet'}" >
+                                                    <pa:ewallet paymentMethodData="#{appointmentController.paymentMethodData}" />
+                                                </h:panelGroup>
+
+                                                <h:panelGroup
+                                                    id="patientDeposit"  
+                                                    rendered="#{appointmentController.currentBill.paymentMethod eq 'PatientDeposit'}" >
+                                                    <pa:patient_deposit_with_paid_value paymentMethodData="#{appointmentController.paymentMethodData}"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup
+                                                    id="multiplePaymentMethods"  
+                                                    rendered="#{appointmentController.currentBill.paymentMethod eq 'MultiplePaymentMethods'}">
+                                                    <pa:multiple_payment_methods_inwardDeposit
+                                                        controller="#{appointmentController}" 
+                                                        paymentMethods="#{enumController.getPaymentMethodsForMultiplePaymentMethod()}" >
+                                                    </pa:multiple_payment_methods_inwardDeposit>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup
+                                                    id="onlinePayment"  
+                                                    rendered="#{appointmentController.currentBill.paymentMethod eq 'OnlineSettlement'}" >
+                                                    <pa:online_settlement paymentMethodData="#{appointmentController.paymentMethodData}"/>
                                                 </h:panelGroup>
                                             </h:panelGroup>
 
@@ -162,63 +247,6 @@
                                 </div>
                             </div>
 
-                            <p:panel class="my-2">
-                                <f:facet name="header" >
-                                    <h:outputLabel value="Reservation Details" />
-                                </f:facet>
-                                <h:panelGroup class="my-2 w-100" >
-                                    <h:panelGrid columns="3" class="w-50 my-2">
-
-                                        <h:outputLabel value="Room No"/>
-                                        <h:outputLabel value=":"/>
-                                        <p:autoComplete
-                                            forceSelection="true"  
-                                            id="cmbRspRoom" 
-                                            class="mx-4 my-2"
-                                            value="#{appointmentController.reservedRoom}" 
-                                            completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
-                                            var="rf" 
-                                            placeholder="Select Room"
-                                            inputStyleClass="w-100"
-                                            itemLabel="#{rf.name}" 
-                                            itemValue="#{rf}" 
-                                            size="30"
-                                            maxResults="25">
-                                        </p:autoComplete>
-
-                                        <h:outputLabel value="Reserve From"/>
-                                        <h:outputLabel value=":"/>
-                                        <p:datePicker 
-                                            value="#{appointmentController.reservedFromDate}" 
-                                            id="reserveFromTimeStamp"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                            styleClass="form-control w-100"
-                                            showButtonBar="true"
-                                            placeholder="Select Reserve From"
-                                            timeInput="true"
-                                            showTime="true"
-                                            class="w-50 mx-4 my-2" 
-                                            inputStyleClass="w-100" >
-                                        </p:datePicker>
-
-                                        <h:outputLabel value="Reserve To"/>
-                                        <h:outputLabel value=":"/>
-                                        <p:datePicker 
-                                            value="#{appointmentController.reservedToDate}" 
-                                            id="reserveToTimeStamp"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                            styleClass="form-control w-100"
-                                            showButtonBar="true"
-                                            placeholder="Select Reserve To"
-                                            timeInput="true"
-                                            showTime="true"
-                                            class="w-50 mx-4 my-2" 
-                                            inputStyleClass="w-100" >
-                                        </p:datePicker>
-
-                                    </h:panelGrid>
-                                </h:panelGroup>
-                            </p:panel>
                         </p:panel>
                     </h:panelGroup>
 
