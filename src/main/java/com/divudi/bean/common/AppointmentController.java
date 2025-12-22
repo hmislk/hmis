@@ -590,6 +590,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                     case Staff_Welfare:
                         p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
                         if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
+                            p.setToStaff(cd.getPaymentMethodData().getStaffWelfare().getToStaff());
                             staffBean.updateStaffWelfare(cd.getPaymentMethodData().getStaffWelfare().getToStaff(), cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
                             JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
                         }
@@ -715,6 +716,8 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         newCancelBill.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         newCancelBill.setBillTypeAtomic(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
         newCancelBill.setBillType(BillType.InwardAppointmentBill);
+        String cancelNo = numberGenerator.inwardAppointmentNumberGeneratorYearly(sessionController.getInstitution(), AppointmentType.IP_APPOINTMENT_CANCELATION);
+        newCancelBill.setDeptId(cancelNo);
         newCancelBill.setReferenceBill(originalBill);
         newCancelBill.setBillDate(new Date());
         newCancelBill.setBillTime(new Date());
@@ -739,8 +742,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             getFacade().edit(originalBill);
         }
 
-        createPayment(newCancelBill, newCancelBill.getPaymentMethod());
-
         return newCancelBill;
     }
 
@@ -763,6 +764,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         Bill cancelBill = saveCacelBill(currentBill);
 
         cancelAppointment(cancelBill, currentAppointment, comment);
+        createCancelPayments(currentBill, cancelBill);
 
         JsfUtil.addSuccessMessage("Appointment Canceled");
     }
@@ -778,6 +780,38 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             appointmentFacade.create(apt);
         } else {
             appointmentFacade.edit(apt);
+        }
+    }
+
+    @Inject
+    BillSearch billSearch;
+
+    private void createCancelPayments(Bill originalBill, Bill cancelBill) {
+
+        List<Payment> originalPayments = billSearch.fetchBillPayments(originalBill);
+
+        for (Payment p : originalPayments) {
+            Payment newlyCancelPayment = p.clonePaymentForNewBill();
+
+            newlyCancelPayment.invertValues();
+            newlyCancelPayment.setReferancePayment(p);
+            newlyCancelPayment.setBill(cancelBill);
+            newlyCancelPayment.setInstitution(getSessionController().getInstitution());
+            newlyCancelPayment.setDepartment(getSessionController().getDepartment());
+            newlyCancelPayment.setCreatedAt(new Date());
+            newlyCancelPayment.setCreater(getSessionController().getLoggedUser());
+            paymentFacade.create(newlyCancelPayment);
+
+            if (newlyCancelPayment.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                PatientDeposit pd = patientDepositService.getDepositOfThePatient(originalBill.getPatient(), originalBill.getDepartment());
+                patientDepositService.updateBalance(newlyCancelPayment, pd);
+            }
+            if (newlyCancelPayment.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+                if (p.getToStaff() != null) {
+                    staffBean.updateStaffWelfare(newlyCancelPayment.getToStaff(), newlyCancelPayment.getPaidValue());
+                    JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+                }
+            }
         }
     }
 
@@ -1026,7 +1060,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                         JsfUtil.addErrorMessage("Please select the first payment method.");
                         return true;
                     }
-                    
+
                     if (paymentDetailsList.size() == 1) {
                         JsfUtil.addErrorMessage("You can't use only one payment method.");
                         return true;
@@ -1731,7 +1765,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
             ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
-            
+
             switch (pm.getPaymentMethod()) {
                 case Cash:
                     // Only set if user hasn't already entered a value
