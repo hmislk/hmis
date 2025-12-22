@@ -51,7 +51,7 @@
                                                 ajax="false"
                                                 rendered="false"
                                                 style="text-align: left"
-                                                value="Daily Stock Values"
+                                                value="Daily Stock Values - Legacy"
                                                 action="#{pharmacySummaryReportController.navigateToDailyStockValuesReport()}"/>
                                             <p:commandButton
                                                 class="w-100 ui-button-success"
@@ -59,15 +59,16 @@
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Daily Stock Values')}"
                                                 style="text-align: left"
                                                 icon="fa fa-rocket"
-                                                value="Daily Stock Values (Optimized)"
+                                                value="Daily Stock Values (F-15)"
                                                 action="/pharmacy/reports/summary_reports/daily_stock_values_report_optimized?faces-redirect=true"
                                                 title="High-performance optimized report - Faster execution"/>
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Bill Types')}" 
-                                                             class="w-100 ui-button-warning"
-                                                             ajax="false"
-                                                             style="text-align: left"
-                                                             value="Bill Types"
-                                                             action="#{pharmacySummaryReportController.navigateToBillTypeIncome}"/>
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Bill Types')}" 
+                                                class="w-100 ui-button-warning"
+                                                ajax="false"
+                                                style="text-align: left"
+                                                value="Bill Types"
+                                                action="#{pharmacySummaryReportController.navigateToBillTypeIncome}"/>
                                             <p:commandButton
                                                 class="w-100 ui-button-warning"
                                                 ajax="false"
