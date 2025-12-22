@@ -6831,9 +6831,36 @@ public class SearchController implements Serializable {
      * Does NOT include GRN details (nested table) for maximum performance.
      */
     public void createPoTablePharmacyDto() {
+        System.out.println("createPoTablePharmacyDto: START");
         pharmacyPurchaseOrderDtos = null;
         String jpql;
         Map<String, Object> params = new HashMap<>();
+
+        // First, get count to verify data exists
+        String countJpql = "SELECT COUNT(b) "
+                + "FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.referenceBill.institution = :ins "
+                + "AND b.department = :dept "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
+
+        Map<String, Object> countParams = new HashMap<>();
+        countParams.put("toDate", getToDate());
+        countParams.put("fromDate", getFromDate());
+        countParams.put("ins", getSessionController().getInstitution());
+        countParams.put("dept", sessionController.getDepartment());
+        countParams.put("bta", BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
+
+        System.out.println("createPoTablePharmacyDto: Count JPQL = " + countJpql);
+        System.out.println("createPoTablePharmacyDto: fromDate = " + getFromDate());
+        System.out.println("createPoTablePharmacyDto: toDate = " + getToDate());
+        System.out.println("createPoTablePharmacyDto: institution = " + getSessionController().getInstitution());
+        System.out.println("createPoTablePharmacyDto: department = " + sessionController.getDepartment());
+        System.out.println("createPoTablePharmacyDto: billTypeAtomic = " + BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
+
+        Long count = getBillFacade().countByJpql(countJpql, countParams, TemporalType.TIMESTAMP);
+        System.out.println("createPoTablePharmacyDto: COUNT = " + count);
 
         jpql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderDTO("
                 + "b.id, "
@@ -6842,7 +6869,7 @@ public class SearchController implements Serializable {
                 + "b.netTotal, "
                 + "COALESCE(creator.name, ''), "
                 + "COALESCE(supplier.name, ''), "
-                + "COALESCE(dept.name, ''), "
+                + "COALESCE(fromDept.name, ''), "
                 + "b.consignment, "
                 + "b.cancelled, "
                 + "b.billClosed, "
@@ -6852,7 +6879,7 @@ public class SearchController implements Serializable {
                 + "FROM Bill b "
                 + "LEFT JOIN b.creater.webUserPerson creator "
                 + "LEFT JOIN b.toInstitution supplier "
-                + "LEFT JOIN b.fromDepartment dept "
+                + "LEFT JOIN b.fromDepartment fromDept "
                 + "LEFT JOIN b.cancelledBill cb "
                 + "LEFT JOIN cb.creater.webUserPerson cancellerPerson "
                 + "WHERE b.retired = false "
@@ -6860,6 +6887,8 @@ public class SearchController implements Serializable {
                 + "AND b.referenceBill.institution = :ins "
                 + "AND b.department = :dept "
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
+
+        System.out.println("createPoTablePharmacyDto: DTO JPQL = " + jpql);
 
         if (getSearchKeyword() != null) {
             if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
@@ -6899,13 +6928,25 @@ public class SearchController implements Serializable {
         params.put("dept", sessionController.getDepartment());
         params.put("bta", BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
 
-        if (getReportKeyWord() != null && getReportKeyWord().isAdditionalDetails()) {
-            pharmacyPurchaseOrderDtos = (List<PharmacyPurchaseOrderDTO>) getBillFacade()
-                    .findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        } else {
-            pharmacyPurchaseOrderDtos = (List<PharmacyPurchaseOrderDTO>) getBillFacade()
-                    .findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+        System.out.println("createPoTablePharmacyDto: Executing DTO query...");
+        try {
+            if (getReportKeyWord() != null && getReportKeyWord().isAdditionalDetails()) {
+                pharmacyPurchaseOrderDtos = (List<PharmacyPurchaseOrderDTO>) getBillFacade()
+                        .findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+            } else {
+                pharmacyPurchaseOrderDtos = (List<PharmacyPurchaseOrderDTO>) getBillFacade()
+                        .findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+            }
+            System.out.println("createPoTablePharmacyDto: Query executed successfully");
+            System.out.println("createPoTablePharmacyDto: Result size = " + (pharmacyPurchaseOrderDtos != null ? pharmacyPurchaseOrderDtos.size() : "null"));
+            if (pharmacyPurchaseOrderDtos != null && !pharmacyPurchaseOrderDtos.isEmpty()) {
+                System.out.println("createPoTablePharmacyDto: First DTO = " + pharmacyPurchaseOrderDtos.get(0));
+            }
+        } catch (Exception e) {
+            System.out.println("createPoTablePharmacyDto: ERROR = " + e.getMessage());
+            e.printStackTrace();
         }
+        System.out.println("createPoTablePharmacyDto: END");
     }
 
     public void createPoTableStore() {

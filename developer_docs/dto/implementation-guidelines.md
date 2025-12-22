@@ -236,6 +236,136 @@ facade.findLightsByJpql(jpql, params)     // Missing TemporalType when using Dat
 4. **Using wrong facade method for DTO queries** → `findByJpql()` instead of `findLightsByJpql()`
 5. **Missing explicit cast** → Type safety issues with DTO constructor queries
 6. **Forgetting to handle null entity relationships** → NullPointerExceptions in queries
+7. **Using `Object` type for primitive boolean parameters** → Silent query failures (see Type Mismatch section below)
+
+## 🚨 CRITICAL: Type Mismatch in DTO Constructor Queries
+
+### The Problem: Primitive Boolean Auto-Boxing Limitation
+
+**JPQL cannot auto-box primitive `boolean` to `Object` in DTO constructor expressions.**
+
+This causes **silent failures** where:
+- COUNT query returns results (no DTO construction needed)
+- DTO query returns 0 results (constructor match fails silently)
+- No exception is thrown
+
+### Example of the Problem
+
+**Entity with primitive booleans:**
+```java
+@Entity
+public class Bill {
+    private boolean cancelled;      // primitive boolean
+    private boolean billClosed;     // primitive boolean
+    private boolean fullyIssued;    // primitive boolean
+}
+```
+
+**❌ WRONG - DTO Constructor using Object:**
+```java
+public PharmacyPurchaseOrderDTO(
+        Long billId,
+        String deptId,
+        Object cancelled,        // ❌ WRONG - Object cannot receive primitive boolean from JPQL
+        Object billClosed,       // ❌ WRONG
+        Object fullyIssued) {    // ❌ WRONG
+    this.cancelled = cancelled != null ? (Boolean) cancelled : false;
+    // ...
+}
+```
+
+**JPQL Query:**
+```java
+String jpql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderDTO("
+    + "b.id, "
+    + "b.deptId, "
+    + "b.cancelled, "        // primitive boolean from entity
+    + "b.billClosed, "       // primitive boolean from entity
+    + "b.fullyIssued) "      // primitive boolean from entity
+    + "FROM Bill b WHERE ...";
+```
+
+**Result:** Query returns 0 results even though COUNT shows 1 record exists!
+
+### ✅ CORRECT Solutions
+
+**Solution 1: Use Boolean Wrapper Type (Recommended)**
+```java
+// ✅ CORRECT - Use Boolean wrapper type
+public PharmacyPurchaseOrderDTO(
+        Long billId,
+        String deptId,
+        Boolean cancelled,      // ✅ JPQL can auto-box primitive boolean → Boolean
+        Boolean billClosed,     // ✅ Works correctly
+        Boolean fullyIssued) {  // ✅ Works correctly
+    this.cancelled = cancelled != null ? cancelled : false;
+    // ...
+}
+```
+
+**Solution 2: Explicit CASE in JPQL (if you cannot change constructor)**
+```java
+String jpql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderDTO("
+    + "b.id, "
+    + "b.deptId, "
+    + "CASE WHEN b.cancelled = true THEN true ELSE false END, "    // Forces Boolean wrapper
+    + "CASE WHEN b.billClosed = true THEN true ELSE false END, "
+    + "CASE WHEN b.fullyIssued = true THEN true ELSE false END) "
+    + "FROM Bill b WHERE ...";
+```
+
+### Type Compatibility Matrix
+
+| Entity Type | DTO Constructor Parameter | JPQL Auto-Boxing | Result |
+|-------------|---------------------------|------------------|---------|
+| `boolean` (primitive) | `Boolean` (wrapper) | ✅ YES | Works |
+| `boolean` (primitive) | `Object` | ❌ NO | Silent failure |
+| `Boolean` (wrapper) | `Boolean` (wrapper) | ✅ YES | Works |
+| `Boolean` (wrapper) | `Object` | ✅ YES | Works |
+| `int` (primitive) | `Integer` (wrapper) | ✅ YES | Works |
+| `int` (primitive) | `Object` | ❌ NO | Silent failure |
+
+### Debugging Silent Failures
+
+When COUNT returns results but DTO query returns 0:
+
+1. **Check constructor parameter types** - Use wrapper types for primitives
+2. **Verify parameter count** - Must match exactly (13 params in query = 13 in constructor)
+3. **Check parameter order** - Must match query SELECT order exactly
+4. **Verify type compatibility** - No primitive → Object conversions
+5. **Test with simple query** - Remove LEFT JOINs temporarily to isolate issue
+
+### LEFT JOIN Considerations for Null Safety
+
+When accessing nested properties that may be null:
+
+**❌ WRONG - Direct property access (NPE if null):**
+```java
+String jpql = "SELECT new DTO("
+    + "b.cancelledBill.createdAt, "              // NPE if cancelledBill is null
+    + "b.cancelledBill.creater.name) "           // NPE if cancelledBill or creater is null
+    + "FROM Bill b WHERE ...";
+```
+
+**✅ CORRECT - Use LEFT JOIN with aliases:**
+```java
+String jpql = "SELECT new DTO("
+    + "cb.createdAt, "                           // Safe - cb can be null from LEFT JOIN
+    + "COALESCE(cancellerPerson.name, '')) "    // Safe - COALESCE handles null
+    + "FROM Bill b "
+    + "LEFT JOIN b.cancelledBill cb "
+    + "LEFT JOIN cb.creater.webUserPerson cancellerPerson "
+    + "WHERE ...";
+```
+
+### Best Practices Summary
+
+1. **Always use wrapper types** (`Boolean`, `Integer`, `Long`) for DTO constructor parameters
+2. **Use LEFT JOIN** for nullable relationships to prevent cartesian products
+3. **Use COALESCE** for nullable String fields to provide default values
+4. **Test COUNT separately** to verify data exists before troubleshooting DTO construction
+5. **Add debug logging** when implementing new DTO queries to catch silent failures early
+6. **Match parameter types exactly** - don't rely on implicit conversions with `Object`
 
 ## Navigation-Level DTO/Entity Selection
 When implementing dual DTO/Entity approach:

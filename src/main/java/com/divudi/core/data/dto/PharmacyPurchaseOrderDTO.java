@@ -277,6 +277,7 @@ public class PharmacyPurchaseOrderDTO implements Serializable {
 
     // Constructor for GRN PO listing page (13 parameters - JPQL compatible)
     // Used for pharmacy_purchase_order_list_for_recieve_dto.xhtml - optimized for approved POs awaiting GRN
+    // Note: Uses Boolean wrapper types for JPQL compatibility (primitives cannot be auto-boxed to Object in JPQL)
     public PharmacyPurchaseOrderDTO(
             Long billId,
             String deptId,
@@ -285,10 +286,10 @@ public class PharmacyPurchaseOrderDTO implements Serializable {
             String creatorName,
             String supplierName,
             String departmentName,
-            Object consignment,
-            Object cancelled,
-            Object billClosed,
-            Object fullyIssued,
+            Boolean consignment,
+            Boolean cancelled,
+            Boolean billClosed,
+            Boolean fullyIssued,
             Date cancelledBillCreatedAt,
             String cancellerName) {
         this.billId = billId;
@@ -299,10 +300,10 @@ public class PharmacyPurchaseOrderDTO implements Serializable {
         this.creatorName = creatorName;
         this.supplierName = supplierName;
         this.departmentName = departmentName;
-        this.consignment = consignment != null ? (Boolean) consignment : false;
-        this.cancelled = cancelled != null ? (Boolean) cancelled : false;
-        this.billClosed = billClosed != null ? (Boolean) billClosed : false;
-        this.fullyIssued = fullyIssued != null ? (Boolean) fullyIssued : false;
+        this.consignment = consignment != null ? consignment : false;
+        this.cancelled = cancelled != null ? cancelled : false;
+        this.billClosed = billClosed != null ? billClosed : false;
+        this.fullyIssued = fullyIssued != null ? fullyIssued : false;
         this.cancelledAt = cancelledBillCreatedAt;
         this.cancellerName = cancellerName;
     }
