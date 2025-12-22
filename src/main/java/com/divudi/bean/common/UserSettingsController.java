@@ -1807,4 +1807,91 @@ public class UserSettingsController implements Serializable {
     public void setPharmacyDirectPurchaseReturnListToApprovePageSize(int pagesize) {
         savePageSize("pharmacy_direct_purchase_return_list_to_approve", pagesize);
     }
+    
+    // page: pharmacy_search_issue_bill_for_return.xhtml
+    // column: Issue Date
+    public boolean isPharmacySearchIssueBillForReturnIssueDateVisible() {
+        return isColumnVisible("pharmacy_search_issue_bill_for_return", "issueDate");
+    }
+    
+    public void setPharmacySearchIssueBillForReturnIssueDateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_search_issue_bill_for_return");
+        settings.setColumnVisible("issueDate", visible);
+        saveColumnVisibility("pharmacy_search_issue_bill_for_return", settings);
+    }
+    
+    //column: Bill No
+    public boolean isPharmacySearchIssueBillForReturnBillNoVisible() {
+        return isColumnVisible("pharmacy_search_issue_bill_for_return", "billNo");
+    }
+    
+    public void setPharmacySearchIssueBillForReturnBillNoVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_search_issue_bill_for_return");
+        settings.setColumnVisible("billNo", visible);
+        saveColumnVisibility("pharmacy_search_issue_bill_for_return", settings);
+    }
+    
+    //column: Patient
+    public boolean isPharmacySearchIssueBillForReturnPatientVisible() {
+        return isColumnVisible("pharmacy_search_issue_bill_for_return", "patient");
+    }
+    
+    public void setPharmacySearchIssueBillForReturnPatientVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_search_issue_bill_for_return");
+        settings.setColumnVisible("patient", visible);
+        saveColumnVisibility("pharmacy_search_issue_bill_for_return", settings);
+    }
+    
+    //column: from department
+    public boolean isPharmacySearchIssueBillForReturnFromDepartmentVisible() {
+        return isColumnVisible("pharmacy_search_issue_bill_for_return", "fromDepartment");
+    }
+    
+    public void setPharmacySearchIssueBillForReturnFromDepartmentVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_search_issue_bill_for_return");
+        settings.setColumnVisible("fromDepartment", visible);
+        saveColumnVisibility("pharmacy_search_issue_bill_for_return", settings);
+    }
+    
+    //column: To Department
+    public boolean isPharmacySearchIssueBillForReturnToDepartmentVisible() {
+        return isColumnVisible("pharmacy_search_issue_bill_for_return", "toDepartment");
+    }
+    
+    public void setPharmacySearchIssueBillForReturnToDepartmentVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_search_issue_bill_for_return");
+        settings.setColumnVisible("toDepartment", visible);
+        saveColumnVisibility("pharmacy_search_issue_bill_for_return", settings);
+    }
+    
+    //column: Issue Value
+    public boolean isPharmacySearchIssueBillForReturnIssueValueVisible() {
+        return isColumnVisible("pharmacy_search_issue_bill_for_return", "issueValue");
+    }
+    
+    public void setPharmacySearchIssueBillForReturnIssueValueVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_search_issue_bill_for_return");
+        settings.setColumnVisible("issueValue", visible);
+        saveColumnVisibility("pharmacy_search_issue_bill_for_return", settings);
+    }
+    
+    //column: Status
+    public boolean isPharmacySearchIssueBillForReturnStatusVisible() {
+        return isColumnVisible("pharmacy_search_issue_bill_for_return", "status");
+    }
+    
+    public void setPharmacySearchIssueBillForReturnStatusVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_search_issue_bill_for_return");
+        settings.setColumnVisible("status", visible);
+        saveColumnVisibility("pharmacy_search_issue_bill_for_return", settings);
+    }
+    
+    // page size
+    public int getPharmacySearchIssueBillForReturnPageSize() {
+        return getPageSize("pharmacy_search_issue_bill_for_return", 10);
+    }
+
+    public void setPharmacySearchIssueBillForReturnPageSize(int pagesize) {
+        savePageSize("pharmacy_search_issue_bill_for_return", pagesize);
+    }
 }
