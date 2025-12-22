@@ -76,6 +76,7 @@ public class ConfigOptionController implements Serializable {
     private String enumType;
     private String enumValue;
     private OptionValueType optionValueType;
+    private String globalFilter;
 
     /**
      * Creates a new instance of OptionController
@@ -895,7 +896,15 @@ public class ConfigOptionController implements Serializable {
     public void listWebUserOptions() {
         options = getWebUserOptions(webUser);
     }
+    
+    public String getGlobalFilter() {
+        return globalFilter;
+    }
 
+    public void setGlobalFilter(String globalFilter) {
+        this.globalFilter = globalFilter;
+    }
+    
     public boolean isPreventPasswordReuse() {
         return configOptionApplicationController.isPreventPasswordReuse();
     }

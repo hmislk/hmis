@@ -322,36 +322,85 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             return;
         }
 
-        // Apply negative sign to each payment method's total value
-        if (paymentMethodData.getCash() != null && paymentMethodData.getCash().getTotalValue() > 0) {
-            paymentMethodData.getCash().setTotalValue(-Math.abs(paymentMethodData.getCash().getTotalValue()));
+        // Only apply negative sign to the currently selected payment method
+        // This prevents accidentally processing payment data from the original bill's payment method
+        if (paymentMethod == null) {
+            return;
         }
-        if (paymentMethodData.getCreditCard() != null && paymentMethodData.getCreditCard().getTotalValue() > 0) {
-            paymentMethodData.getCreditCard().setTotalValue(-Math.abs(paymentMethodData.getCreditCard().getTotalValue()));
-        }
-        if (paymentMethodData.getCheque() != null && paymentMethodData.getCheque().getTotalValue() > 0) {
-            paymentMethodData.getCheque().setTotalValue(-Math.abs(paymentMethodData.getCheque().getTotalValue()));
-        }
-        if (paymentMethodData.getSlip() != null && paymentMethodData.getSlip().getTotalValue() > 0) {
-            paymentMethodData.getSlip().setTotalValue(-Math.abs(paymentMethodData.getSlip().getTotalValue()));
-        }
-        if (paymentMethodData.getEwallet() != null && paymentMethodData.getEwallet().getTotalValue() > 0) {
-            paymentMethodData.getEwallet().setTotalValue(-Math.abs(paymentMethodData.getEwallet().getTotalValue()));
-        }
-        if (paymentMethodData.getPatient_deposit() != null && paymentMethodData.getPatient_deposit().getTotalValue() > 0) {
-            paymentMethodData.getPatient_deposit().setTotalValue(-Math.abs(paymentMethodData.getPatient_deposit().getTotalValue()));
-        }
-        if (paymentMethodData.getCredit() != null && paymentMethodData.getCredit().getTotalValue() > 0) {
-            paymentMethodData.getCredit().setTotalValue(-Math.abs(paymentMethodData.getCredit().getTotalValue()));
-        }
-        if (paymentMethodData.getStaffCredit() != null && paymentMethodData.getStaffCredit().getTotalValue() > 0) {
-            paymentMethodData.getStaffCredit().setTotalValue(-Math.abs(paymentMethodData.getStaffCredit().getTotalValue()));
-        }
-        if (paymentMethodData.getStaffWelfare() != null && paymentMethodData.getStaffWelfare().getTotalValue() > 0) {
-            paymentMethodData.getStaffWelfare().setTotalValue(-Math.abs(paymentMethodData.getStaffWelfare().getTotalValue()));
-        }
-        if (paymentMethodData.getOnlineSettlement() != null && paymentMethodData.getOnlineSettlement().getTotalValue() > 0) {
-            paymentMethodData.getOnlineSettlement().setTotalValue(-Math.abs(paymentMethodData.getOnlineSettlement().getTotalValue()));
+
+        switch (paymentMethod) {
+            case Cash:
+                if (paymentMethodData.getCash() != null && paymentMethodData.getCash().getTotalValue() > 0) {
+                    paymentMethodData.getCash().setTotalValue(-Math.abs(paymentMethodData.getCash().getTotalValue()));
+                }
+                break;
+            case Card:
+                if (paymentMethodData.getCreditCard() != null && paymentMethodData.getCreditCard().getTotalValue() > 0) {
+                    paymentMethodData.getCreditCard().setTotalValue(-Math.abs(paymentMethodData.getCreditCard().getTotalValue()));
+                }
+                break;
+            case Cheque:
+                if (paymentMethodData.getCheque() != null && paymentMethodData.getCheque().getTotalValue() > 0) {
+                    paymentMethodData.getCheque().setTotalValue(-Math.abs(paymentMethodData.getCheque().getTotalValue()));
+                }
+                break;
+            case Slip:
+                if (paymentMethodData.getSlip() != null && paymentMethodData.getSlip().getTotalValue() > 0) {
+                    paymentMethodData.getSlip().setTotalValue(-Math.abs(paymentMethodData.getSlip().getTotalValue()));
+                }
+                break;
+            case ewallet:
+                if (paymentMethodData.getEwallet() != null && paymentMethodData.getEwallet().getTotalValue() > 0) {
+                    paymentMethodData.getEwallet().setTotalValue(-Math.abs(paymentMethodData.getEwallet().getTotalValue()));
+                }
+                break;
+            case PatientDeposit:
+                if (paymentMethodData.getPatient_deposit() != null && paymentMethodData.getPatient_deposit().getTotalValue() > 0) {
+                    paymentMethodData.getPatient_deposit().setTotalValue(-Math.abs(paymentMethodData.getPatient_deposit().getTotalValue()));
+                }
+                break;
+            case Credit:
+                if (paymentMethodData.getCredit() != null && paymentMethodData.getCredit().getTotalValue() > 0) {
+                    paymentMethodData.getCredit().setTotalValue(-Math.abs(paymentMethodData.getCredit().getTotalValue()));
+                }
+                break;
+            case Staff:
+            case OnCall:
+                if (paymentMethodData.getStaffCredit() != null && paymentMethodData.getStaffCredit().getTotalValue() > 0) {
+                    paymentMethodData.getStaffCredit().setTotalValue(-Math.abs(paymentMethodData.getStaffCredit().getTotalValue()));
+                }
+                break;
+            case Staff_Welfare:
+                if (paymentMethodData.getStaffWelfare() != null && paymentMethodData.getStaffWelfare().getTotalValue() > 0) {
+                    paymentMethodData.getStaffWelfare().setTotalValue(-Math.abs(paymentMethodData.getStaffWelfare().getTotalValue()));
+                }
+                break;
+            case OnlineSettlement:
+                if (paymentMethodData.getOnlineSettlement() != null && paymentMethodData.getOnlineSettlement().getTotalValue() > 0) {
+                    paymentMethodData.getOnlineSettlement().setTotalValue(-Math.abs(paymentMethodData.getOnlineSettlement().getTotalValue()));
+                }
+                break;
+            case MultiplePaymentMethods:
+                // For multiple payment methods, apply refund sign to all component payment methods
+                if (paymentMethodData.getPaymentMethodMultiple() != null
+                        && paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null) {
+                    for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                        if (cd.getPaymentMethodData() != null) {
+                            // Recursively apply refund sign to each component
+                            PaymentMethod originalPaymentMethod = paymentMethod;
+                            paymentMethod = cd.getPaymentMethod();
+                            PaymentMethodData originalData = paymentMethodData;
+                            paymentMethodData = cd.getPaymentMethodData();
+                            applyRefundSignToPaymentData();
+                            paymentMethodData = originalData;
+                            paymentMethod = originalPaymentMethod;
+                        }
+                    }
+                }
+                break;
+            default:
+                // No action needed for other payment methods
+                break;
         }
     }
 
@@ -1383,6 +1432,15 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     public void onPaymentMethodChange() {
         // Reset payment method data to prevent using old payment method data
         paymentMethodData = new PaymentMethodData();
+
+        // Clear controller properties that should only be set for specific payment methods
+        // This prevents accidentally using staff/company from original bill when changing to different payment method
+        if (paymentMethod != PaymentMethod.Staff_Welfare && paymentMethod != PaymentMethod.Staff && paymentMethod != PaymentMethod.OnCall) {
+            toStaff = null;
+        }
+        if (paymentMethod != PaymentMethod.Credit) {
+            creditCompany = null;
+        }
 
         // Initialize basic payment data based on newly selected payment method
         if (paymentMethod != null && originalBillToReturn != null) {
