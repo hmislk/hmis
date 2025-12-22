@@ -28,9 +28,19 @@
       "Bash(gh issue view:*)",
       "Bash(python3:*)",
       "Bash(git log:*)",
-      "Bash(timeout 5 mysql -ubuddhika -pBud7NilB -D rh -e \"SELECT ID, NAME FROM ITEM WHERE ID = 22617;\")"
+      "Bash(timeout 5 mysql -ubuddhika -pBud7NilB -D rh -e \"SELECT ID, NAME FROM ITEM WHERE ID = 22617;\")",
       "Bash(git fetch:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "Bash(git submodule:*)",
+      "Bash(git rm:*)",
+      "Bash(grep:*)",
+      "Bash(git show:*)",
+      "Bash(timeout 5 mysql:*)",
+      "Bash(timeout 10 mysql:*)",
+      "Bash(gh issue create:*)",
+      "Bash(gh label:*)",
+      "Bash(gh issue edit:*)",
+      "Bash(gh pr diff:*)"
     ],
     "deny": [],
     "ask": [],

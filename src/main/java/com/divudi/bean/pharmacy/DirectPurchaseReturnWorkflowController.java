@@ -8,6 +8,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.SearchController;
+import com.divudi.bean.common.UserSettingsController;
 import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.BillType;
@@ -97,6 +98,8 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
     PharmacyController pharmacyController;
     @Inject
     private SearchController searchController;
+    @Inject
+    UserSettingsController userSettingsController;
 
     @Inject
     private GrnReturnWorkflowController grnReturnWorkflowController;

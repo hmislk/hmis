@@ -18,7 +18,20 @@
                     <p:panel >
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
-                                <p:outputLabel value="Reprint" class="mt-2"></p:outputLabel>
+                                <div class="d-flex align-items-center gap-3">
+                                    <p:outputLabel value="Reprint" class="mt-2"></p:outputLabel>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                        <p:commandButton
+                                            value="Config"
+                                            icon="fa fa-cog"
+                                            title="Page Configuration Management"
+                                            action="#{pageAdminController.navigateToPageAdmin('opd/bill_reprint')}"
+                                            ajax="false"
+                                            styleClass="ui-button-secondary ui-button-sm p-button-outlined"
+                                            style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                </div>
                                 <div class="d-flex gap-2">
                                     <p:commandButton 
                                         value="To Refund Patient Balance" 

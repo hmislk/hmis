@@ -338,6 +338,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigateToPatientPastChannelBiiking() {
         return "/channel/patients_pastbookings_channel?faces-redirect=true";
     }
+    
+    public String navigateToPatientLookup(){
+       return "/opd/patient_search.xhtml";
+    }
 
     public List<SpecificPatientStatus> getAllPatientSpecificLabels() {
         return Arrays.asList(SpecificPatientStatus.values());
@@ -1017,6 +1021,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void preparePatientDepositCancel() {
         cancelBill = new CancelledBill();
         current = getBill().getPatient();
+        
+        PaymentMethod pm = getBill().getPaymentMethod();
+        
+        if (pm == PaymentMethod.MultiplePaymentMethods) {
+            cancelBill.setPaymentMethod(PaymentMethod.Cash);
+            return;
+        }
+        cancelBill.setPaymentMethod(pm);
     }
 
     public void clearDataForPatientRefund() {
@@ -4102,7 +4114,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void setPersonFacade(PersonFacade personFacade) {
         this.personFacade = personFacade;
     }
-
+    
     public Date getDob() {
         return dob;
     }
@@ -4686,7 +4698,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void setSearchPatientAddress(String searchPatientAddress) {
         this.searchPatientAddress = searchPatientAddress;
     }
-
+    
     /**
      *
      * Set all Patients to null

@@ -1259,7 +1259,7 @@
                                                 class="row my-1"
                                                 layout="block" 
                                                 id="eWallet"  rendered="#{opdBillController.paymentMethod eq 'ewallet'}" >
-                                                <pa:ewallet paymentMethodData="#{opdBillController.paymentMethodData}" />
+                                                <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{opdBillController.paymentMethodData}" />
                                             </h:panelGroup>
                                             <h:panelGroup
                                                 class="row my-1"
@@ -1277,7 +1277,7 @@
                                                 class="row my-1"
                                                 layout="block"
                                                 id="onlinePayment"  rendered="#{opdBillController.paymentMethod eq 'OnlineSettlement'}" >
-                                                <pa:online_settlement paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                <pa:online_settlement_AsOnlyPayment paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             <h:panelGroup
                                                 class="row my-1"

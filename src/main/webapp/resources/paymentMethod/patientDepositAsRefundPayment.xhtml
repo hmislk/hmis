@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="paymentMethodData" required="true" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <div class="row">
+            <div class="col-md-6">
+                <p:outputLabel for="patientDepositRefundPatient" value="Patient: " />
+                <h:outputText id="patientDepositRefundPatient"
+                             value="#{cc.attrs.paymentMethodData.patient_deposit.patient.person.name}"
+                             styleClass="form-control-static" />
+            </div>
+
+            <div class="col-md-6">
+                <p:outputLabel for="refundAmount" value="Refund Amount: " />
+                <p:inputNumber id="refundAmount"
+                              value="#{cc.attrs.paymentMethodData.patient_deposit.totalValue}"
+                              symbol=" "
+                              decimalSeparator="."
+                              thousandSeparator=","
+                              decimalPlaces="2"
+                              placeholder="0.00"
+                              styleClass="form-control"
+                              readonly="true">
+                </p:inputNumber>
+            </div>
+        </div>
+
+        <!-- Patient Deposit Information Panel -->
+        <h:panelGroup layout="block"
+                     rendered="#{cc.attrs.paymentMethodData.patient_deposit.patient ne null}"
+                     styleClass="mt-3">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card border-info">
+                        <div class="card-body p-3">
+                            <div class="row">
+                                <!-- Patient Information Column -->
+                                <div class="col-md-4">
+                                    <h6 class="card-title text-info">
+                                        <i class="fas fa-user me-2"></i>Patient Information
+                                    </h6>
+                                    <p class="mb-1">
+                                        <strong>Name:</strong>
+                                        #{cc.attrs.paymentMethodData.patient_deposit.patient.person.name}
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>HN:</strong>
+                                        #{cc.attrs.paymentMethodData.patient_deposit.patient.phn}
+                                    </p>
+                                    <p class="mb-0">
+                                        <strong>NIC:</strong>
+                                        #{cc.attrs.paymentMethodData.patient_deposit.patient.person.nic}
+                                    </p>
+                                </div>
+
+                                <!-- Current Deposit Balance Column -->
+                                <div class="col-md-4">
+                                    <h6 class="card-title text-info">
+                                        <i class="fas fa-piggy-bank me-2"></i>Current Deposit Balance
+                                    </h6>
+                                    <p class="mb-1">
+                                        <strong>Available:</strong>
+                                        <span class="text-primary fw-bold">
+                                            <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost.balance}"
+                                                         rendered="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost ne null}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                            <h:panelGroup layout="inline"
+                                                          styleClass="text-muted"
+                                                          rendered="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost eq null}">
+                                                No deposit account
+                                            </h:panelGroup>
+                                        </span>
+                                    </p>
+                                    <small class="text-muted">Current balance before refund</small>
+                                </div>
+
+                                <!-- Refund Transaction Column -->
+                                <div class="col-md-4">
+                                    <h6 class="card-title text-success">
+                                        <i class="fas fa-plus-circle me-2"></i>Refund Transaction
+                                    </h6>
+                                    <p class="mb-1">
+                                        <strong>Refund Amount:</strong>
+                                        <span class="text-success fw-bold">
+                                            <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.totalValue}">
+                                                <f:convertNumber pattern="+ Rs. #,##0.00" />
+                                            </h:outputText>
+                                        </span>
+                                    </p>
+                                    <h:panelGroup layout="block" styleClass="mb-0" rendered="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost ne null}">
+                                        <strong>New Balance:</strong>
+                                        <span class="text-success fw-bold">
+                                            <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost.balance + cc.attrs.paymentMethodData.patient_deposit.totalValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </span>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+
+                            <!-- Positive Refund Message -->
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <div class="alert alert-success d-flex align-items-center mb-0" role="alert">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        <div>
+                                            <strong>Refund Processing:</strong>
+                                            This amount will be <strong>added back</strong> to
+                                            #{cc.attrs.paymentMethodData.patient_deposit.patient.person.name}'s deposit account upon cancellation.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Account Creation Notice (if no deposit account exists) -->
+                            <h:panelGroup layout="block" styleClass="row mt-2"
+                                          rendered="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost eq null}">
+                                <h:panelGroup layout="block" styleClass="col-12">
+                                    <div class="alert alert-info d-flex align-items-center mb-0" role="alert">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <div>
+                                            <strong>Account Creation:</strong>
+                                            A deposit account will be automatically created for this patient to process the refund.
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </h:panelGroup>
+
+        <!-- Comments Section -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <p:outputLabel for="refundComments" value="Refund Comments (Optional): " />
+                <p:inputTextarea id="refundComments"
+                                value="#{cc.attrs.paymentMethodData.patient_deposit.comment}"
+                                rows="3"
+                                cols="50"
+                                placeholder="Enter any comments about this refund..."
+                                styleClass="form-control" />
+            </div>
+        </div>
+    </cc:implementation>
+</html>

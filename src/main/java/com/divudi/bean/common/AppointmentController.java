@@ -249,13 +249,13 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             JsfUtil.addErrorMessage("Reserved To Date not Valid");
             return;
         }
-        
-        if(currentAppointment.getAppointmentDate() == null){
+
+        if (currentAppointment.getAppointmentDate() == null) {
             JsfUtil.addErrorMessage("Appointment Date is Missing.");
             return;
         }
-        
-        if(currentBill.getReferredBy() == null){
+
+        if (currentBill.getReferredBy() == null) {
             JsfUtil.addErrorMessage("Referring Doctor is Missing.");
             return;
         }
@@ -353,6 +353,8 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                 + " res.patient.person.dob, "
                 + " COALESCE(res.patient.person.sex, ''), "
                 + " COALESCE(res.patient.person.mobile, ''), "
+                + " res.appointment.bill.referredBy.person.title, "
+                + " COALESCE(res.appointment.bill.referredBy.person.name, ''), "
                 + " res.appointment.status "
                 + " ) "
                 + " FROM Reservation res "
@@ -523,13 +525,13 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             JsfUtil.addErrorMessage("Please select a valid Reservation todate.");
             return;
         }
-        
-        if(currentAppointment.getAppointmentDate() == null){
+
+        if (currentAppointment.getAppointmentDate() == null) {
             JsfUtil.addErrorMessage("Appointment Date is Missing.");
             return;
         }
-        
-        if(currentBill.getReferredBy() == null){
+
+        if (currentBill.getReferredBy() == null) {
             JsfUtil.addErrorMessage("Referring Doctor is Missing.");
             return;
         }
@@ -876,11 +878,148 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return true;
         }
 
+        if (!isPaymentAmountValid()) {
+            return true;
+        }
+
         if (getPaymentSchemeController().checkPaymentMethodError(getCurrentBill().getPaymentMethod(), paymentMethodData)) {
             return true;
         }
-//
+
         return false;
+    }
+
+    private boolean isPaymentAmountValid() {
+        PaymentMethod pm = getCurrentBill().getPaymentMethod();
+
+        if (pm == null) {
+            return false;
+        }
+
+        double amountToCheck = 0.0;
+
+        switch (pm) {
+            case Cash:
+                // For cash payment, check if bill total is greater than 0
+                amountToCheck = getCurrentBill().getTotal();
+                if (amountToCheck <= 0.0) {
+                    JsfUtil.addErrorMessage("Please enter a payment amount");
+                    return false;
+                }
+                break;
+
+            case Card:
+                // For card payment, check paymentMethodData
+                if (paymentMethodData == null || paymentMethodData.getCreditCard() == null
+                        || paymentMethodData.getCreditCard().getTotalValue() <= 0.0) {
+                    JsfUtil.addErrorMessage("Please enter card payment details");
+                    return false;
+                }
+                amountToCheck = paymentMethodData.getCreditCard().getTotalValue();
+                break;
+
+            case Cheque:
+                // For cheque payment
+                if (paymentMethodData == null || paymentMethodData.getCheque() == null
+                        || paymentMethodData.getCheque().getTotalValue() <= 0.0) {
+                    JsfUtil.addErrorMessage("Please enter cheque payment details");
+                    return false;
+                }
+                amountToCheck = paymentMethodData.getCheque().getTotalValue();
+                break;
+
+            case Slip:
+                // For slip payment
+                if (paymentMethodData == null || paymentMethodData.getSlip() == null
+                        || paymentMethodData.getSlip().getTotalValue() <= 0.0) {
+                    JsfUtil.addErrorMessage("Please enter slip payment details");
+                    return false;
+                }
+                amountToCheck = paymentMethodData.getSlip().getTotalValue();
+                break;
+
+            case MultiplePaymentMethods:
+                // For multiple payment methods - check if it's properly configured
+                if (paymentMethodData == null || paymentMethodData.getPaymentMethodMultiple() == null
+                        || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null
+                        || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+                    JsfUtil.addErrorMessage("Please configure payment amounts");
+                    return false;
+                }
+
+                // Calculate total from all components
+                double multipleTotal = 0.0;
+                for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    if (cd != null && cd.getPaymentMethodData() != null) {
+                        // Check based on payment method type in the component
+                        switch (cd.getPaymentMethod()) {
+                            case Cash:
+                                if (cd.getPaymentMethodData().getCash() != null) {
+                                    multipleTotal += cd.getPaymentMethodData().getCash().getTotalValue();
+                                }
+                                break;
+                            case Card:
+                                if (cd.getPaymentMethodData().getCreditCard() != null) {
+                                    multipleTotal += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                                }
+                                break;
+                            case Cheque:
+                                if (cd.getPaymentMethodData().getCheque() != null) {
+                                    multipleTotal += cd.getPaymentMethodData().getCheque().getTotalValue();
+                                }
+                                break;
+                            case Slip:
+                                if (cd.getPaymentMethodData().getSlip() != null) {
+                                    multipleTotal += cd.getPaymentMethodData().getSlip().getTotalValue();
+                                }
+                                break;
+                        }
+                    }
+                }
+
+                if (multipleTotal <= 0.0) {
+                    JsfUtil.addErrorMessage("Please enter valid payment amounts");
+                    return false;
+                }
+                amountToCheck = multipleTotal;
+                break;
+
+            // other payment methods as needed
+            case ewallet:
+                if (paymentMethodData == null || paymentMethodData.getEwallet() == null
+                        || paymentMethodData.getEwallet().getTotalValue() <= 0.0) {
+                    JsfUtil.addErrorMessage("Please enter eWallet payment details");
+                    return false;
+                }
+                amountToCheck = paymentMethodData.getEwallet().getTotalValue();
+                break;
+
+            case Credit:
+                if (paymentMethodData == null || paymentMethodData.getCredit() == null
+                        || paymentMethodData.getCredit().getTotalValue() <= 0.0) {
+                    JsfUtil.addErrorMessage("Please enter credit payment details");
+                    return false;
+                }
+                amountToCheck = paymentMethodData.getCredit().getTotalValue();
+                break;
+
+            default:
+                // For other payment methods, just check that bill total is valid
+                amountToCheck = getCurrentBill().getTotal();
+                if (amountToCheck <= 0.0) {
+                    JsfUtil.addErrorMessage("Please enter a payment amount");
+                    return false;
+                }
+        }
+
+        // Update bill total with the validated amount
+        //  ensures bill.total matches the payment amount
+        if (getCurrentBill().getTotal() != amountToCheck) {
+            getCurrentBill().setTotal(amountToCheck);
+            getCurrentBill().setNetTotal(amountToCheck);
+        }
+
+        return true;
     }
 
     public List<Reservation> checkAppointmentsForRoom(RoomFacilityCharge r) {
@@ -911,18 +1050,18 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         if (reservedRoom == null || reservedFromDate == null || reservedToDate == null) {
             JsfUtil.addErrorMessage("Reservation, room, and dates must not be null");
         }
-        
+
         Map<String, Object> parameters = new HashMap<>();
-        
+
         String jpql = "SELECT r FROM Reservation r "
                 + "WHERE r.room = :room "
                 + "AND r.appointment.status =:status "; // Optional: exclude cancelled reservations
 
-       if(reservation.getId() != null){
-           jpql += " AND r.id !=:id ";
-           parameters.put("id", reservation.getId());
-       }
-        
+        if (reservation.getId() != null) {
+            jpql += " AND r.id !=:id ";
+            parameters.put("id", reservation.getId());
+        }
+
         jpql += " AND ( "
                 + "   (r.reservedFrom < :reservedTo AND r.reservedTo > :reservedFrom) "
                 + "   OR r.reservedFrom BETWEEN :reservedFrom AND :reservedTo "

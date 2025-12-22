@@ -16213,7 +16213,9 @@ public class SearchController implements Serializable {
                 opdServiceCollection = generateOpdServiceCollectionWithoutProfessionalFee(PaymentType.NON_CREDIT);
             }
             bundle.getBundles().add(opdServiceCollection);
-            collectionForTheDay += bundleCashierCollectionTotal(opdServiceCollection);
+            // Use getTotal() directly instead of bundleCashierCollectionTotal() because OPD service collection
+            // is built from bill items, not payments, so payment method values are not populated
+            collectionForTheDay += getSafeTotal(opdServiceCollection);
 
             // Generate pharmacy collection and add to the main bundle
             List<BillTypeAtomic> pharmacyBillTypes = new ArrayList<>();
@@ -16251,7 +16253,9 @@ public class SearchController implements Serializable {
             // Generate collecting centre collection and add to the main bundle
             ReportTemplateRowBundle ccCollection = generateCcCollection();
             bundle.getBundles().add(ccCollection);
-            collectionForTheDay += bundleCashierCollectionTotal(ccCollection);
+            // Use getTotal() directly instead of bundleCashierCollectionTotal() because CC collection
+            // is built from bills, not payments, so payment method values are not populated
+            collectionForTheDay += getSafeTotal(ccCollection);
 
             // Generate OPD Credit Company Payment Collection and add to the main bundle
             ReportTemplateRowBundle opdCreditCompanyCollection = generateCreditCompanyCollectionForOpd();
@@ -16362,13 +16366,13 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(slipPayments);
             netCashCollection -= Math.abs(getSafeTotal(slipPayments));
 
-            // Section 2: Payments made USING patient deposits (display only, not deducted)
-            ReportTemplateRowBundle patientDepositPaymentsUsed = generatePatientDepositPayments();
-            patientDepositPaymentsUsed.calculateTotalByPayments();
-            bundle.getBundles().add(patientDepositPaymentsUsed);
-            System.out.println("DEBUG generateDailyReturn: Patient Deposit PAYMENTS (used for services) = " + getSafeTotal(patientDepositPaymentsUsed));
+            // Section 2: Patient Deposit Utilization - bills settled using patient deposits (display only, not deducted)
+            ReportTemplateRowBundle patientDepositUtilization = generatePatientDepositUtilization();
+            patientDepositUtilization.calculateTotalByPayments();
+            bundle.getBundles().add(patientDepositUtilization);
+            System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization (bills settled using deposits) = " + getSafeTotal(patientDepositUtilization));
             // NOTE: Do NOT deduct from netCashCollection - this is display only
-            System.out.println("DEBUG generateDailyReturn: Patient Deposit Payments NOT deducted from net cash (display only)");
+            System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization NOT deducted from net cash (display only)");
             // NOTE: Do NOT deduct from netCashCollection - this is display only
 
             // Final net cash for the day
@@ -19403,7 +19407,7 @@ public class SearchController implements Serializable {
         return ap;
     }
 
-    public ReportTemplateRowBundle generatePatientDepositPayments() {
+    public ReportTemplateRowBundle generatePatientDepositUtilization() {
         ReportTemplateRowBundle ap;
         ap = reportTemplateController.generatePaymentReport(
                 PaymentMethod.PatientDeposit,
@@ -19412,8 +19416,8 @@ public class SearchController implements Serializable {
                 institution,
                 department,
                 site);
-        ap.setName("Patient Deposit Payments");
-        ap.setBundleType("paymentReportPatientDeposit");
+        ap.setName("Patient Deposit Utilization");
+        ap.setBundleType("patientDepositUtilization");
         return ap;
     }
 

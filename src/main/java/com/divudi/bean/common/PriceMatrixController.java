@@ -380,22 +380,22 @@ public class PriceMatrixController implements Serializable {
         discountPercent = fetchPaymentSchemeDiscountPercent(paymentScheme, paymentMethod, item);
         System.out.println("            >>> fetchDiscountPercent(Item): " + (System.currentTimeMillis() - beforeItem) + "ms - Result: " + (discountPercent != null ? discountPercent + "%" : "null"));
 
-        //Get Discount From Category
-        if (discountPercent == null) {
+        //Get Discount From Category (if Item level returns null OR 0.0)
+        if (discountPercent == null || discountPercent == 0.0) {
             long beforeCategory = System.currentTimeMillis();
             discountPercent = fetchPaymentSchemeDiscountPercent(paymentScheme, paymentMethod, category);
             System.out.println("            >>> fetchDiscountPercent(Category): " + (System.currentTimeMillis() - beforeCategory) + "ms - Result: " + (discountPercent != null ? discountPercent + "%" : "null"));
         }
 
-        //Get Discount From Parent Category
-        if (discountPercent == null && category != null) {
+        //Get Discount From Parent Category (if Category returns null OR 0.0)
+        if ((discountPercent == null || discountPercent == 0.0) && category != null) {
             long beforeParent = System.currentTimeMillis();
             discountPercent = fetchPaymentSchemeDiscountPercent(paymentScheme, paymentMethod, category.getParentCategory());
             System.out.println("            >>> fetchDiscountPercent(ParentCategory): " + (System.currentTimeMillis() - beforeParent) + "ms - Result: " + (discountPercent != null ? discountPercent + "%" : "null"));
         }
 
-        //Get Discount From Department
-        if (discountPercent == null) {
+        //Get Discount From Department (if Parent Category returns null OR 0.0)
+        if (discountPercent == null || discountPercent == 0.0) {
             long beforeDept = System.currentTimeMillis();
             discountPercent = fetchPaymentSchemeDiscountPercent(paymentScheme, paymentMethod, department);
             System.out.println("            >>> fetchDiscountPercent(Department): " + (System.currentTimeMillis() - beforeDept) + "ms - Result: " + (discountPercent != null ? discountPercent + "%" : "null"));
@@ -745,8 +745,11 @@ public class PriceMatrixController implements Serializable {
                 + " and i.paymentMethod=:p"
                 + " and i.category=:cat ";
         try {
-            return getPriceMatrixFacade().findDoubleByJpql(sql, hm);
+            Double result = getPriceMatrixFacade().findDoubleByJpql(sql, hm);
+            System.out.println("            >>> DEBUG fetchPaymentSchemeDiscountPercent(Category): Query result = " + result + " (null means no record found)");
+            return result;
         } catch (Exception e) {
+            System.out.println("            >>> DEBUG fetchPaymentSchemeDiscountPercent(Category): Exception occurred - " + e.getMessage());
             return null;
         }
     }
@@ -787,8 +790,11 @@ public class PriceMatrixController implements Serializable {
                 + " and i.paymentMethod=:p"
                 + " and i.item=:i ";
         try {
-            return getPriceMatrixFacade().findDoubleByJpql(jpql, params);
+            Double result = getPriceMatrixFacade().findDoubleByJpql(jpql, params);
+            System.out.println("            >>> DEBUG fetchPaymentSchemeDiscountPercent(Item): Query result = " + result + " (null means no record found)");
+            return result;
         } catch (Exception e) {
+            System.out.println("            >>> DEBUG fetchPaymentSchemeDiscountPercent(Item): Exception occurred - " + e.getMessage());
             return null;
         }
     }
