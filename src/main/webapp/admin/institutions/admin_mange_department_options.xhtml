@@ -87,6 +87,7 @@
                                      styleClass="table table-striped"
                                      paginator="true"
                                      rows="20"
+                                     globalFilter="#{configOptionController.globalFilter}"
                                      widgetVar="optionsTableWidget">
 
                             <f:facet name="header">
@@ -105,13 +106,13 @@
                                 <h:outputText value="#{option.optionKey}" styleClass="fw-bold"/>
                             </p:column>
 
-                            <p:column headerText="Value Type" style="width: 15%">
+                            <p:column headerText="Value Type" filterBy="#{option.valueType}" style="width: 15%">
                                 <h:panelGroup styleClass="badge badge-info px-2 py-1">
                                     <h:outputText value="#{option.valueType}"/>
                                 </h:panelGroup>
                             </p:column>
 
-                            <p:column headerText="Current Value" style="width: 35%">
+                            <p:column headerText="Current Value" filterBy="#{option.optionValue}" style="width: 35%">
                                 <h:outputText value="#{option.optionValue}"
                                               title="#{option.optionValue}"/>
                             </p:column>
