@@ -27,7 +27,6 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.entity.Appointment;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
-import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.Payment;
@@ -50,8 +49,6 @@ import com.divudi.core.facade.ReservationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.ejb.NumberGenerator;
 import com.divudi.service.PatientDepositService;
-import com.divudi.service.PatientService;
-import com.divudi.service.PaymentService;
 import com.divudi.service.StaffService;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -461,28 +458,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     private void saveReservation(Patient p, Appointment a) {
-//        if (p == null) {
-//            JsfUtil.addErrorMessage("No patient Selected");
-//            return;
-//        }
-//        if (a == null) {
-//            JsfUtil.addErrorMessage("No Appointment Selected");
-//            return;
-//        }
-//        if (reservation.getRoom() == null) {
-//            JsfUtil.addErrorMessage("No Room Selected");
-//            return;
-//        }
-//        if (reservation.getReservedFrom() == null) {
-//            JsfUtil.addErrorMessage("No Reserved From Date Selected");
-//            return;
-//        }
-//
-//        if (reservation.getReservedTo() == null) {
-//            JsfUtil.addErrorMessage("No Reserved To Date Selected");
-//            return;
-//        }
-
         reservation.setAppointment(a);
         reservation.setPatient(p);
         reservation.setCreatedAt(new Date());
@@ -631,6 +606,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                         PatientDeposit currentDeposit = cd.getPaymentMethodData().getPatient_deposit().getPatientDepost();
                         p.setPaidValue(paidValue);
                         patientDepositService.updateBalance(p, currentDeposit);
+                        JsfUtil.addSuccessMessage("Patient Deposit Balance Updated");
                         break;
 
                 }
@@ -1041,13 +1017,25 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                 case MultiplePaymentMethods:
                     if (methodData.getPaymentMethodMultiple() == null || methodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null || methodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
                         JsfUtil.addErrorMessage("Please configure payment amounts");
-                        return false;
+                        return true;
+                    }
+
+                    List<ComponentDetail> paymentDetailsList = methodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+
+                    if (paymentDetailsList.isEmpty()) {
+                        JsfUtil.addErrorMessage("Please select the first payment method.");
+                        return true;
+                    }
+                    
+                    if (paymentDetailsList.size() == 1) {
+                        JsfUtil.addErrorMessage("You can't use only one payment method.");
+                        return true;
                     }
 
                     // Calculate total from all components
                     double multipleTotal = 0.0;
                     int componentCount = 0;
-                    for (ComponentDetail cd : methodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    for (ComponentDetail cd : paymentDetailsList) {
                         componentCount++;
                         if (cd != null && cd.getPaymentMethodData() != null) {
                             // Check based on payment method type in the component
@@ -1214,7 +1202,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
                     if (multipleTotal <= 0.0) {
                         JsfUtil.addErrorMessage("Please enter valid payment amounts");
-                        return false;
+                        return true;
                     }
                     amountToCheck = multipleTotal;
                     break;
@@ -1730,6 +1718,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     @Override
     public void recieveRemainAmountAutomatically() {
+
         calculatRemainForMultiplePaymentTotal();
         if (getCurrentBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
 
@@ -1739,7 +1728,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                     || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
                 return;
             }
-            
+
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
             ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
             
@@ -1776,13 +1765,13 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                     break;
                 case PatientDeposit:
                     Patient p = patientFacade.find(patient.getId());
-                    
+
                     if (p == null) {
                         break;
                     } else {
                         pm.getPaymentMethodData().getPatient_deposit().setPatient(p);
                         PatientDeposit pd = patientDepositService.getDepositOfThePatient(p, sessionController.getDepartment());
-                        
+
                         if (pd != null) {
                             pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
                             pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
