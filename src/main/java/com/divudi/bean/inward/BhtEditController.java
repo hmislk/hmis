@@ -56,6 +56,7 @@ import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.facade.EmailFacade;
 import com.divudi.core.facade.EncounterCreditCompanyFacade;
 import com.divudi.ejb.EmailManagerEjb;
+import com.divudi.service.AuditService;
 import java.util.Collections;
 import java.util.Map;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -110,6 +111,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     EmailFacade emailFacade;
     @EJB
     private EmailManagerEjb emailManagerEjb;
+    @EJB
+    AuditService auditService;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -139,6 +142,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     private ClinicalFindingValue currentPatientAllergy;
     private List<ClinicalFindingValue> patientAllergies;
     private EncounterCreditCompany currecntEncounterCreditCompany;
+    
+    Map<String, Object> originalAdmission;
+    Map<String, Object> updatedAdmission;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Functons">
@@ -462,6 +468,11 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         if (current.getId() == null) {
             getEjbFacade().createAndFlush(current);  // SINGLE flush for ALL entities
         } else {
+            updatedAdmission = new HashMap<>();
+            admissionToAuditMap(updatedAdmission, current);
+            System.out.println("originalAdmission.id = " + originalAdmission.get("bhtNo"));
+            System.out.println("updatedAdmission.id = " + updatedAdmission.get("bhtNo"));
+            auditService.logAudit(originalAdmission, updatedAdmission, sessionController.getLoggedUser(), "PatientEncounter", "UpdateAdmission");
             getEjbFacade().editAndFlush(current);    // SINGLE flush for ALL entities
         }
 
@@ -504,11 +515,15 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToEditAdmissionDetails() {
+        System.out.println("current = " + current);
         if (current == null) {
             JsfUtil.addErrorMessage("No Admission to edit");
             return "";
         }
 
+        System.out.println("enter mapping = ");
+        originalAdmission = new HashMap<>();
+        admissionToAuditMap(originalAdmission, current);
         admissionController.setCurrent(current);
         createPatientRoom();
         fillCreditCompaniesByPatient();
@@ -929,6 +944,30 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     @Override
     public void listnerForPaymentMethodChange() {
         // ToDo: Add Logic
+    }
+    
+    public void admissionToAuditMap(Map<String, Object> m, Admission o) {
+        if (o == null || m == null) {
+            System.out.println("null check: o = " +  o);
+            return;
+        }
+        
+        m.put("encounterID", o.getId());
+        m.put("bhtNo", o.getBhtNo());
+        m.put("encounterType", o.getEncounterType());
+        m.put("dateOfAdmission", o.getDateOfAdmission());
+        m.put("dateOfDischarge", o.getDateOfDischarge());
+        
+        if (o.getDepartment() != null) {
+            m.put("department", o.getDepartment().getName());
+        }
+        if (o.getPatient() != null) {
+            m.put("patient_ID", o.getPatient().getId());
+            m.put("patient_name", o.getPatient().getPerson().getName());
+        }
+        
+        System.out.println("o = " + o);
+        System.out.println("m.encounterId = " + m.get("encounterID"));
     }
 
     /**
