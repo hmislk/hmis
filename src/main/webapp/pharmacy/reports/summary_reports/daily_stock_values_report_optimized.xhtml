@@ -9,7 +9,186 @@
     <h:body>
         <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
             <ui:define name="subcontent">
-                <h:form>
+
+                <!-- Timeout Prevention and Progress Management Scripts -->
+                <script type="text/javascript">
+                //<![CDATA[
+
+                // Global variables for report generation tracking
+                var reportGenerationStartTime = null;
+                var progressInterval = null;
+                var keepAliveInterval = null;
+                var estimatedDuration = 45; // seconds - will be updated after optimization
+
+                // Prevent browser timeout during long report generation
+                function startReportGeneration() {
+                    console.log('Starting report generation with timeout prevention...');
+                    reportGenerationStartTime = new Date().getTime();
+
+                    // Show progress indicator
+                    showProgressIndicator();
+
+                    // Start keep-alive mechanism (every 30 seconds)
+                    keepAliveInterval = setInterval(function() {
+                        // Send a lightweight AJAX request to keep session alive
+                        console.log('Sending keep-alive ping...');
+                        fetch(window.location.href, {
+                            method: 'HEAD',
+                            cache: 'no-cache'
+                        }).catch(function(e) {
+                            console.log('Keep-alive ping failed, but continuing...', e);
+                        });
+                    }, 30000);
+
+                    // Start progress updates
+                    progressInterval = setInterval(updateProgress, 1000);
+
+                    // Prevent browser from showing "page unresponsive" warnings
+                    window.onbeforeunload = function() {
+                        return "Report generation in progress. Are you sure you want to leave?";
+                    };
+                }
+
+                function showProgressIndicator() {
+                    var progressCard = document.getElementById('progressCard');
+                    var actionButtons = document.getElementById('actionButtons');
+
+                    if (progressCard) {
+                        progressCard.style.display = 'block';
+                        progressCard.scrollIntoView({ behavior: 'smooth' });
+                    }
+
+                    if (actionButtons) {
+                        // Disable all action buttons during generation
+                        var buttons = actionButtons.querySelectorAll('button');
+                        buttons.forEach(function(btn) {
+                            btn.disabled = true;
+                        });
+                    }
+                }
+
+                function updateProgress() {
+                    if (!reportGenerationStartTime) return;
+
+                    var elapsed = Math.floor((new Date().getTime() - reportGenerationStartTime) / 1000);
+                    var progressBar = document.getElementById('progressBar');
+                    var progressText = document.getElementById('progressText');
+                    var progressTime = document.getElementById('progressTime');
+
+                    if (progressBar && progressText && progressTime) {
+                        var percentage = Math.min((elapsed / estimatedDuration) * 100, 95); // Cap at 95% until actual completion
+
+                        progressBar.style.width = percentage + '%';
+                        progressBar.setAttribute('aria-valuenow', percentage);
+
+                        progressText.textContent = Math.round(percentage) + '%';
+                        progressTime.textContent = elapsed + 's elapsed';
+
+                        // Update status message based on progress
+                        var statusMsg = document.getElementById('progressStatus');
+                        if (statusMsg) {
+                            if (elapsed < 10) {
+                                statusMsg.textContent = 'Initializing report generation...';
+                            } else if (elapsed < 20) {
+                                statusMsg.textContent = 'Calculating opening stock values...';
+                            } else if (elapsed < 35) {
+                                statusMsg.textContent = 'Processing sales and purchase data...';
+                            } else if (elapsed < 50) {
+                                statusMsg.textContent = 'Finalizing calculations...';
+                            } else {
+                                statusMsg.textContent = 'Report generation taking longer than expected, please wait...';
+                            }
+                        }
+                    }
+                }
+
+                function completeReportGeneration() {
+                    console.log('Report generation completed!');
+
+                    // Clear intervals
+                    if (progressInterval) {
+                        clearInterval(progressInterval);
+                        progressInterval = null;
+                    }
+                    if (keepAliveInterval) {
+                        clearInterval(keepAliveInterval);
+                        keepAliveInterval = null;
+                    }
+
+                    // Remove unload warning
+                    window.onbeforeunload = null;
+
+                    // Update progress to 100%
+                    var progressBar = document.getElementById('progressBar');
+                    var progressText = document.getElementById('progressText');
+                    var progressStatus = document.getElementById('progressStatus');
+
+                    if (progressBar && progressText) {
+                        progressBar.style.width = '100%';
+                        progressBar.setAttribute('aria-valuenow', '100');
+                        progressText.textContent = '100%';
+                    }
+
+                    if (progressStatus) {
+                        progressStatus.textContent = 'Report generated successfully!';
+                        progressStatus.className = 'text-success fw-bold';
+                    }
+
+                    // Hide progress card after 3 seconds
+                    setTimeout(function() {
+                        var progressCard = document.getElementById('progressCard');
+                        if (progressCard) {
+                            progressCard.style.display = 'none';
+                        }
+
+                        // Re-enable action buttons
+                        var actionButtons = document.getElementById('actionButtons');
+                        if (actionButtons) {
+                            var buttons = actionButtons.querySelectorAll('button');
+                            buttons.forEach(function(btn) {
+                                btn.disabled = false;
+                            });
+                        }
+
+                        // Calculate actual duration for future estimates
+                        if (reportGenerationStartTime) {
+                            var actualDuration = (new Date().getTime() - reportGenerationStartTime) / 1000;
+                            estimatedDuration = Math.max(actualDuration * 1.2, 30); // 20% buffer, min 30s
+                            console.log('Updated estimated duration to:', estimatedDuration + 's');
+                        }
+
+                        reportGenerationStartTime = null;
+                    }, 3000);
+                }
+
+                // Initialize when page loads
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Check if we just completed a report generation (page was reloaded)
+                    var reportSection = document.getElementById('reportSection');
+                    var hasReport = reportSection && reportSection.innerHTML.includes('Daily Stock Value Report Results');
+
+                    if (hasReport) {
+                        console.log('Report detected on page load - completing progress tracking');
+                        // Show completed progress briefly
+                        showProgressIndicator();
+                        setTimeout(function() {
+                            completeReportGeneration();
+                        }, 500);
+                    }
+
+                    // Set up event listeners for the generate button
+                    var generateBtn = document.querySelector('button[onclick*="processDailyStockBalanceReportOptimized"]');
+                    if (generateBtn) {
+                        generateBtn.addEventListener('click', function() {
+                            startReportGeneration();
+                        });
+                    }
+                });
+
+                //]]>
+                </script>
+
+                <h:form id="reportForm">
 
                     <!-- Filter Section -->
                     <div class="card mb-4">
@@ -162,14 +341,21 @@
                             <h:outputText value="Actions" styleClass="fw-bold"/>
                         </div>
                         <div class="card-body">
-                            <div class="row g-2">
+                            <div class="row g-2" id="actionButtons">
                                 <div class="col-auto">
                                     <p:commandButton
                                         value="Generate Report"
                                         ajax="false"
                                         action="#{pharmacyDailyStockReportOptimizedController.processDailyStockBalanceReportOptimized}"
                                         styleClass="btn btn-primary"
-                                        icon="fa fa-refresh">
+                                        icon="fa fa-refresh"
+                                        onclick="startReportGeneration();
+                                                 // Auto-complete after page refresh since ajax=false
+                                                 setTimeout(function() {
+                                                     if (document.getElementById('reportSection')) {
+                                                         completeReportGeneration();
+                                                     }
+                                                 }, 1000);">
                                         <f:ajax render="reportSection exportButtons"/>
                                     </p:commandButton>
                                 </div>
@@ -208,6 +394,49 @@
                                         styleClass="btn btn-outline-secondary"
                                         icon="fa fa-eraser"
                                         title="Clear all filters and reset form"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Indicator Card (Hidden by default) -->
+                    <div class="card mb-4" id="progressCard" style="display: none;">
+                        <div class="card-header bg-warning text-dark">
+                            <h:outputText value="&#xf110;" styleClass="fa fa-spinner fa-spin me-2" />
+                            <h:outputText value="Generating Daily Stock Report..." styleClass="fw-bold"/>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="progress mb-3" style="height: 25px;">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                                             id="progressBar"
+                                             role="progressbar"
+                                             style="width: 0%"
+                                             aria-valuenow="0"
+                                             aria-valuemin="0"
+                                             aria-valuemax="100">
+                                            <span id="progressText">0%</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Status:</strong> <span id="progressStatus" class="text-primary">Initializing report generation...</span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Time Elapsed:</strong> <span id="progressTime" class="badge bg-secondary">0s elapsed</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="alert alert-info mb-0">
+                                        <h:outputText value="&#xf05a;" styleClass="fa me-2" />
+                                        <strong>Please wait...</strong><br/>
+                                        <small>
+                                            • Report is generating in the background<br/>
+                                            • Session timeout is prevented automatically<br/>
+                                            • Do not close this page<br/>
+                                            • Large datasets may take longer
+                                        </small>
+                                    </div>
                                 </div>
                             </div>
                         </div>

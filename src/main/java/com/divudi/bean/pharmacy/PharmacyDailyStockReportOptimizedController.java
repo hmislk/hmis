@@ -87,8 +87,11 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
      * simplified queries with better performance
      */
     public void processDailyStockBalanceReportOptimized() {
+        long overallStartTime = System.currentTimeMillis();
+
         System.out.println("==========================================");
-        System.out.println("=== processDailyStockBalanceReportOptimized START ===");
+        System.out.println("=== PERFORMANCE ANALYSIS: Daily Stock Report START ===");
+        System.out.println("=== Timestamp: " + new Date() + " ===");
         System.out.println("From Date: " + fromDate);
         System.out.println("Department: " + department);
         System.out.println("Department ID: " + (department != null ? department.getId() : "null"));
@@ -103,18 +106,33 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
             return;
         }
 
+        // STEP 1: Initialize report object
+        long stepStartTime = System.currentTimeMillis();
+        System.out.println("\n🔄 STEP 1: Initializing report object...");
+
         dailyStockBalanceReport = new DailyStockBalanceReport();
         dailyStockBalanceReport.setDate(fromDate);
         dailyStockBalanceReport.setDepartment(department);
-        // Calculate Opening Stock Value at Retail Rate using optimized method
 
-        // Calculate Opening Stock Value at Retail Rate using optimized method
-        System.out.println(">>> Calculating OPENING stock for date: " + fromDate);
+        long stepDuration = System.currentTimeMillis() - stepStartTime;
+        System.out.println("✅ STEP 1 COMPLETED: " + stepDuration + "ms - Report object initialized");
+
+        // STEP 2: Calculate Opening Stock
+        stepStartTime = System.currentTimeMillis();
+        System.out.println("\n🔄 STEP 2: Calculating OPENING stock value...");
+        System.out.println(">>> Date for opening stock: " + fromDate);
+        System.out.println(">>> Department for opening stock: " + department.getName());
+
         double openingStockValueAtRetailRate = calculateStockValueAtRetailRateOptimized(fromDate, department);
-        System.out.println(">>> Opening stock value returned: " + openingStockValueAtRetailRate);
+
+        stepDuration = System.currentTimeMillis() - stepStartTime;
+        System.out.println("✅ STEP 2 COMPLETED: " + stepDuration + "ms - Opening stock: " + openingStockValueAtRetailRate);
         dailyStockBalanceReport.setOpeningStockValue(openingStockValueAtRetailRate);
 
-        // Calculate toDate as fromDate + 1 day
+        // STEP 3: Calculate date range
+        stepStartTime = System.currentTimeMillis();
+        System.out.println("\n🔄 STEP 3: Setting up date range...");
+
         Calendar cal = Calendar.getInstance();
         cal.setTime(fromDate);
         cal.add(Calendar.DATE, 1);
@@ -123,31 +141,88 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         Date startOfTheDay = CommonFunctions.getStartOfDay(fromDate);
         Date endOfTheDay = CommonFunctions.getEndOfDay(fromDate);
 
-        // These service calls are kept the same as original
+        stepDuration = System.currentTimeMillis() - stepStartTime;
+        System.out.println("✅ STEP 3 COMPLETED: " + stepDuration + "ms");
+        System.out.println(">>> Start of day: " + startOfTheDay);
+        System.out.println(">>> End of day: " + endOfTheDay);
+        System.out.println(">>> Next day (for closing): " + toDate);
+
+        // STEP 4: Fetch Sales Data
+        stepStartTime = System.currentTimeMillis();
+        System.out.println("\n🔄 STEP 4: Fetching SALES data...");
+
         PharmacyBundle saleBundle = pharmacyService.fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(
                 startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+
+        stepDuration = System.currentTimeMillis() - stepStartTime;
+        System.out.println("✅ STEP 4 COMPLETED: " + stepDuration + "ms - Sales data fetched");
+        System.out.println(">>> Sales records found: " + (saleBundle != null ? saleBundle.getRows().size() : "null"));
+        System.out.println(">>> Sales total: " + (saleBundle != null && saleBundle.getSummaryRow() != null ? saleBundle.getSummaryRow().getNetTotal() : "null"));
         dailyStockBalanceReport.setPharmacySalesByAdmissionTypeAndDiscountSchemeBundle(saleBundle);
+
+        // STEP 5: Fetch Purchase Data
+        stepStartTime = System.currentTimeMillis();
+        System.out.println("\n🔄 STEP 5: Fetching PURCHASE data...");
 
         PharmacyBundle purchaseBundle = pharmacyService.fetchPharmacyStockPurchaseValueByBillTypeDto(
                 startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+
+        stepDuration = System.currentTimeMillis() - stepStartTime;
+        System.out.println("✅ STEP 5 COMPLETED: " + stepDuration + "ms - Purchase data fetched");
+        System.out.println(">>> Purchase records found: " + (purchaseBundle != null ? purchaseBundle.getRows().size() : "null"));
+        System.out.println(">>> Purchase total: " + (purchaseBundle != null && purchaseBundle.getSummaryRow() != null ? purchaseBundle.getSummaryRow().getValueOfStocksAtRetailSaleRate() : "null"));
         dailyStockBalanceReport.setPharmacyPurchaseByBillTypeBundle(purchaseBundle);
+
+        // STEP 6: Fetch Transfer Data
+        stepStartTime = System.currentTimeMillis();
+        System.out.println("\n🔄 STEP 6: Fetching TRANSFER data...");
 
         PharmacyBundle transferBundle = pharmacyService.fetchPharmacyTransferValueByBillTypeDto(
                 startOfTheDay, endOfTheDay, null, null, department, null, null, null);
+
+        stepDuration = System.currentTimeMillis() - stepStartTime;
+        System.out.println("✅ STEP 6 COMPLETED: " + stepDuration + "ms - Transfer data fetched");
+        System.out.println(">>> Transfer records found: " + (transferBundle != null ? transferBundle.getRows().size() : "null"));
+        System.out.println(">>> Transfer total: " + (transferBundle != null && transferBundle.getSummaryRow() != null ? transferBundle.getSummaryRow().getValueOfStocksAtRetailSaleRate() : "null"));
         dailyStockBalanceReport.setPharmacyTransferByBillTypeBundle(transferBundle);
+
+        // STEP 7: Fetch Adjustment Data
+        stepStartTime = System.currentTimeMillis();
+        System.out.println("\n🔄 STEP 7: Fetching ADJUSTMENT data...");
 
         PharmacyBundle adjustmentBundle = pharmacyService.fetchPharmacyAdjustmentValueByBillTypeDto(
                 startOfTheDay, endOfTheDay, null, null, department, null, null, null);
-        dailyStockBalanceReport.setPharmacyAdjustmentsByBillTypeBundle(adjustmentBundle);
-        // Calculate Closing Stock Value at Retail Rate using optimized method
 
-        // Calculate Closing Stock Value at Retail Rate using optimized method
-        System.out.println(">>> Calculating CLOSING stock for date: " + toDate);
+        stepDuration = System.currentTimeMillis() - stepStartTime;
+        System.out.println("✅ STEP 7 COMPLETED: " + stepDuration + "ms - Adjustment data fetched");
+        System.out.println(">>> Adjustment records found: " + (adjustmentBundle != null ? adjustmentBundle.getRows().size() : "null"));
+        System.out.println(">>> Adjustment total: " + (adjustmentBundle != null && adjustmentBundle.getSummaryRow() != null ? adjustmentBundle.getSummaryRow().getValueOfStocksAtRetailSaleRate() : "null"));
+        dailyStockBalanceReport.setPharmacyAdjustmentsByBillTypeBundle(adjustmentBundle);
+
+        // STEP 8: Calculate Closing Stock
+        stepStartTime = System.currentTimeMillis();
+        System.out.println("\n🔄 STEP 8: Calculating CLOSING stock value...");
+        System.out.println(">>> Date for closing stock: " + toDate);
+
         double closingStockValueAtRetailRate = calculateStockValueAtRetailRateOptimized(toDate, department);
-        System.out.println(">>> Closing stock value returned: " + closingStockValueAtRetailRate);
+
+        stepDuration = System.currentTimeMillis() - stepStartTime;
+        System.out.println("✅ STEP 8 COMPLETED: " + stepDuration + "ms - Closing stock: " + closingStockValueAtRetailRate);
         dailyStockBalanceReport.setClosingStockValue(closingStockValueAtRetailRate);
 
-        System.out.println("=== processDailyStockBalanceReportOptimized END ===");
+        // OVERALL COMPLETION SUMMARY
+        long totalDuration = System.currentTimeMillis() - overallStartTime;
+        System.out.println("\n==========================================");
+        System.out.println("=== PERFORMANCE ANALYSIS SUMMARY ===");
+        System.out.println("✅ TOTAL DURATION: " + totalDuration + "ms (" + (totalDuration/1000.0) + " seconds)");
+        System.out.println("📊 Opening Stock: " + openingStockValueAtRetailRate);
+        System.out.println("📊 Closing Stock: " + closingStockValueAtRetailRate);
+        System.out.println("📊 Sales Records: " + (saleBundle != null ? saleBundle.getRows().size() : "0"));
+        System.out.println("📊 Purchase Records: " + (purchaseBundle != null ? purchaseBundle.getRows().size() : "0"));
+        System.out.println("📊 Transfer Records: " + (transferBundle != null ? transferBundle.getRows().size() : "0"));
+        System.out.println("📊 Adjustment Records: " + (adjustmentBundle != null ? adjustmentBundle.getRows().size() : "0"));
+        System.out.println("=== PERFORMANCE ANALYSIS END ===");
+        System.out.println("==========================================");
     }
 
     /**
@@ -159,21 +234,38 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
      * @return The total stock value at retail rate, or 0.0 if calculation fails
      */
     private double calculateStockValueAtRetailRateOptimized(Date date, Department dept) {
-        System.out.println("--- calculateStockValueAtRetailRateOptimized (Controller) ---");
-        System.out.println("Date param: " + date);
+        long stockCalcStartTime = System.currentTimeMillis();
+
+        System.out.println("🔍 === STOCK CALCULATION START ===");
+        System.out.println("📅 Date param: " + date);
+        System.out.println("🏥 Department: " + (dept != null ? dept.getName() : "null"));
+        System.out.println("🆔 Department ID: " + (dept != null ? dept.getId() : "null"));
 
         try {
             Long departmentId = (dept != null) ? dept.getId() : null;
-            System.out.println("Extracted departmentId: " + departmentId);
-            System.out.println("Calling facade method...");
+            System.out.println("🔄 Calling StockHistoryFacade.calculateStockValueAtRetailRateOptimized...");
 
+            long facadeStartTime = System.currentTimeMillis();
             double result = stockHistoryFacade.calculateStockValueAtRetailRateOptimized(date, departmentId);
+            long facadeDuration = System.currentTimeMillis() - facadeStartTime;
 
-            System.out.println("Facade returned: " + result);
+            long totalDuration = System.currentTimeMillis() - stockCalcStartTime;
+
+            System.out.println("✅ FACADE COMPLETED: " + facadeDuration + "ms");
+            System.out.println("💰 Stock Value Result: " + result);
+            System.out.println("⏱️ Total Stock Calc Duration: " + totalDuration + "ms");
+            System.out.println("🔍 === STOCK CALCULATION END ===");
+
             return result;
         } catch (Exception e) {
-            System.err.println("!!! EXCEPTION in Controller calculateStockValueAtRetailRateOptimized !!!");
+            long errorDuration = System.currentTimeMillis() - stockCalcStartTime;
+            System.err.println("🚨 === STOCK CALCULATION ERROR ===");
+            System.err.println("⏱️ Time before error: " + errorDuration + "ms");
+            System.err.println("❌ Error message: " + e.getMessage());
+            System.err.println("📍 Error type: " + e.getClass().getSimpleName());
             e.printStackTrace();
+            System.err.println("🚨 === STOCK CALCULATION ERROR END ===");
+
             JsfUtil.addErrorMessage(e, "Error calculating stock value at retail rate for date: " + date);
             return 0.0;
         }
@@ -267,7 +359,7 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         Font totalFont = workbook.createFont();
         totalFont.setBold(true);
         totalStyle.setFont(totalFont);
-        totalStyle.setFillForegroundColor(IndexedColors.LIGHT_GREY.getIndex());
+        totalStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
         totalStyle.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
 
         int rowNum = 0;
@@ -341,7 +433,7 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
                 Row purchaseRow = sheet.createRow(rowNum++);
                 purchaseRow.createCell(0).setCellValue(purchase.getRowType());
                 Cell purchaseCell = purchaseRow.createCell(1);
-                purchaseCell.setCellValue(purchase.getValueOfStocksAtRetailSaleRate());
+                purchaseCell.setCellValue(purchase.getValueOfStocksAtRetailSaleRate().doubleValue());
                 purchaseCell.setCellStyle(numberStyle);
             }
 
@@ -352,7 +444,7 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
             totalPurchasesDesc.setCellStyle(totalStyle);
 
             Cell totalPurchasesCell = totalPurchasesRow.createCell(1);
-            totalPurchasesCell.setCellValue(dailyStockBalanceReport.getPharmacyPurchaseByBillTypeBundle().getSummaryRow().getValueOfStocksAtRetailSaleRate());
+            totalPurchasesCell.setCellValue(dailyStockBalanceReport.getPharmacyPurchaseByBillTypeBundle().getSummaryRow().getValueOfStocksAtRetailSaleRate().doubleValue());
             totalPurchasesCell.setCellStyle(totalStyle);
         }
 
@@ -363,7 +455,7 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
                 Row transferRow = sheet.createRow(rowNum++);
                 transferRow.createCell(0).setCellValue(transfer.getRowType());
                 Cell transferCell = transferRow.createCell(1);
-                transferCell.setCellValue(transfer.getValueOfStocksAtRetailSaleRate());
+                transferCell.setCellValue(transfer.getValueOfStocksAtRetailSaleRate().doubleValue());
                 transferCell.setCellStyle(numberStyle);
             }
 
@@ -374,7 +466,7 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
             totalTransfersDesc.setCellStyle(totalStyle);
 
             Cell totalTransfersCell = totalTransfersRow.createCell(1);
-            totalTransfersCell.setCellValue(dailyStockBalanceReport.getPharmacyTransferByBillTypeBundle().getSummaryRow().getValueOfStocksAtRetailSaleRate());
+            totalTransfersCell.setCellValue(dailyStockBalanceReport.getPharmacyTransferByBillTypeBundle().getSummaryRow().getValueOfStocksAtRetailSaleRate().doubleValue());
             totalTransfersCell.setCellStyle(totalStyle);
         }
 
@@ -385,7 +477,7 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
                 Row adjustmentRow = sheet.createRow(rowNum++);
                 adjustmentRow.createCell(0).setCellValue(adjustment.getRowType());
                 Cell adjustmentCell = adjustmentRow.createCell(1);
-                adjustmentCell.setCellValue(adjustment.getValueOfStocksAtRetailSaleRate());
+                adjustmentCell.setCellValue(adjustment.getGrossTotal());
                 adjustmentCell.setCellStyle(numberStyle);
             }
 
@@ -396,7 +488,7 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
             totalAdjustmentsDesc.setCellStyle(totalStyle);
 
             Cell totalAdjustmentsCell = totalAdjustmentsRow.createCell(1);
-            totalAdjustmentsCell.setCellValue(dailyStockBalanceReport.getPharmacyAdjustmentsByBillTypeBundle().getSummaryRow().getValueOfStocksAtRetailSaleRate());
+            totalAdjustmentsCell.setCellValue(dailyStockBalanceReport.getPharmacyAdjustmentsByBillTypeBundle().getSummaryRow().getValueOfStocksAtRetailSaleRate().doubleValue());
             totalAdjustmentsCell.setCellStyle(totalStyle);
         }
 
