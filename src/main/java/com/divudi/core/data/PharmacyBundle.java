@@ -1388,8 +1388,8 @@ public class PharmacyBundle implements Serializable {
         r.setGrossTotal(nullSafeDouble(b.getTotal()));
         r.setNetTotal(nullSafeDouble(b.getNetTotal()));
         r.setDiscount(nullSafeDouble(b.getDiscount()));
-        r.setServiceCharge(nullSafeDouble(b.getServiceCharge()));
-        r.setActualTotal(nullSafeDouble(b.getTotal()) - nullSafeDouble(b.getServiceCharge()));
+        r.setServiceCharge(nullSafeDouble(b.getMargin()));
+        r.setActualTotal(nullSafeDouble(b.getTotal()) - nullSafeDouble(b.getMargin()));
 
         r.setValueOfStocksAtCostRate(b.getTotalCostValue() == null ? BigDecimal.ZERO : b.getTotalCostValue());
         r.setValueOfStocksAtPurchaseRate(b.getTotalPurchaseValue() == null ? BigDecimal.ZERO : b.getTotalPurchaseValue());

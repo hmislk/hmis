@@ -1807,4 +1807,229 @@ public class UserSettingsController implements Serializable {
     public void setPharmacyDirectPurchaseReturnListToApprovePageSize(int pagesize) {
         savePageSize("pharmacy_direct_purchase_return_list_to_approve", pagesize);
     }
+
+    // ========================================================================
+    // Pharmacy Income Report Column Visibility Properties
+    // Page: pharmacy_income_report.xhtml
+    // ========================================================================
+
+    // Column: Patient
+    public boolean isPharmacyIncomeReportPatientVisible() {
+        return isColumnVisible("pharmacy_income_report", "patient");
+    }
+
+    public void setPharmacyIncomeReportPatientVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("patient", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: Date
+    public boolean isPharmacyIncomeReportDateVisible() {
+        return isColumnVisible("pharmacy_income_report", "date");
+    }
+
+    public void setPharmacyIncomeReportDateVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("date", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: Net Total
+    public boolean isPharmacyIncomeReportNetTotalVisible() {
+        return isColumnVisible("pharmacy_income_report", "netTotal");
+    }
+
+    public void setPharmacyIncomeReportNetTotalVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("netTotal", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: Cash
+    public boolean isPharmacyIncomeReportCashVisible() {
+        return isColumnVisible("pharmacy_income_report", "cash");
+    }
+
+    public void setPharmacyIncomeReportCashVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("cash", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: Card
+    public boolean isPharmacyIncomeReportCardVisible() {
+        return isColumnVisible("pharmacy_income_report", "card");
+    }
+
+    public void setPharmacyIncomeReportCardVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("card", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: Cheque
+    public boolean isPharmacyIncomeReportChequeVisible() {
+        return isColumnVisible("pharmacy_income_report", "cheque");
+    }
+
+    public void setPharmacyIncomeReportChequeVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("cheque", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: Slip
+    public boolean isPharmacyIncomeReportSlipVisible() {
+        return isColumnVisible("pharmacy_income_report", "slip");
+    }
+
+    public void setPharmacyIncomeReportSlipVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("slip", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: Staff Welfare
+    public boolean isPharmacyIncomeReportStaffWelfareVisible() {
+        return isColumnVisible("pharmacy_income_report", "staffWelfare");
+    }
+
+    public void setPharmacyIncomeReportStaffWelfareVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("staffWelfare", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: eWallet
+    public boolean isPharmacyIncomeReportEWalletVisible() {
+        return isColumnVisible("pharmacy_income_report", "eWallet");
+    }
+
+    public void setPharmacyIncomeReportEWalletVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("eWallet", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: Voucher
+    public boolean isPharmacyIncomeReportVoucherVisible() {
+        return isColumnVisible("pharmacy_income_report", "voucher");
+    }
+
+    public void setPharmacyIncomeReportVoucherVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("voucher", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: IOU
+    public boolean isPharmacyIncomeReportIouVisible() {
+        return isColumnVisible("pharmacy_income_report", "iou");
+    }
+
+    public void setPharmacyIncomeReportIouVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("iou", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: Patient Deposit
+    public boolean isPharmacyIncomeReportPatientDepositVisible() {
+        return isColumnVisible("pharmacy_income_report", "patientDeposit");
+    }
+
+    public void setPharmacyIncomeReportPatientDepositVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("patientDeposit", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: Inpatient Credit
+    public boolean isPharmacyIncomeReportInpatientCreditVisible() {
+        return isColumnVisible("pharmacy_income_report", "inpatientCredit");
+    }
+
+    public void setPharmacyIncomeReportInpatientCreditVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("inpatientCredit", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: Outpatient Credit
+    public boolean isPharmacyIncomeReportOutpatientCreditVisible() {
+        return isColumnVisible("pharmacy_income_report", "outpatientCredit");
+    }
+
+    public void setPharmacyIncomeReportOutpatientCreditVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("outpatientCredit", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: Staff Credit
+    public boolean isPharmacyIncomeReportStaffCreditVisible() {
+        return isColumnVisible("pharmacy_income_report", "staffCredit");
+    }
+
+    public void setPharmacyIncomeReportStaffCreditVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("staffCredit", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: Agent Credit
+    public boolean isPharmacyIncomeReportAgentCreditVisible() {
+        return isColumnVisible("pharmacy_income_report", "agentCredit");
+    }
+
+    public void setPharmacyIncomeReportAgentCreditVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("agentCredit", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: Total (Gross Total)
+    public boolean isPharmacyIncomeReportTotalVisible() {
+        return isColumnVisible("pharmacy_income_report", "total");
+    }
+
+    public void setPharmacyIncomeReportTotalVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("total", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: Discount
+    public boolean isPharmacyIncomeReportDiscountVisible() {
+        return isColumnVisible("pharmacy_income_report", "discount");
+    }
+
+    public void setPharmacyIncomeReportDiscountVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("discount", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: Service Charge
+    public boolean isPharmacyIncomeReportServiceChargeVisible() {
+        return isColumnVisible("pharmacy_income_report", "serviceCharge");
+    }
+
+    public void setPharmacyIncomeReportServiceChargeVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("serviceCharge", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
+
+    // Column: Actual Total
+    public boolean isPharmacyIncomeReportActualTotalVisible() {
+        return isColumnVisible("pharmacy_income_report", "actualTotal");
+    }
+
+    public void setPharmacyIncomeReportActualTotalVisible(boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_income_report");
+        settings.setColumnVisible("actualTotal", visible);
+        saveColumnVisibility("pharmacy_income_report", settings);
+    }
 }
