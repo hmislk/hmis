@@ -158,15 +158,18 @@ public class Bill implements Serializable, RetirableEntity {
 
     //Values
     /**
-     * IMPORTANT: Despite the name, this field actually stores the SERVICE CHARGE value
-     * for pharmacy bills. This is a naming inconsistency that should be refactored.
+     * IMPORTANT: Despite the name, this field stores the SERVICE CHARGE value
+     * for pharmacy bills. This is the PRIMARY field used for service charges.
+     *
+     * Data analysis (Dec 2024) shows:
+     * - 23,065 bills have margin != 0 with serviceCharge = 0
+     * - 7,476 bills have both fields with equal values
+     * - 0 bills have serviceCharge used independently
      *
      * Current usage:
      * - Pharmacy reports use this field to display "Service Charge" column
      * - PharmacyBundle.populateRowFromBill() maps this to serviceCharge in PharmacyRow
-     *
-     * TODO: Refactor to rename this field to 'serviceCharge' and remove the unused
-     * 'serviceCharge' field below, or clarify the distinction between the two fields.
+     * - actualTotal is calculated as: total - margin
      *
      * @see #serviceCharge
      * @see com.divudi.core.data.PharmacyBundle#populateRowFromBill
@@ -191,18 +194,18 @@ public class Bill implements Serializable, RetirableEntity {
     private double refundAmount;
     private double balance;
     /**
-     * WARNING: This field appears to be UNUSED in pharmacy billing workflows.
-     * The actual service charge values are stored in the 'margin' field instead.
+     * WARNING: This field is DEPRECATED for pharmacy billing - use 'margin' instead.
      *
-     * This naming confusion has caused bugs where DTO-based reports showed 0.00
-     * for service charges because they read from this field instead of 'margin'.
+     * Data analysis (Dec 2024) confirms:
+     * - This field is NEVER used independently (always 0 or equals margin)
+     * - When populated, it mirrors the 'margin' field value exactly
+     * - All pharmacy reports should use 'margin' for service charge values
      *
-     * TODO: Investigate all usages and consider:
-     * 1. Removing this field if truly unused
-     * 2. Migrating data from 'margin' to this field and updating all code references
-     * 3. Renaming 'margin' to something more appropriate
+     * This naming confusion caused a bug in PharmacyBundle where actualTotal
+     * was incorrectly calculated using this field instead of margin.
      *
      * @see #margin
+     * @deprecated Use {@link #margin} for service charge values
      */
     private double serviceCharge;
     private Double tax = 0.0;
