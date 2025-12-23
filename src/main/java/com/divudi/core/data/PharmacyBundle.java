@@ -931,6 +931,18 @@ public class PharmacyBundle implements Serializable {
             groupRow.setVoucherValue(groupRow.getVoucherValue() + r.getVoucherValue());
             groupRow.setEwalletValue(groupRow.getEwalletValue() + r.getEwalletValue());
             groupRow.setOnCallValue(groupRow.getOnCallValue() + r.getOnCallValue());
+
+            // Aggregate stock values
+            if (r.getValueOfStocksAtCostRate() != null) {
+                groupRow.setValueOfStocksAtCostRate(
+                    groupRow.getValueOfStocksAtCostRate().add(r.getValueOfStocksAtCostRate())
+                );
+            }
+            if (r.getValueOfStocksAtRetailSaleRate() != null) {
+                groupRow.setValueOfStocksAtRetailSaleRate(
+                    groupRow.getValueOfStocksAtRetailSaleRate().add(r.getValueOfStocksAtRetailSaleRate())
+                );
+            }
         }
 
         // Replace with grouped rows, sorted by combined key
