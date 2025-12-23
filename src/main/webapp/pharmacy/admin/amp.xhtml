@@ -11,7 +11,7 @@
     <ui:define name="subcontent">
 
         <h:form>
-            <p:growl id="msg"/>
+            <p:growl id="msg" life="3000"/>
             <p:focus id="selectFocus" for="acAmp" />
             <p:focus id="detailFocus" for="gpDetail" />
             <p:panel  >
@@ -131,6 +131,7 @@
                                              value="#{ampController.current.name}"
                                              placeholder="Enter full product name"
                                              styleClass="longText" class="w-100"
+                                             requiredMessage="AMP name is required"
                                              required="true" />
 
 
@@ -148,14 +149,17 @@
                                         <p:inputText id="code" autocomplete="off"
                                                      value="#{ampController.current.code}"
                                                      placeholder="Enter unique code"
+                                                     maxlength="20"
+                                                     required="true"
+                                                     requiredMessage="Amp code is required"
                                                      styleClass="#{ampController.duplicateCode ? 'is-invalid' : ''}"
-                                                     maxlength="20">
+                                                     >
                                             <p:ajax event="blur" process="@this" update="codePanel msg btnSave codeValidationMsg" listener="#{ampController.checkCodeDuplicate}" />
                                         </p:inputText>
                                         <p:commandButton id="generateCode" value="Generate"
                                                          title="Generate unique code automatically"
                                                          action="#{ampController.generateCode()}"
-                                                         process="generateCode codePanel"
+                                                         process="@this"
                                                          update="codePanel msg btnSave codeValidationMsg"
                                                          class="ui-button-secondary"
                                                          icon="pi pi-refresh" />
@@ -202,6 +206,8 @@
                                                  value="#{ampController.current.vmp}"
                                                  class="w-100"
                                                  maxResults="15"
+                                                 required="true"
+                                                 requiredMessage="Vmp is required"
                                                  inputStyleClass="w-100"
                                                  >
                                 </p:autoComplete>
@@ -326,8 +332,8 @@
                                         <p:commandButton
                                             id="btnSave"
                                             value="Save AMP"
-                                            process="btnSave gpDetail"
-                                            update="acAmp msg @form"
+                                            process="@form"
+                                            update="@form msg"
                                             class="ui-button-success"
                                             icon="fas fa-save"
                                             disabled="#{ampController.duplicateCode}"
