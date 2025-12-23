@@ -1130,17 +1130,25 @@
                             icon="fas fa-hand-holding-usd"
                             rendered="#{webUserController.hasPrivilege('DirectPurchase') and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" 
                             actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
-                        <p:menuitem 
+                        <p:menuitem
                             ajax="false"
                             action="#{searchController.navigateToListPurchaseOrdersToReceive()}"
                             value="GRN"
                             title="Goods Receipt (GRN)"
                             icon="fas fa-dolly-flatbed"
                             rendered="#{webUserController.hasPrivilege('GoodsRecipt')}"  ></p:menuitem>
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{searchController.navigateToGrnListToFinalize()}"  
-                            value="GRN Finalize"  
+                        <p:menuitem
+                            ajax="false"
+                            action="#{searchController.navigateToListPurchaseOrdersToReceiveDto()}"
+                            value="Approved POs to Create GRN"
+                            title="Optimized list of Approved Purchase Orders for GRN Creation - Fast Loading"
+                            icon="fas fa-rocket"
+                            styleClass="ui-menuitem-success"
+                            rendered="#{webUserController.hasPrivilege('GoodsRecipt')}"  ></p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{searchController.navigateToGrnListToFinalize()}"
+                            value="GRN Finalize"
                             icon="fas fa-clipboard-check"
                             rendered="#{webUserController.hasPrivilege('PharmacyGrnFinalize')}" ></p:menuitem>
                         <p:menuitem  
