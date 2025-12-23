@@ -2070,7 +2070,7 @@ public class UserSettingsController implements Serializable {
     }
     
     // page: pharmacy_disposal_return_completed.xhtml
-    // column: Finalized At
+    // column: Completed At
     public boolean isPharmacyDisposalReturnCompletedCompletedAtVisible() {
         return isColumnVisible("pharmacy_disposal_return_completed", "completedAt");
     }
@@ -2081,7 +2081,7 @@ public class UserSettingsController implements Serializable {
         saveColumnVisibility("pharmacy_disposal_return_completed", settings);
     }
     
-    //column: Finalized By
+    //column: Completed By
     public boolean isPharmacyDisposalReturnCompletedCompletedByVisible() {
         return isColumnVisible("pharmacy_disposal_return_completed", "completedBy");
     }
