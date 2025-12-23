@@ -3,12 +3,25 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://xmlns.jcp.org/jsf/html">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
 
-                <p:panel header="Pharmacy Analytics" >
+                <p:panel>
+                    <f:facet name="header">
+                        <h:outputLabel value="Pharmacy Analytics" class="mx-1" />
+                        <p:commandButton
+                            rendered="#{webUserController.hasPrivilege('Admin')}"
+                            value="Config"
+                            icon="fa fa-cog"
+                            title="Page Configuration Management"
+                            action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_analytics')}"
+                            ajax="false"
+                            styleClass="ui-button-secondary ms-5">
+                        </p:commandButton>
+                    </f:facet>
                     <div class="row">
                         <div class="col-md-2">
                             <h:form>
@@ -17,40 +30,45 @@
 
                                     <p:tab title="Summary Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Summary Reports Tab')}">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Income Report')}" 
-                                                             value="Pharmacy Income Report"
-                                                             icon="fa fa-file-medical"
-                                                             ajax="false"
-                                                             styleClass="w-100 ui-button-primary"
-                                                             style="text-align: left"
-                                                             action="#{pharmacySummaryReportController.navigateToPharmacyIncomeReport()}"/>
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Income Report')}" 
+                                                value="Pharmacy Income Report"
+                                                icon="fa fa-file-medical"
+                                                ajax="false"
+                                                styleClass="w-100 ui-button-primary"
+                                                style="text-align: left"
+                                                action="#{pharmacySummaryReportController.navigateToPharmacyIncomeReport()}"/>
 
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Income and Cost')}" 
-                                                             class="w-100" 
-                                                             ajax="false" 
-                                                             style="text-align: left" 
-                                                             value="Pharmacy Income and Cost"
-                                                             action="#{pharmacySummaryReportController.navigateToPharmacyIncomeAndCostReport()}"/>
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Daily Stock Values')}"
-                                                             class="w-100"
-                                                             ajax="false"
-                                                             style="text-align: left"
-                                                             value="Daily Stock Values"
-                                                             action="#{pharmacySummaryReportController.navigateToDailyStockValuesReport()}"/>
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Income and Cost')}" 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                style="text-align: left" 
+                                                value="Pharmacy Income and Cost"
+                                                action="#{pharmacySummaryReportController.navigateToPharmacyIncomeAndCostReport()}"/>
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Daily Stock Values')}"
+                                                class="w-100"
+                                                ajax="false"
+                                                style="text-align: left"
+                                                value="Daily Stock Values - Legacy"
+                                                action="#{pharmacySummaryReportController.navigateToDailyStockValuesReport()}"/>
                                             <p:commandButton
                                                 class="w-100 ui-button-success"
                                                 ajax="false"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Daily Stock Values')}"
                                                 style="text-align: left"
                                                 icon="fa fa-rocket"
-                                                value="Daily Stock Values (Optimized)"
-                                                action="/pharmacy/reports/summary_reports/daily_stock_values_report_optimized?faces-redirect=true"
+                                                value="Daily Stock Values (F-15)"
+                                                action="#{pharmacyDailyStockReportOptimizedController.navigateToDailyStockReport()}"
                                                 title="High-performance optimized report - Faster execution"/>
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Bill Types')}" 
-                                                             class="w-100 ui-button-warning"
-                                                             ajax="false"
-                                                             style="text-align: left"
-                                                             value="Bill Types"
-                                                             action="#{pharmacySummaryReportController.navigateToBillTypeIncome}"/>
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Bill Types')}" 
+                                                class="w-100 ui-button-warning"
+                                                ajax="false"
+                                                style="text-align: left"
+                                                value="Bill Types"
+                                                action="#{pharmacySummaryReportController.navigateToBillTypeIncome}"/>
                                             <p:commandButton
                                                 class="w-100 ui-button-warning"
                                                 ajax="false"

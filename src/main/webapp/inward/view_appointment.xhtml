@@ -117,11 +117,12 @@
                                     value="#{appointmentController.reservationDTOs}"
                                     var="r"
                                     style="min-width: 100%;"
-                                    rows ="10"
+                                    rows ="15"
+                                    rowKey="#{r.id}"
                                     paginator="true"
                                     paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    rowsPerPageTemplate="10,25,50"
+                                    rowsPerPageTemplate="15,25,50"
                                     >
 
                                     <p:column headerText="#" width="2em;" style="padding: 8px;">
