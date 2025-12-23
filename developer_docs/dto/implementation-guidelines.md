@@ -235,137 +235,137 @@ facade.findLightsByJpql(jpql, params)     // Missing TemporalType when using Dat
 3. **Removing entity properties used by business logic** → Runtime failures
 4. **Using wrong facade method for DTO queries** → `findByJpql()` instead of `findLightsByJpql()`
 5. **Missing explicit cast** → Type safety issues with DTO constructor queries
-6. **Forgetting to handle null entity relationships** → NullPointerExceptions in queries
-7. **Using `Object` type for primitive boolean parameters** → Silent query failures (see Type Mismatch section below)
+6. **Accessing properties through null relationships** → Silent query failures (most common issue!)
+7. **Including cancellation details in list DTOs** → Unnecessary complexity and performance issues
 
-## 🚨 CRITICAL: Type Mismatch in DTO Constructor Queries
+## 🚨 CRITICAL: Type Handling in DTO Constructor Queries
 
-### The Problem: Primitive Boolean Auto-Boxing Limitation
+### Recommended Practice: Use Wrapper Types
 
-**JPQL cannot auto-box primitive `boolean` to `Object` in DTO constructor expressions.**
+Always use wrapper types (`Boolean`, `Integer`, `Long`) in DTO constructor parameters for consistency and null safety:
 
-This causes **silent failures** where:
-- COUNT query returns results (no DTO construction needed)
-- DTO query returns 0 results (constructor match fails silently)
-- No exception is thrown
-
-### Example of the Problem
-
-**Entity with primitive booleans:**
 ```java
-@Entity
-public class Bill {
-    private boolean cancelled;      // primitive boolean
-    private boolean billClosed;     // primitive boolean
-    private boolean fullyIssued;    // primitive boolean
-}
-```
-
-**❌ WRONG - DTO Constructor using Object:**
-```java
+// ✅ RECOMMENDED - Use Boolean wrapper type
 public PharmacyPurchaseOrderDTO(
         Long billId,
         String deptId,
-        Object cancelled,        // ❌ WRONG - Object cannot receive primitive boolean from JPQL
-        Object billClosed,       // ❌ WRONG
-        Object fullyIssued) {    // ❌ WRONG
-    this.cancelled = cancelled != null ? (Boolean) cancelled : false;
-    // ...
-}
-```
-
-**JPQL Query:**
-```java
-String jpql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderDTO("
-    + "b.id, "
-    + "b.deptId, "
-    + "b.cancelled, "        // primitive boolean from entity
-    + "b.billClosed, "       // primitive boolean from entity
-    + "b.fullyIssued) "      // primitive boolean from entity
-    + "FROM Bill b WHERE ...";
-```
-
-**Result:** Query returns 0 results even though COUNT shows 1 record exists!
-
-### ✅ CORRECT Solutions
-
-**Solution 1: Use Boolean Wrapper Type (Recommended)**
-```java
-// ✅ CORRECT - Use Boolean wrapper type
-public PharmacyPurchaseOrderDTO(
-        Long billId,
-        String deptId,
-        Boolean cancelled,      // ✅ JPQL can auto-box primitive boolean → Boolean
-        Boolean billClosed,     // ✅ Works correctly
-        Boolean fullyIssued) {  // ✅ Works correctly
+        Boolean cancelled,      // ✅ Wrapper type - handles nulls gracefully
+        Boolean billClosed,     // ✅ Wrapper type
+        Boolean fullyIssued) {  // ✅ Wrapper type
     this.cancelled = cancelled != null ? cancelled : false;
-    // ...
+    this.billClosed = billClosed != null ? billClosed : false;
+    this.fullyIssued = fullyIssued != null ? fullyIssued : false;
 }
-```
-
-**Solution 2: Explicit CASE in JPQL (if you cannot change constructor)**
-```java
-String jpql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderDTO("
-    + "b.id, "
-    + "b.deptId, "
-    + "CASE WHEN b.cancelled = true THEN true ELSE false END, "    // Forces Boolean wrapper
-    + "CASE WHEN b.billClosed = true THEN true ELSE false END, "
-    + "CASE WHEN b.fullyIssued = true THEN true ELSE false END) "
-    + "FROM Bill b WHERE ...";
 ```
 
 ### Type Compatibility Matrix
 
-| Entity Type | DTO Constructor Parameter | JPQL Auto-Boxing | Result |
-|-------------|---------------------------|------------------|---------|
-| `boolean` (primitive) | `Boolean` (wrapper) | ✅ YES | Works |
-| `boolean` (primitive) | `Object` | ❌ NO | Silent failure |
-| `Boolean` (wrapper) | `Boolean` (wrapper) | ✅ YES | Works |
-| `Boolean` (wrapper) | `Object` | ✅ YES | Works |
-| `int` (primitive) | `Integer` (wrapper) | ✅ YES | Works |
-| `int` (primitive) | `Object` | ❌ NO | Silent failure |
+| Entity Type | DTO Constructor Parameter | Result |
+|-------------|---------------------------|---------|
+| `boolean` (primitive) | `Boolean` (wrapper) | ✅ Works |
+| `Boolean` (wrapper) | `Boolean` (wrapper) | ✅ Works |
+| `int` (primitive) | `Integer` (wrapper) | ✅ Works |
+| `Long` | `Long` | ✅ Works |
+| `String` | `String` | ✅ Works |
+
+**Note:** Primitive to wrapper auto-boxing works correctly in EclipseLink JPQL. The more common issue is **null relationship access** (see next section).
 
 ### Debugging Silent Failures
 
 When COUNT returns results but DTO query returns 0:
 
-1. **Check constructor parameter types** - Use wrapper types for primitives
-2. **Verify parameter count** - Must match exactly (13 params in query = 13 in constructor)
-3. **Check parameter order** - Must match query SELECT order exactly
-4. **Verify type compatibility** - No primitive → Object conversions
-5. **Test with simple query** - Remove LEFT JOINs temporarily to isolate issue
+1. **Check for null relationship access** - This is the #1 cause! `b.cancelledBill.createdAt` fails if `cancelledBill` is null
+2. **Test with minimal constructor** - Create a 4-param constructor with just basic fields (id, deptId, createdAt, netTotal). If it works, the issue is with additional fields
+3. **Verify parameter count** - Must match exactly (11 params in query = 11 in constructor)
+4. **Check parameter order** - Must match query SELECT order exactly
+5. **Check constructor parameter types** - Use wrapper types (`Boolean`, not `boolean`)
+6. **Remove relationship traversals one by one** - Identify which nullable relationship is causing the failure
 
-### LEFT JOIN Considerations for Null Safety
+### 🚨 CRITICAL: Null Relationship Access Causes Silent Query Failures
 
-When accessing nested properties that may be null:
+**This is the most common cause of "DTO query returns 0 results" issues.**
 
-**❌ WRONG - Direct property access (NPE if null):**
+When accessing properties through a nullable relationship in a JPQL DTO constructor expression, **the entire query fails silently** if the relationship is null - returning 0 results with no exception.
+
+**❌ WRONG - Direct access through nullable relationship:**
 ```java
 String jpql = "SELECT new DTO("
-    + "b.cancelledBill.createdAt, "              // NPE if cancelledBill is null
-    + "b.cancelledBill.creater.name) "           // NPE if cancelledBill or creater is null
+    + "b.id, "
+    + "b.cancelledBill.createdAt, "              // ❌ FAILS SILENTLY if cancelledBill is null
+    + "b.cancelledBill.creater.webUserPerson.name) "  // ❌ FAILS SILENTLY
     + "FROM Bill b WHERE ...";
 ```
 
-**✅ CORRECT - Use LEFT JOIN with aliases:**
+**What happens:**
+- If ANY row has `cancelledBill = null`, the ENTIRE query returns 0 results
+- No exception is thrown
+- COUNT query on same data returns correct count (e.g., 1)
+- This is JPQL behavior, not a bug
+
+**✅ SOLUTION 1 (Recommended): Exclude nullable relationship fields from DTO**
+```java
+// Simply don't include cancelledBill fields in the DTO query
+String jpql = "SELECT new DTO("
+    + "b.id, "
+    + "b.deptId, "
+    + "b.cancelled) "  // Just the boolean flag, not the relationship details
+    + "FROM Bill b WHERE ...";
+```
+
+**✅ SOLUTION 2: Use LEFT JOIN with explicit aliases (if fields are required)**
 ```java
 String jpql = "SELECT new DTO("
     + "cb.createdAt, "                           // Safe - cb can be null from LEFT JOIN
     + "COALESCE(cancellerPerson.name, '')) "    // Safe - COALESCE handles null
     + "FROM Bill b "
     + "LEFT JOIN b.cancelledBill cb "
-    + "LEFT JOIN cb.creater.webUserPerson cancellerPerson "
+    + "LEFT JOIN cb.creater cancellerCreater "
+    + "LEFT JOIN cancellerCreater.webUserPerson cancellerPerson "
     + "WHERE ...";
 ```
+
+**Note:** Even with LEFT JOIN, you must join EACH level of the relationship chain separately.
+
+### 🚨 Best Practice: Avoid Cancellation Details in List DTOs
+
+**For list/table displays, AVOID including cancellation relationship details:**
+
+- `cancelledBill.createdAt` (cancellation date)
+- `cancelledBill.creater.name` (canceller name)
+- `cancelledBill.comments` (cancellation reason)
+
+**Why:**
+1. **Performance**: These require LEFT JOINs through multiple tables
+2. **Complexity**: Nullable relationships cause silent query failures
+3. **UX**: Users can click through to view full bill details including cancellation info
+4. **Simplicity**: A boolean `cancelled` flag is sufficient for list filtering/display
+
+**✅ Recommended Pattern for List DTOs:**
+```java
+public class PurchaseOrderListDTO {
+    private Long billId;
+    private String deptId;
+    private Date createdAt;
+    private Double netTotal;
+    private Boolean cancelled;    // ✅ Simple boolean flag for display/filtering
+    private Boolean billClosed;
+    // ❌ Don't include: cancelledAt, cancellerName, cancellationReason
+}
+```
+
+**If user needs cancellation details:** Provide a "View Details" action that navigates to the full bill view where all cancellation information is available.
 
 ### Best Practices Summary
 
 1. **Always use wrapper types** (`Boolean`, `Integer`, `Long`) for DTO constructor parameters
-2. **Use LEFT JOIN** for nullable relationships to prevent cartesian products
-3. **Use COALESCE** for nullable String fields to provide default values
-4. **Test COUNT separately** to verify data exists before troubleshooting DTO construction
-5. **Add debug logging** when implementing new DTO queries to catch silent failures early
-6. **Match parameter types exactly** - don't rely on implicit conversions with `Object`
+2. **Avoid nullable relationship traversal** - accessing `b.cancelledBill.createdAt` fails silently if `cancelledBill` is null
+3. **Use LEFT JOIN with explicit aliases** if you must access nullable relationships
+4. **Use COALESCE** for nullable String fields to provide default values
+5. **Test COUNT separately** to verify data exists before troubleshooting DTO construction
+6. **Add debug logging** when implementing new DTO queries to catch silent failures early
+7. **Match parameter types exactly** - don't rely on implicit conversions with `Object`
+8. **Avoid cancellation details in list DTOs** - use boolean flags, let users navigate to details for full info
+9. **Test with minimal constructor first** - if a 4-param constructor works but 11-param fails, the issue is with the additional fields
 
 ## Navigation-Level DTO/Entity Selection
 When implementing dual DTO/Entity approach:

@@ -6862,26 +6862,42 @@ public class SearchController implements Serializable {
         Long count = getBillFacade().countByJpql(countJpql, countParams, TemporalType.TIMESTAMP);
         System.out.println("createPoTablePharmacyDto: COUNT = " + count);
 
+        // First test with a simple query to check exact types returned by JPQL
+        String testJpql = "SELECT b.id, b.deptId, b.createdAt, b.netTotal, b.consignment, b.cancelled, b.billClosed, b.fullyIssued FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.referenceBill.institution = :ins "
+                + "AND b.department = :dept "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
+
+        List testResult = getBillFacade().findByJpql(testJpql, countParams, TemporalType.TIMESTAMP);
+        System.out.println("createPoTablePharmacyDto: TEST QUERY Result size = " + (testResult != null ? testResult.size() : "null"));
+        if (testResult != null && !testResult.isEmpty()) {
+            Object[] firstRow = (Object[]) testResult.get(0);
+            System.out.println("createPoTablePharmacyDto: TEST Row - id type: " + (firstRow[0] != null ? firstRow[0].getClass().getName() : "null"));
+            System.out.println("createPoTablePharmacyDto: TEST Row - deptId type: " + (firstRow[1] != null ? firstRow[1].getClass().getName() : "null"));
+            System.out.println("createPoTablePharmacyDto: TEST Row - createdAt type: " + (firstRow[2] != null ? firstRow[2].getClass().getName() : "null"));
+            System.out.println("createPoTablePharmacyDto: TEST Row - netTotal type: " + (firstRow[3] != null ? firstRow[3].getClass().getName() : "null"));
+            System.out.println("createPoTablePharmacyDto: TEST Row - consignment type: " + (firstRow[4] != null ? firstRow[4].getClass().getName() : "null") + " value: " + firstRow[4]);
+            System.out.println("createPoTablePharmacyDto: TEST Row - cancelled type: " + (firstRow[5] != null ? firstRow[5].getClass().getName() : "null") + " value: " + firstRow[5]);
+            System.out.println("createPoTablePharmacyDto: TEST Row - billClosed type: " + (firstRow[6] != null ? firstRow[6].getClass().getName() : "null") + " value: " + firstRow[6]);
+            System.out.println("createPoTablePharmacyDto: TEST Row - fullyIssued type: " + (firstRow[7] != null ? firstRow[7].getClass().getName() : "null") + " value: " + firstRow[7]);
+        }
+
+        // Use the working minimal DTO approach - just use the minimal constructor and set rest to null
         jpql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderDTO("
                 + "b.id, "
                 + "b.deptId, "
                 + "b.createdAt, "
                 + "b.netTotal, "
-                + "COALESCE(creator.name, ''), "
-                + "COALESCE(supplier.name, ''), "
-                + "COALESCE(fromDept.name, ''), "
+                + "COALESCE(b.creater.webUserPerson.name, ''), "
+                + "COALESCE(b.toInstitution.name, ''), "
+                + "COALESCE(b.fromDepartment.name, ''), "
                 + "b.consignment, "
                 + "b.cancelled, "
                 + "b.billClosed, "
-                + "b.fullyIssued, "
-                + "cb.createdAt, "
-                + "COALESCE(cancellerPerson.name, '')) "
+                + "b.fullyIssued) "
                 + "FROM Bill b "
-                + "LEFT JOIN b.creater.webUserPerson creator "
-                + "LEFT JOIN b.toInstitution supplier "
-                + "LEFT JOIN b.fromDepartment fromDept "
-                + "LEFT JOIN b.cancelledBill cb "
-                + "LEFT JOIN cb.creater.webUserPerson cancellerPerson "
                 + "WHERE b.retired = false "
                 + "AND b.billTypeAtomic = :bta "
                 + "AND b.referenceBill.institution = :ins "

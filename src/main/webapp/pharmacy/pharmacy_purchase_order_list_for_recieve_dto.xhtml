@@ -163,10 +163,7 @@
                                             </div>
                                             <h:panelGroup rendered="#{p.cancelled}">
                                                 <div class="alert alert-danger py-1 px-2 mb-0 small border-0">
-                                                    <strong>Cancelled:</strong>
-                                                    <h:outputLabel rendered="#{p.cancelledAt ne null}" value="#{p.cancelledAt}">
-                                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                    </h:outputLabel>
+                                                    <strong>Cancelled</strong>
                                                 </div>
                                             </h:panelGroup>
                                             <p:commandButton
@@ -199,11 +196,6 @@
                                             <div class="d-flex align-items-center">
                                                 <span>#{p.deptId}</span>
                                             </div>
-                                            <h:panelGroup rendered="#{p.cancelled}">
-                                                <div class="text-danger small">
-                                                    <strong>Cancelled by:</strong> #{p.cancellerName}
-                                                </div>
-                                            </h:panelGroup>
                                         </div>
                                     </p:column>
                                     <p:column headerText="Order Value" sortBy="#{p.netTotal}" styleClass="text-end" width="140">
