@@ -71,6 +71,12 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
+import javax.annotation.PostConstruct;
+import com.divudi.bean.common.PageMetadataRegistry;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 
 /**
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
@@ -101,6 +107,8 @@ public class PharmacyController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     PharmacyErrorChecking pharmacyErrorChecking;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -268,6 +276,867 @@ public class PharmacyController implements Serializable {
     private Map<String, Map<String, List<DepartmentCategoryWiseItems>>> departmentCategoryMap = new HashMap<>();
 
     // </editor-fold>
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     * 🚨 CRITICAL: Use ONLY the core ConfigOptionInfo class from com.divudi.core.data.admin
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/pharmacy_analytics");
+        metadata.setPageName("Pharmacy Analytics Dashboard");
+        metadata.setDescription("Central dashboard for pharmacy analytics, reports and business intelligence");
+        metadata.setControllerClass("PharmacyController");
+
+        // Tab Visibility Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Analytics Summary Reports Tab",
+            "Controls visibility of the Summary Reports tab section",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Analytics Financial Reports Tab",
+            "Controls visibility of the Financial Reports tab section",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Analytics Stock Reports Tab",
+            "Controls visibility of the Stock Reports tab section",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Analytics Item Reports Tab",
+            "Controls visibility of the Item Reports tab section",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Analytics Movement Reports Tab",
+            "Controls visibility of the Movement Reports tab section",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Analytics Retail Sale Reports Tab",
+            "Controls visibility of the Retail Sale Reports tab section",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Analytics Wholesale Reports Tab",
+            "Controls visibility of the Wholesale Reports tab section",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Analytics Inpatient Reports Tab",
+            "Controls visibility of the Inpatient Reports tab section",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Analytics Procurement Reports Tab",
+            "Controls visibility of the Procurement Reports tab section",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Analytics Disbursement Reports Tab",
+            "Controls visibility of the Disbursement Reports tab section",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Analytics Adjustment Reports Tab",
+            "Controls visibility of the Adjustment Reports tab section",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Analytics Disposal Reports Tab",
+            "Controls visibility of the Disposal Reports tab section",
+            OptionScope.APPLICATION
+        ));
+
+        // Summary Reports Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Income Report",
+            "Controls visibility of Pharmacy Income Report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Income and Cost",
+            "Controls visibility of Pharmacy Income and Cost report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Daily Stock Values",
+            "Controls visibility of Daily Stock Values report buttons",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Bill Types",
+            "Controls visibility of Bill Types report button",
+            OptionScope.APPLICATION
+        ));
+
+        // Financial Reports Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Cash In/Out Report",
+            "Controls visibility of Cash In/Out Report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Cashier Report",
+            "Controls visibility of Cashier Report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Cashier Summary",
+            "Controls visibility of Cashier Summary button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show All Cashier Report",
+            "Controls visibility of All Cashier Report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show All Cashier Summary",
+            "Controls visibility of All Cashier Summary button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Cashier Detailed Report by Department",
+            "Controls visibility of Cashier Detailed Report by Department button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Sale Summary",
+            "Controls visibility of Pharmacy Sale Summary button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Sale Summary Date",
+            "Controls visibility of Pharmacy Sale Summary Date button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show All Department Sale Summary",
+            "Controls visibility of All Department Sale Summary button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Sale Summary - By Bill Type",
+            "Controls visibility of Sale Summary - By Bill Type button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Sale Summary - By Payment Method",
+            "Controls visibility of Sale Summary - By Payment Method button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Sale Summary - By Payment Method (By Bill)",
+            "Controls visibility of Sale Summary - By Payment Method (By Bill) button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Stock Overview Report",
+            "Controls visibility of Stock Overview Report button",
+            OptionScope.APPLICATION
+        ));
+
+        // Stock Reports Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Stock Report by Batch",
+            "Controls visibility of Stock Report by Batch buttons (default: true)",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Stock Report by Item",
+            "Controls visibility of Stock Report by Item buttons",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Stock Report by Expiry",
+            "Controls visibility of Stock Report by Expiry button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show All Staff Stock",
+            "Controls visibility of All Staff Stock button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Expiring Stock Report by Batch",
+            "Controls visibility of Expiring Stock Report by Batch button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Zero Stock Item Report",
+            "Controls visibility of Zero Stock Item Report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Suppliers Expiring Stocks",
+            "Controls visibility of Suppliers Expiring Stocks button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Stock Report by Item - Order by VMP",
+            "Controls visibility of Stock Report by Item - Order by VMP button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Stock Report by Product",
+            "Controls visibility of Stock Report by Product button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Stock Report of Single Product",
+            "Controls visibility of Stock Report of Single Product button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Supplier Stock Report",
+            "Controls visibility of Supplier Stock Report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Suppliers Stock Summary",
+            "Controls visibility of Suppliers Stock Summary button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Category Stock Report",
+            "Controls visibility of Category Stock Report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Category Stock Summary",
+            "Controls visibility of Category Stock Summary button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Stock History",
+            "Controls visibility of Stock History button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Before Stock Taking Report",
+            "Controls visibility of Before Stock Taking Report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show After Stock Taking Report",
+            "Controls visibility of After Stock Taking Report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Stock Taking Report(New)",
+            "Controls visibility of Stock Taking Report(New) button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Stock With Movement",
+            "Controls visibility of Stock With Movement button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Stock Summary (with Suppliers)",
+            "Controls visibility of Stock Summary (with Suppliers) button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Stock Report (with Suppliers)",
+            "Controls visibility of Stock Report (with Suppliers) button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Stock Report by Batch for Export",
+            "Controls visibility of Stock Report by Batch for Export button",
+            OptionScope.APPLICATION
+        ));
+
+        // Item Reports Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Bin Card",
+            "Controls visibility of Bin Card button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Item Bin Card",
+            "Controls visibility of Item Bin Card button (default: true)",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Batch Bin Card",
+            "Controls visibility of Batch Bin Card button (default: true)",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Items (AMP) List",
+            "Controls visibility of Items (AMP) List button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Medicine (VTM,ATM,VMP,AMP,VMPP and AMPP) List",
+            "Controls visibility of Medicine (VTM,ATM,VMP,AMP,VMPP and AMPP) List button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Single Items Summary",
+            "Controls visibility of Single Item Summary button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show All Items Summary",
+            "Controls visibility of All Items Summary button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Items Without Distributor",
+            "Controls visibility of Items Without Distributor button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Items With Suppliers and Prices",
+            "Controls visibility of Items With Suppliers and Prices button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Items With Distributor",
+            "Controls visibility of Items With Distributor button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Items With Multiple Distributor(Items Only)",
+            "Controls visibility of Items With Multiple Distributor(Items Only) button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Item With Multiple Distributor",
+            "Controls visibility of Item With Multiple Distributor button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show ROL and ROQ Management",
+            "Controls visibility of ROL and ROQ Management button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Reorder Analysis",
+            "Controls visibility of Reorder Analysis button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Movement Report Stock By Date",
+            "Controls visibility of Movement Report Stock By Date button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Movement Report Stock By Date - By Batch",
+            "Controls visibility of Movement Report Stock By Date - By Batch button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy All Report",
+            "Controls visibility of Pharmacy All Report button",
+            OptionScope.APPLICATION
+        ));
+
+        // Movement Reports Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Movement Out by Sale, Issue, and Consumption with Current Stock Report",
+            "Controls visibility of Movement Out by Sale, Issue, and Consumption with Current Stock Report button",
+            OptionScope.APPLICATION
+        ));
+
+        // Retail Sale Reports Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Sale Report",
+            "Controls visibility of Sale Report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Prescription Report",
+            "Controls visibility of Prescription Report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Institution Item Movement",
+            "Controls visibility of Institution Item Movement button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Fast Moving",
+            "Controls visibility of Fast Moving button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Slow Moving",
+            "Controls visibility of Slow Moving button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Non Moving",
+            "Controls visibility of Non Moving button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Prescription Summary",
+            "Controls visibility of Prescription Summary button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Presciption List",
+            "Controls visibility of Presciption List button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show List of Pharmacy Bills",
+            "Controls visibility of List of Pharmacy Bills button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Retail Sale Bill List",
+            "Controls visibility of Retail Sale Bill List button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Sale Detail - By Bill",
+            "Controls visibility of Sale Detail - By Bill button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Sale Detail - By Bill Items",
+            "Controls visibility of Sale Detail - By Bill Items button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Sale Detail - By Discount Scheme",
+            "Controls visibility of Sale Detail - By Discount Scheme button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Sale Summary By Discount Scheme Summary",
+            "Controls visibility of Sale Summary By Discount Scheme Summary button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Sale Detail - By Payment Method",
+            "Controls visibility of Sale Detail - By Payment Method button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Sale Report",
+            "Controls visibility of Pharmacy Sale Report button",
+            OptionScope.APPLICATION
+        ));
+
+        // Wholesale Reports Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Wholesale Report",
+            "Controls visibility of Pharmacy Wholesale Report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Wholesale Credit Bills",
+            "Controls visibility of Pharmacy Wholesale Credit Bills button",
+            OptionScope.APPLICATION
+        ));
+
+        // Inpatient Reports Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show BHT Issue - By Bill",
+            "Controls visibility of BHT Issue - By Bill button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show BHT Issue - By Bill Item",
+            "Controls visibility of BHT Issue - By Bill Item button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show BHT Issue - By Item",
+            "Controls visibility of BHT Issue - By Item button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show BHT Issue - Staff",
+            "Controls visibility of BHT Issue - Staff button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show BHT Issue With Margin Report",
+            "Controls visibility of BHT Issue With Margin Report button",
+            OptionScope.APPLICATION
+        ));
+
+        // Procurement Reports Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Procurement Report",
+            "Controls visibility of Pharmacy Procurement Report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show GRN Summary",
+            "Controls visibility of GRN Summary button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Department Stock By Batch",
+            "Controls visibility of Department Stock By Batch button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Purchase Orders Not Approved",
+            "Controls visibility of Purchase Orders Not Approved button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Department Stock By Batch to Upload",
+            "Controls visibility of Department Stock By Batch to Upload button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Item-wise Procurement",
+            "Controls visibility of Item-wise Procurement button (default: true)",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Purcharse Bill with Supplier",
+            "Controls visibility of Purcharse Bill with Supplier button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy GRN Report",
+            "Controls visibility of Pharmacy GRN Report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy GRN and purchase Report",
+            "Controls visibility of Pharmacy GRN and purchase Report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show GRN Purchase Items by Supplier",
+            "Controls visibility of GRN Purchase Items by Supplier button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show GRN Summary By Supplier",
+            "Controls visibility of GRN Summary By Supplier button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show GRN Bill Item Report",
+            "Controls visibility of GRN Bill Item Report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show GRN Registry",
+            "Controls visibility of GRN Registry button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show GRN Return List",
+            "Controls visibility of GRN Return List button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Purchase Order Summary",
+            "Controls visibility of Purchase Order Summary button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Purchase Bills by Department",
+            "Controls visibility of Purchase Bills by Department button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Purchase Summary By Supplier",
+            "Controls visibility of Purchase Summary By Supplier button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Purchase Summary (Credit / Cash )",
+            "Controls visibility of Purchase Summary (Credit / Cash ) button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Purchase and GRN Summary (Credit / Cash )",
+            "Controls visibility of Purchase and GRN Summary (Credit / Cash ) button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Purchase Summary By Supplier (Credit / Cash)",
+            "Controls visibility of Purchase Summary By Supplier (Credit / Cash) button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show GRN Payment Summary",
+            "Controls visibility of GRN Payment Summary button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show GRN Payment Summary By Supplier",
+            "Controls visibility of GRN Payment Summary By Supplier button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Pharmacy Return Without Traising",
+            "Controls visibility of Pharmacy Return Without Traising button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Procurement Bill Item List",
+            "Controls visibility of Procurement Bill Item List button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Donation Bills",
+            "Controls visibility of Donation Bills button (default: true, requires PharmacyDonation privilege)",
+            OptionScope.APPLICATION
+        ));
+
+        // Disbursement Reports Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Transfer Issue By Bill Item",
+            "Controls visibility of Transfer Issue By Bill Item button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Transfer Issue by Bill",
+            "Controls visibility of Transfer Issue by Bill button (default: true)",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Transfer Issue by Bill Summary",
+            "Controls visibility of Transfer Issue by Bill Summary button (default: true)",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Transfer Receive By Bill Item",
+            "Controls visibility of Transfer Receive By Bill Item button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Transfer Receive by Bill",
+            "Controls visibility of Transfer Receive by Bill button (default: true)",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Transfer Receive by Bill Summary",
+            "Controls visibility of Transfer Receive by Bill Summary button (default: true)",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Report Transfer Issued not Recieved",
+            "Controls visibility of Report Transfer Issued not Recieved button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Staff Stock Report",
+            "Controls visibility of Staff Stock Report button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Transfer Report Summary",
+            "Controls visibility of Transfer Report Summary button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Transfer Issue Summary Report By Date",
+            "Controls visibility of Transfer Issue Summary Report By Date button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Transfer Receive Vs BHT Issue Quntity Totals By Item",
+            "Controls visibility of Transfer Receive Vs BHT Issue Quntity Totals By Item button",
+            OptionScope.APPLICATION
+        ));
+
+        // Adjustment Reports Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Item-vice adjustments",
+            "Controls visibility of Item-wise adjustments button (default: true)",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Expiry adjustments",
+            "Controls visibility of Expiry adjustments button (default: true)",
+            OptionScope.APPLICATION
+        ));
+
+        // Disposal Reports Configuration Options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Unit Issue by bill",
+            "Controls visibility of Unit Issue by bill button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Unit Issue by Department",
+            "Controls visibility of Unit Issue by Department button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Unit Issue by Item (Batch)",
+            "Controls visibility of Unit Issue by Item (Batch) button",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Unit Issue by Item",
+            "Controls visibility of Unit Issue by Item button",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to system configuration and settings",
+            "Line 15: Config button visibility"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Developers",
+            "Developer access to development and debugging features",
+            "Line 215: Developer-only Stock Report by Batch section visibility"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "PharmacyDonation",
+            "Access to pharmacy donation management and reports",
+            "Line 411: Donation Bills button requires this privilege"
+        ));
+
+        // Register the metadata
+        pageMetadataRegistry.registerPage(metadata);
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Methods - Fill Data">
     public void fillDetails() {
         createStocksDto();
