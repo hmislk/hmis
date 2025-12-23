@@ -151,7 +151,7 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         stepStartTime = System.currentTimeMillis();
         System.out.println("\n🔄 STEP 4: Fetching SALES data...");
 
-        PharmacyBundle saleBundle = pharmacyService.fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(
+        PharmacyBundle saleBundle = pharmacyService.fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionTypeDto(
                 startOfTheDay, endOfTheDay, null, null, department, null, null, null);
 
         stepDuration = System.currentTimeMillis() - stepStartTime;
