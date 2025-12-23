@@ -229,26 +229,20 @@ SELECT
     END AS explain_status;
 
 -- Sample EXPLAIN for uppercase table (only if exists)
-SET @sql = CASE WHEN @use_uppercase_userstock > 0 THEN
-    'EXPLAIN SELECT SUM(us.UPDATIONQTY) FROM USER_STOCK us WHERE us.RETIRED = 0 AND us.STOCK_ID = 1 AND us.CREATER_ID != 1 AND us.CREATEDAT BETWEEN DATE_SUB(NOW(), INTERVAL 30 MINUTE) AND NOW()'
-ELSE
-    'SELECT "USER_STOCK table not found - skipping EXPLAIN" AS explain_result'
-END;
-
-PREPARE explain_stmt FROM @sql;
-EXECUTE explain_stmt;
-DEALLOCATE PREPARE explain_stmt;
+-- Only run EXPLAIN if table actually exists to avoid syntax errors
+SELECT
+    CASE WHEN @use_uppercase_userstock > 0
+         THEN 'Will run EXPLAIN on USER_STOCK table...'
+         ELSE 'USER_STOCK table not found - skipping EXPLAIN'
+    END AS explain_status_uppercase;
 
 -- Sample EXPLAIN for lowercase table (only if exists and uppercase doesn't)
-SET @sql = CASE WHEN @use_lowercase_userstock > 0 AND @use_uppercase_userstock = 0 THEN
-    'EXPLAIN SELECT SUM(us.UPDATIONQTY) FROM userstock us WHERE us.RETIRED = 0 AND us.STOCK_ID = 1 AND us.CREATER_ID != 1 AND us.CREATEDAT BETWEEN DATE_SUB(NOW(), INTERVAL 30 MINUTE) AND NOW()'
-ELSE
-    'SELECT "userstock table not found or uppercase already processed - skipping EXPLAIN" AS explain_result'
-END;
-
-PREPARE explain_stmt FROM @sql;
-EXECUTE explain_stmt;
-DEALLOCATE PREPARE explain_stmt;
+-- Only run EXPLAIN if table actually exists to avoid syntax errors
+SELECT
+    CASE WHEN @use_lowercase_userstock > 0 AND @use_uppercase_userstock = 0
+         THEN 'Will run EXPLAIN on userstock table...'
+         ELSE 'userstock table not found or uppercase already processed - skipping EXPLAIN'
+    END AS explain_status_lowercase;
 
 -- ==========================================
 -- STEP 5: CREATE INDEXES ON USERSTOCKCONTAINER TABLE
@@ -456,26 +450,20 @@ SELECT
     END AS join_explain_status;
 
 -- EXPLAIN for uppercase tables (only if both exist)
-SET @sql = CASE WHEN @use_uppercase_join = 1 THEN
-    'EXPLAIN SELECT SUM(us.UPDATIONQTY) FROM USER_STOCK us JOIN USERSTOCKCONTAINER usc ON us.USERSTOCKCONTAINER_ID = usc.ID WHERE us.RETIRED=0 AND usc.RETIRED=0 AND us.STOCK_ID=1'
-ELSE
-    'SELECT "Uppercase tables (USER_STOCK, USERSTOCKCONTAINER) not found - skipping EXPLAIN" AS explain_result'
-END;
-
-PREPARE join_explain_stmt FROM @sql;
-EXECUTE join_explain_stmt;
-DEALLOCATE PREPARE join_explain_stmt;
+-- Only run EXPLAIN if both tables actually exist to avoid syntax errors
+SELECT
+    CASE WHEN @use_uppercase_join = 1
+         THEN 'Will run JOIN EXPLAIN on uppercase tables (USER_STOCK, USERSTOCKCONTAINER)...'
+         ELSE 'Uppercase tables (USER_STOCK, USERSTOCKCONTAINER) not found - skipping EXPLAIN'
+    END AS join_explain_status_uppercase;
 
 -- EXPLAIN for lowercase tables (only if both exist and uppercase don't)
-SET @sql = CASE WHEN @use_lowercase_join = 1 AND @use_uppercase_join = 0 THEN
-    'EXPLAIN SELECT SUM(us.UPDATIONQTY) FROM userstock us JOIN userstockcontainer usc ON us.USERSTOCKCONTAINER_ID = usc.ID WHERE us.RETIRED=0 AND usc.RETIRED=0 AND us.STOCK_ID=1'
-ELSE
-    'SELECT "Lowercase tables not found or uppercase already processed - skipping EXPLAIN" AS explain_result'
-END;
-
-PREPARE join_explain_stmt FROM @sql;
-EXECUTE join_explain_stmt;
-DEALLOCATE PREPARE join_explain_stmt;
+-- Only run EXPLAIN if both tables actually exist to avoid syntax errors
+SELECT
+    CASE WHEN @use_lowercase_join = 1 AND @use_uppercase_join = 0
+         THEN 'Will run JOIN EXPLAIN on lowercase tables (userstock, userstockcontainer)...'
+         ELSE 'Lowercase tables not found or uppercase already processed - skipping EXPLAIN'
+    END AS join_explain_status_lowercase;
 
 -- ==========================================
 -- MIGRATION COMPLETION SUMMARY

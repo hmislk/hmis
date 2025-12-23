@@ -9,141 +9,452 @@
     <h:body>
         <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
             <ui:define name="subcontent">
-                <h:form >
-                    <p:panelGrid layout="tabular" columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf073;" styleClass="fa ml-5" />
-                            <h:outputLabel value="Date" for="fromDate" class="mx-3"/>
-                        </h:panelGroup>
-                        <p:calendar
-                            styleClass="w-100"
-                            inputStyleClass="w-100 form-control"
-                            id="fromDate"
-                            value="#{pharmacyDailyStockReportOptimizedController.fromDate}"
-                            pattern="#{sessionController.applicationPreference.longDateFormat}"
-                            />
 
-                        <p:spacer width="50" ></p:spacer>
-                        <p:commandButton
-                            class="w-100"
-                            value="Process (Optimized)"
-                            ajax="false"
-                            action="#{pharmacyDailyStockReportOptimizedController.processDailyStockBalanceReportOptimized}" ></p:commandButton>
-                        <p:spacer width="50" ></p:spacer>
+                <!-- Timeout Prevention and Progress Management Scripts -->
+                <script type="text/javascript">
+                //<![CDATA[
 
+                // Global variables for report generation tracking
+                var reportGenerationStartTime = null;
+                var progressInterval = null;
+                var keepAliveInterval = null;
+                var estimatedDuration = 45; // seconds - will be updated after optimization
 
-                        <p:spacer width="50" ></p:spacer>
-                        <p:spacer width="50" ></p:spacer>
-                        <p:spacer width="50" ></p:spacer>
+                // Prevent browser timeout during long report generation
+                function startReportGeneration() {
+                    console.log('Starting report generation with timeout prevention...');
+                    reportGenerationStartTime = new Date().getTime();
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
-                            <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu
-                            id="cmbIns"
-                            styleClass="w-100 form-control"
-                            value="#{pharmacyDailyStockReportOptimizedController.institution}"
-                            filter="true">
-                            <f:selectItem itemLabel="All Institutions" />
-                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                            <p:ajax process="cmbIns" update="cmbDept" />
-                        </p:selectOneMenu>
+                    // Show progress indicator
+                    showProgressIndicator();
 
-                        <p:spacer ></p:spacer>
+                    // Start keep-alive mechanism (every 30 seconds)
+                    keepAliveInterval = setInterval(function() {
+                        // Send a lightweight AJAX request to keep session alive
+                        console.log('Sending keep-alive ping...');
+                        fetch(window.location.href, {
+                            method: 'HEAD',
+                            cache: 'no-cache'
+                        }).catch(function(e) {
+                            console.log('Keep-alive ping failed, but continuing...', e);
+                        });
+                    }, 30000);
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
-                            <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu
-                            id="siteMenu"
-                            styleClass="w-100 form-control"
-                            value="#{pharmacyDailyStockReportOptimizedController.site}"
-                            filter="true">
-                            <f:selectItem itemLabel="All Sites" />
-                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
-                            <p:ajax process="siteMenu" update="cmbDept" />
-                        </p:selectOneMenu>
+                    // Start progress updates
+                    progressInterval = setInterval(updateProgress, 1000);
 
-                        <p:spacer ></p:spacer>
+                    // Prevent browser from showing "page unresponsive" warnings
+                    window.onbeforeunload = function() {
+                        return "Report generation in progress. Are you sure you want to leave?";
+                    };
+                }
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
-                            <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
-                        </h:panelGroup>
-                        <h:panelGroup id="cmbDept">
+                function showProgressIndicator() {
+                    var progressCard = document.getElementById('progressCard');
+                    var actionButtons = document.getElementById('actionButtons');
 
-                            <!-- Component 1: Without Institution and Site -->
-                            <p:selectOneMenu
-                                rendered="#{pharmacyDailyStockReportOptimizedController.institution eq null and pharmacyDailyStockReportOptimizedController.site eq null}"
-                                styleClass="w-100 form-control"
-                                value="#{pharmacyDailyStockReportOptimizedController.department}"
-                                filterMatchMode="contains"
-                                filter="true">
-                                <f:selectItem itemLabel="All Departments" />
-                                <f:selectItems
-                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
-                                    var="d"
-                                    itemLabel="#{d.name}"
-                                    itemValue="#{d}" />
-                            </p:selectOneMenu>
+                    if (progressCard) {
+                        progressCard.style.display = 'block';
+                        progressCard.scrollIntoView({ behavior: 'smooth' });
+                    }
 
-                            <!-- Component 2: With Site Only -->
-                            <p:selectOneMenu
-                                rendered="#{pharmacyDailyStockReportOptimizedController.institution eq null and pharmacyDailyStockReportOptimizedController.site ne null}"
-                                styleClass="w-100 form-control"
-                                value="#{pharmacyDailyStockReportOptimizedController.department}"
-                                filterMatchMode="contains"
-                                filter="true">
-                                <f:selectItem itemLabel="All Departments" />
-                                <f:selectItems
-                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyDailyStockReportOptimizedController.site)}"
-                                    var="d"
-                                    itemLabel="#{d.name}"
-                                    itemValue="#{d}" />
-                            </p:selectOneMenu>
+                    if (actionButtons) {
+                        // Disable all action buttons during generation
+                        var buttons = actionButtons.querySelectorAll('button');
+                        buttons.forEach(function(btn) {
+                            btn.disabled = true;
+                        });
+                    }
+                }
 
-                            <!-- Component 3: With Institution Only -->
-                            <p:selectOneMenu
-                                rendered="#{pharmacyDailyStockReportOptimizedController.institution ne null and pharmacyDailyStockReportOptimizedController.site eq null}"
-                                styleClass="w-100 form-control"
-                                value="#{pharmacyDailyStockReportOptimizedController.department}"
-                                filterMatchMode="contains"
-                                filter="true">
-                                <f:selectItem itemLabel="All Departments" />
-                                <f:selectItems
-                                    value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyDailyStockReportOptimizedController.institution)}"
-                                    var="d"
-                                    itemLabel="#{d.name}"
-                                    itemValue="#{d}" />
-                            </p:selectOneMenu>
+                function updateProgress() {
+                    if (!reportGenerationStartTime) return;
 
-                            <!-- Component 4: With Both Institution and Site -->
-                            <p:selectOneMenu
-                                rendered="#{pharmacyDailyStockReportOptimizedController.institution ne null and pharmacyDailyStockReportOptimizedController.site ne null}"
-                                styleClass="w-100 form-control"
-                                value="#{pharmacyDailyStockReportOptimizedController.department}"
-                                filterMatchMode="contains"
-                                filter="true">
-                                <f:selectItem itemLabel="All Departments" />
-                                <f:selectItems
-                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyDailyStockReportOptimizedController.institution, pharmacyDailyStockReportOptimizedController.site)}"
-                                    var="d"
-                                    itemLabel="#{d.name}"
-                                    itemValue="#{d}" />
-                            </p:selectOneMenu>
+                    var elapsed = Math.floor((new Date().getTime() - reportGenerationStartTime) / 1000);
+                    var progressBar = document.getElementById('progressBar');
+                    var progressText = document.getElementById('progressText');
+                    var progressTime = document.getElementById('progressTime');
 
-                        </h:panelGroup>
+                    if (progressBar && progressText && progressTime) {
+                        var percentage = Math.min((elapsed / estimatedDuration) * 100, 95); // Cap at 95% until actual completion
 
+                        progressBar.style.width = percentage + '%';
+                        progressBar.setAttribute('aria-valuenow', percentage);
 
-                    </p:panelGrid>
+                        progressText.textContent = Math.round(percentage) + '%';
+                        progressTime.textContent = elapsed + 's elapsed';
 
+                        // Update status message based on progress
+                        var statusMsg = document.getElementById('progressStatus');
+                        if (statusMsg) {
+                            if (elapsed < 10) {
+                                statusMsg.textContent = 'Initializing report generation...';
+                            } else if (elapsed < 20) {
+                                statusMsg.textContent = 'Calculating opening stock values...';
+                            } else if (elapsed < 35) {
+                                statusMsg.textContent = 'Processing sales and purchase data...';
+                            } else if (elapsed < 50) {
+                                statusMsg.textContent = 'Finalizing calculations...';
+                            } else {
+                                statusMsg.textContent = 'Report generation taking longer than expected, please wait...';
+                            }
+                        }
+                    }
+                }
 
-                    <table class="table w-100 m-1">
+                function completeReportGeneration() {
+                    console.log('Report generation completed!');
+
+                    // Clear intervals
+                    if (progressInterval) {
+                        clearInterval(progressInterval);
+                        progressInterval = null;
+                    }
+                    if (keepAliveInterval) {
+                        clearInterval(keepAliveInterval);
+                        keepAliveInterval = null;
+                    }
+
+                    // Remove unload warning
+                    window.onbeforeunload = null;
+
+                    // Update progress to 100%
+                    var progressBar = document.getElementById('progressBar');
+                    var progressText = document.getElementById('progressText');
+                    var progressStatus = document.getElementById('progressStatus');
+
+                    if (progressBar && progressText) {
+                        progressBar.style.width = '100%';
+                        progressBar.setAttribute('aria-valuenow', '100');
+                        progressText.textContent = '100%';
+                    }
+
+                    if (progressStatus) {
+                        progressStatus.textContent = 'Report generated successfully!';
+                        progressStatus.className = 'text-success fw-bold';
+                    }
+
+                    // Hide progress card after 3 seconds
+                    setTimeout(function() {
+                        var progressCard = document.getElementById('progressCard');
+                        if (progressCard) {
+                            progressCard.style.display = 'none';
+                        }
+
+                        // Re-enable action buttons
+                        var actionButtons = document.getElementById('actionButtons');
+                        if (actionButtons) {
+                            var buttons = actionButtons.querySelectorAll('button');
+                            buttons.forEach(function(btn) {
+                                btn.disabled = false;
+                            });
+                        }
+
+                        // Calculate actual duration for future estimates
+                        if (reportGenerationStartTime) {
+                            var actualDuration = (new Date().getTime() - reportGenerationStartTime) / 1000;
+                            estimatedDuration = Math.max(actualDuration * 1.2, 30); // 20% buffer, min 30s
+                            console.log('Updated estimated duration to:', estimatedDuration + 's');
+                        }
+
+                        reportGenerationStartTime = null;
+                    }, 3000);
+                }
+
+                // Initialize when page loads
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Check if we just completed a report generation (page was reloaded)
+                    var reportSection = document.getElementById('reportSection');
+                    var hasReport = reportSection && reportSection.innerHTML.includes('Daily Stock Value Report Results');
+
+                    if (hasReport) {
+                        console.log('Report detected on page load - completing progress tracking');
+                        // Show completed progress briefly
+                        showProgressIndicator();
+                        setTimeout(function() {
+                            completeReportGeneration();
+                        }, 500);
+                    }
+
+                    // Set up event listeners for the generate button
+                    var generateBtn = document.querySelector('button[onclick*="processDailyStockBalanceReportOptimized"]');
+                    if (generateBtn) {
+                        generateBtn.addEventListener('click', function() {
+                            startReportGeneration();
+                        });
+                    }
+                });
+
+                //]]>
+                </script>
+
+                <h:form id="reportForm">
+
+                    <!-- Filter Section -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h:outputText value="&#xf0b0;" styleClass="fa me-2" /> <!-- Filter icon -->
+                            <h:outputText value="Report Filters" styleClass="fw-bold"/>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <!-- Date Filter -->
+                                <div class="col-md-4 col-lg-3">
+                                    <h:outputLabel for="fromDate" value="Date" styleClass="form-label fw-bold"/>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <h:outputText value="&#xf073;" styleClass="fa text-primary"/>
+                                        </span>
+                                        <p:calendar
+                                            id="fromDate"
+                                            value="#{pharmacyDailyStockReportOptimizedController.fromDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                            styleClass="form-control"
+                                            showOn="button"/>
+                                    </div>
+                                </div>
+
+                                <!-- Institution Filter -->
+                                <div class="col-md-4 col-lg-3">
+                                    <h:outputLabel for="cmbIns" value="Institution" styleClass="form-label fw-bold"/>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <h:outputText value="&#xf19c;" styleClass="fa text-primary"/>
+                                        </span>
+                                        <p:selectOneMenu
+                                            id="cmbIns"
+                                            styleClass="form-select"
+                                            value="#{pharmacyDailyStockReportOptimizedController.institution}"
+                                            filter="true"
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="All Institutions" itemValue="#{null}"/>
+                                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                                            <p:ajax process="cmbIns" update="cmbSite cmbDept"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <!-- Site Filter -->
+                                <div class="col-md-4 col-lg-3">
+                                    <h:outputLabel for="cmbSite" value="Site" styleClass="form-label fw-bold"/>
+                                    <h:panelGroup id="cmbSite">
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <h:outputText value="&#xf3c5;" styleClass="fa text-primary"/>
+                                            </span>
+                                            <p:selectOneMenu
+                                                id="siteMenu"
+                                                styleClass="form-select"
+                                                value="#{pharmacyDailyStockReportOptimizedController.site}"
+                                                filter="true"
+                                                filterMatchMode="contains">
+                                                <f:selectItem itemLabel="All Sites" itemValue="#{null}"/>
+                                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}"/>
+                                                <p:ajax process="siteMenu" update="cmbDept"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+
+                                <!-- Department Filter -->
+                                <div class="col-md-6 col-lg-3">
+                                    <h:outputLabel for="department" value="Department" styleClass="form-label fw-bold"/>
+                                    <h:panelGroup id="cmbDept">
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <h:outputText value="&#xf0e8;" styleClass="fa text-primary"/>
+                                            </span>
+                                            <!-- Component 1: Without Institution and Site -->
+                                            <p:selectOneMenu
+                                                id="department1"
+                                                rendered="#{pharmacyDailyStockReportOptimizedController.institution eq null and pharmacyDailyStockReportOptimizedController.site eq null}"
+                                                styleClass="form-select"
+                                                value="#{pharmacyDailyStockReportOptimizedController.department}"
+                                                filterMatchMode="contains"
+                                                filter="true">
+                                                <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                                <f:selectItems
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                    var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}"/>
+                                            </p:selectOneMenu>
+
+                                            <!-- Component 2: With Site Only -->
+                                            <p:selectOneMenu
+                                                id="department2"
+                                                rendered="#{pharmacyDailyStockReportOptimizedController.institution eq null and pharmacyDailyStockReportOptimizedController.site ne null}"
+                                                styleClass="form-select"
+                                                value="#{pharmacyDailyStockReportOptimizedController.department}"
+                                                filterMatchMode="contains"
+                                                filter="true">
+                                                <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                                <f:selectItems
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyDailyStockReportOptimizedController.site)}"
+                                                    var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}"/>
+                                            </p:selectOneMenu>
+
+                                            <!-- Component 3: With Institution Only -->
+                                            <p:selectOneMenu
+                                                id="department3"
+                                                rendered="#{pharmacyDailyStockReportOptimizedController.institution ne null and pharmacyDailyStockReportOptimizedController.site eq null}"
+                                                styleClass="form-select"
+                                                value="#{pharmacyDailyStockReportOptimizedController.department}"
+                                                filterMatchMode="contains"
+                                                filter="true">
+                                                <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                                <f:selectItems
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyDailyStockReportOptimizedController.institution)}"
+                                                    var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}"/>
+                                            </p:selectOneMenu>
+
+                                            <!-- Component 4: With Both Institution and Site -->
+                                            <p:selectOneMenu
+                                                id="department4"
+                                                rendered="#{pharmacyDailyStockReportOptimizedController.institution ne null and pharmacyDailyStockReportOptimizedController.site ne null}"
+                                                styleClass="form-select"
+                                                value="#{pharmacyDailyStockReportOptimizedController.department}"
+                                                filterMatchMode="contains"
+                                                filter="true">
+                                                <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                                <f:selectItems
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyDailyStockReportOptimizedController.institution, pharmacyDailyStockReportOptimizedController.site)}"
+                                                    var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons Section -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h:outputText value="&#xf0ae;" styleClass="fa me-2" /> <!-- Actions icon -->
+                            <h:outputText value="Actions" styleClass="fw-bold"/>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2" id="actionButtons">
+                                <div class="col-auto">
+                                    <p:commandButton
+                                        value="Generate Report"
+                                        ajax="false"
+                                        action="#{pharmacyDailyStockReportOptimizedController.processDailyStockBalanceReportOptimized}"
+                                        styleClass="btn btn-primary"
+                                        icon="fa fa-refresh"
+                                        onclick="startReportGeneration();
+                                                 // Auto-complete after page refresh since ajax=false
+                                                 setTimeout(function() {
+                                                     if (document.getElementById('reportSection')) {
+                                                         completeReportGeneration();
+                                                     }
+                                                 }, 1000);">
+                                        <f:ajax render="reportSection exportButtons"/>
+                                    </p:commandButton>
+                                </div>
+
+                                <!-- Export Buttons (shown only when report is available) -->
+                                <h:panelGroup id="exportButtons" layout="block" styleClass="col-auto">
+                                    <h:panelGroup layout="block"
+                                                  rendered="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport != null and pharmacyDailyStockReportOptimizedController.fromDate != null and pharmacyDailyStockReportOptimizedController.department != null}">
+                                        <div class="btn-group" role="group" aria-label="Export options">
+                                            <p:commandButton
+                                                value="Download Excel"
+                                                ajax="false"
+                                                action="#{pharmacyDailyStockReportOptimizedController.downloadExcel}"
+                                                styleClass="btn btn-success"
+                                                icon="fa fa-file-excel-o"
+                                                title="Download report as Excel file"/>
+
+                                            <p:commandButton
+                                                value="Print"
+                                                ajax="false"
+                                                action="#{pharmacyDailyStockReportOptimizedController.navigateToPrintPage}"
+                                                styleClass="btn btn-info"
+                                                icon="fa fa-print"
+                                                title="Open print-friendly version"/>
+                                        </div>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <div class="col-auto ms-auto">
+                                    <p:commandButton
+                                        value="Clear"
+                                        immediate="true"
+                                        ajax="true"
+                                        actionListener="#{pharmacyDailyStockReportOptimizedController.clearFilters}"
+                                        update="@form"
+                                        styleClass="btn btn-outline-secondary"
+                                        icon="fa fa-eraser"
+                                        title="Clear all filters and reset form"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Indicator Card (Hidden by default) -->
+                    <div class="card mb-4" id="progressCard" style="display: none;">
+                        <div class="card-header bg-warning text-dark">
+                            <h:outputText value="&#xf110;" styleClass="fa fa-spinner fa-spin me-2" />
+                            <h:outputText value="Generating Daily Stock Report..." styleClass="fw-bold"/>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="progress mb-3" style="height: 25px;">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                                             id="progressBar"
+                                             role="progressbar"
+                                             style="width: 0%"
+                                             aria-valuenow="0"
+                                             aria-valuemin="0"
+                                             aria-valuemax="100">
+                                            <span id="progressText">0%</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Status:</strong> <span id="progressStatus" class="text-primary">Initializing report generation...</span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Time Elapsed:</strong> <span id="progressTime" class="badge bg-secondary">0s elapsed</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="alert alert-info mb-0">
+                                        <h:outputText value="&#xf05a;" styleClass="fa me-2" />
+                                        <strong>Please wait...</strong><br/>
+                                        <small>
+                                            • Report is generating in the background<br/>
+                                            • Session timeout is prevented automatically<br/>
+                                            • Do not close this page<br/>
+                                            • Large datasets may take longer
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report Results Section -->
+                    <h:panelGroup id="reportSection">
+                        <div class="card"
+                             rendered="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport != null and pharmacyDailyStockReportOptimizedController.fromDate != null and pharmacyDailyStockReportOptimizedController.department != null}">
+                            <div class="card-header bg-info text-white">
+                                <h:outputText value="&#xf1c0;" styleClass="fa me-2" /> <!-- Database icon -->
+                                <h:outputText value="Daily Stock Value Report Results" styleClass="fw-bold"/>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-striped table-hover mb-0">
                         <tr>
                             <th colspan="2" class="bg-primary text-white text-center">
-                                <h:outputText value="Daily Stock Value Report (Optimized)"></h:outputText>
+                                <h:outputText value="Daily Stock Value Report"></h:outputText>
                             </th>
                         </tr>
                         <tr>
@@ -316,8 +627,10 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
-                    </table>
-
+                                </table>
+                            </div>
+                        </div>
+                    </h:panelGroup>
 
 
 
