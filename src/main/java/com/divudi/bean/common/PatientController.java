@@ -1030,14 +1030,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         if (originalBillPayments != null && !originalBillPayments.isEmpty()) {
             initializePaymentDataFromOriginalPayments(originalBillPayments);
-        }
-        if (pm == PaymentMethod.MultiplePaymentMethods) {
+        } else if (pm == PaymentMethod.MultiplePaymentMethods){
             cancelBill.setPaymentMethod(PaymentMethod.Cash);
-            return;
+        } else {
+            cancelBill.setPaymentMethod(pm);
         }
-        cancelBill.setPaymentMethod(pm);
-
-
+        
     }
 
     public void clearDataForPatientRefund() {
@@ -4716,9 +4714,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         // For single payment method
         if (originalPayments.size() == 1) {
             Payment originalPayment = originalPayments.get(0);
-            paymentMethod = originalPayment.getPaymentMethod();
-
-
+            cancelBill.setPaymentMethod(originalPayment.getPaymentMethod());
+            
             // Initialize paymentMethodData based on payment method (using absolute values for UI display)
             // Note: Total value will be updated later when user selects items to refund
             switch (originalPayment.getPaymentMethod()) {
@@ -4761,7 +4758,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             }
         } else {
             // Multiple payments - set to MultiplePaymentMethods
-            paymentMethod = PaymentMethod.MultiplePaymentMethods;
+            cancelBill.setPaymentMethod(PaymentMethod.Cash);
             // Note: For multiple payments, the user would need to manually configure them
             // This is a complex scenario that may require additional UI handling
         }
