@@ -89,7 +89,7 @@ public class DocumentTemplateController implements Serializable {
         current = new DocumentTemplate();
         current.setWebUser(sessionController.getLoggedUser());
         current.setContents(generateDefaultTemplateContents());
-        return "/emr/settings/document_template";
+        return "/emr/settings/document_template?faces-redirect=true";
     }
 
     public String generateDefaultTemplateContents() {
@@ -136,7 +136,7 @@ public class DocumentTemplateController implements Serializable {
             JsfUtil.addErrorMessage("Nothing Selected");
             return "";
         }
-        return "/emr/settings/document_template";
+        return "/emr/settings/document_template?faces-redirect=true";
     }
 
     public String navigateToListUserDocumentTemplate() {
@@ -154,7 +154,7 @@ public class DocumentTemplateController implements Serializable {
         }
         saveSelected();
         fillAllItems(null);
-        JsfUtil.addSuccessMessage("Saved");
+       
     }
 
     public void removeUserDocumentTemplate() {
@@ -171,12 +171,12 @@ public class DocumentTemplateController implements Serializable {
     private void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Updated");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            JsfUtil.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Saved");
         }
         items = null;
     }

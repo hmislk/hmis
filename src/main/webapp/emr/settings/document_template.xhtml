@@ -14,16 +14,19 @@
         <ui:composition template="/emr/settings/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
+                    <p:growl id="msg"  life="3000"/>
                     <p:panel header="Document Template Configuration" styleClass="mb-4">
                         <div class="row">
                             <div class="col-md-4">
                                 <h:panelGroup layout="block" styleClass="mb-3">
                                     <p:outputLabel for="name" value="Name:" styleClass="form-label fw-bold"/>
                                     <p:inputText id="name"
-                                                value="#{documentTemplateController.current.name}"
-                                                styleClass="form-control mt-1"
-                                                placeholder="Enter template name"
-                                                title="Enter a descriptive name for this document template"/>
+                                                 value="#{documentTemplateController.current.name}"
+                                                 styleClass="form-control mt-1"
+                                                 placeholder="Enter template name"
+                                                 required="true"
+                                                 requiredMessage="Template name is required"
+                                                 title="Enter a descriptive name for this document template"/>
                                 </h:panelGroup>
 
                                 <h:panelGroup layout="block" styleClass="mb-3">
@@ -42,9 +45,11 @@
                                 <h:panelGroup layout="block" styleClass="mb-3">
                                     <p:outputLabel for="type" value="Type:" styleClass="form-label fw-bold"/>
                                     <p:selectOneMenu id="type"
-                                                    value="#{documentTemplateController.current.type}"
-                                                    styleClass="form-select mt-1 w-100"
-                                                    title="Select the document template type">
+                                                     value="#{documentTemplateController.current.type}"
+                                                     styleClass="form-select mt-1 w-100"
+                                                     required="true"
+                                                     requiredMessage="Type is required"
+                                                     title="Select the document template type">
                                         <f:selectItem itemLabel="-- Select Type --" itemValue=""/>
                                         <f:selectItems value="#{documentTemplateController.documentTemplateTypes}"/>
                                     </p:selectOneMenu>
@@ -79,17 +84,17 @@
                                 <h:panelGroup layout="block" styleClass="mb-3">
                                     <div class="d-flex gap-2 mb-3">
                                         <p:commandButton value="Save Template"
-                                                        ajax="false"
-                                                        action="#{documentTemplateController.saveUserDocumentTemplate}"
-                                                        icon="pi pi-save"
-                                                        styleClass="ui-button-success"
-                                                        title="Save the document template"/>
+                                                         ajax="false"
+                                                         action="#{documentTemplateController.saveUserDocumentTemplate}"
+                                                         icon="pi pi-save"
+                                                         styleClass="ui-button-success"
+                                                         title="Save the document template"/>
                                         <p:commandButton value="Clear"
-                                                        type="button"
-                                                        icon="pi pi-refresh"
-                                                        styleClass="ui-button-secondary"
-                                                        onclick="PF('textEditorWidget').clear()"
-                                                        title="Clear the editor content"/>
+                                                         type="button"
+                                                         icon="pi pi-refresh"
+                                                         styleClass="ui-button-secondary"
+                                                         onclick="PF('textEditorWidget').clear()"
+                                                         title="Clear the editor content"/>
                                     </div>
                                 </h:panelGroup>
 
