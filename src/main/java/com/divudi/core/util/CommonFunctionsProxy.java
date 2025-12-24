@@ -1,6 +1,8 @@
 package com.divudi.core.util;
 
 import com.divudi.core.entity.channel.SessionInstance;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
@@ -46,6 +48,10 @@ public class CommonFunctionsProxy {
     public Date getEndOfDayOnCurrentDate() {
         return CommonFunctions.getEndOfDay(new Date());
     }
+    
+    public Date getStartOfDayOnCurrentDate() {
+        return CommonFunctions.getStartOfDay(new Date());
+    }
 
     public boolean renderPaginator(List<Object> list, int count) {
         return CommonFunctions.renderPaginator(list, count);
@@ -76,6 +82,16 @@ public class CommonFunctionsProxy {
 
     public double dateDifferenceInMinutes(Date fromDate, Date toDate) {
         return CommonFunctions.dateDifferenceInMinutes(fromDate, toDate);
+    }
+    
+    public static Date getRoundedHourAfter60Minutes() {
+        
+        LocalDateTime d = LocalDateTime.now()
+                .plusMinutes(60)
+                .plusMinutes(30)  // Add 30 minutes to round to nearest
+                .truncatedTo(ChronoUnit.HOURS);
+        
+        return CommonFunctions.convertLocalDateTimeToDate(d);
     }
 
     /**
