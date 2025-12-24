@@ -149,12 +149,23 @@ public class DocumentTemplateController implements Serializable {
             JsfUtil.addErrorMessage("Nothing Selected");
             return;
         }
+         
+        if (current.getName() == null || current.getName().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Template name is required");
+            return;
+        }
+
+        if (current.getType() == null) {
+            JsfUtil.addErrorMessage("Template type is required");
+            return;
+        }
+        
         if (current.getWebUser() == null) {
             current.setWebUser(sessionController.getLoggedUser());
         }
         saveSelected();
         fillAllItems(null);
-       
+
     }
 
     public void removeUserDocumentTemplate() {
