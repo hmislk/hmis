@@ -47,6 +47,7 @@ import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.ReservationFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.CommonFunctionsProxy;
 import com.divudi.ejb.NumberGenerator;
 import com.divudi.service.PatientDepositService;
 import com.divudi.service.StaffService;
@@ -1684,6 +1685,10 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     public Date getReservedFromDate() {
+        if(reservedFromDate == null){
+            reservedFromDate = CommonFunctionsProxy.getRoundedHourAfter60Minutes();
+            System.out.println("reservedFromDate = " + reservedFromDate);
+        }
         return reservedFromDate;
     }
 
