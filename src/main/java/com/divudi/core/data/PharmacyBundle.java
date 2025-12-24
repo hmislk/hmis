@@ -931,6 +931,18 @@ public class PharmacyBundle implements Serializable {
             groupRow.setVoucherValue(groupRow.getVoucherValue() + r.getVoucherValue());
             groupRow.setEwalletValue(groupRow.getEwalletValue() + r.getEwalletValue());
             groupRow.setOnCallValue(groupRow.getOnCallValue() + r.getOnCallValue());
+
+            // Aggregate stock values
+            if (r.getValueOfStocksAtCostRate() != null) {
+                groupRow.setValueOfStocksAtCostRate(
+                    groupRow.getValueOfStocksAtCostRate().add(r.getValueOfStocksAtCostRate())
+                );
+            }
+            if (r.getValueOfStocksAtRetailSaleRate() != null) {
+                groupRow.setValueOfStocksAtRetailSaleRate(
+                    groupRow.getValueOfStocksAtRetailSaleRate().add(r.getValueOfStocksAtRetailSaleRate())
+                );
+            }
         }
 
         // Replace with grouped rows, sorted by combined key
@@ -1288,7 +1300,7 @@ public class PharmacyBundle implements Serializable {
         r.setNetTotal(b.getNetTotal());
         r.setDiscount(b.getDiscount());
         r.setServiceCharge(b.getMargin());
-        r.setActualTotal(b.getTotal() - b.getServiceCharge());
+        r.setActualTotal(b.getTotal() - b.getMargin());
 
         PaymentMethod pm = b.getPaymentMethod();
 
@@ -1376,8 +1388,8 @@ public class PharmacyBundle implements Serializable {
         r.setGrossTotal(nullSafeDouble(b.getTotal()));
         r.setNetTotal(nullSafeDouble(b.getNetTotal()));
         r.setDiscount(nullSafeDouble(b.getDiscount()));
-        r.setServiceCharge(nullSafeDouble(b.getServiceCharge()));
-        r.setActualTotal(nullSafeDouble(b.getTotal()) - nullSafeDouble(b.getServiceCharge()));
+        r.setServiceCharge(nullSafeDouble(b.getMargin()));
+        r.setActualTotal(nullSafeDouble(b.getTotal()) - nullSafeDouble(b.getMargin()));
 
         r.setValueOfStocksAtCostRate(b.getTotalCostValue() == null ? BigDecimal.ZERO : b.getTotalCostValue());
         r.setValueOfStocksAtPurchaseRate(b.getTotalPurchaseValue() == null ? BigDecimal.ZERO : b.getTotalPurchaseValue());

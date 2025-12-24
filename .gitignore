@@ -27,6 +27,7 @@ nb-configuration.xml
 wiki/
 wiki-temp/
 wiki-backup/
+hmis.wiki/
 
 # Windows reserved filename
 nul
