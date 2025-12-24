@@ -170,6 +170,32 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         return "/inward/view_appointment?faces-redirect=true";
     }
 
+    public boolean isReservationWithinToday(Date resFrom, Date resTo, Date currentStartDate, Date currentEndDate) {
+        if (resFrom == null || resTo == null || currentStartDate == null || currentEndDate == null) {
+            return false;
+        }
+
+        // Check if the entire reservation interval is within today
+        return (resFrom.compareTo(currentStartDate) >= 0 && resTo.compareTo(currentEndDate) <= 0);
+    }
+
+    public boolean doesReservationOverlapWithToday(Date resFrom, Date resTo, Date currentStartDate, Date currentEndDate) {
+        if (resFrom == null || resTo == null || currentStartDate == null || currentEndDate == null) {
+            return false;
+        }
+
+        int fromDateComparison  = resFrom.compareTo(currentEndDate);
+        int toDateComparison  = resTo.compareTo(currentStartDate);
+        
+        if(fromDateComparison <= 0 && toDateComparison  <= 0){
+            return false;
+        }else if(fromDateComparison <= 0 && toDateComparison  >= 0){
+            return true;
+        }else{
+            return true;
+        }
+    }
+
     public String navigatePatientAdmit() {
         if (reservation == null) {
             JsfUtil.addErrorMessage("No Reservation Found");
@@ -178,6 +204,17 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
         if (reservation == null || reservation.getAppointment() == null || reservation.getAppointment().getBill() == null) {
             JsfUtil.addErrorMessage("No Reservation Found");
+            return "";
+        }
+
+        Date resFrom = reservation.getReservedFrom();
+        Date resTo = reservation.getReservedTo();
+
+        Date currentStartDate = CommonFunctions.getStartOfDay();
+        Date currentEndDate = CommonFunctions.getEndOfDay();
+
+        if (!doesReservationOverlapWithToday(resFrom, resTo, currentStartDate, currentEndDate)) {
+            JsfUtil.addErrorMessage("Reservation Expired");
             return "";
         }
 
@@ -212,6 +249,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public AppointmentController() {
     }
@@ -1348,6 +1386,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setters">
     public Title[] getTitle() {
         return Title.values();
