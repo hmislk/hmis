@@ -13,6 +13,7 @@
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
         <cc:attribute name="payments" ></cc:attribute>
+        <cc:attribute name="cancelBill" type="java.lang.Boolean"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -43,6 +44,7 @@
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
                 <h:outputLabel value="Deposit Receive "   />
+                <h:outputLabel value="&nbsp;**Cancel**" rendered="#{cc.attrs.cancelBill eq true}" />
                 <h:outputLabel value="&nbsp;**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
                 <h:outputLabel value="&nbsp;**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
                 <h:outputLabel value=" &nbsp;Receipt"   />
