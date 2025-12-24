@@ -3125,4 +3125,156 @@ public class BillService {
         billFacade.editAndCommit(b);
     }
 
+    /**
+     * Creates BillItemFinanceDetails for each bill item and BillFinanceDetails
+     * for the bill in inpatient direct issue bills.
+     *
+     * Rate sources:
+     * - Costing values (valueAtCostRate, valueAtPurchaseRate, valueAtRetailRate):
+     *   From pharmaItem.getStock().getItemBatch() for accurate stock valuation
+     * - Rates and net values: From pharmaItem.getXxxRate() which includes margins
+     *
+     * Values are NEGATIVE because stock leaves the pharmacy (issue to patient).
+     * No discounts or taxes are applied in inpatient issues.
+     *
+     * @param bill The bill to update with finance details
+     */
+    public void createBillFinancialDetailsForInpatientDirectIssueBill(Bill bill) {
+        if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+            return;
+        }
+
+        // Initialize bill-level totals for aggregation
+        BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalWholesaleValue = BigDecimal.ZERO;
+        BigDecimal totalQuantity = BigDecimal.ZERO;
+        BigDecimal totalFreeQuantity = BigDecimal.ZERO;
+
+        // Process each bill item
+        for (BillItem billItem : bill.getBillItems()) {
+            if (billItem == null || billItem.isRetired()) {
+                continue;
+            }
+
+            PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
+            if (pharmaItem == null || pharmaItem.getStock() == null || pharmaItem.getStock().getItemBatch() == null) {
+                continue;
+            }
+
+            // Get quantities
+            BigDecimal qty = BigDecimal.valueOf(Math.abs(billItem.getQty()));
+            BigDecimal freeQty = BigDecimal.valueOf(pharmaItem.getFreeQty() != null ? Math.abs(pharmaItem.getFreeQty()) : 0.0);
+            BigDecimal totalQty = qty.add(freeQty);
+
+            // Get rates from PharmaceuticalBillItem (includes margins for net values)
+            BigDecimal retailRate = BigDecimal.valueOf(pharmaItem.getRetailRate());
+            BigDecimal purchaseRate = BigDecimal.valueOf(pharmaItem.getPurchaseRate());
+            BigDecimal wholesaleRate = BigDecimal.valueOf(pharmaItem.getWholesaleRate());
+
+            // Get costing rates from ItemBatch (for accurate stock valuation)
+            BigDecimal batchRetailRate = BigDecimal.valueOf(
+                    pharmaItem.getStock().getItemBatch().getRetailsaleRate() != null
+                            ? pharmaItem.getStock().getItemBatch().getRetailsaleRate() : 0.0);
+            BigDecimal batchPurchaseRate = BigDecimal.valueOf(
+                    pharmaItem.getStock().getItemBatch().getPurcahseRate() != null
+                            ? pharmaItem.getStock().getItemBatch().getPurcahseRate() : 0.0);
+            BigDecimal batchWholesaleRate = BigDecimal.valueOf(
+                    pharmaItem.getStock().getItemBatch().getWholesaleRate() != null
+                            ? pharmaItem.getStock().getItemBatch().getWholesaleRate() : 0.0);
+
+            // Get cost rate from ItemBatch with fallback to purchase rate
+            BigDecimal costRate = batchPurchaseRate;
+            if (pharmaItem.getStock().getItemBatch().getCostRate() != null
+                    && pharmaItem.getStock().getItemBatch().getCostRate() > 0) {
+                costRate = BigDecimal.valueOf(pharmaItem.getStock().getItemBatch().getCostRate());
+            }
+
+            // Get or create BillItemFinanceDetails (auto-created via getter if null)
+            BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+
+            // SET RATE FIELDS in BillItemFinanceDetails (from pharmaItem - includes margins)
+            bifd.setLineNetRate(BigDecimal.valueOf(billItem.getNetRate()));
+            bifd.setGrossRate(BigDecimal.valueOf(billItem.getRate()));
+            bifd.setLineGrossRate(BigDecimal.valueOf(billItem.getRate()));
+            bifd.setBillCostRate(BigDecimal.ZERO);
+            bifd.setTotalCostRate(costRate);
+            bifd.setLineCostRate(costRate);
+            bifd.setCostRate(costRate);
+            bifd.setPurchaseRate(purchaseRate);
+            bifd.setRetailSaleRate(retailRate);
+            bifd.setWholesaleRate(wholesaleRate);
+
+            // SET TOTAL FIELDS in BillItemFinanceDetails
+            bifd.setLineGrossTotal(BigDecimal.valueOf(billItem.getGrossValue()));
+            bifd.setGrossTotal(BigDecimal.valueOf(billItem.getGrossValue()));
+            bifd.setLineNetTotal(BigDecimal.valueOf(billItem.getNetValue()));
+            bifd.setNetTotal(BigDecimal.valueOf(billItem.getNetValue()));
+
+            // Calculate item values using batch rates for accurate costing
+            BigDecimal itemCostValue = costRate.multiply(qty);
+            BigDecimal itemRetailValue = batchRetailRate.multiply(totalQty);
+            BigDecimal itemPurchaseValue = batchPurchaseRate.multiply(totalQty);
+            BigDecimal itemWholesaleValue = batchWholesaleRate.multiply(totalQty);
+
+            // SET COST VALUES in BillItemFinanceDetails
+            bifd.setLineCost(itemCostValue);
+            bifd.setBillCost(BigDecimal.ZERO);
+            bifd.setTotalCost(itemCostValue);
+
+            // SET VALUE FIELDS (NEGATIVE for stock going out - issue to patient)
+            bifd.setValueAtCostRate(costRate.multiply(totalQty).negate());
+            bifd.setValueAtPurchaseRate(batchPurchaseRate.multiply(totalQty).negate());
+            bifd.setValueAtRetailRate(batchRetailRate.multiply(totalQty).negate());
+            bifd.setValueAtWholesaleRate(batchWholesaleRate.multiply(totalQty).negate());
+
+            // SET QUANTITIES (NEGATIVE for stock going out)
+            bifd.setQuantity(qty.negate());
+            bifd.setQuantityByUnits(qty.negate());
+            bifd.setTotalQuantity(totalQty.negate());
+            bifd.setFreeQuantity(freeQty.negate());
+
+            // UPDATE PHARMACEUTICAL BILL ITEM VALUES
+            pharmaItem.setCostRate(costRate.doubleValue());
+            pharmaItem.setCostValue(itemCostValue.doubleValue());
+            pharmaItem.setRetailValue(itemRetailValue.doubleValue());
+            pharmaItem.setPurchaseValue(itemPurchaseValue.doubleValue());
+
+            // Accumulate bill-level totals
+            totalCostValue = totalCostValue.add(itemCostValue);
+            totalPurchaseValue = totalPurchaseValue.add(itemPurchaseValue);
+            totalRetailSaleValue = totalRetailSaleValue.add(itemRetailValue);
+            totalWholesaleValue = totalWholesaleValue.add(itemWholesaleValue);
+            totalQuantity = totalQuantity.add(qty);
+            totalFreeQuantity = totalFreeQuantity.add(freeQty);
+
+            // Persist BillItem (cascades to BillItemFinanceDetails and PharmaceuticalBillItem)
+            billItemFacade.edit(billItem);
+        }
+
+        // CREATE/UPDATE BILL-LEVEL FINANCE DETAILS
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails();
+            bfd.setBill(bill);
+            bill.setBillFinanceDetails(bfd);
+        }
+
+        // Set basic totals from bill
+        bfd.setNetTotal(BigDecimal.valueOf(bill.getNetTotal()));
+        bfd.setGrossTotal(BigDecimal.valueOf(bill.getTotal()));
+
+        // Set calculated totals (NEGATIVE for stock going out)
+        bfd.setTotalCostValue(totalCostValue.negate());
+        bfd.setTotalPurchaseValue(totalPurchaseValue.negate());
+        bfd.setTotalRetailSaleValue(totalRetailSaleValue.negate());
+        bfd.setTotalWholesaleValue(totalWholesaleValue.negate());
+        bfd.setTotalQuantity(totalQuantity.negate());
+        bfd.setTotalFreeQuantity(totalFreeQuantity.negate());
+
+        // Persist Bill (cascades to BillFinanceDetails)
+        billFacade.edit(bill);
+    }
+
 }
