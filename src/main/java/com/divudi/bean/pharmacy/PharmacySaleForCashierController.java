@@ -1183,6 +1183,229 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         editingQty = null;
     }
 
+    /**
+     * Divides the quantity of a single bill item by half.
+     * Minimum quantity is 1 - never goes below 1.
+     * Uses existing quantityInTableChangeEvent for validation and calculations.
+     */
+    public void divideQuantityByHalf(BillItem billItem) {
+        if (billItem == null) {
+            JsfUtil.addErrorMessage("No item selected");
+            return;
+        }
+
+        if (billItem.getQty() == null || billItem.getQty() <= 0) {
+            JsfUtil.addErrorMessage("Invalid quantity");
+            return;
+        }
+
+        // Calculate new quantity (divide by 2, minimum 1)
+        double newQty = Math.max(1.0, billItem.getQty() / 2.0);
+
+        // Set the new quantity
+        billItem.setQty(newQty);
+
+        // Use existing method for validation and recalculation
+        quantityInTableChangeEvent(billItem);
+
+        JsfUtil.addSuccessMessage("Quantity reduced to " + String.format("%.0f", newQty));
+    }
+
+    /**
+     * Multiplies the quantity of a single bill item by two.
+     * Validates against available stock before applying changes.
+     * Uses existing quantityInTableChangeEvent for validation and calculations.
+     */
+    public void multiplyQuantityByTwo(BillItem billItem) {
+        if (billItem == null) {
+            JsfUtil.addErrorMessage("No item selected");
+            return;
+        }
+
+        if (billItem.getQty() == null || billItem.getQty() <= 0) {
+            JsfUtil.addErrorMessage("Invalid quantity");
+            return;
+        }
+
+        // Validate pharmaceutical bill item and stock
+        if (billItem.getPharmaceuticalBillItem() == null) {
+            JsfUtil.addErrorMessage("Invalid bill item - pharmaceutical information missing");
+            return;
+        }
+
+        if (billItem.getPharmaceuticalBillItem().getStock() == null) {
+            JsfUtil.addErrorMessage("Invalid bill item - stock information missing");
+            return;
+        }
+
+        try {
+            // Fetch latest stock information
+            Stock currentStock = stockFacade.find(billItem.getPharmaceuticalBillItem().getStock().getId());
+
+            if (currentStock == null) {
+                JsfUtil.addErrorMessage("Stock information not found. Please refresh and try again.");
+                return;
+            }
+
+            // Calculate new quantity (multiply by 2)
+            double newQty = billItem.getQty() * 2.0;
+
+            // Check if new quantity exceeds available stock
+            if (newQty > currentStock.getStock()) {
+                JsfUtil.addErrorMessage("Cannot double quantity. Available: " +
+                    String.format("%.0f", currentStock.getStock()) +
+                    ", Required: " + String.format("%.0f", newQty));
+                return;
+            }
+
+            // Set the new quantity
+            billItem.setQty(newQty);
+
+            // Use existing method for validation and recalculation
+            quantityInTableChangeEvent(billItem);
+
+            JsfUtil.addSuccessMessage("Quantity increased to " + String.format("%.0f", newQty));
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error validating stock quantity: " + e.getMessage());
+            System.out.println("Error in multiplyQuantityByTwo: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Divides all bill item quantities by half.
+     * Minimum quantity is 1 for each item - never goes below 1.
+     * Processes all items and recalculates bill totals.
+     */
+    public void divideAllQuantitiesByHalf() {
+        if (getPreBill() == null || getPreBill().getBillItems() == null || getPreBill().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No items in the bill");
+            return;
+        }
+
+        int processedCount = 0;
+        int errorCount = 0;
+
+        for (BillItem billItem : getPreBill().getBillItems()) {
+            try {
+                if (billItem != null && billItem.getQty() != null && billItem.getQty() > 0) {
+                    // Calculate new quantity (divide by 2, minimum 1)
+                    double newQty = Math.max(1.0, billItem.getQty() / 2.0);
+                    billItem.setQty(newQty);
+
+                    // Update pharmaceutical bill item quantity
+                    if (billItem.getPharmaceuticalBillItem() != null) {
+                        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - newQty);
+                    }
+
+                    // Recalculate gross value
+                    billItem.setGrossValue(billItem.getQty() * billItem.getRate());
+
+                    processedCount++;
+                }
+            } catch (Exception e) {
+                errorCount++;
+                System.out.println("Error processing item in divideAllQuantitiesByHalf: " + e.getMessage());
+            }
+        }
+
+        // Recalculate all bill totals
+        calculateBillItemsAndBillTotalsOfPreBill();
+
+        if (errorCount > 0) {
+            JsfUtil.addErrorMessage(processedCount + " items reduced, " + errorCount + " items failed");
+        } else {
+            JsfUtil.addSuccessMessage("All quantities reduced by half (" + processedCount + " items processed)");
+        }
+    }
+
+    /**
+     * Multiplies all bill item quantities by two.
+     * Validates each item against available stock before applying changes.
+     * Items that exceed stock limits are skipped with error messages.
+     * Recalculates bill totals after processing.
+     */
+    public void multiplyAllQuantitiesByTwo() {
+        if (getPreBill() == null || getPreBill().getBillItems() == null || getPreBill().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No items in the bill");
+            return;
+        }
+
+        int processedCount = 0;
+        int skippedCount = 0;
+        StringBuilder skippedItems = new StringBuilder();
+
+        for (BillItem billItem : getPreBill().getBillItems()) {
+            try {
+                if (billItem == null || billItem.getQty() == null || billItem.getQty() <= 0) {
+                    skippedCount++;
+                    continue;
+                }
+
+                // Validate pharmaceutical bill item and stock
+                if (billItem.getPharmaceuticalBillItem() == null ||
+                    billItem.getPharmaceuticalBillItem().getStock() == null) {
+                    skippedCount++;
+                    continue;
+                }
+
+                // Fetch latest stock information
+                Stock currentStock = stockFacade.find(billItem.getPharmaceuticalBillItem().getStock().getId());
+
+                if (currentStock == null) {
+                    skippedCount++;
+                    continue;
+                }
+
+                // Calculate new quantity (multiply by 2)
+                double newQty = billItem.getQty() * 2.0;
+
+                // Check if new quantity exceeds available stock
+                if (newQty > currentStock.getStock()) {
+                    skippedCount++;
+                    String itemName = billItem.getPharmaceuticalBillItem().getStock().getItemBatch().getItem().getName();
+                    if (skippedItems.length() > 0) {
+                        skippedItems.append(", ");
+                    }
+                    skippedItems.append(itemName);
+                    continue;
+                }
+
+                // Set the new quantity
+                billItem.setQty(newQty);
+
+                // Update pharmaceutical bill item quantity
+                if (billItem.getPharmaceuticalBillItem() != null) {
+                    billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - newQty);
+                }
+
+                // Recalculate gross value
+                billItem.setGrossValue(billItem.getQty() * billItem.getRate());
+
+                processedCount++;
+
+            } catch (Exception e) {
+                skippedCount++;
+                System.out.println("Error processing item in multiplyAllQuantitiesByTwo: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        // Recalculate all bill totals
+        calculateBillItemsAndBillTotalsOfPreBill();
+
+        // Show results
+        if (skippedCount > 0 && processedCount > 0) {
+            JsfUtil.addSuccessMessage(processedCount + " items doubled successfully");
+            JsfUtil.addErrorMessage(skippedCount + " items skipped due to insufficient stock: " + skippedItems.toString());
+        } else if (skippedCount > 0 && processedCount == 0) {
+            JsfUtil.addErrorMessage("No items could be doubled. All items have insufficient stock.");
+        } else {
+            JsfUtil.addSuccessMessage("All quantities doubled (" + processedCount + " items processed)");
+        }
+    }
+
     private Patient savePatient() {
         Patient pat = getPatient();
         // Check for null references and empty name
@@ -1780,20 +2003,28 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                     .append("WHERE s.stock > :stockMin ")
                     .append("AND s.department = :department ");
 
+            // Create a copy of parameters and only include the ones we actually use
+            Map<String, Object> queryParameters = new HashMap<>();
+            queryParameters.put("stockMin", parameters.get("stockMin"));
+            queryParameters.put("department", parameters.get("department"));
+
             // Build search conditions based on search type
             if (prefixSearch) {
                 sql.append("AND (");
                 boolean firstCondition = true;
+                boolean usesExactQuery = false;
 
                 // Item name prefix search (highest priority)
                 sql.append("UPPER(s.itemBatch.item.name) LIKE UPPER(:searchStart)");
                 firstCondition = false;
+                queryParameters.put("searchStart", parameters.get("searchStart"));
 
                 // Item code prefix search (if enabled)
                 if (searchConfig.searchByItemCode) {
                     if (!firstCondition) sql.append(" OR ");
                     sql.append("UPPER(s.itemBatch.item.code) LIKE UPPER(:searchStart)");
                     firstCondition = false;
+                    // searchStart already added above
                 }
 
                 // Barcode exact match (if enabled and query is long enough)
@@ -1801,20 +2032,31 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                     if (!firstCondition) sql.append(" OR ");
                     sql.append("s.itemBatch.item.barcode = :exactQuery");
                     firstCondition = false;
+                    usesExactQuery = true;
                 }
 
                 // Generic name prefix search (if enabled)
                 if (searchConfig.searchByGeneric) {
                     if (!firstCondition) sql.append(" OR ");
                     sql.append("UPPER(s.itemBatch.item.vmp.vtm.name) LIKE UPPER(:searchStart)");
+                    // searchStart already added above
                 }
 
                 sql.append(") ORDER BY s.itemBatch.item.name, s.itemBatch.dateOfExpire");
+
+                // Only add exactQuery parameter if it's actually used
+                if (usesExactQuery) {
+                    queryParameters.put("exactQuery", parameters.get("exactQuery"));
+                }
 
             } else {
                 // Contains search (excludes items already found in prefix search)
                 sql.append("AND (");
                 boolean firstCondition = true;
+
+                // Add the parameters we'll use for contains search
+                queryParameters.put("searchContains", parameters.get("searchContains"));
+                queryParameters.put("searchStart", parameters.get("searchStart"));
 
                 // Item name contains (but not prefix to avoid duplicates)
                 sql.append("UPPER(s.itemBatch.item.name) LIKE UPPER(:searchContains) ")
@@ -1839,9 +2081,9 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 sql.append(") ORDER BY s.itemBatch.item.name, s.itemBatch.dateOfExpire");
             }
 
-            // Execute query
+            // Execute query with only the parameters that are actually used
             List<StockDTO> results = (List<StockDTO>) getStockFacade().findLightsByJpql(
-                    sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+                    sql.toString(), queryParameters, TemporalType.TIMESTAMP, 20);
 
             return results != null ? results : Collections.emptyList();
         } catch (Exception e) {

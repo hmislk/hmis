@@ -208,6 +208,27 @@
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa fa-list" />
                                             <h:outputText value="Bill Items" class="mx-4"></h:outputText>
+
+                                            <!-- Quantity Adjustment Buttons (Header Level) -->
+                                            <p:commandButton
+                                                icon="fas fa-divide"
+                                                title="Divide ALL quantities by 2"
+                                                class="ui-button-secondary ui-button-sm"
+                                                style="float: right; margin-left: 5px;"
+                                                action="#{pharmacySaleForCashierController.divideAllQuantitiesByHalf()}"
+                                                process="@this tblBillItem"
+                                                update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId}"/>
+
+                                            <p:commandButton
+                                                icon="fas fa-times"
+                                                title="Multiply ALL quantities by 2"
+                                                class="ui-button-info ui-button-sm"
+                                                style="float: right; margin-left: 5px;"
+                                                onclick="if (!confirm('Are you sure you want to double ALL item quantities?')) return false;"
+                                                action="#{pharmacySaleForCashierController.multiplyAllQuantitiesByTwo()}"
+                                                process="@this tblBillItem"
+                                                update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId}"/>
+
                                             <p:commandButton
                                                 value="Remove Selected" class="ui-button-danger" style="float: right"
                                                 action="#{pharmacySaleForCashierController.removeSelectedBillItems()}"
@@ -323,20 +344,45 @@
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column 
+                                            <p:column
                                                 styleClass="text-end"
-                                                headerText="Qty" 
-                                                width="8em">
-                                                <p:inputText
-                                                    autocomplete="off" 
-                                                    id="txtTblQty"
-                                                    value="#{bi.qty}" 
-                                                    styleClass="w-100 text-end"
-                                                    disabled="#{!configOptionApplicationController.getBooleanValueByKey('Allow Editing Quantity of Added Items in Pharmacy Retail Sale for Cashier', false)}">
-                                                    <f:convertNumber integerOnly="true" />
-                                                    <p:ajax event="keyup" process="@this" update="gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId}" listener="#{pharmacySaleForCashierController.quantityInTableChangeEvent(bi)}"/>
-                                                    <p:ajax event="blur" process="@this" update="gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId}" listener="#{pharmacySaleForCashierController.quantityInTableChangeEvent(bi)}"/>
-                                                </p:inputText>
+                                                headerText="Qty"
+                                                width="14em">
+                                                <!-- Flexbox container for quantity input and buttons -->
+                                                <div style="display: flex; align-items: center; gap: 4px;">
+                                                    <!-- Divide by half button -->
+                                                    <p:commandButton
+                                                        icon="fas fa-divide"
+                                                        title="Divide quantity by 2"
+                                                        class="ui-button-secondary ui-button-sm"
+                                                        action="#{pharmacySaleForCashierController.divideQuantityByHalf(bi)}"
+                                                        process="@this"
+                                                        update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId}"
+                                                        style="padding: 0.25rem 0.4rem;"/>
+
+                                                    <!-- Quantity input field -->
+                                                    <p:inputText
+                                                        autocomplete="off"
+                                                        id="txtTblQty"
+                                                        value="#{bi.qty}"
+                                                        onfocus="this.select();"
+                                                        styleClass="text-end"
+                                                        style="flex: 1; min-width: 50px;"
+                                                        disabled="#{!configOptionApplicationController.getBooleanValueByKey('Allow Editing Quantity of Added Items in Pharmacy Retail Sale for Cashier', false)}">
+                                                        <f:convertNumber integerOnly="true" />
+                                                        <p:ajax event="blur" process="@this" update="gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" listener="#{pharmacySaleForCashierController.quantityInTableChangeEvent(bi)}"/>
+                                                    </p:inputText>
+
+                                                    <!-- Multiply by two button -->
+                                                    <p:commandButton
+                                                        icon="fas fa-times"
+                                                        title="Multiply quantity by 2"
+                                                        class="ui-button-info ui-button-sm"
+                                                        action="#{pharmacySaleForCashierController.multiplyQuantityByTwo(bi)}"
+                                                        process="@this"
+                                                        update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId}"
+                                                        style="padding: 0.25rem 0.4rem;"/>
+                                                </div>
                                             </p:column>
 
 
