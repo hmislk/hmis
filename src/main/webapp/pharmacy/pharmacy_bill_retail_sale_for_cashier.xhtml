@@ -80,6 +80,35 @@
 
                             </f:facet>
 
+                            <!-- Version Navigation Buttons -->
+                            <div class="mb-3 text-center">
+                                <div class="btn-group" role="group">
+                                    <p:commandButton
+                                        icon="fas fa-file-invoice"
+                                        value="Sale 1"
+                                        disabled="true"
+                                        class="ui-button-secondary" />
+                                    <p:commandButton
+                                        icon="fas fa-file-invoice"
+                                        value="Sale 2"
+                                        action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_1?faces-redirect=true"
+                                        ajax="false"
+                                        class="ui-button-info" />
+                                    <p:commandButton
+                                        icon="fas fa-file-invoice"
+                                        value="Sale 3"
+                                        action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_2?faces-redirect=true"
+                                        ajax="false"
+                                        class="ui-button-info" />
+                                    <p:commandButton
+                                        icon="fas fa-file-invoice"
+                                        value="Sale 4"
+                                        action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_3?faces-redirect=true"
+                                        ajax="false"
+                                        class="ui-button-info" />
+                                </div>
+                            </div>
+
                             <div class="row">
                                 <div class="col-md-7">
                                     <p:panel>
