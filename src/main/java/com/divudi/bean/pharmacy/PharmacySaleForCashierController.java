@@ -1502,20 +1502,20 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             List<StockDTO> results;
 
             if (cachedStockIds != null) {
-                // Cache hit: Get fresh stock data for cached stock IDs
+                // Cache hit: Get fresh stock data for cached stock IDs with preserved relevance ordering
                 results = getFreshStockDataForIds(cachedStockIds);
                 long durationMs = (System.nanoTime() - startTime) / 1_000_000;
-                logger.log(Level.FINE, "Metadata cache hit for query ''{0}'' in {1}ms - fetched fresh stock for {2} items",
+                logger.log(Level.FINE, "Metadata cache hit for query ''{0}'' in {1}ms - fetched fresh stock for {2} items with preserved ordering",
                     new Object[]{qry, durationMs, results.size()});
             } else {
-                // Cache miss: Execute full search and cache the stock IDs
+                // Cache miss: Execute full CASE-based search and cache the stock IDs
                 results = executeFullSearchAndCacheMetadata(qry, searchConfig, cacheKey);
                 long durationMs = (System.nanoTime() - startTime) / 1_000_000;
                 if (durationMs > 500) {
-                    logger.log(Level.WARNING, "Slow autocomplete query: {0}ms for query ''{1}'' returned {2} results",
+                    logger.log(Level.WARNING, "Slow CASE-based autocomplete query: {0}ms for query ''{1}'' returned {2} results",
                         new Object[]{durationMs, qry, results.size()});
                 } else {
-                    logger.log(Level.FINE, "Full autocomplete query completed in {0}ms for query ''{1}'' returned {2} results",
+                    logger.log(Level.FINE, "CASE-based autocomplete query completed in {0}ms for query ''{1}'' returned {2} results with relevance ordering",
                         new Object[]{durationMs, qry, results.size()});
                 }
             }
@@ -1615,7 +1615,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     /**
-     * Get fresh stock data for cached stock IDs (ensures multi-user accuracy)
+     * Get fresh stock data for cached stock IDs with preserved ordering (ensures multi-user accuracy)
      */
     private List<StockDTO> getFreshStockDataForIds(List<Long> stockIds) {
         if (stockIds == null || stockIds.isEmpty()) {
@@ -1624,6 +1624,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         try {
             // Build query to get current stock data for specific stock IDs
+            // Note: We use the original order from stockIds list to preserve relevance ranking
             StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
                     .append("s.id, s.itemBatch.id, s.itemBatch.item.id, s.itemBatch.item.name, s.itemBatch.item.code, ")
                     .append("COALESCE(s.itemBatch.item.vmp.name, ''), s.itemBatch.batchNo, ")
@@ -1631,8 +1632,19 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                     .append("FROM Stock s ")
                     .append("WHERE s.stock > :stockMin ")
                     .append("AND s.department = :department ")
-                    .append("AND s.id IN :stockIds ")
-                    .append("ORDER BY s.itemBatch.item.name, s.itemBatch.dateOfExpire");
+                    .append("AND s.id IN :stockIds ");
+
+            // Preserve the original CASE-based ordering from the cached metadata
+            // This ensures consistent result ordering between cache misses and hits
+            sql.append("ORDER BY ")
+                .append("CASE ");
+
+            // Add specific ordering for each cached stock ID to preserve relevance ranking
+            for (int i = 0; i < stockIds.size() && i < 20; i++) {
+                sql.append("WHEN s.id = ").append(stockIds.get(i)).append(" THEN ").append(i).append(" ");
+            }
+
+            sql.append("ELSE 999 END, s.itemBatch.dateOfExpire");
 
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("department", getSessionController().getLoggedUser().getDepartment());
@@ -1650,23 +1662,19 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     /**
-     * Execute full search query and cache the stock IDs for future use
+     * Execute full search query with CASE-based relevance ordering and cache the stock IDs
      */
     private List<StockDTO> executeFullSearchAndCacheMetadata(String qry, SearchConfig searchConfig, String cacheKey) {
         try {
-            // Build full search query
+            // Build optimized single query with relevance ordering
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("department", getSessionController().getLoggedUser().getDepartment());
             parameters.put("stockMin", 0.0);
 
-            // Prefix-first optimization: use prefix matching for short queries
-            String searchPattern;
-            if (qry.length() <= 4) {
-                searchPattern = qry + "%";  // Prefix only for short queries (better index usage)
-            } else {
-                searchPattern = "%" + qry + "%";  // Contains pattern for longer queries
-            }
-            parameters.put("query", searchPattern);
+            // Always search both patterns for comprehensive results
+            parameters.put("searchStart", qry + "%");      // Exact prefix matches (highest relevance)
+            parameters.put("searchContains", "%" + qry + "%");  // Contains matches (lower relevance)
+            parameters.put("exactQuery", qry);             // For barcode exact match
 
             StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
                     .append("s.id, s.itemBatch.id, s.itemBatch.item.id, s.itemBatch.item.name, s.itemBatch.item.code, ")
@@ -1677,25 +1685,50 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                     .append("AND s.department = :department ")
                     .append("AND (");
 
-            // Primary search on item name (most common)
-            sql.append("UPPER(s.itemBatch.item.name) LIKE :query ");
+            // Build search conditions for all enabled fields
+            boolean firstCondition = true;
 
-            // Additional search fields based on configuration
+            // Item name search (most common)
+            sql.append("(UPPER(s.itemBatch.item.name) LIKE UPPER(:searchStart) OR UPPER(s.itemBatch.item.name) LIKE UPPER(:searchContains))");
+            firstCondition = false;
+
+            // Item code search (if enabled)
             if (searchConfig.searchByItemCode) {
-                sql.append("OR UPPER(s.itemBatch.item.code) LIKE :query ");
+                if (!firstCondition) sql.append(" OR ");
+                sql.append("(UPPER(s.itemBatch.item.code) LIKE UPPER(:searchStart) OR UPPER(s.itemBatch.item.code) LIKE UPPER(:searchContains))");
+                firstCondition = false;
             }
 
+            // Barcode search (if enabled) - exact match only
             if (searchConfig.searchByBarcode) {
-                sql.append("OR s.itemBatch.item.barcode = :query ");
+                if (!firstCondition) sql.append(" OR ");
+                sql.append("s.itemBatch.item.barcode = :exactQuery"); // Exact barcode match
+                firstCondition = false;
             }
+
+            // Generic name search (if enabled)
+            if (searchConfig.searchByGeneric) {
+                if (!firstCondition) sql.append(" OR ");
+                sql.append("(UPPER(s.itemBatch.item.vmp.vtm.name) LIKE UPPER(:searchStart) OR UPPER(s.itemBatch.item.vmp.vtm.name) LIKE UPPER(:searchContains))");
+            }
+
+            sql.append(") ");
+
+            // CASE-based relevance ordering: Exact matches first, then contains matches
+            sql.append("ORDER BY ")
+                .append("CASE ")
+                .append("  WHEN UPPER(s.itemBatch.item.name) LIKE UPPER(:searchStart) THEN 0 ")
+                .append("  WHEN UPPER(s.itemBatch.item.code) LIKE UPPER(:searchStart) THEN 1 ");
 
             if (searchConfig.searchByGeneric) {
-                sql.append("OR UPPER(s.itemBatch.item.vmp.vtm.name) LIKE :query ");
+                sql.append("  WHEN UPPER(s.itemBatch.item.vmp.vtm.name) LIKE UPPER(:searchStart) THEN 2 ");
             }
 
-            sql.append(") ORDER BY s.itemBatch.item.name, s.itemBatch.dateOfExpire");
+            sql.append("  ELSE 10 ")
+                .append("END, ")
+                .append("s.itemBatch.item.name, s.itemBatch.dateOfExpire");
 
-            // Execute full query
+            // Execute optimized single query
             List<StockDTO> results = (List<StockDTO>) getStockFacade().findLightsByJpql(
                     sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
 
@@ -1706,11 +1739,14 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                     stockIds.add(dto.getId());
                 }
                 cacheMetadata(cacheKey, stockIds);
+
+                logger.log(Level.FINE, "CASE-based search completed - {0} results with relevance ordering",
+                    results.size());
             }
 
             return results != null ? results : Collections.emptyList();
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error executing full search query", e);
+            logger.log(Level.SEVERE, "Error executing CASE-based search query", e);
             return Collections.emptyList();
         }
     }
