@@ -225,23 +225,23 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
 
     // === PERFORMANCE OPTIMIZATION CACHES ===
     /**
-     * Cache for converter operations during single add button action.
-     * Cleared at start of each addBillItem() call to prevent stale data.
+     * Cache for converter operations during single add button action. Cleared
+     * at start of each addBillItem() call to prevent stale data.
      */
     private transient Map<Long, StockDTO> converterCache;
     private transient int converterCallCount = 0;
 
     /**
-     * Cache for discount calculations during single add button action.
-     * Key format: "billItemId_paymentSchemeId_paymentMethod"
+     * Cache for discount calculations during single add button action. Key
+     * format: "billItemId_paymentSchemeId_paymentMethod"
      */
     private transient Map<String, Double> discountCache;
     private transient int discountCalculationCount = 0;
 
     /**
-     * Cache for item metadata only (names, codes, batch info) - NO STOCK QUANTITIES.
-     * Stock quantities are always fetched fresh to ensure multi-user accuracy.
-     * Key format: "department_id|query|search_config_hash"
+     * Cache for item metadata only (names, codes, batch info) - NO STOCK
+     * QUANTITIES. Stock quantities are always fetched fresh to ensure
+     * multi-user accuracy. Key format: "department_id|query|search_config_hash"
      * TTL: 5 minutes for item metadata (changes rarely)
      */
     private transient Map<String, List<Long>> itemMetadataCache; // Cache stock IDs only
@@ -326,359 +326,359 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
 
         // 🔧 UI DISPLAY CONFIGURATIONS
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Enable token system in sale for cashier",
-            "Enables token-based queue management system for pharmacy sales",
-            "Line 25: Token system controls and counter selection",
-            OptionScope.APPLICATION
+                "Enable token system in sale for cashier",
+                "Enables token-based queue management system for pharmacy sales",
+                "Line 25: Token system controls and counter selection",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Analytics - Show Single Items Summary",
-            "Shows button to view detailed analytics for individual pharmacy items",
-            "Line 92: Item details button for analytics",
-            OptionScope.APPLICATION
+                "Pharmacy Analytics - Show Single Items Summary",
+                "Shows button to view detailed analytics for individual pharmacy items",
+                "Line 92: Item details button for analytics",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Allow Editing Quantity of Added Items in Pharmacy Retail Sale for Cashier",
-            "Enables editing quantity of already added items in the bill items table",
-            "Line 314: Quantity input field in bill items table",
-            OptionScope.APPLICATION
+                "Allow Editing Quantity of Added Items in Pharmacy Retail Sale for Cashier",
+                "Enables editing quantity of already added items in the bill items table",
+                "Line 314: Quantity input field in bill items table",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Allow Tendered Amount for pharmacy sale for cashier",
-            "Shows tendered amount and balance calculation fields for cash transactions",
-            "Line 565: Tendered amount and balance display panel",
-            OptionScope.APPLICATION
+                "Allow Tendered Amount for pharmacy sale for cashier",
+                "Shows tendered amount and balance calculation fields for cash transactions",
+                "Line 565: Tendered amount and balance display panel",
+                OptionScope.APPLICATION
         ));
 
         // 🔧 PRINTING CONFIGURATIONS
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Bill Support for Native Printers",
-            "Enables native printer support for bill printing instead of browser printing",
-            "Line 619: Print button rendering condition",
-            OptionScope.APPLICATION
+                "Pharmacy Bill Support for Native Printers",
+                "Enables native printer support for bill printing instead of browser printing",
+                "Line 619: Print button rendering condition",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Sale for Cashier Token Bill is Pos paper",
-            "Uses POS paper format for token bill printing",
-            "Line 704: Token bill format rendering",
-            OptionScope.APPLICATION
+                "Pharmacy Sale for Cashier Token Bill is Pos paper",
+                "Uses POS paper format for token bill printing",
+                "Line 704: Token bill format rendering",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Sale for Cashier Bill is Pos paper",
-            "Uses POS paper format for main bill printing",
-            "Line 722: Main bill format rendering",
-            OptionScope.APPLICATION
+                "Pharmacy Sale for Cashier Bill is Pos paper",
+                "Uses POS paper format for main bill printing",
+                "Line 722: Main bill format rendering",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Retail Sale Bill is PosHeaderPaper",
-            "Uses POS header paper format for bill printing",
-            "Line 738: POS header format rendering",
-            OptionScope.APPLICATION
+                "Pharmacy Retail Sale Bill is PosHeaderPaper",
+                "Uses POS header paper format for bill printing",
+                "Line 738: POS header format rendering",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy Sale for cashier Bill is FiveFiveCustom3",
-            "Uses FiveFiveCustom3 format for bill printing",
-            "Line 748: FiveFiveCustom3 format rendering",
-            OptionScope.APPLICATION
+                "Pharmacy Sale for cashier Bill is FiveFiveCustom3",
+                "Uses FiveFiveCustom3 format for bill printing",
+                "Line 748: FiveFiveCustom3 format rendering",
+                OptionScope.APPLICATION
         ));
 
         // 🔧 SEARCH AND AUTOCOMPLETE CONFIGURATIONS
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Enable search medicines by item code",
-            "Enables searching medicines using item codes in autocomplete",
-            "Controller: Medicine search functionality",
-            OptionScope.APPLICATION
+                "Enable search medicines by item code",
+                "Enables searching medicines using item codes in autocomplete",
+                "Controller: Medicine search functionality",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Enable search medicines by barcode",
-            "Enables searching medicines using barcodes in autocomplete",
-            "Controller: Medicine search functionality",
-            OptionScope.APPLICATION
+                "Enable search medicines by barcode",
+                "Enables searching medicines using barcodes in autocomplete",
+                "Controller: Medicine search functionality",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Enable search medicines by generic name(VMP)",
-            "Enables searching medicines by generic names (Virtual Medicinal Products)",
-            "Controller: Medicine search functionality",
-            OptionScope.APPLICATION
+                "Enable search medicines by generic name(VMP)",
+                "Enables searching medicines by generic names (Virtual Medicinal Products)",
+                "Controller: Medicine search functionality",
+                OptionScope.APPLICATION
         ));
 
         // 🔧 BILL VALIDATION CONFIGURATIONS
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Add bill item instructions in pharmacy cashier sale",
-            "Includes special instructions when adding items to pharmacy bills",
-            "Controller: Bill item processing logic",
-            OptionScope.APPLICATION
+                "Add bill item instructions in pharmacy cashier sale",
+                "Includes special instructions when adding items to pharmacy bills",
+                "Controller: Bill item processing logic",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Check for Allergies during Dispensing",
-            "Validates patient allergies against prescribed medications during dispensing",
-            "Controller: Patient safety validation",
-            OptionScope.APPLICATION
+                "Check for Allergies during Dispensing",
+                "Validates patient allergies against prescribed medications during dispensing",
+                "Controller: Patient safety validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Add quantity from multiple batches in pharmacy retail billing",
-            "Allows combining quantities from multiple batches for the same item",
-            "Controller: Quantity handling logic",
-            OptionScope.APPLICATION
+                "Add quantity from multiple batches in pharmacy retail billing",
+                "Allows combining quantities from multiple batches for the same item",
+                "Controller: Quantity handling logic",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Need to Enter the Cash Tendered Amount to Settle Pharmacy Retail Bill",
-            "Requires cash tendered amount input before settling retail pharmacy bills",
-            "Controller: Bill settlement validation",
-            OptionScope.APPLICATION
+                "Need to Enter the Cash Tendered Amount to Settle Pharmacy Retail Bill",
+                "Requires cash tendered amount input before settling retail pharmacy bills",
+                "Controller: Bill settlement validation",
+                OptionScope.APPLICATION
         ));
 
         // 🔧 BILL NUMBER GENERATION STRATEGIES (CRITICAL)
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number",
-            "Generates bill numbers with format: Prefix-DEPT-INST-YEAR-NUMBER for pharmacy sale pre bills",
-            "Controller: Bill number generation in savePreBillForCashier()",
-            OptionScope.APPLICATION
+                "Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number",
+                "Generates bill numbers with format: Prefix-DEPT-INST-YEAR-NUMBER for pharmacy sale pre bills",
+                "Controller: Bill number generation in savePreBillForCashier()",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number",
-            "Generates bill numbers with format: Prefix-INST-DEPT-YEAR-NUMBER for pharmacy sale pre bills",
-            "Controller: Bill number generation in savePreBillForCashier()",
-            OptionScope.APPLICATION
+                "Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number",
+                "Generates bill numbers with format: Prefix-INST-DEPT-YEAR-NUMBER for pharmacy sale pre bills",
+                "Controller: Bill number generation in savePreBillForCashier()",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Year + Yearly Number",
-            "Generates bill numbers with format: Prefix-INST-YEAR-NUMBER for pharmacy sale pre bills",
-            "Controller: Bill number generation in savePreBillForCashier()",
-            OptionScope.APPLICATION
+                "Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Year + Yearly Number",
+                "Generates bill numbers with format: Prefix-INST-YEAR-NUMBER for pharmacy sale pre bills",
+                "Controller: Bill number generation in savePreBillForCashier()",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number",
-            "Generates bill numbers with format: Prefix-DEPT-INST-YEAR-NUMBER for pharmacy sale cashier pre bills",
-            "Controller: Bill number generation in savePreBillTOSettleInCashier()",
-            OptionScope.APPLICATION
+                "Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number",
+                "Generates bill numbers with format: Prefix-DEPT-INST-YEAR-NUMBER for pharmacy sale cashier pre bills",
+                "Controller: Bill number generation in savePreBillTOSettleInCashier()",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number",
-            "Generates bill numbers with format: Prefix-INST-DEPT-YEAR-NUMBER for pharmacy sale cashier pre bills",
-            "Controller: Bill number generation in savePreBillTOSettleInCashier()",
-            OptionScope.APPLICATION
+                "Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number",
+                "Generates bill numbers with format: Prefix-INST-DEPT-YEAR-NUMBER for pharmacy sale cashier pre bills",
+                "Controller: Bill number generation in savePreBillTOSettleInCashier()",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Year + Yearly Number",
-            "Generates bill numbers with format: Prefix-INST-YEAR-NUMBER for pharmacy sale cashier pre bills",
-            "Controller: Bill number generation in savePreBillTOSettleInCashier()",
-            OptionScope.APPLICATION
+                "Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Year + Yearly Number",
+                "Generates bill numbers with format: Prefix-INST-YEAR-NUMBER for pharmacy sale cashier pre bills",
+                "Controller: Bill number generation in savePreBillTOSettleInCashier()",
+                OptionScope.APPLICATION
         ));
 
         // 🔧 BILL NUMBER SUFFIXES (Required for BillNumberGenerator methods)
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Bill Number Suffix for PHARMACY_RETAIL_SALE_PRE",
-            "Custom suffix to append to pharmacy retail sale pre bill numbers (used by BillNumberGenerator methods)",
-            "Controller: BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE bill generation",
-            OptionScope.APPLICATION
+                "Bill Number Suffix for PHARMACY_RETAIL_SALE_PRE",
+                "Custom suffix to append to pharmacy retail sale pre bill numbers (used by BillNumberGenerator methods)",
+                "Controller: BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE bill generation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Bill Number Suffix for PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER",
-            "Custom suffix to append to pharmacy retail sale pre bills to settle at cashier (used by BillNumberGenerator methods)",
-            "Controller: BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER bill generation",
-            OptionScope.APPLICATION
+                "Bill Number Suffix for PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER",
+                "Custom suffix to append to pharmacy retail sale pre bills to settle at cashier (used by BillNumberGenerator methods)",
+                "Controller: BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER bill generation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Bill Number Suffix for PHARMACY_RETAIL_SALE",
-            "Custom suffix to append to pharmacy retail sale bill numbers (used by BillNumberGenerator methods)",
-            "Controller: BillTypeAtomic.PHARMACY_RETAIL_SALE bill generation",
-            OptionScope.APPLICATION
+                "Bill Number Suffix for PHARMACY_RETAIL_SALE",
+                "Custom suffix to append to pharmacy retail sale bill numbers (used by BillNumberGenerator methods)",
+                "Controller: BillTypeAtomic.PHARMACY_RETAIL_SALE bill generation",
+                OptionScope.APPLICATION
         ));
 
         // 🔧 PATIENT VALIDATION CONFIGURATIONS
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Patient is required in Pharmacy Retail Sale",
-            "Requires patient selection/creation for all pharmacy retail sales",
-            "Controller: Patient validation in multiple methods",
-            OptionScope.APPLICATION
+                "Patient is required in Pharmacy Retail Sale",
+                "Requires patient selection/creation for all pharmacy retail sales",
+                "Controller: Patient validation in multiple methods",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Patient Name is required in Pharmacy Retail Sale",
-            "Validates that patient name is provided for pharmacy retail sales",
-            "Controller: Patient data validation",
-            OptionScope.APPLICATION
+                "Patient Name is required in Pharmacy Retail Sale",
+                "Validates that patient name is provided for pharmacy retail sales",
+                "Controller: Patient data validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Patient Phone is required in Pharmacy Retail Sale",
-            "Validates that patient phone number is provided for pharmacy retail sales",
-            "Controller: Patient contact validation",
-            OptionScope.APPLICATION
+                "Patient Phone is required in Pharmacy Retail Sale",
+                "Validates that patient phone number is provided for pharmacy retail sales",
+                "Controller: Patient contact validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Patient Gender is required in Pharmacy Retail Sale",
-            "Validates that patient gender is provided for pharmacy retail sales",
-            "Controller: Patient demographic validation",
-            OptionScope.APPLICATION
+                "Patient Gender is required in Pharmacy Retail Sale",
+                "Validates that patient gender is provided for pharmacy retail sales",
+                "Controller: Patient demographic validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Patient Address is required in Pharmacy Retail Sale",
-            "Validates that patient address is provided for pharmacy retail sales",
-            "Controller: Patient address validation",
-            OptionScope.APPLICATION
+                "Patient Address is required in Pharmacy Retail Sale",
+                "Validates that patient address is provided for pharmacy retail sales",
+                "Controller: Patient address validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Patient Area is required in Pharmacy Retail Sale",
-            "Validates that patient area/location is provided for pharmacy retail sales",
-            "Controller: Patient location validation",
-            OptionScope.APPLICATION
+                "Patient Area is required in Pharmacy Retail Sale",
+                "Validates that patient area/location is provided for pharmacy retail sales",
+                "Controller: Patient location validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Enable blacklist patient management in the system",
-            "Enables system-wide blacklist patient management functionality",
-            "Controller: Patient blacklist checking",
-            OptionScope.APPLICATION
+                "Enable blacklist patient management in the system",
+                "Enables system-wide blacklist patient management functionality",
+                "Controller: Patient blacklist checking",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Enable blacklist patient management for Pharmacy from the system",
-            "Enables blacklist patient management specifically for pharmacy module",
-            "Controller: Pharmacy-specific patient blacklist checking",
-            OptionScope.APPLICATION
+                "Enable blacklist patient management for Pharmacy from the system",
+                "Enables blacklist patient management specifically for pharmacy module",
+                "Controller: Pharmacy-specific patient blacklist checking",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Referring Doctor is required in Pharmacy Retail Sale",
-            "Validates that referring doctor is specified for pharmacy retail sales",
-            "Controller: Doctor referral validation",
-            OptionScope.APPLICATION
+                "Referring Doctor is required in Pharmacy Retail Sale",
+                "Validates that referring doctor is specified for pharmacy retail sales",
+                "Controller: Doctor referral validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Patient Phone number is mandotary in sale for cashier",
-            "Makes patient phone number mandatory specifically for cashier sales",
-            "Controller: Cashier-specific patient validation",
-            OptionScope.APPLICATION
+                "Patient Phone number is mandotary in sale for cashier",
+                "Makes patient phone number mandatory specifically for cashier sales",
+                "Controller: Cashier-specific patient validation",
+                OptionScope.APPLICATION
         ));
 
         // 🔧 DETAILED PATIENT CREATION REQUIREMENTS
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Need Patient Title And Gender To Save Patient in Pharmacy Sale",
-            "Requires patient title and gender when creating new patients in pharmacy sales",
-            "Controller: New patient creation validation",
-            OptionScope.APPLICATION
+                "Need Patient Title And Gender To Save Patient in Pharmacy Sale",
+                "Requires patient title and gender when creating new patients in pharmacy sales",
+                "Controller: New patient creation validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Need Patient Name to save Patient in Pharmacy Sale",
-            "Requires patient name when creating new patients in pharmacy sales",
-            "Controller: New patient creation validation",
-            OptionScope.APPLICATION
+                "Need Patient Name to save Patient in Pharmacy Sale",
+                "Requires patient name when creating new patients in pharmacy sales",
+                "Controller: New patient creation validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Need Patient Age to Save Patient in Pharmacy Sale",
-            "Requires patient age when creating new patients in pharmacy sales",
-            "Controller: New patient creation validation",
-            OptionScope.APPLICATION
+                "Need Patient Age to Save Patient in Pharmacy Sale",
+                "Requires patient age when creating new patients in pharmacy sales",
+                "Controller: New patient creation validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Need Patient Phone Number to save Patient in Pharmacy Sale",
-            "Requires patient phone number when creating new patients in pharmacy sales",
-            "Controller: New patient creation validation",
-            OptionScope.APPLICATION
+                "Need Patient Phone Number to save Patient in Pharmacy Sale",
+                "Requires patient phone number when creating new patients in pharmacy sales",
+                "Controller: New patient creation validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Need Patient Address to save Patient in Pharmacy Sale",
-            "Requires patient address when creating new patients in pharmacy sales",
-            "Controller: New patient creation validation",
-            OptionScope.APPLICATION
+                "Need Patient Address to save Patient in Pharmacy Sale",
+                "Requires patient address when creating new patients in pharmacy sales",
+                "Controller: New patient creation validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Need Patient Mail to save Patient in Pharmacy Sale",
-            "Requires patient email address when creating new patients in pharmacy sales",
-            "Controller: New patient creation validation",
-            OptionScope.APPLICATION
+                "Need Patient Mail to save Patient in Pharmacy Sale",
+                "Requires patient email address when creating new patients in pharmacy sales",
+                "Controller: New patient creation validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Need Patient NIC to save Patient in Pharmacy Sale",
-            "Requires patient NIC (National Identity Card) when creating new patients in pharmacy sales",
-            "Controller: New patient creation validation",
-            OptionScope.APPLICATION
+                "Need Patient NIC to save Patient in Pharmacy Sale",
+                "Requires patient NIC (National Identity Card) when creating new patients in pharmacy sales",
+                "Controller: New patient creation validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Need Patient Area to save Patient in Pharmacy Sale",
-            "Requires patient area/location when creating new patients in pharmacy sales",
-            "Controller: New patient creation validation",
-            OptionScope.APPLICATION
+                "Need Patient Area to save Patient in Pharmacy Sale",
+                "Requires patient area/location when creating new patients in pharmacy sales",
+                "Controller: New patient creation validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Need Referring Doctor to settlle bill in Pharmacy Sale",
-            "Requires referring doctor selection before settling pharmacy bills",
-            "Controller: Bill settlement validation",
-            OptionScope.APPLICATION
+                "Need Referring Doctor to settlle bill in Pharmacy Sale",
+                "Requires referring doctor selection before settling pharmacy bills",
+                "Controller: Bill settlement validation",
+                OptionScope.APPLICATION
         ));
 
         // 🔧 PAYMENT AND SETTLEMENT CONFIGURATIONS
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Patient details are required for retail sale",
-            "Requires patient details to be completed for retail sales",
-            "Controller: Retail sale validation",
-            OptionScope.APPLICATION
+                "Patient details are required for retail sale",
+                "Requires patient details to be completed for retail sales",
+                "Controller: Retail sale validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy retail sale CreditCard last digits is Mandatory",
-            "Requires last 4 digits of credit card for credit card payments in pharmacy retail sales",
-            "Controller: Credit card payment validation",
-            OptionScope.APPLICATION
+                "Pharmacy retail sale CreditCard last digits is Mandatory",
+                "Requires last 4 digits of credit card for credit card payments in pharmacy retail sales",
+                "Controller: Credit card payment validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Pharmacy discount should be staff when select Staff_welfare as payment method",
-            "Automatically applies staff discount when staff welfare payment method is selected",
-            "Controller: Staff welfare payment validation",
-            OptionScope.APPLICATION
+                "Pharmacy discount should be staff when select Staff_welfare as payment method",
+                "Automatically applies staff discount when staff welfare payment method is selected",
+                "Controller: Staff welfare payment validation",
+                OptionScope.APPLICATION
         ));
 
         // 🔧 PRIVILEGES
         metadata.addPrivilege(new PrivilegeInfo(
-            "Admin",
-            "Administrative access to system configuration and page management",
-            "Line 39: Config button visibility"
+                "Admin",
+                "Administrative access to system configuration and page management",
+                "Line 39: Config button visibility"
         ));
 
         metadata.addPrivilege(new PrivilegeInfo(
-            "ChangeReceiptPrintingPaperTypes",
-            "Permission to change receipt printing paper types and formats",
-            "Line 603: Paper type selection controls"
+                "ChangeReceiptPrintingPaperTypes",
+                "Permission to change receipt printing paper types and formats",
+                "Line 603: Paper type selection controls"
         ));
 
         metadata.addPrivilege(new PrivilegeInfo(
-            "PharmacySale",
-            "Basic permission to access pharmacy sale functionalities",
-            "Lines 657-660: Sale navigation buttons"
+                "PharmacySale",
+                "Basic permission to access pharmacy sale functionalities",
+                "Lines 657-660: Sale navigation buttons"
         ));
 
         // 🔧 REGISTER THE METADATA
@@ -715,7 +715,6 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
             return "/pharmacy/pharmacy_bill_retail_sale_for_cashier_1?faces-redirect=true";
         }
     }
-
 
     private void prepareForPharmacySaleWithoutStock() {
         clearBill();
@@ -1130,9 +1129,9 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
 
             // Check if entered quantity exceeds available stock
             if (tmp.getQty() > currentStock.getStock()) {
-                JsfUtil.addErrorMessage("Insufficient stock. Available: " +
-                    String.format("%.0f", currentStock.getStock()) +
-                    ", Requested: " + String.format("%.0f", tmp.getQty()));
+                JsfUtil.addErrorMessage("Insufficient stock. Available: "
+                        + String.format("%.0f", currentStock.getStock())
+                        + ", Requested: " + String.format("%.0f", tmp.getQty()));
 
                 // Reset quantity to maximum available stock
                 tmp.setQty(currentStock.getStock());
@@ -1180,9 +1179,9 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
     }
 
     /**
-     * Divides the quantity of a single bill item by half.
-     * Minimum quantity is 1 - never goes below 1.
-     * Uses existing quantityInTableChangeEvent for validation and calculations.
+     * Divides the quantity of a single bill item by half. Minimum quantity is 1
+     * - never goes below 1. Uses existing quantityInTableChangeEvent for
+     * validation and calculations.
      */
     public void divideQuantityByHalf(BillItem billItem) {
         if (billItem == null) {
@@ -1208,9 +1207,9 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
     }
 
     /**
-     * Multiplies the quantity of a single bill item by two.
-     * Validates against available stock before applying changes.
-     * Uses existing quantityInTableChangeEvent for validation and calculations.
+     * Multiplies the quantity of a single bill item by two. Validates against
+     * available stock before applying changes. Uses existing
+     * quantityInTableChangeEvent for validation and calculations.
      */
     public void multiplyQuantityByTwo(BillItem billItem) {
         if (billItem == null) {
@@ -1248,9 +1247,9 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
 
             // Check if new quantity exceeds available stock
             if (newQty > currentStock.getStock()) {
-                JsfUtil.addErrorMessage("Cannot double quantity. Available: " +
-                    String.format("%.0f", currentStock.getStock()) +
-                    ", Required: " + String.format("%.0f", newQty));
+                JsfUtil.addErrorMessage("Cannot double quantity. Available: "
+                        + String.format("%.0f", currentStock.getStock())
+                        + ", Required: " + String.format("%.0f", newQty));
                 return;
             }
 
@@ -1270,9 +1269,9 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
     }
 
     /**
-     * Divides all bill item quantities by half.
-     * Minimum quantity is 1 for each item - never goes below 1.
-     * Processes all items and recalculates bill totals.
+     * Divides all bill item quantities by half. Minimum quantity is 1 for each
+     * item - never goes below 1. Processes all items and recalculates bill
+     * totals.
      */
     public void divideAllQuantitiesByHalf() {
         if (getPreBill() == null || getPreBill().getBillItems() == null || getPreBill().getBillItems().isEmpty()) {
@@ -1317,10 +1316,10 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
     }
 
     /**
-     * Multiplies all bill item quantities by two.
-     * Validates each item against available stock before applying changes.
-     * Items that exceed stock limits are skipped with error messages.
-     * Recalculates bill totals after processing.
+     * Multiplies all bill item quantities by two. Validates each item against
+     * available stock before applying changes. Items that exceed stock limits
+     * are skipped with error messages. Recalculates bill totals after
+     * processing.
      */
     public void multiplyAllQuantitiesByTwo() {
         if (getPreBill() == null || getPreBill().getBillItems() == null || getPreBill().getBillItems().isEmpty()) {
@@ -1340,8 +1339,8 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
                 }
 
                 // Validate pharmaceutical bill item and stock
-                if (billItem.getPharmaceuticalBillItem() == null ||
-                    billItem.getPharmaceuticalBillItem().getStock() == null) {
+                if (billItem.getPharmaceuticalBillItem() == null
+                        || billItem.getPharmaceuticalBillItem().getStock() == null) {
                     skippedCount++;
                     continue;
                 }
@@ -1666,7 +1665,11 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
     }
 
     public String toPharmacyRetailSaleForCashier() {
-        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier_1?faces-redirect=true";
+        if (billPreview) {
+            return "/pharmacy/printing/retail_sale_for_cashier_1?faces-redirect=true";
+        } else {
+            return "/pharmacy/pharmacy_bill_retail_sale_for_cashier_1?faces-redirect=true";
+        }
     }
 
     public List<Item> completeRetailSaleItems(String qry) {
@@ -1684,11 +1687,6 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
         items = getItemFacade().findByJpql(sql, m, 10);
         return items;
     }
-
-
-
-
-
 
     public List<Stock> completeAvailableStockOptimized(String qry) {
         if (qry == null || qry.trim().isEmpty()) {
@@ -1769,17 +1767,17 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
                 results = getFreshStockDataForIds(cachedStockIds);
                 long durationMs = (System.nanoTime() - startTime) / 1_000_000;
                 logger.log(Level.FINE, "Metadata cache hit for query ''{0}'' in {1}ms - fetched fresh stock for {2} items with preserved ordering",
-                    new Object[]{qry, durationMs, results.size()});
+                        new Object[]{qry, durationMs, results.size()});
             } else {
                 // Cache miss: Execute full search with EclipseLink-compatible relevance ordering and cache the stock IDs
                 results = executeFullSearchAndCacheMetadata(qry, searchConfig, cacheKey);
                 long durationMs = (System.nanoTime() - startTime) / 1_000_000;
                 if (durationMs > 500) {
                     logger.log(Level.WARNING, "Slow autocomplete query: {0}ms for query ''{1}'' returned {2} results",
-                        new Object[]{durationMs, qry, results.size()});
+                            new Object[]{durationMs, qry, results.size()});
                 } else {
                     logger.log(Level.FINE, "Autocomplete query completed in {0}ms for query ''{1}'' returned {2} results with relevance ordering",
-                        new Object[]{durationMs, qry, results.size()});
+                            new Object[]{durationMs, qry, results.size()});
                 }
             }
 
@@ -1798,6 +1796,7 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
      * Inner class to hold search configuration for caching
      */
     private static class SearchConfig {
+
         boolean searchByItemCode;
         boolean searchByBarcode;
         boolean searchByGeneric;
@@ -1815,7 +1814,8 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
     }
 
     /**
-     * Get session-level cached search configuration (initialized once per session)
+     * Get session-level cached search configuration (initialized once per
+     * session)
      */
     private SearchConfig getCachedSearchConfig(boolean longQuery) {
         // Initialize session-level config cache once per session
@@ -1827,7 +1827,7 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
             configCacheInitialized = true;
 
             logger.log(Level.INFO, "Search configuration cached for session: ItemCode={0}, Generic={1}",
-                new Object[]{sessionCachedSearchByItemCode, sessionCachedSearchByGeneric});
+                    new Object[]{sessionCachedSearchByItemCode, sessionCachedSearchByGeneric});
         }
 
         // Barcode search still depends on query length but uses session cache
@@ -1878,7 +1878,8 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
     }
 
     /**
-     * Get fresh stock data for cached stock IDs with preserved ordering (ensures multi-user accuracy)
+     * Get fresh stock data for cached stock IDs with preserved ordering
+     * (ensures multi-user accuracy)
      */
     private List<StockDTO> getFreshStockDataForIds(List<Long> stockIds) {
         if (stockIds == null || stockIds.isEmpty()) {
@@ -1900,7 +1901,7 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
             // Preserve the original CASE-based ordering from the cached metadata
             // This ensures consistent result ordering between cache misses and hits
             sql.append("ORDER BY ")
-                .append("CASE ");
+                    .append("CASE ");
 
             // Add specific ordering for each cached stock ID to preserve relevance ranking
             for (int i = 0; i < stockIds.size() && i < 20; i++) {
@@ -1925,7 +1926,8 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
     }
 
     /**
-     * Execute optimized search query with EclipseLink-compatible relevance ordering and cache the stock IDs
+     * Execute optimized search query with EclipseLink-compatible relevance
+     * ordering and cache the stock IDs
      */
     private List<StockDTO> executeFullSearchAndCacheMetadata(String qry, SearchConfig searchConfig, String cacheKey) {
         try {
@@ -1970,7 +1972,7 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
                 cacheMetadata(cacheKey, stockIds);
 
                 logger.log(Level.FINE, "Search completed with relevance ordering - {0} results (prefix matches first, then contains matches)",
-                    finalResults.size());
+                        finalResults.size());
             }
 
             return finalResults;
@@ -2011,7 +2013,9 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
 
                 // Item code prefix search (if enabled)
                 if (searchConfig.searchByItemCode) {
-                    if (!firstCondition) sql.append(" OR ");
+                    if (!firstCondition) {
+                        sql.append(" OR ");
+                    }
                     sql.append("UPPER(s.itemBatch.item.code) LIKE UPPER(:searchStart)");
                     firstCondition = false;
                     // searchStart already added above
@@ -2019,7 +2023,9 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
 
                 // Barcode exact match (if enabled and query is long enough)
                 if (searchConfig.searchByBarcode && qry.length() >= 6) {
-                    if (!firstCondition) sql.append(" OR ");
+                    if (!firstCondition) {
+                        sql.append(" OR ");
+                    }
                     sql.append("s.itemBatch.item.barcode = :exactQuery");
                     firstCondition = false;
                     usesExactQuery = true;
@@ -2027,7 +2033,9 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
 
                 // Generic name prefix search (if enabled)
                 if (searchConfig.searchByGeneric) {
-                    if (!firstCondition) sql.append(" OR ");
+                    if (!firstCondition) {
+                        sql.append(" OR ");
+                    }
                     sql.append("UPPER(s.itemBatch.item.vmp.vtm.name) LIKE UPPER(:searchStart)");
                     // searchStart already added above
                 }
@@ -2050,22 +2058,26 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
 
                 // Item name contains (but not prefix to avoid duplicates)
                 sql.append("UPPER(s.itemBatch.item.name) LIKE UPPER(:searchContains) ")
-                   .append("AND NOT UPPER(s.itemBatch.item.name) LIKE UPPER(:searchStart)");
+                        .append("AND NOT UPPER(s.itemBatch.item.name) LIKE UPPER(:searchStart)");
                 firstCondition = false;
 
                 // Item code contains (if enabled)
                 if (searchConfig.searchByItemCode) {
-                    if (!firstCondition) sql.append(" OR ");
+                    if (!firstCondition) {
+                        sql.append(" OR ");
+                    }
                     sql.append("(UPPER(s.itemBatch.item.code) LIKE UPPER(:searchContains) ")
-                       .append("AND NOT UPPER(s.itemBatch.item.code) LIKE UPPER(:searchStart))");
+                            .append("AND NOT UPPER(s.itemBatch.item.code) LIKE UPPER(:searchStart))");
                     firstCondition = false;
                 }
 
                 // Generic name contains (if enabled)
                 if (searchConfig.searchByGeneric) {
-                    if (!firstCondition) sql.append(" OR ");
+                    if (!firstCondition) {
+                        sql.append(" OR ");
+                    }
                     sql.append("(UPPER(s.itemBatch.item.vmp.vtm.name) LIKE UPPER(:searchContains) ")
-                       .append("AND NOT UPPER(s.itemBatch.item.vmp.vtm.name) LIKE UPPER(:searchStart))");
+                            .append("AND NOT UPPER(s.itemBatch.item.vmp.vtm.name) LIKE UPPER(:searchStart))");
                 }
 
                 sql.append(") ORDER BY s.itemBatch.item.name, s.itemBatch.dateOfExpire");
@@ -2135,7 +2147,7 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
             if (event != null && event.getObject() != null && event.getObject() instanceof StockDTO) {
                 StockDTO selectedDto = (StockDTO) event.getObject();
                 logger.log(Level.FINE, "Item selected - ID: {0}, StockQty: {1}, ItemName: {2}",
-                    new Object[]{selectedDto.getId(), selectedDto.getStockQty(), selectedDto.getItemName()});
+                        new Object[]{selectedDto.getId(), selectedDto.getStockQty(), selectedDto.getItemName()});
                 this.stockDto = selectedDto;
             } else {
                 logger.log(Level.WARNING, "handleSelect called with null or invalid event object");
@@ -2147,10 +2159,10 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
             long durationMs = (System.nanoTime() - startTime) / 1_000_000;
             if (durationMs > 1000) {
                 logger.log(Level.WARNING, "Slow item selection processing: {0}ms for item ID {1}",
-                    new Object[]{durationMs, stockDto != null ? stockDto.getId() : "null"});
+                        new Object[]{durationMs, stockDto != null ? stockDto.getId() : "null"});
             } else {
                 logger.log(Level.FINE, "Item selection completed in {0}ms for item ID {1}",
-                    new Object[]{durationMs, stockDto != null ? stockDto.getId() : "null"});
+                        new Object[]{durationMs, stockDto != null ? stockDto.getId() : "null"});
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error during item selection", e);
@@ -2287,8 +2299,8 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
             billItem.getPharmaceuticalBillItem().setItemBatch(itemBatchFacade.getReference(stockDto.getItemBatchId()));
             long afterBatch = System.currentTimeMillis();
             long batchTime = afterBatch - beforeBatch;
-            System.out.println("calculateBillItem: ItemBatch reference took " + batchTime + "ms" +
-                (batchTime > 1000 ? " *** SLOW - JPA not warmed up ***" : " *** FAST - JPA warmed up successfully ***"));
+            System.out.println("calculateBillItem: ItemBatch reference took " + batchTime + "ms"
+                    + (batchTime > 1000 ? " *** SLOW - JPA not warmed up ***" : " *** FAST - JPA warmed up successfully ***"));
         }
 
         long afterEntityRefs = System.currentTimeMillis();
@@ -2544,7 +2556,6 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
 //            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
 //            return addedQty;
 //        }
-
 
         addedQty = qty;
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
@@ -3177,18 +3188,20 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
     /**
      * Save Pre-Bill Items Finally with Locked Stocks
      *
-     * Enhanced version of savePreBillItemsFinally() that uses pre-locked and validated stocks
-     * from StockLockingService. This prevents stock deduction failures since stocks were
-     * already validated before settlement began.
+     * Enhanced version of savePreBillItemsFinally() that uses pre-locked and
+     * validated stocks from StockLockingService. This prevents stock deduction
+     * failures since stocks were already validated before settlement began.
      *
-     * Key Differences from savePreBillItemsFinally():
-     * - Uses pre-locked stocks from stockValidation result
-     * - Calls stockLockingService.deductAndReleaseLock() instead of pharmacyBean.deductFromStock()
-     * - Should not encounter insufficient stock errors (since pre-validated)
-     * - Releases each lock immediately after deduction
+     * Key Differences from savePreBillItemsFinally(): - Uses pre-locked stocks
+     * from stockValidation result - Calls
+     * stockLockingService.deductAndReleaseLock() instead of
+     * pharmacyBean.deductFromStock() - Should not encounter insufficient stock
+     * errors (since pre-validated) - Releases each lock immediately after
+     * deduction
      *
      * @param list List of bill items to save
-     * @param lockedStocks Map of locked stocks (stockId -> Stock entity) from validation
+     * @param lockedStocks Map of locked stocks (stockId -> Stock entity) from
+     * validation
      */
     private void savePreBillItemsFinallyWithLockedStocks(List<BillItem> list, Map<Long, Stock> lockedStocks) {
         // Initialize the billItems collection if it was set to null
@@ -3636,9 +3649,9 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
 
         // STOCK-FIRST SETTLEMENT: Validate and lock all stocks BEFORE any entity saves
         StockValidationResult stockValidation = stockLockingService.lockAndValidateStocks(
-            getPreBill().getBillItems(),
-            getSessionController().getLoggedUser(),
-            getPreBill().getDepartment()
+                getPreBill().getBillItems(),
+                getSessionController().getLoggedUser(),
+                getPreBill().getDepartment()
         );
 
         if (!stockValidation.isValid()) {
@@ -5094,8 +5107,8 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
      */
     private String generateDiscountCacheKey(BillItem bi) {
         if (bi == null || bi.getPharmaceuticalBillItem() == null
-            || bi.getPharmaceuticalBillItem().getStock() == null
-            || bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null) {
+                || bi.getPharmaceuticalBillItem().getStock() == null
+                || bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null) {
             return null;
         }
 
@@ -5316,9 +5329,9 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
     }
 
     /**
-     * Clear performance optimization caches at the start of each add button action.
-     * This prevents stale cached data from affecting new operations while allowing
-     * optimization during a single add button workflow.
+     * Clear performance optimization caches at the start of each add button
+     * action. This prevents stale cached data from affecting new operations
+     * while allowing optimization during a single add button workflow.
      */
     private void clearPerformanceCaches() {
         long startTime = System.currentTimeMillis();
@@ -5336,10 +5349,10 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
     }
 
     /**
-     * Warm up JPA facades by triggering initialization during controller startup.
-     * This prevents the 8+ second delay on first user interaction by initializing
-     * Hibernate EntityManagerFactory, connection pools, and metadata caches early.
-     * Called from init() @PostConstruct method.
+     * Warm up JPA facades by triggering initialization during controller
+     * startup. This prevents the 8+ second delay on first user interaction by
+     * initializing Hibernate EntityManagerFactory, connection pools, and
+     * metadata caches early. Called from init() @PostConstruct method.
      */
     private void warmUpJpaFacades() {
         // Run warm-up in background thread to not block UI
@@ -5375,7 +5388,7 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
                     // Try to load some entities if count is reasonable
                     if (count > 0 && count < 1000000) {
                         System.out.println("WARM-UP: Loading sample ItemBatch entities...");
-                        java.util.List<ItemBatch> batches = itemBatchFacade.findRange(new int[]{0, Math.min(50, (int)count)});
+                        java.util.List<ItemBatch> batches = itemBatchFacade.findRange(new int[]{0, Math.min(50, (int) count)});
                         System.out.println("WARM-UP: Loaded " + batches.size() + " ItemBatch entities");
 
                         // Access properties for first few entities only
