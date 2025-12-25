@@ -39,6 +39,9 @@ import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyService;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.StaffService;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.concurrent.ConcurrentHashMap;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillFeePayment;
@@ -105,6 +108,13 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.annotation.PostConstruct;
+
+import com.divudi.bean.common.PageMetadataRegistry;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
@@ -118,6 +128,8 @@ import org.primefaces.PrimeFaces;
 @Named
 @SessionScoped
 public class PharmacySaleForCashierController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
+
+    private static final Logger logger = Logger.getLogger(PharmacySaleForCashierController.class.getName());
 
     @Inject
     private PriceMatrixController priceMatrixController;
@@ -143,6 +155,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     private TokenController tokenController;
     @Inject
     private DrawerController drawerController;
+    @Inject
+    private PageMetadataRegistry pageMetadataRegistry;
     @EJB
     private ConfigOptionFacade configOptionFacade;
     @EJB
@@ -199,11 +213,51 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     Stock stock;
     StockDTO stockDto;
     /**
-     * Temporary cache of the most recent autocomplete results.
-     * Used by StockDtoConverter to preserve full DTO data during JSF lifecycle.
-     * NOT a persistent cache - cleared on each new search.
+     * Temporary cache of the most recent autocomplete results. Used by
+     * StockDtoConverter to preserve full DTO data during JSF lifecycle. NOT a
+     * persistent cache - cleared on each new search.
      */
     private List<StockDTO> lastAutocompleteResults;
+
+    // === PERFORMANCE OPTIMIZATION CACHES ===
+    /**
+     * Cache for converter operations during single add button action.
+     * Cleared at start of each addBillItem() call to prevent stale data.
+     */
+    private transient Map<Long, StockDTO> converterCache;
+    private transient int converterCallCount = 0;
+
+    /**
+     * Cache for discount calculations during single add button action.
+     * Key format: "billItemId_paymentSchemeId_paymentMethod"
+     */
+    private transient Map<String, Double> discountCache;
+    private transient int discountCalculationCount = 0;
+
+    /**
+     * Cache for item metadata only (names, codes, batch info) - NO STOCK QUANTITIES.
+     * Stock quantities are always fetched fresh to ensure multi-user accuracy.
+     * Key format: "department_id|query|search_config_hash"
+     * TTL: 5 minutes for item metadata (changes rarely)
+     */
+    private transient Map<String, List<Long>> itemMetadataCache; // Cache stock IDs only
+    private transient Map<String, Long> metadataCacheTimestamps;
+    private static final long METADATA_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes for metadata
+
+    /**
+     * Session-level configuration cache (refreshed only on browser restart)
+     * This is safe because config changes require session restart anyway
+     */
+    private transient Boolean sessionCachedSearchByItemCode;
+    private transient Boolean sessionCachedSearchByBarcode;
+    private transient Boolean sessionCachedSearchByGeneric;
+    private transient boolean configCacheInitialized = false;
+
+    /**
+     * Flag to track JPA warm-up completion status
+     */
+    private volatile boolean jpaWarmUpCompleted = false;
+
     private List<ClinicalFindingValue> allergyListOfPatient;
     private boolean billSettlingStarted;
 
@@ -243,6 +297,388 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
      * Creates a new instance of PharmacySaleController
      */
     public PharmacySaleForCashierController() {
+    }
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+        // Initialize JPA facades in background to prevent first-user delays
+        warmUpJpaFacades();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/pharmacy_bill_retail_sale_for_cashier");
+        metadata.setPageName("Pharmacy Retail Sale For Cashier");
+        metadata.setDescription("Pharmacy retail sale interface for cashiers with token system support");
+        metadata.setControllerClass("PharmacySaleForCashierController");
+
+        // 🔧 UI DISPLAY CONFIGURATIONS
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Enable token system in sale for cashier",
+            "Enables token-based queue management system for pharmacy sales",
+            "Line 25: Token system controls and counter selection",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Analytics - Show Single Items Summary",
+            "Shows button to view detailed analytics for individual pharmacy items",
+            "Line 92: Item details button for analytics",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Editing Quantity of Added Items in Pharmacy Retail Sale for Cashier",
+            "Enables editing quantity of already added items in the bill items table",
+            "Line 314: Quantity input field in bill items table",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Tendered Amount for pharmacy sale for cashier",
+            "Shows tendered amount and balance calculation fields for cash transactions",
+            "Line 565: Tendered amount and balance display panel",
+            OptionScope.APPLICATION
+        ));
+
+        // 🔧 PRINTING CONFIGURATIONS
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Bill Support for Native Printers",
+            "Enables native printer support for bill printing instead of browser printing",
+            "Line 619: Print button rendering condition",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Sale for Cashier Token Bill is Pos paper",
+            "Uses POS paper format for token bill printing",
+            "Line 704: Token bill format rendering",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Sale for Cashier Bill is Pos paper",
+            "Uses POS paper format for main bill printing",
+            "Line 722: Main bill format rendering",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Bill is PosHeaderPaper",
+            "Uses POS header paper format for bill printing",
+            "Line 738: POS header format rendering",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Sale for cashier Bill is FiveFiveCustom3",
+            "Uses FiveFiveCustom3 format for bill printing",
+            "Line 748: FiveFiveCustom3 format rendering",
+            OptionScope.APPLICATION
+        ));
+
+        // 🔧 SEARCH AND AUTOCOMPLETE CONFIGURATIONS
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Enable search medicines by item code",
+            "Enables searching medicines using item codes in autocomplete",
+            "Controller: Medicine search functionality",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Enable search medicines by barcode",
+            "Enables searching medicines using barcodes in autocomplete",
+            "Controller: Medicine search functionality",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Enable search medicines by generic name(VMP)",
+            "Enables searching medicines by generic names (Virtual Medicinal Products)",
+            "Controller: Medicine search functionality",
+            OptionScope.APPLICATION
+        ));
+
+        // 🔧 BILL VALIDATION CONFIGURATIONS
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Add bill item instructions in pharmacy cashier sale",
+            "Includes special instructions when adding items to pharmacy bills",
+            "Controller: Bill item processing logic",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Check for Allergies during Dispensing",
+            "Validates patient allergies against prescribed medications during dispensing",
+            "Controller: Patient safety validation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Add quantity from multiple batches in pharmacy retail billing",
+            "Allows combining quantities from multiple batches for the same item",
+            "Controller: Quantity handling logic",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Need to Enter the Cash Tendered Amount to Settle Pharmacy Retail Bill",
+            "Requires cash tendered amount input before settling retail pharmacy bills",
+            "Controller: Bill settlement validation",
+            OptionScope.APPLICATION
+        ));
+
+        // 🔧 BILL NUMBER GENERATION STRATEGIES (CRITICAL)
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Generates bill numbers with format: Prefix-DEPT-INST-YEAR-NUMBER for pharmacy sale pre bills",
+            "Controller: Bill number generation in savePreBillForCashier()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Generates bill numbers with format: Prefix-INST-DEPT-YEAR-NUMBER for pharmacy sale pre bills",
+            "Controller: Bill number generation in savePreBillForCashier()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Pre Bill - Prefix + Institution Code + Year + Yearly Number",
+            "Generates bill numbers with format: Prefix-INST-YEAR-NUMBER for pharmacy sale pre bills",
+            "Controller: Bill number generation in savePreBillForCashier()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Generates bill numbers with format: Prefix-DEPT-INST-YEAR-NUMBER for pharmacy sale cashier pre bills",
+            "Controller: Bill number generation in savePreBillTOSettleInCashier()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Generates bill numbers with format: Prefix-INST-DEPT-YEAR-NUMBER for pharmacy sale cashier pre bills",
+            "Controller: Bill number generation in savePreBillTOSettleInCashier()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Year + Yearly Number",
+            "Generates bill numbers with format: Prefix-INST-YEAR-NUMBER for pharmacy sale cashier pre bills",
+            "Controller: Bill number generation in savePreBillTOSettleInCashier()",
+            OptionScope.APPLICATION
+        ));
+
+        // 🔧 BILL NUMBER SUFFIXES (Required for BillNumberGenerator methods)
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PHARMACY_RETAIL_SALE_PRE",
+            "Custom suffix to append to pharmacy retail sale pre bill numbers (used by BillNumberGenerator methods)",
+            "Controller: BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE bill generation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER",
+            "Custom suffix to append to pharmacy retail sale pre bills to settle at cashier (used by BillNumberGenerator methods)",
+            "Controller: BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER bill generation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PHARMACY_RETAIL_SALE",
+            "Custom suffix to append to pharmacy retail sale bill numbers (used by BillNumberGenerator methods)",
+            "Controller: BillTypeAtomic.PHARMACY_RETAIL_SALE bill generation",
+            OptionScope.APPLICATION
+        ));
+
+        // 🔧 PATIENT VALIDATION CONFIGURATIONS
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Patient is required in Pharmacy Retail Sale",
+            "Requires patient selection/creation for all pharmacy retail sales",
+            "Controller: Patient validation in multiple methods",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Patient Name is required in Pharmacy Retail Sale",
+            "Validates that patient name is provided for pharmacy retail sales",
+            "Controller: Patient data validation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Patient Phone is required in Pharmacy Retail Sale",
+            "Validates that patient phone number is provided for pharmacy retail sales",
+            "Controller: Patient contact validation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Patient Gender is required in Pharmacy Retail Sale",
+            "Validates that patient gender is provided for pharmacy retail sales",
+            "Controller: Patient demographic validation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Patient Address is required in Pharmacy Retail Sale",
+            "Validates that patient address is provided for pharmacy retail sales",
+            "Controller: Patient address validation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Patient Area is required in Pharmacy Retail Sale",
+            "Validates that patient area/location is provided for pharmacy retail sales",
+            "Controller: Patient location validation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Enable blacklist patient management in the system",
+            "Enables system-wide blacklist patient management functionality",
+            "Controller: Patient blacklist checking",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Enable blacklist patient management for Pharmacy from the system",
+            "Enables blacklist patient management specifically for pharmacy module",
+            "Controller: Pharmacy-specific patient blacklist checking",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Referring Doctor is required in Pharmacy Retail Sale",
+            "Validates that referring doctor is specified for pharmacy retail sales",
+            "Controller: Doctor referral validation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Patient Phone number is mandotary in sale for cashier",
+            "Makes patient phone number mandatory specifically for cashier sales",
+            "Controller: Cashier-specific patient validation",
+            OptionScope.APPLICATION
+        ));
+
+        // 🔧 DETAILED PATIENT CREATION REQUIREMENTS
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Need Patient Title And Gender To Save Patient in Pharmacy Sale",
+            "Requires patient title and gender when creating new patients in pharmacy sales",
+            "Controller: New patient creation validation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Need Patient Name to save Patient in Pharmacy Sale",
+            "Requires patient name when creating new patients in pharmacy sales",
+            "Controller: New patient creation validation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Need Patient Age to Save Patient in Pharmacy Sale",
+            "Requires patient age when creating new patients in pharmacy sales",
+            "Controller: New patient creation validation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Need Patient Phone Number to save Patient in Pharmacy Sale",
+            "Requires patient phone number when creating new patients in pharmacy sales",
+            "Controller: New patient creation validation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Need Patient Address to save Patient in Pharmacy Sale",
+            "Requires patient address when creating new patients in pharmacy sales",
+            "Controller: New patient creation validation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Need Patient Mail to save Patient in Pharmacy Sale",
+            "Requires patient email address when creating new patients in pharmacy sales",
+            "Controller: New patient creation validation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Need Patient NIC to save Patient in Pharmacy Sale",
+            "Requires patient NIC (National Identity Card) when creating new patients in pharmacy sales",
+            "Controller: New patient creation validation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Need Patient Area to save Patient in Pharmacy Sale",
+            "Requires patient area/location when creating new patients in pharmacy sales",
+            "Controller: New patient creation validation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Need Referring Doctor to settlle bill in Pharmacy Sale",
+            "Requires referring doctor selection before settling pharmacy bills",
+            "Controller: Bill settlement validation",
+            OptionScope.APPLICATION
+        ));
+
+        // 🔧 PAYMENT AND SETTLEMENT CONFIGURATIONS
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Patient details are required for retail sale",
+            "Requires patient details to be completed for retail sales",
+            "Controller: Retail sale validation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy retail sale CreditCard last digits is Mandatory",
+            "Requires last 4 digits of credit card for credit card payments in pharmacy retail sales",
+            "Controller: Credit card payment validation",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy discount should be staff when select Staff_welfare as payment method",
+            "Automatically applies staff discount when staff welfare payment method is selected",
+            "Controller: Staff welfare payment validation",
+            OptionScope.APPLICATION
+        ));
+
+        // 🔧 PRIVILEGES
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to system configuration and page management",
+            "Line 39: Config button visibility"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Permission to change receipt printing paper types and formats",
+            "Line 603: Paper type selection controls"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "PharmacySale",
+            "Basic permission to access pharmacy sale functionalities",
+            "Lines 657-660: Sale navigation buttons"
+        ));
+
+        // 🔧 REGISTER THE METADATA
+        pageMetadataRegistry.registerPage(metadata);
     }
 
     public Token getCurrentToken() {
@@ -622,9 +1058,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         //    JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
         //    return true;
         //}
-
         //userStockController.updateUserStock(tmp.getTransUserStock(), tmp.getQty()); // Commented out for performance
-
         onEditCalculation(tmp);
 
         return false;
@@ -788,12 +1222,15 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     public Stock convertStockDtoToEntity(StockDTO stockDto) {
         long startTime = System.currentTimeMillis();
+        System.out.println("=== convertStockDtoToEntity START - StockDTO ID: " + (stockDto != null ? stockDto.getId() : "null") + " ===");
 
         if (stockDto == null || stockDto.getId() == null) {
+            System.out.println("convertStockDtoToEntity: stockDto or ID is null, returning null");
             return null;
         }
 
         long beforeGetReference = System.currentTimeMillis();
+        System.out.println("convertStockDtoToEntity: Getting stock reference for ID: " + stockDto.getId());
 
         // Use EntityManager.getReference() to get JPA proxy WITHOUT database query
         // Returns a proxy that only loads data when you access entity properties
@@ -802,8 +1239,15 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         try {
             Stock result = stockFacade.getReference(stockDto.getId());
             long afterGetReference = System.currentTimeMillis();
+            long totalTime = afterGetReference - startTime;
+            long getRefTime = afterGetReference - beforeGetReference;
+            System.out.println("convertStockDtoToEntity: stockFacade.getReference took " + getRefTime + "ms");
+            System.out.println("=== convertStockDtoToEntity END - Total time: " + totalTime + "ms ===");
             return result;
         } catch (Exception e) {
+            long endTime = System.currentTimeMillis();
+            System.out.println("convertStockDtoToEntity: Exception occurred - " + e.getMessage());
+            System.out.println("=== convertStockDtoToEntity END (EXCEPTION) - Total time: " + (endTime - startTime) + "ms ===");
             return null;
         }
     }
@@ -978,141 +1422,10 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         return items;
     }
 
-    @Deprecated
-    public List<Stock> completeAvailableStocks(String qry) {
-        Set<Stock> stockSet = new LinkedHashSet<>(); // Preserve insertion order
-        List<Stock> initialStocks = completeAvailableStocksStartsWith(qry);
-        if (initialStocks != null) {
-            stockSet.addAll(initialStocks);
-        }
 
-        // No need to check if initialStocks is empty or null anymore, Set takes care of duplicates
-        if (stockSet.size() <= 10) {
-            List<Stock> additionalStocks = completeAvailableStocksContains(qry);
-            if (additionalStocks != null) {
-                stockSet.addAll(additionalStocks);
-            }
-        }
 
-        return new ArrayList<>(stockSet);
-    }
 
-    @Deprecated
-    public List<Stock> completeAvailableStocksStartsWith(String qry) {
-        List<Stock> stockList;
-        String sql;
-        Map m = new HashMap();
-        m.put("d", getSessionController().getLoggedUser().getDepartment());
-        double d = 0.0;
-        m.put("s", d);
-        m.put("n", qry.toUpperCase() + "%");
-        if (qry.length() > 4) {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        } else {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        }
-        stockList = getStockFacade().findByJpql(sql, m, 20);
-        return stockList;
-    }
 
-    @Deprecated
-    public List<Stock> completeAvailableStocksContains(String qry) {
-        List<Stock> stockList;
-        String sql;
-        Map m = new HashMap();
-        m.put("d", getSessionController().getLoggedUser().getDepartment());
-        double d = 0.0;
-        m.put("s", d);
-        m.put("n", "%" + qry.toUpperCase() + "%");
-        if (qry.length() > 4) {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        } else {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        }
-        stockList = getStockFacade().findByJpql(sql, m, 20);
-        return stockList;
-    }
-
-    //matara pharmacy auto complete
-    @Deprecated
-    public List<Stock> completeAvailableStocksFromNameOrGenericOld(String qry) {
-        List<Stock> items;
-        String sql;
-        Map m = new HashMap();
-        m.put("d", getSessionController().getLoggedUser().getDepartment());
-        double d = 0.0;
-        m.put("s", d);
-        qry = qry.replaceAll("\n", "");
-        qry = qry.replaceAll("\r", "");
-        m.put("n", "%" + qry.toUpperCase().trim() + "%");
-
-        //////System.out.println("qry = " + qry);
-        if (qry.length() > 4) {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n or (i.itemBatch.item.vmp.name) like :n) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        } else {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.vmp.name) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        }
-
-        items = getStockFacade().findByJpql(sql, m, 20);
-
-        if (qry.length() > 5 && items.size() == 1) {
-            stock = items.get(0);
-            handleSelectAction();
-        }
-        return items;
-    }
-
-    @Deprecated
-    public List<Stock> completeAvailableStocksFromNameOrGeneric(String qry) {
-        long startTime = System.nanoTime();
-        if (qry == null || qry.trim().isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        qry = qry.replaceAll("[\\n\\r]", "").trim();
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
-        parameters.put("stockMin", 0.0);
-        parameters.put("query", "%" + qry + "%");
-
-        String sql;
-        if (qry.length() > 6) {
-            sql = "SELECT i FROM Stock i "
-                    + "WHERE i.stock > :stockMin "
-                    + "AND i.department = :department "
-                    + "AND (i.itemBatch.item.name LIKE :query ";
-
-            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by item code", true)) {
-                sql += " OR i.itemBatch.item.code LIKE :query ";
-            }
-
-            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by barcode", true)) {
-                sql += "OR i.itemBatch.item.barcode = :query ";
-            }
-        } else {
-            sql = "SELECT i FROM Stock i "
-                    + "WHERE i.stock > :stockMin "
-                    + "AND i.department = :department "
-                    + "AND( i.itemBatch.item.name LIKE :query ";
-
-            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by item code", true)) {
-                sql += " OR i.itemBatch.item.code LIKE :query ";
-            }
-
-            if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by barcode", false)) {
-                sql += "OR i.itemBatch.item.barcode = :query ";
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey("Enable search medicines by generic name(VMP)", false)) {
-            sql += "OR i.itemBatch.item.vmp.vtm.name LIKE :query ";
-        }
-
-        sql += ") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        long endTime = System.nanoTime();
-        long executionTime = endTime - startTime;
-        return getStockFacade().findByJpql(sql, parameters, 20);
-    }
 
     public List<Stock> completeAvailableStockOptimized(String qry) {
         if (qry == null || qry.trim().isEmpty()) {
@@ -1160,71 +1473,268 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     public List<StockDTO> completeAvailableStockOptimizedDto(String qry) {
-        System.out.println("=== CASHIER completeAvailableStockOptimizedDto START ===");
-        System.out.println("Query: " + qry);
+        long startTime = System.nanoTime();
 
-        if (qry == null || qry.trim().isEmpty()) {
+        try {
+            // Input validation
+            if (qry == null || qry.trim().isEmpty()) {
+                lastAutocompleteResults = Collections.emptyList();
+                logger.log(Level.FINE, "Autocomplete query is empty, returning empty list");
+                return lastAutocompleteResults;
+            }
+
+            qry = qry.replaceAll("[\\n\\r]", "").trim().toUpperCase();
+
+            // Initialize metadata cache if needed
+            if (itemMetadataCache == null) {
+                itemMetadataCache = new ConcurrentHashMap<>();
+                metadataCacheTimestamps = new ConcurrentHashMap<>();
+            }
+
+            // Get cached search configuration
+            SearchConfig searchConfig = getCachedSearchConfig(qry.length() > 6);
+
+            // Build cache key for metadata
+            String cacheKey = buildAutocompleteCacheKey(qry, searchConfig);
+
+            // Check metadata cache first
+            List<Long> cachedStockIds = getCachedMetadata(cacheKey);
+            List<StockDTO> results;
+
+            if (cachedStockIds != null) {
+                // Cache hit: Get fresh stock data for cached stock IDs
+                results = getFreshStockDataForIds(cachedStockIds);
+                long durationMs = (System.nanoTime() - startTime) / 1_000_000;
+                logger.log(Level.FINE, "Metadata cache hit for query ''{0}'' in {1}ms - fetched fresh stock for {2} items",
+                    new Object[]{qry, durationMs, results.size()});
+            } else {
+                // Cache miss: Execute full search and cache the stock IDs
+                results = executeFullSearchAndCacheMetadata(qry, searchConfig, cacheKey);
+                long durationMs = (System.nanoTime() - startTime) / 1_000_000;
+                if (durationMs > 500) {
+                    logger.log(Level.WARNING, "Slow autocomplete query: {0}ms for query ''{1}'' returned {2} results",
+                        new Object[]{durationMs, qry, results.size()});
+                } else {
+                    logger.log(Level.FINE, "Full autocomplete query completed in {0}ms for query ''{1}'' returned {2} results",
+                        new Object[]{durationMs, qry, results.size()});
+                }
+            }
+
+            // Store results for JSF converter
+            lastAutocompleteResults = results != null ? results : Collections.emptyList();
+            return lastAutocompleteResults;
+
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error during autocomplete query for: " + qry, e);
             lastAutocompleteResults = Collections.emptyList();
-            System.out.println("Query is empty, returning empty list");
             return lastAutocompleteResults;
         }
+    }
 
-        qry = qry.replaceAll("[\\n\\r]", "").trim();
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
-        parameters.put("stockMin", 0.0);
-        parameters.put("query", "%" + qry + "%");
+    /**
+     * Inner class to hold search configuration for caching
+     */
+    private static class SearchConfig {
+        boolean searchByItemCode;
+        boolean searchByBarcode;
+        boolean searchByGeneric;
 
-        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
-                "Enable search medicines by item code", true);
-        boolean searchByBarcode = qry.length() > 6
-                ? configOptionApplicationController.getBooleanValueByKey(
-                        "Enable search medicines by barcode", true)
-                : configOptionApplicationController.getBooleanValueByKey(
-                        "Enable search medicines by barcode", false);
-        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
-                "Enable search medicines by generic name(VMP)", false);
-
-        StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
-                .append("i.id, i.itemBatch.id, i.itemBatch.item.id, i.itemBatch.item.name, i.itemBatch.item.code, ")
-                .append("COALESCE(i.itemBatch.item.vmp.name, ''), i.itemBatch.batchNo, ")
-                .append("i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire, i.itemBatch.item.discountAllowed) ")
-                .append("FROM Stock i ")
-                .append("WHERE i.stock > :stockMin ")
-                .append("AND i.department = :department ")
-                .append("AND (");
-
-        sql.append("i.itemBatch.item.name LIKE :query ");
-
-        if (searchByItemCode) {
-            sql.append("OR i.itemBatch.item.code LIKE :query ");
+        SearchConfig(boolean searchByItemCode, boolean searchByBarcode, boolean searchByGeneric) {
+            this.searchByItemCode = searchByItemCode;
+            this.searchByBarcode = searchByBarcode;
+            this.searchByGeneric = searchByGeneric;
         }
 
-        if (searchByBarcode) {
-            sql.append("OR i.itemBatch.item.barcode = :query ");
+        @Override
+        public String toString() {
+            return searchByItemCode + "|" + searchByBarcode + "|" + searchByGeneric;
+        }
+    }
+
+    /**
+     * Get session-level cached search configuration (initialized once per session)
+     */
+    private SearchConfig getCachedSearchConfig(boolean longQuery) {
+        // Initialize session-level config cache once per session
+        if (!configCacheInitialized) {
+            sessionCachedSearchByItemCode = configOptionApplicationController.getBooleanValueByKey(
+                    "Enable search medicines by item code", true);
+            sessionCachedSearchByGeneric = configOptionApplicationController.getBooleanValueByKey(
+                    "Enable search medicines by generic name(VMP)", false);
+            configCacheInitialized = true;
+
+            logger.log(Level.INFO, "Search configuration cached for session: ItemCode={0}, Generic={1}",
+                new Object[]{sessionCachedSearchByItemCode, sessionCachedSearchByGeneric});
         }
 
-        if (searchByGeneric) {
-            sql.append("OR i.itemBatch.item.vmp.vtm.name LIKE :query ");
+        // Barcode search still depends on query length but uses session cache
+        boolean searchByBarcode;
+        if (longQuery) {
+            if (sessionCachedSearchByBarcode == null) {
+                sessionCachedSearchByBarcode = configOptionApplicationController.getBooleanValueByKey(
+                        "Enable search medicines by barcode", true);
+            }
+            searchByBarcode = sessionCachedSearchByBarcode;
+        } else {
+            searchByBarcode = false; // Don't search barcode for short queries
         }
 
-        sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
+        return new SearchConfig(sessionCachedSearchByItemCode, searchByBarcode, sessionCachedSearchByGeneric);
+    }
 
-        List<StockDTO> results = (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+    /**
+     * Build cache key for autocomplete results
+     */
+    private String buildAutocompleteCacheKey(String query, SearchConfig searchConfig) {
+        Department dept = getSessionController().getLoggedUser().getDepartment();
+        return dept.getId() + "|" + query + "|" + searchConfig.toString();
+    }
 
-        // Store results in temporary cache for converter
-        lastAutocompleteResults = results != null ? results : Collections.emptyList();
-
-        System.out.println("=== CASHIER completeAvailableStockOptimizedDto END ===");
-        System.out.println("Returned " + lastAutocompleteResults.size() + " results");
-        if (!lastAutocompleteResults.isEmpty()) {
-            StockDTO first = lastAutocompleteResults.get(0);
-            System.out.println("First result - ID: " + first.getId() +
-                              ", ItemName: " + first.getItemName() +
-                              ", StockQty: " + first.getStockQty());
+    /**
+     * Get cached stock IDs for metadata-only caching (multi-user safe)
+     */
+    private List<Long> getCachedMetadata(String cacheKey) {
+        if (itemMetadataCache == null || metadataCacheTimestamps == null) {
+            return null;
         }
 
-        return lastAutocompleteResults;
+        Long timestamp = metadataCacheTimestamps.get(cacheKey);
+        if (timestamp == null) {
+            return null;
+        }
+
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - timestamp > METADATA_CACHE_TTL_MS) {
+            // Cache expired, remove entries
+            itemMetadataCache.remove(cacheKey);
+            metadataCacheTimestamps.remove(cacheKey);
+            return null;
+        }
+
+        return itemMetadataCache.get(cacheKey);
+    }
+
+    /**
+     * Get fresh stock data for cached stock IDs (ensures multi-user accuracy)
+     */
+    private List<StockDTO> getFreshStockDataForIds(List<Long> stockIds) {
+        if (stockIds == null || stockIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        try {
+            // Build query to get current stock data for specific stock IDs
+            StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
+                    .append("s.id, s.itemBatch.id, s.itemBatch.item.id, s.itemBatch.item.name, s.itemBatch.item.code, ")
+                    .append("COALESCE(s.itemBatch.item.vmp.name, ''), s.itemBatch.batchNo, ")
+                    .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire, s.itemBatch.item.discountAllowed) ")
+                    .append("FROM Stock s ")
+                    .append("WHERE s.stock > :stockMin ")
+                    .append("AND s.department = :department ")
+                    .append("AND s.id IN :stockIds ")
+                    .append("ORDER BY s.itemBatch.item.name, s.itemBatch.dateOfExpire");
+
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+            parameters.put("stockMin", 0.0);
+            parameters.put("stockIds", stockIds);
+
+            List<StockDTO> results = (List<StockDTO>) getStockFacade().findLightsByJpql(
+                    sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+
+            return results != null ? results : Collections.emptyList();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error fetching fresh stock data for cached IDs", e);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Execute full search query and cache the stock IDs for future use
+     */
+    private List<StockDTO> executeFullSearchAndCacheMetadata(String qry, SearchConfig searchConfig, String cacheKey) {
+        try {
+            // Build full search query
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+            parameters.put("stockMin", 0.0);
+
+            // Prefix-first optimization: use prefix matching for short queries
+            String searchPattern;
+            if (qry.length() <= 4) {
+                searchPattern = qry + "%";  // Prefix only for short queries (better index usage)
+            } else {
+                searchPattern = "%" + qry + "%";  // Contains pattern for longer queries
+            }
+            parameters.put("query", searchPattern);
+
+            StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
+                    .append("s.id, s.itemBatch.id, s.itemBatch.item.id, s.itemBatch.item.name, s.itemBatch.item.code, ")
+                    .append("COALESCE(s.itemBatch.item.vmp.name, ''), s.itemBatch.batchNo, ")
+                    .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire, s.itemBatch.item.discountAllowed) ")
+                    .append("FROM Stock s ")
+                    .append("WHERE s.stock > :stockMin ")
+                    .append("AND s.department = :department ")
+                    .append("AND (");
+
+            // Primary search on item name (most common)
+            sql.append("UPPER(s.itemBatch.item.name) LIKE :query ");
+
+            // Additional search fields based on configuration
+            if (searchConfig.searchByItemCode) {
+                sql.append("OR UPPER(s.itemBatch.item.code) LIKE :query ");
+            }
+
+            if (searchConfig.searchByBarcode) {
+                sql.append("OR s.itemBatch.item.barcode = :query ");
+            }
+
+            if (searchConfig.searchByGeneric) {
+                sql.append("OR UPPER(s.itemBatch.item.vmp.vtm.name) LIKE :query ");
+            }
+
+            sql.append(") ORDER BY s.itemBatch.item.name, s.itemBatch.dateOfExpire");
+
+            // Execute full query
+            List<StockDTO> results = (List<StockDTO>) getStockFacade().findLightsByJpql(
+                    sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
+
+            if (results != null && !results.isEmpty()) {
+                // Cache the stock IDs for future metadata lookups
+                List<Long> stockIds = new ArrayList<>();
+                for (StockDTO dto : results) {
+                    stockIds.add(dto.getId());
+                }
+                cacheMetadata(cacheKey, stockIds);
+            }
+
+            return results != null ? results : Collections.emptyList();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error executing full search query", e);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Cache stock IDs for metadata caching
+     */
+    private void cacheMetadata(String cacheKey, List<Long> stockIds) {
+        if (itemMetadataCache == null) {
+            itemMetadataCache = new ConcurrentHashMap<>();
+        }
+        if (metadataCacheTimestamps == null) {
+            metadataCacheTimestamps = new ConcurrentHashMap<>();
+        }
+
+        // Limit cache size to prevent memory issues
+        if (itemMetadataCache.size() > 100) {
+            // Simple cache eviction: remove oldest entries
+            itemMetadataCache.clear();
+            metadataCacheTimestamps.clear();
+        }
+
+        itemMetadataCache.put(cacheKey, new ArrayList<>(stockIds)); // Defensive copy
+        metadataCacheTimestamps.put(cacheKey, System.currentTimeMillis());
     }
 
     public void handleSelectAction() {
@@ -1233,7 +1743,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         if (stockDto == null) {
             return;
         }
-
 
         long beforeCalculateRates = System.currentTimeMillis();
 
@@ -1252,30 +1761,33 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     public void handleSelect(SelectEvent event) {
-        long startTime = System.currentTimeMillis();
-        System.out.println("=== CASHIER handleSelect START ===");
+        long startTime = System.nanoTime();
 
-        // Get the selected StockDTO from the event to ensure we have the full DTO with all fields
-        if (event != null && event.getObject() != null && event.getObject() instanceof StockDTO) {
-            StockDTO selectedDto = (StockDTO) event.getObject();
-            System.out.println("Event object received - ID: " + selectedDto.getId() +
-                              ", StockQty: " + selectedDto.getStockQty() +
-                              ", ItemName: " + selectedDto.getItemName());
-            this.stockDto = selectedDto;
-            System.out.println("stockDto property set successfully");
-        } else {
-            System.out.println("WARNING: handleSelect called with null or invalid event object");
+        try {
+            // Get the selected StockDTO from the event to ensure we have the full DTO with all fields
+            if (event != null && event.getObject() != null && event.getObject() instanceof StockDTO) {
+                StockDTO selectedDto = (StockDTO) event.getObject();
+                logger.log(Level.FINE, "Item selected - ID: {0}, StockQty: {1}, ItemName: {2}",
+                    new Object[]{selectedDto.getId(), selectedDto.getStockQty(), selectedDto.getItemName()});
+                this.stockDto = selectedDto;
+            } else {
+                logger.log(Level.WARNING, "handleSelect called with null or invalid event object");
+                return;
+            }
+
+            handleSelectAction();
+
+            long durationMs = (System.nanoTime() - startTime) / 1_000_000;
+            if (durationMs > 1000) {
+                logger.log(Level.WARNING, "Slow item selection processing: {0}ms for item ID {1}",
+                    new Object[]{durationMs, stockDto != null ? stockDto.getId() : "null"});
+            } else {
+                logger.log(Level.FINE, "Item selection completed in {0}ms for item ID {1}",
+                    new Object[]{durationMs, stockDto != null ? stockDto.getId() : "null"});
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error during item selection", e);
         }
-
-        System.out.println("Before handleSelectAction - stockDto: " +
-                          (stockDto != null ? "ID=" + stockDto.getId() + ", Qty=" + stockDto.getStockQty() : "NULL"));
-
-        handleSelectAction();
-
-        long endTime = System.currentTimeMillis();
-        System.out.println("=== CASHIER handleSelect END - Time: " + (endTime - startTime) + "ms ===");
-        System.out.println("After handleSelectAction - stockDto: " +
-                          (stockDto != null ? "ID=" + stockDto.getId() + ", Qty=" + stockDto.getStockQty() : "NULL"));
     }
 
     public void showItemDetailsForSelectedStock() {
@@ -1300,7 +1812,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
             // Execute JavaScript to open the popup
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,
-                "Opening item details for: " + selectedItem.getName(), null));
+                    "Opening item details for: " + selectedItem.getName(), null));
 
             PrimeFaces.current().executeScript("window.open('" + popupUrl + "', '_blank');");
 
@@ -1342,7 +1854,12 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     public void calculateBillItem() {
+        long calculateBillItemStart = System.currentTimeMillis();
+        System.out.println("=== CASHIER calculateBillItem START - Time: " + calculateBillItemStart + " ===");
+        System.out.println("calculateBillItem: JPA warm-up status: " + (jpaWarmUpCompleted ? "COMPLETED" : "PENDING/IN-PROGRESS"));
+
         if (stockDto == null) {
+            System.out.println("calculateBillItem: stockDto is null, returning early");
             return;
         }
         if (getPreBill() == null) {
@@ -1356,11 +1873,17 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
 
         // Convert StockDTO to Stock entity if not already set
+        long beforeStockConvert = System.currentTimeMillis();
         if (billItem.getPharmaceuticalBillItem().getStock() == null) {
+            System.out.println("calculateBillItem: Converting stockDto to entity...");
             Stock stockEntity = convertStockDtoToEntity(stockDto);
             if (stockEntity != null) {
                 getBillItem().getPharmaceuticalBillItem().setStock(stockEntity);
             }
+            long afterStockConvert = System.currentTimeMillis();
+            System.out.println("calculateBillItem: Stock conversion took " + (afterStockConvert - beforeStockConvert) + "ms");
+        } else {
+            System.out.println("calculateBillItem: Stock already set, skipping conversion");
         }
 
         if (getQty() == null) {
@@ -1376,15 +1899,33 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         // PERFORMANCE FIX: Use DTO fields and entity proxies to avoid database query
         // Previously: stockEntity.getItemBatch() triggered database load defeating getReference() optimization
         // Now: Use proxy references and DTO data directly - zero database queries
+        long beforeEntityRefs = System.currentTimeMillis();
+
         if (stockDto.getItemId() != null) {
+            System.out.println("calculateBillItem: Getting item reference for ID: " + stockDto.getItemId());
+            long beforeItem = System.currentTimeMillis();
             billItem.setItem(itemFacade.getReference(stockDto.getItemId()));
+            long afterItem = System.currentTimeMillis();
+            System.out.println("calculateBillItem: Item reference took " + (afterItem - beforeItem) + "ms");
         }
+
         if (stockDto.getDateOfExpire() != null) {
             billItem.getPharmaceuticalBillItem().setDoe(stockDto.getDateOfExpire());
         }
+
         if (stockDto.getItemBatchId() != null) {
+            System.out.println("calculateBillItem: Getting itemBatch reference for ID: " + stockDto.getItemBatchId());
+            System.out.println("calculateBillItem: This is the KNOWN BOTTLENECK operation. Warm-up status: " + (jpaWarmUpCompleted ? "COMPLETED - Should be fast" : "PENDING - May be slow"));
+            long beforeBatch = System.currentTimeMillis();
             billItem.getPharmaceuticalBillItem().setItemBatch(itemBatchFacade.getReference(stockDto.getItemBatchId()));
+            long afterBatch = System.currentTimeMillis();
+            long batchTime = afterBatch - beforeBatch;
+            System.out.println("calculateBillItem: ItemBatch reference took " + batchTime + "ms" +
+                (batchTime > 1000 ? " *** SLOW - JPA not warmed up ***" : " *** FAST - JPA warmed up successfully ***"));
         }
+
+        long afterEntityRefs = System.currentTimeMillis();
+        System.out.println("calculateBillItem: Total entity references took " + (afterEntityRefs - beforeEntityRefs) + "ms");
 
         billItem.setQty(qty);
 
@@ -1398,7 +1939,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
 
         // Calculate discount rate based on current payment scheme
+        long beforeDiscount = System.currentTimeMillis();
+        System.out.println("calculateBillItem: Calculating discount rate...");
         billItem.setDiscountRate(calculateBillItemDiscountRate(billItem));
+        long afterDiscount = System.currentTimeMillis();
+        System.out.println("calculateBillItem: Discount calculation took " + (afterDiscount - beforeDiscount) + "ms");
 
         // Calculate net rate after applying discount
         billItem.setNetRate(billItem.getRate() - billItem.getDiscountRate());
@@ -1408,14 +1953,36 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         billItem.setDiscount(billItem.getDiscountRate() * qty);
         billItem.setNetValue(billItem.getGrossValue() - billItem.getDiscount());
 
+        long calculateBillItemEnd = System.currentTimeMillis();
+        long calculateBillItemTime = calculateBillItemEnd - calculateBillItemStart;
+        System.out.println("=== CASHIER calculateBillItem END - Time: " + calculateBillItemTime + "ms ===");
+
     }
 
     public void addBillItem() {
+        long addBillItemStartTime = System.currentTimeMillis();
         System.out.println("=== CASHIER addBillItem CALLED ===");
+        System.out.println("Add Button Click - Start Time: " + addBillItemStartTime);
+
+        // Clear performance caches at start of new add operation
+        clearPerformanceCaches();
+
         System.out.println("Stack trace to identify caller:");
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
         for (int i = 0; i < Math.min(10, stackTrace.length); i++) {
             System.out.println("  " + stackTrace[i]);
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
+            if (patient != null && getBillItem() != null) {
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
+                }
+                String allergyMsg = pharmacyService.getAllergyMessageForPatient(patient, billItem, allergyListOfPatient);
+                if (!allergyMsg.isEmpty()) {
+                    JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Add quantity from multiple batches in pharmacy retail billing")) {
@@ -1425,19 +1992,49 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
         calculateBillItemsAndBillTotalsOfPreBill();
         setActiveIndex(1);
+
+        long addBillItemEndTime = System.currentTimeMillis();
+        long totalTime = addBillItemEndTime - addBillItemStartTime;
+
+        // Print performance summary
+        System.out.println("=== CASHIER ADD BUTTON PERFORMANCE SUMMARY ===");
+        System.out.println("Total Add Button Time: " + totalTime + "ms");
+        System.out.println("Converter Calls: " + converterCallCount);
+        System.out.println("Converter Cache Size: " + (converterCache != null ? converterCache.size() : 0));
+        System.out.println("Discount Calculations: " + discountCalculationCount);
+        System.out.println("Discount Cache Size: " + (discountCache != null ? discountCache.size() : 0));
+        System.out.println("Add Button Click - End Time: " + addBillItemEndTime);
+        System.out.println("=== END PERFORMANCE SUMMARY ===");
     }
 
     public void calculateBillItemsAndBillTotalsOfPreBill() {
+        long calculateStartTime = System.currentTimeMillis();
+        System.out.println("=== CASHIER calculateBillItemsAndBillTotalsOfPreBill START ===");
+        System.out.println("Calculate totals - Start Time: " + calculateStartTime);
+
         calculateRatesForAllBillItemsInPreBill();
         calculatePreBillTotals();
+
+        long calculateEndTime = System.currentTimeMillis();
+        long calculateTotalTime = calculateEndTime - calculateStartTime;
+        System.out.println("=== CASHIER calculateBillItemsAndBillTotalsOfPreBill TOTAL TIME: " + calculateTotalTime + "ms ===");
+        System.out.println("Calculate totals - End Time: " + calculateEndTime);
     }
 
     public void calculateRatesForAllBillItemsInPreBill() {
+        long ratesCalculationStart = System.currentTimeMillis();
+        System.out.println("=== CASHIER calculateRatesForAllBillItemsInPreBill START - Time: " + ratesCalculationStart + " ===");
+        System.out.println("Bill items to process: " + (getPreBill() != null && getPreBill().getBillItems() != null ? getPreBill().getBillItems().size() : 0));
+
         for (BillItem tbi : getPreBill().getBillItems()) {
             calculateRatesOfSelectedBillItemBeforeAddingToTheList(tbi);
 //            calculateBillItemForEditing(tbi);
         }
         calculatePreBillTotals();
+
+        long ratesCalculationEnd = System.currentTimeMillis();
+        long ratesCalculationTime = ratesCalculationEnd - ratesCalculationStart;
+        System.out.println("=== CASHIER calculateRatesForAllBillItemsInPreBill END - Time: " + ratesCalculationTime + "ms ===");
     }
 
     public void calculateRatesOfSelectedBillItemBeforeAddingToTheList(BillItem bi) {
@@ -1489,7 +2086,10 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     public double addBillItemSingleItem() {
+        long singleItemStartTime = System.currentTimeMillis();
         System.out.println("=== CASHIER addBillItemSingleItem START ===");
+        System.out.println("Single item processing - Start Time: " + singleItemStartTime);
+
         editingQty = null;
         errorMessage = null;
         double addedQty = 0.0;
@@ -1577,20 +2177,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 //            JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
 //            return addedQty;
 //        }
-        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
-            if (patient != null && getBillItem() != null) {
 
-                if (allergyListOfPatient == null) {
-                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
-                }
-                String allergyMsg = pharmacyService.getAllergyMessageForPatient(patient, billItem, allergyListOfPatient);
-
-                if (!allergyMsg.isEmpty()) {
-                    JsfUtil.addErrorMessage(allergyMsg);
-                    return addedQty;
-                }
-            }
-        }
 
         addedQty = qty;
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
@@ -1619,7 +2206,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         //}
         //UserStock us = saveUserStock(billItem);
         //billItem.setTransUserStock(us);
-
         // Add instructions only if enabled (default: false for performance)
         if (configOptionApplicationController.getBooleanValueByKey("Add bill item instructions in pharmacy cashier sale", false)) {
             pharmacyService.addBillItemInstructions(billItem);
@@ -1627,6 +2213,12 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         clearBillItem();
         getBillItem();
+
+        long singleItemEndTime = System.currentTimeMillis();
+        long singleItemTotalTime = singleItemEndTime - singleItemStartTime;
+        System.out.println("=== CASHIER addBillItemSingleItem TOTAL TIME: " + singleItemTotalTime + "ms ===");
+        System.out.println("Single item processing - End Time: " + singleItemEndTime);
+
         return addedQty;
     }
 
@@ -1675,20 +2267,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             return;
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing")) {
-            if (patient != null && getBillItem() != null) {
-                if (allergyListOfPatient == null) {
-                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
-                }
-                String allergyMsg = pharmacyService.getAllergyMessageForPatient(patient, billItem, allergyListOfPatient);
-
-                if (!allergyMsg.isEmpty()) {
-                    JsfUtil.addErrorMessage(allergyMsg);
-                    return;
-                }
-            }
-        }
-
         double requestedQty = getQty();
         double addedQty = 0.0;
         double remainingQty = getQty();
@@ -1718,7 +2296,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 //        System.out.println("stock = " + userSelectedStockDto);
 //        System.out.println("stock item batch = " + userSelectedStockDto.getItemBatch());
 //        System.out.println("stock item batch item= " + userSelectedStockDto.getItemBatch().getItem());
-
         // Convert DTO to entity for finding next available stocks (multiple batches feature)
         Stock userSelectedStock = convertStockDtoToEntity(userSelectedStockDto);
         if (userSelectedStock == null) {
@@ -1788,7 +2365,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     //    getUserStockContainerFacade().create(getUserStockContainer());
     //
     //}
-
     // COMMENTED OUT FOR PERFORMANCE
     //private UserStock saveUserStock(BillItem tbi) {
     //    UserStock us = new UserStock();
@@ -1803,7 +2379,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     //
     //    return us;
     //}
-
     //    public void calculateAllRatesNew() {
 //        ////////System.out.println("calculating all rates");
 //        for (BillItem tbi : getPreBill().getBillItems()) {
@@ -2168,7 +2743,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
 
         //userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser()); // Commented out for performance
-
         calculateRatesForAllBillItemsInPreBill();
 
     }
@@ -2229,7 +2803,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
 
         //userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser()); // Commented out for performance
-
         calculateRatesForAllBillItemsInPreBill();
 
     }
@@ -2558,10 +3131,10 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 }
             }
         }
-        
-        if(configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false) && 
-                configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Pharmacy from the system", false)){
-            if(getPatient().isBlacklisted()){
+
+        if (configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false)
+                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Pharmacy from the system", false)) {
+            if (getPatient().isBlacklisted()) {
                 JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
                 billSettlingStarted = false;
                 return null;
@@ -3542,7 +4115,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             BigDecimal purchaseRate = BigDecimal.valueOf(pharmaItem.getPurchaseRate());
             BigDecimal wholesaleRate = BigDecimal.valueOf(pharmaItem.getWholesaleRate());
 
-
             // Get cost rate from item batch (correct approach) with fallback to purchase rate
             BigDecimal costRate = purchaseRate; // default fallback
             if (pharmaItem.getItemBatch() != null) {
@@ -3571,7 +4143,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             bifd.setPurchaseRate(purchaseRate);
             bifd.setRetailSaleRate(retailRate);
 
-
             // UPDATE TOTAL FIELDS in BillItemFinanceDetails
             bifd.setLineGrossTotal(BigDecimal.valueOf(billItem.getGrossValue()));
             bifd.setGrossTotal(BigDecimal.valueOf(billItem.getGrossValue()));
@@ -3586,12 +4157,10 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             bifd.setBillCost(BigDecimal.ZERO); // Set to 0 as per user requirement
             bifd.setTotalCost(itemCostValue);
 
-
             // UPDATE VALUE FIELDS in BillItemFinanceDetails (for retail sales, use totalQty including free)
             bifd.setValueAtCostRate(costRate.multiply(totalQty));
             bifd.setValueAtPurchaseRate(purchaseRate.multiply(totalQty));
             bifd.setValueAtRetailRate(retailRate.multiply(totalQty));
-
 
             // UPDATE QUANTITIES in BillItemFinanceDetails
             bifd.setQuantity(qty);
@@ -3602,7 +4171,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             pharmaItem.setCostValue(itemCostValue.doubleValue());
             pharmaItem.setRetailValue(itemRetailValue.doubleValue());
             pharmaItem.setPurchaseValue(itemPurchaseValue.doubleValue());
-
 
             // Accumulate bill-level totals
             totalCostValue = totalCostValue.add(itemCostValue);
@@ -3632,7 +4200,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         bfd.setTotalRetailSaleValue(totalRetailSaleValue);
         bfd.setTotalQuantity(totalQuantity);
         bfd.setTotalFreeQuantity(totalFreeQuantity);
-
 
     }
 
@@ -3728,7 +4295,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         //    errorMessage = "Sorry Already Other User Try to Billing This Stock You Cant Add";
         //    return;
         //}
-
         billItem.setBill(getPreBill());
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
@@ -3737,7 +4303,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         //userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
         //UserStock us = userStockController.saveUserStock(billItem, getSessionController().getLoggedUser(), getUserStockContainer());
         //billItem.setTransUserStock(us);
-
         calculateRatesForAllBillItemsInPreBill();
 
         calculateBillItemsAndBillTotalsOfPreBill();
@@ -3889,11 +4454,26 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     //    TO check the functionality
     public double calculateBillItemDiscountRate(BillItem bi) {
         long startTime = System.currentTimeMillis();
+        discountCalculationCount++;
 
-        // DEBUG: Log payment scheme status and stack trace
-        System.out.println("=== DISCOUNT CALCULATION DEBUG ===");
+        // Generate cache key for this discount calculation
+        String cacheKey = generateDiscountCacheKey(bi);
+
+        // PERFORMANCE OPTIMIZATION: Check discount cache first
+        if (discountCache != null && cacheKey != null && discountCache.containsKey(cacheKey)) {
+            Double cachedDiscount = discountCache.get(cacheKey);
+            System.out.println("=== DISCOUNT CALCULATION CACHE HIT (#" + discountCalculationCount + ") ===");
+            System.out.println("Cached discount for key '" + cacheKey + "': " + cachedDiscount);
+            long endTime = System.currentTimeMillis();
+            System.out.println("=== DISCOUNT CALCULATION CACHED - Time: " + (endTime - startTime) + "ms ===");
+            return cachedDiscount;
+        }
+
+        // DEBUG: Log payment scheme status and stack trace for actual calculation
+        System.out.println("=== DISCOUNT CALCULATION DEBUG (#" + discountCalculationCount + ") ===");
         System.out.println("PaymentScheme from controller: " + (getPaymentScheme() != null ? getPaymentScheme().getName() : "NULL"));
         System.out.println("PaymentMethod from controller: " + (getPaymentMethod() != null ? getPaymentMethod().toString() : "NULL"));
+        System.out.println("Cache key: " + cacheKey);
         System.out.println("Called from:");
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
         for (int i = 2; i < Math.min(6, stackTrace.length); i++) {
@@ -3920,6 +4500,12 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         // Skip ALL discount calculation if no payment scheme is selected
         if (getPaymentScheme() == null) {
             System.out.println("Returning 0.0 - PaymentScheme is NULL");
+            // Cache this NULL payment scheme result
+            if (cacheKey != null && discountCache != null) {
+                discountCache.put(cacheKey, 0.0);
+            }
+            long endTime = System.currentTimeMillis();
+            System.out.println("=== DISCOUNT CALCULATION COMPLETE (NULL SCHEME) - Time: " + (endTime - startTime) + "ms ===");
             return 0.0;
         }
 
@@ -3993,8 +4579,41 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             dr = (retailRate * discountRate) / 100;
             return dr;
         }
-        return 0;
+        // Cache the final discount result
+        double finalDiscount = 0;
+        if (cacheKey != null && discountCache != null) {
+            discountCache.put(cacheKey, finalDiscount);
+            System.out.println("Cached discount result: " + finalDiscount + " for key: " + cacheKey);
+        }
 
+        long endTime = System.currentTimeMillis();
+        System.out.println("=== DISCOUNT CALCULATION COMPLETE - Time: " + (endTime - startTime) + "ms ===");
+
+        return finalDiscount;
+
+    }
+
+    /**
+     * Generate cache key for discount calculation based on billItem context.
+     * Returns null for uncacheable scenarios (incomplete data).
+     */
+    private String generateDiscountCacheKey(BillItem bi) {
+        if (bi == null || bi.getPharmaceuticalBillItem() == null
+            || bi.getPharmaceuticalBillItem().getStock() == null
+            || bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null) {
+            return null;
+        }
+
+        // Create cache key based on payment context and item
+        StringBuilder keyBuilder = new StringBuilder();
+        keyBuilder.append("item_");
+        keyBuilder.append(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getItem().getId());
+        keyBuilder.append("_scheme_");
+        keyBuilder.append(getPaymentScheme() != null ? getPaymentScheme().getId() : "null");
+        keyBuilder.append("_method_");
+        keyBuilder.append(getPaymentMethod() != null ? getPaymentMethod().toString() : "null");
+
+        return keyBuilder.toString();
     }
 
     public void saveBillFee(BillItem bi, Payment p) {
@@ -4163,7 +4782,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 //        bfp.setPayment(p);
 //        getBillFeePaymentFacade().create(bfp);
 //    }
-
     private void clearBill() {
         preBill = null;
         saleBill = null;
@@ -4200,6 +4818,124 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         paymentMethodData = null;
         setCashPaid(0.0);
         allergyListOfPatient = null;
+    }
+
+    /**
+     * Clear performance optimization caches at the start of each add button action.
+     * This prevents stale cached data from affecting new operations while allowing
+     * optimization during a single add button workflow.
+     */
+    private void clearPerformanceCaches() {
+        long startTime = System.currentTimeMillis();
+
+        // Reset cache objects
+        converterCache = new java.util.concurrent.ConcurrentHashMap<>();
+        discountCache = new java.util.concurrent.ConcurrentHashMap<>();
+
+        // Reset counters for performance tracking
+        converterCallCount = 0;
+        discountCalculationCount = 0;
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("=== PERFORMANCE CACHES CLEARED - Time: " + (endTime - startTime) + "ms ===");
+    }
+
+    /**
+     * Warm up JPA facades by triggering initialization during controller startup.
+     * This prevents the 8+ second delay on first user interaction by initializing
+     * Hibernate EntityManagerFactory, connection pools, and metadata caches early.
+     * Called from init() @PostConstruct method.
+     */
+    private void warmUpJpaFacades() {
+        // Run warm-up in background thread to not block UI
+        new Thread(() -> {
+            try {
+                long warmUpStart = System.currentTimeMillis();
+                System.out.println("=== CASHIER JPA WARM-UP START ===");
+
+                // Simple and robust warm-up - just trigger JPA initialization
+                int successCount = 0;
+
+                // Warm up Item facade
+                try {
+                    System.out.println("WARM-UP: Initializing Item facade...");
+                    long itemStart = System.currentTimeMillis();
+                    itemFacade.count(); // Simple count query to warm up
+                    long itemEnd = System.currentTimeMillis();
+                    System.out.println("WARM-UP: Item facade initialized in " + (itemEnd - itemStart) + "ms");
+                    successCount++;
+                } catch (Exception e) {
+                    System.out.println("WARM-UP: Item facade failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+                }
+
+                // Warm up ItemBatch facade - MOST IMPORTANT
+                try {
+                    System.out.println("WARM-UP: Initializing ItemBatch facade...");
+                    long batchStart = System.currentTimeMillis();
+
+                    // Start with simple operations
+                    long count = itemBatchFacade.count();
+                    System.out.println("WARM-UP: ItemBatch count = " + count);
+
+                    // Try to load some entities if count is reasonable
+                    if (count > 0 && count < 1000000) {
+                        System.out.println("WARM-UP: Loading sample ItemBatch entities...");
+                        java.util.List<ItemBatch> batches = itemBatchFacade.findRange(new int[]{0, Math.min(50, (int)count)});
+                        System.out.println("WARM-UP: Loaded " + batches.size() + " ItemBatch entities");
+
+                        // Access properties for first few entities only
+                        int accessed = 0;
+                        for (ItemBatch batch : batches) {
+                            if (batch != null && accessed < 5) {
+                                try {
+                                    Long id = batch.getId();
+                                    if (id != null) {
+                                        System.out.println("WARM-UP: Accessed ItemBatch ID " + id);
+                                        accessed++;
+                                    }
+                                } catch (Exception e2) {
+                                    System.out.println("WARM-UP: Error accessing batch properties: " + e2.getMessage());
+                                }
+                            }
+                        }
+                        System.out.println("WARM-UP: Successfully accessed " + accessed + " ItemBatch entities");
+                    }
+
+                    long batchEnd = System.currentTimeMillis();
+                    System.out.println("WARM-UP: ItemBatch facade initialized in " + (batchEnd - batchStart) + "ms");
+                    successCount++;
+                } catch (Exception e) {
+                    System.out.println("WARM-UP: ItemBatch facade failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+                    e.printStackTrace();
+                }
+
+                // Warm up Stock facade
+                try {
+                    System.out.println("WARM-UP: Initializing Stock facade...");
+                    long stockStart = System.currentTimeMillis();
+                    stockFacade.count(); // Simple count query
+                    long stockEnd = System.currentTimeMillis();
+                    System.out.println("WARM-UP: Stock facade initialized in " + (stockEnd - stockStart) + "ms");
+                    successCount++;
+                } catch (Exception e) {
+                    System.out.println("WARM-UP: Stock facade failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+                }
+
+                long warmUpEnd = System.currentTimeMillis();
+                long totalWarmUpTime = warmUpEnd - warmUpStart;
+
+                // Mark warm-up as completed
+                jpaWarmUpCompleted = true;
+
+                System.out.println("=== CASHIER JPA WARM-UP COMPLETE - Total time: " + totalWarmUpTime + "ms ===");
+                System.out.println("WARM-UP: First user interaction should now be fast!");
+                System.out.println("WARM-UP: jpaWarmUpCompleted flag set to true");
+
+            } catch (Exception e) {
+                System.out.println("WARM-UP: Warm-up thread failed: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }, "PharmacyCashier-JPA-WarmUp").start();
     }
 
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
@@ -4654,7 +5390,16 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            System.out.println("=== CASHIER StockDtoConverter.getAsObject START ===");
+            long converterStartTime = System.currentTimeMillis();
+
+            PharmacySaleForCashierController controller = (PharmacySaleForCashierController) facesContext.getApplication().getELResolver()
+                    .getValue(facesContext.getELContext(), null, "pharmacySaleForCashierController");
+
+            if (controller != null) {
+                controller.converterCallCount++;
+            }
+
+            System.out.println("=== CASHIER StockDtoConverter.getAsObject START (#" + (controller != null ? controller.converterCallCount : "?") + ") ===");
             System.out.println("Converting value: " + value);
 
             if (value == null || value.trim().isEmpty()) {
@@ -4666,46 +5411,65 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 Long id = Long.valueOf(value);
                 System.out.println("Converter: Parsed ID = " + id);
 
-                PharmacySaleForCashierController controller = (PharmacySaleForCashierController) facesContext.getApplication().getELResolver()
-                        .getValue(facesContext.getELContext(), null, "pharmacySaleForCashierController");
-
                 if (controller == null) {
                     System.out.println("Converter ERROR: controller is null");
                     return null;
                 }
 
+                // PERFORMANCE OPTIMIZATION: Check converter cache first
+                if (controller.converterCache != null && controller.converterCache.containsKey(id)) {
+                    StockDTO cachedDto = controller.converterCache.get(id);
+                    System.out.println("Converter: CACHE HIT! Returning cached DTO - ID: " + id + ", StockQty: " + cachedDto.getStockQty());
+                    long converterEndTime = System.currentTimeMillis();
+                    System.out.println("=== CASHIER StockDtoConverter.getAsObject END (CACHED) - Time: " + (converterEndTime - converterStartTime) + "ms ===");
+                    return cachedDto;
+                }
+
+                StockDTO foundDto = null;
+
                 // First check: Does current stockDto match?
                 if (controller.getStockDto() != null && id.equals(controller.getStockDto().getId())) {
                     System.out.println("Converter: Found match in current stockDto");
                     System.out.println("Converter: Returning DTO with StockQty = " + controller.getStockDto().getStockQty());
-                    return controller.getStockDto();
+                    foundDto = controller.getStockDto();
                 }
 
                 // Second check: Search in lastAutocompleteResults
-                if (controller.getLastAutocompleteResults() != null) {
-                    System.out.println("Converter: Searching in lastAutocompleteResults (" +
-                                      controller.getLastAutocompleteResults().size() + " items)");
+                if (foundDto == null && controller.getLastAutocompleteResults() != null) {
+                    System.out.println("Converter: Searching in lastAutocompleteResults ("
+                            + controller.getLastAutocompleteResults().size() + " items)");
                     for (StockDTO dto : controller.getLastAutocompleteResults()) {
                         if (dto != null && id.equals(dto.getId())) {
-                            System.out.println("Converter: Found match in cache - ID: " + dto.getId() +
-                                              ", StockQty: " + dto.getStockQty());
-                            return dto;
+                            System.out.println("Converter: Found match in autocomplete cache - ID: " + dto.getId()
+                                    + ", StockQty: " + dto.getStockQty());
+                            foundDto = dto;
+                            break;
                         }
                     }
-                    System.out.println("Converter: No match found in cache");
-                } else {
+                    if (foundDto == null) {
+                        System.out.println("Converter: No match found in autocomplete cache");
+                    }
+                } else if (foundDto == null) {
                     System.out.println("Converter: lastAutocompleteResults is null");
                 }
 
-                // If not found, return null (will trigger proper error message)
-                System.out.println("Converter: No match found anywhere, returning null");
-                return null;
+                // Cache the result for future converter calls during this add operation
+                if (foundDto != null && controller.converterCache != null) {
+                    controller.converterCache.put(id, foundDto);
+                    System.out.println("Converter: Cached DTO for ID " + id + " for future use");
+                }
+
+                if (foundDto == null) {
+                    System.out.println("Converter: No match found anywhere, returning null");
+                }
+
+                long converterEndTime = System.currentTimeMillis();
+                System.out.println("=== CASHIER StockDtoConverter.getAsObject END - Time: " + (converterEndTime - converterStartTime) + "ms ===");
+                return foundDto;
 
             } catch (NumberFormatException e) {
                 System.out.println("Converter ERROR: NumberFormatException - " + e.getMessage());
                 return null;
-            } finally {
-                System.out.println("=== CASHIER StockDtoConverter.getAsObject END ===");
             }
         }
 
@@ -4723,8 +5487,9 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     /**
-     * Load bill with all pharmaceutical item associations to avoid lazy loading issues.
-     * This is essential for financial calculations that require pharmaceutical item data.
+     * Load bill with all pharmaceutical item associations to avoid lazy loading
+     * issues. This is essential for financial calculations that require
+     * pharmaceutical item data.
      *
      * @param billId The ID of the bill to load
      * @return Bill with all pharmaceutical associations loaded
@@ -4782,12 +5547,13 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     /**
-     * Calculate and record costing values for stock valuation.
-     * Creates BillFinanceDetails and BillItemFinanceDetails with proper financial calculations.
+     * Calculate and record costing values for stock valuation. Creates
+     * BillFinanceDetails and BillItemFinanceDetails with proper financial
+     * calculations.
      *
      * @param bill The bill for which to calculate costing values
      */
-        private void calculateAndRecordCostingValues(Bill bill) {
+    private void calculateAndRecordCostingValues(Bill bill) {
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
         for (int i = 1; i <= Math.min(4, stack.length - 1); i++) {
         }
@@ -4795,7 +5561,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
             return;
         }
-
 
         // Initialize bill finance details if not present
         if (bill.getBillFinanceDetails() == null) {
@@ -4806,9 +5571,9 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             BillFinanceDetails existingBfd = bill.getBillFinanceDetails();
 
             // Check if calculations are already done
-            if (existingBfd.getTotalCostValue() != null ||
-                existingBfd.getTotalPurchaseValue() != null ||
-                existingBfd.getTotalRetailSaleValue() != null) {
+            if (existingBfd.getTotalCostValue() != null
+                    || existingBfd.getTotalPurchaseValue() != null
+                    || existingBfd.getTotalRetailSaleValue() != null) {
                 return;
             }
         }
@@ -4837,9 +5602,9 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             if (existingDetails != null) {
 
                 // Check if values are already set - if so, skip calculation to prevent duplicates
-                if (existingDetails.getValueAtCostRate() != null ||
-                    existingDetails.getValueAtPurchaseRate() != null ||
-                    existingDetails.getValueAtRetailRate() != null) {
+                if (existingDetails.getValueAtCostRate() != null
+                        || existingDetails.getValueAtPurchaseRate() != null
+                        || existingDetails.getValueAtRetailRate() != null) {
                     continue;
                 }
             }
@@ -4943,7 +5708,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         // NOTE: Removed redundant billItemFacade.edit() calls to prevent duplicate cascades
         // The bill.save() below will cascade to all billItems and their financeDetails automatically
-
         // Save the bill with its finance details
         billFacade.edit(bill);
     }
