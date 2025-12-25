@@ -143,6 +143,10 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     }
 
     public String navigateToNewPatientDepositCancel() {
+        if (patientController.getBill() == null) {
+            JsfUtil.addErrorMessage("A Bill is not selected");
+            return "";
+        }
         if (patientController.getBill().isCancelled()) {
             JsfUtil.addErrorMessage("Already Canceled Bill");
             return "";
@@ -370,7 +374,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         List<Payment> p = billBeanController.createPayment(patientController.getCancelBill(),
                 patientController.getCancelBill().getPaymentMethod(),
                 patientController.getPaymentMethodData());
-        drawerController.updateDrawerForOuts(p);
+        drawerController.updateDrawerForOuts(p);        
     }
 
     public void settlePatientDepositReturn() {
