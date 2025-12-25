@@ -109,7 +109,7 @@
                                     class="ui-button-success m-1 float-end"
                                     ajax="false"
                                     immediate="true"
-                                    action="#{pharmacySaleForCashierController2.navigateToPharmacyBillForCashier()}" >
+                                    action="#{pharmacySaleForCashierController3.navigateToPharmacyBillForCashier()}" >
                                 </p:commandButton>
                             </div>
                         </div>
@@ -122,15 +122,15 @@
                                 id="tokenPrint">
                                 <phi:saleBill_five_five_token 
                                     id="saleBillTokenFiveFive"
-                                    bill="#{pharmacySaleForCashierController2.printBill}"
+                                    bill="#{pharmacySaleForCashierController3.printBill}"
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Token Paper is FiveFivePaper With Blank Space For Printed Heading', true)}" ></phi:saleBill_five_five_token>
                                 <phi:saleBillToken 
                                     id="saleBillTokenPos" 
-                                    bill="#{pharmacySaleForCashierController2.printBill}"
+                                    bill="#{pharmacySaleForCashierController3.printBill}"
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Token Paper is POS Paper', true)}" ></phi:saleBillToken>
                                 <phi:saleBillToken_Custom_1 
                                     id="saleBillTokenPosCustom1" 
-                                    bill="#{pharmacySaleForCashierController2.printBill}"
+                                    bill="#{pharmacySaleForCashierController3.printBill}"
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Token Paper is POS Paper Custom 1', false)}" ></phi:saleBillToken_Custom_1>    
                             </h:panelGroup>
                             <h:panelGroup 
@@ -139,32 +139,32 @@
                                 style="page-break-after: always!important; page-break-before: always!important;"
                                 id="gpBillPreview">
                                 <phi:saleBill_for_Cashier 
-                                    bill="#{pharmacySaleForCashierController2.printBill}"
+                                    bill="#{pharmacySaleForCashierController3.printBill}"
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper', true)}" >
                                 </phi:saleBill_for_Cashier>
                                 <phi:saleBill_for_Cashier_Pos_paper_Custom_1
                                     id="gpBillCustom1"
-                                    bill="#{pharmacySaleForCashierController2.printBill}"
+                                    bill="#{pharmacySaleForCashierController3.printBill}"
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper Custom 1', false)}" >
                                 </phi:saleBill_for_Cashier_Pos_paper_Custom_1>
                                 <phi:saleBill_five_five_for_Cashier 
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header', true)}"
-                                    bill="#{pharmacySaleForCashierController2.printBill}">
+                                    bill="#{pharmacySaleForCashierController3.printBill}">
                                 </phi:saleBill_five_five_for_Cashier>
                                 <phi:saleBill_Header 
-                                    bill="#{pharmacySaleForCashierController2.printBill}"
+                                    bill="#{pharmacySaleForCashierController3.printBill}"
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS paper with header', true)}">
                                 </phi:saleBill_Header>
                                 <pp:retail_sale_for_cashier_custom_1
-                                    bill="#{pharmacySaleForCashierController2.printBill}"
+                                    bill="#{pharmacySaleForCashierController3.printBill}"
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is Custom 1', true)}">
                                 </pp:retail_sale_for_cashier_custom_1>
                                 <pp:retail_sale_for_cashier_custom_2 
-                                    bill="#{pharmacySaleForCashierController2.printBill}"
+                                    bill="#{pharmacySaleForCashierController3.printBill}"
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is Custom 2', true)}">
                                 </pp:retail_sale_for_cashier_custom_2>
                                 <pp:retail_sale_for_cashier_custom_3 
-                                    bill="#{pharmacySaleForCashierController2.printBill}"
+                                    bill="#{pharmacySaleForCashierController3.printBill}"
                                     rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is Custom 3', true)}">
                                 </pp:retail_sale_for_cashier_custom_3>
 
