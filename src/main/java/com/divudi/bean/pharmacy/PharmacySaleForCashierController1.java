@@ -127,11 +127,11 @@ import org.primefaces.PrimeFaces;
  *
  * @author Buddhika
  */
-@Named("pharmacySaleForCashierController")
+@Named("pharmacySaleForCashierController1")
 @SessionScoped
-public class PharmacySaleForCashierController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
+public class PharmacySaleForCashierController1 implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
-    private static final Logger logger = Logger.getLogger(PharmacySaleForCashierController.class.getName());
+    private static final Logger logger = Logger.getLogger(PharmacySaleForCashierController1.class.getName());
 
     @Inject
     private PriceMatrixController priceMatrixController;
@@ -159,12 +159,6 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     private DrawerController drawerController;
     @Inject
     private PageMetadataRegistry pageMetadataRegistry;
-    @Inject
-    PharmacySaleController1 pharmacySaleController1;
-    @Inject
-    PharmacySaleController2 pharmacySaleController2;
-    @Inject
-    PharmacySaleController3 pharmacySaleController3;
     @EJB
     private ConfigOptionFacade configOptionFacade;
     @EJB
@@ -304,9 +298,9 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     PaymentMethod paymentMethod;
 
     /**
-     * Creates a new instance of PharmacySaleController
+     * Creates a new instance of PharmacySaleForCashierController
      */
-    public PharmacySaleForCashierController() {
+    public PharmacySaleForCashierController1() {
     }
 
     @PostConstruct
@@ -328,7 +322,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         metadata.setPagePath("pharmacy/pharmacy_bill_retail_sale_for_cashier");
         metadata.setPageName("Pharmacy Retail Sale For Cashier");
         metadata.setDescription("Pharmacy retail sale interface for cashiers with token system support");
-        metadata.setControllerClass("PharmacySaleForCashierController");
+        metadata.setControllerClass("PharmacySaleForCashierController1");
 
         // 🔧 UI DISPLAY CONFIGURATIONS
         metadata.addConfigOption(new ConfigOptionInfo(
@@ -703,60 +697,23 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 //        prepareForPharmacySaleWithoutStock();
 //        return "/pharmacy/pharmacy_sale_without_stock?faces-redirect=true";
 //    }
-    public String navigateToPharmacyBillForCashierFromMenu() {
-        if (sessionController.getPharmacyBillingAfterShiftStart()) {
-            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
-            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
-                
-                resetAll();
-                pharmacySaleController1.resetAll();
-                pharmacySaleController2.resetAll();
-                pharmacySaleController3.resetAll();
-                
-                setBillSettlingStarted(false);
-                pharmacySaleController1.setBillSettlingStarted(false);
-                pharmacySaleController2.setBillSettlingStarted(false);
-                pharmacySaleController3.setBillSettlingStarted(false);
-                
-                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
-            } else {
-                setBillSettlingStarted(false);
-                JsfUtil.addErrorMessage("Start Your Shift First !");
-                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
-            }
-        } else {
-            resetAll();
-            setBillSettlingStarted(false);
-            return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
-        }
-    }
-    
     public String navigateToPharmacyBillForCashier() {
         if (sessionController.getPharmacyBillingAfterShiftStart()) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 resetAll();
                 setBillSettlingStarted(false);
-                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
+                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier_1?faces-redirect=true";
             } else {
                 setBillSettlingStarted(false);
                 JsfUtil.addErrorMessage("Start Your Shift First !");
-                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
+                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier_1?faces-redirect=true";
             }
         } else {
             resetAll();
             setBillSettlingStarted(false);
-            return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
+            return "/pharmacy/pharmacy_bill_retail_sale_for_cashier_1?faces-redirect=true";
         }
-    }
-
-    public String navigateToPharmacyBillForCashierWholeSale() {
-        setBillSettlingStarted(false);
-        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
-    }
-
-    public String navigateToBillCancellationView() {
-        return "pharmacy_cancel_bill_retail?faces-redirect=true";
     }
 
     private void prepareForPharmacySaleWithoutStock() {
@@ -1709,9 +1666,9 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     public String toPharmacyRetailSaleForCashier() {
         if (billPreview) {
-            return "/pharmacy/printing/retail_sale_for_cashier?faces-redirect=true";
+            return "/pharmacy/printing/retail_sale_for_cashier_1?faces-redirect=true";
         } else {
-            return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
+            return "/pharmacy/pharmacy_bill_retail_sale_for_cashier_1?faces-redirect=true";
         }
     }
 
@@ -3797,7 +3754,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     public String navigateToSaleBillForCashierPrint() {
-        return "/pharmacy/printing/retail_sale_for_cashier?faces-redirect=true";
+        return "/pharmacy/printing/retail_sale_for_cashier_1?faces-redirect=true";
     }
 
     @Deprecated // Plse use settlePreBillAndNavigateToPrint
@@ -5943,8 +5900,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
             long converterStartTime = System.currentTimeMillis();
 
-            PharmacySaleForCashierController controller = (PharmacySaleForCashierController) facesContext.getApplication().getELResolver()
-                    .getValue(facesContext.getELContext(), null, "pharmacySaleForCashierController");
+            PharmacySaleForCashierController1 controller = (PharmacySaleForCashierController1) facesContext.getApplication().getELResolver()
+                    .getValue(facesContext.getELContext(), null, "pharmacySaleForCashierController1");
 
             if (controller != null) {
                 controller.converterCallCount++;

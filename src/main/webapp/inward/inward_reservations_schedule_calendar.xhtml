@@ -21,35 +21,51 @@
                 </f:facet>
 
                 <div class="d-flex gap-2 mb-3 w-100 justify-content-center">
-                    <p:datePicker 
-                        value="#{inwardReservationController.fromDate}"
-                        id="reserveFromTimeStamp"
-                        pattern="dd/MMM/yyyy"
-                        styleClass="form-control w-100"
-                        showButtonBar="true"
-                        timeInput="true"
-                        inputStyleClass="w-100" >
-                    </p:datePicker>
 
-                    <p:datePicker 
+                    <p:calendar 
+                        id="fromDate"
+                        value="#{inwardReservationController.fromDate}"
+                        navigator="false"
+                        style="width: 350px;"
+                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                        styleClass="dateTimePicker"
+                        inputStyleClass="form-control">
+                    </p:calendar>
+
+                    <p:calendar 
+                        id="toDate"
                         value="#{inwardReservationController.toDate}"
-                        id="reserveToTimeStamp"
-                        pattern="dd/MMM/yyyy"
-                        styleClass="form-control w-100"
-                        showButtonBar="true"
-                        timeInput="true"
-                        inputStyleClass="w-100" >
-                    </p:datePicker>
+                        navigator="false"
+                        style="width: 350px;"
+                        styleClass="dateTimePicker"
+                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                        inputStyleClass="form-control">
+                    </p:calendar>
+
+                    <p:selectOneMenu
+                        value="#{inwardReservationController.calanderStatus}"
+                        filter="true"
+                        style="width: 250px;"
+                        placeholder="Appointment Status"
+                        autoWidth="false">
+                        <f:selectItem itemLabel="Any Status" ></f:selectItem>
+                        <f:selectItems
+                            value="#{enumController.getAppointmentStatus()}"
+                            var="rs"
+                            itemLabel="#{rs.name}"
+                            itemValue="#{rs}" >
+                        </f:selectItems>
+                    </p:selectOneMenu>
 
                     <p:commandButton
                         value="Find Reservations"
                         action="#{inwardReservationController.findReservations()}"
-                        class="ui-button-warning w-50"
+                        class="ui-button-warning mx-4"
+                        ajax="false"
                         icon="fa fa-search">
-                        <p:ajax process="@this" update="schedule test"/>
                     </p:commandButton>
                 </div>
-                
+
                 <div style="margin-left: 4%; margin-right: 4%;" class="mb-3">
                     <p:schedule
                         id="schedule"
