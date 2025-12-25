@@ -2320,7 +2320,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     }
 
     public String navigateToSaleBillForCashierPrint() {
-        return "/pharmacy/printing/retail_sale_for_cashier?faces-redirect=true";
+        return "/pharmacy/printing/retail_sale_for_cashier_1?faces-redirect=true";
     }
 
     @Deprecated // Plse use settlePreBillAndNavigateToPrint
