@@ -18,96 +18,109 @@
 
                         <p:panel>
                             <f:facet id="panelHeader" name="header" >
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h:outputLabel value="Pharmacy Retail Bill (Sale 3)" />
-                                    <i class="fas fa-cash-register rounded-circle shadow-lg" style="font-size: 36px; color: purple; "></i>
+                                <!-- Three-section flexbox header layout -->
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px;">
 
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', true)}" class="d-flex align-items-center">
-                                        <p:outputLabel value="Counter" class="me-2"></p:outputLabel>
-                                        <p:selectOneMenu value="#{pharmacySaleController2.counter}" >
-                                            <f:selectItem itemLabel="Any" ></f:selectItem>
-                                            <f:selectItems
-                                                value="#{sessionController.loggableSubDepartments}"
-                                                var="c"
-                                                itemLabel="#{c.name}"
-                                                itemValue="#{c}" >
-                                            </f:selectItems>
-                                        </p:selectOneMenu>
-                                    </h:panelGroup>
-                                    <div class="d-flex gap-2">
-                                        <!-- Admin Configuration Button (only for administrators) -->
+                                    <!-- LEFT SECTION: Icon, Title, Config, Back -->
+                                    <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                                        <i class="fas fa-cash-register" style="font-size: 28px; color: #9c27b0;"></i>
+                                        <h:outputText value="Pharmacy Retail Bill For Cashier - 3" style="font-weight: 600; font-size: 1.1rem; white-space: nowrap;"/>
+
+                                        <!-- Admin Configuration Button -->
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                             <p:commandButton
                                                 value="Config"
                                                 icon="fa fa-cog"
                                                 title="Page Configuration Management"
-                                                action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_bill_retail_sale_for_cashier')}"
+                                                action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_bill_retail_sale_for_cashier_2')}"
                                                 ajax="false"
-                                                class="ui-button-secondary">
+                                                class="ui-button-secondary ui-button-sm">
                                             </p:commandButton>
                                         </h:panelGroup>
 
+                                        <!-- Back Button (icon-only with tooltip) -->
                                         <p:commandButton
-                                            value="Back"
-                                            class="ui-button-secondary"
                                             icon="fas fa-arrow-left"
+                                            title="Back to token management"
+                                            class="ui-button-secondary ui-button-sm"
                                             ajax="false"
-                                            action="#{tokenController.navigateToManagePharmacyTokens()}" >
+                                            action="#{tokenController.navigateToManagePharmacyTokens()}">
                                         </p:commandButton>
+                                    </div>
 
+                                    <!-- CENTER SECTION: Version Navigation Buttons -->
+                                    <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                                        <p:commandButton
+                                            icon="fas fa-file-invoice"
+                                            value="Sale 1"
+                                            action="/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true"
+                                            ajax="false"
+                                            class="ui-button-info ui-button-sm"
+                                            style="min-width: 90px;"/>
+                                        <p:commandButton
+                                            icon="fas fa-file-invoice"
+                                            value="Sale 2"
+                                            action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_1?faces-redirect=true"
+                                            ajax="false"
+                                            class="ui-button-info ui-button-sm"
+                                            style="min-width: 90px;"/>
+                                        <p:commandButton
+                                            icon="fas fa-file-invoice"
+                                            value="Sale 3"
+                                            disabled="true"
+                                            class="ui-button-secondary ui-button-sm"
+                                            style="min-width: 90px;"/>
+                                        <p:commandButton
+                                            icon="fas fa-file-invoice"
+                                            value="Sale 4"
+                                            action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_3?faces-redirect=true"
+                                            ajax="false"
+                                            class="ui-button-info ui-button-sm"
+                                            style="min-width: 90px;"/>
+                                    </div>
+
+                                    <!-- RIGHT SECTION: Counter, New Bill, Settle Bill -->
+                                    <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                                        <!-- Counter Dropdown -->
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', true)}"
+                                                      style="display: flex; align-items: center; gap: 8px;">
+                                            <p:outputLabel value="Counter" style="white-space: nowrap;"></p:outputLabel>
+                                            <p:selectOneMenu value="#{pharmacySaleController2.counter}" style="min-width: 120px;">
+                                                <f:selectItem itemLabel="Any" ></f:selectItem>
+                                                <f:selectItems
+                                                    value="#{sessionController.loggableSubDepartments}"
+                                                    var="c"
+                                                    itemLabel="#{c.name}"
+                                                    itemValue="#{c}" >
+                                                </f:selectItems>
+                                            </p:selectOneMenu>
+                                        </h:panelGroup>
+
+                                        <!-- New Bill Button -->
                                         <p:commandButton
                                             accesskey="n"
                                             value="New Bill"
                                             icon="fa fa-plus"
                                             ajax="false"
                                             actionListener="#{pharmacySaleController2.resetAll}"
-                                            class="ui-button-warning" >
+                                            class="ui-button-warning"
+                                            style="white-space: nowrap;">
                                         </p:commandButton>
 
+                                        <!-- Settle Bill Button -->
                                         <p:commandButton
                                             accesskey="c"
                                             ajax="false"
-                                            value="Settle Bill At Cashier"
+                                            value="Settle Bill"
                                             icon="fas fa-check"
-                                            onclick="if (!confirm('Are you sure?'))
-                                                        return false"
+                                            onclick="if (!confirm('Are you sure?')) return false"
                                             action="#{pharmacySaleController2.settlePreBillAndNavigateToPrint()}"
                                             class="ui-button-success"
-                                            >
+                                            style="white-space: nowrap;">
                                         </p:commandButton>
                                     </div>
                                 </div>
-
                             </f:facet>
-
-                            <!-- Version Navigation Buttons -->
-                            <div class="mb-3 text-center">
-                                <div class="btn-group" role="group">
-                                    <p:commandButton
-                                        icon="fas fa-file-invoice"
-                                        value="Sale 1"
-                                        action="/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true"
-                                        ajax="false"
-                                        class="ui-button-info" />
-                                    <p:commandButton
-                                        icon="fas fa-file-invoice"
-                                        value="Sale 2"
-                                        action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_1?faces-redirect=true"
-                                        ajax="false"
-                                        class="ui-button-info" />
-                                    <p:commandButton
-                                        icon="fas fa-file-invoice"
-                                        value="Sale 3"
-                                        disabled="true"
-                                        class="ui-button-secondary" />
-                                    <p:commandButton
-                                        icon="fas fa-file-invoice"
-                                        value="Sale 4"
-                                        action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_3?faces-redirect=true"
-                                        ajax="false"
-                                        class="ui-button-info" />
-                                </div>
-                            </div>
 
                             <div class="row">
                                 <div class="col-md-7">
