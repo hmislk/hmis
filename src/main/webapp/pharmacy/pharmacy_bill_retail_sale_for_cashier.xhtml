@@ -322,7 +322,6 @@
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                                 </h:outputLabel>
-
                                             </p:column>
                                             <p:column 
                                                 styleClass="text-end"
@@ -330,12 +329,13 @@
                                                 width="8em">
                                                 <p:inputText
                                                     autocomplete="off" 
-                                                    id="ipTblQty"
+                                                    id="txtTblQty"
                                                     value="#{bi.qty}" 
                                                     styleClass="w-100 text-end"
                                                     disabled="#{!configOptionApplicationController.getBooleanValueByKey('Allow Editing Quantity of Added Items in Pharmacy Retail Sale for Cashier', false)}">
                                                     <f:convertNumber integerOnly="true" />
-                                                    <p:ajax event="keyup" process="@this" update="gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" listener="#{pharmacySaleForCashierController.quantityInTableChangeEvent(bi)}"/>
+                                                    <p:ajax event="keyup" process="@this" update="gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId}" listener="#{pharmacySaleForCashierController.quantityInTableChangeEvent(bi)}"/>
+                                                    <p:ajax event="blur" process="@this" update="gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId}" listener="#{pharmacySaleForCashierController.quantityInTableChangeEvent(bi)}"/>
                                                 </p:inputText>
                                             </p:column>
 

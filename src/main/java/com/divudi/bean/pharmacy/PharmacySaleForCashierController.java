@@ -1106,12 +1106,62 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             return;
         }
 
-        tmp.setGrossValue(tmp.getQty() * tmp.getRate());
-        tmp.getPharmaceuticalBillItem().setQtyInUnit(0 - tmp.getQty());
+        // Validate pharmaceutical bill item and stock
+        if (tmp.getPharmaceuticalBillItem() == null) {
+            JsfUtil.addErrorMessage("Invalid bill item - pharmaceutical information missing");
+            return;
+        }
 
-        calculateBillItemForEditing(tmp);
+        if (tmp.getPharmaceuticalBillItem().getStock() == null) {
+            JsfUtil.addErrorMessage("Invalid bill item - stock information missing");
+            return;
+        }
 
-        calculateBillItemsAndBillTotalsOfPreBill();
+        // Validate quantity
+        if (tmp.getQty() == null || tmp.getQty() <= 0) {
+            JsfUtil.addErrorMessage("Please enter a valid quantity greater than 0");
+            return;
+        }
+
+        try {
+            // Fetch latest stock information to get current available quantity
+            Stock currentStock = stockFacade.find(tmp.getPharmaceuticalBillItem().getStock().getId());
+
+            if (currentStock == null) {
+                JsfUtil.addErrorMessage("Stock information not found. Please refresh and try again.");
+                return;
+            }
+
+            // Check if entered quantity exceeds available stock
+            if (tmp.getQty() > currentStock.getStock()) {
+                JsfUtil.addErrorMessage("Insufficient stock. Available: " +
+                    String.format("%.0f", currentStock.getStock()) +
+                    ", Requested: " + String.format("%.0f", tmp.getQty()));
+
+                // Reset quantity to maximum available stock
+                tmp.setQty(currentStock.getStock());
+
+                // Recalculate with the adjusted quantity
+                tmp.setGrossValue(tmp.getQty() * tmp.getRate());
+                tmp.getPharmaceuticalBillItem().setQtyInUnit(0 - tmp.getQty());
+                calculateBillItemForEditing(tmp);
+                calculateBillItemsAndBillTotalsOfPreBill();
+                return;
+            }
+
+            // If validation passes, proceed with normal calculation
+            tmp.setGrossValue(tmp.getQty() * tmp.getRate());
+            tmp.getPharmaceuticalBillItem().setQtyInUnit(0 - tmp.getQty());
+
+            calculateBillItemForEditing(tmp);
+
+            calculateBillItemsAndBillTotalsOfPreBill();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error validating stock quantity: " + e.getMessage());
+            System.out.println("Error in quantityInTableChangeEvent: " + e.getMessage());
+            e.printStackTrace();
+        }
 
     }
 
@@ -1508,14 +1558,14 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 logger.log(Level.FINE, "Metadata cache hit for query ''{0}'' in {1}ms - fetched fresh stock for {2} items with preserved ordering",
                     new Object[]{qry, durationMs, results.size()});
             } else {
-                // Cache miss: Execute full CASE-based search and cache the stock IDs
+                // Cache miss: Execute full search with EclipseLink-compatible relevance ordering and cache the stock IDs
                 results = executeFullSearchAndCacheMetadata(qry, searchConfig, cacheKey);
                 long durationMs = (System.nanoTime() - startTime) / 1_000_000;
                 if (durationMs > 500) {
-                    logger.log(Level.WARNING, "Slow CASE-based autocomplete query: {0}ms for query ''{1}'' returned {2} results",
+                    logger.log(Level.WARNING, "Slow autocomplete query: {0}ms for query ''{1}'' returned {2} results",
                         new Object[]{durationMs, qry, results.size()});
                 } else {
-                    logger.log(Level.FINE, "CASE-based autocomplete query completed in {0}ms for query ''{1}'' returned {2} results with relevance ordering",
+                    logger.log(Level.FINE, "Autocomplete query completed in {0}ms for query ''{1}'' returned {2} results with relevance ordering",
                         new Object[]{durationMs, qry, results.size()});
                 }
             }
@@ -1662,91 +1712,140 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     /**
-     * Execute full search query with CASE-based relevance ordering and cache the stock IDs
+     * Execute optimized search query with EclipseLink-compatible relevance ordering and cache the stock IDs
      */
     private List<StockDTO> executeFullSearchAndCacheMetadata(String qry, SearchConfig searchConfig, String cacheKey) {
         try {
-            // Build optimized single query with relevance ordering
+            // Use LinkedHashSet to maintain ordering and eliminate duplicates
+            Set<StockDTO> orderedResults = new LinkedHashSet<>();
+
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("department", getSessionController().getLoggedUser().getDepartment());
             parameters.put("stockMin", 0.0);
-
-            // Always search both patterns for comprehensive results
-            parameters.put("searchStart", qry + "%");      // Exact prefix matches (highest relevance)
-            parameters.put("searchContains", "%" + qry + "%");  // Contains matches (lower relevance)
+            parameters.put("searchStart", qry + "%");      // Exact prefix matches
             parameters.put("exactQuery", qry);             // For barcode exact match
 
+            // Step 1: Get prefix matches first (highest relevance)
+            List<StockDTO> prefixResults = executeSearchQuery(qry, searchConfig, parameters, true);
+            if (prefixResults != null) {
+                orderedResults.addAll(prefixResults);
+            }
+
+            // Step 2: Get contains matches if we need more results (lower relevance)
+            if (orderedResults.size() < 20) {
+                parameters.put("searchContains", "%" + qry + "%");
+                List<StockDTO> containsResults = executeSearchQuery(qry, searchConfig, parameters, false);
+                if (containsResults != null) {
+                    orderedResults.addAll(containsResults); // Set automatically handles duplicates
+                }
+            }
+
+            // Convert to list maintaining the insertion order (relevance order)
+            List<StockDTO> finalResults = new ArrayList<>(orderedResults);
+
+            // Limit to 20 results
+            if (finalResults.size() > 20) {
+                finalResults = finalResults.subList(0, 20);
+            }
+
+            if (!finalResults.isEmpty()) {
+                // Cache the stock IDs for future metadata lookups (in relevance order)
+                List<Long> stockIds = new ArrayList<>();
+                for (StockDTO dto : finalResults) {
+                    stockIds.add(dto.getId());
+                }
+                cacheMetadata(cacheKey, stockIds);
+
+                logger.log(Level.FINE, "Search completed with relevance ordering - {0} results (prefix matches first, then contains matches)",
+                    finalResults.size());
+            }
+
+            return finalResults;
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error executing autocomplete search query with relevance ordering", e);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Execute search query for either prefix or contains pattern
+     */
+    private List<StockDTO> executeSearchQuery(String qry, SearchConfig searchConfig, Map<String, Object> parameters, boolean prefixSearch) {
+        try {
             StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
                     .append("s.id, s.itemBatch.id, s.itemBatch.item.id, s.itemBatch.item.name, s.itemBatch.item.code, ")
                     .append("COALESCE(s.itemBatch.item.vmp.name, ''), s.itemBatch.batchNo, ")
                     .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire, s.itemBatch.item.discountAllowed) ")
                     .append("FROM Stock s ")
                     .append("WHERE s.stock > :stockMin ")
-                    .append("AND s.department = :department ")
-                    .append("AND (");
+                    .append("AND s.department = :department ");
 
-            // Build search conditions for all enabled fields
-            boolean firstCondition = true;
+            // Build search conditions based on search type
+            if (prefixSearch) {
+                sql.append("AND (");
+                boolean firstCondition = true;
 
-            // Item name search (most common)
-            sql.append("(UPPER(s.itemBatch.item.name) LIKE UPPER(:searchStart) OR UPPER(s.itemBatch.item.name) LIKE UPPER(:searchContains))");
-            firstCondition = false;
-
-            // Item code search (if enabled)
-            if (searchConfig.searchByItemCode) {
-                if (!firstCondition) sql.append(" OR ");
-                sql.append("(UPPER(s.itemBatch.item.code) LIKE UPPER(:searchStart) OR UPPER(s.itemBatch.item.code) LIKE UPPER(:searchContains))");
+                // Item name prefix search (highest priority)
+                sql.append("UPPER(s.itemBatch.item.name) LIKE UPPER(:searchStart)");
                 firstCondition = false;
-            }
 
-            // Barcode search (if enabled) - exact match only
-            if (searchConfig.searchByBarcode) {
-                if (!firstCondition) sql.append(" OR ");
-                sql.append("s.itemBatch.item.barcode = :exactQuery"); // Exact barcode match
+                // Item code prefix search (if enabled)
+                if (searchConfig.searchByItemCode) {
+                    if (!firstCondition) sql.append(" OR ");
+                    sql.append("UPPER(s.itemBatch.item.code) LIKE UPPER(:searchStart)");
+                    firstCondition = false;
+                }
+
+                // Barcode exact match (if enabled and query is long enough)
+                if (searchConfig.searchByBarcode && qry.length() >= 6) {
+                    if (!firstCondition) sql.append(" OR ");
+                    sql.append("s.itemBatch.item.barcode = :exactQuery");
+                    firstCondition = false;
+                }
+
+                // Generic name prefix search (if enabled)
+                if (searchConfig.searchByGeneric) {
+                    if (!firstCondition) sql.append(" OR ");
+                    sql.append("UPPER(s.itemBatch.item.vmp.vtm.name) LIKE UPPER(:searchStart)");
+                }
+
+                sql.append(") ORDER BY s.itemBatch.item.name, s.itemBatch.dateOfExpire");
+
+            } else {
+                // Contains search (excludes items already found in prefix search)
+                sql.append("AND (");
+                boolean firstCondition = true;
+
+                // Item name contains (but not prefix to avoid duplicates)
+                sql.append("UPPER(s.itemBatch.item.name) LIKE UPPER(:searchContains) ")
+                   .append("AND NOT UPPER(s.itemBatch.item.name) LIKE UPPER(:searchStart)");
                 firstCondition = false;
+
+                // Item code contains (if enabled)
+                if (searchConfig.searchByItemCode) {
+                    if (!firstCondition) sql.append(" OR ");
+                    sql.append("(UPPER(s.itemBatch.item.code) LIKE UPPER(:searchContains) ")
+                       .append("AND NOT UPPER(s.itemBatch.item.code) LIKE UPPER(:searchStart))");
+                    firstCondition = false;
+                }
+
+                // Generic name contains (if enabled)
+                if (searchConfig.searchByGeneric) {
+                    if (!firstCondition) sql.append(" OR ");
+                    sql.append("(UPPER(s.itemBatch.item.vmp.vtm.name) LIKE UPPER(:searchContains) ")
+                       .append("AND NOT UPPER(s.itemBatch.item.vmp.vtm.name) LIKE UPPER(:searchStart))");
+                }
+
+                sql.append(") ORDER BY s.itemBatch.item.name, s.itemBatch.dateOfExpire");
             }
 
-            // Generic name search (if enabled)
-            if (searchConfig.searchByGeneric) {
-                if (!firstCondition) sql.append(" OR ");
-                sql.append("(UPPER(s.itemBatch.item.vmp.vtm.name) LIKE UPPER(:searchStart) OR UPPER(s.itemBatch.item.vmp.vtm.name) LIKE UPPER(:searchContains))");
-            }
-
-            sql.append(") ");
-
-            // CASE-based relevance ordering: Exact matches first, then contains matches
-            sql.append("ORDER BY ")
-                .append("CASE ")
-                .append("  WHEN UPPER(s.itemBatch.item.name) LIKE UPPER(:searchStart) THEN 0 ")
-                .append("  WHEN UPPER(s.itemBatch.item.code) LIKE UPPER(:searchStart) THEN 1 ");
-
-            if (searchConfig.searchByGeneric) {
-                sql.append("  WHEN UPPER(s.itemBatch.item.vmp.vtm.name) LIKE UPPER(:searchStart) THEN 2 ");
-            }
-
-            sql.append("  ELSE 10 ")
-                .append("END, ")
-                .append("s.itemBatch.item.name, s.itemBatch.dateOfExpire");
-
-            // Execute optimized single query
+            // Execute query
             List<StockDTO> results = (List<StockDTO>) getStockFacade().findLightsByJpql(
                     sql.toString(), parameters, TemporalType.TIMESTAMP, 20);
 
-            if (results != null && !results.isEmpty()) {
-                // Cache the stock IDs for future metadata lookups
-                List<Long> stockIds = new ArrayList<>();
-                for (StockDTO dto : results) {
-                    stockIds.add(dto.getId());
-                }
-                cacheMetadata(cacheKey, stockIds);
-
-                logger.log(Level.FINE, "CASE-based search completed - {0} results with relevance ordering",
-                    results.size());
-            }
-
             return results != null ? results : Collections.emptyList();
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error executing CASE-based search query", e);
+            logger.log(Level.SEVERE, "Error executing " + (prefixSearch ? "prefix" : "contains") + " search query", e);
             return Collections.emptyList();
         }
     }
