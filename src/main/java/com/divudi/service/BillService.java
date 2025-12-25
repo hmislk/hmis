@@ -3163,9 +3163,9 @@ public class BillService {
                 continue;
             }
 
-            // Get quantities
+            // Get quantities (primitive double - no null check needed)
             BigDecimal qty = BigDecimal.valueOf(Math.abs(billItem.getQty()));
-            BigDecimal freeQty = BigDecimal.valueOf(pharmaItem.getFreeQty() != null ? Math.abs(pharmaItem.getFreeQty()) : 0.0);
+            BigDecimal freeQty = BigDecimal.valueOf(Math.abs(pharmaItem.getFreeQty()));
             BigDecimal totalQty = qty.add(freeQty);
 
             // Get rates from PharmaceuticalBillItem (includes margins for net values)
@@ -3174,15 +3174,10 @@ public class BillService {
             BigDecimal wholesaleRate = BigDecimal.valueOf(pharmaItem.getWholesaleRate());
 
             // Get costing rates from ItemBatch (for accurate stock valuation)
-            BigDecimal batchRetailRate = BigDecimal.valueOf(
-                    pharmaItem.getStock().getItemBatch().getRetailsaleRate() != null
-                            ? pharmaItem.getStock().getItemBatch().getRetailsaleRate() : 0.0);
-            BigDecimal batchPurchaseRate = BigDecimal.valueOf(
-                    pharmaItem.getStock().getItemBatch().getPurcahseRate() != null
-                            ? pharmaItem.getStock().getItemBatch().getPurcahseRate() : 0.0);
-            BigDecimal batchWholesaleRate = BigDecimal.valueOf(
-                    pharmaItem.getStock().getItemBatch().getWholesaleRate() != null
-                            ? pharmaItem.getStock().getItemBatch().getWholesaleRate() : 0.0);
+            // These are primitive double, so no null check needed
+            BigDecimal batchRetailRate = BigDecimal.valueOf(pharmaItem.getStock().getItemBatch().getRetailsaleRate());
+            BigDecimal batchPurchaseRate = BigDecimal.valueOf(pharmaItem.getStock().getItemBatch().getPurcahseRate());
+            BigDecimal batchWholesaleRate = BigDecimal.valueOf(pharmaItem.getStock().getItemBatch().getWholesaleRate());
 
             // Get cost rate from ItemBatch with fallback to purchase rate
             BigDecimal costRate = batchPurchaseRate;
