@@ -50,28 +50,30 @@
                                     <!-- CENTER SECTION: Version Navigation Buttons -->
                                     <div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-grow: 1;">
                                         <p:commandButton
+                                            disabled="true"
                                             icon="fas fa-file-invoice"
                                             value="Sale 1"
-                                            disabled="true"
-                                            class="ui-button-secondary" />
+                                            action="#{pharmacySaleForCashierController.toPharmacyRetailSale()}"
+                                            ajax="false"
+                                            class="ui-button-info ui-button-sm" />
                                         <p:commandButton
                                             icon="fas fa-file-invoice"
                                             value="Sale 2"
-                                            action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_1?faces-redirect=true"
+                                            action="#{pharmacySaleForCashierController1.toPharmacyRetailSale()}"
                                             ajax="false"
-                                            class="ui-button-info" />
+                                            class="ui-button-info ui-button-sm" />
                                         <p:commandButton
                                             icon="fas fa-file-invoice"
                                             value="Sale 3"
-                                            action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_2?faces-redirect=true"
+                                            action="#{pharmacySaleForCashierController2.toPharmacyRetailSale()}"
                                             ajax="false"
-                                            class="ui-button-info" />
+                                            class="ui-button-info ui-button-sm" />
                                         <p:commandButton
                                             icon="fas fa-file-invoice"
                                             value="Sale 4"
-                                            action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_3?faces-redirect=true"
-                                            ajax="false"
-                                            class="ui-button-info" />
+                                            disabled="true"
+                                            action="#{pharmacySaleForCashierController3.toPharmacyRetailSale()}"
+                                            class="ui-button-secondary ui-button-sm" />
                                     </div>
 
                                     <!-- RIGHT SECTION: Counter Selection and Action Buttons -->
