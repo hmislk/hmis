@@ -1707,8 +1707,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         billPreview = false;
     }
 
-    public String toPharmacyRetailSale() {
-        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
+    public String toPharmacyRetailSaleForCashier() {
+        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
     }
 
     public List<Item> completeRetailSaleItems(String qry) {
