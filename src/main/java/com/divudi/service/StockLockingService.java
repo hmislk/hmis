@@ -85,21 +85,13 @@ public class StockLockingService {
      * @return StockValidationResult containing locked stocks (if valid) or errors (if invalid)
      */
     public StockValidationResult lockAndValidateStocks(List<BillItem> billItems, WebUser user, Department department) {
-        LOGGER.log(Level.INFO, "Starting stock lock and validation for {0} bill items", billItems != null ? billItems.size() : 0);
+        LOGGER.log(Level.FINE, "Starting stock lock and validation for {0} bill items", billItems != null ? billItems.size() : 0);
 
         StockValidationResult result = new StockValidationResult();
-
-        // Create audit event
-        AuditEvent auditEvent = auditEventController.createNewAuditEvent(
-                "Stock Lock and Validation",
-                String.format("Locking stocks for %d bill items", billItems != null ? billItems.size() : 0)
-        );
-        result.setAuditEventId(auditEvent.getUuid());
 
         // Validate input
         if (billItems == null || billItems.isEmpty()) {
             LOGGER.log(Level.WARNING, "No bill items provided for stock locking");
-            auditEventController.failAuditEvent(auditEvent, "No bill items provided");
             result.setValid(false);
             return result;
         }
@@ -120,12 +112,11 @@ public class StockLockingService {
 
             if (stockToBillItems.isEmpty()) {
                 LOGGER.log(Level.WARNING, "No valid stock references found in bill items");
-                auditEventController.failAuditEvent(auditEvent, "No valid stock references found");
                 result.setValid(false);
                 return result;
             }
 
-            LOGGER.log(Level.INFO, "Attempting to lock {0} unique stocks", stockToBillItems.size());
+            LOGGER.log(Level.FINE, "Attempting to lock {0} unique stocks", stockToBillItems.size());
 
             // Step 2: Lock ALL stocks atomically
             Map<Long, Stock> lockedStocks = new HashMap<>();
@@ -143,8 +134,15 @@ public class StockLockingService {
                     LOGGER.log(Level.SEVERE, "Failed to lock stock " + stockId + " - another transaction is using it", e);
                     // Release any locks we acquired so far
                     releaseLocks(lockedStocks, "Lock acquisition failed for stock " + stockId);
+
+                    // Create audit event for this exception (system-level error)
+                    AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                            "Stock Lock Exception",
+                            "Lock timeout for stock " + stockId
+                    );
                     auditEventController.failAuditEvent(auditEvent,
                             "Lock timeout - stock " + stockId + " is locked by another user");
+
                     result.setValid(false);
                     StockValidationError error = new StockValidationError(
                             null,
@@ -158,7 +156,7 @@ public class StockLockingService {
                 }
             }
 
-            LOGGER.log(Level.INFO, "Successfully locked {0} stocks, now validating quantities", lockedStocks.size());
+            LOGGER.log(Level.FINE, "Successfully locked {0} stocks, now validating quantities", lockedStocks.size());
 
             // Step 3: Validate quantities for all locked stocks
             List<StockValidationError> validationErrors = new ArrayList<>();
@@ -205,22 +203,25 @@ public class StockLockingService {
             if (validationErrors.isEmpty()) {
                 // Success - all stocks validated
                 result.setValid(true);
-                auditEventController.completeAuditEvent(auditEvent,
-                        String.format("Successfully locked and validated %d stocks", lockedStocks.size()));
-                LOGGER.log(Level.INFO, "Stock validation successful for all {0} stocks", lockedStocks.size());
+                LOGGER.log(Level.FINE, "Stock validation successful for all {0} stocks", lockedStocks.size());
             } else {
-                // Failure - release locks and return errors
+                // Failure - release locks and return errors (normal business case, no audit needed)
                 result.setValid(false);
                 result.setErrors(validationErrors);
-                releaseLocks(lockedStocks, "Validation failed - insufficient stock");
-                auditEventController.failAuditEvent(auditEvent,
-                        String.format("Validation failed: %d stock shortages", validationErrors.size()));
-                LOGGER.log(Level.WARNING, "Stock validation failed with {0} errors", validationErrors.size());
+                releaseLocks(lockedStocks, "Insufficient stock - normal validation");
+                LOGGER.log(Level.FINE, "Stock validation failed with {0} errors - insufficient stock", validationErrors.size());
             }
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Unexpected error during stock locking and validation", e);
-            auditEventController.failAuditEvent(auditEvent, "Unexpected error: " + e.getMessage());
+
+            // Create audit event for system exceptions only
+            AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                    "Stock Validation System Exception",
+                    "Unexpected error during stock locking: " + e.getMessage()
+            );
+            auditEventController.failAuditEvent(auditEvent, "System exception: " + e.getMessage());
+
             result.setValid(false);
             StockValidationError error = new StockValidationError(
                     null,
@@ -230,6 +231,7 @@ public class StockLockingService {
                     "System error during stock validation: " + e.getMessage()
             );
             result.addError(error);
+            result.setAuditEventId(auditEvent.getUuid());
         }
 
         return result;
@@ -263,7 +265,7 @@ public class StockLockingService {
             boolean deducted = pharmacyBean.deductFromStock(lockedStock, qty, pbi, department);
 
             if (deducted) {
-                LOGGER.log(Level.INFO, "Successfully deducted {0} from stock {1}",
+                LOGGER.log(Level.FINE, "Successfully deducted {0} from stock {1}",
                         new Object[]{qty, lockedStock.getId()});
             } else {
                 LOGGER.log(Level.WARNING, "Failed to deduct {0} from stock {1}",
@@ -296,14 +298,20 @@ public class StockLockingService {
             return;
         }
 
-        LOGGER.log(Level.INFO, "Releasing {0} stock locks. Reason: {1}",
+        LOGGER.log(Level.FINE, "Releasing {0} stock locks. Reason: {1}",
                 new Object[]{lockedStocks.size(), reason});
 
-        // Create audit event for lock release
-        AuditEvent auditEvent = auditEventController.createNewAuditEvent(
-                "Stock Locks Released",
-                String.format("Releasing %d locks. Reason: %s", lockedStocks.size(), reason)
-        );
+        // Only create audit events for exceptional lock releases (not for normal insufficient stock cases)
+        boolean isExceptionalCase = reason != null &&
+                (reason.contains("failed") || reason.contains("exception") || reason.contains("error"));
+
+        AuditEvent auditEvent = null;
+        if (isExceptionalCase) {
+            auditEvent = auditEventController.createNewAuditEvent(
+                    "Stock Locks Released - Exception",
+                    String.format("Releasing %d locks due to exception. Reason: %s", lockedStocks.size(), reason)
+            );
+        }
 
         try {
             // Locks are automatically released by transaction boundary
@@ -312,12 +320,16 @@ public class StockLockingService {
                 LOGGER.log(Level.FINE, "Releasing lock on stock {0}", entry.getKey());
             }
 
-            auditEventController.completeAuditEvent(auditEvent,
-                    String.format("Released %d locks successfully", lockedStocks.size()));
+            if (auditEvent != null) {
+                auditEventController.completeAuditEvent(auditEvent,
+                        String.format("Released %d locks successfully", lockedStocks.size()));
+            }
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error releasing locks", e);
-            auditEventController.failAuditEvent(auditEvent, "Error releasing locks: " + e.getMessage());
+            if (auditEvent != null) {
+                auditEventController.failAuditEvent(auditEvent, "Error releasing locks: " + e.getMessage());
+            }
         }
     }
 
