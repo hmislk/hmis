@@ -67,6 +67,7 @@ import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.data.dto.StockDTO;
+import com.divudi.core.data.dto.StockValidationResult;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -83,6 +84,7 @@ import com.divudi.service.AuditService;
 import com.divudi.service.BillService;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.service.PaymentService;
+import com.divudi.service.StockLockingService;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -199,6 +201,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     private BillService billService;
     @EJB
     private AuditService auditService;
+    @EJB
+    private StockLockingService stockLockingService;
     /////////////////////////
     private PreBill preBill;
     private Bill saleBill;
@@ -3184,6 +3188,108 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     }
 
+    /**
+     * Save Pre-Bill Items Finally with Locked Stocks
+     *
+     * Enhanced version of savePreBillItemsFinally() that uses pre-locked and validated stocks
+     * from StockLockingService. This prevents stock deduction failures since stocks were
+     * already validated before settlement began.
+     *
+     * Key Differences from savePreBillItemsFinally():
+     * - Uses pre-locked stocks from stockValidation result
+     * - Calls stockLockingService.deductAndReleaseLock() instead of pharmacyBean.deductFromStock()
+     * - Should not encounter insufficient stock errors (since pre-validated)
+     * - Releases each lock immediately after deduction
+     *
+     * @param list List of bill items to save
+     * @param lockedStocks Map of locked stocks (stockId -> Stock entity) from validation
+     */
+    private void savePreBillItemsFinallyWithLockedStocks(List<BillItem> list, Map<Long, Stock> lockedStocks) {
+        // Initialize the billItems collection if it was set to null
+        if (getPreBill().getBillItems() == null) {
+            getPreBill().setBillItems(new ArrayList<>());
+        }
+
+        for (BillItem tbi : list) {
+            if (execureOnEditActions(tbi)) {
+                // If any issue in Stock Bill Item will not save & not include for total
+                // continue;
+            }
+
+            tbi.setInwardChargeType(InwardChargeType.Medicine);
+            tbi.setBill(getPreBill());
+            if (tbi.getId() == null) {
+                tbi.setCreatedAt(new Date());
+                tbi.setCreater(sessionController.getLoggedUser());
+                getBillItemFacade().create(tbi);
+            } else {
+                getBillItemFacade().edit(tbi);
+            }
+
+            // Get the pre-locked stock for this item
+            PharmaceuticalBillItem pbi = tbi.getPharmaceuticalBillItem();
+            if (pbi == null || pbi.getStock() == null || pbi.getStock().getId() == null) {
+                logger.log(Level.WARNING, "Bill item has no valid stock reference: {0}", tbi.getId());
+                continue;
+            }
+
+            Stock lockedStock = lockedStocks.get(pbi.getStock().getId());
+            if (lockedStock == null) {
+                logger.log(Level.SEVERE, "No locked stock found for bill item {0}, stock ID {1}",
+                        new Object[]{tbi.getId(), pbi.getStock().getId()});
+                // This should not happen since we pre-validated all stocks
+                throw new RuntimeException("Internal error: No locked stock found for pre-validated item: " + tbi.getItem().getName());
+            }
+
+            double qtyL = pbi.getQty() + pbi.getFreeQty();
+
+            // Deduct from locked stock and release lock
+            boolean returnFlag = stockLockingService.deductAndReleaseLock(
+                    lockedStock,
+                    Math.abs(qtyL),
+                    pbi,
+                    getPreBill().getDepartment()
+            );
+
+            if (!returnFlag) {
+                // This should be extremely rare since we pre-validated stocks
+                // But handle it gracefully with audit trail
+                BillItem originalBillItem = new BillItem();
+                originalBillItem.setQty(tbi.getQty());
+                originalBillItem.setItem(tbi.getItem());
+                originalBillItem.setRate(tbi.getRate());
+                originalBillItem.setNetValue(tbi.getNetValue());
+
+                tbi.setQty(0.0);
+                // Keep PharmaceuticalBillItem quantities in sync for consistency
+                if (tbi.getPharmaceuticalBillItem() != null) {
+                    tbi.getPharmaceuticalBillItem().setQty(0.0);
+                    tbi.getPharmaceuticalBillItem().setFreeQty(0.0f);
+                }
+
+                String errorMsg = "Critical error: Stock deduction failed for pre-validated item: " + tbi.getItem().getName();
+                JsfUtil.addErrorMessage(errorMsg);
+                logger.log(Level.SEVERE, errorMsg);
+
+                // Record audit event for this critical failure
+                auditService.logAudit(
+                        originalBillItem,
+                        tbi,
+                        sessionController.getLoggedUser(),
+                        "BillItem",
+                        "PRE_VALIDATED_STOCK_DEDUCTION_FAILED"
+                );
+
+                getBillItemFacade().edit(tbi);
+            }
+
+            getPreBill().getBillItems().add(tbi);
+        }
+
+        //userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser()); // Commented out for performance
+        calculateRatesForAllBillItemsInPreBill();
+    }
+
     public Staff getToStaff() {
         return toStaff;
     }
@@ -3542,84 +3648,110 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             }
         }
 
-        Patient pt = null;
-        if (getPatient() != null && getPatient().getPerson() != null) {
-            String name = getPatient().getPerson().getName();
-            boolean hasValidName = name != null && !name.trim().isEmpty();
+        // STOCK-FIRST SETTLEMENT: Validate and lock all stocks BEFORE any entity saves
+        StockValidationResult stockValidation = stockLockingService.lockAndValidateStocks(
+            getPreBill().getBillItems(),
+            getSessionController().getLoggedUser(),
+            getPreBill().getDepartment()
+        );
 
-            if (patientRequiredForPharmacySale) {
-                if (!hasValidName) {
-                    JsfUtil.addErrorMessage("Please Select a Patient");
-                    billSettlingStarted = false;
-                    return null;
-                } else {
-                    pt = savePatient();
-                }
-            } else {
-                if (hasValidName) {
-                    pt = savePatient();
-                }
-            }
-        } else if (patientRequiredForPharmacySale) {
-            JsfUtil.addErrorMessage("Please Select a Patient");
+        if (!stockValidation.isValid()) {
+            // Display comprehensive error messages showing ALL stock shortfalls
+            JsfUtil.addErrorMessage(stockValidation.getFormattedErrorMessage());
             billSettlingStarted = false;
             return null;
         }
 
-        if (billPreview) {
+        // Stock validation successful - proceed with settlement using locked stocks
+        try {
+            Patient pt = null;
+            if (getPatient() != null && getPatient().getPerson() != null) {
+                String name = getPatient().getPerson().getName();
+                boolean hasValidName = name != null && !name.trim().isEmpty();
 
-        }
-
-        calculateRatesForAllBillItemsInPreBill();
-
-        List<BillItem> tmpBillItems = new ArrayList<>(getPreBill().getBillItems());
-        getPreBill().setBillItems(null);
-        getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
-
-        savePreBillFinallyForRetailSaleForCashier(pt);
-        savePreBillItemsFinally(tmpBillItems);
-        setPrintBill(getPreBill());
-        // Calculate and record costing values for stock valuation after persistence
-        // Using current bill directly instead of reloading to avoid transaction timing issues
-        // Calculate and record costing values for stock valuation after persistence
-        // Using current bill directly instead of reloading to avoid transaction timing issues
-
-        if (getPreBill().getBillItems() != null && !getPreBill().getBillItems().isEmpty()) {
-            calculateAndRecordCostingValues(getPreBill());
-        } else {
-            Bill managedBill = loadBillWithPharmaceuticalItems(getPreBill().getId());
-            if (managedBill != null) {
-                calculateAndRecordCostingValues(managedBill);
-                setPreBill((PreBill) managedBill);
-            } else {
-            }
-        }
-
-        if (configOptionController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
-            if (getPatient() != null) {
-                Token t = tokenController.findPharmacyTokens(getPreBill());
-                if (t == null) {
-                    Token saleForCashierToken = tokenController.findPharmacyTokenSaleForCashier(getPreBill(), TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
-                    if (saleForCashierToken == null) {
-                        settlePharmacyToken(TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
+                if (patientRequiredForPharmacySale) {
+                    if (!hasValidName) {
+                        JsfUtil.addErrorMessage("Please Select a Patient");
+                        billSettlingStarted = false;
+                        return null;
+                    } else {
+                        pt = savePatient();
                     }
-                    markInprogress();
+                } else {
+                    if (hasValidName) {
+                        pt = savePatient();
+                    }
+                }
+            } else if (patientRequiredForPharmacySale) {
+                JsfUtil.addErrorMessage("Please Select a Patient");
+                billSettlingStarted = false;
+                return null;
+            }
 
-                } else if (t != null) {
-                    markToken();
+            if (billPreview) {
+
+            }
+
+            calculateRatesForAllBillItemsInPreBill();
+
+            List<BillItem> tmpBillItems = new ArrayList<>(getPreBill().getBillItems());
+            getPreBill().setBillItems(null);
+            getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+
+            savePreBillFinallyForRetailSaleForCashier(pt);
+            // Use locked stocks for settlement instead of re-validating
+            savePreBillItemsFinallyWithLockedStocks(tmpBillItems, stockValidation.getLockedStocks());
+            setPrintBill(getPreBill());
+            // Calculate and record costing values for stock valuation after persistence
+            // Using current bill directly instead of reloading to avoid transaction timing issues
+            // Calculate and record costing values for stock valuation after persistence
+            // Using current bill directly instead of reloading to avoid transaction timing issues
+
+            if (getPreBill().getBillItems() != null && !getPreBill().getBillItems().isEmpty()) {
+                calculateAndRecordCostingValues(getPreBill());
+            } else {
+                Bill managedBill = loadBillWithPharmaceuticalItems(getPreBill().getId());
+                if (managedBill != null) {
+                    calculateAndRecordCostingValues(managedBill);
+                    setPreBill((PreBill) managedBill);
+                } else {
                 }
             }
 
-        }
+            if (configOptionController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
+                if (getPatient() != null) {
+                    Token t = tokenController.findPharmacyTokens(getPreBill());
+                    if (t == null) {
+                        Token saleForCashierToken = tokenController.findPharmacyTokenSaleForCashier(getPreBill(), TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
+                        if (saleForCashierToken == null) {
+                            settlePharmacyToken(TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
+                        }
+                        markInprogress();
 
-        if (getCurrentToken() != null) {
-            getCurrentToken().setBill(getPreBill());
-            tokenFacade.edit(getCurrentToken());
-        }
+                    } else if (t != null) {
+                        markToken();
+                    }
+                }
 
-        resetAll();
-        billPreview = true;
-        return navigateToSaleBillForCashierPrint();
+            }
+
+            if (getCurrentToken() != null) {
+                getCurrentToken().setBill(getPreBill());
+                tokenFacade.edit(getCurrentToken());
+            }
+
+            resetAll();
+            billPreview = true;
+            return navigateToSaleBillForCashierPrint();
+        } catch (Exception e) {
+            // Release all locks on any settlement failure
+            stockLockingService.releaseLocks(stockValidation.getLockedStocks(),
+                    "Settlement failed: " + e.getMessage());
+            JsfUtil.addErrorMessage("Settlement failed. Please try again.");
+            billSettlingStarted = false;
+            logger.log(Level.SEVERE, "Error during bill settlement", e);
+            return null;
+        }
     }
 
     public String navigateToSaleBillForCashierPrint() {
