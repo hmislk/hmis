@@ -341,6 +341,30 @@
                                     </tr>
 
                                     <tr>
+                                        <td><strong>Correct Finance Details for OPD and Pharmacy Retail Sale Bills</strong></td>
+                                        <td>
+                                            Populates BillItemFinanceDetails and BillFinanceDetails for historical OPD and pharmacy retail sale bills
+                                            within the selected date range. Corrects stock values to negative (stock going out) for accurate reporting.
+                                            Includes OPD service bills and pharmacy retail sales. Skips bills that already have corrected finance details.
+                                            Uses cost, purchase, retail rates from ItemBatch and service rates for proper stock valuation.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                id="btnCorrectOpdPharmacyRetailSaleFinanceDetails"
+                                                action="#{dataAdministrationController.correctOpdAndPharmacyRetailSaleBillFinanceDetails()}"
+                                                ajax="false"
+                                                value="Correct OPD &amp; Retail Sale Finance Details"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-calculator"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                onclick="return confirm('This will populate finance details for OPD and pharmacy retail sale bills in the selected period. Proceed?');" />
+                                        </td>
+                                        <td>
+                                            #{dataAdministrationController.executionFeedback}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
                                         <td><strong>Assign Pharmacy Department Type</strong></td>
                                         <td>
                                             Assigns the Pharmacy department type to all PharmaceuticalItem objects that currently have no department type assigned. This ensures proper categorization of pharmaceutical items within the system.

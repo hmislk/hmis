@@ -3272,4 +3272,199 @@ public class BillService {
         billFacade.edit(bill);
     }
 
+    /**
+     * Creates and populates BillItemFinanceDetails and BillFinanceDetails for OPD and pharmacy retail sale bills.
+     * This method handles correction of historical bills that have incorrect (positive) stock values.
+     * For outgoing stock (sales), values are made negative to reflect stock reduction.
+     *
+     * @param bill The OPD or pharmacy retail sale bill to process
+     */
+    public void createBillFinancialDetailsForOpdAndPharmacyRetailSaleBill(Bill bill) {
+        if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+            return;
+        }
+
+        BillTypeAtomic billType = bill.getBillTypeAtomic();
+        if (billType == null) {
+            return;
+        }
+
+        // Initialize bill-level totals for aggregation
+        BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalWholesaleValue = BigDecimal.ZERO;
+        BigDecimal totalQuantity = BigDecimal.ZERO;
+        BigDecimal totalFreeQuantity = BigDecimal.ZERO;
+
+        for (BillItem billItem : bill.getBillItems()) {
+            if (billItem == null || billItem.isRetired()) {
+                continue;
+            }
+
+            BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+            if (bifd == null) {
+                bifd = new BillItemFinanceDetails();
+                bifd.setBillItem(billItem);
+                billItem.setBillItemFinanceDetails(bifd);
+            }
+
+            // Check if this is a pharmacy bill with pharmaceutical items
+            if (isPharmacyRetailSale(billType) && billItem.getPharmaceuticalBillItem() != null) {
+                // Process pharmaceutical bill items (like inpatient method)
+                processPharmaceuticalBillItemForCorrection(billItem, bifd);
+            } else {
+                // Process OPD service items (different approach)
+                processOpdServiceItemForCorrection(billItem, bifd);
+            }
+
+            // Accumulate totals from BIFD (absolute values for aggregation)
+            if (bifd.getValueAtRetailRate() != null) {
+                totalRetailSaleValue = totalRetailSaleValue.add(bifd.getValueAtRetailRate().abs());
+            }
+            if (bifd.getValueAtPurchaseRate() != null) {
+                totalPurchaseValue = totalPurchaseValue.add(bifd.getValueAtPurchaseRate().abs());
+            }
+            if (bifd.getValueAtCostRate() != null) {
+                totalCostValue = totalCostValue.add(bifd.getValueAtCostRate().abs());
+            }
+            if (bifd.getValueAtWholesaleRate() != null) {
+                totalWholesaleValue = totalWholesaleValue.add(bifd.getValueAtWholesaleRate().abs());
+            }
+            if (bifd.getTotalQuantity() != null) {
+                totalQuantity = totalQuantity.add(bifd.getTotalQuantity().abs());
+            }
+            if (bifd.getFreeQuantity() != null) {
+                totalFreeQuantity = totalFreeQuantity.add(bifd.getFreeQuantity().abs());
+            }
+
+            // Persist BillItem (cascades to BillItemFinanceDetails)
+            billItemFacade.edit(billItem);
+        }
+
+        // Create/Update bill-level finance details
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails();
+            bfd.setBill(bill);
+            bill.setBillFinanceDetails(bfd);
+        }
+
+        // Set bill-level aggregated values (NEGATIVE for stock going out)
+        bfd.setNetTotal(bill.getNetTotal());
+        bfd.setGrossTotal(bill.getTotal());
+        bfd.setTotalCostValue(totalCostValue.negate());
+        bfd.setTotalPurchaseValue(totalPurchaseValue.negate());
+        bfd.setTotalRetailSaleValue(totalRetailSaleValue.negate());
+        bfd.setTotalWholesaleValue(totalWholesaleValue.negate());
+        bfd.setTotalQuantity(totalQuantity.negate());
+        bfd.setTotalFreeQuantity(totalFreeQuantity.negate());
+
+        // Persist Bill (cascades to BillFinanceDetails)
+        billFacade.edit(bill);
+    }
+
+    private boolean isPharmacyRetailSale(BillTypeAtomic billType) {
+        return billType == BillTypeAtomic.PHARMACY_RETAIL_SALE ||
+               billType == BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
+    }
+
+    private void processPharmaceuticalBillItemForCorrection(BillItem billItem, BillItemFinanceDetails bifd) {
+        PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
+        if (pharmaItem == null || pharmaItem.getItemBatch() == null) {
+            return;
+        }
+
+        ItemBatch batch = pharmaItem.getItemBatch();
+
+        // Get quantities
+        BigDecimal qty = billItem.getQty() != null ? BigDecimal.valueOf(billItem.getQty()) : BigDecimal.ZERO;
+        BigDecimal freeQty = pharmaItem.getFreeQty() != null ? BigDecimal.valueOf(pharmaItem.getFreeQty()) : BigDecimal.ZERO;
+        BigDecimal totalQty = qty.add(freeQty);
+
+        // Get rates from batch
+        BigDecimal costRate = batch.getCostRate() != null ? BigDecimal.valueOf(batch.getCostRate()) :
+                             (batch.getPurcahseRate() != 0.0 ? BigDecimal.valueOf(batch.getPurcahseRate()) : BigDecimal.ZERO);
+        BigDecimal purchaseRate = BigDecimal.valueOf(batch.getPurcahseRate());
+        BigDecimal retailRate = BigDecimal.valueOf(batch.getRetailsaleRate());
+        BigDecimal wholesaleRate = BigDecimal.valueOf(batch.getWholesaleRate());
+
+        // Set rates in BIFD (these don't change sign)
+        bifd.setCostRate(costRate);
+        bifd.setPurchaseRate(purchaseRate);
+        bifd.setRetailSaleRate(retailRate);
+        bifd.setWholesaleRate(wholesaleRate);
+        bifd.setLineNetRate(billItem.getNetRate());
+        bifd.setGrossRate(billItem.getRate());
+        bifd.setLineGrossRate(billItem.getRate());
+
+        // Calculate values (NEGATIVE for stock going out)
+        bifd.setValueAtCostRate(costRate.multiply(totalQty).negate());
+        bifd.setValueAtPurchaseRate(purchaseRate.multiply(totalQty).negate());
+        bifd.setValueAtRetailRate(retailRate.multiply(totalQty).negate());
+        bifd.setValueAtWholesaleRate(wholesaleRate.multiply(totalQty).negate());
+
+        // Set quantities (NEGATIVE for stock going out)
+        bifd.setQuantity(qty.negate());
+        bifd.setFreeQuantity(freeQty.negate());
+        bifd.setTotalQuantity(totalQty.negate());
+
+        // Set totals and costs
+        bifd.setLineGrossTotal(billItem.getGrossValue());
+        bifd.setGrossTotal(billItem.getGrossValue());
+        bifd.setLineNetTotal(billItem.getNetValue());
+        bifd.setNetTotal(billItem.getNetValue());
+
+        BigDecimal itemCostValue = costRate.multiply(totalQty.abs());
+        bifd.setLineCost(itemCostValue);
+        bifd.setTotalCost(itemCostValue);
+        bifd.setBillCost(BigDecimal.ZERO);
+
+        // Update PharmaceuticalBillItem values
+        pharmaItem.setCostRate(costRate.doubleValue());
+        pharmaItem.setCostValue(itemCostValue.doubleValue());
+        pharmaItem.setRetailValue(retailRate.multiply(totalQty.abs()).doubleValue());
+        pharmaItem.setPurchaseValue(purchaseRate.multiply(totalQty.abs()).doubleValue());
+    }
+
+    private void processOpdServiceItemForCorrection(BillItem billItem, BillItemFinanceDetails bifd) {
+        // For OPD service items, use the bill item's rates and values
+        BigDecimal qty = billItem.getQty() != null ? BigDecimal.valueOf(billItem.getQty()) : BigDecimal.ZERO;
+
+        // Use service rates (net rate as cost approximation for services)
+        BigDecimal serviceRate = billItem.getNetRate() != null ? billItem.getNetRate() : BigDecimal.ZERO;
+        BigDecimal grossRate = billItem.getRate() != null ? billItem.getRate() : BigDecimal.ZERO;
+
+        // Set rates in BIFD
+        bifd.setCostRate(serviceRate); // Approximate cost as net rate for services
+        bifd.setPurchaseRate(serviceRate);
+        bifd.setRetailSaleRate(grossRate);
+        bifd.setWholesaleRate(serviceRate);
+        bifd.setLineNetRate(billItem.getNetRate());
+        bifd.setGrossRate(billItem.getRate());
+        bifd.setLineGrossRate(billItem.getRate());
+
+        // Calculate values (NEGATIVE for revenue - stock/service going out)
+        bifd.setValueAtCostRate(serviceRate.multiply(qty).negate());
+        bifd.setValueAtPurchaseRate(serviceRate.multiply(qty).negate());
+        bifd.setValueAtRetailRate(grossRate.multiply(qty).negate());
+        bifd.setValueAtWholesaleRate(serviceRate.multiply(qty).negate());
+
+        // Set quantities (NEGATIVE for services rendered)
+        bifd.setQuantity(qty.negate());
+        bifd.setFreeQuantity(BigDecimal.ZERO);
+        bifd.setTotalQuantity(qty.negate());
+
+        // Set totals and costs
+        bifd.setLineGrossTotal(billItem.getGrossValue());
+        bifd.setGrossTotal(billItem.getGrossValue());
+        bifd.setLineNetTotal(billItem.getNetValue());
+        bifd.setNetTotal(billItem.getNetValue());
+
+        BigDecimal serviceCost = serviceRate.multiply(qty.abs());
+        bifd.setLineCost(serviceCost);
+        bifd.setTotalCost(serviceCost);
+        bifd.setBillCost(BigDecimal.ZERO);
+    }
+
 }

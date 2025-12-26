@@ -3739,6 +3739,80 @@ public class DataAdministrationController implements Serializable {
         executionFeedback = output.toString();
     }
 
+    /**
+     * Corrects finance details for OPD and pharmacy retail sale bills.
+     * This method populates BillItemFinanceDetails and BillFinanceDetails for historical
+     * OPD and pharmacy retail sale bills with missing or incorrect stock values.
+     * Stock values are made negative as stock goes out during sales.
+     */
+    public void correctOpdAndPharmacyRetailSaleBillFinanceDetails() {
+        int processed = 0;
+        int updated = 0;
+        int skipped = 0;
+
+        // Target bill types for OPD and pharmacy retail sales
+        List&lt;BillTypeAtomic&gt; targetTypes = Arrays.asList(
+                // OPD Bills with stock going out (OPD_IN service type)
+                BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT,
+                BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT,
+
+                // Pharmacy Retail Sales with stock going out
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
+        );
+
+        // Build JPQL query with date range
+        Map&lt;String, Object&gt; params = new HashMap&lt;&gt;();
+        params.put("ret", false);
+        params.put("types", targetTypes);
+
+        StringBuilder jpql = new StringBuilder(
+                "SELECT b FROM Bill b WHERE b.retired = :ret AND b.billTypeAtomic IN :types"
+        );
+        if (fromDate != null) {
+            jpql.append(" AND b.createdAt &gt;= :fromDate");
+            params.put("fromDate", fromDate);
+        }
+        if (toDate != null) {
+            jpql.append(" AND b.createdAt &lt;= :toDate");
+            params.put("toDate", toDate);
+        }
+
+        List&lt;Bill&gt; bills = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        for (Bill bill : bills) {
+            processed++;
+
+            // Skip if BillFinanceDetails already has negative totalCostValue (already corrected)
+            if (bill.getBillFinanceDetails() != null
+                    &amp;&amp; bill.getBillFinanceDetails().getTotalCostValue() != null
+                    &amp;&amp; bill.getBillFinanceDetails().getTotalCostValue().compareTo(BigDecimal.ZERO) &lt;= 0) {
+                skipped++;
+                continue;
+            }
+
+            // Call service method to populate/correct BIFD and BFD
+            billService.createBillFinancialDetailsForOpdAndPharmacyRetailSaleBill(bill);
+            updated++;
+        }
+
+        // Build feedback message
+        StringBuilder output = new StringBuilder();
+        output.append("OPD and Pharmacy Retail Sale Finance Details Correction\n");
+        output.append("======================================================\n");
+        output.append("Processed: ").append(processed).append(" bills\n");
+        output.append("Updated: ").append(updated).append(" bills\n");
+        output.append("Skipped (already corrected): ").append(skipped).append(" bills\n");
+        if (fromDate != null || toDate != null) {
+            output.append("Date range: ").append(fromDate).append(" to ").append(toDate);
+        }
+        executionFeedback = output.toString();
+    }
+
     public class EntityFieldError {
 
         private String entityName;
