@@ -30,6 +30,8 @@ import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
+import com.divudi.core.data.dto.AllSmsListDTO;
+
 /**
  *
  * @author Dushan
@@ -77,6 +79,8 @@ public class SmsController implements Serializable {
     private String smsTemplate;
     private List<Patient> patientsForSms;
     private List<Patient> selectedPatients;
+
+    private List<AllSmsListDTO> allSmsListDtos;
 
     // New variable to control SMS sending
     private static boolean doNotSendAnySms = false;
@@ -147,14 +151,30 @@ public class SmsController implements Serializable {
         return smsManager.sendSms(s);
     }
 
+//    public void fillAllSms() {
+//        String j = "select s "
+//                + " from Sms s "
+//                + " where s.createdAt between :fd and :td ";
+//        Map m = new HashMap();
+//        m.put("fd", fromDate);
+//        m.put("td", toDate);
+//        smses = smsFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
+//    }
     public void fillAllSms() {
-        String j = "select s "
-                + " from Sms s "
-                + " where s.createdAt between :fd and :td ";
+        String j = "select s from Sms s where s.createdAt between :fd and :td";
         Map m = new HashMap();
         m.put("fd", fromDate);
         m.put("td", toDate);
+
+        // Existing entity list (DO NOT REMOVE)
         smses = smsFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
+
+        // NEW DTO list (PARALLEL)
+        allSmsListDtos = new java.util.ArrayList<>();
+
+        for (Sms s : smses) {
+            allSmsListDtos.add(toDto(s));
+        }
     }
 
     public void fillAllFaildSms() {
@@ -291,6 +311,19 @@ public class SmsController implements Serializable {
 
     public void setBool(Boolean bool) {
         this.bool = bool;
+    }
+
+    private AllSmsListDTO toDto(Sms s) {
+        AllSmsListDTO dto = new AllSmsListDTO();
+
+        dto.setSmsId(s.getId());
+        dto.setCreatedAt(s.getCreatedAt());
+        dto.setMessage(s.getSendingMessage());
+        dto.setRecipient(s.getReceipientNumber());
+        dto.setSuccess(s.getSentSuccessfully());
+        dto.setSmsType(s.getSmsType() != null ? s.getSmsType().name() : "UNKNOWN");
+
+        return dto;
     }
 
     private void save(Sms s) {
