@@ -1141,6 +1141,7 @@ public class PharmacyController implements Serializable {
     public void fillDetails() {
         createStocksDto();
         createDepartmentSaleDto();
+        createBatchDetailsDto();  // Add batch details with expiry information
         createInstitutionBhtIssue(); // TODO: Fix this
         createDepartmentTransferIssueDto();
         createDepartmentTransferReceiveDto();
@@ -7061,6 +7062,8 @@ public class PharmacyController implements Serializable {
     private List<InstitutionStock> institutionStocks;
     private List<com.divudi.core.data.dto.PharmacyInstitutionStockDTO> institutionStockDtos;
     private List<com.divudi.core.data.dto.PharmacyDepartmentStockDTO> departmentStockDtos;
+    private List<com.divudi.core.data.dto.PharmacyBatchStockDTO> batchDetailsDtos;
+    private boolean batchDetailsEnabled = false;
     private Map<Long, Double> institutionTotals = new HashMap<>();
     private Set<Long> displayedInstitutionIds = new HashSet<>();
 
@@ -7820,6 +7823,69 @@ public class PharmacyController implements Serializable {
             departmentStockDtos = new ArrayList<>();
             grantStock = 0;
         }
+    }
+
+    /**
+     * Creates batch-level stock data with expiry information
+     * Performance optimization: skips query if both block and tab are disabled
+     */
+    public void createBatchDetailsDto() {
+        // Performance check: skip if both block and tab disabled
+        if (!isBatchBlockEnabled() && !isBatchTabEnabled()) {
+            batchDetailsEnabled = false;
+            batchDetailsDtos = new ArrayList<>();
+            return;
+        }
+
+        batchDetailsEnabled = true;
+        batchDetailsDtos = new ArrayList<>();
+
+        Item stockItem;
+        if (pharmacyItem instanceof Ampp) {
+            stockItem = ((Ampp) pharmacyItem).getAmp();
+        } else {
+            stockItem = pharmacyItem;
+        }
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyBatchStockDTO(" +
+                "s.itemBatch.batchNo, " +
+                "s.itemBatch.dateOfExpire, " +
+                "s.department.institution, " +
+                "s.department, " +
+                "SUM(s.stock)) " +
+                "FROM Stock s " +
+                "WHERE s.itemBatch.item = :item " +
+                "AND s.stock > 0 " +
+                "GROUP BY s.itemBatch, s.department " +
+                "ORDER BY s.itemBatch.dateOfExpire ASC, " +
+                "s.department.institution.name, s.department.name";
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("item", stockItem);
+
+        try {
+            batchDetailsDtos = (List<com.divudi.core.data.dto.PharmacyBatchStockDTO>)
+                getBillItemFacade().findLightsByJpql(jpql, parameters, TemporalType.DATE , 100);
+        } catch (Exception e) {
+            batchDetailsDtos = new ArrayList<>();
+            // Log error if needed
+        }
+    }
+
+    /**
+     * Checks if batch block is enabled via configuration
+     */
+    private boolean isBatchBlockEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey(
+            "Pharmacy Item Details Section - Display Batch Block", true);
+    }
+
+    /**
+     * Checks if batch tab is enabled via configuration
+     */
+    private boolean isBatchTabEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey(
+            "Pharmacy Item Details Section - Display Batch Tab", true);
     }
 
     public void createInstitutionSale() {
@@ -9348,6 +9414,22 @@ public class PharmacyController implements Serializable {
 
     public void setDepartmentStockDtos(List<com.divudi.core.data.dto.PharmacyDepartmentStockDTO> departmentStockDtos) {
         this.departmentStockDtos = departmentStockDtos;
+    }
+
+    public List<com.divudi.core.data.dto.PharmacyBatchStockDTO> getBatchDetailsDtos() {
+        return batchDetailsDtos;
+    }
+
+    public void setBatchDetailsDtos(List<com.divudi.core.data.dto.PharmacyBatchStockDTO> batchDetailsDtos) {
+        this.batchDetailsDtos = batchDetailsDtos;
+    }
+
+    public boolean isBatchDetailsEnabled() {
+        return batchDetailsEnabled;
+    }
+
+    public void setBatchDetailsEnabled(boolean batchDetailsEnabled) {
+        this.batchDetailsEnabled = batchDetailsEnabled;
     }
 
     /**
