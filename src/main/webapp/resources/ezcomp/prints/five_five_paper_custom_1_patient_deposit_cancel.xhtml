@@ -22,23 +22,23 @@
         <div class="fiveinchbill" style="page-break-after: always" >
 
             <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.department.printingName}" />
             </div>
             <div class="institutionContact" >
                 <div>
-                    <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.cancelledBill.department.address}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
+                    <h:outputLabel value="#{cc.attrs.bill.cancelledBill.department.telephone1} "/>
                     <h:outputLabel value=" /" style="width: 20px; text-align: center;"/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.cancelledBill.department.telephone2}"/>
                 </div>
             </div>
             <div class="institutionContact" >
-                <h:outputLabel value="Email : #{cc.attrs.bill.department.email} "/>
+                <h:outputLabel value="Email : #{cc.attrs.bill.cancelledBill.department.email} "/>
             </div>
             <div  class="institutionContact" >
-                <h:outputLabel value="Web : #{cc.attrs.bill.institution.web}"/>
+                <h:outputLabel value="Web : #{cc.attrs.bill.cancelledBill.institution.web}"/>
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
@@ -102,7 +102,7 @@
             </div>
 
             <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Print OPD Bill Session Number')}" >
-                <h:panelGroup  rendered="#{cc.attrs.bill.singleBillSession ne null}" >
+                <h:panelGroup  rendered="#{cc.attrs.bill.cancelledBill.singleBillSession ne null}" >
                     <div class="billline">
                         <div style="width: 100%;text-align: center;font-size: 10px;">
                             <p:outputLabel value="Session No. : " ></p:outputLabel>
@@ -162,7 +162,7 @@
 
                         </td>
                         <td  style="width:10%!important;text-align: right;">
-                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="text-align: right;" class="w-100">
+                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.netTotal}" style="text-align: right;" class="w-100">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
@@ -175,7 +175,7 @@
 
                         </td>
                         <td  style="width:10%!important;text-align: right;">
-                            <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="text-align: right;" class="w-100">
+                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.netTotal}" style="text-align: right;" class="w-100">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
@@ -200,10 +200,6 @@
                 </div>
                 
                 <div class=" gap-2" style="font-size: 9pt">
-<!--                    <div class="d-flex flex-column">
-                        <h:outputLabel value="Original Bill No : " />
-                        <h:outputLabel value="#{cc.attrs.bill.deptId}" />
-                    </div>-->
                     <h:outputLabel value="Created By : #{cc.attrs.bill.creater.staff.code}"/><br/>
                     <h:outputLabel value="#{cc.attrs.bill.createdAt}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -258,7 +254,7 @@
                 </ui:repeat>
             </h:panelGroup>
 
-            <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
+            <h:panelGroup>
                 <div class="d-flex gap-2" style="font-size: 9pt;margin-left:5%">
                     <h:outputLabel value="Remark :"/>
                     <h:outputLabel value="#{cc.attrs.bill.cancelledBill.comments}"/>
