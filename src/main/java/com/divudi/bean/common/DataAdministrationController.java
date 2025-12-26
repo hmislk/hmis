@@ -3751,7 +3751,7 @@ public class DataAdministrationController implements Serializable {
         int skipped = 0;
 
         // Target bill types for OPD and pharmacy retail sales
-        List&lt;BillTypeAtomic&gt; targetTypes = Arrays.asList(
+        List<BillTypeAtomic> targetTypes = Arrays.asList(
                 // OPD Bills with stock going out (OPD_IN service type)
                 BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
                 BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
@@ -3766,7 +3766,7 @@ public class DataAdministrationController implements Serializable {
         );
 
         // Build JPQL query with date range
-        Map&lt;String, Object&gt; params = new HashMap&lt;&gt;();
+        Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("types", targetTypes);
 
@@ -3774,23 +3774,23 @@ public class DataAdministrationController implements Serializable {
                 "SELECT b FROM Bill b WHERE b.retired = :ret AND b.billTypeAtomic IN :types"
         );
         if (fromDate != null) {
-            jpql.append(" AND b.createdAt &gt;= :fromDate");
+            jpql.append(" AND b.createdAt >= :fromDate");
             params.put("fromDate", fromDate);
         }
         if (toDate != null) {
-            jpql.append(" AND b.createdAt &lt;= :toDate");
+            jpql.append(" AND b.createdAt <= :toDate");
             params.put("toDate", toDate);
         }
 
-        List&lt;Bill&gt; bills = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        List<Bill> bills = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
         for (Bill bill : bills) {
             processed++;
 
             // Skip if BillFinanceDetails already has negative totalCostValue (already corrected)
             if (bill.getBillFinanceDetails() != null
-                    &amp;&amp; bill.getBillFinanceDetails().getTotalCostValue() != null
-                    &amp;&amp; bill.getBillFinanceDetails().getTotalCostValue().compareTo(BigDecimal.ZERO) &lt;= 0) {
+                    && bill.getBillFinanceDetails().getTotalCostValue() != null
+                    && bill.getBillFinanceDetails().getTotalCostValue().compareTo(BigDecimal.ZERO) <= 0) {
                 skipped++;
                 continue;
             }

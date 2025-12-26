@@ -10,6 +10,25 @@
         <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
             <ui:define name="subcontent">
 
+                <!-- Custom CSS for Column Width Alignment -->
+                <style>
+                    /* Fixed width for numeric columns to ensure vertical alignment */
+                    .value-column {
+                        width: 120px;
+                        min-width: 120px;
+                        max-width: 120px;
+                    }
+
+                    /* Ensure transaction type column takes remaining space */
+                    .type-column {
+                        width: auto;
+                    }
+
+                    /* Hide columns for specific sections */
+                    .hide-column {
+                        display: none;
+                    }
+                </style>
 
                 <h:form id="reportForm">
 
@@ -218,224 +237,498 @@
 
                     <!-- Report Results Section -->
                     <h:panelGroup id="reportSection">
-                        <div class="card"
-                             rendered="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport != null and pharmacyDailyStockReportOptimizedController.fromDate != null and pharmacyDailyStockReportOptimizedController.department != null}">
-                            <div class="card-header bg-info text-white">
-                                <h:outputText value="&#xf1c0;" styleClass="fa me-2" /> <!-- Database icon -->
-                                <h:outputText value="Daily Stock Value Report Results" styleClass="fw-bold"/>
+                        <h:panelGroup layout="block"
+                                      rendered="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport != null and pharmacyDailyStockReportOptimizedController.fromDate != null and pharmacyDailyStockReportOptimizedController.department != null}">
+
+                            <!-- Main Report Container Card -->
+                            <div class="card mb-3">
+                                <div class="card-header bg-info text-white">
+                                    <h:outputText value="&#xf1c0;" styleClass="fa me-2" /> <!-- Database icon -->
+                                    <h:outputText value="Daily Stock Value Report Results" styleClass="fw-bold"/>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Report Header Information -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <h:panelGroup layout="block" styleClass="alert alert-secondary mb-0">
+                                                <h:outputText value="Date: " styleClass="fw-bold"/>
+                                                <h:outputText value="#{pharmacyDailyStockReportOptimizedController.fromDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                                </h:outputText>
+                                            </h:panelGroup>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h:panelGroup layout="block" styleClass="alert alert-secondary mb-0">
+                                                <h:outputText value="Department: " styleClass="fw-bold"/>
+                                                <h:outputText value="#{pharmacyDailyStockReportOptimizedController.department.name}"/>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+
+                                    <!-- Opening Stock Section Card -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-primary text-white">
+                                            <h:outputText value="&#xf49e;" styleClass="fas me-2" /> <!-- fa-box-open icon -->
+                                            <h:outputText value="Opening Stock" styleClass="fw-bold"/>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th colspan="5">Description</th>
+                                                        <th class="text-end">Cost Rate</th>
+                                                        <th class="text-end">Retail Rate</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td colspan="5">
+                                                            <h:outputText value="Opening Stock Value"/>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.openingStockValueAtCostRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.openingStockValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Sales Section Card -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-success text-white">
+                                            <h:outputText value="&#xf788;" styleClass="fas me-2" /> <!-- fa-cash-register icon -->
+                                            <h:outputText value="Sales Transactions" styleClass="fw-bold"/>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead class="table-success">
+                                                    <tr>
+                                                        <th class="type-column">Sale Type</th>
+                                                        <th class="text-end value-column">Gross Value</th>
+                                                        <th class="text-end value-column">Discount</th>
+                                                        <th class="text-end value-column">Service Charge</th>
+                                                        <th class="text-end value-column">Net Value</th>
+                                                        <th class="text-end value-column">Stock Value (Cost)</th>
+                                                        <th class="text-end value-column">Stock Value (Retail)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <ui:repeat value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.rows}" var="sale">
+                                                        <tr>
+                                                            <td class="type-column">
+                                                                <h:outputText value="#{sale.rowType}"/>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{sale.grossTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{sale.discount}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{sale.serviceCharge}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{sale.netTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{sale.valueOfStocksAtCostRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{sale.valueOfStocksAtRetailSaleRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                    </ui:repeat>
+                                                </tbody>
+                                                <tfoot class="bg-success text-white fw-bold">
+                                                    <tr>
+                                                        <td class="type-column">Total Sales</td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.grossTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.discount}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.serviceCharge}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.netTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.valueOfStocksAtCostRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.valueOfStocksAtRetailSaleRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Purchases Section Card -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-warning text-dark">
+                                            <h:outputText value="&#xf07a;" styleClass="fas me-2" /> <!-- fa-shopping-cart icon -->
+                                            <h:outputText value="Purchase Transactions" styleClass="fw-bold"/>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead class="table-warning">
+                                                    <tr>
+                                                        <th class="type-column">Purchase Type</th>
+                                                        <th class="text-end value-column">Gross Value</th>
+                                                        <th class="text-end value-column hide-column">Discount</th>
+                                                        <th class="text-end value-column hide-column">Service Charge</th>
+                                                        <th class="text-end value-column">Net Value</th>
+                                                        <th class="text-end value-column">Stock Value (Cost)</th>
+                                                        <th class="text-end value-column">Stock Value (Retail)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <ui:repeat id="purchaseBundles" value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.rows}" var="purchase">
+                                                        <tr>
+                                                            <td class="type-column">
+                                                                <h:outputText value="#{purchase.rowType}"/>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{purchase.grossTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column hide-column">
+                                                                <h:outputText value="#{purchase.discount}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column hide-column">
+                                                                <h:outputText value="#{purchase.serviceCharge}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{purchase.netTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{purchase.valueOfStocksAtCostRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{purchase.valueOfStocksAtRetailSaleRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                    </ui:repeat>
+                                                </tbody>
+                                                <tfoot class="bg-warning text-dark fw-bold">
+                                                    <tr>
+                                                        <td class="type-column">Total Purchases</td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.summaryRow.grossTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column hide-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.summaryRow.discount}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column hide-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.summaryRow.serviceCharge}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.summaryRow.netTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.summaryRow.valueOfStocksAtCostRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText id="lblPurchaseBillsTotalAtRetailRate" value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.summaryRow.valueOfStocksAtRetailSaleRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Transfers Section Card -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-info text-white">
+                                            <h:outputText value="&#xf362;" styleClass="fas me-2" /> <!-- fa-exchange-alt icon -->
+                                            <h:outputText value="Transfer Transactions" styleClass="fw-bold"/>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead class="table-info">
+                                                    <tr>
+                                                        <th class="type-column">Transfer Type</th>
+                                                        <th class="text-end value-column">Gross Value</th>
+                                                        <th class="text-end value-column hide-column">Discount</th>
+                                                        <th class="text-end value-column hide-column">Service Charge</th>
+                                                        <th class="text-end value-column">Net Value</th>
+                                                        <th class="text-end value-column">Stock Value (Cost)</th>
+                                                        <th class="text-end value-column">Stock Value (Retail)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <ui:repeat value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.rows}" var="transfer">
+                                                        <tr>
+                                                            <td class="type-column">
+                                                                <h:outputText value="#{transfer.rowType}"/>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{transfer.grossTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column hide-column">
+                                                                <h:outputText value="#{transfer.discount}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column hide-column">
+                                                                <h:outputText value="#{transfer.serviceCharge}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{transfer.netTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{transfer.valueOfStocksAtCostRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{transfer.valueOfStocksAtRetailSaleRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                    </ui:repeat>
+                                                </tbody>
+                                                <tfoot class="bg-info text-white fw-bold">
+                                                    <tr>
+                                                        <td class="type-column">Total Transfers</td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.summaryRow.grossTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column hide-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.summaryRow.discount}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column hide-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.summaryRow.serviceCharge}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.summaryRow.netTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.summaryRow.valueOfStocksAtCostRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.summaryRow.valueOfStocksAtRetailSaleRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Adjustments Section Card -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-danger text-white">
+                                            <h:outputText value="&#xf044;" styleClass="fas me-2" /> <!-- fa-edit icon -->
+                                            <h:outputText value="Adjustment Transactions" styleClass="fw-bold"/>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead class="table-danger">
+                                                    <tr>
+                                                        <th class="type-column">Adjustment Type</th>
+                                                        <th class="text-end value-column">Gross Value</th>
+                                                        <th class="text-end value-column hide-column">Discount</th>
+                                                        <th class="text-end value-column hide-column">Service Charge</th>
+                                                        <th class="text-end value-column">Net Value</th>
+                                                        <th class="text-end value-column">Stock Value (Cost)</th>
+                                                        <th class="text-end value-column">Stock Value (Retail)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <ui:repeat value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.rows}" var="adjustment">
+                                                        <tr>
+                                                            <td class="type-column">
+                                                                <h:outputText value="#{adjustment.rowType}"/>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{adjustment.grossTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column hide-column">
+                                                                <h:outputText value="#{adjustment.discount}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column hide-column">
+                                                                <h:outputText value="#{adjustment.serviceCharge}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{adjustment.netTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{adjustment.valueOfStocksAtCostRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
+                                                                <h:outputText value="#{adjustment.valueOfStocksAtRetailSaleRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                    </ui:repeat>
+                                                </tbody>
+                                                <tfoot class="bg-danger text-white fw-bold">
+                                                    <tr>
+                                                        <td class="type-column">Total Adjustments</td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.summaryRow.grossTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column hide-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.summaryRow.discount}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column hide-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.summaryRow.serviceCharge}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.summaryRow.netTotal}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.summaryRow.valueOfStocksAtCostRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.summaryRow.valueOfStocksAtRetailSaleRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Closing Stock Section Card -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-primary text-white">
+                                            <h:outputText value="&#xf466;" styleClass="fas me-2" /> <!-- fa-box icon -->
+                                            <h:outputText value="Closing Stock" styleClass="fw-bold"/>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th colspan="5">Description</th>
+                                                        <th class="text-end">Cost Rate</th>
+                                                        <th class="text-end">Retail Rate</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td colspan="5">
+                                                            <h:outputText value="Closing Stock Value"/>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockValueAtCostRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                </div>
                             </div>
-                            <div class="card-body p-0">
-                                <table class="table table-striped table-hover mb-0">
-                        <tr>
-                            <th colspan="7" class="bg-primary text-white text-center">
-                                <h:outputText value="Daily Stock Value Report"/>
-                            </th>
-                        </tr>
-                        <tr>
-                            <th colspan="3" class="bg-secondary text-white text-center">
-                                <h:outputText value="Date : "/>
-                                <h:outputText value="#{pharmacyDailyStockReportOptimizedController.fromDate}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                </h:outputText>
-                            </th>
-                            <th colspan="4" class="bg-secondary text-white text-center">
-                                <h:outputText value="Department : "/>
-                                <h:outputText value="#{pharmacyDailyStockReportOptimizedController.department.name}"/>
-                            </th>
-                        </tr>
 
-                        <tr class="table-primary">
-                            <td colspan="5">
-                                <h:outputLabel value="Opening Stock"/>
-                            </td>
-                            <td class="text-end">
-                                <h:outputLabel value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.openingStockValueAtCostRate}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </td>
-                            <td class="text-end">
-                                <h:outputLabel value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.openingStockValue}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-
-                        <!-- Sales Section Header -->
-                        <tr class="table-success">
-                            <th>Sale Type</th>
-                            <th class="text-end">Gross Value</th>
-                            <th class="text-end">Discount</th>
-                            <th class="text-end">Service Charge</th>
-                            <th class="text-end">Net Value</th>
-                            <th class="text-end">Stock Value (Cost)</th>
-                            <th class="text-end">Stock Value (Retail)</th>
-                        </tr>
-                        <ui:repeat value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.rows}" var="sale">
-                            <tr class="table-success">
-                                <td>
-                                    <h:outputLabel value="#{sale.rowType}"/>
-                                </td>
-                                <td class="text-end">
-                                    <h:outputLabel value="#{sale.grossTotal}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </td>
-                                <td class="text-end">
-                                    <h:outputLabel value="#{sale.discount}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </td>
-                                <td class="text-end">
-                                    <h:outputLabel value="#{sale.serviceCharge}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </td>
-                                <td class="text-end">
-                                    <h:outputLabel value="#{sale.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </td>
-                                <td class="text-end">
-                                    <h:outputLabel value="#{sale.valueOfStocksAtCostRate}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </td>
-                                <td class="text-end">
-                                    <h:outputLabel value="#{sale.valueOfStocksAtRetailSaleRate}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </ui:repeat>
-                        <tr class="bg-success text-white fw-bold">
-                            <td>Total Sales</td>
-                            <td class="text-end">
-                                <h:outputLabel value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.grossTotal}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </td>
-                            <td class="text-end">
-                                <h:outputLabel value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.discount}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </td>
-                            <td class="text-end">
-                                <h:outputLabel value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.serviceCharge}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </td>
-                            <td class="text-end">
-                                <h:outputLabel value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </td>
-                            <td class="text-end">
-                                <h:outputLabel value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.valueOfStocksAtCostRate}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </td>
-                            <td class="text-end">
-                                <h:outputLabel value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.valueOfStocksAtRetailSaleRate}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-
-                        <!-- Purchases Section -->
-                        <ui:repeat
-                            id="purchaseBundles"
-                            value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.rows}" var="purchase">
-                            <tr class="table-warning">
-                                <td colspan="6">
-                                    <h:outputLabel value="#{purchase.rowType}"/>
-                                </td>
-                                <td class="text-end">
-                                    <h:outputLabel value="#{purchase.valueOfStocksAtRetailSaleRate}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </ui:repeat>
-                        <tr class="bg-warning text-dark fw-bold">
-                            <td colspan="6" class="text-end">
-                                <h:outputLabel value="Total Purchases"/>
-                            </td>
-                            <td class="text-end">
-                                <h:outputLabel
-                                    id="lblPurchaseBillsTotalAtRetailRate"
-                                    value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.summaryRow.valueOfStocksAtRetailSaleRate}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-
-                        <!-- Transfers Section -->
-                        <ui:repeat value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.rows}" var="transfer">
-                            <tr class="table-info">
-                                <td colspan="6">
-                                    <h:outputLabel value="#{transfer.rowType}"/>
-                                </td>
-                                <td class="text-end">
-                                    <h:outputLabel value="#{transfer.valueOfStocksAtRetailSaleRate}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </ui:repeat>
-                        <tr class="bg-info text-dark fw-bold">
-                            <td colspan="6" class="text-end">
-                                <h:outputLabel value="Total Transfers"/>
-                            </td>
-                            <td class="text-end">
-                                <h:outputLabel value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.summaryRow.valueOfStocksAtRetailSaleRate}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-
-                        <!-- Adjustments Section -->
-                        <ui:repeat value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.rows}" var="adjustment">
-                            <tr class="table-danger">
-                                <td colspan="6">
-                                    <h:outputLabel value="#{adjustment.rowType}"/>
-                                </td>
-                                <td class="text-end">
-                                    <h:outputLabel value="#{adjustment.grossTotal}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </ui:repeat>
-                        <tr class="bg-danger text-white fw-bold">
-                            <td colspan="6" class="text-end">
-                                <h:outputLabel value="Total Adjustments"/>
-                            </td>
-                            <td class="text-end">
-                                <h:outputLabel value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.summaryRow.valueOfStocksAtRetailSaleRate}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-
-                        <!-- Closing Stock -->
-                        <tr class="table-primary">
-                            <td colspan="5">
-                                <h:outputLabel value="Closing Stock"/>
-                            </td>
-                            <td class="text-end">
-                                <h:outputLabel value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockValueAtCostRate}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </td>
-                            <td class="text-end">
-                                <h:outputLabel value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockValue}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                                </table>
-                            </div>
-                        </div>
+                        </h:panelGroup>
                     </h:panelGroup>
 
 

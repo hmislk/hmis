@@ -56,6 +56,7 @@ import com.divudi.core.entity.cashTransaction.DenominationTransaction;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.ItemBatch;
 
 import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
@@ -3351,8 +3352,8 @@ public class BillService {
         }
 
         // Set bill-level aggregated values (NEGATIVE for stock going out)
-        bfd.setNetTotal(bill.getNetTotal());
-        bfd.setGrossTotal(bill.getTotal());
+        bfd.setNetTotal(BigDecimal.valueOf(bill.getNetTotal()));
+        bfd.setGrossTotal(BigDecimal.valueOf(bill.getTotal()));
         bfd.setTotalCostValue(totalCostValue.negate());
         bfd.setTotalPurchaseValue(totalPurchaseValue.negate());
         bfd.setTotalRetailSaleValue(totalRetailSaleValue.negate());
@@ -3377,26 +3378,30 @@ public class BillService {
 
         ItemBatch batch = pharmaItem.getItemBatch();
 
-        // Get quantities
-        BigDecimal qty = billItem.getQty() != null ? BigDecimal.valueOf(billItem.getQty()) : BigDecimal.ZERO;
-        BigDecimal freeQty = pharmaItem.getFreeQty() != null ? BigDecimal.valueOf(pharmaItem.getFreeQty()) : BigDecimal.ZERO;
+        // Get quantities (primitive double - no null check needed)
+        BigDecimal qty = BigDecimal.valueOf(Math.abs(billItem.getQty()));
+        BigDecimal freeQty = BigDecimal.valueOf(Math.abs(pharmaItem.getFreeQty()));
         BigDecimal totalQty = qty.add(freeQty);
 
-        // Get rates from batch
-        BigDecimal costRate = batch.getCostRate() != null ? BigDecimal.valueOf(batch.getCostRate()) :
-                             (batch.getPurcahseRate() != 0.0 ? BigDecimal.valueOf(batch.getPurcahseRate()) : BigDecimal.ZERO);
+        // Get rates from batch (following existing pattern)
         BigDecimal purchaseRate = BigDecimal.valueOf(batch.getPurcahseRate());
         BigDecimal retailRate = BigDecimal.valueOf(batch.getRetailsaleRate());
         BigDecimal wholesaleRate = BigDecimal.valueOf(batch.getWholesaleRate());
+
+        // Get cost rate with fallback to purchase rate
+        BigDecimal costRate = purchaseRate;
+        if (batch.getCostRate() != null && batch.getCostRate() > 0) {
+            costRate = BigDecimal.valueOf(batch.getCostRate());
+        }
 
         // Set rates in BIFD (these don't change sign)
         bifd.setCostRate(costRate);
         bifd.setPurchaseRate(purchaseRate);
         bifd.setRetailSaleRate(retailRate);
         bifd.setWholesaleRate(wholesaleRate);
-        bifd.setLineNetRate(billItem.getNetRate());
-        bifd.setGrossRate(billItem.getRate());
-        bifd.setLineGrossRate(billItem.getRate());
+        bifd.setLineNetRate(BigDecimal.valueOf(billItem.getNetRate()));
+        bifd.setGrossRate(BigDecimal.valueOf(billItem.getRate()));
+        bifd.setLineGrossRate(BigDecimal.valueOf(billItem.getRate()));
 
         // Calculate values (NEGATIVE for stock going out)
         bifd.setValueAtCostRate(costRate.multiply(totalQty).negate());
@@ -3410,10 +3415,10 @@ public class BillService {
         bifd.setTotalQuantity(totalQty.negate());
 
         // Set totals and costs
-        bifd.setLineGrossTotal(billItem.getGrossValue());
-        bifd.setGrossTotal(billItem.getGrossValue());
-        bifd.setLineNetTotal(billItem.getNetValue());
-        bifd.setNetTotal(billItem.getNetValue());
+        bifd.setLineGrossTotal(BigDecimal.valueOf(billItem.getGrossValue()));
+        bifd.setGrossTotal(BigDecimal.valueOf(billItem.getGrossValue()));
+        bifd.setLineNetTotal(BigDecimal.valueOf(billItem.getNetValue()));
+        bifd.setNetTotal(BigDecimal.valueOf(billItem.getNetValue()));
 
         BigDecimal itemCostValue = costRate.multiply(totalQty.abs());
         bifd.setLineCost(itemCostValue);
@@ -3429,20 +3434,20 @@ public class BillService {
 
     private void processOpdServiceItemForCorrection(BillItem billItem, BillItemFinanceDetails bifd) {
         // For OPD service items, use the bill item's rates and values
-        BigDecimal qty = billItem.getQty() != null ? BigDecimal.valueOf(billItem.getQty()) : BigDecimal.ZERO;
+        BigDecimal qty = BigDecimal.valueOf(Math.abs(billItem.getQty()));
 
         // Use service rates (net rate as cost approximation for services)
-        BigDecimal serviceRate = billItem.getNetRate() != null ? billItem.getNetRate() : BigDecimal.ZERO;
-        BigDecimal grossRate = billItem.getRate() != null ? billItem.getRate() : BigDecimal.ZERO;
+        BigDecimal serviceRate = BigDecimal.valueOf(billItem.getNetRate());
+        BigDecimal grossRate = BigDecimal.valueOf(billItem.getRate());
 
         // Set rates in BIFD
         bifd.setCostRate(serviceRate); // Approximate cost as net rate for services
         bifd.setPurchaseRate(serviceRate);
         bifd.setRetailSaleRate(grossRate);
         bifd.setWholesaleRate(serviceRate);
-        bifd.setLineNetRate(billItem.getNetRate());
-        bifd.setGrossRate(billItem.getRate());
-        bifd.setLineGrossRate(billItem.getRate());
+        bifd.setLineNetRate(BigDecimal.valueOf(billItem.getNetRate()));
+        bifd.setGrossRate(BigDecimal.valueOf(billItem.getRate()));
+        bifd.setLineGrossRate(BigDecimal.valueOf(billItem.getRate()));
 
         // Calculate values (NEGATIVE for revenue - stock/service going out)
         bifd.setValueAtCostRate(serviceRate.multiply(qty).negate());
@@ -3456,10 +3461,10 @@ public class BillService {
         bifd.setTotalQuantity(qty.negate());
 
         // Set totals and costs
-        bifd.setLineGrossTotal(billItem.getGrossValue());
-        bifd.setGrossTotal(billItem.getGrossValue());
-        bifd.setLineNetTotal(billItem.getNetValue());
-        bifd.setNetTotal(billItem.getNetValue());
+        bifd.setLineGrossTotal(BigDecimal.valueOf(billItem.getGrossValue()));
+        bifd.setGrossTotal(BigDecimal.valueOf(billItem.getGrossValue()));
+        bifd.setLineNetTotal(BigDecimal.valueOf(billItem.getNetValue()));
+        bifd.setNetTotal(BigDecimal.valueOf(billItem.getNetValue()));
 
         BigDecimal serviceCost = serviceRate.multiply(qty.abs());
         bifd.setLineCost(serviceCost);
