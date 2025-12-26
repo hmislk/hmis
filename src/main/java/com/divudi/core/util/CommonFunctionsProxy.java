@@ -104,4 +104,18 @@ public class CommonFunctionsProxy {
     public String escapeHtml(String input) {
         return CommonFunctions.escapeHtml(input);
     }
+
+    /**
+     * Adds the specified number of days to the given date.
+     *
+     * @param date the base date
+     * @param days the number of days to add (can be negative to subtract)
+     * @return the resulting date after adding the days
+     */
+    public Date addDaysToDate(Date date, Long days) {
+        if (date == null || days == null) {
+            return date;
+        }
+        return CommonFunctions.getAddedDate(date, days.intValue());
+    }
 }
