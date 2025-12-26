@@ -317,6 +317,30 @@
                                     </tr>
 
                                     <tr>
+                                        <td><strong>Correct Finance Details for Inpatient Direct Issue Bills</strong></td>
+                                        <td>
+                                            Populates BillItemFinanceDetails and BillFinanceDetails for historical inpatient direct issue bills
+                                            within the selected date range. Includes direct pharmacy issues, theatre issues, store issues,
+                                            and request-based issues to inpatients. Skips bills that already have finance details populated.
+                                            Uses cost, purchase, retail rates from ItemBatch for accurate stock valuation.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                id="btnCorrectInpatientDirectIssueFinanceDetails"
+                                                action="#{dataAdministrationController.correctInpatientDirectIssueBillFinanceDetails()}"
+                                                ajax="false"
+                                                value="Correct Inpatient Issue Finance Details"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-calculator"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                onclick="return confirm('This will populate finance details for inpatient direct issue bills in the selected period. Proceed?');" />
+                                        </td>
+                                        <td>
+                                            #{dataAdministrationController.executionFeedback}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
                                         <td><strong>Assign Pharmacy Department Type</strong></td>
                                         <td>
                                             Assigns the Pharmacy department type to all PharmaceuticalItem objects that currently have no department type assigned. This ensures proper categorization of pharmaceutical items within the system.
