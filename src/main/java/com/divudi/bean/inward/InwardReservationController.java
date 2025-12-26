@@ -2,6 +2,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.AppointmentStatus;
 import com.divudi.core.data.dto.ReservationDTO;
 import com.divudi.core.data.inward.InwardReservationEvent;
 
@@ -95,7 +96,7 @@ public class InwardReservationController implements Serializable {
 
     public String navigateToReservationCalendarFromMenu() {
         currentReservationDTO = null;
-        fromDate = new Date();
+        fromDate = CommonFunctions.getStartOfDay();
         Long noOfMonths = configOptionApplicationController.getLongValueByKey("Number of Months to Load During Reservation Calendar", 6L);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(fromDate);
@@ -141,6 +142,8 @@ public class InwardReservationController implements Serializable {
     private void addMessage(FacesMessage message) {
         FacesContext.getCurrentInstance().addMessage(null, message);
     }
+    
+    private AppointmentStatus calanderStatus = null ;
 
     public void findReservations() {
         String jpql;
@@ -149,13 +152,21 @@ public class InwardReservationController implements Serializable {
         jpql = "Select r from Reservation r "
                 + " where r.retired=:ret";
         m.put("ret", false);
-
+        
+        if(calanderStatus != null){
+            jpql += " and r.appointment.status =:ststus";
+            m.put("ststus", calanderStatus);
+        }else{
+            jpql += " and r.appointment.status =:ststus";
+            m.put("ststus", AppointmentStatus.PENDING);
+        }
+        
         if (fromDate != null) {
-            jpql += " and r.reservedFrom between :fd and :td ";
+            jpql += " and (r.reservedFrom between :fd and :td or r.reservedTo between :fd and :td )";
             m.put("fd", fromDate);
             m.put("td", toDate);
         }
-
+        
         selectedReservations = reservationFacade.findByJpqlWithoutCache(jpql, m, TemporalType.TIMESTAMP);
         generateReservationsEvents(selectedReservations);
     }
@@ -268,5 +279,13 @@ public class InwardReservationController implements Serializable {
 
     public void setCurrentReservationDTO(ReservationDTO currentReservationDTO) {
         this.currentReservationDTO = currentReservationDTO;
+    }
+
+    public AppointmentStatus getCalanderStatus() {
+        return calanderStatus;
+    }
+
+    public void setCalanderStatus(AppointmentStatus calanderStatus) {
+        this.calanderStatus = calanderStatus;
     }
 }

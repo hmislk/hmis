@@ -13,8 +13,6 @@
                 xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
                 xmlns:na="http://xmlns.jcp.org/jsf/composite/template">
 
-
-
     <ui:define name="content">
 
         <h:outputStylesheet library="css" name="printing.css" />
@@ -63,11 +61,11 @@
                                             <h:panelGrid columns="3" class="w-50 my-2">
 
                                                 <h:outputLabel value="Room No"/>
-                                                <h:outputLabel value=":"/>
+                                                <h:outputLabel value=":" class="mx-4"/>
                                                 <p:autoComplete
                                                     forceSelection="true"  
                                                     id="cmbRspRoom" 
-                                                    class="mx-4 my-2"
+                                                    class="my-2"
                                                     value="#{appointmentController.reservedRoom}" 
                                                     completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
                                                     var="rf" 
@@ -79,35 +77,32 @@
                                                     maxResults="25">
                                                 </p:autoComplete>
 
-                                                <h:outputLabel value="Reserve From"/>
-                                                <h:outputLabel value=":"/>
-                                                <p:datePicker 
-                                                    value="#{appointmentController.reservedFromDate}" 
-                                                    id="reserveFromTimeStamp"
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                                    styleClass="form-control w-100"
-                                                    showButtonBar="true"
-                                                    placeholder="Select Reserve From"
-                                                    timeInput="true"
-                                                    showTime="true"
-                                                    class="w-50 mx-4 my-2" 
-                                                    inputStyleClass="w-100" >
-                                                </p:datePicker>
+                                                <h:outputLabel value="Reserve From" class="mt-2"/>
+                                                <h:outputLabel value=":" class="mx-4 mt-2"/>
 
-                                                <h:outputLabel value="Reserve To"/>
-                                                <h:outputLabel value=":"/>
-                                                <p:datePicker 
+                                                <p:calendar 
+                                                    id="reserveFromTimeStamp"
+                                                    value="#{appointmentController.reservedFromDate}" 
+                                                    navigator="false"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    class="w-100 mt-2"
+                                                    placeholder="Reservation Start"
+                                                    inputStyleClass="form-control">
+                                                </p:calendar>
+
+                                                <h:outputLabel value="Reserve To" class="mt-2"/>
+                                                <h:outputLabel value=":" class="mx-4 mt-2"/>
+
+                                                <p:calendar 
                                                     value="#{appointmentController.reservedToDate}" 
                                                     id="reserveToTimeStamp"
+                                                    navigator="false"
                                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                                    styleClass="form-control w-100"
-                                                    showButtonBar="true"
-                                                    placeholder="Select Reserve To"
-                                                    timeInput="true"
-                                                    showTime="true"
-                                                    class="w-50 mx-4 my-2" 
-                                                    inputStyleClass="w-100" >
-                                                </p:datePicker>
+                                                    styleClass="dateTimePicker"
+                                                    placeholder="Reservation End"
+                                                    class="w-100 mt-2"
+                                                    inputStyleClass="form-control">
+                                                </p:calendar>
 
                                             </h:panelGrid>
                                         </h:panelGroup>
@@ -228,17 +223,16 @@
                                             </p:autoComplete>
 
                                             <p:outputLabel value="Appointment Date"/>
-                                            <p:datePicker 
-                                                inputStyleClass="w-100"
-                                                class="w-100 my-1"
-                                                showTime="true"
-                                                placeholder="Select Appointment Date"
-                                                showButtonBar="true"
-                                                timeInput="true"
+                                            <p:calendar 
+                                                id="appointmentDate"
                                                 value="#{appointmentController.currentAppointment.appointmentDate}" 
-                                                pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                                >                            
-                                            </p:datePicker>
+                                                navigator="false"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                styleClass="dateTimePicker"
+                                                class="w-100 mt-2"
+                                                placeholder="Select Appointment Date"
+                                                inputStyleClass="form-control">
+                                            </p:calendar>
 
 
                                         </h:panelGrid>

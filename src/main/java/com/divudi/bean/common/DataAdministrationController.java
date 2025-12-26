@@ -3671,6 +3671,74 @@ public class DataAdministrationController implements Serializable {
         this.selected = selected;
     }
 
+    /**
+     * Corrects BillItemFinanceDetails and BillFinanceDetails for historical
+     * inpatient direct issue bills within the selected date range.
+     *
+     * Skips bills that already have BillFinanceDetails populated (non-zero totalCostValue).
+     * Uses the same service method as new bill settlement for consistency.
+     */
+    public void correctInpatientDirectIssueBillFinanceDetails() {
+        int processed = 0;
+        int updated = 0;
+        int skipped = 0;
+
+        // Target bill types for inpatient direct issues
+        List<BillTypeAtomic> targetTypes = Arrays.asList(
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_STORE_INWARD,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD
+        );
+
+        // Build JPQL query with date range
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("types", targetTypes);
+
+        StringBuilder jpql = new StringBuilder(
+                "SELECT b FROM Bill b WHERE b.retired = :ret AND b.billTypeAtomic IN :types"
+        );
+        if (fromDate != null) {
+            jpql.append(" AND b.createdAt >= :fromDate");
+            params.put("fromDate", fromDate);
+        }
+        if (toDate != null) {
+            jpql.append(" AND b.createdAt <= :toDate");
+            params.put("toDate", toDate);
+        }
+
+        List<Bill> bills = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        for (Bill bill : bills) {
+            processed++;
+
+            // Skip if BillFinanceDetails already has data (non-zero totalCostValue)
+            if (bill.getBillFinanceDetails() != null
+                    && bill.getBillFinanceDetails().getTotalCostValue() != null
+                    && bill.getBillFinanceDetails().getTotalCostValue().compareTo(BigDecimal.ZERO) != 0) {
+                skipped++;
+                continue;
+            }
+
+            // Call existing service method to populate BIFD and BFD
+            billService.createBillFinancialDetailsForInpatientDirectIssueBill(bill);
+            updated++;
+        }
+
+        // Build feedback message
+        StringBuilder output = new StringBuilder();
+        output.append("Inpatient Direct Issue Finance Details Correction\n");
+        output.append("=================================================\n");
+        output.append("Processed: ").append(processed).append(" bills\n");
+        output.append("Updated: ").append(updated).append(" bills\n");
+        output.append("Skipped (already populated): ").append(skipped).append(" bills\n");
+        if (fromDate != null || toDate != null) {
+            output.append("Date range: ").append(fromDate).append(" to ").append(toDate);
+        }
+        executionFeedback = output.toString();
+    }
+
     public class EntityFieldError {
 
         private String entityName;
