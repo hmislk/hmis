@@ -2180,6 +2180,10 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;
         }
+        if (currentPayment.getPaidValue() <= 0) {
+            JsfUtil.addErrorMessage("Payment value must be greater than zero");
+            return;
+        }
         getCurrentBillPayments().add(currentPayment);
         calculateFundTransferBillTotal();
         currentPayment = null;
@@ -2400,6 +2404,16 @@ public class FinancialTransactionController implements Serializable {
         if (currentBill.getToWebUser() == null) {
             floatTransferStarted = false;
             JsfUtil.addErrorMessage("Select to whom to transfer");
+            return "";
+        }
+        if (currentBill.getComments() == null || currentBill.getComments().trim().isEmpty()) {
+            floatTransferStarted = false;
+            JsfUtil.addErrorMessage("Comments are required for fund transfer");
+            return "";
+        }
+        if (getCurrentBillPayments() == null || getCurrentBillPayments().isEmpty()) {
+            floatTransferStarted = false;
+            JsfUtil.addErrorMessage("At least one float must be added before settlement");
             return "";
         }
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_TRANSFER_BILL);
