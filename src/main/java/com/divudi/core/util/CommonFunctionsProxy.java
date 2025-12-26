@@ -112,7 +112,7 @@ public class CommonFunctionsProxy {
      * @param days the number of days to add (can be negative to subtract)
      * @return the resulting date after adding the days
      */
-    public Date addDaysToDate(Date date, Long days) {
+    public Date addDaysToDate(Date date, int days) {
         if (date == null || days == null) {
             return date;
         }
