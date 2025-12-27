@@ -146,6 +146,7 @@ public class SmsController implements Serializable {
             return;
         }
         Sms s = new Sms();
+        s.setSmsType(MessageType.CustomSMS);
         s.setReceipientNumber(smsNumber);
         s.setSendingMessage(smsMessage);
         save(s);
@@ -204,10 +205,14 @@ public class SmsController implements Serializable {
                 + " s.sentSuccessfully,"
                 + " s.pending,"
                 + " COALESCE(s.receivedMessage,'N/A'),"
-                + " s.bill.patient.person.title, " 
-                + " COALESCE(s.bill.patient.person.name, '')"
+                + " p.title, " 
+                + " COALESCE(p.name,'')"
                 + " )"
-                + " from Sms s where s.createdAt between :fd and :td "
+                + " from Sms s "
+                + " LEFT JOIN s.bill b "
+                + " LEFT JOIN b.patient pt "
+                + " LEFT JOIN pt.person p "
+                + " where s.createdAt between :fd and :td "
                 + " ORDER BY s.id asc";
         
         Map params = new HashMap();
@@ -215,7 +220,7 @@ public class SmsController implements Serializable {
         params.put("td", toDate);
 
         smsDtoList = (List<SmsDTO>)smsFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
-        
+
     }
 
     public void fillAllFaildSms() {
