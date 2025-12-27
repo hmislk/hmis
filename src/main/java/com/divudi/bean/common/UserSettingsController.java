@@ -739,27 +739,27 @@ public class UserSettingsController implements Serializable {
         return isColumnVisible("pharmacy_return_withouttressing", "retailRate");
     }
     
-    public void setPharmacyReturnWithouttresingRetailRateVisible(boolean visible){
+    public void setPharmacyReturnWithouttressingRetailRateVisible(boolean visible){
         ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_return_withouttresing");
         settings.setColumnVisible("retailRate", visible);
         saveColumnVisibility("pharmacy_return_withouttresing", settings);
     }
     
-    public boolean isPharmacyReturnWithouttresingRetailValueVisible(){
+    public boolean isPharmacyReturnWithouttressingRetailValueVisible(){
         return isColumnVisible("pharmacy_return_withouttresing", "retailValue");
     }
     
-    public void setPharmacyReturnWithouttresingRetailValueVisible(boolean visible){
+    public void setPharmacyReturnWithouttressingRetailValueVisible(boolean visible){
         ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_return_withouttresing");
         settings.setColumnVisible("retailValue", visible);
         saveColumnVisibility("pharmacy_return_withouttresing", settings);
     }
     
-    public boolean isPharmacyReturnWithouttresingExpiryVisible(){
+    public boolean isPharmacyReturnWithouttressingExpiryVisible(){
         return isColumnVisible("pharmacy_return_withouttresing", "expiry");
     }
     
-    public void setPharmacyReturnWithouttresingExpiryVisible(boolean visible){
+    public void setPharmacyReturnWithouttressingExpiryVisible(boolean visible){
         ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_return_withouttresing");
         settings.setColumnVisible("expiry", visible);
         saveColumnVisibility("pharmacy_return_withouttresing", settings);

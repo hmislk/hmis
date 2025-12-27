@@ -18,8 +18,11 @@ import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
+import com.divudi.service.pharmacy.PharmacyCostingService;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.IssueRateMargins;
@@ -28,6 +31,7 @@ import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.UserStock;
@@ -40,6 +44,7 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -95,6 +100,8 @@ public class PharmacyReturnwithouttresing implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     BillNumberGenerator billNumberBean;
+    @EJB
+    private PharmacyCostingService pharmacyCostingService;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -562,6 +569,9 @@ public class PharmacyReturnwithouttresing implements Serializable {
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
         getBillFacade().edit(getPreBill());
 
+        // Create financial details for proper cost accounting
+        createFinanceDetailsForReturnItems();
+
         setPrintBill(getBillFacade().find(getPreBill().getId()));
 
         clearBill();
@@ -569,6 +579,128 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
         billPreview = true;
 
+    }
+
+    /**
+     * Creates BillItemFinanceDetails and BillFinanceDetails for return without tracing.
+     * Follows cost accounting sign conventions for proper inventory valuation.
+     */
+    private void createFinanceDetailsForReturnItems() {
+        if (getPreBill() == null || getPreBill().getBillItems() == null) {
+            return;
+        }
+
+        // Step 1: Create BIFD for each item
+        for (BillItem billItem : getPreBill().getBillItems()) {
+            if (!billItem.isRetired()) {
+                createBillItemFinanceDetails(billItem);
+            }
+        }
+
+        // Step 2: Create BFD at bill level
+        createBillFinanceDetails();
+
+        // Step 3: Persist updated bill
+        getBillFacade().edit(getPreBill());
+    }
+
+    /**
+     * Creates BillItemFinanceDetails for a single return item.
+     * Applies negative cost accounting for stock-out transactions.
+     */
+    private void createBillItemFinanceDetails(BillItem billItem) {
+        PharmaceuticalBillItem phi = billItem.getPharmaceuticalBillItem();
+        if (phi == null || phi.getStock() == null || phi.getStock().getItemBatch() == null) {
+            return;
+        }
+
+        // Initialize BIFD (auto-creates if null)
+        billItem.initializeBillItemFinanceDetails();
+        BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+
+        // Set audit information
+        bifd.setCreatedAt(new Date());
+        bifd.setCreatedBy(getSessionController().getLoggedUser());
+
+        // Calculate units per pack using PharmacyCostingService
+        pharmacyCostingService.calculateUnitsPerPack(bifd);
+
+        // Set quantities from PharmaceuticalBillItem (negative for returns)
+        pharmacyCostingService.addBillItemFinanceDetailQuantitiesFromPharmaceuticalBillItem(phi, bifd);
+
+        // Extract and set rates from ItemBatch (positive values)
+        ItemBatch batch = phi.getStock().getItemBatch();
+        bifd.setCostRate(BigDecimal.valueOf(batch.getCostRate() != null ? batch.getCostRate() : batch.getPurcahseRate()));
+        bifd.setPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()));
+        bifd.setRetailSaleRate(BigDecimal.valueOf(batch.getRetailsaleRate()));
+
+        // Set line rates (using purchase rate for return pricing)
+        bifd.setLineGrossRate(bifd.getPurchaseRate());
+        bifd.setGrossRate(bifd.getLineGrossRate());
+        bifd.setNetRate(bifd.getLineGrossRate());
+
+        // Calculate stock valuation values (NEGATIVE for returns)
+        BigDecimal absQuantityInUnits = bifd.getQuantityByUnits().abs();
+        bifd.setValueAtCostRate(bifd.getCostRate().multiply(absQuantityInUnits).negate());
+        bifd.setValueAtPurchaseRate(bifd.getPurchaseRate().multiply(absQuantityInUnits).negate());
+        bifd.setValueAtRetailRate(bifd.getRetailSaleRate().multiply(absQuantityInUnits).negate());
+
+        // Calculate line totals (positive revenue)
+        BigDecimal absQuantity = bifd.getQuantity().abs();
+        bifd.setLineGrossTotal(bifd.getLineGrossRate().multiply(absQuantity));
+        bifd.setGrossTotal(bifd.getLineGrossTotal());
+        bifd.setNetTotal(bifd.getLineGrossTotal());
+    }
+
+    /**
+     * Creates and populates BillFinanceDetails with aggregated values.
+     */
+    private void createBillFinanceDetails() {
+        // Initialize BFD if not exists
+        if (getPreBill().getBillFinanceDetails() == null) {
+            BillFinanceDetails bfd = new BillFinanceDetails();
+            bfd.setBill(getPreBill());
+            getPreBill().setBillFinanceDetails(bfd);
+        }
+
+        BillFinanceDetails bfd = getPreBill().getBillFinanceDetails();
+
+        // Aggregate totals from all bill items
+        BigDecimal totalGross = BigDecimal.ZERO;
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalRetailValue = BigDecimal.ZERO;
+
+        for (BillItem billItem : getPreBill().getBillItems()) {
+            if (billItem.isRetired() || billItem.getBillItemFinanceDetails() == null) {
+                continue;
+            }
+
+            BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+
+            // Aggregate revenue (positive)
+            if (bifd.getGrossTotal() != null) {
+                totalGross = totalGross.add(bifd.getGrossTotal());
+            }
+
+            // Aggregate stock valuations (negative for returns)
+            if (bifd.getValueAtCostRate() != null) {
+                totalCostValue = totalCostValue.add(bifd.getValueAtCostRate());
+            }
+            if (bifd.getValueAtPurchaseRate() != null) {
+                totalPurchaseValue = totalPurchaseValue.add(bifd.getValueAtPurchaseRate());
+            }
+            if (bifd.getValueAtRetailRate() != null) {
+                totalRetailValue = totalRetailValue.add(bifd.getValueAtRetailRate());
+            }
+        }
+
+        // Set aggregated values in BFD
+        bfd.setGrossTotal(totalGross);
+        bfd.setNetTotal(totalGross);
+        bfd.setTotalCostValue(totalCostValue);
+        bfd.setTotalPurchaseValue(totalPurchaseValue);
+        bfd.setTotalRetailSaleValue(totalRetailValue);
     }
 
     private boolean checkItemBatch() {

@@ -83,7 +83,11 @@ public class CommonFunctionsProxy {
     public double dateDifferenceInMinutes(Date fromDate, Date toDate) {
         return CommonFunctions.dateDifferenceInMinutes(fromDate, toDate);
     }
-    
+
+    public Date addDaysToDate(Date date, Long days) {
+        return CommonFunctions.addDaysToDate(date, days);
+    }
+
     public static Date getRoundedHourAfter60Minutes() {
         
         LocalDateTime d = LocalDateTime.now()
