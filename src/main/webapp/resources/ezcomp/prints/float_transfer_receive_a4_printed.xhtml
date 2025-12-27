@@ -1,0 +1,165 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
+        <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+    </cc:interface>
+
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacypos.css" />
+        <div class="a4bill" style="align-content: center; page-break-after: always;">
+
+            <!-- Blank Header Space for Pre-printed Letterhead -->
+            <div style="height: 120px;"></div>
+
+            <div style="margin-top: 20px; text-align: center; font-weight: bold; font-size: 16pt;">
+                <h:outputLabel value="FLOAT RECEIVE NOTE"/>
+                <h:outputLabel value=" - **Duplicate**" rendered="#{cc.attrs.duplicate eq true}" style="color: red;"/>
+            </div>
+
+            <div class="billline">
+                <br/>
+                <hr/>
+                <br/>
+            </div>
+
+            <!-- Bill Details -->
+            <div style="padding: 15px;">
+                <table style="width: 100%; font-size: 12pt;">
+                    <tr>
+                        <td style="width: 20%; text-align: left; font-weight: bold;">From</td>
+                        <td style="width: 2%;">:</td>
+                        <td style="width: 28%;"><h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}"/></td>
+                        <td style="width: 20%; text-align: left; font-weight: bold;">Transferred At</td>
+                        <td style="width: 2%;">:</td>
+                        <td style="width: 28%;">
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">To Staff</td>
+                        <td>:</td>
+                        <td><h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/></td>
+                        <td style="text-align: left; font-weight: bold;">Received At</td>
+                        <td>:</td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="billline">
+                <hr/>
+            </div>
+
+            <!-- Payment Details -->
+            <div style="padding: 15px;">
+                <div style="text-align: center; font-weight: bold; font-size: 14pt; margin-bottom: 10px;">Payment Details</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 12pt;">
+                    <tr style="background: #f2f2f2; font-weight: bold;">
+                        <td style="padding: 10px; text-align: left; border: 1px solid #ccc; width: 25%;">Payment Method</td>
+                        <td style="padding: 10px; text-align: left; border: 1px solid #ccc; width: 50%;">Details</td>
+                        <td style="padding: 10px; text-align: right; border: 1px solid #ccc; width: 25%;">Amount</td>
+                    </tr>
+                    <ui:repeat value="#{cc.attrs.bill.payments}" var="bip">
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ccc;">
+                                <h:outputLabel value="#{bip.paymentMethod}"/>
+                            </td>
+                            <td style="padding: 10px; border: 1px solid #ccc;">
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Cash'}">
+                                    <ui:repeat value="#{bip.humanReadableDenominations}" var="denomination">
+                                        <h:outputText value="#{denomination}"/><br/>
+                                    </ui:repeat>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Cheque'}">
+                                    <h:outputText value="Bank: #{bip.bank.name}, Cheque No: #{bip.chequeRefNo}, Date: "/>
+                                    <h:outputText value="#{bip.chequeDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Card'}">
+                                    <h:outputText value="Card Ref: #{bip.creditCardRefNo}, Bank: #{bip.institution.name}"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'ewallet'}">
+                                    <h:outputText value="eWallet Ref: #{bip.chequeRefNo}, Provider: #{bip.institution.name}"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Slip'}">
+                                    <h:outputText value="Bank: #{bip.bank.name}, Date: "/>
+                                    <h:outputText value="#{bip.chequeDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputText>
+                                </h:panelGroup>
+                            </td>
+                            <td style="padding: 10px; text-align: right; border: 1px solid #ccc;">
+                                <h:outputLabel value="#{bip.paidValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                </table>
+            </div>
+
+            <div class="billline">
+                <hr/>
+            </div>
+
+            <!-- Total -->
+            <div style="padding: 15px;">
+                <table style="width: 100%; font-size: 14pt;">
+                    <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
+                        <tr>
+                            <td style="text-align: right; font-weight: bold; width: 70%;">Total Amount:</td>
+                            <td style="text-align: right; font-weight: bold; width: 30%; padding-right: 30px;">
+                                <h:outputLabel value="#{cc.attrs.bill.total}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+                </table>
+            </div>
+
+            <div class="billline">
+                <hr/>
+            </div>
+
+            <!-- Signature Section -->
+            <div style="padding: 30px 15px;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="width: 50%; text-align: center;">
+                            <div style="border-top: 1px solid #000; width: 200px; margin: 0 auto; padding-top: 5px;">
+                                Sender's Signature
+                            </div>
+                        </td>
+                        <td style="width: 50%; text-align: center;">
+                            <div style="border-top: 1px solid #000; width: 200px; margin: 0 auto; padding-top: 5px;">
+                                Receiver's Signature
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Footer -->
+            <div style="text-align: center; font-size: 11pt; padding: 15px; color: gray;">
+                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Footer Text')}" escape="false"/>
+            </div>
+
+        </div>
+    </cc:implementation>
+</html>

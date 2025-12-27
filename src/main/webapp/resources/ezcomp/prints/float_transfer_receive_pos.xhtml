@@ -1,0 +1,179 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
+        <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+    </cc:interface>
+
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacypos.css" />
+        <div class="posbillBreak" style="page-break-after: always">
+
+            <!-- Header Section with Institution Details -->
+            <div class="institutionName" style="text-align: center!important; font-weight: bold!important; font-size: 16px!important;">
+                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+            </div>
+            <div class="institutionContact" style="text-align: center; font-size: 11px;">
+                <div>
+                    <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                </div>
+                <div>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
+                    <h:outputLabel value=" / " rendered="#{cc.attrs.bill.department.telephone2 ne null and cc.attrs.bill.department.telephone2 ne ''}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                </div>
+            </div>
+
+            <div class="headingBill" style="text-align: center; font-weight: bold; font-size: 14px; margin-top: 5px;">
+                <h:outputLabel value="Float Receive Note"/>
+                <h:outputLabel value=" - **Duplicate**" rendered="#{cc.attrs.duplicate eq true}" style="color: red;"/>
+            </div>
+
+            <div class="billline" style="text-align: center;">
+                <h:outputLabel value="---------------------------------------------"/>
+            </div>
+
+            <!-- Bill Details -->
+            <div style="padding: 5px;">
+                <table style="width: 100%; font-size: 11px;">
+                    <tr>
+                        <td style="width: 30%; text-align: left;">
+                            <h:outputLabel value="From"/>
+                        </td>
+                        <td style="width: 5%;">:</td>
+                        <td style="width: 65%;">
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <h:outputLabel value="Transferred At"/>
+                        </td>
+                        <td>:</td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <h:outputLabel value="To Staff"/>
+                        </td>
+                        <td>:</td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <h:outputLabel value="Received At"/>
+                        </td>
+                        <td>:</td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="billline" style="text-align: center;">
+                <h:outputLabel value="---------------------------------------------"/>
+            </div>
+
+            <!-- Payment Details -->
+            <div style="padding: 5px;">
+                <div style="text-align: center; font-weight: bold; font-size: 12px;">Payment Details</div>
+                <table style="width: 100%; font-size: 11px;">
+                    <ui:repeat value="#{cc.attrs.bill.payments}" var="bip">
+                        <tr>
+                            <td style="text-align: left;">
+                                <h:outputLabel value="#{bip.paymentMethod}"/>
+                            </td>
+                            <td style="text-align: left;">
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Cash'}">
+                                    <ui:repeat value="#{bip.humanReadableDenominations}" var="denomination">
+                                        <h:outputText value="#{denomination}"/><br/>
+                                    </ui:repeat>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Cheque'}">
+                                    <h:outputText value="#{bip.bank.name} "/>
+                                    <h:outputText value="#{bip.chequeRefNo} "/>
+                                    <h:outputText value="#{bip.chequeDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Card'}">
+                                    <h:outputText value="#{bip.paidValue} "/>
+                                    <h:outputText value="#{bip.creditCardRefNo} "/>
+                                    <h:outputText value="#{bip.institution.name} "/>
+                                    <h:outputText value="#{bip.comments}"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'ewallet'}">
+                                    <h:outputText value="#{bip.paidValue} "/>
+                                    <h:outputText value="#{bip.chequeRefNo} "/>
+                                    <h:outputText value="#{bip.institution.name} "/>
+                                    <h:outputText value="#{bip.comments}"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Slip'}">
+                                    <h:outputText value="#{bip.paidValue} "/>
+                                    <h:outputText value="#{bip.bank.name} "/>
+                                    <h:outputText value="#{bip.chequeDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                    </h:outputText>
+                                    <h:outputText value=" #{bip.comments}"/>
+                                </h:panelGroup>
+                            </td>
+                            <td style="text-align: right;">
+                                <h:outputLabel value="#{bip.paidValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                </table>
+            </div>
+
+            <div class="billline" style="text-align: center;">
+                <h:outputLabel value="---------------------------------------------"/>
+            </div>
+
+            <!-- Total -->
+            <div style="padding: 5px;">
+                <table style="width: 100%; font-size: 12px; font-weight: bold;">
+                    <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
+                        <tr>
+                            <td style="text-align: left;">
+                                <h:outputLabel value="Total"/>
+                            </td>
+                            <td style="text-align: right;">
+                                <h:outputLabel value="#{cc.attrs.bill.total}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+                </table>
+            </div>
+
+            <div class="billline" style="text-align: center;">
+                <h:outputLabel value="---------------------------------------------"/>
+            </div>
+
+            <!-- Footer -->
+            <div style="text-align: center; font-size: 10px; padding: 5px; color: gray;">
+                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Footer Text')}" escape="false"/>
+            </div>
+
+        </div>
+    </cc:implementation>
+</html>

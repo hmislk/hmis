@@ -101,15 +101,55 @@
                             </div>
                         </div>
 
+                        <div class="row mb-2 mt-2">
+                            <div class="d-flex justify-content-end gap-2">
+                                <p:outputLabel value="Paper Type" class="mt-2"/>
+                                <p:selectOneMenu
+                                    value="#{sessionController.departmentPreference.fundTransferBillPaperType}"
+                                    style="width: 13em;">
+                                    <f:selectItem itemLabel="Please Select Paper Type" />
+                                    <f:selectItems value="#{enumController.paperTypes}" />
+                                </p:selectOneMenu>
+                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"/>
+                            </div>
+                        </div>
 
-                        <p:commandButton 
-                            value="Print" 
+                        <p:commandButton
+                            value="Print"
                             ajax="false" >
-                            <p:printer target="panelPrint"    ></p:printer>
+                            <p:printer target="panelPrint"/>
                         </p:commandButton>
 
-                        <h:panelGroup id="panelPrint" >
-                            <prints:float_transfer_receive_five_five bill="#{financialTransactionController.currentBill}"/>  
+                        <h:panelGroup id="panelPrint">
+                            <!-- POS Paper with header -->
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.fundTransferBillPaperType eq 'PosPaper'}">
+                                <prints:float_transfer_receive_pos bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
+
+                            <!-- POS Printed Paper (without header) -->
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.fundTransferBillPaperType eq 'PosPrintedPaper'}">
+                                <prints:float_transfer_receive_pos_printed bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
+
+                            <!-- 5x5 Paper with header (default) -->
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.fundTransferBillPaperType eq 'FiveFivePaper' or sessionController.departmentPreference.fundTransferBillPaperType eq null}">
+                                <prints:float_transfer_receive_five_five bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
+
+                            <!-- 5x5 Printed Paper (without header) -->
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.fundTransferBillPaperType eq 'FiveFivePrintedPaper'}">
+                                <prints:float_transfer_receive_five_five_printed bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
+
+                            <!-- A4 Paper with header -->
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.fundTransferBillPaperType eq 'A4Paper'}">
+                                <prints:float_transfer_receive_a4 bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
+
+                            <!-- A4 Printed Paper (without header) -->
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.fundTransferBillPaperType eq 'A4PrintedPaper'}">
+                                <prints:float_transfer_receive_a4_printed bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
                         </h:panelGroup>
 
 
