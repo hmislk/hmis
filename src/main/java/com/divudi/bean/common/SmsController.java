@@ -31,6 +31,7 @@ import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 import com.divudi.core.data.dto.SmsDTO;
+import java.util.ArrayList;
 
 /**
  *
@@ -105,6 +106,17 @@ public class SmsController implements Serializable {
      * Creates a new instance of SmsController
      */
     public SmsController() {
+    }
+    
+    public void makeNull(){
+        smsDtoList = new ArrayList<>();
+        fromDate = null;
+        toDate = null;
+    }
+    
+    public String navigateToSmsList() {
+        makeNull();
+        return "/analytics/sms_list?faces-redirect=true";
     }
 
     public Boolean sendSms(String number, String message, String username, String password, String sendingAlias) {
@@ -189,11 +201,15 @@ public class SmsController implements Serializable {
                 + " s.smsType,"
                 + " COALESCE(s.sendingMessage,'N/A'),"
                 + " COALESCE(s.receipientNumber,'N/A'),"
+                + " s.sentSuccessfully,"
                 + " s.pending,"
-                + " s.bill.patient.person.title " 
-//                + " COALESCE(s.bill.patient.person.name, '')"
+                + " COALESCE(s.receivedMessage,'N/A'),"
+                + " s.bill.patient.person.title, " 
+                + " COALESCE(s.bill.patient.person.name, '')"
                 + " )"
-                + " from Sms s where s.createdAt between :fd and :td";
+                + " from Sms s where s.createdAt between :fd and :td "
+                + " ORDER BY s.id asc";
+        
         Map params = new HashMap();
         params.put("fd", fromDate);
         params.put("td", toDate);
