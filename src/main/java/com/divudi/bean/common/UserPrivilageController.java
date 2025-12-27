@@ -168,6 +168,7 @@ public class UserPrivilageController implements Serializable {
 
         TreeNode roomNode = new DefaultTreeNode(new PrivilegeHolder(null, "Room"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoom, "Room Menu"), roomNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.WatingRoomAdmitPatient, "Waiting Room Admit Patient"), roomNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoomRoomOccupency, "Room Occupancy"), roomNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoomRoomChange, "Room Change"), roomNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoomGurdianRoomChange, "Guardian Room Change"), roomNode);

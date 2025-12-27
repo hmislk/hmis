@@ -102,6 +102,7 @@ public class InwardReservationController implements Serializable {
         calendar.setTime(fromDate);
         calendar.add(Calendar.MONTH, noOfMonths.intValue());
         toDate = calendar.getTime();
+        calanderStatus = AppointmentStatus.PENDING;
         findReservations();
         return "/inward/inward_reservations_schedule_calendar?faces-redirect=true";
     }
@@ -156,9 +157,6 @@ public class InwardReservationController implements Serializable {
         if(calanderStatus != null){
             jpql += " and r.appointment.status =:ststus";
             m.put("ststus", calanderStatus);
-        }else{
-            jpql += " and r.appointment.status =:ststus";
-            m.put("ststus", AppointmentStatus.PENDING);
         }
         
         if (fromDate != null) {
