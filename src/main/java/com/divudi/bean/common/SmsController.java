@@ -193,9 +193,7 @@ public class SmsController implements Serializable {
     }
     
     public void fillAllSmsDtos() {
-
         smsDtoList = new ArrayList<>();
-        
         String jpql = "select new com.divudi.core.data.dto.SmsDTO("
                 + " COALESCE(s.id,0),"
                 + " s.createdAt,"
