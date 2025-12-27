@@ -1442,13 +1442,13 @@ public class PatientEncounterController implements Serializable {
                     null
             );
             System.out.println("DEBUG: Weight-based lookup found " + (diagnosisMedicineList != null ? diagnosisMedicineList.size() : "null") + " medicine recommendations");
-            if (!diagnosisMedicineList.isEmpty()) {
+            if (diagnosisMedicineList != null && !diagnosisMedicineList.isEmpty()) {
                 lookupMethod = "weight group (" + patientWeight + " kg)";
             }
         }
 
         // Method 2: By Patient Age Group (fallback when weight is not available or no weight-based favourites found)
-        if (diagnosisMedicineList.isEmpty() && patientAgeInDays != null && patientAgeInDays > 0) {
+        if (diagnosisMedicineList == null || diagnosisMedicineList.isEmpty() && patientAgeInDays != null && patientAgeInDays > 0) {
             System.out.println("DEBUG: Step 1 - Finding medicine list by age group: " + patientAgeInDays + " days");
             diagnosisMedicineList = favouriteController.listFavouriteItems(
                     selectedDiagnosis,
@@ -1457,7 +1457,7 @@ public class PatientEncounterController implements Serializable {
                     patientAgeInDays
             );
             System.out.println("DEBUG: Age-based lookup found " + (diagnosisMedicineList != null ? diagnosisMedicineList.size() : "null") + " medicine recommendations");
-            if (!diagnosisMedicineList.isEmpty()) {
+            if (diagnosisMedicineList!=null && !diagnosisMedicineList.isEmpty()) {
                 lookupMethod = "age group (" + (patientAgeInDays / 365) + " years)";
             }
         }
