@@ -30,6 +30,8 @@ import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
+import com.divudi.core.data.dto.SmsDTO;
+
 /**
  *
  * @author Dushan
@@ -77,6 +79,8 @@ public class SmsController implements Serializable {
     private String smsTemplate;
     private List<Patient> patientsForSms;
     private List<Patient> selectedPatients;
+
+    private List<SmsDTO> smsDtoList;
 
     // New variable to control SMS sending
     private static boolean doNotSendAnySms = false;
@@ -147,14 +151,63 @@ public class SmsController implements Serializable {
         return smsManager.sendSms(s);
     }
 
+//    public void fillAllSms() {
+//        String j = "select s "
+//                + " from Sms s "
+//                + " where s.createdAt between :fd and :td ";
+//        Map m = new HashMap();
+//        m.put("fd", fromDate);
+//        m.put("td", toDate);
+//        smses = smsFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
+//    }
+    
+    
+    @Deprecated
     public void fillAllSms() {
-        String j = "select s "
-                + " from Sms s "
-                + " where s.createdAt between :fd and :td ";
+        String j = "select s from Sms s where s.createdAt between :fd and :td";
         Map m = new HashMap();
         m.put("fd", fromDate);
         m.put("td", toDate);
+
+        // Existing entity list (DO NOT REMOVE)
         smses = smsFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
+
+        // NEW DTO list (PARALLEL)
+        //SmsDTO = new java.util.ArrayList<>();
+
+        for (Sms s : smses) {
+            //allSmsListDtos.add(toDto(s));
+        }
+    }
+    
+    public void fillAllSmsDtos() {
+        System.out.println("fillAllSmsDtos - Start");
+        String jpql = "select new com.divudi.core.data.dto.SmsDTO("
+                + " COALESCE(s.id,0),"
+                + " s.createdAt,"
+                + " s.sentAt,"
+                + " s.smsType,"
+                + " COALESCE(s.sendingMessage,'N/A'),"
+                + " COALESCE(s.receipientNumber,'N/A'),"
+                + " s.pending,"
+                + " s.bill.patient.person.title " 
+//                + " COALESCE(s.bill.patient.person.name, '')"
+                + " )"
+                + " from Sms s where s.createdAt between :fd and :td";
+        Map params = new HashMap();
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        
+        System.out.println("m = " + params);
+        System.out.println("j = " + jpql);
+        
+        // Existing entity list (DO NOT REMOVE)
+        smsDtoList = (List<SmsDTO>)smsFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+        
+        System.out.println("allSmsListDtos = " + smsDtoList);
+        System.out.println("allSmsListDtos = " + smsDtoList.size());
+        
+        System.out.println("fillAllSmsDtos - End");
     }
 
     public void fillAllFaildSms() {
@@ -456,6 +509,14 @@ public class SmsController implements Serializable {
 
     public void setMaxNumberToList(Long maxNumberToList) {
         this.maxNumberToList = maxNumberToList;
+    }
+
+    public List<SmsDTO> getSmsDtoList() {
+        return smsDtoList;
+    }
+
+    public void setSmsDtoList(List<SmsDTO> smsDtoList) {
+        this.smsDtoList = smsDtoList;
     }
 
     public class SmsSummeryRow {

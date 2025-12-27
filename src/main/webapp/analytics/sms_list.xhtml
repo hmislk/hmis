@@ -35,6 +35,15 @@
                                              ajax="false" 
                                              value="Search" 
                                              action="#{smsController.fillAllSms}"/>
+                            
+                             <p:commandButton 
+                                             class="ui-button-warning"
+                                             icon="fas fa-magnifying-glass"
+                                             ajax="false" 
+                                             value="Search" 
+                                             action="#{smsController.fillAllSmsDtos}"/>
+                             
+                             
                             <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
                                 <p:dataExporter fileName="All Bills" type="xlsx" target="tblBills" ></p:dataExporter>
                             </p:commandButton>
@@ -79,11 +88,6 @@
                                        style="align-items: center; width: 60px;text-align: center; font-size: 14px;"/>
                             </p:column>
                         </p:dataTable>
-
-
-
-
-
 
                     </p:panel>
 
