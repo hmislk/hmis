@@ -2554,7 +2554,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     @Override
     public void listnerForPaymentMethodChange() {
-        // ToDo: Add Logic
+        paymentMethod = PaymentMethod.Agent;
     }
 
     public String getExternalDoctor() {
