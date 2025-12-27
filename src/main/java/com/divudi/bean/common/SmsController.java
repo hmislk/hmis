@@ -193,7 +193,9 @@ public class SmsController implements Serializable {
     }
     
     public void fillAllSmsDtos() {
-        System.out.println("fillAllSmsDtos - Start");
+
+        smsDtoList = new ArrayList<>();
+        
         String jpql = "select new com.divudi.core.data.dto.SmsDTO("
                 + " COALESCE(s.id,0),"
                 + " s.createdAt,"
@@ -213,17 +215,9 @@ public class SmsController implements Serializable {
         Map params = new HashMap();
         params.put("fd", fromDate);
         params.put("td", toDate);
-        
-        System.out.println("m = " + params);
-        System.out.println("j = " + jpql);
-        
-        // Existing entity list (DO NOT REMOVE)
+
         smsDtoList = (List<SmsDTO>)smsFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
         
-        System.out.println("allSmsListDtos = " + smsDtoList);
-        System.out.println("allSmsListDtos = " + smsDtoList.size());
-        
-        System.out.println("fillAllSmsDtos - End");
     }
 
     public void fillAllFaildSms() {
