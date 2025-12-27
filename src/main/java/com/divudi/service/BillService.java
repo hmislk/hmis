@@ -59,6 +59,8 @@ import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 
 import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
+import com.divudi.core.data.dto.PharmacyReturnWithoutTrasingBillDTO;
+import com.divudi.core.data.dto.PharmacyReturnWithoutTrasingBillItemDTO;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 
 import com.divudi.core.entity.Category;
@@ -1543,6 +1545,148 @@ public class BillService {
         }
 
         return results;
+    }
+
+    public List<PharmacyReturnWithoutTrasingBillDTO> fetchPharmacyReturnWithoutTrasingBillDTOs(
+            Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser) {
+
+        String jpql;
+        Map params = new HashMap();
+
+        jpql = "select new com.divudi.core.data.dto.PharmacyReturnWithoutTrasingBillDTO("
+                + " b.id, "
+                + " coalesce(b.deptId,''), "
+                + " coalesce(b.invoiceNumber,''), "
+                + " b.createdAt, "
+                + " b.billDate, "
+                + " coalesce(supplier.name,''), "
+                + " supplier.id, "
+                + " coalesce(dept.name,''), "
+                + " dept.id, "
+                + " coalesce(creator.webUserPerson.name,''), "
+                + " coalesce(b.comments,''), "
+                + " coalesce(b.paymentMethod,''), "
+                + " coalesce(b.total,0.0), "
+                + " coalesce(b.discount,0.0), "
+                + " coalesce(b.netTotal,0.0), "
+                + " coalesce(bfd.totalCostValue,0.0), "
+                + " coalesce(bfd.totalPurchaseValue,0.0), "
+                + " coalesce(bfd.totalRetailSaleValue,0.0) ) "
+                + " from Bill b "
+                + " left join b.billFinanceDetails bfd "
+                + " left join b.toInstitution supplier "
+                + " left join b.department dept "
+                + " left join b.creater creator "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic = :billTypeAtomic "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("ret", false);
+        params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution = :ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater = :user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department = :dep ";
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site = :site ";
+            params.put("site", site);
+        }
+
+        jpql += " order by b.createdAt desc, b.id desc ";
+
+        return (List<PharmacyReturnWithoutTrasingBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public List<PharmacyReturnWithoutTrasingBillItemDTO> fetchPharmacyReturnWithoutTrasingBillItemDTOs(
+            Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser) {
+
+        String jpql;
+        Map params = new HashMap();
+
+        jpql = "select new com.divudi.core.data.dto.PharmacyReturnWithoutTrasingBillItemDTO("
+                + " b.id, "
+                + " coalesce(b.deptId,''), "
+                + " b.createdAt, "
+                + " coalesce(supplier.name,''), "
+                + " coalesce(b.paymentMethod,''), "
+                + " item.id, "
+                + " coalesce(item.name,''), "
+                + " coalesce(item.code,''), "
+                + " coalesce(item.barcode,''), "
+                + " coalesce(batch.batchNo,''), "
+                + " batch.dateOfExpire, "
+                + " coalesce(bi.qty,0.0), "
+                + " coalesce(pbi.qtyInUnit,0.0), "
+                + " coalesce(bifd.costRate,0.0), "
+                + " coalesce(bifd.purchaseRate,0.0), "
+                + " coalesce(bifd.retailSaleRate,0.0), "
+                + " coalesce(bifd.valueAtCostRate,0.0), "
+                + " coalesce(bifd.valueAtPurchaseRate,0.0), "
+                + " coalesce(bifd.valueAtRetailRate,0.0), "
+                + " coalesce(bi.netValue,0.0) ) "
+                + " from Bill b "
+                + " join b.billItems bi "
+                + " left join bi.billItemFinanceDetails bifd "
+                + " left join bi.pharmaceuticalBillItem pbi "
+                + " left join pbi.stock stock "
+                + " left join stock.itemBatch batch "
+                + " left join batch.item item "
+                + " left join b.toInstitution supplier "
+                + " where b.retired = false and bi.retired = false "
+                + " and b.billTypeAtomic = :billTypeAtomic "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution = :ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater = :user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department = :dep ";
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site = :site ";
+            params.put("site", site);
+        }
+
+        jpql += " order by b.createdAt desc, b.id desc, bi.searialNo ";
+
+        return (List<PharmacyReturnWithoutTrasingBillItemDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public List<OpdIncomeReportDTO> fetchOpdIncomeReportDTOs(Date fromDate,

@@ -6,12 +6,17 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -52,6 +57,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -80,11 +86,19 @@ public class PharmacyReturnwithouttresing implements Serializable {
     public PharmacyReturnwithouttresing() {
     }
 
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
     @Inject
     PaymentSchemeController PaymentSchemeController;
 
     @Inject
     SessionController sessionController;
+
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -1255,6 +1269,80 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
     public void setCashPaidStr(String cashPaidStr) {
         this.cashPaidStr = cashPaidStr;
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/pharmacy_return_withouttresing");
+        metadata.setPageName("Pharmacy Return Without Tracing");
+        metadata.setDescription("Return pharmacy items without tracing the original issue");
+        metadata.setControllerClass("PharmacyReturnwithouttresing");
+
+        // Column visibility configuration options
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "ui.pharmacy_return_withouttresing.columns.visibility",
+            "JSON configuration for column visibility settings on the pharmacy return without tracing page",
+            OptionScope.USER
+        ));
+
+        // Register individual column configurations for UI components
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Return Without Tracing Item Visible",
+            "Controls visibility of item column in pharmacy return without tracing table",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Return Without Tracing Qty Visible",
+            "Controls visibility of quantity column in pharmacy return without tracing table",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Return Without Tracing Return Rate Visible",
+            "Controls visibility of return rate column in pharmacy return without tracing table",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Return Without Tracing Return Value Visible",
+            "Controls visibility of return value column in pharmacy return without tracing table",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Return Without Tracing Retail Rate Visible",
+            "Controls visibility of retail rate column in pharmacy return without tracing table",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Return Without Tracing Retail Value Visible",
+            "Controls visibility of retail value column in pharmacy return without tracing table",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Return Without Tracing Expiry Visible",
+            "Controls visibility of expiry date column in pharmacy return without tracing table",
+            OptionScope.APPLICATION
+        ));
+
+        // Bill Number Suffix Configuration for PHARMACY_RETURN_WITHOUT_TREASING
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PHARMACY_RETURN_WITHOUT_TREASING",
+            "Custom suffix to append to pharmacy return without tracing bill numbers (used by BillNumberGenerator.institutionBillNumberGeneratorByPayment)",
+            OptionScope.APPLICATION
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
     }
 
     public PaymentMethodData getPaymentMethodData() {
