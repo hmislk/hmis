@@ -14,87 +14,120 @@
                         <f:facet name="header" >
                             <h:outputLabel value="All SMS List"/>                          
                         </f:facet>
+
                         <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="From Date"/>
-                            <p:datePicker class="w-100 mx-4" inputStyleClass="w-100"
-                                          id="fromDate" 
-                                          value="#{smsController.fromDate}" 
-                                          showTime="true"
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
+                            <p:datePicker 
+                                class="w-100 mx-4" 
+                                inputStyleClass="w-100"
+                                id="fromDate" 
+                                value="#{smsController.fromDate}" 
+                                showTime="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
                             </p:datePicker>
                             <h:outputLabel value="To Date"/>
-                            <p:datePicker class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{smsController.toDate}" 
-                                          showTime="true"
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
+                            <p:datePicker 
+                                class="w-100 mx-4" 
+                                inputStyleClass="w-100" 
+                                id="toDate" value="#{smsController.toDate}" 
+                                showTime="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                             </p:datePicker>
                         </h:panelGrid>
+
                         <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton id="btnSearch"
-                                             class="ui-button-warning"
-                                             icon="fas fa-magnifying-glass"
-                                             ajax="false" 
-                                             value="Search" 
-                                             action="#{smsController.fillAllSms}"/>
-                            
-                             <p:commandButton 
-                                             class="ui-button-warning"
-                                             icon="fas fa-magnifying-glass"
-                                             ajax="false" 
-                                             value="Search" 
-                                             action="#{smsController.fillAllSmsDtos}"/>
-                             
-                             
-                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
-                                <p:dataExporter fileName="All Bills" type="xlsx" target="tblBills" ></p:dataExporter>
+
+                            <p:commandButton 
+                                class="ui-button-warning"
+                                icon="fas fa-magnifying-glass"
+                                ajax="false" 
+                                value="Search" 
+                                action="#{smsController.fillAllSmsDtos()}">
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                class="ui-button-success mx-2" 
+                                icon="fas fa-file-excel" 
+                                id="btnExcel" 
+                                ajax="false" 
+                                value="Excel" >
+                                <p:dataExporter fileName="All SMS" type="xlsx" target="tblSms" ></p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
 
-                        <p:dataTable rowIndexVar="i" id="tblBills" 
-                                     value="#{smsController.smses}"
-                                     reflow="true"
-                                     var="sms"  
-                                     style="min-width: 100%;"  
-                                     paginator="true"
-                                     paginatorPosition="bottom"
-                                     rows="10"
-                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15"
-                                     >
-                            <p:column headerText="Sent At" sortBy="#{sms.createdAt}"  >
+                        <p:dataTable 
+                            rowIndexVar="i" 
+                            id="tblSms" 
+                            value="#{smsController.smsDtoList}"
+                            reflow="true"
+                            var="sms"
+                            class="mt-3"
+                            rowKey="#{sms.smsId}"
+                            style="min-width: 100%;"  
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            rows="20"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="20,50,100,500"
+                            >
+
+                            <p:column headerText="#" style="padding: 6px; width :4em">
+                                #{i+1}
+                            </p:column>
+
+                            <p:column headerText="Create At" style="padding: 6px; width :8em">
                                 <h:outputLabel value="#{sms.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"  ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="SMS Type" sortBy="#{sms.smsType}" filterBy="#{sms.smsType}" filterMatchMode="contains" >
+
+                            <p:column 
+                                headerText="SMS Type" 
+                                style="padding: 6px; width :8em"
+                                sortBy="#{sms.smsType}" 
+                                filterBy="#{sms.smsType}" 
+                                filterMatchMode="contains" >
                                 <h:outputLabel value="#{sms.smsType}"/>
                             </p:column>
-                            <p:column filterBy="#{sms.bill.patient.person.name}" 
-                                      filterMatchMode="contains"
-                                      headerText="Patient"  >
-                                <h:outputLabel value="#{sms.bill.patient.person.name}"/>
+
+                            <p:column 
+                                filterBy="#{sms.patientNameWithTitle}" 
+                                style="padding: 6px; width :20em"
+                                filterMatchMode="contains"
+                                headerText="Patient"  >
+                                <h:outputLabel value="#{sms.patientNameWithTitle}"/>
                             </p:column>
-                            <p:column headerText="Message"  >
-                                <h:outputLabel value="#{sms.sendingMessage}"/>
+
+                            <p:column headerText="Message" style="padding: 6px;" >
+                                <h:outputLabel value="#{sms.message}"/>
                             </p:column>
-                            <p:column headerText="Phone Number"
-                                      filterBy="#{sms.receipientNumber}" 
-                                      filterMatchMode="contains"
-                                      styleClass="alignTop" >
-                                <h:outputLabel value="#{sms.receipientNumber}"/>
+
+                            <p:column 
+                                headerText="Phone Number"
+                                style="padding: 6px; width :10em"
+                                filterBy="#{sms.recipient}" 
+                                filterMatchMode="contains"
+                                styleClass="alignTop" >
+                                <h:outputLabel value="#{sms.recipient}"/>
                             </p:column>
-                            <p:column headerText="Success"  sortBy="#{sms.sentSuccessfully}" >
-                                <p:tag class="ui-tag" value="#{sms.sentSuccessfully ? 'Success' : 'Failed'}"
-                                       severity="#{sms.sentSuccessfully ? 'success' : 'danger'}" 
-                                       style="align-items: center; width: 60px;text-align: center; font-size: 14px;"/>
+
+                            <p:column 
+                                headerText="Status" 
+                                class="text-center"
+                                style="padding: 6px; width :6em" 
+                                sortBy="#{sms.success}" >
+                                <p:tag 
+                                    class="ui-tag" 
+                                    value="#{sms.success ? 'Success' : 'Failed'}"
+                                    severity="#{sms.success ? 'success' : 'danger'}" 
+                                    style="align-items: center; width: 60px;text-align: center; font-size: 14px;">
+                                </p:tag>
                             </p:column>
                         </p:dataTable>
-
                     </p:panel>
-
+                    
                 </h:form>
-
             </ui:define>
-
         </ui:composition>
     </h:body>
 </html>
