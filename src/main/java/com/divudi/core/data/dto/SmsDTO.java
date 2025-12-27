@@ -21,25 +21,15 @@ public class SmsDTO {
     private String message;
     private String recipient;
     private Boolean success;
+    private Boolean pending;
+    private String failureMessage;
     private String sourceModule;
     private Title patientTitle;
     private String patientName;
     private String patientNameWithTitle;
     
 
-//    public SmsDTO(Long smsId, Date createdAt, Date sentAt, MessageType smsType, String message, String recipient, Boolean success, Title patientTitle, String patientName) {
-//        this.smsId = smsId;
-//        this.createdAt = createdAt;
-//        this.sentAt = sentAt;
-//        this.smsType = smsType;
-//        this.message = message;
-//        this.recipient = recipient;
-//        this.success = success;
-//        this.patientTitle = patientTitle;
-//        this.patientName = patientName;
-//    }
-    
-    public SmsDTO(Long smsId, Date createdAt, Date sentAt, MessageType smsType, String message, String recipient, Boolean success, Title patientTitle) {
+    public SmsDTO(Long smsId, Date createdAt, Date sentAt, MessageType smsType, String message, String recipient, Boolean success, Boolean pending,String failureMessage, Title patientTitle, String patientName) {
         this.smsId = smsId;
         this.createdAt = createdAt;
         this.sentAt = sentAt;
@@ -47,7 +37,10 @@ public class SmsDTO {
         this.message = message;
         this.recipient = recipient;
         this.success = success;
+        this.pending = pending;
+        this.failureMessage = failureMessage;
         this.patientTitle = patientTitle;
+        this.patientName = patientName;
     }
     
 
@@ -146,5 +139,21 @@ public class SmsDTO {
 
     public void setPatientNameWithTitle(String patientNameWithTitle) {
         this.patientNameWithTitle = patientNameWithTitle;
+    }
+
+    public Boolean getPending() {
+        return pending;
+    }
+
+    public void setPending(Boolean pending) {
+        this.pending = pending;
+    }
+
+    public String getFailureMessage() {
+        return failureMessage;
+    }
+
+    public void setFailureMessage(String failureMessage) {
+        this.failureMessage = failureMessage;
     }
 }
