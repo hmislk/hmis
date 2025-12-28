@@ -1076,13 +1076,20 @@ public class DataAdministrationController implements Serializable {
                     bfd.setTotalWholesaleValueFree(applySign(bfd.getTotalWholesaleValueFree(), financeValueShouldBeNegative));
                     bfd.setTotalWholesaleValueNonFree(applySign(bfd.getTotalWholesaleValueNonFree(), financeValueShouldBeNegative));
 
-                    // Keep all gross/net totals positive
-                    bfd.setLineGrossTotal(applySign(bfd.getLineGrossTotal(), false));
-                    bfd.setBillGrossTotal(applySign(bfd.getBillGrossTotal(), false));
-                    bfd.setGrossTotal(applySign(bfd.getGrossTotal(), false));
-                    bfd.setLineNetTotal(applySign(bfd.getLineNetTotal(), false));
-                    bfd.setBillNetTotal(applySign(bfd.getBillNetTotal(), false));
-                    bfd.setNetTotal(applySign(bfd.getNetTotal(), false));
+                    // Financial fields (gross/net totals) - opposite sign to qty
+                    // For ISSUE: positive (money comes in), for RECEIVE: negative (money goes out)
+                    boolean bfdFinancialNegative = !isBillAndItemTotalsPositive(bta);
+                    bfd.setLineGrossTotal(applySign(bfd.getLineGrossTotal(), bfdFinancialNegative));
+                    bfd.setBillGrossTotal(applySign(bfd.getBillGrossTotal(), bfdFinancialNegative));
+                    bfd.setGrossTotal(applySign(bfd.getGrossTotal(), bfdFinancialNegative));
+                    bfd.setLineNetTotal(applySign(bfd.getLineNetTotal(), bfdFinancialNegative));
+                    bfd.setBillNetTotal(applySign(bfd.getBillNetTotal(), bfdFinancialNegative));
+                    bfd.setNetTotal(applySign(bfd.getNetTotal(), bfdFinancialNegative));
+
+                    // Cost value fields - same sign as qty (stock valuation)
+                    bfd.setTotalCostValue(applySign(bfd.getTotalCostValue(), financeValueShouldBeNegative));
+                    bfd.setTotalCostValueFree(applySign(bfd.getTotalCostValueFree(), financeValueShouldBeNegative));
+                    bfd.setTotalCostValueNonFree(applySign(bfd.getTotalCostValueNonFree(), financeValueShouldBeNegative));
                 }
 
                 // Fix Bill totals
@@ -1103,7 +1110,7 @@ public class DataAdministrationController implements Serializable {
                         bi.setGrossValue(applySign(bi.getGrossValue(), !itemTotalsPositive));
                         bi.setNetValue(applySign(bi.getNetValue(), !itemTotalsPositive));
 
-                        // BillItemFinanceDetails totals
+                        // BillItemFinanceDetails - financial totals (opposite sign to qty)
                         BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
                         if (bifd != null) {
                             bifd.setLineGrossTotal(applySign(bifd.getLineGrossTotal(), !itemTotalsPositive));
@@ -1112,6 +1119,14 @@ public class DataAdministrationController implements Serializable {
                             bifd.setLineNetTotal(applySign(bifd.getLineNetTotal(), !itemTotalsPositive));
                             bifd.setBillNetTotal(applySign(bifd.getBillNetTotal(), !itemTotalsPositive));
                             bifd.setNetTotal(applySign(bifd.getNetTotal(), !itemTotalsPositive));
+
+                            // BillItemFinanceDetails - stock valuation fields (same sign as qty)
+                            boolean stockValueNegative = isFinanceValueNegative(bta);
+                            bifd.setValueAtCostRate(applySign(bifd.getValueAtCostRate(), stockValueNegative));
+                            bifd.setValueAtPurchaseRate(applySign(bifd.getValueAtPurchaseRate(), stockValueNegative));
+                            bifd.setValueAtRetailRate(applySign(bifd.getValueAtRetailRate(), stockValueNegative));
+                            bifd.setLineCost(applySign(bifd.getLineCost(), stockValueNegative));
+                            bifd.setTotalCost(applySign(bifd.getTotalCost(), stockValueNegative));
                         }
 
                         // Pharmaceutical Bill Item values

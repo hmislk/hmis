@@ -101,15 +101,42 @@
                             </div>
                         </div>
 
-
-                        <p:commandButton 
-                            value="Print" 
+                        <p:commandButton
+                            value="Print"
                             ajax="false" >
-                            <p:printer target="panelPrint"    ></p:printer>
+                            <p:printer target="panelPrint"/>
                         </p:commandButton>
 
-                        <h:panelGroup id="panelPrint" >
-                            <prints:float_transfer_receive_five_five bill="#{financialTransactionController.currentBill}"/>  
+                        <h:panelGroup id="panelPrint">
+                            <!-- POS Paper with header -->
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is POS Paper', false)}">
+                                <prints:float_transfer_receive_pos bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
+
+                            <!-- POS Printed Paper (without header) -->
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is POS Printed Paper', false)}">
+                                <prints:float_transfer_receive_pos_printed bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
+
+                            <!-- 5x5 Paper with header (default) -->
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is 5x5 Paper', true)}">
+                                <prints:float_transfer_receive_five_five bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
+
+                            <!-- 5x5 Printed Paper (without header) -->
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is 5x5 Printed Paper', false)}">
+                                <prints:float_transfer_receive_five_five_printed bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
+
+                            <!-- A4 Paper with header -->
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is A4 Paper', false)}">
+                                <prints:float_transfer_receive_a4 bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
+
+                            <!-- A4 Printed Paper (without header) -->
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is A4 Printed Paper', false)}">
+                                <prints:float_transfer_receive_a4_printed bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
                         </h:panelGroup>
 
 
