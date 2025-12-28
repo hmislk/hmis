@@ -67,13 +67,21 @@
                                 title="Generate transfer report with current filters"
                                 action="#{reportsTransfer.fillDepartmentTransfersIssueByBillItem()}" >
                             </p:commandButton>
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Export to Excel" 
+                            <p:commandButton
+                                ajax="false"
+                                value="Export to Excel"
                                 icon="pi pi-file-excel"
                                 class="ui-button-success"
                                 title="Export current data to Excel file">
                                 <p:dataExporter type="xlsx" target="tblScreen" fileName="Detailed_Transfer_Listing_#{reportsTransfer.fromDate}_#{reportsTransfer.toDate}" exportFooter="true" />
+                            </p:commandButton>
+                            <p:commandButton
+                                ajax="false"
+                                value="Export to CSV"
+                                icon="pi pi-file"
+                                class="ui-button-secondary"
+                                title="Export current data to CSV file (opens in Excel)">
+                                <p:dataExporter type="csv" target="tblScreen" fileName="Detailed_Transfer_Listing_#{reportsTransfer.fromDate}_#{reportsTransfer.toDate}" />
                             </p:commandButton>
                             <p:commandButton 
                                 value="Print Report" 
