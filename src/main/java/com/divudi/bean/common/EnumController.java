@@ -1185,6 +1185,7 @@ public class EnumController implements Serializable {
         p.add(PaymentMethod.Slip);
         p.add(PaymentMethod.OnlineSettlement);
         p.add(PaymentMethod.Staff_Welfare);
+        p.add(PaymentMethod.ewallet);
         p.add(PaymentMethod.PatientDeposit);
         paymentMethodsForMultiplePaymentMethod = p;
         return paymentMethodsForMultiplePaymentMethod;

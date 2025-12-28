@@ -30,31 +30,61 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- HAPI FHIR -->
+        <!-- HAPI FHIR - with log4j-core exclusions to prevent Payara conflicts -->
         <dependency>
             <groupId>ca.uhn.hapi.fhir</groupId>
             <artifactId>hapi-fhir-base</artifactId>
             <version>6.1.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>ca.uhn.hapi.fhir</groupId>
             <artifactId>hapi-fhir-structures-r5</artifactId>
             <version>6.1.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>ca.uhn.hapi</groupId>
             <artifactId>hapi-structures-v25</artifactId>
             <version>2.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>ca.uhn.hapi</groupId>
             <artifactId>hapi-base</artifactId>
             <version>2.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>ca.uhn.hapi</groupId>
             <artifactId>hapi-structures-v24</artifactId>
             <version>2.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Jackson Dependencies - Updated for CVE-2019-10202 Security Fix -->
         <!-- Replaced vulnerable org.codehaus.jackson:jackson-jaxrs 1.9.13 -->
@@ -138,17 +168,33 @@
        
 
         <!-- Log4j2 API (required by Apache POI 5.x) -->
+        <!-- Using log4j-to-slf4j bridge to route all log4j calls to SLF4J -->
+        <!-- This avoids log4j-core conflicts in Payara/GlassFish -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
             <version>2.23.1</version>
         </dependency>
 
-        <!-- Log4j2 Core (required by Apache POI 5.x) -->
+        <!-- Bridge log4j-api to SLF4J - prevents log4j-core from being loaded -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
+            <artifactId>log4j-to-slf4j</artifactId>
             <version>2.23.1</version>
+        </dependency>
+
+        <!-- SLF4J API -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.9</version>
+        </dependency>
+
+        <!-- SLF4J Simple implementation - lightweight logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.9</version>
         </dependency>
 
         <!-- Apache POI Core Dependency -->
@@ -156,6 +202,12 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
             <version>5.2.5</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Apache POI OOXML Dependency -->
@@ -188,6 +240,10 @@
                     <groupId>org.bouncycastle</groupId>
                     <artifactId>bcprov-jdk15on</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
             </exclusions>
             <type>jar</type>
         </dependency>
@@ -197,6 +253,12 @@
             <groupId>fr.opensagres.xdocreport</groupId>
             <artifactId>fr.opensagres.poi.xwpf.converter.xhtml</artifactId>
             <version>2.0.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         
@@ -352,6 +414,12 @@
             <artifactId>keycloak-common</artifactId>
             <version>22.0.1</version>
             <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.itextpdf</groupId>

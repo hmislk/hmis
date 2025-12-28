@@ -157,6 +157,23 @@ public class Bill implements Serializable, RetirableEntity {
     private String referenceNumber; //referenceNumber
 
     //Values
+    /**
+     * IMPORTANT: Despite the name, this field stores the SERVICE CHARGE value
+     * for pharmacy bills. This is the PRIMARY field used for service charges.
+     *
+     * Data analysis (Dec 2024) shows:
+     * - 23,065 bills have margin != 0 with serviceCharge = 0
+     * - 7,476 bills have both fields with equal values
+     * - 0 bills have serviceCharge used independently
+     *
+     * Current usage:
+     * - Pharmacy reports use this field to display "Service Charge" column
+     * - PharmacyBundle.populateRowFromBill() maps this to serviceCharge in PharmacyRow
+     * - actualTotal is calculated as: total - margin
+     *
+     * @see #serviceCharge
+     * @see com.divudi.core.data.PharmacyBundle#populateRowFromBill
+     */
     private double margin;
 
     private double total;
@@ -176,6 +193,20 @@ public class Bill implements Serializable, RetirableEntity {
     private double settledAmountBySponsor;
     private double refundAmount;
     private double balance;
+    /**
+     * WARNING: This field is DEPRECATED for pharmacy billing - use 'margin' instead.
+     *
+     * Data analysis (Dec 2024) confirms:
+     * - This field is NEVER used independently (always 0 or equals margin)
+     * - When populated, it mirrors the 'margin' field value exactly
+     * - All pharmacy reports should use 'margin' for service charge values
+     *
+     * This naming confusion caused a bug in PharmacyBundle where actualTotal
+     * was incorrectly calculated using this field instead of margin.
+     *
+     * @see #margin
+     * @deprecated Use {@link #margin} for service charge values
+     */
     private double serviceCharge;
     private Double tax = 0.0;
     private Double cashPaid = 0.0;

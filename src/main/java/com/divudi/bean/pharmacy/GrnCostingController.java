@@ -2496,6 +2496,24 @@ public class GrnCostingController implements Serializable {
     }
 
     public String navigateToResiveCostingWithSaveApprove() {
+        // Check for billId parameter (from DTO-based page)
+        String billIdParam = JsfUtil.getRequestParameter("billId");
+        if (billIdParam != null && !billIdParam.isEmpty()) {
+            try {
+                Long billId = Long.parseLong(billIdParam);
+                Bill bill = getBillFacade().find(billId);
+                if (bill != null) {
+                    setApproveBill(bill);
+                } else {
+                    JsfUtil.addErrorMessage("Purchase Order not found");
+                    return "";
+                }
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Invalid Bill ID");
+                return "";
+            }
+        }
+
         // Check if there are existing unapproved GRNs for this purchase order
         if (getApproveBill() != null && getApproveBill().getListOfBill() != null) {
             for (Bill existingGrn : getApproveBill().getListOfBill()) {

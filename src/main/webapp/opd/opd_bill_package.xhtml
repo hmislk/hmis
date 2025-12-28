@@ -41,7 +41,7 @@
                             action="#{billPackageController.settleBill()}"
                             onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
                                         return false;"
-                            class="ui-button-success mx-1"
+                            styleClass="ui-button-success mx-1"
                             >
                         </p:commandButton>
                         <p:commandButton
@@ -49,7 +49,9 @@
                             value="Lookup"
                             ajax="false"
                             icon="fa fa-search"
-                            class="ui-button-warning mx-1"
+                            styleClass="ui-button-warning mx-1"
+                            disabled="false"
+                            action="#{patientController.navigateToPatientLookup()}"
                             >
                         </p:commandButton>
                         <p:commandButton
@@ -57,11 +59,12 @@
                             value="Profile"
                             ajax="false"
                             icon="fa fa-user"
-                            class="ui-button-warning mx-1"
+                            styleClass="ui-button-warning mx-1"
+                            action="#{patientController.toEmrPatientProfile()}"
                             >
                             <f:setPropertyActionListener
                                 value="#{billPackageController.patient}"
-                                target="#{patientController.current}" ></f:setPropertyActionListener>
+                                target="#{patientController.current}" ></f:setPropertyActionListener> 
                         </p:commandButton>
                         <p:commandButton
                             value="New Package Bill"
@@ -69,6 +72,7 @@
                             icon="fas fa-plus"
                             ajax="false"
                             action="/opd/opd_bill_package"
+                            styleClass="ui-button-help"
                             actionListener="#{billPackageController.prepareNewBill()}" >
                         </p:commandButton>
                     </h:panelGrid>

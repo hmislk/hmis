@@ -404,55 +404,42 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         }
     }
 
-    /**
-     * Transfer controller properties (staff, credit company) to payment method data
-     * This ensures payment details are properly set in payment data before creating payments
-     */
-    private void transferPaymentDataFromControllerProperties() {
-        if (paymentMethodData == null) {
-            paymentMethodData = new PaymentMethodData();
-        }
-
-        // Transfer staff data for staff-related payment methods
-        if (toStaff != null) {
-            switch (paymentMethod) {
-                case Staff_Welfare:
-                    paymentMethodData.getStaffWelfare().setToStaff(toStaff);
-                    if (paymentMethodData.getStaffWelfare().getTotalValue() == 0) {
-                        paymentMethodData.getStaffWelfare().setTotalValue(Math.abs(refundingTotalAmount));
-                    }
-                    break;
-                case Staff:
-                case OnCall:
-                    paymentMethodData.getStaffCredit().setToStaff(toStaff);
-                    if (paymentMethodData.getStaffCredit().getTotalValue() == 0) {
-                        paymentMethodData.getStaffCredit().setTotalValue(Math.abs(refundingTotalAmount));
-                    }
-                    break;
-                default:
-                    break;
+        /**
+         * Transfer controller properties (staff, credit company) to payment method data
+         * This ensures payment details are properly set in payment data before creating payments
+         */
+        private void transferPaymentDataFromControllerProperties() {
+            if (paymentMethodData == null) {
+                paymentMethodData = new PaymentMethodData();
+            }
+            // Transfer staff data for staff-related payment methods
+            if (toStaff != null) {
+                switch (paymentMethod) {
+                    case Staff_Welfare:
+                        paymentMethodData.getStaffWelfare().setToStaff(toStaff);
+                        if (paymentMethodData.getStaffWelfare().getTotalValue() == 0) {
+                            paymentMethodData.getStaffWelfare().setTotalValue(Math.abs(refundingTotalAmount));
+                        }
+                        break;
+                    case Staff:
+                    case OnCall:
+                        paymentMethodData.getStaffCredit().setToStaff(toStaff);
+                        if (paymentMethodData.getStaffCredit().getTotalValue() == 0) {
+                            paymentMethodData.getStaffCredit().setTotalValue(Math.abs(refundingTotalAmount));
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            // Transfer credit company for credit payment method
+            if (paymentMethod == PaymentMethod.Credit && creditCompany != null) {
+                paymentMethodData.getCredit().setInstitution(creditCompany);
+                if (paymentMethodData.getCredit().getTotalValue() == 0) {
+                    paymentMethodData.getCredit().setTotalValue(Math.abs(refundingTotalAmount));
+                }
             }
         }
-
-        // Transfer credit company for credit payment method
-        if (paymentMethod == PaymentMethod.Credit && creditCompany != null) {
-            paymentMethodData.getCredit().setInstitution(creditCompany);
-            if (paymentMethodData.getCredit().getTotalValue() == 0) {
-                paymentMethodData.getCredit().setTotalValue(Math.abs(refundingTotalAmount));
-            }
-        }
-
-        // Debug logging
-        if (paymentMethod == PaymentMethod.Credit && creditCompany != null) {
-            logger.fine("transferPaymentDataFromControllerProperties - Credit Company: " + creditCompany.getName());
-            logger.fine("Credit Institution set to: " +
-                (paymentMethodData.getCredit().getInstitution() != null ?
-                paymentMethodData.getCredit().getInstitution().getName() : "null"));
-        }
-        if (toStaff != null && (paymentMethod == PaymentMethod.Staff_Welfare || paymentMethod == PaymentMethod.Staff)) {
-            logger.fine("transferPaymentDataFromControllerProperties - Staff: " + toStaff.getPerson().getName());
-        }
-    }
 
     // </editor-fold>
 

@@ -4,6 +4,7 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <!-- INTERFACE -->
@@ -31,9 +32,9 @@
                                 <h6><h:outputLabel value="#{cc.attrs.reservation.appointment.bill.institution.web}"/></h6>
                             </div>
                         </div>
-                        
+
                         <div class="row m-2 ">
-                            
+
                             <hr/>
 
                             <div class="my-2 text-center" style="font-weight: bold;">
@@ -201,16 +202,39 @@
                                             <th class="text-left">Payment Method</th>
                                             <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                             <td class="text-left">
-                                                <h:outputLabel value="#{cc.attrs.reservation.appointment.bill.paymentMethod}"></h:outputLabel>
+                                                <h:outputLabel value="#{cc.attrs.reservation.appointment.bill.paymentMethod.label}"></h:outputLabel>
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
 
+                            <div class="d-flex justify-content-center">
+                                <h:panelGroup rendered="#{cc.attrs.reservation.appointment.bill.paymentMethod eq 'MultiplePaymentMethods'}" class="mt-2">
+                                    <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.reservation.appointment.bill)}" var="ps">
+                                        <div class="d-flex">
+                                            <div style="width: 200px;">
+                                                <h:outputText style="font-size: 11pt;"  value="#{ps.paymentMethod.label}"/>
+                                                <h:outputText style="font-size: 11pt; width: 2cm;"  value=" (#{ps.creditCardRefNo})" rendered="#{ps.paymentMethod eq 'Card'}"/>
+                                                <h:outputText style="font-size: 11pt; width: 2cm;"  value=" (#{ps.chequeRefNo})" rendered="#{ps.paymentMethod eq 'Cheque'}"/>
+                                                <h:outputText style="font-size: 11pt; width: 2cm;"  value=" (#{ps.referenceNo})" rendered="#{ps.paymentMethod eq 'Slip'}"/>
+                                                <h:outputText style="font-size: 11pt; width: 2cm;"  value=" (#{ps.referenceNo})" rendered="#{ps.paymentMethod eq 'OnlineSettlement'}"/>
+                                                <h:outputText style="font-size: 11pt; width: 2cm;"  value=" (#{ps.referenceNo})" rendered="#{ps.paymentMethod eq 'ewallet'}"/>
+                                            </div>
+                                            <div >
+                                                <h:outputText style="font-size: 11pt; width: 2cm;" class="d-flex justify-content-end" value="#{ps.paidValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+                                    </ui:repeat>
+                                </h:panelGroup>
+                            </div>
+                            
+
                             <h:panelGroup class="my-3" rendered="#{cc.attrs.reservation.appointment.appointmentCancel}"  style="font-size: 14px;">
                                 <hr/>
-                                
+
                                 <div class="d-flex gap-2">
                                     <h:outputLabel value="Cancel By "></h:outputLabel>
                                     <h:outputLabel value="#{cc.attrs.reservation.appointment.appointmentCancelBy.webUserPerson.nameWithTitle eq null ? 'N/A' : cc.attrs.reservation.appointment.appointmentCancelBy.webUserPerson.nameWithTitle}"></h:outputLabel>

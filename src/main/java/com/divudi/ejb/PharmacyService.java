@@ -342,6 +342,18 @@ public class PharmacyService {
 
     }
 
+    public PharmacyBundle fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionTypeDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        PharmacyBundle bundle;
+
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetailsAndPaymentScheme(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionTypeDto();
+
+        return bundle;
+    }
+
     public PharmacyBundle fetchPharmacyStockPurchaseValueByBillType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
         List<BillTypeAtomic> billTypeAtomics = getPharmacyPurchaseBillTypes();

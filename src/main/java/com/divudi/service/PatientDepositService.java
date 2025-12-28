@@ -95,6 +95,7 @@ public class PatientDepositService {
 
             case OPD_BATCH_BILL_WITH_PAYMENT:
             case PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT:
+            case INWARD_APPOINTMENT_BILL:
                 handleOutPayment(p, pd);
                 break;
 
@@ -120,6 +121,7 @@ public class PatientDepositService {
             case PACKAGE_OPD_BATCH_BILL_CANCELLATION:
             case PACKAGE_OPD_BILL_CANCELLATION:
             case PACKAGE_OPD_BILL_REFUND:
+            case INWARD_APPOINTMENT_CANCEL_BILL:
                 handleInPayment(p, pd);
                 break;
 
@@ -193,7 +195,7 @@ public class PatientDepositService {
             case PATIENT_DEPOSIT_CANCELLED:
                 handlePatientDepositBillCancel(b, pd);
                 break;
-
+                
             default:
                 throw new AssertionError();
         }
