@@ -696,6 +696,16 @@ public class CommonFunctions {
         return calendar.getTime();
     }
 
+    public static Date addDaysToDate(Date date, Long days) {
+        if (date == null) {
+            return null;
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DAY_OF_MONTH, days.intValue());
+        return calendar.getTime();
+    }
+
     public static Date retiermentDate(Date dob) {
         if (dob == null) {
             dob = new Date();

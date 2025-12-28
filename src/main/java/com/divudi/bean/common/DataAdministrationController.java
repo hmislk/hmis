@@ -3754,6 +3754,278 @@ public class DataAdministrationController implements Serializable {
         executionFeedback = output.toString();
     }
 
+    /**
+     * Corrects finance details for OPD and pharmacy retail sale bills.
+     * This method populates BillItemFinanceDetails and BillFinanceDetails for historical
+     * OPD and pharmacy retail sale bills with missing or incorrect stock values.
+     * Stock values are made negative as stock goes out during sales.
+     */
+    public void correctOpdAndPharmacyRetailSaleBillFinanceDetails() {
+        int processed = 0;
+        int updated = 0;
+        int skipped = 0;
+
+        // Target bill types for OPD and pharmacy retail sales
+        List<BillTypeAtomic> targetTypes = Arrays.asList(
+                // OPD Bills with stock going out (OPD_IN service type)
+                BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT,
+                BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT,
+
+                // Pharmacy Retail Sales with stock going out
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
+        );
+
+        // Build JPQL query with date range
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("types", targetTypes);
+
+        StringBuilder jpql = new StringBuilder(
+                "SELECT b FROM Bill b WHERE b.retired = :ret AND b.billTypeAtomic IN :types"
+        );
+        if (fromDate != null) {
+            jpql.append(" AND b.createdAt >= :fromDate");
+            params.put("fromDate", fromDate);
+        }
+        if (toDate != null) {
+            jpql.append(" AND b.createdAt <= :toDate");
+            params.put("toDate", toDate);
+        }
+
+        List<Bill> bills = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        for (Bill bill : bills) {
+            processed++;
+
+            // Skip if BillFinanceDetails already has negative totalCostValue (already corrected)
+            if (bill.getBillFinanceDetails() != null
+                    && bill.getBillFinanceDetails().getTotalCostValue() != null
+                    && bill.getBillFinanceDetails().getTotalCostValue().compareTo(BigDecimal.ZERO) <= 0) {
+                skipped++;
+                continue;
+            }
+
+            // Call service method to populate/correct BIFD and BFD
+            billService.createBillFinancialDetailsForOpdAndPharmacyRetailSaleBill(bill);
+            updated++;
+        }
+
+        // Build feedback message
+        StringBuilder output = new StringBuilder();
+        output.append("OPD and Pharmacy Retail Sale Finance Details Correction\n");
+        output.append("======================================================\n");
+        output.append("Processed: ").append(processed).append(" bills\n");
+        output.append("Updated: ").append(updated).append(" bills\n");
+        output.append("Skipped (already corrected): ").append(skipped).append(" bills\n");
+        if (fromDate != null || toDate != null) {
+            output.append("Date range: ").append(fromDate).append(" to ").append(toDate);
+        }
+        executionFeedback = output.toString();
+    }
+
+    /**
+     * Corrects finance details for historical Return Without Tracing bills.
+     * Creates BillItemFinanceDetails and BillFinanceDetails for bills that were created
+     * before the BIFD/BFD implementation was added to the return process.
+     */
+    public void correctReturnWithoutTracingBillFinanceDetails() {
+        int processed = 0;
+        int updated = 0;
+        int skipped = 0;
+
+        // Target Return Without Tracing bill type
+        List<BillTypeAtomic> targetTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING
+        );
+
+        // Build JPQL query with date range
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("types", targetTypes);
+
+        StringBuilder jpql = new StringBuilder(
+                "SELECT b FROM Bill b WHERE b.retired = :ret AND b.billTypeAtomic IN :types"
+        );
+        if (fromDate != null) {
+            jpql.append(" AND b.createdAt >= :fromDate");
+            params.put("fromDate", fromDate);
+        }
+        if (toDate != null) {
+            jpql.append(" AND b.createdAt <= :toDate");
+            params.put("toDate", toDate);
+        }
+
+        List<Bill> bills = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        for (Bill bill : bills) {
+            processed++;
+
+            // Skip if BillFinanceDetails already exists with data
+            if (bill.getBillFinanceDetails() != null
+                    && bill.getBillFinanceDetails().getTotalCostValue() != null
+                    && bill.getBillFinanceDetails().getTotalCostValue().compareTo(BigDecimal.ZERO) != 0) {
+                skipped++;
+                continue;
+            }
+
+            try {
+                // Create financial details using the same logic as new returns
+                createFinanceDetailsForHistoricalReturnBill(bill);
+                updated++;
+            } catch (Exception e) {
+                // Log error but continue processing other bills
+                System.err.println("Error processing Return Without Tracing bill ID " + bill.getId() + ": " + e.getMessage());
+                skipped++;
+            }
+        }
+
+        // Build feedback message
+        StringBuilder output = new StringBuilder();
+        output.append("Return Without Tracing Finance Details Correction\n");
+        output.append("=================================================\n");
+        output.append("Processed: ").append(processed).append(" bills\n");
+        output.append("Updated: ").append(updated).append(" bills\n");
+        output.append("Skipped (already populated or errors): ").append(skipped).append(" bills\n");
+        if (fromDate != null || toDate != null) {
+            output.append("Date range: ").append(fromDate).append(" to ").append(toDate);
+        }
+        executionFeedback = output.toString();
+    }
+
+    /**
+     * Creates financial details for a historical Return Without Tracing bill.
+     * Uses the same logic as the current implementation in PharmacyReturnwithouttresing.
+     */
+    private void createFinanceDetailsForHistoricalReturnBill(Bill bill) {
+        if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+            return;
+        }
+
+        // Process each bill item
+        for (BillItem billItem : bill.getBillItems()) {
+            if (billItem.isRetired()) {
+                continue;
+            }
+            createHistoricalBillItemFinanceDetails(billItem);
+        }
+
+        // Create bill-level finance details
+        createHistoricalBillFinanceDetails(bill);
+
+        // Persist the updated bill
+        billFacade.edit(bill);
+    }
+
+    /**
+     * Creates BIFD for historical bill item using same logic as current implementation.
+     */
+    private void createHistoricalBillItemFinanceDetails(BillItem billItem) {
+        PharmaceuticalBillItem phi = billItem.getPharmaceuticalBillItem();
+        if (phi == null || phi.getStock() == null || phi.getStock().getItemBatch() == null) {
+            return;
+        }
+
+        // Initialize BIFD
+        if (billItem.getBillItemFinanceDetails() == null) {
+            billItem.setBillItemFinanceDetails(new BillItemFinanceDetails());
+            billItem.getBillItemFinanceDetails().setBillItem(billItem);
+        }
+
+        BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+
+        // Set basic info
+        bifd.setCreatedAt(new Date());
+
+        // Get rates from batch
+        ItemBatch batch = phi.getStock().getItemBatch();
+        BigDecimal costRate = BigDecimal.valueOf(batch.getCostRate() != null ? batch.getCostRate() : batch.getPurcahseRate());
+        BigDecimal purchaseRate = BigDecimal.valueOf(batch.getPurcahseRate());
+        BigDecimal retailRate = BigDecimal.valueOf(batch.getRetailsaleRate());
+
+        // Set rates (positive values)
+        bifd.setCostRate(costRate);
+        bifd.setPurchaseRate(purchaseRate);
+        bifd.setRetailSaleRate(retailRate);
+        bifd.setLineGrossRate(purchaseRate); // Use purchase rate for returns
+        bifd.setGrossRate(purchaseRate);
+        bifd.setNetRate(purchaseRate);
+
+        // Get quantities from PharmaceuticalBillItem
+        BigDecimal qty = BigDecimal.valueOf(Math.abs(phi.getQty()));
+        BigDecimal freeQty = BigDecimal.valueOf(Math.abs(phi.getFreeQty()));
+        BigDecimal totalQty = qty.add(freeQty);
+
+        // Set quantities (negative for returns - stock going out)
+        bifd.setQuantity(qty.negate());
+        bifd.setFreeQuantity(freeQty.negate());
+        bifd.setTotalQuantity(totalQty.negate());
+        bifd.setQuantityByUnits(totalQty.negate()); // Simplified - assume no pack conversion
+
+        // Calculate stock valuation values (NEGATIVE for returns)
+        bifd.setValueAtCostRate(costRate.multiply(totalQty).negate());
+        bifd.setValueAtPurchaseRate(purchaseRate.multiply(totalQty).negate());
+        bifd.setValueAtRetailRate(retailRate.multiply(totalQty).negate());
+
+        // Calculate line totals (positive revenue from returns)
+        bifd.setLineGrossTotal(purchaseRate.multiply(qty));
+        bifd.setGrossTotal(bifd.getLineGrossTotal());
+        bifd.setNetTotal(bifd.getLineGrossTotal());
+    }
+
+    /**
+     * Creates BFD for historical bill with aggregated values.
+     */
+    private void createHistoricalBillFinanceDetails(Bill bill) {
+        if (bill.getBillFinanceDetails() == null) {
+            bill.setBillFinanceDetails(new BillFinanceDetails());
+            bill.getBillFinanceDetails().setBill(bill);
+        }
+
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+
+        // Aggregate totals from bill items
+        BigDecimal totalGross = BigDecimal.ZERO;
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalRetailValue = BigDecimal.ZERO;
+
+        for (BillItem billItem : bill.getBillItems()) {
+            if (billItem.isRetired() || billItem.getBillItemFinanceDetails() == null) {
+                continue;
+            }
+
+            BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+
+            // Aggregate positive revenue
+            if (bifd.getGrossTotal() != null) {
+                totalGross = totalGross.add(bifd.getGrossTotal());
+            }
+
+            // Aggregate negative stock valuations
+            if (bifd.getValueAtCostRate() != null) {
+                totalCostValue = totalCostValue.add(bifd.getValueAtCostRate());
+            }
+            if (bifd.getValueAtPurchaseRate() != null) {
+                totalPurchaseValue = totalPurchaseValue.add(bifd.getValueAtPurchaseRate());
+            }
+            if (bifd.getValueAtRetailRate() != null) {
+                totalRetailValue = totalRetailValue.add(bifd.getValueAtRetailRate());
+            }
+        }
+
+        // Set aggregated values
+        bfd.setGrossTotal(totalGross);
+        bfd.setNetTotal(totalGross);
+        bfd.setTotalCostValue(totalCostValue);
+        bfd.setTotalPurchaseValue(totalPurchaseValue);
+        bfd.setTotalRetailSaleValue(totalRetailValue);
+    }
+
     public class EntityFieldError {
 
         private String entityName;
