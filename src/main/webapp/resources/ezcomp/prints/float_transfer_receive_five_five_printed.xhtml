@@ -135,18 +135,16 @@
 
             <div>
                 <table style="width: 100%;">
-                    <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
-                        <tr>
-                            <td  >
-                                <h:outputLabel value="Total"/>
-                            </td>
-                            <td >
-                                <h:outputLabel value="#{cc.attrs.bill.total}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                    </h:panelGroup>
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Total"/>
+                        </td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.total}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
                 </table>
             </div>
 

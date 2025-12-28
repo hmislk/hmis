@@ -138,18 +138,16 @@
             <!-- Total -->
             <div style="padding: 5px;">
                 <table style="width: 100%; font-size: 12px; font-weight: bold;">
-                    <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
-                        <tr>
-                            <td style="text-align: left;">
-                                <h:outputLabel value="Total"/>
-                            </td>
-                            <td style="text-align: right;">
-                                <h:outputLabel value="#{cc.attrs.bill.total}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                    </h:panelGroup>
+                    <tr>
+                        <td style="text-align: left;">
+                            <h:outputLabel value="Total"/>
+                        </td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{cc.attrs.bill.total}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
                 </table>
             </div>
 

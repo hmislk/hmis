@@ -128,16 +128,14 @@
             <!-- Total -->
             <div style="padding: 15px;">
                 <table style="width: 100%; font-size: 14pt;">
-                    <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
-                        <tr>
-                            <td style="text-align: right; font-weight: bold; width: 70%;">Total Amount:</td>
-                            <td style="text-align: right; font-weight: bold; width: 30%; padding-right: 30px;">
-                                <h:outputLabel value="#{cc.attrs.bill.absoluteNetTotalTransient}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                    </h:panelGroup>
+                    <tr>
+                        <td style="text-align: right; font-weight: bold; width: 70%;">Total Amount:</td>
+                        <td style="text-align: right; font-weight: bold; width: 30%; padding-right: 30px;">
+                            <h:outputLabel value="#{cc.attrs.bill.absoluteNetTotalTransient}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
                 </table>
             </div>
 

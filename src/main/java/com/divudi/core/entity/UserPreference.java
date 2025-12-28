@@ -146,9 +146,6 @@ public class UserPreference implements Serializable {
     @Enumerated(EnumType.STRING)
     private PaperType inwardDepositPaymentBillPaper;
 
-    @Enumerated(EnumType.STRING)
-    private PaperType fundTransferBillPaperType;
-
     private boolean partialPaymentOfPharmacyBillsAllowed;
 
     @Deprecated
@@ -1243,17 +1240,6 @@ public class UserPreference implements Serializable {
 
     public void setInwardDepositPaymentBillPaper(PaperType inwardDepositPaymentBillPaper) {
         this.inwardDepositPaymentBillPaper = inwardDepositPaymentBillPaper;
-    }
-
-    public PaperType getFundTransferBillPaperType() {
-        if (fundTransferBillPaperType == null) {
-            fundTransferBillPaperType = PaperType.FiveFivePaper;
-        }
-        return fundTransferBillPaperType;
-    }
-
-    public void setFundTransferBillPaperType(PaperType fundTransferBillPaperType) {
-        this.fundTransferBillPaperType = fundTransferBillPaperType;
     }
 
     public String getLengthOfOTPIndexes() {

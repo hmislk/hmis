@@ -152,12 +152,10 @@
 
             <!-- Total -->
             <div style="text-align: right; font-size: 14px; font-weight: bold; padding: 5px;">
-                <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
-                    Total Amount:
-                    <h:outputLabel value="#{cc.attrs.bill.absoluteNetTotalTransient}">
-                        <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>
-                </h:panelGroup>
+                Total Amount:
+                <h:outputLabel value="#{cc.attrs.bill.absoluteNetTotalTransient}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
             </div>
 
             <div class="billline" style="text-align: center;">
