@@ -4483,6 +4483,15 @@ public class BillBeanController implements Serializable {
         //TODO: Create Logic
         return null;
     }
+    
+    public Double calBillItemMargin(BillEntry billEntry) {
+        Double marginTot = 0.0;
+        for (BillFee f : billEntry.getLstBillFees()) {
+            marginTot += f.getFeeMargin();
+        }
+        return marginTot;
+    }
+
 
     public List<BillFee> billFeefromBillItemPackage(BillItem billItem, Item packege) {
         List<BillFee> t = new ArrayList<>();

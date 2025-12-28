@@ -32,5 +32,6 @@ public enum MessageType {
     DoctorPayment,
     BulkPatientSms,
     BulkNumberSms,
-    ConfirmationEmail
+    ConfirmationEmail,
+    CustomSMS
 }
