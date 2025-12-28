@@ -14980,10 +14980,8 @@ public class SearchController implements Serializable {
     
     public void findInwardServiceBills(){
         if(getSearchKeyword().getItemName() == null || getSearchKeyword().getItemName().trim().equals("")){
-            System.out.println("Null");
             findInwardServiceBill();
         }else{
-            System.out.println("not Null");
             createInwardServiceTableForLab();
         }
     }
