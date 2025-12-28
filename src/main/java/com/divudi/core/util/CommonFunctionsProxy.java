@@ -84,9 +84,6 @@ public class CommonFunctionsProxy {
         return CommonFunctions.dateDifferenceInMinutes(fromDate, toDate);
     }
 
-    public Date addDaysToDate(Date date, Long days) {
-        return CommonFunctions.addDaysToDate(date, days);
-    }
 
     public static Date getRoundedHourAfter60Minutes() {
 
@@ -123,7 +120,4 @@ public class CommonFunctionsProxy {
         return CommonFunctions.getAddedDate(date, days.intValue());
     }
 
-    public Date addDaysToDate(Date date, int days) {
-        return CommonFunctions.getAddedDate(date, days);
-    }
 }
