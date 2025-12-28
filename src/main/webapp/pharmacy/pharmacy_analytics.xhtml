@@ -413,8 +413,12 @@
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show GRN Payment Summary By Supplier')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="GRN Payment Summary By Supplier" action="#{pharmacySaleReportController.navigatePharmacyReportGrnPaymentDetailBySupplier()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
 
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Return Without Traising')}" class="w-100 ui-button-warning" ajax="false"
-                                                             value="Pharmacy Return Without Traising" action="#{pharmacySaleReportController.navigatePharmacyReportGrnDetail1()}" />
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Return Without Traising')}" 
+                                                class="w-100 ui-button-primary" 
+                                                ajax="false"
+                                                value="Pharmacy Return Without Traising" 
+                                                action="#{pharmacySaleReportController.navigateToViewListOfPharmacyReturnWithoutTracingReceipt()}" />
 
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Procurement Bill Item List')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Procurement Bill Item List"
