@@ -1547,6 +1547,48 @@ public class BillService {
         return results;
     }
 
+    // Debug method to count bills before DTO testing
+    public Long countPharmacyReturnWithoutTrasingBills(
+            Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser) {
+
+        String jpql = "SELECT COUNT(b) FROM Bill b "
+                + " WHERE b.retired = false "
+                + " AND b.billTypeAtomic = :billTypeAtomic "
+                + " AND b.createdAt BETWEEN :fromDate AND :toDate ";
+
+        Map params = new HashMap();
+        params.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " AND b.institution = :ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " AND b.creater = :user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " AND b.department = :dep ";
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " AND b.department.site = :site ";
+            params.put("site", site);
+        }
+
+        return (Long) billFacade.findLongByJpql(jpql, params);
+    }
+
     public List<PharmacyReturnWithoutTrasingBillDTO> fetchPharmacyReturnWithoutTrasingBillDTOs(
             Date fromDate,
             Date toDate,
@@ -1555,6 +1597,16 @@ public class BillService {
             Department department,
             WebUser webUser) {
 
+        // First, debug with count query
+        Long count = countPharmacyReturnWithoutTrasingBills(fromDate, toDate, institution, site, department, webUser);
+        System.out.println("🔍 DEBUG: Found " + count + " PHARMACY_RETURN_WITHOUT_TREASING bills in date range");
+
+        if (count == 0) {
+            System.out.println("🚨 No bills found - check BillTypeAtomic and date range");
+            return new ArrayList<>();
+        }
+
+        // Start with minimal constructor to test for null relationship issues
         String jpql;
         Map params = new HashMap();
 
@@ -1564,11 +1616,11 @@ public class BillService {
                 + " coalesce(b.invoiceNumber,''), "
                 + " b.createdAt, "
                 + " b.billDate, "
-                + " coalesce(supplier.name,''), "
-                + " supplier.id, "
-                + " coalesce(dept.name,''), "
-                + " dept.id, "
-                + " coalesce(creator.webUserPerson.name,''), "
+                + " coalesce(b.toInstitution.name,''), "  // ✅ SAFE: Using COALESCE with direct property
+                + " b.toInstitution.id, "                 // ✅ SAFE: Left join handles null
+                + " coalesce(b.department.name,''), "     // ✅ SAFE: Using COALESCE with direct property
+                + " b.department.id, "                    // ✅ SAFE: Left join handles null
+                + " coalesce(b.creater.webUserPerson.name,''), " // ⚠️ POTENTIAL ISSUE: Nested relationship
                 + " coalesce(b.comments,''), "
                 + " coalesce(b.paymentMethod,''), "
                 + " coalesce(b.total,0.0), "
@@ -1579,9 +1631,10 @@ public class BillService {
                 + " coalesce(bfd.totalRetailSaleValue,0.0) ) "
                 + " from Bill b "
                 + " left join b.billFinanceDetails bfd "
-                + " left join b.toInstitution supplier "
-                + " left join b.department dept "
-                + " left join b.creater creator "
+                + " left join b.toInstitution "           // ✅ Explicit LEFT JOIN for safety
+                + " left join b.department "              // ✅ Explicit LEFT JOIN for safety
+                + " left join b.creater "                 // ✅ Explicit LEFT JOIN for safety
+                + " left join b.creater.webUserPerson "   // ✅ Explicit LEFT JOIN for nested relationship
                 + " where b.retired=:ret "
                 + " and b.billTypeAtomic = :billTypeAtomic "
                 + " and b.createdAt between :fromDate and :toDate ";
@@ -1613,7 +1666,18 @@ public class BillService {
 
         jpql += " order by b.createdAt desc, b.id desc ";
 
-        return (List<PharmacyReturnWithoutTrasingBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        try {
+            List<PharmacyReturnWithoutTrasingBillDTO> results =
+                (List<PharmacyReturnWithoutTrasingBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+            System.out.println("🔍 DEBUG: DTO query returned " + (results != null ? results.size() : "null") + " results");
+            return results != null ? results : new ArrayList<>();
+
+        } catch (Exception e) {
+            System.err.println("🚨 DTO query failed: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     public List<PharmacyReturnWithoutTrasingBillItemDTO> fetchPharmacyReturnWithoutTrasingBillItemDTOs(
@@ -1624,21 +1688,63 @@ public class BillService {
             Department department,
             WebUser webUser) {
 
+        // First verify bill items exist
+        String countJpql = "SELECT COUNT(bi) FROM Bill b "
+                + " JOIN b.billItems bi "
+                + " WHERE b.retired = false AND bi.retired = false "
+                + " AND b.billTypeAtomic = :billTypeAtomic "
+                + " AND b.createdAt BETWEEN :fromDate AND :toDate ";
+
+        Map countParams = new HashMap();
+        countParams.put("billTypeAtomic", BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+        countParams.put("fromDate", fromDate);
+        countParams.put("toDate", toDate);
+
+        // Add same filters for count query
+        if (institution != null) {
+            countJpql += " AND b.institution = :ins ";
+            countParams.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            countJpql += " AND b.creater = :user ";
+            countParams.put("user", webUser);
+        }
+
+        if (department != null) {
+            countJpql += " AND b.department = :dep ";
+            countParams.put("dep", department);
+        }
+
+        if (site != null) {
+            countJpql += " AND b.department.site = :site ";
+            countParams.put("site", site);
+        }
+
+        Long itemCount = (Long) billFacade.findLongByJpql(countJpql, countParams);
+        System.out.println("🔍 DEBUG: Found " + itemCount + " bill items in PHARMACY_RETURN_WITHOUT_TREASING bills");
+
+        if (itemCount == 0) {
+            System.out.println("🚨 No bill items found");
+            return new ArrayList<>();
+        }
+
         String jpql;
         Map params = new HashMap();
 
+        // ✅ SAFE: Using explicit LEFT JOINs and avoiding deep nested null relationships
         jpql = "select new com.divudi.core.data.dto.PharmacyReturnWithoutTrasingBillItemDTO("
                 + " b.id, "
                 + " coalesce(b.deptId,''), "
                 + " b.createdAt, "
-                + " coalesce(supplier.name,''), "
+                + " coalesce(b.toInstitution.name,''), "  // Direct property access with COALESCE
                 + " coalesce(b.paymentMethod,''), "
-                + " item.id, "
+                + " coalesce(item.id,0), "                // Handle null item
                 + " coalesce(item.name,''), "
                 + " coalesce(item.code,''), "
                 + " coalesce(item.barcode,''), "
                 + " coalesce(batch.batchNo,''), "
-                + " batch.dateOfExpire, "
+                + " batch.dateOfExpire, "                 // May be null from LEFT JOIN
                 + " coalesce(bi.qty,0.0), "
                 + " coalesce(pbi.qtyInUnit,0.0), "
                 + " coalesce(bifd.costRate,0.0), "
@@ -1649,13 +1755,13 @@ public class BillService {
                 + " coalesce(bifd.valueAtRetailRate,0.0), "
                 + " coalesce(bi.netValue,0.0) ) "
                 + " from Bill b "
-                + " join b.billItems bi "
+                + " join b.billItems bi "                 // INNER JOIN - must have bill items
                 + " left join bi.billItemFinanceDetails bifd "
                 + " left join bi.pharmaceuticalBillItem pbi "
                 + " left join pbi.stock stock "
                 + " left join stock.itemBatch batch "
                 + " left join batch.item item "
-                + " left join b.toInstitution supplier "
+                + " left join b.toInstitution "           // Explicit LEFT JOIN
                 + " where b.retired = false and bi.retired = false "
                 + " and b.billTypeAtomic = :billTypeAtomic "
                 + " and b.createdAt between :fromDate and :toDate ";
@@ -1686,7 +1792,18 @@ public class BillService {
 
         jpql += " order by b.createdAt desc, b.id desc, bi.searialNo ";
 
-        return (List<PharmacyReturnWithoutTrasingBillItemDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        try {
+            List<PharmacyReturnWithoutTrasingBillItemDTO> results =
+                (List<PharmacyReturnWithoutTrasingBillItemDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+            System.out.println("🔍 DEBUG: Bill Item DTO query returned " + (results != null ? results.size() : "null") + " results");
+            return results != null ? results : new ArrayList<>();
+
+        } catch (Exception e) {
+            System.err.println("🚨 Bill Item DTO query failed: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     public List<OpdIncomeReportDTO> fetchOpdIncomeReportDTOs(Date fromDate,

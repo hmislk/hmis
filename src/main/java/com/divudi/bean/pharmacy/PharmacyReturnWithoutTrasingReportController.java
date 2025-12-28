@@ -18,6 +18,7 @@ import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -65,17 +66,33 @@ public class PharmacyReturnWithoutTrasingReportController implements Serializabl
 
     // Main processing method
     public void processReport() {
-        if (reportViewType == null) {
-            JsfUtil.addErrorMessage("Please select a report view type.");
-            return;
-        }
-
-        if (fromDate == null || toDate == null) {
-            JsfUtil.addErrorMessage("Please select both from and to dates.");
-            return;
-        }
+        // Clear any previous messages
+        clearReportData();
 
         try {
+            // Validation
+            if (reportViewType == null) {
+                JsfUtil.addErrorMessage("Please select a report view type.");
+                return;
+            }
+
+            if (fromDate == null || toDate == null) {
+                JsfUtil.addErrorMessage("Please select both from and to dates.");
+                return;
+            }
+
+            if (fromDate.after(toDate)) {
+                JsfUtil.addErrorMessage("From date cannot be after to date.");
+                return;
+            }
+
+            // Check for reasonable date range (not more than 1 year)
+            long daysDiff = (toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24);
+            if (daysDiff > 365) {
+                JsfUtil.addErrorMessage("Date range cannot exceed 1 year. Please select a smaller date range.");
+                return;
+            }
+
             switch (reportViewType) {
                 case BY_BILL:
                     processReportByBill();
@@ -89,6 +106,8 @@ public class PharmacyReturnWithoutTrasingReportController implements Serializabl
             }
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error processing report: " + e.getMessage());
+            System.err.println("🚨 FATAL ERROR: Report processing failed: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -97,16 +116,31 @@ public class PharmacyReturnWithoutTrasingReportController implements Serializabl
         billItemReportData = null;
         summaryRow = null;
 
-        // Fetch bill-level data
-        billReportData = billService.fetchPharmacyReturnWithoutTrasingBillDTOs(
-                fromDate, toDate, institution, site, department, sessionController.getLoggedUser());
+        try {
+            System.out.println("🔍 DEBUG: Processing Bill Report with filters:");
+            System.out.println("  - From Date: " + fromDate);
+            System.out.println("  - To Date: " + toDate);
+            System.out.println("  - Institution: " + (institution != null ? institution.getName() : "All"));
+            System.out.println("  - Site: " + (site != null ? site.getName() : "All"));
+            System.out.println("  - Department: " + (department != null ? department.getName() : "All"));
 
-        calculateBillSummary();
+            // Fetch bill-level data
+            billReportData = billService.fetchPharmacyReturnWithoutTrasingBillDTOs(
+                    fromDate, toDate, institution, site, department, sessionController.getLoggedUser());
 
-        if (billReportData != null && !billReportData.isEmpty()) {
-            JsfUtil.addSuccessMessage("Report generated successfully. Found " + totalRecordCount + " bills.");
-        } else {
-            JsfUtil.addInfoMessage("No records found for the selected criteria.");
+            calculateBillSummary();
+
+            if (billReportData != null && !billReportData.isEmpty()) {
+                JsfUtil.addSuccessMessage("Report generated successfully. Found " + totalRecordCount + " bills.");
+                System.out.println("✅ SUCCESS: Generated bill report with " + totalRecordCount + " records");
+            } else {
+                JsfUtil.addInfoMessage("No records found for the selected criteria. Check the server logs for debugging details.");
+                System.out.println("⚠️ INFO: No bill records found - check if data exists with different bill types or date ranges");
+            }
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating bill report: " + e.getMessage());
+            System.err.println("🚨 ERROR: Bill report generation failed: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -115,16 +149,26 @@ public class PharmacyReturnWithoutTrasingReportController implements Serializabl
         billReportData = null;
         summaryRow = null;
 
-        // Fetch item-level data
-        billItemReportData = billService.fetchPharmacyReturnWithoutTrasingBillItemDTOs(
-                fromDate, toDate, institution, site, department, sessionController.getLoggedUser());
+        try {
+            System.out.println("🔍 DEBUG: Processing Bill Item Report with same filters...");
 
-        calculateBillItemSummary();
+            // Fetch item-level data
+            billItemReportData = billService.fetchPharmacyReturnWithoutTrasingBillItemDTOs(
+                    fromDate, toDate, institution, site, department, sessionController.getLoggedUser());
 
-        if (billItemReportData != null && !billItemReportData.isEmpty()) {
-            JsfUtil.addSuccessMessage("Report generated successfully. Found " + billItemReportData.size() + " bill items.");
-        } else {
-            JsfUtil.addInfoMessage("No records found for the selected criteria.");
+            calculateBillItemSummary();
+
+            if (billItemReportData != null && !billItemReportData.isEmpty()) {
+                JsfUtil.addSuccessMessage("Report generated successfully. Found " + billItemReportData.size() + " bill items.");
+                System.out.println("✅ SUCCESS: Generated bill item report with " + billItemReportData.size() + " records");
+            } else {
+                JsfUtil.addInfoMessage("No bill items found for the selected criteria. Check the server logs for debugging details.");
+                System.out.println("⚠️ INFO: No bill item records found");
+            }
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating bill item report: " + e.getMessage());
+            System.err.println("🚨 ERROR: Bill item report generation failed: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -169,13 +213,19 @@ public class PharmacyReturnWithoutTrasingReportController implements Serializabl
 
     // Reset methods
     public void resetFilters() {
-        fromDate = null;
-        toDate = null;
-        institution = null;
-        site = null;
-        department = null;
-        reportViewType = null;
-        clearReportData();
+        try {
+            fromDate = CommonFunctions.getStartOfDay();
+            toDate = CommonFunctions.getEndOfDay();
+            institution = null;
+            site = null;
+            department = null;
+            reportViewType = null;
+            clearReportData();
+            JsfUtil.addInfoMessage("Filters reset to default values.");
+        } catch (Exception e) {
+            System.err.println("🚨 ERROR: Failed to reset filters: " + e.getMessage());
+            JsfUtil.addErrorMessage("Error resetting filters: " + e.getMessage());
+        }
     }
 
     public void clearReportData() {
@@ -183,6 +233,26 @@ public class PharmacyReturnWithoutTrasingReportController implements Serializabl
         billItemReportData = null;
         summaryRow = null;
         totalRecordCount = 0;
+    }
+
+    // Initialize controller with safe defaults
+    @PostConstruct
+    public void init() {
+        try {
+            System.out.println("🔧 Initializing PharmacyReturnWithoutTrasingReportController...");
+            // Set default dates if not already set
+            if (fromDate == null) {
+                fromDate = CommonFunctions.getStartOfDay();
+            }
+            if (toDate == null) {
+                toDate = CommonFunctions.getEndOfDay();
+            }
+            clearReportData();
+            System.out.println("✅ Controller initialized successfully");
+        } catch (Exception e) {
+            System.err.println("🚨 ERROR: Failed to initialize controller: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     // Lazy initialization getters with defaults

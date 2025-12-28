@@ -1776,7 +1776,7 @@ public class PharmacySaleReportController implements Serializable {
         return "/pharmacy/pharmacy_report_summery_all?faces-redirect=true";
     }
 
-    public String navigatePharmacyReportGrnDetail1() {
+    public String navigateToViewListOfPharmacyReturnWithoutTracingReceipt() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -1802,14 +1802,14 @@ public class PharmacySaleReportController implements Serializable {
         }
         auditEvent.setUrl(url);
         auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("navigatePharmacyReportGrnDetail1()");
+        auditEvent.setEventTrigger("navigateToViewListOfPharmacyReturnWithoutTracingReceipt()");
         auditEventApplicationController.logAuditEvent(auditEvent);
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        return "/pharmacy/pharmacy_report_grn_detail_1?faces-redirect=true";
+        return "/pharmacy/pharmacy_report_return_without_tracing_receipt_list?faces-redirect=true";
     }
 
     public String navigatePharmacyBillReport() {
