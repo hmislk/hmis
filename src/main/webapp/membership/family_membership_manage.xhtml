@@ -160,7 +160,7 @@
                                 </p:column>
                                 <p:column headerText="Quick Links" >
                                     <p:commandButton 
-                                        action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(fm.patient, fm.family.membershipScheme.paymentScheme)}" 
+                                        action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(fm.patient, fm.family.membershipScheme.paymentScheme, fm.family)}"
                                         ajax="false"
                                         styleClass="ui-button-opd"
                                         rendered="#{webUserController.hasPrivilege('OpdBilling')}"
