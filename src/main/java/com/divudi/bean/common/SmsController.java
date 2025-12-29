@@ -31,6 +31,8 @@ import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 import com.divudi.core.data.dto.SmsDTO;
+import com.divudi.core.data.dto.FailedSmsDTO;
+        
 import java.util.ArrayList;
 
 /**
@@ -82,6 +84,7 @@ public class SmsController implements Serializable {
     private List<Patient> selectedPatients;
 
     private List<SmsDTO> smsDtoList;
+    private List<FailedSmsDTO> failedSmsDtoList;
 
     // New variable to control SMS sending
     private static boolean doNotSendAnySms = false;
@@ -107,13 +110,13 @@ public class SmsController implements Serializable {
      */
     public SmsController() {
     }
-    
-    public void makeNull(){
+
+    public void makeNull() {
         smsDtoList = new ArrayList<>();
         fromDate = null;
         toDate = null;
     }
-    
+
     public String navigateToSmsList() {
         makeNull();
         return "/analytics/sms_list?faces-redirect=true";
@@ -173,8 +176,6 @@ public class SmsController implements Serializable {
 //        m.put("td", toDate);
 //        smses = smsFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
 //    }
-    
-    
     @Deprecated
     public void fillAllSms() {
         String j = "select s from Sms s where s.createdAt between :fd and :td";
@@ -187,12 +188,11 @@ public class SmsController implements Serializable {
 
         // NEW DTO list (PARALLEL)
         //SmsDTO = new java.util.ArrayList<>();
-
         for (Sms s : smses) {
             //allSmsListDtos.add(toDto(s));
         }
     }
-    
+
     public void fillAllSmsDtos() {
         smsDtoList = new ArrayList<>();
         String jpql = "select new com.divudi.core.data.dto.SmsDTO("
@@ -205,7 +205,7 @@ public class SmsController implements Serializable {
                 + " s.sentSuccessfully,"
                 + " s.pending,"
                 + " COALESCE(s.receivedMessage,'N/A'),"
-                + " p.title, " 
+                + " p.title, "
                 + " COALESCE(p.name,'')"
                 + " )"
                 + " from Sms s "
@@ -214,12 +214,12 @@ public class SmsController implements Serializable {
                 + " LEFT JOIN pt.person p "
                 + " where s.createdAt between :fd and :td "
                 + " ORDER BY s.id asc";
-        
+
         Map params = new HashMap();
         params.put("fd", fromDate);
         params.put("td", toDate);
 
-        smsDtoList = (List<SmsDTO>)smsFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+        smsDtoList = (List<SmsDTO>) smsFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
 
     }
 
@@ -234,6 +234,38 @@ public class SmsController implements Serializable {
         m.put("td", toDate);
         m.put("suc", true);
         faildsms = smsFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
+    }
+
+    public void fillAllFailedSmsDtos() {
+
+        String jpql = "select new com.divudi.core.data.dto.FailedSmsDTO("
+                + " s.id, "
+                + " s.createdAt, "
+                + " s.sentAt, "
+                + " s.smsType, "
+                + " COALESCE(s.sendingMessage,'N/A'), "
+                + " COALESCE(s.receipientNumber,'N/A'), "
+                + " s.sentSuccessfully, "
+                + " s.pending, "
+                + " COALESCE(s.receivedMessage,'N/A'), "
+                + " p.title, "
+                + " COALESCE(p.name,'') "
+                + ") "
+                + " from Sms s "
+                + " LEFT JOIN s.bill b "
+                + " LEFT JOIN b.patient pt "
+                + " LEFT JOIN pt.person p "
+                + " where s.sentSuccessfully <> true "
+                + " and s.createdAt between :fd and :td "
+                + " order by s.id desc";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        failedSmsDtoList
+                = (List<FailedSmsDTO>) smsFacade
+                        .findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public void sentUnsentSms() {
@@ -555,6 +587,14 @@ public class SmsController implements Serializable {
     }
 
     //---------Getters and Setters
+    public List<FailedSmsDTO> getFailedSmsDtoList() {
+        return failedSmsDtoList;
+    }
+
+    public void setFailedSmsDtoList(List<FailedSmsDTO> failedSmsDtoList) {
+        this.failedSmsDtoList = failedSmsDtoList;
+    }
+
     public SessionController getSessionController() {
         return sessionController;
     }
