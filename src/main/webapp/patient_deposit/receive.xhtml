@@ -665,6 +665,85 @@
 
         </h:panelGroup>
 
+        <!-- Patient Deposit Printer Configuration Dialog -->
+        <p:dialog id="patientDepositConfigDialog"
+                  header="Patient Deposit Printer Configuration"
+                  widgetVar="patientDepositConfigDialog"
+                  modal="true"
+                  width="600"
+                  height="500"
+                  resizable="true"
+                  maximizable="true"
+                  closeOnEscape="true">
+
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="patientDepositConfigForm" />
+
+            <h:form id="patientDepositConfigForm">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <h:outputText value="Patient Deposit Receipt Paper Settings">
+                                    <f:facet name="before">
+                                        <i class="fas fa-file-alt"></i>
+                                    </f:facet>
+                                </h:outputText>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="patientDepositPosPaper"
+                                        value="#{pharmacyConfigController.patientDepositPosPaper}" />
+                                    <p:outputLabel for="patientDepositPosPaper" value="POS/5.5 inch Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Standard 5.5 inch thermal receipt format (Default)</small>
+                                </div>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="patientDepositA4Paper"
+                                        value="#{pharmacyConfigController.patientDepositA4Paper}" />
+                                    <p:outputLabel for="patientDepositA4Paper" value="A4 Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">A4 size paper format for detailed receipts</small>
+                                </div>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="patientDepositCustomPaper"
+                                        value="#{pharmacyConfigController.patientDepositCustomPaper}" />
+                                    <p:outputLabel for="patientDepositCustomPaper" value="Custom Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Custom format for special printing requirements</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <p:messages id="patientDepositConfigMessages" showDetail="true" closable="true" />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            value="Apply &amp; Close"
+                                            icon="fas fa-save"
+                                            class="ui-button-success"
+                                            ajax="false"
+                                            action="#{pharmacyConfigController.savePatientDepositConfig}" />
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('patientDepositConfigDialog').hide(); return false;"
+                                            type="button" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </h:form>
+        </p:dialog>
+
     </ui:define>
 
 </ui:composition>
