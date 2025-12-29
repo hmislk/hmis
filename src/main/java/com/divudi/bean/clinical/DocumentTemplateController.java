@@ -141,7 +141,7 @@ public class DocumentTemplateController implements Serializable {
 
     public String navigateToListUserDocumentTemplate() {
         items = fillAllItems(null);
-        return "/emr/settings/document_templates";
+        return "/emr/settings/document_templates?faces-redirect=true";
     }
 
     public void saveUserDocumentTemplate() {
