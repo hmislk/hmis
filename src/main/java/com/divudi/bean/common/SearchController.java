@@ -16593,15 +16593,6 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(slipPayments);
             netCashCollection -= Math.abs(getSafeTotal(slipPayments));
 
-            // Section 2: Patient Deposit Utilization - bills settled using patient deposits (display only, not deducted)
-            ReportTemplateRowBundle patientDepositUtilization = generatePatientDepositUtilization();
-            patientDepositUtilization.calculateTotalByPayments();
-            bundle.getBundles().add(patientDepositUtilization);
-            System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization (bills settled using deposits) = " + getSafeTotal(patientDepositUtilization));
-            // NOTE: Do NOT deduct from netCashCollection - this is display only
-            System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization NOT deducted from net cash (display only)");
-            // NOTE: Do NOT deduct from netCashCollection - this is display only
-
             // Final net cash for the day
             ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
             netCashForTheDayBundle.setName("Net Cash");
@@ -16640,6 +16631,36 @@ public class SearchController implements Serializable {
             netCashForTheDayBundlePlusCredits.setBundleType("netCashPlusCredit");
             netCashForTheDayBundlePlusCredits.setTotal(netCollectionPlusCredits);
             bundle.getBundles().add(netCashForTheDayBundlePlusCredits);
+
+            // Patient Deposit Reconciliation Section (Display Only - No Impact on Calculations)
+            System.out.println("DEBUG generateDailyReturn: Starting Patient Deposit Reconciliation Section");
+
+            // 1. Patient Deposit Receipts Summary (display total again)
+            ReportTemplateRowBundle patientDepositReceiptsSummary = generatePatientDepositCollection();
+            ReportTemplateRowBundle patientDepositReceiptsSummaryDisplay = new ReportTemplateRowBundle();
+            patientDepositReceiptsSummaryDisplay.setName("Patient Deposit Receipts");
+            patientDepositReceiptsSummaryDisplay.setBundleType("patientDepositReceiptsSummary");
+            patientDepositReceiptsSummaryDisplay.setTotal(patientDepositReceiptsSummary.getTotal());
+            bundle.getBundles().add(patientDepositReceiptsSummaryDisplay);
+            System.out.println("DEBUG generateDailyReturn: Patient Deposit Receipts Summary = " + patientDepositReceiptsSummary.getTotal());
+
+            // 2. Patient Deposit Utilization (moved from deductions area)
+            ReportTemplateRowBundle patientDepositUtilization = generatePatientDepositUtilization();
+            patientDepositUtilization.calculateTotalByPayments();
+            patientDepositUtilization.setBundleType("patientDepositUtilizationSummary");
+            bundle.getBundles().add(patientDepositUtilization);
+            System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization Summary = " + getSafeTotal(patientDepositUtilization));
+
+            // 3. Carried out Patient Deposit Value (Receipts - Utilization)
+            double carriedOutDepositValue = patientDepositReceiptsSummary.getTotal() - Math.abs(getSafeTotal(patientDepositUtilization));
+            ReportTemplateRowBundle carriedOutPatientDeposit = new ReportTemplateRowBundle();
+            carriedOutPatientDeposit.setName("Carried out Patient Deposit Value");
+            carriedOutPatientDeposit.setBundleType("carriedOutPatientDeposit");
+            carriedOutPatientDeposit.setTotal(carriedOutDepositValue);
+            bundle.getBundles().add(carriedOutPatientDeposit);
+            System.out.println("DEBUG generateDailyReturn: Carried out Patient Deposit Value = " + carriedOutDepositValue + " (Receipts: " + patientDepositReceiptsSummary.getTotal() + " - Utilization: " + Math.abs(getSafeTotal(patientDepositUtilization)) + ")");
+
+            System.out.println("DEBUG generateDailyReturn: Patient Deposit Reconciliation Section Complete");
 
         }, FinancialReport.DAILY_RETURN, sessionController.getLoggedUser());
     }
