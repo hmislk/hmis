@@ -14780,6 +14780,11 @@ public class SearchController implements Serializable {
     }
 
     public void createPatientDepositTable(BillType billType) {
+        // Ensure department-specific deposits configuration is enabled
+        if (!configOptionApplicationController.getBooleanValueByKey("Patient Deposits are Department Specific", false)) {
+            configOptionApplicationController.setBooleanValueByKey("Patient Deposits are Department Specific", true);
+        }
+
         bills = new ArrayList<>();
         String jpql;
         Map temMap = new HashMap();
