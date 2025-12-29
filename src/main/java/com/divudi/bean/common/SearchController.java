@@ -19133,6 +19133,8 @@ public class SearchController implements Serializable {
 
         String jpql = "select b "
                 + " from Bill b "
+                + " left join fetch b.patient patient "
+                + " left join fetch patient.person "
                 + " where b.retired = :br "
                 + " and b.createdAt between :fd and :td "
                 + " and b.billTypeAtomic in :btas ";
