@@ -16514,6 +16514,15 @@ public class SearchController implements Serializable {
             System.out.println("DEBUG generateDailyReturn: Patient Deposit Receipts ADDED to collectionForTheDay");
             System.out.println("DEBUG generateDailyReturn: Collection for the day after patient deposits = " + collectionForTheDay);
 
+            // OPD Patient Deposit Payments - bills paid using deposits (deducted from collection for the day)
+            ReportTemplateRowBundle opdPatientDepositPayments = generateOpdPatientDepositPayments();
+            opdPatientDepositPayments.calculateTotalByPayments();
+            bundle.getBundles().add(opdPatientDepositPayments);
+            collectionForTheDay -= Math.abs(getSafeTotal(opdPatientDepositPayments));
+            System.out.println("DEBUG generateDailyReturn: OPD Patient Deposit Payments = " + getSafeTotal(opdPatientDepositPayments));
+            System.out.println("DEBUG generateDailyReturn: OPD Patient Deposit Payments deducted from collection for the day");
+            System.out.println("DEBUG generateDailyReturn: Collection for the day after OPD patient deposit deduction = " + collectionForTheDay);
+
             // Final collection for the day
             ReportTemplateRowBundle collectionForTheDayBundle = new ReportTemplateRowBundle();
             collectionForTheDayBundle.setName("Collection for the day");
@@ -19636,6 +19645,25 @@ public class SearchController implements Serializable {
                 site);
         ap.setName("Patient Deposit Utilization");
         ap.setBundleType("patientDepositUtilization");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateOpdPatientDepositPayments() {
+        // Get OPD bill types
+        List<BillTypeAtomic> opdBillTypes = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+
+        // Use new payment report method with bill type filtering
+        ReportTemplateRowBundle ap = reportTemplateController.generatePaymentReportByBillTypes(
+                PaymentMethod.PatientDeposit,
+                opdBillTypes,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+
+        ap.setName("OPD Patient Deposit Payments");
+        ap.setBundleType("opdPatientDepositPayments");
         return ap;
     }
 
