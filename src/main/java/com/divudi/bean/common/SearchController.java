@@ -14803,6 +14803,12 @@ public class SearchController implements Serializable {
             temMap.put("pn", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
 
+        // Add department filtering - restrict to logged-in user's department only
+        if (getSessionController().getDepartment() != null) {
+            jpql += " and b.department.id = :deptId ";
+            temMap.put("deptId", getSessionController().getDepartment().getId());
+        }
+
         jpql += " order by b.createdAt desc  ";
 
         temMap.put("billType", billType);
