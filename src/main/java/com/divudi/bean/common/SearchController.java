@@ -16593,6 +16593,14 @@ public class SearchController implements Serializable {
             System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization NOT deducted from net cash (display only)");
             // NOTE: Do NOT deduct from netCashCollection - this is display only
 
+            // NEW: OPD Patient Deposit Payments - bills paid using deposits (deducted from net cash)
+            ReportTemplateRowBundle opdPatientDepositPayments = generateOpdPatientDepositPayments();
+            opdPatientDepositPayments.calculateTotalByPayments();
+            bundle.getBundles().add(opdPatientDepositPayments);
+            netCashCollection -= Math.abs(getSafeTotal(opdPatientDepositPayments));
+            System.out.println("DEBUG generateDailyReturn: OPD Patient Deposit Payments = " + getSafeTotal(opdPatientDepositPayments));
+            System.out.println("DEBUG generateDailyReturn: OPD Patient Deposit Payments deducted from net cash");
+
             // Final net cash for the day
             ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
             netCashForTheDayBundle.setName("Net Cash");
@@ -19638,6 +19646,25 @@ public class SearchController implements Serializable {
                 site);
         ap.setName("Patient Deposit Utilization");
         ap.setBundleType("patientDepositUtilization");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generateOpdPatientDepositPayments() {
+        // Get OPD bill types
+        List<BillTypeAtomic> opdBillTypes = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+
+        // Use new payment report method with bill type filtering
+        ReportTemplateRowBundle ap = reportTemplateController.generatePaymentReportByBillTypes(
+                PaymentMethod.PatientDeposit,
+                opdBillTypes,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+
+        ap.setName("OPD Patient Deposit Payments");
+        ap.setBundleType("opdPatientDepositPayments");
         return ap;
     }
 
