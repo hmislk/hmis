@@ -3092,7 +3092,6 @@ public class Bill implements Serializable, RetirableEntity {
     public void setSite(Institution site) {
         this.site = site;
     }
-    
 
     public Request getCurrentRequest() {
         return currentRequest;
