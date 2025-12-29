@@ -159,6 +159,11 @@ public class PharmacyConfigController implements Serializable {
     private boolean patientDepositA4Paper;
     private boolean patientDepositCustomPaper;
 
+    // Petty Cash Settings
+    private boolean pettyCashPosPaper;
+    private boolean pettyCashA4Paper;
+    private boolean pettyCashCustomPaper;
+
     public PharmacyConfigController() {
     }
     
@@ -301,6 +306,11 @@ public class PharmacyConfigController implements Serializable {
         patientDepositA4Paper = configOptionController.getBooleanValueByKey("Patient Deposit Receipt A4 Paper", false);
         patientDepositCustomPaper = configOptionController.getBooleanValueByKey("Patient Deposit Receipt Custom Paper", false);
 
+        // Petty Cash Settings
+        pettyCashPosPaper = configOptionController.getBooleanValueByKey("Petty Cash Receipt POS Paper", true);
+        pettyCashA4Paper = configOptionController.getBooleanValueByKey("Petty Cash Receipt A4 Paper", false);
+        pettyCashCustomPaper = configOptionController.getBooleanValueByKey("Petty Cash Receipt Custom Paper", false);
+
     }
 
     /**
@@ -427,6 +437,11 @@ public class PharmacyConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Patient Deposit Receipt POS Paper", patientDepositPosPaper);
             configOptionController.setBooleanValueByKey("Patient Deposit Receipt A4 Paper", patientDepositA4Paper);
             configOptionController.setBooleanValueByKey("Patient Deposit Receipt Custom Paper", patientDepositCustomPaper);
+
+            // Petty Cash Settings
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt POS Paper", pettyCashPosPaper);
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt A4 Paper", pettyCashA4Paper);
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt Custom Paper", pettyCashCustomPaper);
 
             JsfUtil.addSuccessMessage("Configuration saved successfully");
 
@@ -672,6 +687,26 @@ public class PharmacyConfigController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving Patient Deposit configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Petty Cash configuration changes specifically
+     */
+    public void savePettyCashConfig() {
+        try {
+            // Petty Cash Settings
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt POS Paper", pettyCashPosPaper);
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt A4 Paper", pettyCashA4Paper);
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt Custom Paper", pettyCashCustomPaper);
+
+            JsfUtil.addSuccessMessage("Petty Cash configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Petty Cash configuration: " + e.getMessage());
         }
     }
 
@@ -1405,6 +1440,31 @@ public class PharmacyConfigController implements Serializable {
 
     public void setPatientDepositCustomPaper(boolean patientDepositCustomPaper) {
         this.patientDepositCustomPaper = patientDepositCustomPaper;
+    }
+
+    // Petty Cash Getters and Setters
+    public boolean isPettyCashPosPaper() {
+        return pettyCashPosPaper;
+    }
+
+    public void setPettyCashPosPaper(boolean pettyCashPosPaper) {
+        this.pettyCashPosPaper = pettyCashPosPaper;
+    }
+
+    public boolean isPettyCashA4Paper() {
+        return pettyCashA4Paper;
+    }
+
+    public void setPettyCashA4Paper(boolean pettyCashA4Paper) {
+        this.pettyCashA4Paper = pettyCashA4Paper;
+    }
+
+    public boolean isPettyCashCustomPaper() {
+        return pettyCashCustomPaper;
+    }
+
+    public void setPettyCashCustomPaper(boolean pettyCashCustomPaper) {
+        this.pettyCashCustomPaper = pettyCashCustomPaper;
     }
 
 }
