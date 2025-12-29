@@ -339,6 +339,9 @@
                                     </p:column>
 
                                     <p:column headerText="Remarks" >
+                                        <h:panelGroup rendered="#{bill.membershipScheme ne null}">
+                                            <p:badge value="#{bill.membershipScheme.name}" severity="success" styleClass="mr-2"></p:badge>
+                                        </h:panelGroup>
                                         <h:panelGroup id="remark">
                                             <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
                                             <p:badge rendered="#{bill.billTypeAtomic eq 'PACKAGE_OPD_BILL_WITH_PAYMENT'}" value="Package Bill"></p:badge>
