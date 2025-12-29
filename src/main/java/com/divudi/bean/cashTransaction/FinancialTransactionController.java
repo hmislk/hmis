@@ -1172,6 +1172,32 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/handover_start_select?faces-redirect=true";
     }
 
+    public String navigateToSelectPaymentsForHandoverCreate(ReportTemplateRowBundle inputBundle, String paymentMethodStr) {
+        if (inputBundle == null) {
+            JsfUtil.addErrorMessage("No Bundle Selected");
+            return null;
+        }
+        PaymentMethod pm = null;
+        if (paymentMethodStr != null && !paymentMethodStr.isEmpty()) {
+            try {
+                pm = PaymentMethod.valueOf(paymentMethodStr);
+            } catch (IllegalArgumentException e) {
+                // Try mapping common string variations to enum values
+                switch (paymentMethodStr) {
+                    case "StaffWelfare":
+                        pm = PaymentMethod.Staff_Welfare;
+                        break;
+                    default:
+                        JsfUtil.addErrorMessage("Invalid Payment Method: " + paymentMethodStr);
+                        return null;
+                }
+            }
+        }
+        selectedBundle = inputBundle;
+        selectedPaymentMethod = pm;
+        return "/cashier/handover_start_select?faces-redirect=true";
+    }
+
     @Deprecated
     public String navigateToSelectPaymentsForHandoverAccept(ReportTemplateRowBundle inputBundle, PaymentMethod inputPaymentMethod) {
         if (inputBundle == null) {
@@ -1180,6 +1206,33 @@ public class FinancialTransactionController implements Serializable {
         }
         selectedBundle = inputBundle;
         selectedPaymentMethod = inputPaymentMethod;
+        return "/cashier/handover_accept_select?faces-redirect=true";
+    }
+
+    @Deprecated
+    public String navigateToSelectPaymentsForHandoverAccept(ReportTemplateRowBundle inputBundle, String paymentMethodStr) {
+        if (inputBundle == null) {
+            JsfUtil.addErrorMessage("No Bundle Selected");
+            return null;
+        }
+        PaymentMethod pm = null;
+        if (paymentMethodStr != null && !paymentMethodStr.isEmpty()) {
+            try {
+                pm = PaymentMethod.valueOf(paymentMethodStr);
+            } catch (IllegalArgumentException e) {
+                // Try mapping common string variations to enum values
+                switch (paymentMethodStr) {
+                    case "StaffWelfare":
+                        pm = PaymentMethod.Staff_Welfare;
+                        break;
+                    default:
+                        JsfUtil.addErrorMessage("Invalid Payment Method: " + paymentMethodStr);
+                        return null;
+                }
+            }
+        }
+        selectedBundle = inputBundle;
+        selectedPaymentMethod = pm;
         return "/cashier/handover_accept_select?faces-redirect=true";
     }
 
