@@ -1050,6 +1050,21 @@ public class QuickBookReportController implements Serializable {
             // Calculate TRANS amount with correct sign based on transaction type
             double transAmount = isReturnTransaction ? grantTot : (0 - grantTot);
 
+            // Calculate total SPL amounts for balance validation
+            double totalSplAmount = 0.0;
+            for (QuickBookFormat splFormat : qbfs) {
+                totalSplAmount += splFormat.getAmount();
+            }
+
+            // Validate accounting equation: TRANS + sum(SPLs) should equal 0
+            double balance = transAmount + totalSplAmount;
+            if (Math.abs(balance) > 0.01) {
+                System.err.println("WARNING: QB entry does not balance for bill " + b.getDeptId() +
+                                  " (Type: " + billType + ", Return: " + isReturnTransaction + ")" +
+                                  " - TRANS: " + transAmount + ", SPL Total: " + totalSplAmount +
+                                  ", Balance: " + balance);
+            }
+
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
                 qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(approvalDate), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Pharmacy", "", "", transAmount, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
             } else {
