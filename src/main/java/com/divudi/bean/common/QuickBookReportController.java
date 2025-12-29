@@ -900,6 +900,11 @@ public class QuickBookReportController implements Serializable {
      * This method handles cases where expenses are stored as totals in BILL table
      * rather than as individual BILLITEM records.
      */
+    /**
+     * Enhanced QB format method for approved pharmacy transactions filtered by approval date.
+     * This method includes only approved GRN, Direct Purchase, GRN Return, Direct Purchase Return,
+     * and Return without tracing receipts, filtered by approval date instead of creation date.
+     */
     public void createQBFormatPharmacyGRNAndPurchaseBillsWithExpenses() {
         List<Bill> bills = new ArrayList<>();
         List<Bill> billsBilled = new ArrayList<>();
@@ -910,24 +915,62 @@ public class QuickBookReportController implements Serializable {
         List<Bill> billsCanceledP = new ArrayList<>();
         List<Bill> billsReturnP = new ArrayList<>();
         List<Bill> billsReturnCancelP = new ArrayList<>();
+        List<Bill> billsDirectPurchase = new ArrayList<>();
+        List<Bill> billsDirectPurchaseReturn = new ArrayList<>();
 
-        for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.PharmacyGrnBill, BillType.PharmacyGrnReturn, BillType.PharmacyPurchaseBill, BillType.PurchaseReturn}), getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate))) {
-            billsBilled.addAll(getBills(new BilledBill(), BillType.PharmacyGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-            billsBilledP.addAll(getBills(new BilledBill(), BillType.PharmacyPurchaseBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-            billsCanceled.addAll(getBills(new CancelledBill(), BillType.PharmacyGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-            billsCanceledP.addAll(getBills(new CancelledBill(), BillType.PharmacyPurchaseBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-            billsReturn.addAll(getBills(new BilledBill(), BillType.PharmacyGrnReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-            billsReturnP.addAll(getBills(new BilledBill(), BillType.PurchaseReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-            billsReturnCancel.addAll(getBills(new CancelledBill(), BillType.PharmacyGrnReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-            billsReturnCancelP.addAll(getBills(new CancelledBill(), BillType.PurchaseReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+        // Define the approved bill types to include
+        List<BillTypeAtomic> approvedBillTypes = Arrays.asList(
+            BillTypeAtomic.PHARMACY_GRN,                    // Approved GRN (not GRN_PRE)
+            BillTypeAtomic.PHARMACY_GRN_RETURN,             // GRN Return
+            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,        // Direct Purchase
+            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND, // Direct Purchase Return
+            BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING // Return without tracing receipts
+        );
+
+        // Get departments with approved bills filtered by approval date
+        for (Department d : getApprovedDepartments(approvedBillTypes, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate))) {
+
+            // Get approved GRNs (not pending/pre-approval)
+            billsBilled.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_GRN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+
+            // Get approved Direct Purchases
+            billsDirectPurchase.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+
+            // Get approved GRN Returns
+            billsReturn.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_GRN_RETURN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+
+            // Get approved Direct Purchase Returns
+            billsDirectPurchaseReturn.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+
+            // Get approved Returns without tracing receipts
+            billsReturnP.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+
+            // Get cancelled bills (if needed for QB reporting)
+            billsCanceled.addAll(getApprovedBills(new CancelledBill(), BillTypeAtomic.PHARMACY_GRN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsReturnCancel.addAll(getApprovedBills(new CancelledBill(), BillTypeAtomic.PHARMACY_GRN_RETURN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
         }
 
-        System.out.println("billsBilled.size() = " + billsBilled.size());
+        // Aggregate all approved bills for processing
+        System.out.println("billsBilled (Approved GRNs).size() = " + billsBilled.size());
         bills.addAll(billsBilled);
-        System.out.println("billsBilledP.size() = " + billsBilledP.size());
-        bills.addAll(billsBilledP);
 
-        System.out.println("bills.size() = " + bills.size());
+        System.out.println("billsDirectPurchase.size() = " + billsDirectPurchase.size());
+        bills.addAll(billsDirectPurchase);
+
+        System.out.println("billsReturn (GRN Returns).size() = " + billsReturn.size());
+        bills.addAll(billsReturn);
+
+        System.out.println("billsDirectPurchaseReturn.size() = " + billsDirectPurchaseReturn.size());
+        bills.addAll(billsDirectPurchaseReturn);
+
+        System.out.println("billsReturnP (Returns without tracing).size() = " + billsReturnP.size());
+        bills.addAll(billsReturnP);
+
+        // Add cancelled bills if needed
+        bills.addAll(billsCanceled);
+        bills.addAll(billsReturnCancel);
+
+        System.out.println("Total approved bills.size() = " + bills.size());
 
         quickBookFormats = new ArrayList<>();
 
@@ -939,7 +982,11 @@ public class QuickBookReportController implements Serializable {
 
             qbf.setRowType("SPL");
             qbf.setTrnsType("Bill");
-            qbf.setDate(sdf.format(b.getCreatedAt()));
+
+            // Use approval date instead of creation date for approved bills
+            Date approvalDate = b.getApproveAt() != null ? b.getApproveAt() : b.getCreatedAt();
+            qbf.setDate(sdf.format(approvalDate));
+
             qbf.setAccnt("INVENTORIES:" + b.getDepartment().getName());
             qbf.setName("");
             qbf.setInvItemType("");
@@ -948,13 +995,17 @@ public class QuickBookReportController implements Serializable {
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
+            System.out.println("b.getApproveAt() = " + b.getApproveAt());
             System.out.println("b.getInvoiceDate() = " + b.getInvoiceDate());
             System.out.println("b.getInsId() = " + b.getInsId());
-            Date invoiceDate = b.getInvoiceDate() != null ? b.getInvoiceDate() : b.getCreatedAt();
+
+            // For memo, prefer invoice date, then approval date, then creation date
+            Date memoDate = b.getInvoiceDate() != null ? b.getInvoiceDate() :
+                           (b.getApproveAt() != null ? b.getApproveAt() : b.getCreatedAt());
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate) + " / " + b.getFromInstitution().getChequePrintingName());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(memoDate) + " / " + b.getFromInstitution().getChequePrintingName());
             } else {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(invoiceDate));
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(memoDate));
             }
             qbf.setCustFld1("");
             qbf.setCustFld2("");
@@ -967,7 +1018,7 @@ public class QuickBookReportController implements Serializable {
             // First try individual expense items
             for (BillItem bi : b.getBillExpenses()) {
                 String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), expenseAccount, "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(approvalDate), expenseAccount, "", "", "", bi.getNetValue(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
@@ -977,23 +1028,23 @@ public class QuickBookReportController implements Serializable {
 
                 // Add expenses considered for costing (Transport-like)
                 if (b.getExpensesTotalConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Transport", "", "", "", b.getExpensesTotalConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(approvalDate), "OTHER MATERIAL & SERVICE COST:Transport", "", "", "", b.getExpensesTotalConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalConsideredForCosting();
                     qbfs.add(qbf);
                 }
 
                 // Add expenses NOT considered for costing (Installation-like)
                 if (b.getExpensesTotalNotConsideredForCosting() != 0) {
-                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), "OTHER MATERIAL & SERVICE COST:Installation Charges", "", "", "", b.getExpensesTotalNotConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                    qbf = new QuickBookFormat("SPL", "Bill", sdf.format(approvalDate), "OTHER MATERIAL & SERVICE COST:Installation Charges", "", "", "", b.getExpensesTotalNotConsideredForCosting(), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     grantTot += b.getExpensesTotalNotConsideredForCosting();
                     qbfs.add(qbf);
                 }
             }
 
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Pharmacy", "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(approvalDate), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Pharmacy", "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
             } else {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(approvalDate), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", (0 - grantTot), b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
             }
             quickBookFormats.add(qbf);
 
@@ -3482,6 +3533,69 @@ public class QuickBookReportController implements Serializable {
 
         return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
+    }
+
+    /**
+     * Enhanced method to get approved bills filtered by approval date instead of creation date.
+     * This method ensures only completed/approved bills are included in QB reports.
+     *
+     * @param billClass - Bill class (BilledBill, CancelledBill)
+     * @param billTypeAtomic - BillTypeAtomic enum for precise bill type filtering
+     * @param dep - Department filter
+     * @param ins - Institution filter
+     * @param fd - From approval date
+     * @param td - To approval date
+     * @return List of approved bills within the approval date range
+     */
+    public List<Bill> getApprovedBills(Bill billClass, BillTypeAtomic billTypeAtomic, Department dep, Institution ins, Date fd, Date td) {
+        String sql;
+        Map<String, Object> temMap = new HashMap<>();
+
+        sql = "SELECT b FROM Bill b WHERE type(b)=:bill"
+                + " and b.retired=false "
+                + " and b.billTypeAtomic = :bta "
+                + " and b.department=:d "
+                + " and b.institution=:ins "
+                + " and b.completed = true "  // Only approved/completed bills
+                + " and b.approveAt between :fromDate and :toDate "  // Filter by approval date
+                + " order by b.approveAt, b.id ";
+
+        temMap.put("fromDate", fd);
+        temMap.put("toDate", td);
+        temMap.put("bill", billClass.getClass());
+        temMap.put("bta", billTypeAtomic);
+        temMap.put("d", dep);
+        temMap.put("ins", ins);
+
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Enhanced method to get departments that have approved bills within approval date range.
+     *
+     * @param billTypeAtomics - List of BillTypeAtomic values
+     * @param ins - Institution filter
+     * @param fd - From approval date
+     * @param td - To approval date
+     * @return List of departments with approved bills
+     */
+    public List<Department> getApprovedDepartments(List<BillTypeAtomic> billTypeAtomics, Institution ins, Date fd, Date td) {
+        String sql;
+        Map<String, Object> temMap = new HashMap<>();
+
+        sql = "SELECT distinct(b.department) FROM Bill b WHERE b.retired=false "
+                + " and b.billTypeAtomic in :btas "
+                + " and b.institution=:ins "
+                + " and b.completed = true "  // Only approved/completed bills
+                + " and b.approveAt between :fromDate and :toDate "  // Filter by approval date
+                + " order by b.department.name ";
+
+        temMap.put("fromDate", fd);
+        temMap.put("toDate", td);
+        temMap.put("btas", billTypeAtomics);
+        temMap.put("ins", ins);
+
+        return getDepartmentFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public List<Department> getDepartmentrs(List<BillType> billTypes, Institution ins, Date fd, Date td) {
