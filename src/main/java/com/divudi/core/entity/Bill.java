@@ -507,6 +507,11 @@ public class Bill implements Serializable, RetirableEntity {
     
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Request currentRequest;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Patient chiefHouseHolder;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Family memberFamily;
 
     public Bill() {
         if (status == null) {
@@ -3100,7 +3105,21 @@ public class Bill implements Serializable, RetirableEntity {
     public void setCurrentRequest(Request currentRequest) {
         this.currentRequest = currentRequest;
     }
-    
-    
-    
+
+    public Patient getChiefHouseHolder() {
+        return chiefHouseHolder;
+    }
+
+    public void setChiefHouseHolder(Patient chiefHouseHolder) {
+        this.chiefHouseHolder = chiefHouseHolder;
+    }
+
+    public Family getMemberFamily() {
+        return memberFamily;
+    }
+
+    public void setMemberFamily(Family memberFamily) {
+        this.memberFamily = memberFamily;
+    }
+
 }

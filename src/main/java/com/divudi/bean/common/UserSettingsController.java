@@ -76,7 +76,7 @@ public class UserSettingsController implements Serializable {
             });
         } catch (Exception e) {
             // Graceful degradation - if settings can't be loaded, continue with defaults
-
+            JsfUtil.addErrorMessage("Failed to load your settings. Using defaults.");
         }
     }
 
@@ -197,6 +197,7 @@ public class UserSettingsController implements Serializable {
             settingsCache.put(key, option);
 
         } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to save your settings.");
         }
     }
 
@@ -228,6 +229,7 @@ public class UserSettingsController implements Serializable {
             String jsonString = serializeToJson(value);
             saveUserSetting(key, jsonString, OptionValueType.LONG_TEXT);
         } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to save your settings.");
         }
     }
 
