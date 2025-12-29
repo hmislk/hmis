@@ -285,28 +285,33 @@
                     </div>
                 </div>
 
-                <table  style="font-size: 8pt;">
-                    
-                    <h:panelGroup rendered="#{cc.attrs.bill.membershipScheme ne null or cc.attrs.bill.chiefHouseHolder ne null or cc.attrs.bill.memberFamily ne null}">
+                <h:panelGroup rendered="#{cc.attrs.bill.membershipScheme ne null or cc.attrs.bill.chiefHouseHolder ne null or cc.attrs.bill.memberFamily ne null}">
+                    <table  style="font-size: 8pt;">
                         <tr>
-                            <td style="width: 8cm; vertical-align: top;" colspan="3">
-                                <div class="d-flex gap-2">
-                                    <h:outputLabel value="CCH"/>
+                            <td style="vertical-align: top;" colspan="3">
+                                <div class="d-flex gap-1">
+                                    <h:outputLabel value="CHH"/>
                                     <h:outputLabel value=" : "/>
                                     <h:outputLabel value="#{cc.attrs.bill.chiefHouseHolder.person.nameWithTitle}"/>
                                     <h:outputLabel value=" / "/>
                                     <h:outputLabel value="#{cc.attrs.bill.membershipScheme.name}"/>
                                     <h:outputLabel value="(#{cc.attrs.bill.memberFamily.membershipCardNo})" rendered="#{cc.attrs.bill.memberFamily ne null}" />
-                                    
+
                                 </div>
                             </td>
                         </tr>
-                    </h:panelGroup>
-                    
+                    </table>
+                </h:panelGroup>
+
+                <table  style="font-size: 8pt;">
+
                     <tr>
                         <td style="width: 4cm; vertical-align: top;">
-                            <h:outputLabel value="Billed By :"/>
-                            <h:outputLabel value="#{cc.attrs.bill.creater.name}"/>
+                            <div class="d-flex gap-1">
+                                <h:outputLabel value="Billed By"/>
+                                <h:outputLabel value=" : "/>
+                                <h:outputLabel value=" #{cc.attrs.bill.creater.name}"/>
+                            </div>
                         </td>
                         <td style="width: 2cm;"></td>
                         <td style=" vertical-align: top;">
@@ -315,7 +320,7 @@
                     </tr>
                     <tr>
                         <td style="width: 4cm; vertical-align: top;" colspan="3">
-                            <div class="d-flex gap-2">
+                            <div class="d-flex gap-1">
                                 <h:outputLabel value="Batch Bill"/>
                                 <h:outputLabel value=" : "/>
                                 <h:outputLabel value=" #{cc.attrs.bill.backwardReferenceBill.deptId}"/>
@@ -327,7 +332,7 @@
                     <h:panelGroup rendered="#{cc.attrs.duplicate}">
                         <tr>
                             <td style="vertical-align: top;" colspan="3">
-                                <div class="d-flex gap-2">
+                                <div class="d-flex gap-1">
                                     <h:outputLabel value="Printerd By "/>
                                     <h:outputLabel value="#{sessionController.loggedUser.name}"/>
                                     <h:outputLabel value=" at "/>
