@@ -16514,6 +16514,15 @@ public class SearchController implements Serializable {
             System.out.println("DEBUG generateDailyReturn: Patient Deposit Receipts ADDED to collectionForTheDay");
             System.out.println("DEBUG generateDailyReturn: Collection for the day after patient deposits = " + collectionForTheDay);
 
+            // OPD Patient Deposit Payments - bills paid using deposits (deducted from collection for the day)
+            ReportTemplateRowBundle opdPatientDepositPayments = generateOpdPatientDepositPayments();
+            opdPatientDepositPayments.calculateTotalByPayments();
+            bundle.getBundles().add(opdPatientDepositPayments);
+            collectionForTheDay -= Math.abs(getSafeTotal(opdPatientDepositPayments));
+            System.out.println("DEBUG generateDailyReturn: OPD Patient Deposit Payments = " + getSafeTotal(opdPatientDepositPayments));
+            System.out.println("DEBUG generateDailyReturn: OPD Patient Deposit Payments deducted from collection for the day");
+            System.out.println("DEBUG generateDailyReturn: Collection for the day after OPD patient deposit deduction = " + collectionForTheDay);
+
             // Final collection for the day
             ReportTemplateRowBundle collectionForTheDayBundle = new ReportTemplateRowBundle();
             collectionForTheDayBundle.setName("Collection for the day");
@@ -16592,14 +16601,6 @@ public class SearchController implements Serializable {
             // NOTE: Do NOT deduct from netCashCollection - this is display only
             System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization NOT deducted from net cash (display only)");
             // NOTE: Do NOT deduct from netCashCollection - this is display only
-
-            // NEW: OPD Patient Deposit Payments - bills paid using deposits (deducted from net cash)
-            ReportTemplateRowBundle opdPatientDepositPayments = generateOpdPatientDepositPayments();
-            opdPatientDepositPayments.calculateTotalByPayments();
-            bundle.getBundles().add(opdPatientDepositPayments);
-            netCashCollection -= Math.abs(getSafeTotal(opdPatientDepositPayments));
-            System.out.println("DEBUG generateDailyReturn: OPD Patient Deposit Payments = " + getSafeTotal(opdPatientDepositPayments));
-            System.out.println("DEBUG generateDailyReturn: OPD Patient Deposit Payments deducted from net cash");
 
             // Final net cash for the day
             ReportTemplateRowBundle netCashForTheDayBundle = new ReportTemplateRowBundle();
