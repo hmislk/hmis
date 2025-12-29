@@ -222,19 +222,19 @@
                                         <div class="col-3"></div>
                                         <div class="col-9 mt-2" >
                                             
-                                            <h:panelGroup id="creditCard" style="display: #{pettyCashBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; " >
+                                            <h:panelGroup id="creditCard" rendered="#{pettyCashBillController.current.paymentMethod eq 'Card'}" >
                                                 <pa:creditCard paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
                                             </h:panelGroup>
 
-                                            <h:panelGroup id="cheque" style="display: #{pettyCashBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                            <h:panelGroup id="cheque" rendered="#{pettyCashBillController.current.paymentMethod eq 'Cheque'}" >
                                                 <pa:cheque paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
                                             </h:panelGroup>
 
-                                            <h:panelGroup id="slip" style="display: #{pettyCashBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                            <h:panelGroup id="slip" rendered="#{pettyCashBillController.current.paymentMethod eq 'Slip'}" >
                                                 <pa:slip paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             
-                                            <h:panelGroup id="eWallet" style="display: #{pettyCashBillController.current.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
+                                            <h:panelGroup id="eWallet" rendered="#{pettyCashBillController.current.paymentMethod eq 'ewallet'}" >
                                                 <pa:ewallet_collect paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                         </div>
