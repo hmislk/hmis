@@ -19,14 +19,14 @@
 -- Count total completed direct purchase bills
 SELECT 'Total Completed Direct Purchases' as description,
        COUNT(*) as count
-FROM billedbill
+FROM bill
 WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
   AND completed = TRUE;
 
 -- Count bills missing approval data
 SELECT 'Bills Missing Approval Data' as description,
        COUNT(*) as count
-FROM billedbill
+FROM bill
 WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
   AND completed = TRUE
   AND (approve_user IS NULL OR approve_at IS NULL OR editor IS NULL OR edited_at IS NULL);
@@ -41,7 +41,7 @@ SELECT id,
        approve_at,
        editor,
        edited_at
-FROM billedbill
+FROM bill
 WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
   AND completed = TRUE
   AND approve_user IS NULL
@@ -53,7 +53,7 @@ LIMIT 5;
 
 -- Step 1: Update approveUser field using completedBy
 -- Sets approveUser to the user who completed the transaction
-UPDATE billedbill
+UPDATE bill
 SET approve_user = completed_by
 WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
   AND completed = TRUE
@@ -66,7 +66,7 @@ SELECT 'Updated approveUser fields' as description,
 
 -- Step 2: Update approveAt field using completedAt
 -- Sets approveAt to the timestamp when the transaction was completed
-UPDATE billedbill
+UPDATE bill
 SET approve_at = completed_at
 WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
   AND completed = TRUE
@@ -79,7 +79,7 @@ SELECT 'Updated approveAt fields' as description,
 
 -- Step 3: Update editor field using completedBy
 -- Sets editor to the user who completed the transaction
-UPDATE billedbill
+UPDATE bill
 SET editor = completed_by
 WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
   AND completed = TRUE
@@ -92,7 +92,7 @@ SELECT 'Updated editor fields' as description,
 
 -- Step 4: Update editedAt field using completedAt
 -- Sets editedAt to the timestamp when the transaction was completed
-UPDATE billedbill
+UPDATE bill
 SET edited_at = completed_at
 WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
   AND completed = TRUE
@@ -110,7 +110,7 @@ SELECT 'Updated editedAt fields' as description,
 -- Count remaining bills with missing approval data (should be 0)
 SELECT 'Bills Still Missing Approval Data' as description,
        COUNT(*) as count
-FROM billedbill
+FROM bill
 WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
   AND completed = TRUE
   AND (approve_user IS NULL OR approve_at IS NULL OR editor IS NULL OR edited_at IS NULL);
@@ -118,7 +118,7 @@ WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
 -- Count successfully updated bills
 SELECT 'Bills With Complete Approval Data' as description,
        COUNT(*) as count
-FROM billedbill
+FROM bill
 WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
   AND completed = TRUE
   AND approve_user IS NOT NULL
@@ -129,7 +129,7 @@ WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
 -- Verify data consistency (approval fields should match completion fields for historical data)
 SELECT 'Data Consistency Check' as description,
        COUNT(*) as consistent_records
-FROM billedbill
+FROM bill
 WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
   AND completed = TRUE
   AND approve_user = completed_by
@@ -154,7 +154,7 @@ SELECT id,
          THEN 'CONSISTENT'
          ELSE 'INCONSISTENT'
        END as data_status
-FROM billedbill
+FROM bill
 WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
   AND completed = TRUE
 ORDER BY billdate DESC
