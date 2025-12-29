@@ -508,8 +508,9 @@ public class Bill implements Serializable, RetirableEntity {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Request currentRequest;
     
+    @ManyToOne(fetch = FetchType.LAZY)
     private Patient chiefHouseHolder;
-    
+    @ManyToOne(fetch = FetchType.LAZY)
     private Family memberFamily;
 
     public Bill() {

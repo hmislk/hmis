@@ -296,7 +296,6 @@
                                     <h:outputLabel value=" / "/>
                                     <h:outputLabel value="#{cc.attrs.bill.membershipScheme.name}"/>
                                     <h:outputLabel value="(#{cc.attrs.bill.memberFamily.membershipCardNo})" rendered="#{cc.attrs.bill.memberFamily ne null}" />
-
                                 </div>
                             </td>
                         </tr>
@@ -317,30 +316,31 @@
                         <td style=" vertical-align: top;">
 
                         </td>
-                    </tr>
-                    <tr>
-                        <td style="width: 4cm; vertical-align: top;" colspan="3">
-                            <div class="d-flex gap-1">
-                                <h:outputLabel value="Batch Bill"/>
-                                <h:outputLabel value=" : "/>
-                                <h:outputLabel value=" #{cc.attrs.bill.backwardReferenceBill.deptId}"/>
-                            </div>
-
-                        </td>
-                    </tr>
+                    </tr
+                    
+                    <h:panelGroup rendered="#{cc.attrs.bill.backwardReferenceBill ne null}">
+                        <tr>
+                            <td style="width: 4cm; vertical-align: top;" colspan="3">
+                                <div class="d-flex gap-1">
+                                    <h:outputLabel value="Batch Bill"/>
+                                    <h:outputLabel value=" : "/>
+                                    <h:outputLabel value=" #{cc.attrs.bill.backwardReferenceBill.deptId}"/>
+                                </div>
+                            </td>
+                        </tr
+                    </h:panelGroup>
 
                     <h:panelGroup rendered="#{cc.attrs.duplicate}">
                         <tr>
                             <td style="vertical-align: top;" colspan="3">
                                 <div class="d-flex gap-1">
-                                    <h:outputLabel value="Printerd By "/>
+                                    <h:outputLabel value="Printed By "/>
                                     <h:outputLabel value="#{sessionController.loggedUser.name}"/>
                                     <h:outputLabel value=" at "/>
                                     <h:outputLabel value="#{sessionController.currentDate}">
                                         <f:convertDateTime pattern="yyyy-MM-dd hh:mm a"/>
                                     </h:outputLabel>
                                 </div>
-
                             </td>
                         </tr>
                     </h:panelGroup>
