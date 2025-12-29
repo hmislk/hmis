@@ -168,7 +168,7 @@
                                                                 requiredMessage="Please enter a title"
                                                                 value="#{patientDepositController.patient.person.title}">
                                                                 <f:selectItem itemLabel="Select Title" />
-                                                                <f:selectItems value="#{patientDepositController.title}" var="i"
+                                                                <f:selectItems value="#{opdBillController.title}" var="i"
                                                                                itemLabel="#{i.label}" itemValue="#{i}"/>
                                                                 <p:ajax event="change" process="cmbTitle" update="cmbSex" ></p:ajax>
                                                             </p:selectOneMenu>
@@ -200,7 +200,7 @@
                                                                 value="#{patientDepositController.patient.person.sex}"
                                                                 class="form-control w-100">
                                                                 <f:selectItem itemLabel="Select Gender"/>
-                                                                <f:selectItems value="#{patientDepositController.sex}"/>
+                                                                <f:selectItems value="#{opdBillController.sex}"/>
                                                             </p:selectOneMenu>
                                                         </div>
                                                         <div class="col-md-9 p-1">
