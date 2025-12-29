@@ -1148,6 +1148,13 @@ public class PharmacyDirectPurchaseController implements Serializable {
         getBill().setCompleted(true);
         getBill().setCompletedAt(new Date());
         getBill().setCompletedBy(getSessionController().getLoggedUser());
+
+        // Add missing approval tracking variables to match GRN approve process
+        getBill().setApproveUser(getSessionController().getLoggedUser());
+        getBill().setApproveAt(new Date());
+        getBill().setEditor(getSessionController().getLoggedUser());
+        getBill().setEditedAt(new Date());
+
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         } else {
