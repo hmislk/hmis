@@ -19,6 +19,9 @@ public class DailyStockBalanceReport {
     private double stockTransactionValue;
     private double closingStockValue;
 
+    private double openingStockValueAtCostRate;
+    private double closingStockValueAtCostRate;
+
     private PharmacyBundle pharmacySalesByAdmissionTypeAndDiscountSchemeBundle;
     private PharmacyBundle pharmacyPurchaseByBillTypeBundle;
     private PharmacyBundle pharmacyTransferByBillTypeBundle;
@@ -145,6 +148,22 @@ public class DailyStockBalanceReport {
 
     public void setClosingStockValue(double closingStockValue) {
         this.closingStockValue = closingStockValue;
+    }
+
+    public double getOpeningStockValueAtCostRate() {
+        return openingStockValueAtCostRate;
+    }
+
+    public void setOpeningStockValueAtCostRate(double openingStockValueAtCostRate) {
+        this.openingStockValueAtCostRate = openingStockValueAtCostRate;
+    }
+
+    public double getClosingStockValueAtCostRate() {
+        return closingStockValueAtCostRate;
+    }
+
+    public void setClosingStockValueAtCostRate(double closingStockValueAtCostRate) {
+        this.closingStockValueAtCostRate = closingStockValueAtCostRate;
     }
 
     public double getPurchasesOfDrugsPrevious() {

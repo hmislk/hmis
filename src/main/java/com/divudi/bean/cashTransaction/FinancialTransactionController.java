@@ -1,12 +1,18 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.channel.analytics.ReportTemplateController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import java.util.HashMap;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
+import javax.annotation.PostConstruct;
 import com.divudi.core.data.*;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Payment;
@@ -114,6 +120,8 @@ public class FinancialTransactionController implements Serializable {
     private DenominationTransactionController denominationTransactionController;
     @Inject
     private DrawerController drawerController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -1164,6 +1172,32 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/handover_start_select?faces-redirect=true";
     }
 
+    public String navigateToSelectPaymentsForHandoverCreate(ReportTemplateRowBundle inputBundle, String paymentMethodStr) {
+        if (inputBundle == null) {
+            JsfUtil.addErrorMessage("No Bundle Selected");
+            return null;
+        }
+        PaymentMethod pm = null;
+        if (paymentMethodStr != null && !paymentMethodStr.isEmpty()) {
+            try {
+                pm = PaymentMethod.valueOf(paymentMethodStr);
+            } catch (IllegalArgumentException e) {
+                // Try mapping common string variations to enum values
+                switch (paymentMethodStr) {
+                    case "StaffWelfare":
+                        pm = PaymentMethod.Staff_Welfare;
+                        break;
+                    default:
+                        JsfUtil.addErrorMessage("Invalid Payment Method: " + paymentMethodStr);
+                        return null;
+                }
+            }
+        }
+        selectedBundle = inputBundle;
+        selectedPaymentMethod = pm;
+        return "/cashier/handover_start_select?faces-redirect=true";
+    }
+
     @Deprecated
     public String navigateToSelectPaymentsForHandoverAccept(ReportTemplateRowBundle inputBundle, PaymentMethod inputPaymentMethod) {
         if (inputBundle == null) {
@@ -1172,6 +1206,33 @@ public class FinancialTransactionController implements Serializable {
         }
         selectedBundle = inputBundle;
         selectedPaymentMethod = inputPaymentMethod;
+        return "/cashier/handover_accept_select?faces-redirect=true";
+    }
+
+    @Deprecated
+    public String navigateToSelectPaymentsForHandoverAccept(ReportTemplateRowBundle inputBundle, String paymentMethodStr) {
+        if (inputBundle == null) {
+            JsfUtil.addErrorMessage("No Bundle Selected");
+            return null;
+        }
+        PaymentMethod pm = null;
+        if (paymentMethodStr != null && !paymentMethodStr.isEmpty()) {
+            try {
+                pm = PaymentMethod.valueOf(paymentMethodStr);
+            } catch (IllegalArgumentException e) {
+                // Try mapping common string variations to enum values
+                switch (paymentMethodStr) {
+                    case "StaffWelfare":
+                        pm = PaymentMethod.Staff_Welfare;
+                        break;
+                    default:
+                        JsfUtil.addErrorMessage("Invalid Payment Method: " + paymentMethodStr);
+                        return null;
+                }
+            }
+        }
+        selectedBundle = inputBundle;
+        selectedPaymentMethod = pm;
         return "/cashier/handover_accept_select?faces-redirect=true";
     }
 
@@ -2172,6 +2233,10 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;
         }
+        if (currentPayment.getPaidValue() <= 0) {
+            JsfUtil.addErrorMessage("Payment value must be greater than zero");
+            return;
+        }
         getCurrentBillPayments().add(currentPayment);
         calculateFundTransferBillTotal();
         currentPayment = null;
@@ -2392,6 +2457,16 @@ public class FinancialTransactionController implements Serializable {
         if (currentBill.getToWebUser() == null) {
             floatTransferStarted = false;
             JsfUtil.addErrorMessage("Select to whom to transfer");
+            return "";
+        }
+        if (currentBill.getComments() == null || currentBill.getComments().trim().isEmpty()) {
+            floatTransferStarted = false;
+            JsfUtil.addErrorMessage("Comments are required for fund transfer");
+            return "";
+        }
+        if (getCurrentBillPayments() == null || getCurrentBillPayments().isEmpty()) {
+            floatTransferStarted = false;
+            JsfUtil.addErrorMessage("At least one float must be added before settlement");
             return "";
         }
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.FUND_TRANSFER_BILL);
@@ -6991,5 +7066,116 @@ public class FinancialTransactionController implements Serializable {
         }
         return patientDepositsAreConsideredInHandingover;
     }
+
+    // <editor-fold defaultstate="collapsed" desc="Page Metadata Registration">
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface.
+     * This registers all configuration options used by the Shift Handover page.
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("cashier/handover_start_all");
+        metadata.setPageName("Shift Handover");
+        metadata.setDescription("Shift handover page for cashiers to hand over collected payments at the end of their shift");
+        metadata.setControllerClass("FinancialTransactionController");
+
+        // Configuration Options - Patient Deposits
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Patient Deposits are considered in handingover",
+                "When enabled, patient deposit transactions are included in the shift handover process. When disabled, patient deposits are handled separately.",
+                OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - Cash Selection
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Select All Cash During Handover",
+                "When enabled, all cash payments are automatically selected for handover. Default: true",
+                OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - Denomination Management
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Allow to Denomination for shift Starting Process",
+                "When enabled, cashiers can enter denomination details when starting their shift. Default: false",
+                OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - Payment Selection
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Select All Payments for Handovers",
+                "When enabled, all payments are automatically selected for handover. Used when handover values have already been created.",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Select all payments by default for Handing over of the shift.",
+                "When enabled, all payments are selected by default during shift handover. Default: false",
+                OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - Shift Closing Validations
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Must Receive All Fund Transfers Before Closing Shift",
+                "When enabled, users must receive all pending fund transfers before they can close their shift. Default: false",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Must Wait Until Other User Accepts All Fund Transfers Before Closing Shift",
+                "When enabled, users must wait for recipients to accept all fund transfers before closing their shift. Default: false",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Must Receive All Handovers Before Closing Shift",
+                "When enabled, users must receive all pending handovers before they can close their shift. Default: false",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Must Wait Until Other User Accepts All Handovers Before Closing Shift",
+                "When enabled, users must wait for recipients to accept all handovers before closing their shift. Default: false",
+                OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - Cash Handling
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Maximum Allowed Cash Difference for Handover",
+                "Maximum allowed difference between collected cash and handed over cash (in currency units). Default: 1.0",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Should Select All Collections for Handover",
+                "When enabled, all collected payments are automatically selected for handover. Default: false",
+                OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - Drawer Management
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Enable Drawer Manegment",
+                "When enabled, drawer management features are active for cash handling and shift management. Default: true",
+                OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access required to view the Config button and manage page configurations",
+                "Header facet: Config button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
+    }
+    // </editor-fold>
 
 }

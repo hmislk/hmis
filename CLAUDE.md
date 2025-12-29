@@ -108,6 +108,7 @@
 17. **🚨 PRIMEFACES COMPONENT REFERENCES**: Use PrimeFaces `p:resolveFirstComponentWithId` function for component updates: `update=":#{p:resolveFirstComponentWithId('componentId',view).clientId}"` or `render=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pPreview',view).clientId}"` for multiple components
 18. **🚨 DATATABLE SELECTION**: Use `selectionMode="multiple"` on dataTable element, `selectionBox="true"` on column, and array property (not List) for selection binding - [Guide](developer_docs/jsf/primefaces-datatable-selection.md)
 19. **🚨 JSF RENDERED ATTRIBUTE**: Never use `rendered` attribute on plain HTML elements (div, span, etc.) - JSF ignores it; use JSF components like `h:panelGroup` with `layout="block"` instead
+20. **🚨 AJAX SELECTORS**: NEVER use PrimeFaces CSS/jQuery selectors like `@(.class)`, `@(#id)`, `@parent`, etc. in `update` or `process` attributes. Use `@this` for current component, `@form` for current form, explicit component IDs like `:growl` for absolute IDs, `componentId` for same-form components, or `:#{p:resolveFirstComponentWithId('id',view).clientId}` for dynamic resolution - [Guide](developer_docs/jsf/ajax-update-guidelines.md)
 
 ---
 This behavior should persist across all Claude Code sessions for this project.

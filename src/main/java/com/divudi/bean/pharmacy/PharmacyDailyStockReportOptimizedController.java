@@ -129,6 +129,18 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         System.out.println("✅ STEP 2 COMPLETED: " + stepDuration + "ms - Opening stock: " + openingStockValueAtRetailRate);
         dailyStockBalanceReport.setOpeningStockValue(openingStockValueAtRetailRate);
 
+        // STEP 2A: Calculate Opening Stock at Cost Rate
+        stepStartTime = System.currentTimeMillis();
+        System.out.println("\n🔄 STEP 2A: Calculating OPENING stock value at COST rate...");
+        System.out.println(">>> Date for opening stock (cost): " + fromDate);
+        System.out.println(">>> Department for opening stock (cost): " + department.getName());
+
+        double openingStockValueAtCostRate = calculateStockValueAtCostRateOptimized(fromDate, department);
+
+        stepDuration = System.currentTimeMillis() - stepStartTime;
+        System.out.println("✅ STEP 2A COMPLETED: " + stepDuration + "ms - Opening stock at cost rate: " + openingStockValueAtCostRate);
+        dailyStockBalanceReport.setOpeningStockValueAtCostRate(openingStockValueAtCostRate);
+
         // STEP 3: Calculate date range
         stepStartTime = System.currentTimeMillis();
         System.out.println("\n🔄 STEP 3: Setting up date range...");
@@ -210,13 +222,26 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         System.out.println("✅ STEP 8 COMPLETED: " + stepDuration + "ms - Closing stock: " + closingStockValueAtRetailRate);
         dailyStockBalanceReport.setClosingStockValue(closingStockValueAtRetailRate);
 
+        // STEP 8A: Calculate Closing Stock at Cost Rate
+        stepStartTime = System.currentTimeMillis();
+        System.out.println("\n🔄 STEP 8A: Calculating CLOSING stock value at COST rate...");
+        System.out.println(">>> Date for closing stock (cost): " + toDate);
+
+        double closingStockValueAtCostRate = calculateStockValueAtCostRateOptimized(toDate, department);
+
+        stepDuration = System.currentTimeMillis() - stepStartTime;
+        System.out.println("✅ STEP 8A COMPLETED: " + stepDuration + "ms - Closing stock at cost rate: " + closingStockValueAtCostRate);
+        dailyStockBalanceReport.setClosingStockValueAtCostRate(closingStockValueAtCostRate);
+
         // OVERALL COMPLETION SUMMARY
         long totalDuration = System.currentTimeMillis() - overallStartTime;
         System.out.println("\n==========================================");
         System.out.println("=== PERFORMANCE ANALYSIS SUMMARY ===");
         System.out.println("✅ TOTAL DURATION: " + totalDuration + "ms (" + (totalDuration/1000.0) + " seconds)");
-        System.out.println("📊 Opening Stock: " + openingStockValueAtRetailRate);
-        System.out.println("📊 Closing Stock: " + closingStockValueAtRetailRate);
+        System.out.println("📊 Opening Stock (Retail Rate): " + openingStockValueAtRetailRate);
+        System.out.println("📊 Opening Stock (Cost Rate): " + openingStockValueAtCostRate);
+        System.out.println("📊 Closing Stock (Retail Rate): " + closingStockValueAtRetailRate);
+        System.out.println("📊 Closing Stock (Cost Rate): " + closingStockValueAtCostRate);
         System.out.println("📊 Sales Records: " + (saleBundle != null ? saleBundle.getRows().size() : "0"));
         System.out.println("📊 Purchase Records: " + (purchaseBundle != null ? purchaseBundle.getRows().size() : "0"));
         System.out.println("📊 Transfer Records: " + (transferBundle != null ? transferBundle.getRows().size() : "0"));
@@ -285,6 +310,52 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
             return stockHistoryFacade.calculateStockValueAtRetailRateTwoStep(date, departmentId);
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error calculating stock value (two-step method): " + date);
+            return 0.0;
+        }
+    }
+
+    /**
+     * OPTIMIZED: Calculates the stock value at cost rate for a given date and
+     * department. Delegates to the facade method for better encapsulation.
+     *
+     * @param date The date for which to calculate stock value
+     * @param dept The department for which to calculate stock value
+     * @return The total stock value at cost rate, or 0.0 if calculation fails
+     */
+    private double calculateStockValueAtCostRateOptimized(Date date, Department dept) {
+        long stockCalcStartTime = System.currentTimeMillis();
+
+        System.out.println("🔍 === STOCK CALCULATION (COST RATE) START ===");
+        System.out.println("📅 Date param: " + date);
+        System.out.println("🏥 Department: " + (dept != null ? dept.getName() : "null"));
+        System.out.println("🆔 Department ID: " + (dept != null ? dept.getId() : "null"));
+
+        try {
+            Long departmentId = (dept != null) ? dept.getId() : null;
+            System.out.println("🔄 Calling StockHistoryFacade.calculateStockValueAtCostRateOptimized...");
+
+            long facadeStartTime = System.currentTimeMillis();
+            double result = stockHistoryFacade.calculateStockValueAtCostRateOptimized(date, departmentId);
+            long facadeDuration = System.currentTimeMillis() - facadeStartTime;
+
+            long totalDuration = System.currentTimeMillis() - stockCalcStartTime;
+
+            System.out.println("✅ FACADE COMPLETED: " + facadeDuration + "ms");
+            System.out.println("💰 Stock Value Result (Cost): " + result);
+            System.out.println("⏱️ Total Stock Calc Duration: " + totalDuration + "ms");
+            System.out.println("🔍 === STOCK CALCULATION (COST RATE) END ===");
+
+            return result;
+        } catch (Exception e) {
+            long errorDuration = System.currentTimeMillis() - stockCalcStartTime;
+            System.err.println("🚨 === STOCK CALCULATION (COST RATE) ERROR ===");
+            System.err.println("⏱️ Time before error: " + errorDuration + "ms");
+            System.err.println("❌ Error message: " + e.getMessage());
+            System.err.println("📍 Error type: " + e.getClass().getSimpleName());
+            e.printStackTrace();
+            System.err.println("🚨 === STOCK CALCULATION (COST RATE) ERROR END ===");
+
+            JsfUtil.addErrorMessage(e, "Error calculating stock value at cost rate for date: " + date);
             return 0.0;
         }
     }
@@ -369,7 +440,7 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         Cell titleCell = titleRow.createCell(0);
         titleCell.setCellValue("Daily Stock Value Report");
         titleCell.setCellStyle(titleStyle);
-        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 1));
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 2));
 
         // Empty row
         rowNum++;
@@ -393,16 +464,25 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         descHeader.setCellValue("Description");
         descHeader.setCellStyle(headerStyle);
 
-        Cell valueHeader = headerRow.createCell(1);
-        valueHeader.setCellValue("Value");
-        valueHeader.setCellStyle(headerStyle);
+        Cell retailValueHeader = headerRow.createCell(1);
+        retailValueHeader.setCellValue("Value (Retail Rate)");
+        retailValueHeader.setCellStyle(headerStyle);
+
+        Cell costValueHeader = headerRow.createCell(2);
+        costValueHeader.setCellValue("Value (Cost Rate)");
+        costValueHeader.setCellStyle(headerStyle);
 
         // Opening Stock
         Row openingRow = sheet.createRow(rowNum++);
         openingRow.createCell(0).setCellValue("Opening Stock");
-        Cell openingCell = openingRow.createCell(1);
-        openingCell.setCellValue(dailyStockBalanceReport.getOpeningStockValue());
-        openingCell.setCellStyle(numberStyle);
+
+        Cell openingRetailCell = openingRow.createCell(1);
+        openingRetailCell.setCellValue(dailyStockBalanceReport.getOpeningStockValue());
+        openingRetailCell.setCellStyle(numberStyle);
+
+        Cell openingCostCell = openingRow.createCell(2);
+        openingCostCell.setCellValue(dailyStockBalanceReport.getOpeningStockValueAtCostRate());
+        openingCostCell.setCellStyle(numberStyle);
 
         // Sales
         if (dailyStockBalanceReport.getPharmacySalesByAdmissionTypeAndDiscountSchemeBundle() != null
@@ -495,13 +575,19 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         // Closing Stock
         Row closingRow = sheet.createRow(rowNum++);
         closingRow.createCell(0).setCellValue("Closing Stock");
-        Cell closingCell = closingRow.createCell(1);
-        closingCell.setCellValue(dailyStockBalanceReport.getClosingStockValue());
-        closingCell.setCellStyle(numberStyle);
+
+        Cell closingRetailCell = closingRow.createCell(1);
+        closingRetailCell.setCellValue(dailyStockBalanceReport.getClosingStockValue());
+        closingRetailCell.setCellStyle(numberStyle);
+
+        Cell closingCostCell = closingRow.createCell(2);
+        closingCostCell.setCellValue(dailyStockBalanceReport.getClosingStockValueAtCostRate());
+        closingCostCell.setCellStyle(numberStyle);
 
         // Auto-size columns
         sheet.autoSizeColumn(0);
         sheet.autoSizeColumn(1);
+        sheet.autoSizeColumn(2);
 
         return workbook;
     }

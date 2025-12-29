@@ -28,6 +28,15 @@
                                 class="ui-button-warning"
                                 ajax="false" action="/pharmacy/pharmacy_return_withouttresing"
                                 actionListener="#{pharmacyReturnwithouttresing.resetAll()}"  ></p:commandButton>
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                value="Config"
+                                icon="fa fa-cog"
+                                title="Page Configuration Management"
+                                action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_return_withouttresing')}"
+                                ajax="false"
+                                styleClass="ui-button-secondary ms-2">
+                            </p:commandButton>
                         </div>
                     </f:facet>
                     <div class="row">

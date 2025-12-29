@@ -14780,6 +14780,11 @@ public class SearchController implements Serializable {
     }
 
     public void createPatientDepositTable(BillType billType) {
+        // Ensure department-specific deposits configuration is enabled
+        if (!configOptionApplicationController.getBooleanValueByKey("Patient Deposits are Department Specific", false)) {
+            configOptionApplicationController.setBooleanValueByKey("Patient Deposits are Department Specific", true);
+        }
+
         bills = new ArrayList<>();
         String jpql;
         Map temMap = new HashMap();
@@ -14801,6 +14806,12 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             jpql += " and  ((b.patient.person.name) like :pn )";
             temMap.put("pn", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        // Add department filtering - restrict to logged-in user's department only
+        if (getSessionController().getDepartment() != null) {
+            jpql += " and b.department.id = :deptId ";
+            temMap.put("deptId", getSessionController().getDepartment().getId());
         }
 
         jpql += " order by b.createdAt desc  ";
@@ -14918,64 +14929,121 @@ public class SearchController implements Serializable {
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
-        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-
+    
     public void createInwardServiceTableForLab() {
-        Date startTime = new Date();
-
         String sql;
         Map temMap = new HashMap();
         sql = "select (b.bill) from BillItem b where "
-                + " b.bill.billType = :billType "
+                + " b.bill.billTypeAtomic =:type "
                 + " and b.bill.createdAt between :fromDate and :toDate"
-                + " and b.bill.retired=false  ";
+                + " and b.bill.retired=false ";
+        
+        if (showLoggedDepartmentOnly) {
+            Department dept = sessionController.getDepartment();
+            if (dept != null) {
+                sql += " and b.bill.department=:dept";
+                temMap.put("dept", dept);
+            }
+        }
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
-            sql += " and  ((b.bill.patientEncounter.patient.person.name) like :patientName )";
+            sql += " and ((b.bill.patientEncounter.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
-            sql += " and  ((b.bill.patientEncounter.patient.person.phone) like :patientPhone )";
+            sql += " and ((b.bill.patientEncounter.patient.person.phone) like :patientPhone )";
             temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
-            sql += " and  ((b.bill.patientEncounter.bhtNo) like :bht )";
+            sql += " and ((b.bill.patientEncounter.bhtNo) like :bht )";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  ((b.bill.insId) like :billNo )";
+            sql += " and ((b.bill.insId) like :billNo )";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
-        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.bill.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
-        }
-
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-            sql += " and  ((b.item.name) like :item )";
+            sql += " and ((b.item.name) like :item )";
             temMap.put("item", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
-        sql += " order by b.bill.deptId desc ";
-        temMap.put("billType", BillType.InwardBill);
+        sql += " order by b.bill.id desc ";
+        temMap.put("type", BillTypeAtomic.INWARD_SERVICE_BILL);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
         List<Bill> billList = new ArrayList<>();
 
-        billList = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        billList = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP);
 
         Set<Bill> uniqueBills = new HashSet<>(billList);
 
         bills = new ArrayList<>(uniqueBills);
     }
+    
+    
+    public void findInwardServiceBills(){
+        if(getSearchKeyword().getItemName() == null || getSearchKeyword().getItemName().trim().equals("")){
+            findInwardServiceBill();
+        }else{
+            createInwardServiceTableForLab();
+        }
+    }
+    
+    public void findInwardServiceBill() {
+        bills = new ArrayList<>();
+        
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from Bill b where "
+                + " b.billTypeAtomic = :type "
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and b.retired=false ";
+        
+        if (showLoggedDepartmentOnly) {
+            Department dept = sessionController.getDepartment();
+            if (dept != null) {
+                sql += " and b.department=:dept";
+                temMap.put("dept", dept);
+            }
+        }
 
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and ((b.patientEncounter.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and ((b.patientEncounter.patient.person.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
+            sql += " and ((b.patientEncounter.bhtNo) like :bht )";
+            temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and ((b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.id desc ";
+        
+        temMap.put("type", BillTypeAtomic.INWARD_SERVICE_BILL);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+        bills = getBillFacade().findByJpqlWithoutCache(sql, temMap, TemporalType.TIMESTAMP);
+    }
+    
     public void createInwardServiceTableDischarged() {
 
         String sql;
