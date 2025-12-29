@@ -2341,7 +2341,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         BilledBill newBatchBill = new BilledBill();
 
         if (oneOpdBillForAllDepartments) {
-            System.out.println("oneOpdBillForAllDepartments");
             Bill newSingleBill = new BilledBill();
             newSingleBill = saveBill(sessionController.getDepartment(), newSingleBill);
             if (newSingleBill == null) {
@@ -2378,10 +2377,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             getBillBean().checkBillItemFeesInitiated(newSingleBill);
             getBills().add(newSingleBill);
         } else if (oneOpdBillForEachDepartmentAndCategoryCombination) {
-            System.out.println("oneOpdBillForEachDepartmentAndCategoryCombination");
             processBillsByDepartmentAndCategory();
         } else if (oneOpdBillForEachDepartment) {
-            System.out.println("processBillsByDepartment");
             processBillsByDepartment();
         } else if (oneOpdBillForEachCategory) {
             JsfUtil.addErrorMessage("Still Under Development");
@@ -2512,7 +2509,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     private void saveBatchBill() {
-        System.out.println("-------------------------------------- Start save Batch Bill --------------------------------------");
         Bill newBatchBill = new BilledBill();
         newBatchBill.setBillType(BillType.OpdBathcBill);
         newBatchBill.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
@@ -2557,15 +2553,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         
         if(currentPatientMembershipScheme != null){
-            System.out.println("Membership Scheme = " + currentPatientMembershipScheme.getId() + " - " + currentPatientMembershipScheme.getPaymentScheme().getName());
             newBatchBill.setMembershipScheme(currentPatientMembershipScheme);
         }
         if(chiefHouseHolder != null){
-            System.out.println("Chief House Holder = " + chiefHouseHolder.getId() + " - " + chiefHouseHolder.getPerson().getNameWithTitle());
             newBatchBill.setChiefHouseHolder(chiefHouseHolder);
         }
         if(currentPatientFamily != null){
-            System.out.println("Patient Family = " + currentPatientFamily.getId() + " - " + currentPatientFamily.getMembershipCardNo());
             newBatchBill.setMemberFamily(currentPatientFamily);
         }
         
@@ -2585,11 +2578,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setFromStaff(selectedCurrentlyWorkingStaff);
 
         getBillFacade().create(newBatchBill);
-        
-        System.out.println(" Bill ChiefHouseHolder = " + newBatchBill.getChiefHouseHolder());
-        System.out.println(" Bill Membership Scheme = " + newBatchBill.getMembershipScheme());
-        System.out.println(" Bill Member Family = " + newBatchBill.getMemberFamily());
-        
 
         double dbl = 0;
         double reminingCashPaid = cashPaid;
@@ -2636,8 +2624,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setCashPaid(cashPaid);
         getBillFacade().edit(newBatchBill);
         setBatchBill(newBatchBill);
-        
-        System.out.println("-------------------------------------- End save Batch Bill --------------------------------------");
+
     }
 
     @Inject
@@ -2666,7 +2653,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     private Bill saveBill(Department bt, Bill newBill) {
-        System.out.println("-------------------------------------- Start save Single Bill --------------------------------------");   
         newBill.setBillType(BillType.OpdBill);
         newBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         newBill.setDepartment(getSessionController().getDepartment());
@@ -2692,15 +2678,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setPatient(patient);
         
         if(currentPatientMembershipScheme != null){
-            System.out.println("Membership Scheme = " + currentPatientMembershipScheme.getId() + " - " + currentPatientMembershipScheme.getPaymentScheme().getName());
             newBill.setMembershipScheme(currentPatientMembershipScheme);
         }
         if(chiefHouseHolder != null){
-            System.out.println("Chief House Holder = " + chiefHouseHolder.getId() + " - " + chiefHouseHolder.getPerson().getNameWithTitle());
             newBill.setChiefHouseHolder(chiefHouseHolder);
         }
         if(currentPatientFamily != null){
-            System.out.println("Patient Family = " + currentPatientFamily.getId() + " - " + currentPatientFamily.getMembershipCardNo());
             newBill.setMemberFamily(currentPatientFamily);
         }
 
@@ -2782,17 +2765,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else {
             getFacade().edit(newBill);
         }
-        
-        System.out.println(" Bill ChiefHouseHolder = " + newBill.getChiefHouseHolder());
-        System.out.println(" Bill Membership Scheme = " + newBill.getMembershipScheme());
-        System.out.println(" Bill Member Family = " + newBill.getMemberFamily());
-        System.out.println("-------------------------------------- End save Single Bill --------------------------------------");
+
         return newBill;
 
     }
 
     private Bill saveBill(Department bt, Category cat, Bill newBill) {
-        System.out.println("-------------------------------------- Start save Single Bill --------------------------------------");
         newBill.setBillType(BillType.OpdBill);
         newBill.setBillTypeAtomic(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
 
@@ -2859,15 +2837,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setSessionId(getBillNumberGenerator().generateDailyBillNumberForOpd(newBill.getDepartment()));
         
         if(currentPatientMembershipScheme != null){
-            System.out.println("Membership Scheme = " + currentPatientMembershipScheme.getId() + " - " + currentPatientMembershipScheme.getPaymentScheme().getName());
             newBill.setMembershipScheme(currentPatientMembershipScheme);
         }
         if(chiefHouseHolder != null){
-            System.out.println("Chief House Holder = " + chiefHouseHolder.getId() + " - " + chiefHouseHolder.getPerson().getNameWithTitle());
             newBill.setChiefHouseHolder(chiefHouseHolder);
         }
         if(currentPatientFamily != null){
-            System.out.println("Patient Family = " + currentPatientFamily.getId() + " - " + currentPatientFamily.getMembershipCardNo());
             newBill.setMemberFamily(currentPatientFamily);
         }
 
@@ -2876,11 +2851,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else {
             getFacade().edit(newBill);
         }
-        
-        System.out.println(" Bill ChiefHouseHolder = " + newBill.getChiefHouseHolder());
-        System.out.println(" Bill Membership Scheme = " + newBill.getMembershipScheme());
-        System.out.println(" Bill Member Family = " + newBill.getMemberFamily());
-        System.out.println("-------------------------------------- End save Single Bill --------------------------------------");
         return newBill;
 
     }
@@ -4124,10 +4094,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     FamilyFacade familyFacade;
 
     public String navigateToNewOpdBillWithPaymentScheme(Patient pt, PaymentScheme ps, Family family) {
-        System.out.println("navigateToNewOpdBillWithPaymentScheme");   
-        System.out.println("Patient = " + pt);
-        System.out.println("PaymentScheme = " + ps);
-        System.out.println("family = " + family);
         navigateToNewOpdBill();
 
         Patient currentPatient = patientFacade.findWithoutCache(pt.getId());
@@ -4139,21 +4105,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }else if(currentFamily == null){
             JsfUtil.addErrorMessage("Error in Family");
             return "";
-        }else {   
-            
-            System.out.println("Load Current Patient = " + currentPatient);
-            System.out.println("Load Family Patient = " + currentFamily);
-            
+        }else {
             patient = currentPatient;
             chiefHouseHolder = currentFamily.getChiefHouseHolder();
             currentPatientFamily = currentFamily;
             currentPatientMembershipScheme = currentFamily.getMembershipScheme();
             paymentScheme = ps;
-            
-            System.out.println("patient = " + patient);
-            System.out.println("chiefHouseHolder = " + chiefHouseHolder);
-            System.out.println("currentPatientFamily = " + currentPatientFamily);
-            System.out.println("currentPatientMembershipScheme = " + currentPatientMembershipScheme);
 
             if (sessionController.getOpdBillItemSearchByAutocomplete()) {
                 return "/opd/opd_bill_ac?faces-redirect=true";
