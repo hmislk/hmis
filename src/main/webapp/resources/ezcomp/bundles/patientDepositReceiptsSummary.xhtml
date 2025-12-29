@@ -17,16 +17,12 @@
 
         <div class="row" >
             <div class="col" >
-                <h1>
-                    <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
-                </h1>
+                <h:outputText value="#{cc.attrs.bundle.name}" styleClass="font-weight-bold"></h:outputText>
             </div>
-            <div class="col" >
-                <h1>
-                    <h:outputText value="#{cc.attrs.bundle.total}" >
-                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                    </h:outputText>
-                </h1>
+            <div class="col text-end" >
+                <h:outputText value="#{cc.attrs.bundle.total}" styleClass="font-weight-bold">
+                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                </h:outputText>
             </div>
         </div>
 
