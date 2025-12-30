@@ -470,9 +470,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         } else {
             updatedAdmission = new HashMap<>();
             admissionToAuditMap(updatedAdmission, current);
-            System.out.println("originalAdmission.id = " + originalAdmission.get("bhtNo"));
-            System.out.println("updatedAdmission.id = " + updatedAdmission.get("bhtNo"));
             auditService.logAudit(originalAdmission, updatedAdmission, sessionController.getLoggedUser(), "PatientEncounter", "UpdateAdmission");
+            updatedAdmission = null;
             getEjbFacade().editAndFlush(current);    // SINGLE flush for ALL entities
         }
 
@@ -515,15 +514,16 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToEditAdmissionDetails() {
-        System.out.println("current = " + current);
         if (current == null) {
             JsfUtil.addErrorMessage("No Admission to edit");
             return "";
         }
-
-        System.out.println("enter mapping = ");
-        originalAdmission = new HashMap<>();
-        admissionToAuditMap(originalAdmission, current);
+        // audit: store original details
+        if (current.getId() != null) {
+            originalAdmission = new HashMap<>();
+            admissionToAuditMap(originalAdmission, current);
+        }
+        
         admissionController.setCurrent(current);
         createPatientRoom();
         fillCreditCompaniesByPatient();
@@ -948,7 +948,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     
     public void admissionToAuditMap(Map<String, Object> m, Admission o) {
         if (o == null || m == null) {
-            System.out.println("null check: o = " +  o);
             return;
         }
         
@@ -956,8 +955,13 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         m.put("bhtNo", o.getBhtNo());
         m.put("encounterType", o.getEncounterType());
         m.put("dateOfAdmission", o.getDateOfAdmission());
-        m.put("dateOfDischarge", o.getDateOfDischarge());
         
+        if (o.getReferringConsultant() != null) {
+            m.put("consultant", o.getReferringConsultant().getName());
+        }
+        if (o.getOpdDoctor() != null) {
+            m.put("medicalOfficer", o.getOpdDoctor().getName());
+        }
         if (o.getDepartment() != null) {
             m.put("department", o.getDepartment().getName());
         }
@@ -965,9 +969,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             m.put("patient_ID", o.getPatient().getId());
             m.put("patient_name", o.getPatient().getPerson().getName());
         }
-        
-        System.out.println("o = " + o);
-        System.out.println("m.encounterId = " + m.get("encounterID"));
+        if (o.getGuardian() != null) {
+            m.put("guardian_name", o.getGuardian().getName());
+        }
     }
 
     /**
