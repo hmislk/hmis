@@ -534,10 +534,9 @@ public class InwardReportController implements Serializable {
         return specialtyBarOptions;
     }
 
-
     private List<InwardAdmissionDTO> list;
-    
-    public void processAdmissionCountConsultantWiseReport(){
+
+    public void processAdmissionCountConsultantWiseReport() {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
@@ -564,7 +563,7 @@ public class InwardReportController implements Serializable {
         jpql.append(" ORDER BY e.referringConsultant.speciality.name, e.referringConsultant.person.name ");
 
         List<InwardAdmissionDTO> rawList = (List<InwardAdmissionDTO>) peFacade.findLightsByJpqlWithoutCache(jpql.toString(), params, TemporalType.TIMESTAMP);
-        
+
         // Group by specialty and doctor, count surgeries month-wise
         Map<String, Map<Long, InwardAdmissionDTO>> specialtyDoctorMap = new LinkedHashMap<>();
         Calendar cal = Calendar.getInstance();
@@ -593,9 +592,11 @@ public class InwardReportController implements Serializable {
             }
 
             // Increment month counter
-            cal.setTime(dto.getDateOfDischarge());
-            int month = cal.get(Calendar.MONTH);
-            aggregated.addMonthCount(month, 1);
+            if (dto.getDateOfDischarge() != null) {
+                cal.setTime(dto.getDateOfDischarge());
+                int month = cal.get(Calendar.MONTH);
+                aggregated.addMonthCount(month, 1);
+            }
         }
 
         // Build final list with subtotals and grand total
@@ -618,18 +619,18 @@ public class InwardReportController implements Serializable {
             // Add subtotal row
             list.add(subtotal);
         }
-       
+
         // Add grand total row
         list.add(grandTotal);
-        
+
         createAdmissionCountCharts();
     }
-    
-    public void createAdmissionCountCharts(){
+
+    public void createAdmissionCountCharts() {
         createConsultantWiseCharts();
         createSpecialtyWiseCharts();
     }
-    
+
     private void createConsultantWiseCharts() {
         // Define color palette (RGB strings without alpha for now)
         String[] colors = {
