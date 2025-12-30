@@ -29,14 +29,14 @@
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2" >
                             <p:commandButton class="ui-button-warning" icon="fas fa-magnifying-glass" id="btnSearch" ajax="false" value="Search" 
-                                             action="#{smsController.fillAllFailedSmsDtos()}"/>
+                                             action="#{smsController.fillAllFailedSmsDtos}"/>
                             <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
                                 <p:dataExporter fileName="All Bills" type="xlsx" target="tblBills" ></p:dataExporter>
                             </p:commandButton>
                         </h:panelGrid>
 
                         <p:dataTable rowIndexVar="i" id="tblBills" 
-                                     value="#{smsController.failedSmsDtoList}"
+                                     value="#{smsController.smsDtoList}"
                                      reflow="true"
                                      var="sms"  
                                      style="min-width: 100%;"  
@@ -46,36 +46,30 @@
                                      paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15"
                                      >
-                            <p:column headerText="Created At">
-                                <h:outputText value="#{sms.createdAt}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                </h:outputText>
+                            <p:column headerText="ID" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.smsId}"/>
                             </p:column>
 
-                            <p:column headerText="Sent At">
-                                <h:outputText value="#{sms.sentAt}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                </h:outputText>
+                            <p:column filterBy="#{sms.patientNameWithTitle}" 
+                                      filterMatchMode="contains" 
+                                      headerText="Patient" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.patientNameWithTitle}"/>
                             </p:column>
 
-                            <p:column headerText="Patient">
-                                <h:outputText value="#{sms.patientNameWithTitle}"/>
+                            <p:column headerText="Message" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.message}"/>
                             </p:column>
 
-                            <p:column headerText="Message">
-                                <h:outputText value="#{sms.message}"/>
-                            </p:column>
-
-                            <p:column headerText="Reason For Failure">
-                                <h:outputText value="#{sms.failureMessage}"/>
+                            <p:column headerText="Reason For Failure" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.failureMessage}"/>
                             </p:column>
 
                             <p:column headerText="Phone Number"
                                       filterBy="#{sms.recipient}"
-                                      filterMatchMode="contains">
-                                <h:outputText value="#{sms.recipient}"/>
+                                      filterMatchMode="contains"
+                                      styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.recipient}"/>
                             </p:column>
-
 
                             <p:column headerText="Action" 
                                       styleClass="alignTop" 
@@ -84,16 +78,12 @@
                                                  actionListener="#{smsController.setSelectedSms(sms)}" 
                                                  action="#{smsController.sentUnsentSms}">
                                 </p:commandButton>
-
                             </p:column>
                         </p:dataTable>
 
                     </p:panel>
                 </h:form>
-
-
             </ui:define>
-
         </ui:composition>
     </h:body>
 </html>
