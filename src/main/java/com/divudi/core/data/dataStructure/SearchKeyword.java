@@ -7,6 +7,7 @@ package com.divudi.core.data.dataStructure;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
@@ -59,6 +60,7 @@ public class SearchKeyword {
     private Department itemDepartment;
     private Item item;
     private Investigation investigation;
+    private PatientInvestigationStatus patientInvestigationStatus;
     private List<BillType> billTypes;
     private Long id;
     // Removed legacy Institution distributor; use String fromInstitution in JSF filters
@@ -448,6 +450,14 @@ public class SearchKeyword {
 
     public void setInvestigation(Investigation investigation) {
         this.investigation = investigation;
+    }
+
+    public PatientInvestigationStatus getPatientInvestigationStatus() {
+        return patientInvestigationStatus;
+    }
+
+    public void setPatientInvestigationStatus(PatientInvestigationStatus patientInvestigationStatus) {
+        this.patientInvestigationStatus = patientInvestigationStatus;
     }
 
     public Long getId() {
