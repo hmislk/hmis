@@ -211,9 +211,15 @@
                                     <div class="row">
                                         <div class="col-3"><p:outputLabel value="Payment Method" /></div>
                                         <div class="col-9">
-                                            <p:selectOneMenu   id="cmbPs" value="#{pettyCashBillController.current.paymentMethod}">                                                                     
-                                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
-                                                <p:ajax process="cmbPs" update="creditCard cheque slip eWallet" event="change" />
+                                            <p:selectOneMenu   id="cmbPs" value="#{pettyCashBillController.current.paymentMethod}">
+                                                <f:selectItems value="#{enumController.paymentMethodsForPettyCashBilling}"
+                                                               var="p"
+                                                               itemLabel="#{p.label}"
+                                                               itemValue="#{p}"/>
+                                                <p:ajax process="@this"
+                                                        update="cash creditCard cheque slip eWallet"
+                                                        event="change"
+                                                        listener="#{pettyCashBillController.listnerForPaymentMethodChange()}"/>
                                             </p:selectOneMenu></div>
                                     </div>
                                         <!--<p:inputText value="#{pettyCashBillController.comment}" id="comment"/>-->
@@ -221,19 +227,28 @@
                                     <div class="row">
                                         <div class="col-3"></div>
                                         <div class="col-9 mt-2" >
-                                            
+
+                                            <!-- Cash Payment - No additional form -->
+                                            <h:panelGroup id="cash" rendered="#{pettyCashBillController.current.paymentMethod eq 'Cash'}">
+                                                <!-- No additional fields needed for Cash -->
+                                            </h:panelGroup>
+
+                                            <!-- Credit Card Payment -->
                                             <h:panelGroup id="creditCard" rendered="#{pettyCashBillController.current.paymentMethod eq 'Card'}" >
                                                 <pa:creditCard paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
                                             </h:panelGroup>
 
+                                            <!-- Cheque Payment -->
                                             <h:panelGroup id="cheque" rendered="#{pettyCashBillController.current.paymentMethod eq 'Cheque'}" >
                                                 <pa:cheque paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
                                             </h:panelGroup>
 
+                                            <!-- Slip Payment -->
                                             <h:panelGroup id="slip" rendered="#{pettyCashBillController.current.paymentMethod eq 'Slip'}" >
                                                 <pa:slip paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
                                             </h:panelGroup>
-                                            
+
+                                            <!-- E-Wallet Payment -->
                                             <h:panelGroup id="eWallet" rendered="#{pettyCashBillController.current.paymentMethod eq 'ewallet'}" >
                                                 <pa:ewallet_collect paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
                                             </h:panelGroup>
