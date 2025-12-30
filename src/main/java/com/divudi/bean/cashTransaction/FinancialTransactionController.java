@@ -15,6 +15,7 @@ import com.divudi.core.data.admin.PrivilegeInfo;
 import javax.annotation.PostConstruct;
 import com.divudi.core.data.*;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PaymentFacade;
@@ -258,6 +259,14 @@ public class FinancialTransactionController implements Serializable {
     private double totalCashFund;
 
     boolean floatTransferStarted = false;
+
+    // Float Out Cancellation Properties
+    private List<Bill> myFundTransferBillsOut;
+    private Bill fundTransferBillToCancel;
+    private Bill fundTransferCancellationBill;
+    private String fundTransferCancellationReason;
+    private Date myFloatOutsFromDate;
+    private Date myFloatOutsToDate;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -2099,6 +2108,14 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillType(BillType.FundTransferBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
+    }
+
+    public void ensureFundTransferBillInitialized() {
+        if (currentBill == null || currentBill.getBillType() != BillType.FundTransferBill) {
+            prepareToAddNewFundTransferBill();
+            floatTransferStarted = false;
+            currentBillPayments = new ArrayList<>();
+        }
     }
 
     private void prepareToAddNewFundDepositBill() {
@@ -5034,6 +5051,189 @@ public class FinancialTransactionController implements Serializable {
         return billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
+    // Float Out Cancellation Methods
+    public void fillMyFundTransferBillsOut() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder(
+                "select s from Bill s "
+                + "where s.retired=:ret "
+                + "and s.billTypeAtomic=:btype "
+                + "and s.fromWebUser=:fromUser "
+                + "and s.createdAt between :fd and :td "
+        );
+        params.put("ret", false);
+        params.put("btype", BillTypeAtomic.FUND_TRANSFER_BILL);
+        params.put("fromUser", sessionController.getLoggedUser());
+        params.put("fd", getMyFloatOutsFromDate());
+        params.put("td", getMyFloatOutsToDate());
+        jpql.append("order by s.createdAt desc");
+        myFundTransferBillsOut = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+    }
+
+    public String navigateToMyFundTransferBillsOut() {
+        myFloatOutsFromDate = CommonFunctions.getStartOfDay(CommonFunctions.getAddedDate(new Date(), -30));
+        myFloatOutsToDate = CommonFunctions.getEndOfDay(new Date());
+        fillMyFundTransferBillsOut();
+        return "/cashier/fund_transfer_bills_my_float_outs?faces-redirect=true";
+    }
+
+    public String navigateToFundTransferBillCancel(Bill bill) {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return "";
+        }
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.FUND_TRANSFER_BILL) {
+            JsfUtil.addErrorMessage("Invalid bill type");
+            return "";
+        }
+        if (bill.isCancelled()) {
+            JsfUtil.addErrorMessage("This float transfer has already been cancelled");
+            return "";
+        }
+        if (bill.getReferenceBill() != null) {
+            JsfUtil.addErrorMessage("This float transfer has already been accepted and cannot be cancelled");
+            return "";
+        }
+        fundTransferBillToCancel = bill;
+        fundTransferCancellationReason = null;
+        // Load payments for display
+        if (fundTransferBillToCancel.getPayments() == null || fundTransferBillToCancel.getPayments().isEmpty()) {
+            fundTransferBillToCancel.setPayments(findPaymentsForBill(fundTransferBillToCancel));
+        }
+        return "/cashier/fund_transfer_bill_cancel?faces-redirect=true";
+    }
+
+    public String navigateToViewFundTransferBill(Bill bill) {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return "";
+        }
+        currentBill = bill;
+        if (currentBill.getPayments() == null || currentBill.getPayments().isEmpty()) {
+            currentBill.setPayments(findPaymentsForBill(currentBill));
+        }
+        currentBillPayments = currentBill.getPayments();
+        return "/cashier/fund_transfer_bill_print?faces-redirect=true";
+    }
+
+    public String cancelFundTransferBill() {
+        // Re-validate before executing
+        if (fundTransferBillToCancel == null) {
+            JsfUtil.addErrorMessage("No bill selected for cancellation");
+            return "";
+        }
+        // Refresh from database to check current state
+        Bill freshBill = billFacade.find(fundTransferBillToCancel.getId());
+        if (freshBill.isCancelled()) {
+            JsfUtil.addErrorMessage("This float transfer has already been cancelled");
+            return "";
+        }
+        if (freshBill.getReferenceBill() != null) {
+            JsfUtil.addErrorMessage("This float transfer has been accepted and cannot be cancelled");
+            return "";
+        }
+        if (fundTransferCancellationReason == null || fundTransferCancellationReason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Cancellation reason is required");
+            return "";
+        }
+
+        // Create cancellation bill
+        fundTransferCancellationBill = new CancelledBill();
+        fundTransferCancellationBill.setBillType(BillType.FundTransferBill);
+        fundTransferCancellationBill.setBillTypeAtomic(BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED);
+        fundTransferCancellationBill.setBillClassType(BillClassType.CancelledBill);
+
+        // Copy department info from original
+        fundTransferCancellationBill.setDepartment(fundTransferBillToCancel.getDepartment());
+        fundTransferCancellationBill.setInstitution(fundTransferBillToCancel.getInstitution());
+
+        // Copy from/to info
+        fundTransferCancellationBill.setFromStaff(fundTransferBillToCancel.getFromStaff());
+        fundTransferCancellationBill.setFromWebUser(fundTransferBillToCancel.getFromWebUser());
+        fundTransferCancellationBill.setToStaff(fundTransferBillToCancel.getToStaff());
+        fundTransferCancellationBill.setToWebUser(fundTransferBillToCancel.getToWebUser());
+
+        // Set audit fields
+        fundTransferCancellationBill.setCreater(sessionController.getLoggedUser());
+        fundTransferCancellationBill.setCreatedAt(new Date());
+        fundTransferCancellationBill.setBillDate(new Date());
+        fundTransferCancellationBill.setBillTime(new Date());
+        fundTransferCancellationBill.setStaff(sessionController.getLoggedUser().getStaff());
+
+        // Set comments
+        fundTransferCancellationBill.setComments(fundTransferCancellationReason);
+
+        // Link to original bill
+        fundTransferCancellationBill.setBilledBill(fundTransferBillToCancel);
+        fundTransferCancellationBill.setBackwardReferenceBill(fundTransferBillToCancel);
+
+        // Generate bill number
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
+                sessionController.getDepartment(),
+                BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED
+        );
+        fundTransferCancellationBill.setDeptId(deptId);
+        fundTransferCancellationBill.setInsId(deptId);
+
+        // Save cancellation bill
+        billController.save(fundTransferCancellationBill);
+
+        // Create reversed payments and update drawer
+        List<Payment> cancellationPayments = new ArrayList<>();
+        double totalValue = 0.0;
+
+        // Get original payments
+        List<Payment> originalPayments = findPaymentsForBill(fundTransferBillToCancel);
+
+        for (Payment originalPayment : originalPayments) {
+            Payment cancellationPayment = new Payment();
+            cancellationPayment.setBill(fundTransferCancellationBill);
+            cancellationPayment.setPaymentMethod(originalPayment.getPaymentMethod());
+            cancellationPayment.setCreatedAt(new Date());
+            cancellationPayment.setCreater(sessionController.getLoggedUser());
+
+            // POSITIVE value for cancellation (reverses the negative from original)
+            cancellationPayment.setPaidValue(Math.abs(originalPayment.getPaidValue()));
+            totalValue += cancellationPayment.getPaidValue();
+
+            // Copy other payment details
+            cancellationPayment.setBank(originalPayment.getBank());
+            cancellationPayment.setChequeRefNo(originalPayment.getChequeRefNo());
+            cancellationPayment.setChequeDate(originalPayment.getChequeDate());
+            cancellationPayment.setCreditCardRefNo(originalPayment.getCreditCardRefNo());
+            cancellationPayment.setInstitution(originalPayment.getInstitution());
+
+            paymentController.save(cancellationPayment);
+            cancellationPayments.add(cancellationPayment);
+
+            // Reverse drawer update - add back to sender's drawer
+            drawerController.updateDrawerForIns(cancellationPayment);
+        }
+
+        // Set totals (positive for cancellation)
+        fundTransferCancellationBill.setTotal(totalValue);
+        fundTransferCancellationBill.setNetTotal(totalValue);
+        fundTransferCancellationBill.getPayments().addAll(cancellationPayments);
+        billController.save(fundTransferCancellationBill);
+
+        // Update original bill as cancelled
+        fundTransferBillToCancel.setCancelled(true);
+        fundTransferBillToCancel.setCancelledBill(fundTransferCancellationBill);
+        billController.save(fundTransferBillToCancel);
+
+        currentBill = fundTransferCancellationBill;
+        currentBillPayments = cancellationPayments;
+
+        JsfUtil.addSuccessMessage("Float transfer cancelled successfully");
+
+        return "/cashier/fund_transfer_bill_cancel_print?faces-redirect=true";
+    }
+
+    public String navigateBackToMyFloatOuts() {
+        fillMyFundTransferBillsOut();
+        return "/cashier/fund_transfer_bills_my_float_outs?faces-redirect=true";
+    }
+
     public boolean hasAtLeastOneFundTransferBillToReceive(WebUser fromUser,
             Staff fromStaff,
             WebUser toUser,
@@ -6130,6 +6330,61 @@ public class FinancialTransactionController implements Serializable {
 
     public void setSelectedBill(Bill selectedBill) {
         this.selectedBill = selectedBill;
+    }
+
+    // Float Out Cancellation Getters/Setters
+    public List<Bill> getMyFundTransferBillsOut() {
+        return myFundTransferBillsOut;
+    }
+
+    public void setMyFundTransferBillsOut(List<Bill> myFundTransferBillsOut) {
+        this.myFundTransferBillsOut = myFundTransferBillsOut;
+    }
+
+    public Bill getFundTransferBillToCancel() {
+        return fundTransferBillToCancel;
+    }
+
+    public void setFundTransferBillToCancel(Bill fundTransferBillToCancel) {
+        this.fundTransferBillToCancel = fundTransferBillToCancel;
+    }
+
+    public Bill getFundTransferCancellationBill() {
+        return fundTransferCancellationBill;
+    }
+
+    public void setFundTransferCancellationBill(Bill fundTransferCancellationBill) {
+        this.fundTransferCancellationBill = fundTransferCancellationBill;
+    }
+
+    public String getFundTransferCancellationReason() {
+        return fundTransferCancellationReason;
+    }
+
+    public void setFundTransferCancellationReason(String fundTransferCancellationReason) {
+        this.fundTransferCancellationReason = fundTransferCancellationReason;
+    }
+
+    public Date getMyFloatOutsFromDate() {
+        if (myFloatOutsFromDate == null) {
+            myFloatOutsFromDate = CommonFunctions.getStartOfDay(CommonFunctions.getStartOfMonth());
+        }
+        return myFloatOutsFromDate;
+    }
+
+    public void setMyFloatOutsFromDate(Date myFloatOutsFromDate) {
+        this.myFloatOutsFromDate = myFloatOutsFromDate;
+    }
+
+    public Date getMyFloatOutsToDate() {
+        if (myFloatOutsToDate == null) {
+            myFloatOutsToDate = CommonFunctions.getEndOfDay(new Date());
+        }
+        return myFloatOutsToDate;
+    }
+
+    public void setMyFloatOutsToDate(Date myFloatOutsToDate) {
+        this.myFloatOutsToDate = myFloatOutsToDate;
     }
 
     // </editor-fold>

@@ -159,10 +159,10 @@ The Printer Configuration System provides a unified interface for managing paper
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <p:selectBooleanCheckbox
+                            <h:selectBooleanCheckbox
                                 id="yourOptionId"
                                 value="#{pharmacyConfigController.yourProperty}" />
-                            <p:outputLabel for="yourOptionId" value="Your Option Name" class="ms-2" />
+                            <h:outputLabel for="yourOptionId" value="Your Option Name" class="ms-2" />
                             <small class="form-text text-muted d-block">Description of what this option does</small>
                         </div>
                         <!-- Add more options as needed -->
@@ -305,6 +305,7 @@ rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
 - Include descriptive help text for each option
 - Use consistent button styling (`ui-button-secondary` for settings, at the left of the page)
 - Place settings buttons in the right button area
+- **Use JSF checkboxes (`h:selectBooleanCheckbox`) instead of PrimeFaces (`p:selectBooleanCheckbox`)** for configuration options to avoid loading/status selection issues
 
 ### 2. Backend Consistency
 - Group related properties together with comments
@@ -321,6 +322,32 @@ rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
 - Set appropriate default values
 - Use boolean flags for enable/disable options
 - Ensure configuration keys are unique and descriptive
+
+### 5. Component Selection Guidelines
+
+**✅ Recommended: JSF Native Components**
+```xhtml
+<!-- Use h:selectBooleanCheckbox for configuration options -->
+<h:selectBooleanCheckbox
+    id="yourOptionId"
+    value="#{pharmacyConfigController.yourProperty}" />
+<h:outputLabel for="yourOptionId" value="Your Option Name" class="ms-2" />
+```
+
+**❌ Avoid: PrimeFaces Components for Configuration**
+```xhtml
+<!-- AVOID p:selectBooleanCheckbox for configuration dialogs -->
+<p:selectBooleanCheckbox
+    id="yourOptionId"
+    value="#{pharmacyConfigController.yourProperty}" />
+<p:outputLabel for="yourOptionId" value="Your Option Name" class="ms-2" />
+```
+
+**Reasoning:**
+- **Loading Issues**: PrimeFaces checkboxes sometimes fail to properly reflect the correct initial state when configuration dialogs are opened
+- **AJAX Complications**: Native JSF components have more reliable binding to backend boolean properties
+- **Simpler Lifecycle**: JSF checkboxes avoid the complexity of PrimeFaces AJAX processing for simple boolean operations
+- **Better Performance**: Native components have less overhead for basic form controls
 
 ## Troubleshooting
 
@@ -345,6 +372,19 @@ rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
    - Check if page caching is affecting configuration display
    - Verify `loadCurrentConfig()` is called after saving
    - Remember: `configOptionController` provides department-specific values
+
+5. **Configuration Checkbox Loading Issues**
+   - **Problem**: Configuration checkboxes don't reflect correct initial state when dialog opens
+   - **Solution**: Replace `p:selectBooleanCheckbox` with `h:selectBooleanCheckbox`
+   - **Reason**: PrimeFaces AJAX processing can interfere with proper binding to backend boolean properties
+   - **Example Fix**:
+     ```xhtml
+     <!-- Replace this -->
+     <p:selectBooleanCheckbox value="#{controller.property}" />
+
+     <!-- With this -->
+     <h:selectBooleanCheckbox value="#{controller.property}" />
+     ```
 
 ### Debug Tips
 

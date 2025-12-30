@@ -222,19 +222,19 @@
                                         <div class="col-3"></div>
                                         <div class="col-9 mt-2" >
                                             
-                                            <h:panelGroup id="creditCard" style="display: #{pettyCashBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; " >
+                                            <h:panelGroup id="creditCard" rendered="#{pettyCashBillController.current.paymentMethod eq 'Card'}" >
                                                 <pa:creditCard paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
                                             </h:panelGroup>
 
-                                            <h:panelGroup id="cheque" style="display: #{pettyCashBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                            <h:panelGroup id="cheque" rendered="#{pettyCashBillController.current.paymentMethod eq 'Cheque'}" >
                                                 <pa:cheque paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
                                             </h:panelGroup>
 
-                                            <h:panelGroup id="slip" style="display: #{pettyCashBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                            <h:panelGroup id="slip" rendered="#{pettyCashBillController.current.paymentMethod eq 'Slip'}" >
                                                 <pa:slip paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             
-                                            <h:panelGroup id="eWallet" style="display: #{pettyCashBillController.current.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
+                                            <h:panelGroup id="eWallet" rendered="#{pettyCashBillController.current.paymentMethod eq 'ewallet'}" >
                                                 <pa:ewallet_collect paymentMethodData="#{pettyCashBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                         </div>
@@ -278,22 +278,40 @@
                         </div>
                     </f:facet>
                     <div class="d-flex justify-content-end">
-                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                        <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
-                            <f:selectItem itemLabel="Please Select Paper Type" />
-                            <f:selectItems value="#{enumController.paperTypes}" />
-                        </p:selectOneMenu>
-                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
-                        <p:commandButton value="Print" 
-                                         class="ui-button-info m-1"
-                                         icon="fa fa-print"
-                                         ajax="false">
+                        <p:commandButton
+                            value="Print"
+                            ajax="false"
+                            icon="fas fa-print"
+                            class="ui-button-info mx-2">
                             <p:printer target="gpBillPreview" />
-                        </p:commandButton> 
+                        </p:commandButton>
+
+                        <!-- Settings button for paper type configuration -->
+                        <p:commandButton
+                            rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                            value="Settings"
+                            icon="fas fa-cog"
+                            class="ui-button-secondary mx-1"
+                            type="button"
+                            onclick="PF('pettyCashConfigDialog').show();" />
                     </div>
 
                     <h:panelGroup   id="gpBillPreview">
-                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
+                        <!-- POS/5.5 inch Format (Default) -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt POS Paper', true)}">
+                            <bi:petty  bill="#{pettyCashBillController.current}" billController="#{pettyCashBillController}" dup="false"/>
+                        </h:panelGroup>
+
+                        <!-- A4 Format -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt A4 Paper', false)}">
+                            <!-- For now, use the same component until A4 format is created -->
+                            <bi:petty  bill="#{pettyCashBillController.current}" billController="#{pettyCashBillController}" dup="false"/>
+                            <h:outputText value="Note: A4 format composite component needs to be created" style="display:none;" />
+                        </h:panelGroup>
+
+                        <!-- Custom Format -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Petty Cash Receipt Custom Paper', false)}">
+                            <!-- Use existing format for now -->
                             <bi:petty  bill="#{pettyCashBillController.current}" billController="#{pettyCashBillController}" dup="false"/>
                         </h:panelGroup>
                     </h:panelGroup>
@@ -301,6 +319,85 @@
 
             </h:form>
         </h:panelGroup>
+
+        <!-- Petty Cash Printer Configuration Dialog -->
+        <p:dialog id="pettyCashConfigDialog"
+                  header="Petty Cash Receipt Printer Configuration"
+                  widgetVar="pettyCashConfigDialog"
+                  modal="true"
+                  width="600"
+                  height="500"
+                  resizable="true"
+                  maximizable="true"
+                  closeOnEscape="true">
+
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="pettyCashConfigForm" />
+
+            <h:form id="pettyCashConfigForm">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <h:outputText value="Petty Cash Receipt Paper Settings">
+                                    <f:facet name="before">
+                                        <i class="fas fa-file-alt"></i>
+                                    </f:facet>
+                                </h:outputText>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox
+                                        id="pettyCashPosPaper"
+                                        value="#{pharmacyConfigController.pettyCashPosPaper}" />
+                                    <h:outputLabel for="pettyCashPosPaper" value="POS/5.5 inch Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Standard 5.5 inch thermal receipt format (Default)</small>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox
+                                        id="pettyCashA4Paper"
+                                        value="#{pharmacyConfigController.pettyCashA4Paper}" />
+                                    <h:outputLabel for="pettyCashA4Paper" value="A4 Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">A4 size paper format for detailed receipts</small>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox
+                                        id="pettyCashCustomPaper"
+                                        value="#{pharmacyConfigController.pettyCashCustomPaper}" />
+                                    <h:outputLabel for="pettyCashCustomPaper" value="Custom Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Custom format for special printing requirements</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <p:messages id="pettyCashConfigMessages" showDetail="true" closable="true" />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            value="Apply &amp; Close"
+                                            icon="fas fa-save"
+                                            class="ui-button-success"
+                                            ajax="false"
+                                            action="#{pharmacyConfigController.savePettyCashConfig}" />
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('pettyCashConfigDialog').hide(); return false;"
+                                            type="button" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </h:form>
+        </p:dialog>
 
     </ui:define>
 </ui:composition>
