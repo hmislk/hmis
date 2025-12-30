@@ -202,7 +202,7 @@
                                     <h:outputText value="#{item.totalAdmissions}"/>
                                 </p:column>
                             </p:dataTable>
-                        </p:panel>s
+                        </p:panel>
 
 
                         <p:panel
@@ -227,7 +227,7 @@
                             </f:facet>
                             <p:tabView id="chartTabs" dynamic="true" cache="true">
                                 <p:tab title="Specialty-wise Line Chart" onTabShow="PF('specialtyLineWV').reinit();">
-                                    <p:panel header="Specialty Wise Admissiom Trend">
+                                    <p:panel header="Specialty Wise Admission Trend">
                                         <p:chart value="#{inwardReportController.specialtyLineChartModel}" widgetVar="specialtyLineWV" style="width:100%; height:500px;" />
                                     </p:panel>
                                 </p:tab>
