@@ -4,12 +4,13 @@ import com.divudi.core.entity.Staff;
 import java.util.Calendar;
 import java.util.Date;
 
-public class SurgeryCountDoctorWiseDTO {
+public class InwardAdmissionDTO {
 
-    private Staff staff;
+    private Long staffId;
     private String doctorName;
     private String specialityName;
     private Date createdAt;
+    private Date dateOfDischarge;
 
     // Month-wise counters
     private int january;
@@ -29,17 +30,18 @@ public class SurgeryCountDoctorWiseDTO {
     private boolean isSubtotal;
     private boolean isGrandTotal;
 
-    public SurgeryCountDoctorWiseDTO(Staff staff, String doctorName, String specialityName, Date createdAt) {
-        this.staff = staff;
+    // Constructor for fetching data for admission count table
+    public InwardAdmissionDTO(Long staffId, String doctorName, String specialityName, Date dateOfDischarge) {
+        this.staffId = staffId;
         this.doctorName = doctorName;
         this.specialityName = specialityName;
-        this.createdAt = createdAt;
+        this.dateOfDischarge = dateOfDischarge;
         this.isSubtotal = false;
         this.isGrandTotal = false;
     }
 
     // Constructor for subtotal rows
-    public SurgeryCountDoctorWiseDTO(String specialityName) {
+    public InwardAdmissionDTO(String specialityName) {
         this.specialityName = specialityName;
         this.doctorName = "Total";
         this.isSubtotal = true;
@@ -47,7 +49,7 @@ public class SurgeryCountDoctorWiseDTO {
     }
 
     // Constructor for grand total row
-    public SurgeryCountDoctorWiseDTO() {
+    public InwardAdmissionDTO() {
         this.doctorName = "Grand Total";
         this.specialityName = "";
         this.isSubtotal = false;
@@ -55,12 +57,12 @@ public class SurgeryCountDoctorWiseDTO {
     }
 
     // Getters and Setters
-    public Staff getStaff() {
-        return staff;
+    public Long getStaffId() {
+        return staffId;
     }
 
-    public void setStaff(Staff staff) {
-        this.staff = staff;
+    public void setStaffId(Long staffId) {
+        this.staffId = staffId;
     }
 
     public String getDoctorName() {
@@ -199,7 +201,7 @@ public class SurgeryCountDoctorWiseDTO {
         this.december = december;
     }
 
-    public int getTotalSurgeries() {
+    public int getTotalAdmissions() {
         return january + february + march + april + may + june
                 + july + august + september + october + november + december;
     }
@@ -245,7 +247,7 @@ public class SurgeryCountDoctorWiseDTO {
         }
     }
 
-    public void addAllCounts(SurgeryCountDoctorWiseDTO other) {
+    public void addAllCounts(InwardAdmissionDTO other) {
         this.january += other.january;
         this.february += other.february;
         this.march += other.march;
@@ -258,5 +260,13 @@ public class SurgeryCountDoctorWiseDTO {
         this.october += other.october;
         this.november += other.november;
         this.december += other.december;
+    }
+
+    public Date getDateOfDischarge() {
+        return dateOfDischarge;
+    }
+
+    public void setDateOfDischarge(Date dateOfDischarge) {
+        this.dateOfDischarge = dateOfDischarge;
     }
 }
