@@ -5094,6 +5094,11 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("This float transfer has already been accepted and cannot be cancelled");
             return "";
         }
+        if (bill.getFromWebUser() == null
+                || !bill.getFromWebUser().equals(sessionController.getLoggedUser())) {
+            JsfUtil.addErrorMessage("You can only cancel float transfers you created");
+            return "";
+        }
         fundTransferBillToCancel = bill;
         fundTransferCancellationReason = null;
         // Load payments for display
@@ -5130,6 +5135,11 @@ public class FinancialTransactionController implements Serializable {
         }
         if (freshBill.getReferenceBill() != null) {
             JsfUtil.addErrorMessage("This float transfer has been accepted and cannot be cancelled");
+            return "";
+        }
+        if (freshBill.getFromWebUser() == null
+                || !freshBill.getFromWebUser().equals(sessionController.getLoggedUser())) {
+            JsfUtil.addErrorMessage("You are not authorized to cancel this float transfer");
             return "";
         }
         if (fundTransferCancellationReason == null || fundTransferCancellationReason.trim().isEmpty()) {
