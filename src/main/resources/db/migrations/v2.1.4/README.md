@@ -10,10 +10,14 @@ This migration adds composite indexes for performance optimization on:
 
 ## Files
 
-### Main Migration Script
-- **migration.sql** - Complete migration (all steps combined)
-  - Use this when running through the migration admin page
-  - Fixed to avoid `PREPARE` statement errors with NULL variables
+### Environment-Specific Migration Scripts
+- **migration.sql** - Production migration (uppercase table names: USER_STOCK, USERSTOCKCONTAINER, PRICEMATRIX)
+  - Use for Ubuntu/Linux production servers
+  - Use when running through the migration admin page on production
+- **migration-dev.sql** - Development migration (lowercase table names: userstock, userstockcontainer, pricematrix)
+  - Use for Windows development environments
+  - Use for testing databases with lowercase table names
+  - Fixed version that avoids `EXPLAIN` statement failures
 
 ### Individual Scripts (Can be run separately)
 1. **01-pre-migration-checks.sql** - Pre-migration verification (read-only)
@@ -27,12 +31,45 @@ This migration adds composite indexes for performance optimization on:
 - **migration-info.json** - Migration metadata
 - **README.md** - This file
 
+## Choosing the Right Migration File
+
+Before running the migration, determine your database table case:
+
+```sql
+SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_SCHEMA = DATABASE()
+AND TABLE_NAME IN ('USER_STOCK', 'userstock');
+```
+
+**Results:**
+- If you see `USER_STOCK` → Use `migration.sql` (Production)
+- If you see `userstock` → Use `migration-dev.sql` (Development)
+- If you see no results → Tables don't exist (check your database)
+
 ## Running the Migration
 
-### Option 1: Through Admin Page (Recommended)
+### Option 1: Through Admin Page (Recommended for Production)
 1. Navigate to `/rhLocal/faces/admin/database_migration.xhtml`
 2. Click "Execute All Migrations" button
-3. The fixed `migration.sql` will run all steps automatically
+3. The `migration.sql` will run automatically (uses uppercase table names)
+
+### Option 1b: Manual Development Migration (For Development Environments)
+If you're running on a development environment with lowercase tables:
+
+```bash
+# Run the development-specific migration directly
+mysql -u username -p database_name < migration-dev.sql
+```
+
+Or using credentials file:
+```bash
+# Load credentials
+source ~/.config/hmis/credentials.txt  # Linux/Mac
+source C:/Credentials/credentials.txt  # Windows
+
+# Run migration
+mysql -u$DB_USER -p$DB_PASS $DB_NAME < migration-dev.sql
+```
 
 ### Option 2: Run Individual Scripts (Manual)
 Useful for testing or troubleshooting specific parts:
@@ -80,15 +117,16 @@ Call: PREPARE count_stmt FROM @record_count_sql
 When the migration runner executes SQL statements one-by-one, MySQL user variables set in one statement (like `@record_count_sql`) were not properly available for subsequent `PREPARE` statements, resulting in NULL values.
 
 ### Solution
-Replaced all dynamic `PREPARE` statements with:
-1. **Direct SQL queries with UNION** - For record counting
-2. **Direct EXPLAIN statements** - For performance verification
+Created **environment-specific migration files** to handle table case sensitivity:
+1. **migration.sql** - For production (uppercase tables: USER_STOCK, USERSTOCKCONTAINER, PRICEMATRIX)
+2. **migration-dev.sql** - For development (lowercase tables: userstock, userstockcontainer, pricematrix)
 
-The fixed migration is:
+Each migration file:
+- ✅ **Environment-specific** - No conditional table name checking needed
 - ✅ **Idempotent** - Safe to run multiple times (uses `IF NOT EXISTS`)
 - ✅ **No dynamic SQL** - Avoids PREPARE statement issues
 - ✅ **Statement-by-statement safe** - Works with any execution method
-- ✅ **Fail-safe** - EXPLAIN queries may fail gracefully if tables don't exist
+- ✅ **Clean EXPLAIN queries** - Only runs on tables that exist in that environment
 
 ## Safety Features
 
@@ -238,4 +276,4 @@ Closes #16990 - Speed up the pharmacy retail sale
 Dr M H B Ariyaratne
 
 ## Date
-2025-12-03 (Updated: 2025-12-22 - Fixed PREPARE statement issues)
+2025-12-03 (Updated: 2025-12-30 - Added environment-specific migration files)

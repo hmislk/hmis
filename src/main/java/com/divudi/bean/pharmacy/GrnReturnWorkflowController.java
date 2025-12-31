@@ -36,6 +36,11 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.Payment;
 import com.divudi.service.PaymentService;
+import com.divudi.bean.common.PageMetadataRegistry;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -52,6 +57,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.annotation.PostConstruct;
 
 /**
  * Controller for GRN Return Workflow - handles Create, Finalize, and Approve
@@ -100,6 +106,8 @@ public class GrnReturnWorkflowController implements Serializable {
     private SearchController searchController;
     @Inject
     UserSettingsController userSettingsController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
 
     // Main properties
     private Bill currentBill;
@@ -128,6 +136,149 @@ public class GrnReturnWorkflowController implements Serializable {
 
     @Inject
     PharmacyCalculation pharmacyBillBean;
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     * 🚨 CRITICAL: Use ONLY the core ConfigOptionInfo class from com.divudi.core.data.admin
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/pharmacy_grn_return_form");
+        metadata.setPageName("Pharmacy GRN Return Form");
+        metadata.setDescription("GRN return workflow processing for creating, finalizing, and approving returns");
+        metadata.setControllerClass("GrnReturnWorkflowController");
+
+        // 🔧 CONFIGURATION OPTIONS - Return Workflow Configurations
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Purchase Return by Quantity and Free Quantity",
+            "Controls display of quantity and free quantity columns and workflow",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Purchase Return by Total Quantity",
+            "Controls total quantity return workflow and column display",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Purchase Return - Changing Return Rate is allowed",
+            "Enables editing of return rates vs fixed display",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Purchase Return Based On Line Cost Rate",
+            "Uses line cost rate for return calculations",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Purchase Return Based On Total Cost Rate",
+            "Uses total cost rate for return calculations",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Allow Negative Stock in Returns",
+            "Controls whether returns that would cause negative stock are allowed",
+            OptionScope.APPLICATION
+        ));
+
+        // 🔧 BILL NUMBER GENERATION CONFIGURATIONS
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for GRN Return",
+            "Custom suffix to append to GRN Return bill numbers",
+            OptionScope.APPLICATION
+        ));
+
+        // 🔧 CRITICAL: Bill Number Generation Strategies for PHARMACY_GRN_RETURN
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PHARMACY_GRN_RETURN",
+            "Custom suffix to append to pharmacy GRN return bill numbers (used by BillNumberGenerator methods)",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Department ID is Prefix Dept Ins Year Count",
+            "Department bill generation with prefix + department code + institution code + year + count",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy GRN Return - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number",
+            "Institution + Department + Year + Yearly Number generation strategy",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Department ID is Prefix Ins Year Count",
+            "Department bill generation with prefix + institution code + year + count",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Institution ID is Prefix Ins Year Count",
+            "Institution bill generation with prefix + institution code + year + count",
+            OptionScope.APPLICATION
+        ));
+
+        // 🔧 PRINT FORMAT CONFIGURATIONS
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "GRN Return Receipt Paper is Custom 1",
+            "Uses custom format 1 for GRN return receipt printing",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "GRN Return Receipt Paper is Custom 2",
+            "Uses custom format 2 for GRN return receipt printing",
+            OptionScope.APPLICATION
+        ));
+
+        // 🔧 PRIVILEGES
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to system configuration",
+            "Config button visibility"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "CreateGrnReturn",
+            "Permission to create GRN return requests",
+            "Main workflow access and navigation buttons"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "FinalizeGrnReturn",
+            "Permission to finalize GRN return requests",
+            "Finalize button and workflow access"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ApproveGrnReturn",
+            "Permission to approve GRN return requests",
+            "Approve button and final approval workflow"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Permission to change receipt printing paper types and formats",
+            "Settings button in print preview"
+        ));
+
+        // 🔧 REGISTER THE METADATA (REQUIRED!)
+        pageMetadataRegistry.registerPage(metadata);
+    }
 
     // Navigation methods
     public String navigateToCreateGrnReturn() {
