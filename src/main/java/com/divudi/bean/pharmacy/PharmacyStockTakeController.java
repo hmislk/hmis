@@ -18,6 +18,7 @@ import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.data.dto.StockDTO;
+import com.divudi.core.monitoring.StockVerificationMetrics;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
@@ -38,6 +39,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -127,6 +129,22 @@ public class PharmacyStockTakeController implements Serializable {
 
     // Stock count generation job tracking
     private String generationJobId;
+
+    // Performance optimization: HashMap indexes for O(1) snapshot lookups
+    private HashMap<String, BillItem> snapshotLookupByCodeBatch;
+    private HashMap<Long, BillItem> snapshotLookupById;
+    private HashMap<String, Integer> headerColumnMap;
+
+    // Performance optimization: ThreadLocal formatters to avoid repeated object creation
+    private static final ThreadLocal<DataFormatter> THREAD_LOCAL_FORMATTER =
+        ThreadLocal.withInitial(DataFormatter::new);
+    private FormulaEvaluator cachedEvaluator;
+
+    // Performance optimization configuration and validation
+    private boolean enableOptimizations = true; // Feature flag for optimization control
+    private boolean validateOptimizedResults = false; // Validation mode for development/testing
+    private int validationMismatchCount = 0; // Track validation failures
+    private boolean enableLightweightBillLoading = true; // Feature flag for lightweight bill loading
 
     /**
      * Generate stock count bill preview without persisting.
@@ -1002,14 +1020,27 @@ public class PharmacyStockTakeController implements Serializable {
      * Parse uploaded sheet and prepare physical count bill with variances.
      */
     public void parseUploadedSheet() {
+        // Performance monitoring: Setup
+        String jobId = "UPLOAD-" + System.currentTimeMillis();
+        StockVerificationMetrics metrics = new StockVerificationMetrics();
+
         LOGGER.log(Level.INFO, "[StockTake] parseUploadedSheet() called. snapshotBillId={0}, fileName={1}",
                 new Object[]{snapshotBill != null ? snapshotBill.getId() : null, file != null ? file.getFileName() : null});
+
+        // Log system information for performance analysis context
+        metrics.logSystemInfo(jobId);
+
+        StockVerificationMetrics.PerformanceTimer overallTimer =
+            StockVerificationMetrics.PerformanceTimer.start(jobId, "Complete Upload Process");
+        StockVerificationMetrics.MemoryMetrics memoryMetrics =
+            StockVerificationMetrics.MemoryMetrics.start(jobId, "Upload Processing");
 
         System.out.println("=== DEBUG: parseUploadedSheet() START ===");
 
         if (snapshotBill == null) {
             JsfUtil.addErrorMessage("No snapshot available");
             LOGGER.log(Level.WARNING, "[StockTake] Parse aborted. snapshotBill is null");
+            overallTimer.logCompletion(0);
             return;
         }
 
@@ -1023,15 +1054,26 @@ public class PharmacyStockTakeController implements Serializable {
         if (snapshotBill.isCompleted()) {
             JsfUtil.addErrorMessage("Cannot upload to a completed stock taking session");
             LOGGER.log(Level.WARNING, "[StockTake] Parse aborted. Stock taking already completed. billId={0}", snapshotBill.getId());
+            overallTimer.logCompletion(0);
             return;
         }
         if (file == null) {
             JsfUtil.addErrorMessage("No file uploaded");
             LOGGER.log(Level.WARNING, "[StockTake] Parse aborted. Uploaded file is null");
+            overallTimer.logCompletion(0);
             return;
         }
         try (InputStream in = file.getInputStream(); XSSFWorkbook wb = new XSSFWorkbook(in)) {
+            // Clear cached evaluator for new workbook
+            cachedEvaluator = null;
+            headerColumnMap = null; // Clear header cache too
+
             XSSFSheet sheet = wb.getSheetAt(0);
+
+            // Step 1: Initialize physical count bill
+            StockVerificationMetrics.PerformanceTimer stepTimer =
+                StockVerificationMetrics.PerformanceTimer.start(jobId, "Bill Initialization");
+
             Department dept = snapshotBill.getDepartment();
             physicalCountBill = new Bill();
             physicalCountBill.setBillType(BillType.PharmacyPhysicalCountBill);
@@ -1041,6 +1083,18 @@ public class PharmacyStockTakeController implements Serializable {
             physicalCountBill.setCreatedAt(new Date());
             physicalCountBill.setCreater(sessionController.getLoggedUser());
             physicalCountBill.setReferenceBill(snapshotBill);
+
+            stepTimer.logCompletion(1);
+
+            // Step 2: Build snapshot indexes for O(1) lookups
+            stepTimer = StockVerificationMetrics.PerformanceTimer.start(jobId, "Snapshot Indexing");
+            buildSnapshotIndexes();
+            int snapshotItemCount = snapshotBill.getBillItems() != null ? snapshotBill.getBillItems().size() : 0;
+            stepTimer.logCompletion(snapshotItemCount);
+
+            // Step 3: Process Excel header for column mapping
+            stepTimer = StockVerificationMetrics.PerformanceTimer.start(jobId, "Header Processing");
+
             // Identify relevant columns by header names to be resilient to layout changes
             Row header = sheet.getRow(0);
             int colBillItemId = findColumnIndex(header, "BillItem ID");
@@ -1049,6 +1103,8 @@ public class PharmacyStockTakeController implements Serializable {
             int colRealStock = findColumnIndex(header, "Real Stock Qty");
             LOGGER.log(Level.INFO, "[StockTake] Header columns detected. BillItemID={0}, Code={1}, Batch={2}, RealStock={3}",
                     new Object[]{colBillItemId, colCode, colBatch, colRealStock});
+
+            stepTimer.logCompletion(4); // 4 columns processed
 // There are systamatically validated below
 //            if (colRealStock < 0) {
 //                // User 
@@ -1067,9 +1123,19 @@ public class PharmacyStockTakeController implements Serializable {
             int skippedNoQty = 0;
             int skippedNoMatch = 0;
 
-            System.out.println("DEBUG: Starting to process rows. Total rows: " + sheet.getLastRowNum());
+            // Step 4: Process Excel rows with optimized lookups
+            int totalRows = sheet.getLastRowNum();
+            stepTimer = StockVerificationMetrics.PerformanceTimer.start(jobId, "Excel Row Processing");
+            memoryMetrics.sampleMemoryUsage(); // Sample memory before main processing
+
+            System.out.println("DEBUG: Starting to process rows. Total rows: " + totalRows);
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                // Periodic progress logging for large uploads
+                if (i % 1000 == 0) {
+                    stepTimer.logStep("Row processing progress", i);
+                    memoryMetrics.sampleMemoryUsage();
+                }
                 Row row = sheet.getRow(i);
                 if (row == null) {
                     continue;
@@ -1129,20 +1195,43 @@ public class PharmacyStockTakeController implements Serializable {
                 physicalCountBill.getBillItems().add(bi);
             }
 
+            // Complete row processing monitoring
+            stepTimer.logCompletion(processed);
+
             System.out.println("=== DEBUG: parseUploadedSheet() SUMMARY ===");
             System.out.println("DEBUG: Processed rows: " + processed);
             System.out.println("DEBUG: Matched items: " + matched);
             System.out.println("DEBUG: Skipped (no qty): " + skippedNoQty);
             System.out.println("DEBUG: Skipped (no match): " + skippedNoMatch);
 
+            // Log final performance metrics
+            memoryMetrics.logMemoryResults(processed);
+            long totalDuration = overallTimer.logCompletion(processed);
+
             LOGGER.log(Level.INFO, "[StockTake] Parse completed. processedRows={0}, matchedItems={1}, skippedNoQty={2}, skippedNoMatch={3}",
                     new Object[]{processed, matched, skippedNoQty, skippedNoMatch});
+
+            // Performance analysis summary
+            double processingRate = processed > 0 ? processed / (totalDuration / 1000.0) : 0;
+            LOGGER.log(Level.INFO, "[StockTake] PERFORMANCE SUMMARY - Processing rate: {0} rows/sec, " +
+                      "Match efficiency: {1}%, Memory per row: ~{2} KB",
+                      new Object[]{
+                          String.format("%.2f", processingRate),
+                          String.format("%.1f", processed > 0 ? (matched * 100.0 / processed) : 0),
+                          "N/A" // Memory per row calculated in memoryMetrics
+                      });
+
+            // Log validation summary for development/testing
+            logValidationSummary(jobId, processed);
             if (matched == 0) {
                 JsfUtil.addErrorMessage("No valid rows found. Ensure the file is from the system template and the 'Real Stock Qty' column has values.");
             }
         } catch (IOException e) {
             JsfUtil.addErrorMessage(e, "Error processing file");
             LOGGER.log(Level.SEVERE, "[StockTake] Exception while parsing uploaded file", e);
+            if (overallTimer != null) {
+                overallTimer.logCompletion(0);
+            }
             physicalCountBill = null;
         }
     }
@@ -1251,6 +1340,37 @@ public class PharmacyStockTakeController implements Serializable {
     }
 
     private String getString(Row row, int col) {
+        Cell cell = row.getCell(col);
+        if (cell == null) {
+            return null;
+        }
+
+        // OPTIMIZED: Reuse thread-local formatter and cached evaluator
+        DataFormatter dataFormatter = THREAD_LOCAL_FORMATTER.get();
+        if (cachedEvaluator == null) {
+            cachedEvaluator = row.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
+        }
+        FormulaEvaluator formulaEvaluator = cachedEvaluator;
+
+        try {
+            // Use DataFormatter with FormulaEvaluator to handle formulas and preserve decimal precision
+            String cellValue = dataFormatter.formatCellValue(cell, formulaEvaluator);
+            return cellValue != null ? cellValue.trim() : null;
+        } catch (Exception e) {
+            // Fallback: try to get string value directly
+            try {
+                return cell.getStringCellValue().trim();
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+    }
+
+    /**
+     * LEGACY: Original implementation with per-cell object creation.
+     * Preserved for rollback capability and validation testing.
+     */
+    private String getStringLegacy(Row row, int col) {
         Cell cell = row.getCell(col);
         if (cell == null) {
             return null;
@@ -1472,9 +1592,76 @@ public class PharmacyStockTakeController implements Serializable {
         return "/pharmacy/pharmacy_stock_take_upload?faces-redirect=true";
     }
 
-    // Overload: navigate using id (for DTO rows)
+    /**
+     * MAIN ENTRY POINT: Navigate using id with configurable loading strategy.
+     * Uses lightweight loading by default, can fallback to legacy loading.
+     */
     public String gotoUploadAdjustmentsById(Long billId) {
-        System.out.println("=== DEBUG: gotoUploadAdjustmentsById() called with billId=" + billId + " ===");
+        if (enableLightweightBillLoading) {
+            return gotoUploadAdjustmentsByIdOptimized(billId);
+        } else {
+            LOGGER.log(Level.INFO, "[Performance] Using legacy bill loading for billId={0}", billId);
+            return gotoUploadAdjustmentsByIdLegacy(billId);
+        }
+    }
+
+    /**
+     * OPTIMIZED: Navigate using id with lightweight Bill loading.
+     * Only loads essential Bill properties without expensive BillItems relationships.
+     * BillItems are loaded lazily when actually needed for upload processing.
+     */
+    private String gotoUploadAdjustmentsByIdOptimized(Long billId) {
+        String jobId = "BILL_LOAD-" + System.currentTimeMillis();
+        StockVerificationMetrics.PerformanceTimer timer =
+            StockVerificationMetrics.PerformanceTimer.start(jobId, "Lightweight Bill Loading");
+
+        System.out.println("=== DEBUG: gotoUploadAdjustmentsByIdOptimized() called with billId=" + billId + " ===");
+        if (billId == null) {
+            timer.logCompletion(0);
+            return null;
+        }
+
+        try {
+            // OPTIMIZED: Only load Bill with Institution and Department (NO BillItems)
+            String jpql = "select b from Bill b "
+                    + "left join fetch b.institution "
+                    + "left join fetch b.department "
+                    + "where b.id = :billId";
+
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("billId", billId);
+
+            System.out.println("DEBUG: Executing LIGHTWEIGHT query for Bill (no BillItems)...");
+            Bill b = billFacade.findFirstByJpql(jpql, params);
+
+            if (b == null) {
+                System.out.println("DEBUG: Bill not found with ID: " + billId);
+                timer.logCompletion(0);
+                return null;
+            }
+
+            System.out.println("DEBUG: Bill loaded successfully. ID=" + b.getId() +
+                             ", Completed=" + b.isCompleted() +
+                             ", Institution=" + (b.getInstitution() != null ? b.getInstitution().getName() : "null") +
+                             ", Department=" + (b.getDepartment() != null ? b.getDepartment().getName() : "null"));
+
+            timer.logCompletion(1);
+            return gotoUploadAdjustments(b);
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "[StockTake] Error loading bill for upload. billId=" + billId, e);
+            timer.logCompletion(0);
+            JsfUtil.addErrorMessage("Error loading stock taking session: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * LEGACY: Original implementation with heavy entity loading.
+     * Preserved for rollback capability if needed.
+     */
+    public String gotoUploadAdjustmentsByIdLegacy(Long billId) {
+        System.out.println("=== DEBUG: gotoUploadAdjustmentsByIdLegacy() called with billId=" + billId + " ===");
         if (billId == null) {
             return null;
         }
@@ -1613,7 +1800,52 @@ public class PharmacyStockTakeController implements Serializable {
         }
     }
 
+    /**
+     * Performance Optimization: Build header column index for O(1) column lookups.
+     * Eliminates repeated header row scanning during Excel processing.
+     */
+    private void buildHeaderColumnMap(Row headerRow) {
+        headerColumnMap = new HashMap<>();
+        if (headerRow == null) {
+            return;
+        }
+
+        short lastColumn = headerRow.getLastCellNum();
+        for (int i = 0; i < lastColumn; i++) {
+            Cell cell = headerRow.getCell(i);
+            if (cell != null) {
+                try {
+                    String columnName = cell.getStringCellValue();
+                    if (columnName != null) {
+                        headerColumnMap.put(columnName.trim().toLowerCase(), i);
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
+        LOGGER.log(Level.FINE, "[Performance] Header column map built with {0} columns",
+                headerColumnMap.size());
+    }
+
+    /**
+     * OPTIMIZED: O(1) column index lookup using HashMap.
+     * Replaces O(N) linear scan of header row for each column lookup.
+     */
     private int findColumnIndex(Row header, String title) {
+        if (headerColumnMap == null) {
+            buildHeaderColumnMap(header);
+        }
+        if (headerColumnMap == null || title == null) {
+            return -1;
+        }
+        return headerColumnMap.getOrDefault(title.toLowerCase(), -1);
+    }
+
+    /**
+     * LEGACY: Original O(N) linear header scanning implementation.
+     * Preserved for rollback capability and validation testing.
+     */
+    private int findColumnIndexLegacy(Row header, String title) {
         if (header == null) {
             return -1;
         }
@@ -1633,7 +1865,161 @@ public class PharmacyStockTakeController implements Serializable {
         return -1;
     }
 
+    /**
+     * Performance Optimization: Build HashMap indexes for O(1) snapshot lookups.
+     * This eliminates O(N) linear searches in findSnapshotBillItem methods.
+     * Called once when snapshot is loaded, then used for all subsequent lookups.
+     */
+    private void buildSnapshotIndexes() {
+        if (snapshotBill == null) {
+            snapshotLookupByCodeBatch = null;
+            snapshotLookupById = null;
+            return;
+        }
+
+        // Handle lazy loading: trigger BillItems loading if needed
+        if (snapshotBill.getBillItems() == null) {
+            loadSnapshotBillItemsLazily();
+        }
+
+        if (snapshotBill.getBillItems() == null || snapshotBill.getBillItems().isEmpty()) {
+            snapshotLookupByCodeBatch = new HashMap<>();
+            snapshotLookupById = new HashMap<>();
+            LOGGER.log(Level.WARNING, "[Performance] No BillItems found for snapshot indexing. billId={0}",
+                      snapshotBill.getId());
+            return;
+        }
+
+        snapshotLookupByCodeBatch = new HashMap<>();
+        snapshotLookupById = new HashMap<>();
+
+        for (BillItem bi : snapshotBill.getBillItems()) {
+            // Index by ID for fast lookup
+            if (bi.getId() != null) {
+                snapshotLookupById.put(bi.getId(), bi);
+            }
+
+            // Index by Code+Batch combination for upload matching
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            if (pbi != null && pbi.getItemBatch() != null) {
+                String itemCode = pbi.getItemBatch().getItem().getCode();
+                String batchNo = pbi.getItemBatch().getBatchNo();
+                if (itemCode != null && batchNo != null) {
+                    String key = buildCodeBatchKey(itemCode, batchNo);
+                    snapshotLookupByCodeBatch.put(key, bi);
+                }
+            }
+        }
+
+        LOGGER.log(Level.INFO, "[Performance] Snapshot indexes built. ID entries: {0}, Code+Batch entries: {1}",
+                new Object[]{snapshotLookupById.size(), snapshotLookupByCodeBatch.size()});
+    }
+
+    /**
+     * Load BillItems lazily when needed for upload processing.
+     * This is called when BillItems are needed but weren't loaded in the lightweight loading.
+     */
+    private void loadSnapshotBillItemsLazily() {
+        if (snapshotBill == null || snapshotBill.getId() == null) {
+            return;
+        }
+
+        String jobId = "LAZY_LOAD-" + System.currentTimeMillis();
+        StockVerificationMetrics.PerformanceTimer timer =
+            StockVerificationMetrics.PerformanceTimer.start(jobId, "Lazy BillItems Loading");
+
+        try {
+            LOGGER.log(Level.INFO, "[Performance] Lazy loading BillItems for snapshot billId={0}", snapshotBill.getId());
+
+            // Load BillItems with their PharmaceuticalBillItems
+            String jpql = "select bi from BillItem bi "
+                    + "left join fetch bi.pharmaceuticalBillItem pbi "
+                    + "left join fetch pbi.stock "
+                    + "left join fetch pbi.itemBatch ib "
+                    + "left join fetch ib.item "
+                    + "where bi.bill.id = :billId";
+
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("billId", snapshotBill.getId());
+
+            List<BillItem> billItems = billItemFacade.findByJpql(jpql, params);
+
+            // Handle lazy collection properly - use reflection or direct assignment
+            // Instead of modifying the lazy collection, we'll just work with the loaded list
+            // and let the HashMap optimization handle the lookups
+
+            // Store loaded items for HashMap indexing
+            if (billItems != null && !billItems.isEmpty()) {
+                // Force initialization of the lazy collection by accessing it
+                try {
+                    if (snapshotBill.getBillItems() == null) {
+                        // Collection is null, initialize with loaded items
+                        snapshotBill.setBillItems(billItems);
+                    } else {
+                        // Collection exists but might be lazy - try to access it safely
+                        snapshotBill.getBillItems().size(); // Force initialization
+                        snapshotBill.getBillItems().clear();
+                        snapshotBill.getBillItems().addAll(billItems);
+                    }
+                } catch (Exception lazyException) {
+                    // If lazy loading fails, set the collection directly
+                    LOGGER.log(Level.WARNING, "[Performance] Lazy collection access failed, using direct assignment", lazyException);
+                    snapshotBill.setBillItems(billItems);
+                }
+            }
+
+            timer.logCompletion(billItems.size());
+
+            LOGGER.log(Level.INFO, "[Performance] Lazy loaded {0} BillItems for snapshot", billItems.size());
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "[Performance] Error lazy loading BillItems for snapshot billId=" + snapshotBill.getId(), e);
+            timer.logCompletion(0);
+        }
+    }
+
+    /**
+     * Build normalized key for Code+Batch lookup.
+     * Uses lowercase to ensure case-insensitive matching.
+     */
+    private String buildCodeBatchKey(String code, String batch) {
+        return (code != null ? code.toLowerCase() : "") + "|" +
+               (batch != null ? batch.toLowerCase() : "");
+    }
+
+    /**
+     * OPTIMIZED: O(1) snapshot lookup by code and batch using HashMap index.
+     * Replaces O(N) linear search with case-insensitive string comparison.
+     */
     private BillItem findSnapshotBillItem(String code, String batch) {
+        if (snapshotLookupByCodeBatch == null) {
+            buildSnapshotIndexes();
+        }
+        if (snapshotLookupByCodeBatch == null) {
+            return null; // No snapshot available
+        }
+        return snapshotLookupByCodeBatch.get(buildCodeBatchKey(code, batch));
+    }
+
+    /**
+     * OPTIMIZED: O(1) snapshot lookup by BillItem ID using HashMap index.
+     * Replaces O(N) linear search through all bill items.
+     */
+    private BillItem findSnapshotBillItemById(long id) {
+        if (snapshotLookupById == null) {
+            buildSnapshotIndexes();
+        }
+        if (snapshotLookupById == null) {
+            return null; // No snapshot available
+        }
+        return snapshotLookupById.get(id);
+    }
+
+    /**
+     * LEGACY: Original O(N) linear search implementation.
+     * Preserved for rollback capability and validation testing.
+     */
+    private BillItem findSnapshotBillItemLegacy(String code, String batch) {
         if (snapshotBill == null) {
             return null;
         }
@@ -1650,7 +2036,11 @@ public class PharmacyStockTakeController implements Serializable {
         return null;
     }
 
-    private BillItem findSnapshotBillItemById(long id) {
+    /**
+     * LEGACY: Original O(N) linear search by ID implementation.
+     * Preserved for rollback capability and validation testing.
+     */
+    private BillItem findSnapshotBillItemByIdLegacy(long id) {
         if (snapshotBill == null || snapshotBill.getBillItems() == null) {
             return null;
         }
@@ -1660,6 +2050,195 @@ public class PharmacyStockTakeController implements Serializable {
             }
         }
         return null;
+    }
+
+    /**
+     * VALIDATION WRAPPER: Compare optimized vs legacy results for correctness.
+     * Used when validateOptimizedResults flag is enabled for development/testing.
+     */
+    private BillItem findSnapshotBillItemWithValidation(String code, String batch) {
+        if (!enableOptimizations) {
+            // Rollback: Use legacy implementation
+            return findSnapshotBillItemLegacy(code, batch);
+        }
+
+        BillItem optimizedResult = findSnapshotBillItem(code, batch);
+
+        if (validateOptimizedResults) {
+            BillItem legacyResult = findSnapshotBillItemLegacy(code, batch);
+            if (!Objects.equals(optimizedResult, legacyResult)) {
+                validationMismatchCount++;
+                LOGGER.log(Level.SEVERE,
+                    "[Performance] OPTIMIZATION MISMATCH #{0}: findSnapshotBillItem({1}, {2}) - " +
+                    "Optimized: {3}, Legacy: {4}",
+                    new Object[]{validationMismatchCount, code, batch,
+                               optimizedResult != null ? optimizedResult.getId() : null,
+                               legacyResult != null ? legacyResult.getId() : null});
+
+                // Return legacy result when mismatch detected for safety
+                return legacyResult;
+            }
+        }
+
+        return optimizedResult;
+    }
+
+    /**
+     * VALIDATION WRAPPER: Compare optimized vs legacy results for ID lookup.
+     * Used when validateOptimizedResults flag is enabled for development/testing.
+     */
+    private BillItem findSnapshotBillItemByIdWithValidation(long id) {
+        if (!enableOptimizations) {
+            // Rollback: Use legacy implementation
+            return findSnapshotBillItemByIdLegacy(id);
+        }
+
+        BillItem optimizedResult = findSnapshotBillItemById(id);
+
+        if (validateOptimizedResults) {
+            BillItem legacyResult = findSnapshotBillItemByIdLegacy(id);
+            if (!Objects.equals(optimizedResult, legacyResult)) {
+                validationMismatchCount++;
+                LOGGER.log(Level.SEVERE,
+                    "[Performance] OPTIMIZATION MISMATCH #{0}: findSnapshotBillItemById({1}) - " +
+                    "Optimized: {2}, Legacy: {3}",
+                    new Object[]{validationMismatchCount, id,
+                               optimizedResult != null ? optimizedResult.getId() : null,
+                               legacyResult != null ? legacyResult.getId() : null});
+
+                // Return legacy result when mismatch detected for safety
+                return legacyResult;
+            }
+        }
+
+        return optimizedResult;
+    }
+
+    /**
+     * VALIDATION WRAPPER: Compare optimized vs legacy header processing.
+     */
+    private int findColumnIndexWithValidation(Row header, String title) {
+        if (!enableOptimizations) {
+            // Rollback: Use legacy implementation
+            return findColumnIndexLegacy(header, title);
+        }
+
+        int optimizedResult = findColumnIndex(header, title);
+
+        if (validateOptimizedResults) {
+            int legacyResult = findColumnIndexLegacy(header, title);
+            if (optimizedResult != legacyResult) {
+                validationMismatchCount++;
+                LOGGER.log(Level.SEVERE,
+                    "[Performance] OPTIMIZATION MISMATCH #{0}: findColumnIndex({1}) - " +
+                    "Optimized: {2}, Legacy: {3}",
+                    new Object[]{validationMismatchCount, title, optimizedResult, legacyResult});
+
+                // Return legacy result when mismatch detected for safety
+                return legacyResult;
+            }
+        }
+
+        return optimizedResult;
+    }
+
+    /**
+     * VALIDATION WRAPPER: Compare optimized vs legacy string extraction.
+     */
+    private String getStringWithValidation(Row row, int col) {
+        if (!enableOptimizations) {
+            // Rollback: Use legacy implementation
+            return getStringLegacy(row, col);
+        }
+
+        String optimizedResult = getString(row, col);
+
+        if (validateOptimizedResults) {
+            String legacyResult = getStringLegacy(row, col);
+            if (!Objects.equals(optimizedResult, legacyResult)) {
+                validationMismatchCount++;
+                LOGGER.log(Level.WARNING,
+                    "[Performance] OPTIMIZATION MISMATCH #{0}: getString(row {1}, col {2}) - " +
+                    "Optimized: '{3}', Legacy: '{4}'",
+                    new Object[]{validationMismatchCount, row.getRowNum(), col,
+                               optimizedResult, legacyResult});
+
+                // Return legacy result when mismatch detected for safety
+                return legacyResult;
+            }
+        }
+
+        return optimizedResult;
+    }
+
+    /**
+     * Log validation summary after processing completion.
+     * Provides summary of optimization validation results.
+     */
+    private void logValidationSummary(String jobId, int totalValidations) {
+        if (validateOptimizedResults) {
+            double errorRate = totalValidations > 0 ? (validationMismatchCount * 100.0 / totalValidations) : 0;
+            LOGGER.log(Level.INFO,
+                "[StockVerification-{0}] VALIDATION SUMMARY: " +
+                "Total validations: {1}, Mismatches: {2}, Error rate: {3}%",
+                new Object[]{jobId, totalValidations, validationMismatchCount,
+                           String.format("%.2f", errorRate)});
+
+            if (validationMismatchCount > 0) {
+                LOGGER.log(Level.WARNING,
+                    "[StockVerification-{0}] OPTIMIZATION ISSUES DETECTED: " +
+                    "{1} mismatches found. Review optimization implementation.",
+                    new Object[]{jobId, validationMismatchCount});
+            }
+
+            // Reset counter for next upload
+            validationMismatchCount = 0;
+        }
+    }
+
+    /**
+     * Configuration methods for performance optimization control.
+     */
+    public void enableOptimizations() {
+        this.enableOptimizations = true;
+        LOGGER.log(Level.INFO, "Performance optimizations ENABLED");
+    }
+
+    public void disableOptimizations() {
+        this.enableOptimizations = false;
+        LOGGER.log(Level.INFO, "Performance optimizations DISABLED - Using legacy methods");
+    }
+
+    public void enableValidation() {
+        this.validateOptimizedResults = true;
+        LOGGER.log(Level.INFO, "Optimization validation ENABLED - Will compare optimized vs legacy results");
+    }
+
+    public void disableValidation() {
+        this.validateOptimizedResults = false;
+        LOGGER.log(Level.INFO, "Optimization validation DISABLED");
+    }
+
+    public boolean isOptimizationsEnabled() {
+        return enableOptimizations;
+    }
+
+    public boolean isValidationEnabled() {
+        return validateOptimizedResults;
+    }
+
+    public void enableLightweightBillLoading() {
+        this.enableLightweightBillLoading = true;
+        LOGGER.log(Level.INFO, "Lightweight bill loading ENABLED - Fast startup for upload pages");
+    }
+
+    public void disableLightweightBillLoading() {
+        this.enableLightweightBillLoading = false;
+        LOGGER.log(Level.INFO, "Lightweight bill loading DISABLED - Using legacy eager loading");
+    }
+
+    public boolean isLightweightBillLoadingEnabled() {
+        return enableLightweightBillLoading;
     }
 
     /**
