@@ -942,6 +942,11 @@ public class DataUploadController implements Serializable {
                 String itemName = getCellValueAsString(row.getCell(COL_NAME));
                 String itemCode = getCellValueAsString(row.getCell(COL_CODE));
 
+                // Handle numeric codes - strip .0 suffix for integer values
+                if (itemCode != null && itemCode.endsWith(".0")) {
+                    itemCode = itemCode.substring(0, itemCode.length() - 2);
+                }
+
                 // Skip completely empty rows
                 if ((itemName == null || itemName.trim().isEmpty()) &&
                     (itemCode == null || itemCode.trim().isEmpty())) {
