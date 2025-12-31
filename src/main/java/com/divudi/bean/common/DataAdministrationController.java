@@ -3403,8 +3403,10 @@ public class DataAdministrationController implements Serializable {
 
         String query = qry.toLowerCase().trim();
         for (DepartmentType type : DepartmentType.values()) {
-            if (type.getLabel().toLowerCase().contains(query) ||
-                type.name().toLowerCase().contains(query)) {
+            String label = type.getLabel();
+            boolean labelMatches = label != null && label.toLowerCase().contains(query);
+            boolean nameMatches = type.name().toLowerCase().contains(query);
+            if (labelMatches || nameMatches) {
                 filteredTypes.add(type);
             }
         }
