@@ -393,6 +393,33 @@ public class SmsController implements Serializable {
         this.bool = bool;
     }
 
+    public void sendFailedSmsById(Long smsId) {
+        if (doNotSendAnySms) {
+            JsfUtil.addErrorMessage("SMS sending is disabled");
+            return;
+        }
+
+        if (smsId == null) {
+            JsfUtil.addErrorMessage("Invalid SMS");
+            return;
+        }
+
+        Sms s = smsFacade.find(smsId);
+
+        if (s == null) {
+            JsfUtil.addErrorMessage("SMS not found");
+            return;
+        }
+
+        boolean sent = smsManager.sendSms(s);
+
+        if (sent) {
+            JsfUtil.addSuccessMessage("SMS sent successfully");
+        } else {
+            JsfUtil.addErrorMessage("SMS sending failed");
+        }
+    }
+
     private void save(Sms s) {
         if (s == null) {
             JsfUtil.addErrorMessage("No SMS");

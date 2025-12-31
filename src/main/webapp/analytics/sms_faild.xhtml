@@ -74,10 +74,10 @@
                             <p:column headerText="Action" 
                                       styleClass="alignTop" 
                                       width="15">
-                                <p:commandButton value="Send Now" 
-                                                 actionListener="#{smsController.setSelectedSms(sms)}" 
-                                                 action="#{smsController.sentUnsentSms}">
-                                </p:commandButton>
+                                <p:commandButton value="Send Now"
+                                                 action="#{smsController.sendFailedSmsById(sms.smsId)}"
+                                                 ajax="false"/>
+
                             </p:column>
                         </p:dataTable>
 
