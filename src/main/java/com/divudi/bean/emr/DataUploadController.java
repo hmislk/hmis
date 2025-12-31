@@ -942,14 +942,15 @@ public class DataUploadController implements Serializable {
                 String itemName = getCellValueAsString(row.getCell(COL_NAME));
                 String itemCode = getCellValueAsString(row.getCell(COL_CODE));
 
-                // Handle numeric codes - strip .0 suffix for integer values
+                // Normalize item code - strip .0 suffix for consistent comparison
+                String itemCodeNormalized = itemCode;
                 if (itemCode != null && itemCode.endsWith(".0")) {
-                    itemCode = itemCode.substring(0, itemCode.length() - 2);
+                    itemCodeNormalized = itemCode.substring(0, itemCode.length() - 2);
                 }
 
                 // Skip completely empty rows
                 if ((itemName == null || itemName.trim().isEmpty()) &&
-                    (itemCode == null || itemCode.trim().isEmpty())) {
+                    (itemCodeNormalized == null || itemCodeNormalized.trim().isEmpty())) {
                     continue;
                 }
 
@@ -958,21 +959,22 @@ public class DataUploadController implements Serializable {
                     validationErrors.add("Row " + excelRowNumber + ": Item name (Column C) is empty");
                     continue;
                 }
-                if (itemCode == null || itemCode.trim().isEmpty()) {
+                if (itemCodeNormalized == null || itemCodeNormalized.trim().isEmpty()) {
                     validationErrors.add("Row " + excelRowNumber + ": Item code (Column D) is empty");
                     continue;
                 }
 
-                // Query for AMP by code AND name
+                // Query for AMP by code AND name - try both with and without .0 suffix
                 Map<String, Object> params = new HashMap<>();
-                params.put("code", itemCode.trim());
                 params.put("name", itemName.trim().toUpperCase());
-                String jpql = "SELECT a FROM Amp a WHERE a.retired = false AND a.code = :code AND UPPER(a.name) = :name";
+                String jpql = "SELECT a FROM Amp a WHERE a.retired = false AND (a.code = :code1 OR a.code = :code2) AND UPPER(a.name) = :name";
+                params.put("code1", itemCodeNormalized.trim());           // Without .0 (e.g., "10021")
+                params.put("code2", itemCodeNormalized.trim() + ".0");    // With .0 (e.g., "10021.0")
                 Amp amp = ampFacade.findFirstByJpql(jpql, params);
 
                 if (amp == null) {
                     validationErrors.add("Row " + excelRowNumber + ": Item not found - Code: '" +
-                        itemCode.trim() + "', Name: '" + itemName.trim() + "'");
+                        itemCodeNormalized.trim() + "', Name: '" + itemName.trim() + "'");
                     continue;
                 }
 
