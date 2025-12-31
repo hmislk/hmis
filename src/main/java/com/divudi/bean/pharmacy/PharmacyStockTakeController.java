@@ -19,6 +19,7 @@ import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.data.dto.StockDTO;
+import com.divudi.core.light.common.PharmacySnapshotBillLight;
 import com.divudi.core.monitoring.StockVerificationMetrics;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -104,6 +105,7 @@ public class PharmacyStockTakeController implements Serializable {
     private com.divudi.core.facade.CategoryFacade categoryFacade;
 
     private Bill snapshotBill;
+    private PharmacySnapshotBillLight snapshotBillDisplay; // DTO for display purposes only
     private Bill physicalCountBill;
     private UploadedFile file;
     private Institution institution;
@@ -1023,6 +1025,7 @@ public class PharmacyStockTakeController implements Serializable {
     /**
      * Parse uploaded sheet and prepare physical count bill with variances.
      */
+    @Deprecated
     public void parseUploadedSheet() {
         // Performance monitoring: Setup
         String jobId = "UPLOAD-" + System.currentTimeMillis();
@@ -1268,6 +1271,157 @@ public class PharmacyStockTakeController implements Serializable {
      * Parse, persist a Physical Count bill, and navigate to review page.
      */
     public String parseAndPersistNavigate() {
+        if (!webUserController.hasPrivilege(Privileges.Pharmacy.toString())) {
+            JsfUtil.addErrorMessage("Not authorized to upload/save physical count data");
+            return null;
+        }
+        if (snapshotBillDisplay == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return null;
+        }
+
+        if (snapshotBillDisplay.getDepartmentId() == null) {
+            JsfUtil.addErrorMessage("No Department for Snapshot Bill. Error");
+            return null;
+        }
+        if (sessionController.getDepartment() == null) {
+            JsfUtil.addErrorMessage("No Logged Department");
+            return null;
+        }
+        if (!Objects.equals(sessionController.getDepartment().getId(), snapshotBillDisplay.getDepartmentId())){
+            JsfUtil.addErrorMessage("Please log to the department you want to upload the stock data");
+            return null;
+        }
+
+        if (snapshotBillDisplay.getCompleted()) {
+            JsfUtil.addErrorMessage("Cannot upload to a completed stock taking session");
+            return null;
+        }
+
+        if (file == null) {
+            JsfUtil.addErrorMessage("No file uploaded");
+            return null;
+        }
+
+        try (InputStream in = file.getInputStream(); XSSFWorkbook wb = new XSSFWorkbook(in)) {
+
+            cachedEvaluator = null;
+            headerColumnMap = null; // Clear header cache too
+
+            XSSFSheet sheet = wb.getSheetAt(0);
+            System.out.println("DEBUG: Excel sheet loaded, rows: " + sheet.getLastRowNum());
+
+            physicalCountBill = new Bill();
+            physicalCountBill.setBillType(BillType.PharmacyPhysicalCountBill);
+            physicalCountBill.setBillClassType(BillClassType.BilledBill);
+            physicalCountBill.setDepartment(sessionController.getDepartment());
+            physicalCountBill.setInstitution(sessionController.getInstitution());
+            physicalCountBill.setCreatedAt(new Date());
+            physicalCountBill.setCreater(sessionController.getLoggedUser());
+            physicalCountBill.setReferenceBill(billFacade.getReference(snapshotBillDisplay.getId()));
+
+            Row header = sheet.getRow(0);
+            System.out.println("DEBUG: Excel header row loaded");
+
+            int colBillItemId = 0;
+            int colRealStock = 10;
+
+            int processed = 0;
+            int matched = 0;
+            int skippedNoQty = 0;
+            int skippedNoMatch = 0;
+
+            // Step 4: Process Excel rows with optimized lookups
+            int totalRows = sheet.getLastRowNum();
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+
+                Row row = sheet.getRow(i);
+                if (row == null) {
+                    continue;
+                }
+
+                Double physicalObj = colRealStock >= 0 ? getDoubleNullable(row, colRealStock) : null;
+
+                if (physicalObj == null) {
+                    skippedNoQty++;
+                    continue;
+                }
+
+                Long snapShotBillItemId = getLongNullable(row, colBillItemId);
+                if (snapShotBillItemId == null) {
+                    skippedNoQty++;
+                    continue;
+                }
+
+                double physical = physicalObj;
+                processed++;
+
+                BillItem snapBillItem = billItemFacade.getReference(snapShotBillItemId);
+
+                BillItem bi = new BillItem();
+                bi.setBill(physicalCountBill);
+                bi.setItem(snapBillItem.getItem());
+                bi.setQty(physical);
+                bi.setCreatedAt(new Date());
+                bi.setCreater(sessionController.getLoggedUser());
+                bi.setReferanceBillItem(snapBillItem);
+
+                
+                PharmaceuticalBillItem snapPbi = snapBillItem.getPharmaceuticalBillItem();
+                Stock currentStock = (snapPbi != null) ? snapPbi.getStock() : null;
+                double currentStockQty = (currentStock != null && currentStock.getStock() != null)
+                        ? currentStock.getStock() : snapBillItem.getQty();
+                bi.setAdjustedValue(physical - currentStockQty);
+
+                PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
+                pbi.setBillItem(bi);
+                if (snapPbi != null) {
+                    pbi.setItemBatch(snapPbi.getItemBatch());
+                    pbi.setStock(currentStock); // Store stock reference for approval process
+                }
+                pbi.setQty(physical);
+                bi.setPharmaceuticalBillItem(pbi);
+                physicalCountBill.getBillItems().add(bi);
+            }
+
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage(e, "Error processing file");
+            physicalCountBill = null;
+            return null;
+        }
+
+        
+        if (physicalCountBill.getId() == null) {
+            Department dept = physicalCountBill.getDepartment();
+            String deptId = billNumberBean.departmentBillNumberGenerator(dept, BillType.PharmacyPhysicalCountBill, BillClassType.BilledBill, BillNumberSuffix.NONE);
+            physicalCountBill.setInsId(deptId);
+            physicalCountBill.setDeptId(deptId);
+            billFacade.create(physicalCountBill);
+        } else {
+            billFacade.edit(physicalCountBill);
+        }
+        for (BillItem bi : physicalCountBill.getBillItems()) {
+            if (bi == null) {
+                continue;
+            }
+            bi.setBill(physicalCountBill);
+            if (bi.getPharmaceuticalBillItem() != null) {
+                bi.getPharmaceuticalBillItem().setBillItem(bi);
+            }
+            if (bi.getId() == null) {
+                billItemFacade.create(bi);
+            } else {
+                billItemFacade.edit(bi);
+            }
+        }
+        printPreview = false;
+        JsfUtil.addSuccessMessage("Upload processed successfully. Items parsed: " + physicalCountBill.getBillItems().size());
+        return "/pharmacy/pharmacy_stock_take_review?faces-redirect=true";
+    }
+
+    @Deprecated
+    public String parseAndPersistNavigateLegacy() {
         LOGGER.log(Level.INFO, "[StockTake] parseAndPersistNavigate() invoked");
         if (!webUserController.hasPrivilege(Privileges.Pharmacy.toString())) {
             JsfUtil.addErrorMessage("Not authorized to upload/save physical count data");
@@ -1652,14 +1806,27 @@ public class PharmacyStockTakeController implements Serializable {
         }
     }
 
-  
-    
     public String navigateToUploadAdjustmentsById(Long billId) {
         if (billId == null) {
             JsfUtil.addErrorMessage("No Bill ID");
             return null;
         }
-        snapshotBill = billFacade.getReference(billId);
+        String jpql = "select new com.divudi.core.light.common.PharmacySnapshotBillLight("
+                + "b.id, b.deptId, b.createdAt, b.institution.name, b.department.name, "
+                + "b.department.id, b.completed) "
+                + "from Bill b where b.id = :billId";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("billId", billId);
+
+        List<PharmacySnapshotBillLight> results = (List<PharmacySnapshotBillLight>) billFacade.findLightsByJpql(jpql, params);
+        if (results != null && !results.isEmpty()) {
+            snapshotBillDisplay = results.get(0);
+        } else {
+            JsfUtil.addErrorMessage("Snapshot Bill not found");
+            return null;
+        }
+
         return "/pharmacy/pharmacy_stock_take_upload?faces-redirect=true";
     }
 
@@ -1934,6 +2101,7 @@ public class PharmacyStockTakeController implements Serializable {
      * performance penalty. Loads lightweight DTOs first, then batch-loads
      * entities only when needed.
      */
+    @Deprecated
     private void buildSnapshotIndexes() {
         if (snapshotBill == null) {
             snapshotLookupByCodeBatch = null;
@@ -1962,6 +2130,7 @@ public class PharmacyStockTakeController implements Serializable {
      * during Excel) 4. Result: 1 query instead of 10,330 → 98% performance
      * improvement
      */
+    @Deprecated
     private void buildSnapshotIndexesOptimized() {
         try {
             LOGGER.log(Level.INFO, "[Performance] Building LIGHTWEIGHT DTO snapshot indexes for billId={0}",
@@ -2817,6 +2986,14 @@ public class PharmacyStockTakeController implements Serializable {
 
     public void setSnapshotBill(Bill snapshotBill) {
         this.snapshotBill = snapshotBill;
+    }
+
+    public PharmacySnapshotBillLight getSnapshotBillDisplay() {
+        return snapshotBillDisplay;
+    }
+
+    public void setSnapshotBillDisplay(PharmacySnapshotBillLight snapshotBillDisplay) {
+        this.snapshotBillDisplay = snapshotBillDisplay;
     }
 
     /**
