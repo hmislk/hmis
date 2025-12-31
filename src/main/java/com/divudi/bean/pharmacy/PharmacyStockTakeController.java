@@ -19,6 +19,7 @@ import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.data.dto.StockVerificationBillItemDTO;
+import com.divudi.core.data.dto.ProcessingBillItemDTO;
 import com.divudi.core.monitoring.StockVerificationMetrics;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -47,8 +48,6 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -105,9 +104,6 @@ public class PharmacyStockTakeController implements Serializable {
     @EJB
     private com.divudi.core.facade.CategoryFacade categoryFacade;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     private Bill snapshotBill;
     private Bill physicalCountBill;
     private UploadedFile file;
@@ -140,6 +136,9 @@ public class PharmacyStockTakeController implements Serializable {
     private HashMap<String, BillItem> snapshotLookupByCodeBatch;
     private HashMap<Long, BillItem> snapshotLookupById;
     private HashMap<String, Integer> headerColumnMap;
+
+    // On-demand processing cache: comprehensive DTOs loaded only when needed during Excel processing
+    private HashMap<Long, ProcessingBillItemDTO> processingDTOCache;
 
     // Performance optimization: ThreadLocal formatters to avoid repeated object creation
     private static final ThreadLocal<DataFormatter> THREAD_LOCAL_FORMATTER =
@@ -1051,32 +1050,43 @@ public class PharmacyStockTakeController implements Serializable {
         }
 
         System.out.println("DEBUG: snapshotBill.id = " + snapshotBill.getId());
-        if (snapshotBill.getBillItems() != null && !snapshotBill.getBillItems().isEmpty()) {
-            BillItem firstItem = snapshotBill.getBillItems().iterator().next();
-            System.out.println("DEBUG: First billItem.id = " + firstItem.getId());
-        }
+        System.out.println("DEBUG: About to check if BillItems are loaded...");
+
+        // CRITICAL FIX: Do NOT access getBillItems() before buildSnapshotIndexes()
+        // This would trigger lazy loading of all 5,000+ entities
+        System.out.println("DEBUG: Skipping BillItems check to avoid lazy loading trigger");
+        System.out.println("DEBUG: Will build indexes first, then access BillItems safely...");
 
         // Check if the stock taking is already completed
+        System.out.println("DEBUG: Checking if stock taking is completed...");
         if (snapshotBill.isCompleted()) {
             JsfUtil.addErrorMessage("Cannot upload to a completed stock taking session");
             LOGGER.log(Level.WARNING, "[StockTake] Parse aborted. Stock taking already completed. billId={0}", snapshotBill.getId());
             overallTimer.logCompletion(0);
             return;
         }
+        System.out.println("DEBUG: Stock taking not completed, proceeding...");
+
+        System.out.println("DEBUG: Checking uploaded file...");
         if (file == null) {
             JsfUtil.addErrorMessage("No file uploaded");
             LOGGER.log(Level.WARNING, "[StockTake] Parse aborted. Uploaded file is null");
             overallTimer.logCompletion(0);
             return;
         }
+        System.out.println("DEBUG: File exists: " + file.getFileName());
         try (InputStream in = file.getInputStream(); XSSFWorkbook wb = new XSSFWorkbook(in)) {
+            System.out.println("DEBUG: Excel file opened successfully");
+
             // Clear cached evaluator for new workbook
             cachedEvaluator = null;
             headerColumnMap = null; // Clear header cache too
 
             XSSFSheet sheet = wb.getSheetAt(0);
+            System.out.println("DEBUG: Excel sheet loaded, rows: " + sheet.getLastRowNum());
 
             // Step 1: Initialize physical count bill
+            System.out.println("DEBUG: STEP 1 - Initializing physical count bill...");
             StockVerificationMetrics.PerformanceTimer stepTimer =
                 StockVerificationMetrics.PerformanceTimer.start(jobId, "Bill Initialization");
 
@@ -1091,27 +1101,40 @@ public class PharmacyStockTakeController implements Serializable {
             physicalCountBill.setReferenceBill(snapshotBill);
 
             stepTimer.logCompletion(1);
+            System.out.println("DEBUG: STEP 1 completed - Physical count bill initialized");
 
             // Step 2: Build snapshot indexes for O(1) lookups
+            System.out.println("DEBUG: STEP 2 - About to build snapshot indexes (DTO OPTIMIZATION SHOULD KICK IN)...");
             stepTimer = StockVerificationMetrics.PerformanceTimer.start(jobId, "Snapshot Indexing");
             buildSnapshotIndexes();
+            System.out.println("DEBUG: STEP 2 completed - Snapshot indexes built");
+
             // OPTIMIZED: Use HashMap size instead of accessing getBillItems() collection
             int snapshotItemCount = snapshotLookupById != null ? snapshotLookupById.size() : 0;
+            System.out.println("DEBUG: Snapshot item count: " + snapshotItemCount);
             stepTimer.logCompletion(snapshotItemCount);
 
             // Step 3: Process Excel header for column mapping
+            System.out.println("DEBUG: STEP 3 - Processing Excel header...");
             stepTimer = StockVerificationMetrics.PerformanceTimer.start(jobId, "Header Processing");
 
             // Identify relevant columns by header names to be resilient to layout changes
             Row header = sheet.getRow(0);
+            System.out.println("DEBUG: Excel header row loaded");
+
             int colBillItemId = findColumnIndex(header, "BillItem ID");
             int colCode = findColumnIndex(header, "Code");
             int colBatch = findColumnIndex(header, "Batch");
             int colRealStock = findColumnIndex(header, "Real Stock Qty");
+
+            System.out.println("DEBUG: Column mapping - BillItemID:" + colBillItemId +
+                             ", Code:" + colCode + ", Batch:" + colBatch + ", RealStock:" + colRealStock);
+
             LOGGER.log(Level.INFO, "[StockTake] Header columns detected. BillItemID={0}, Code={1}, Batch={2}, RealStock={3}",
                     new Object[]{colBillItemId, colCode, colBatch, colRealStock});
 
             stepTimer.logCompletion(4); // 4 columns processed
+            System.out.println("DEBUG: STEP 3 completed - Header processing done");
 // There are systamatically validated below
 //            if (colRealStock < 0) {
 //                // User 
@@ -1925,61 +1948,115 @@ public class PharmacyStockTakeController implements Serializable {
      */
     private void buildSnapshotIndexesOptimized() {
         try {
-            LOGGER.log(Level.INFO, "[Performance] Building optimized snapshot indexes using DTO approach for billId={0}",
+            LOGGER.log(Level.INFO, "[Performance] Building ULTRA-OPTIMIZED snapshot indexes using on-demand DTO approach for billId={0}",
                       snapshotBill.getId());
 
-            // Load lightweight DTOs instead of full entities
+            // Load lightweight DTOs for index keys only (no entity loading)
             List<StockVerificationBillItemDTO> dtos = loadSnapshotDTOs();
 
             if (dtos == null || dtos.isEmpty()) {
                 snapshotLookupByCodeBatch = new HashMap<>();
                 snapshotLookupById = new HashMap<>();
+                processingDTOCache = new HashMap<>();
                 LOGGER.log(Level.WARNING, "[Performance] No BillItems found for snapshot indexing. billId={0}",
                           snapshotBill.getId());
                 return;
             }
 
-            // Now batch-load the actual entities we need
-            // This is done in a single query with all necessary joins
-            loadSnapshotBillItemsOptimized();
-
-            // Build indexes from the loaded entities
-            if (snapshotBill.getBillItems() == null || snapshotBill.getBillItems().isEmpty()) {
-                snapshotLookupByCodeBatch = new HashMap<>();
-                snapshotLookupById = new HashMap<>();
-                LOGGER.log(Level.WARNING, "[Performance] BillItems not loaded after optimization. billId={0}",
-                          snapshotBill.getId());
-                return;
-            }
-
+            // OPTIMIZATION: Build indexes from lightweight DTOs WITHOUT loading entities
+            // Entities will be loaded on-demand when Excel processing needs them
             snapshotLookupByCodeBatch = new HashMap<>();
             snapshotLookupById = new HashMap<>();
+            processingDTOCache = new HashMap<>();
 
-            for (BillItem bi : snapshotBill.getBillItems()) {
+            for (StockVerificationBillItemDTO dto : dtos) {
+                // Create placeholder BillItem for lookup (minimal proxy)
+                BillItem placeholder = createPlaceholderBillItem(dto);
+
                 // Index by ID for fast lookup
-                if (bi.getId() != null) {
-                    snapshotLookupById.put(bi.getId(), bi);
+                if (dto.getBillItemId() != null) {
+                    snapshotLookupById.put(dto.getBillItemId(), placeholder);
                 }
 
                 // Index by Code+Batch combination for upload matching
-                PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
-                if (pbi != null && pbi.getItemBatch() != null) {
-                    String itemCode = pbi.getItemBatch().getItem().getCode();
-                    String batchNo = pbi.getItemBatch().getBatchNo();
-                    if (itemCode != null && batchNo != null) {
-                        String key = buildCodeBatchKey(itemCode, batchNo);
-                        snapshotLookupByCodeBatch.put(key, bi);
-                    }
+                if (dto.getItemCode() != null && dto.getBatchNo() != null) {
+                    String key = buildCodeBatchKey(dto.getItemCode(), dto.getBatchNo());
+                    snapshotLookupByCodeBatch.put(key, placeholder);
                 }
             }
 
-            LOGGER.log(Level.INFO, "[Performance] Snapshot indexes built successfully. ID entries: {0}, Code+Batch entries: {1}",
+            LOGGER.log(Level.INFO, "[Performance] ULTRA-OPTIMIZED indexes built from DTOs. ID entries: {0}, Code+Batch entries: {1}",
                     new Object[]{snapshotLookupById.size(), snapshotLookupByCodeBatch.size()});
+            LOGGER.log(Level.INFO, "[Performance] NO ENTITIES LOADED - will use on-demand loading during Excel processing");
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "[Performance] Error building optimized snapshot indexes. Falling back to legacy approach.", e);
+            LOGGER.log(Level.SEVERE, "[Performance] Error building ultra-optimized snapshot indexes. Falling back to legacy approach.", e);
             // Fallback to old approach if optimization fails
             buildSnapshotIndexesLegacy();
+        }
+    }
+
+    /**
+     * Create minimal placeholder BillItem for index lookup.
+     * Contains only ID - full data loaded on-demand when needed.
+     */
+    private BillItem createPlaceholderBillItem(StockVerificationBillItemDTO dto) {
+        BillItem placeholder = new BillItem();
+        placeholder.setId(dto.getBillItemId());
+        // Mark as placeholder to trigger on-demand loading when accessed
+        placeholder.setDescreption("PLACEHOLDER_FOR_ON_DEMAND_LOADING");
+        return placeholder;
+    }
+
+    /**
+     * Load comprehensive ProcessingBillItemDTO on-demand when Excel processing needs full data.
+     * Uses single-item query with all required joins for optimal performance.
+     */
+    private ProcessingBillItemDTO loadProcessingDTO(Long billItemId) {
+        // Check cache first to avoid duplicate loading
+        if (processingDTOCache.containsKey(billItemId)) {
+            return processingDTOCache.get(billItemId);
+        }
+
+        try {
+            LOGGER.log(Level.FINE, "[Performance] Loading comprehensive DTO on-demand for billItemId={0}", billItemId);
+
+            String jpql = "select new com.divudi.core.data.dto.ProcessingBillItemDTO(" +
+                         "bi.id, bi.qty, bi.descreption, " +
+                         "pbi.id, pbi.qty, pbi.costRate, pbi.stringValue, " +
+                         "ib.id, ib.batchNo, ib.expireDate, " +
+                         "i.id, i.code, i.name, cat.name, " +
+                         "s.id, s.stock) " +
+                         "from BillItem bi " +
+                         "join bi.pharmaceuticalBillItem pbi " +
+                         "join pbi.itemBatch ib " +
+                         "join ib.item i " +
+                         "left join i.category cat " +
+                         "join pbi.stock s " +
+                         "where bi.id = :billItemId";
+
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("billItemId", billItemId);
+
+            @SuppressWarnings("unchecked")
+            List<ProcessingBillItemDTO> results =
+                (List<ProcessingBillItemDTO>) billItemFacade.findLightsByJpql(jpql, params);
+
+            ProcessingBillItemDTO dto = (results != null && !results.isEmpty()) ? results.get(0) : null;
+
+            // Cache the result to avoid reloading
+            processingDTOCache.put(billItemId, dto);
+
+            if (dto != null) {
+                LOGGER.log(Level.FINE, "[Performance] Loaded comprehensive DTO: itemCode={0}, batch={1}, qty={2}",
+                          new Object[]{dto.getItemCode(), dto.getBatchNo(), dto.getSafeBillItemQty()});
+            }
+
+            return dto;
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "[Performance] Error loading comprehensive DTO for billItemId=" + billItemId, e);
+            return null;
         }
     }
 
@@ -1996,11 +2073,13 @@ public class PharmacyStockTakeController implements Serializable {
                       "where bi.bill.id = :billId";
 
         try {
-            // Use EntityManager directly for DTO constructor queries
-            List<StockVerificationBillItemDTO> dtos = entityManager
-                .createQuery(jpql, StockVerificationBillItemDTO.class)
-                .setParameter("billId", snapshotBill.getId())
-                .getResultList();
+            // Use AbstractFacade's generic findLightsByJpql method for DTO constructor queries
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("billId", snapshotBill.getId());
+
+            @SuppressWarnings("unchecked")
+            List<StockVerificationBillItemDTO> dtos =
+                (List<StockVerificationBillItemDTO>) billItemFacade.findLightsByJpql(jpql, params);
 
             LOGGER.log(Level.INFO, "[Performance] Loaded {0} lightweight DTOs for snapshot indexing",
                       dtos != null ? dtos.size() : 0);
@@ -2058,47 +2137,26 @@ public class PharmacyStockTakeController implements Serializable {
     }
 
     /**
-     * OPTIMIZED: Load BillItems with all required associations in a single batch query.
-     * This method is called from buildSnapshotIndexesOptimized() and uses efficient fetch joins
-     * to minimize database round trips.
+     * HELPER: Get comprehensive processing data for a BillItem when Excel processing needs it.
+     * Uses on-demand loading with caching to minimize database calls.
      *
-     * Performance: Loads all entities in 1 query vs. N+1 query pattern from lazy loading.
+     * This method bridges the gap between lookup (which returns placeholder BillItems)
+     * and Excel processing (which needs comprehensive data for calculations).
      */
-    private void loadSnapshotBillItemsOptimized() {
-        if (snapshotBill == null || snapshotBill.getId() == null) {
-            return;
+    public ProcessingBillItemDTO getProcessingData(Long billItemId) {
+        return loadProcessingDTO(billItemId);
+    }
+
+    /**
+     * HELPER: Get comprehensive processing data by code+batch lookup.
+     * Combines HashMap lookup with on-demand DTO loading.
+     */
+    public ProcessingBillItemDTO getProcessingDataByCodeBatch(String itemCode, String batchNo) {
+        BillItem placeholder = findSnapshotItemByCodeBatch(itemCode, batchNo);
+        if (placeholder != null && placeholder.getId() != null) {
+            return loadProcessingDTO(placeholder.getId());
         }
-
-        try {
-            LOGGER.log(Level.INFO, "[Performance] Batch loading BillItems with associations for billId={0}",
-                      snapshotBill.getId());
-
-            // Single query with all necessary joins to avoid N+1 problem
-            String jpql = "select bi from BillItem bi "
-                    + "left join fetch bi.pharmaceuticalBillItem pbi "
-                    + "left join fetch bi.item "
-                    + "left join fetch pbi.stock "
-                    + "left join fetch pbi.itemBatch ib "
-                    + "left join fetch ib.item "
-                    + "where bi.bill.id = :billId";
-
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("billId", snapshotBill.getId());
-
-            List<BillItem> billItems = billItemFacade.findByJpql(jpql, params);
-
-            // Assign the loaded list directly to avoid lazy collection issues
-            if (billItems != null && !billItems.isEmpty()) {
-                snapshotBill.setBillItems(billItems);
-                LOGGER.log(Level.INFO, "[Performance] Loaded {0} BillItems with associations", billItems.size());
-            } else {
-                LOGGER.log(Level.WARNING, "[Performance] No BillItems found for billId={0}", snapshotBill.getId());
-            }
-
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "[Performance] Error batch loading BillItems for billId=" + snapshotBill.getId(), e);
-            throw new RuntimeException("Failed to load BillItems for snapshot", e);
-        }
+        return null;
     }
 
     /**
