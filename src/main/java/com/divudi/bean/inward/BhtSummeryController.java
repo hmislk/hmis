@@ -140,6 +140,8 @@ public class BhtSummeryController implements Serializable {
     List<BillItem> pharmacyItems;
     private List<Bill> paymentBill;
     private List<Bill> pharmacyIssues;
+    private List<Bill> medicineOnlyIssues;
+    private List<Bill> medicinesAndSurgicalSupplies;
     List<Bill> storeIssues;
     private List<Bill> surgeryBills;
     private Bill surgeryBill;
@@ -621,6 +623,14 @@ public class BhtSummeryController implements Serializable {
                     break;
                 case Medicine:
                     discountValue = updateIssueBillFees(cit.getInwardChargeType(), BillType.PharmacyBhtPre);
+                    break;
+                case MedicinesAndSurgicalSupplies:
+                    // Only apply discount if the feature is enabled
+                    if (isMedicinesAndSurgicalSuppliesSeparatelyDisplayed()) {
+                        discountValue = updateIssueBillFees(cit.getInwardChargeType(), BillType.PharmacyBhtPre);
+                    } else {
+                        discountValue = 0;
+                    }
                     break;
                 case GeneralIssuing:
                     discountValue = updateIssueBillFees(cit.getInwardChargeType(), BillType.StoreBhtPre);
@@ -2159,6 +2169,8 @@ public class BhtSummeryController implements Serializable {
         createPatientRooms();
         createPatientItems();
         pharmacyIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters);
+        medicineOnlyIssues = filterMedicineOnlyIssues(pharmacyIssues);
+        medicinesAndSurgicalSupplies = filterMedicinesAndSurgicalSupplies(pharmacyIssues);
         storeIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.StoreBhtPre, childPatientEncouters);
         departmentBillItems = getInwardBean().createDepartmentBillItems(patientEncounter, null, childPatientEncouters);
         additionalChargeBill = getInwardBean().fetchOutSideBill(getPatientEncounter(), childPatientEncouters);
@@ -2199,6 +2211,8 @@ public class BhtSummeryController implements Serializable {
         createPatientRooms();
         createPatientItems();
         pharmacyIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters);
+        medicineOnlyIssues = filterMedicineOnlyIssues(pharmacyIssues);
+        medicinesAndSurgicalSupplies = filterMedicinesAndSurgicalSupplies(pharmacyIssues);
         storeIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.StoreBhtPre, childPatientEncouters);
         departmentBillItems = getInwardBean().createDepartmentBillItems(patientEncounter, null, childPatientEncouters);
         additionalChargeBill = getInwardBean().fetchOutSideBill(getPatientEncounter(), childPatientEncouters);
@@ -2724,6 +2738,91 @@ public class BhtSummeryController implements Serializable {
         this.timedItemFeeFacade = timedItemFeeFacade;
     }
 
+    private List<Bill> filterMedicineOnlyIssues(List<Bill> pharmacyIssues) {
+        if (pharmacyIssues == null || pharmacyIssues.isEmpty()) {
+            return pharmacyIssues;
+        }
+        
+        // Check if the feature is enabled via application option
+        if (!isMedicinesAndSurgicalSuppliesSeparatelyDisplayed()) {
+            return pharmacyIssues; // Return all bills if feature disabled
+        }
+        
+        List<Bill> filtered = new ArrayList<>();
+        
+        for (Bill bill : pharmacyIssues) {
+            // Check if bill's bill type atomic is an inward/regular medicine type
+            if (isInwardMedicineType(bill.getBillTypeAtomic())) {
+                filtered.add(bill);
+            }
+        }
+        
+        return filtered;
+    }
+
+    private List<Bill> filterMedicinesAndSurgicalSupplies(List<Bill> pharmacyIssues) {
+        // Check if the feature is enabled via application option
+        if (!isMedicinesAndSurgicalSuppliesSeparatelyDisplayed()) {
+            return new ArrayList<>();
+        }
+        
+        List<Bill> filtered = new ArrayList<>();
+        
+        if (pharmacyIssues == null || pharmacyIssues.isEmpty()) {
+            return filtered;
+        }
+        
+        for (Bill bill : pharmacyIssues) {
+            // Check if bill's bill type atomic is a theatre/surgical supplies medicine type
+            if (isTheatreMedicineType(bill.getBillTypeAtomic())) {
+                filtered.add(bill);
+            }
+        }
+        
+        return filtered;
+    }
+
+    private boolean isInwardMedicineType(BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return false;
+        }
+        
+        // Inward medicine bill type atomics
+        return billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE
+                || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION
+                || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                || billTypeAtomic == BillTypeAtomic.REQUEST_MEDICINE_INWARD
+                || billTypeAtomic == BillTypeAtomic.REQUEST_MEDICINE_INWARD_CANCELLATION
+                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD
+                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION
+                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
+                || billTypeAtomic == BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD
+                || billTypeAtomic == BillTypeAtomic.RETURN_MEDICINE_INWARD
+                || billTypeAtomic == BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD;
+    }
+
+    private boolean isTheatreMedicineType(BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return false;
+        }
+        
+        // Theatre/surgical supplies medicine bill type atomics
+        return billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE
+                || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
+                || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN
+                || billTypeAtomic == BillTypeAtomic.REQUEST_MEDICINE_THEATRE
+                || billTypeAtomic == BillTypeAtomic.REQUEST_MEDICINE_THEATRE_CANCELLATION
+                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE
+                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION
+                || billTypeAtomic == BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_THEATRE
+                || billTypeAtomic == BillTypeAtomic.RETURN_MEDICINE_THEATRE
+                || billTypeAtomic == BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE;
+    }
+
+    private boolean isMedicinesAndSurgicalSuppliesSeparatelyDisplayed() {
+        return configOptionApplicationController.getBooleanValueByKey("Separate Medicines and Surgical Supplies Tab", false);
+    }
+
     private void createChargeItemTotals(boolean isEstimatedBill) {
         chargeItemTotals = new ArrayList<>();
 
@@ -2864,6 +2963,23 @@ public class BhtSummeryController implements Serializable {
                     btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
                     btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
                     i.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters));
+                    break;
+                case MedicinesAndSurgicalSupplies:
+                    // Theatre/surgical supplies medicines - Only calculate if the feature is enabled
+                    if (isMedicinesAndSurgicalSuppliesSeparatelyDisplayed()) {
+                        List<BillTypeAtomic> theatreMedicineBtas = new ArrayList<>();
+                        theatreMedicineBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
+                        theatreMedicineBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
+                        theatreMedicineBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
+                        theatreMedicineBtas.add(BillTypeAtomic.REQUEST_MEDICINE_THEATRE);
+                        theatreMedicineBtas.add(BillTypeAtomic.REQUEST_MEDICINE_THEATRE_CANCELLATION);
+                        theatreMedicineBtas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE);
+                        theatreMedicineBtas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION);
+                        theatreMedicineBtas.add(BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_THEATRE);
+                        theatreMedicineBtas.add(BillTypeAtomic.RETURN_MEDICINE_THEATRE);
+                        theatreMedicineBtas.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE);
+                        i.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), theatreMedicineBtas, childPatientEncouters));
+                    }
                     break;
                 case GeneralIssuing:
                     i.setTotal(getInwardBean().calCostOfIssue(getPatientEncounter(), BillType.StoreBhtPre, childPatientEncouters));
@@ -3071,6 +3187,22 @@ public class BhtSummeryController implements Serializable {
 
     public void setPharmacyIssues(List<Bill> pharmacyIssues) {
         this.pharmacyIssues = pharmacyIssues;
+    }
+
+    public List<Bill> getMedicineOnlyIssues() {
+        return medicineOnlyIssues;
+    }
+
+    public void setMedicineOnlyIssues(List<Bill> medicineOnlyIssues) {
+        this.medicineOnlyIssues = medicineOnlyIssues;
+    }
+
+    public List<Bill> getMedicinesAndSurgicalSupplies() {
+        return medicinesAndSurgicalSupplies;
+    }
+
+    public void setMedicinesAndSurgicalSupplies(List<Bill> medicinesAndSurgicalSupplies) {
+        this.medicinesAndSurgicalSupplies = medicinesAndSurgicalSupplies;
     }
 
     public List<Bill> getStoreIssues() {
