@@ -138,6 +138,7 @@ public class BillBhtController implements Serializable {
 
     private double total;
     private double discount;
+    private double marginTotal;
     private double netTotal;
     private double cashPaid;
     private double cashBalance;
@@ -342,6 +343,7 @@ public class BillBhtController implements Serializable {
         batchBill = null;
         bills = null;
         referredBy = null;
+        marginTotal = 0.0;
         return "/inward/inward_bill_service?faces-redirect=true";
     }
 
@@ -828,6 +830,7 @@ public class BillBhtController implements Serializable {
                 addingEntry.setLstBillFees(billFeeFromBillItemWithMatrix(bItem, getPatientEncounter(), getPatientEncounter().getDepartment(), getPatientEncounter().getPaymentMethod()));
             }
             addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
+            bItem.setMarginValue(getBillBean().calBillItemMargin(addingEntry));
             lstBillEntries.add(addingEntry);
 
             bItem.setRate(getBillBean().billItemRate(addingEntry));
@@ -867,12 +870,7 @@ public class BillBhtController implements Serializable {
         for (Fee i : itemFee) {
             BillFee billFee = getBillBean().createBillFee(billItem, i, patientEncounter);
 
-            System.out.println("billFee = " + billFee);
-            System.out.println("billFee.getFeeGrossValue() = " + billFee.getFeeGrossValue());
-            System.out.println("matrixDepartment = " + billFee);
-            System.out.println("paymentMethod = " + paymentMethod);
             PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment, paymentMethod);
-            System.out.println("priceMatrix = " + priceMatrix);
 
             getInwardBean().setBillFeeMargin(billFee, billItem.getItem(), priceMatrix, patientEncounter);
 
@@ -933,6 +931,7 @@ public class BillBhtController implements Serializable {
     public void calTotals() {
         double tot = 0.0;
         double net = 0.0;
+        double margin = 0.0;
 
         for (BillEntry be : getLstBillEntries()) {
             BillItem bi = be.getBillItem();
@@ -946,11 +945,13 @@ public class BillBhtController implements Serializable {
                 bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getFeeValue());
                 //    bf.getBillItem().setNetValue(bf.getBillItem().getNetValue());
                 bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFeeGrossValue());
-
+                margin += bf.getFeeMargin();
+                
             }
         }
 
         setTotal(tot);
+        setMarginTotal(margin);
         setNetTotal(net);
     }
 
@@ -1539,6 +1540,14 @@ public class BillBhtController implements Serializable {
 
     public void setInwardItemDepartments(List<Department> inwardItemDepartments) {
         this.inwardItemDepartments = inwardItemDepartments;
+    }
+
+    public double getMarginTotal() {
+        return marginTotal;
+    }
+
+    public void setMarginTotal(double marginTotal) {
+        this.marginTotal = marginTotal;
     }
 
 }

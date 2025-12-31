@@ -858,11 +858,9 @@ public class ChannelScheduleController implements Serializable {
         hm.put("stf", currentStaff);
         hm.put("class", ServiceSession.class);
         retiredItems = getFacade().findByJpql(sql, hm);
-        System.out.println("retiredItems = " + retiredItems);
     }
 
     public void unretireCurrentServiceSession() {
-        System.out.println("unretireCurrentServiceSession");
         if (current == null) {
             JsfUtil.addErrorMessage("No Current Service Session");
             return;
@@ -1137,7 +1135,6 @@ public class ChannelScheduleController implements Serializable {
             channelScheduleController.channelSheduleForAllDoctor(getCurrent().getStaff());
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
-            System.out.println("start persisting");
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             if (current.getEndingTime().equals(current.getStartingTime()) || current.getEndingTime().before(current.getStartingTime())) {

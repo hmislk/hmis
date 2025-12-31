@@ -1295,6 +1295,16 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
 
         Patient pt = savePatient();
 
+        if (pt != null) {
+            if (configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false)
+                    && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Pharmacy from the system", false)) {
+                if (pt.isBlacklisted()) {
+                    JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+                    return;
+                }
+            }
+        }
+
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
 
@@ -1410,6 +1420,14 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
                     JsfUtil.addErrorMessage("Patient area is required.");
                     return;
                 }
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false)
+                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Pharmacy from the system", false)) {
+            if (getPatient() != null && getPatient().isBlacklisted()) {
+                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+                return;
             }
         }
 
@@ -1745,7 +1763,6 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
 //                return (tr * priceMatrix.getDiscountPercent()) / 100;
 //            }
 //        }
-
         //PAYMENTSCHEME DISCOUNT
         if (getPaymentScheme() != null && discountAllowed) {
             PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPaymentMethod(), getPaymentScheme(), getSessionController().getDepartment(), bi.getItem());

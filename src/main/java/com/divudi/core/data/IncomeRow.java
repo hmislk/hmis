@@ -314,7 +314,6 @@ public class IncomeRow implements Serializable {
             this.totalCostValue = dto.getTotalCostValue().doubleValue();
 
             System.out.println("Converted to double: " + this.totalCostValue);
-            System.out.println("=== END PRECISION LOSS DETECTION ===");
         }
 
         this.bill = bill;
@@ -377,7 +376,6 @@ public class IncomeRow implements Serializable {
         bill.setPaymentScheme(dto.getPaymentScheme());
 
         this.bill = bill;
-        System.out.println("  - Created Bill with id: " + bill.getId() + ", paymentMethod: " + bill.getPaymentMethod());
     }
 
     public IncomeRow(PharmacyIncomeBillItemDTO dto) {

@@ -996,7 +996,6 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
             System.out.println("NetRate calculated: " + bi.getNetRate());
 
             bi.setGrossValue(bi.getRate() * bi.getQty());
-            System.out.println("GrossValue calculated: " + bi.getGrossValue());
 
             bi.setDiscount(bi.getDiscountRate() * bi.getQty());
 
@@ -1027,7 +1026,6 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
         System.out.println("Total set: " + grossTotal);
 
         getPreBill().setGrantTotal(grossTotal);
-        System.out.println("GrantTotal set: " + grossTotal);
 
         getPreBill().setDiscount(discountTotal);
 

@@ -423,17 +423,48 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             if (!getCurrent().isClaimable()) {
                 JsfUtil.addErrorMessage("Please mark as Claimable");
                 return;
-
             }
         }
         // Apply patient name capitalization based on configuration settings
         //patientController.applyPatientNameCapitalization(getCurrent().getPatient());
 
-        // Use editAndFlush to ensure changes are immediately committed and cached entities are cleared
-        getPatientFacade().editAndFlush(getCurrent().getPatient());
-        getPersonFacade().editAndFlush(getCurrent().getPatient().getPerson());
-        getPersonFacade().editAndFlush(getCurrent().getGuardian());
-        getEjbFacade().editAndFlush(current);
+        // Save Person FIRST (correct order - was backwards before!)
+        Person person = getCurrent().getPatient().getPerson();
+        if (person != null) {
+            if (person.getId() == null) {
+                getPersonFacade().create(person);
+            } else {
+                getPersonFacade().edit(person);
+            }
+        }
+
+        // Save Patient SECOND
+        Patient patient = getCurrent().getPatient();
+        if (patient != null) {
+            if (patient.getId() == null) {
+                getPatientFacade().create(patient);
+            } else {
+                getPatientFacade().edit(patient);
+            }
+        }
+
+        // Save Guardian
+        Person guardian = getCurrent().getGuardian();
+        if (guardian != null) {
+            if (guardian.getId() == null) {
+                getPersonFacade().create(guardian);
+            } else {
+                getPersonFacade().edit(guardian);
+            }
+        }
+
+        // Save Admission with immediate flush (flushes ALL entities without clear)
+        if (current.getId() == null) {
+            getEjbFacade().createAndFlush(current);  // SINGLE flush for ALL entities
+        } else {
+            getEjbFacade().editAndFlush(current);    // SINGLE flush for ALL entities
+        }
+
         savePatientAllergies();
 
         JsfUtil.addSuccessMessage("Detail Updated");

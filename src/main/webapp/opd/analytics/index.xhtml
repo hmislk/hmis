@@ -78,7 +78,7 @@
                                                 class="w-100 ui-button-success"
                                                 ajax="false"
                                                 icon="fa fa-rocket"
-                                                value="Itemized Sales Summary (Fast - Recommended)"
+                                                value="Itemized Sales Summary"
                                                 action="#{searchController.navigateToOptimizedItemizedSaleSummary}"
                                                 title="High-performance DTO-based report - Uses database aggregation for faster loading"/>
 
@@ -86,6 +86,7 @@
                                             <p:commandButton
                                                 class="w-100 ui-button-warning"
                                                 ajax="false"
+                                                rendered="false"
                                                 icon="fa fa-exclamation-triangle"
                                                 value="Itemized Sales Summary (Deprecated)"
                                                 action="#{searchController.navigateToItemizedSaleSummary}"

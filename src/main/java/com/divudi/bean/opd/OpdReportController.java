@@ -577,7 +577,6 @@ public class OpdReportController implements Serializable {
                     billTypeAtomics, admissionType, paymentScheme);
 
             System.out.println("Results returned: " + (opdIncomeReportDtos != null ? opdIncomeReportDtos.size() : 0));
-            System.out.println("=================================");
 
             bundle = new IncomeBundle(opdIncomeReportDtos);
             bundle.generatePaymentDetailsForBillsAndBatchBills();

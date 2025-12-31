@@ -30,8 +30,13 @@
             <table class="table w-100">
                 <thead>
                     <tr class="text-light bg-success">
-                        <th class="text-light bg-success">
-                            <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
+                        <th class="text-light bg-success" colspan="3">
+                            <h:outputText value="#{cc.attrs.bundle.name}" />
+                        </th>
+                        <th class="text-end text-light bg-success">
+                            <h:outputText value="#{cc.attrs.bundle.cashierCollectionTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
                         </th>
                     </tr>
                 </thead>
@@ -40,18 +45,6 @@
             <p:dataTable
                 emptyMessage="No #{cc.attrs.bundle.name}"
                 var="row" value="#{cc.attrs.bundle.reportTemplateRows}" styleClass="w-100" rowStyleClass="#{row.department ne null ? 'table-primary' : 'table-light'}">
-                <f:facet name="header">
-                    <h:panelGroup styleClass="d-flex justify-content-between w-100">
-                        <h:outputText value="Pharmacy Collection" />
-                        <h:panelGroup>
-                            <h:outputText value="Total: " />
-                            <h:outputText value="#{cc.attrs.bundle.cashierGrandTotal}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </h:panelGroup>
-                    </h:panelGroup>
-                </f:facet>
-
                 <p:column headerText="Department">
                     <h:outputText value="#{row.department.name}" />
                 </p:column>

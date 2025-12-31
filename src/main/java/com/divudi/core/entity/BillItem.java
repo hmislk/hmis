@@ -88,7 +88,9 @@ public class BillItem implements Serializable, RetirableEntity {
     private double otherFee;
     private double reagentFee;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+              fetch = FetchType.EAGER,
+              orphanRemoval = true)
     private BillItemFinanceDetails billItemFinanceDetails;
 
 //    private double dblValue;
@@ -1185,6 +1187,13 @@ public class BillItem implements Serializable, RetirableEntity {
         this.reagentFee = reagentFee;
     }
 
+    /**
+     * TODO: MIGRATION NEEDED - Replace all callers with initializeBillItemFinanceDetails()
+     * This getter currently auto-creates to maintain compatibility, but this causes
+     * potential duplicate creation issues. Once all callers are migrated to use
+     * the explicit initializeBillItemFinanceDetails() method, change this to:
+     * return billItemFinanceDetails;
+     */
     public BillItemFinanceDetails getBillItemFinanceDetails() {
         if (billItemFinanceDetails == null) {
             billItemFinanceDetails = new BillItemFinanceDetails();
@@ -1192,6 +1201,19 @@ public class BillItem implements Serializable, RetirableEntity {
             billItemFinanceDetails.setCreatedAt(new Date());
         }
         return billItemFinanceDetails;
+    }
+
+    /**
+     * Explicit method to initialize BillItemFinanceDetails.
+     * Use this instead of relying on getter auto-creation to prevent duplicates.
+     * PREFERRED: Use this method for new code and migrate existing callers here.
+     */
+    public void initializeBillItemFinanceDetails() {
+        if (billItemFinanceDetails == null) {
+            billItemFinanceDetails = new BillItemFinanceDetails();
+            billItemFinanceDetails.setBillItem(this);
+            billItemFinanceDetails.setCreatedAt(new Date());
+        }
     }
 
     public void setBillItemFinanceDetails(BillItemFinanceDetails billItemFinanceDetails) {

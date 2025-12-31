@@ -17,6 +17,10 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:outputStylesheet library="css" name="lab.css" ></h:outputStylesheet>
+
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+
                 <h:panelGroup rendered="#{!(webUserController.hasPrivilege('LabAutherizing') eq true or webUserController.hasPrivilege('LabDataentry') eq true or webUserController.hasPrivilege('LabPrinting') eq true)}" >
                     <na:not_authorize />
                 </h:panelGroup>
@@ -25,24 +29,35 @@
                     <h:form id="form">
                         <p:panel>
                             <f:facet name="header">
-                                <h:outputText value="Report View" />
-                                <p:commandButton
-                                    value="Back to Report Search"
-                                    style="float: right;"
-                                    action="#{laboratoryManagementController.navigateToBackFormPatientReportPrintView()}"
-                                    icon="fa-solid fa-arrow-left"
-                                    class="mx-1 ui-button-secondary"
-                                    ajax="false"   >
-                                </p:commandButton>
-                                <p:commandButton
-                                    class="ui-button-info "
-                                    icon="fas fa-print"
-                                    ajax="false"
-                                    style="float: right;"
-                                    value="Print"
-                                    actionListener="#{patientReportController.printPatientReport()}">
-                                    <p:printer target="divPrint" />
-                                </p:commandButton>
+                                <div class="d-flex justify-content-between">
+                                    <h:outputText value="Report View" class="mt-2"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton 
+                                            value="Export PDF" 
+                                            class="ui-button-channelling" 
+                                            icon="fas fa-file-pdf" 
+                                            disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}"
+                                            onclick="downloadPdf()" 
+                                            type="button"  
+                                            ajax="false">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            class="ui-button-info"
+                                            icon="fas fa-print"
+                                            ajax="false"
+                                            value="Print"
+                                            actionListener="#{patientReportController.printPatientReport()}">
+                                            <p:printer target="divPrint" />
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="Back to Report Search"
+                                            action="#{laboratoryManagementController.navigateToBackFormPatientReportPrintView()}"
+                                            icon="fa fa-arrow-left"
+                                            class="ui-button-secondary"
+                                            ajax="false">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
                             </f:facet>
 
                             <div class="d-flex justify-content-end">
@@ -67,19 +82,45 @@
 
                                 </style>
 
+                                <script>
+                                    function downloadPdf() {
+                                        console.log("Downloading PDF...");
+                                        const element = document.getElementById('pdf');
+                                        element.classList.remove('print-only');
+
+                                        const opt = {
+                                            margin: [0, 0, 0, 0], // top, left, bottom, right
+                                            filename: '#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patient.person.nameWithTitle} - #{patientReportController.currentPatientReport.patientInvestigation.investigation.name}.pdf',
+                                            image: {type: 'jpeg', quality: 1.00},
+                                            html2canvas: {
+                                                scale: 2
+                                            },
+                                            jsPDF: {unit: 'mm', format: [210, 280], orientation: 'portrait'}
+                                        };
+
+                                        html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
+                                            pdf.deletePage(2); // Remove the second page if it exists
+                                        }).save().then(() => {
+                                            element.classList.add('print-only');
+                                        });
+                                    }
+                                </script>
+
                                 <h:panelGroup  id="divPrint" >
 
-                                    <!--HtmlTemplate-->
-                                    <lab:html_patient_report/>
+                                    <div id="pdf">
+                                        <!--HtmlTemplate-->
+                                        <lab:html_patient_report/>
 
-                                    <!--General-->
-                                    <lab:general_patient_report/>
+                                        <!--General-->
+                                        <lab:general_patient_report/>
 
-                                    <!--Microbiology-->
-                                    <lab:microbiology_patient_report/>
+                                        <!--Microbiology-->
+                                        <lab:microbiology_patient_report/>
 
-                                    <!--PathologyOrHaematology-->
-                                    <lab:pathology_patient_report/>
+                                        <!--PathologyOrHaematology-->
+                                        <lab:pathology_patient_report/>
+                                    </div>
 
                                 </h:panelGroup>
 

@@ -115,7 +115,6 @@ public class RequestService {
 
         List<Request> req = requestFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
-        System.out.println("req = " + req);
 
         return req;
     }

@@ -440,7 +440,6 @@ public class RequestController implements Serializable {
         currentRequest.setStatus(RequestStatus.UNDER_REVIEW);
         requestService.save(currentRequest, sessionController.getLoggedUser());
 
-        System.out.println("Successfully Cancel Approvel");
         JsfUtil.addSuccessMessage("Approval cancelled");
 
     }
@@ -478,7 +477,6 @@ public class RequestController implements Serializable {
             }
         }
 
-        System.out.println("Successfully Reject = ");
         JsfUtil.addSuccessMessage("Rejected successfully");
 
     }
@@ -534,7 +532,6 @@ public class RequestController implements Serializable {
             }
         }
 
-        System.out.println("Successfully Reject = ");
         JsfUtil.addSuccessMessage("Cancelled successfully");
     }
 

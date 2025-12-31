@@ -11,9 +11,7 @@
             <ui:define name="subcontent">
                 <h:form class="w-100">
                     <p:panel header="Outside Payment" class="w-100">
-                        <h:panelGrid columns="5" class="w-100 ">
-
-
+                        <h:panelGrid columns="6" class="w-100 ">
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Admission From Date" class="mx-3"/>
@@ -31,6 +29,7 @@
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class="w-100" inputStyleClass="w-100" ></p:datePicker>
+                                          <p:spacer width="20"/> 
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
@@ -49,13 +48,14 @@
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class="w-100" inputStyleClass="w-100"></p:datePicker>
+                                          <p:spacer width="20"/> 
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Institution" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true" class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItem itemLabel="All Institutions" ></f:selectItem>
                                 <f:selectItems value=""
                                                var="i"
                                                itemLabel=""
@@ -67,19 +67,32 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Branch" class="mx-3"/>
+                                <h:outputLabel value="Site" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu value="" filter="true" class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItem itemLabel="All Sites" ></f:selectItem>
                                 <f:selectItems value=""
                                                var="i"
                                                itemLabel=""
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-
-
-
+                            <p:spacer width="20"/> 
+  
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Department" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true" class="w-100 ">
+                                <f:selectItem itemLabel="All Deparments" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer width="20"/> 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Invoice Approved From Date" class="mx-3"/>
@@ -100,24 +113,7 @@
                                           class="w-100" inputStyleClass="w-100"></p:datePicker>
 
 
-
-
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Department" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"/> 
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
@@ -131,7 +127,7 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-
+                            <p:spacer width="20"/> 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Service Center" class="mx-3"/>
@@ -160,7 +156,7 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-
+                            <p:spacer width="20"/> 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf51c;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Sponsor" class="mx-3"/>
@@ -188,7 +184,7 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-
+                            <p:spacer width="20"/> 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf071;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Admission Status" class="mx-3"/>

@@ -332,6 +332,7 @@ public class CreditCompanyDueController implements Serializable {
         site = null;
         department = null;
         institution = null;
+        creditCompany = null;
     }
 
     public void createAgeTable() {
@@ -1338,8 +1339,15 @@ public class CreditCompanyDueController implements Serializable {
                 default:
                     btas = billService.fetchBillTypeAtomicsForOpdFinance();
             }
+            
+            List<Institution> setIns = new ArrayList<>();
+            
+            if(creditCompany == null){
+                setIns = getCreditBean().getCreditInstitution(btas, getFromDate(), getToDate(), true);
+            }else{
+                setIns.add(creditCompany);
+            }
 
-            List<Institution> setIns = getCreditBean().getCreditInstitution(btas, getFromDate(), getToDate(), true);
             items = new ArrayList<>();
             for (Institution ins : setIns) {
                 List<Payment> payments = getCreditBean().getCreditPayments(ins, btas, getFromDate(), getToDate(), true);

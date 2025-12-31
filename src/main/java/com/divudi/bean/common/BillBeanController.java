@@ -4386,7 +4386,6 @@ public class BillBeanController implements Serializable {
                 labTestHistoryController.addBillingHistory(ptIx, sessionController.getDepartment());
             }
         } catch (Exception e) {
-            System.out.println("Error = " + e);
         }
 
     }
@@ -4484,6 +4483,15 @@ public class BillBeanController implements Serializable {
         //TODO: Create Logic
         return null;
     }
+    
+    public Double calBillItemMargin(BillEntry billEntry) {
+        Double marginTot = 0.0;
+        for (BillFee f : billEntry.getLstBillFees()) {
+            marginTot += f.getFeeMargin();
+        }
+        return marginTot;
+    }
+
 
     public List<BillFee> billFeefromBillItemPackage(BillItem billItem, Item packege) {
         List<BillFee> t = new ArrayList<>();
@@ -5199,10 +5207,30 @@ public class BillBeanController implements Serializable {
         Map params = new HashMap();
         jpql = "Select p "
                 + " from Payment p "
-                + "where p.bill=:bill "
-                + "order by p.id";
+                + " LEFT JOIN FETCH p.bank "
+                + " LEFT JOIN FETCH p.institution "
+                + " LEFT JOIN FETCH p.creditCompany "
+                + " where p.bill=:bill "
+                + " order by p.id";
         params.put("bill", bill);
         fetchingBillComponents = paymentFacade.findByJpql(jpql, params);
+
+        // Debug: Print payment details
+        System.out.println("=== BillBeanController.fetchBillPayments DEBUG ===");
+        System.out.println("Bill ID: " + (bill != null ? bill.getId() : "null"));
+        System.out.println("Found payments count: " + (fetchingBillComponents != null ? fetchingBillComponents.size() : "null"));
+        if (fetchingBillComponents != null) {
+            for (int i = 0; i < fetchingBillComponents.size(); i++) {
+                Payment p = fetchingBillComponents.get(i);
+                System.out.println("Payment[" + i + "] ID: " + p.getId());
+                System.out.println("Payment[" + i + "] Method: " + p.getPaymentMethod());
+                System.out.println("Payment[" + i + "] Bank: " + (p.getBank() != null ? p.getBank().getName() + " (ID: " + p.getBank().getId() + ")" : "null"));
+                System.out.println("Payment[" + i + "] Institution: " + (p.getInstitution() != null ? p.getInstitution().getName() + " (ID: " + p.getInstitution().getId() + ")" : "null"));
+                System.out.println("Payment[" + i + "] ReferenceNo: " + p.getReferenceNo());
+            }
+        }
+        System.out.println("=== END fetchBillPayments DEBUG ===");
+
         return fetchingBillComponents;
     }
 

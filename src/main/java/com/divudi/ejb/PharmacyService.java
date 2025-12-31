@@ -138,7 +138,6 @@ public class PharmacyService {
 
         if (vtm == null && vmp != null) {
             vtm = (Vtm) vmp.getVtm();
-            System.out.println("line 141"+vtm);
             // TODO: Temporarily stopped searching for VTM of VMP - need to remember how to get VTM from VMP
             // vtm = vmp.getVtm(); // Commented out to prevent compilation error
         }
@@ -321,7 +320,6 @@ public class PharmacyService {
 
     public PharmacyBundle fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
-        System.out.println("processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType");
 
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
 
@@ -342,6 +340,18 @@ public class PharmacyService {
 
         return bundle;
 
+    }
+
+    public PharmacyBundle fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionTypeDto(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        PharmacyBundle bundle;
+
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetailsAndPaymentScheme(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionTypeDto();
+
+        return bundle;
     }
 
     public PharmacyBundle fetchPharmacyStockPurchaseValueByBillType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {

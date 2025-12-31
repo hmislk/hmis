@@ -594,7 +594,6 @@ public class ChannelApi {
         }
         String hospitalId = (String) requestBody.get("hosID");
         String doctorId = (String) requestBody.get("docNo");
-        System.out.println(hospitalId + " " + doctorId);
 
         Long hospitalIdLong = null;
         if (hospitalId != null && !hospitalId.isEmpty()) {
@@ -1911,7 +1910,6 @@ public class ChannelApi {
     @Path("/test")
     @Produces(MediaType.TEXT_PLAIN)
     public Response testAPI() {
-        System.out.println("API test method called");
 
         // Create a simple JSON object to return as response
         JSONObject responseObject = new JSONObject();

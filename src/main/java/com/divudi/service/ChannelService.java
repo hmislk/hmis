@@ -1296,9 +1296,7 @@ public class ChannelService {
         }
 
         if (categoryList != null && !categoryList.isEmpty()) {
-            System.out.println("line 1302");
             for (Category c : categoryList) {
-                System.out.println(c.getName() + categoryList.size());
             }
             sql += "and session.originatingSession.category in :category ";
             params.put("category", categoryList);
@@ -1587,7 +1585,6 @@ public class ChannelService {
         sql += " order by bill.createdAt desc";
 
         List<Bill> list = billFacade.findByJpql(sql, params, TemporalType.TIMESTAMP);
-        System.out.println("end " + list.size());
 
         return list;
     }

@@ -1778,7 +1778,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     public List<Payment> createPaymentsForCancellationsforOPDBill(Bill bill, PaymentMethod pm) {
         System.out.println("createPaymentsForCancellationsforOPDBill");
         System.out.println("bill = " + bill);
-        System.out.println("pm = " + pm);
         List<Payment> ps = new ArrayList<>();
         if (pm == null) {
             Bill originalIndividualBill = bill.getBilledBill();

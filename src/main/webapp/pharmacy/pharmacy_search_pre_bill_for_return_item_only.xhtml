@@ -155,7 +155,7 @@
                                                     ajax="false"
                                                     id="returnViewBill"
                                                     icon="fas fa-file-invoice"
-                                                    action="pharmacy_reprint_bill_return_pre"
+                                                    action="pharmacy_reprint_bill_return_pre?faces-redirect=true"
                                                     disabled="#{returnBill.creatorName eq null or returnBill.creatorName eq ''}">
                                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{searchController.loadBillById(returnBill.id)}"/>
                                                 </p:commandButton>

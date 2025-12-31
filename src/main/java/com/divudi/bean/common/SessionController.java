@@ -950,7 +950,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public String loginActionWithoutDepartment() {
-        System.out.println("DEBUG: loginActionWithoutDepartment() called for user: " + userName + " at " + new Date());
         long totalStartTime = System.currentTimeMillis();
         
         department = null;
@@ -958,13 +957,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         boolean l = checkUsersWithoutDepartment();
         if (l) {
             if (department != null) {
-                System.out.println("DEBUG: Login successful with department pre-selected, total time: " + (System.currentTimeMillis() - totalStartTime) + "ms");
                 return selectDepartment();
             }
-            System.out.println("DEBUG: Login successful, redirecting to department selection, total time: " + (System.currentTimeMillis() - totalStartTime) + "ms");
             return "/index1.xhtml?faces-redirect=true";
         } else {
-            System.out.println("DEBUG: Login failed, total time: " + (System.currentTimeMillis() - totalStartTime) + "ms");
             JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
         }
@@ -1428,7 +1424,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         
         long queryStartTime = System.currentTimeMillis();
         List<WebUser> allUsers = getFacede().findByJpql(jpql, m);
-        System.out.println("DEBUG: User lookup query took " + (System.currentTimeMillis() - queryStartTime) + "ms");
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 boolean passwordIsOk;
@@ -1484,6 +1479,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                         loggableDepartments = departmentController.fillAllItems();
                     }
 //                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
+//                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
                     System.out.println("DEBUG: Loading loggable institutions...");
                     long fillInstStartTime = System.currentTimeMillis();
                     loggableInstitutions = fillLoggableInstitutions();
@@ -1521,7 +1517,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                     if (departments.size() == 1) {
                         department = departments.get(0);
                     }
-                    System.out.println("DEBUG: checkUsersWithoutDepartment() completed in " + (System.currentTimeMillis() - startTime) + "ms");
                     return true;
                 }
             }
@@ -1675,7 +1670,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         long navStartTime = System.currentTimeMillis();
         String result = navigateToLoginPageByUsersDefaultLoginPage();
         System.out.println("DEBUG: Navigation took " + (System.currentTimeMillis() - navStartTime) + "ms");
-        System.out.println("DEBUG: selectDepartment() completed in " + (System.currentTimeMillis() - selectDeptStartTime) + "ms");
         return result;
     }
 

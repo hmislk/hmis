@@ -437,7 +437,6 @@ public class OpdMemberShipDiscountController implements Serializable {
                         null);
                 p.setDiscountPercent(margin);
                 System.out.println("p = " + p);
-                System.out.println("margin = " + margin);
                 paymentSchemeDiscountFacade.edit(p);
             }
         }
@@ -462,7 +461,6 @@ public class OpdMemberShipDiscountController implements Serializable {
                         null);
                 p.setDiscountPercent(margin);
                 System.out.println("p = " + p);
-                System.out.println("margin = " + margin);
                 paymentSchemeDiscountFacade.edit(p);
             }
     }

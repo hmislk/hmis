@@ -183,7 +183,7 @@
                         <p:menuitem 
                             ajax="false" 
                             action="#{billPackageController.navigateToSearchOpdPackageBills()}" 
-                            value="OPD Bill Package Search" 
+                            value="OPD Package Bill Search" 
                             icon="fa fa-box-open"
                             actionListener="#{searchController.clearBillList()}"
                             rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" >
@@ -360,16 +360,30 @@
                             rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" >
                         </p:menuitem>
 
+                    </p:submenu>
+
+                    <p:submenu label="Appointment" icon="fa fa-calendar-plus" rendered="#{webUserController.hasPrivilege('InwardAppointmentMenu')}">
                         <p:menuitem
                             ajax="false"
                             action="#{appointmentController.navigateToInwardAppointmentFromMenu()}"
-                            value="Inward Appointment"
-                            icon="fa fa-calendar-plus"
-                            rendered="#{webUserController.hasPrivilege('InwardAdmissionsInwardAppoinment')}" >
+                            value="Add Appointment"
+                            rendered="#{webUserController.hasPrivilege('AddInwardAppointment')}"
+                            icon="fa fa-calendar-plus" >
                         </p:menuitem>
-                    </p:submenu>
-
-                    <p:submenu label="Room" icon="fa fa-door-open" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
+                        <p:menuitem
+                            ajax="false"
+                            value="Appointment admission"
+                            action="#{appointmentController.navigateToAppointmentAdminFromMenu()}"
+                            icon="fa fa-user-plus"
+                            rendered="#{webUserController.hasPrivilege('InwardAppointmentAdmission')}">
+                        </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            value="Manage Appointment"
+                            actionListener="#{appointmentController.makeNull()}" 
+                            action="#{appointmentController.navigateToSearchAppointmentsListFromMenu()}"
+                            icon="fa fa-list" >
+                        </p:menuitem>
                         <p:menuitem 
                             ajax="false" 
                             action="#{inwardReservationController.navigateToReservationCalendarFromMenu()}" 
@@ -377,6 +391,9 @@
                             icon="fa fa-calendar-check" 
                             rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" >
                         </p:menuitem>
+                    </p:submenu>
+                    
+                    <p:submenu label="Room" icon="fa fa-door-open" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
                         <p:menuitem 
                             ajax="false" 
                             action="#{admissionController.navigateToRoomOccupancy()}" 
@@ -921,7 +938,7 @@
                         </p:menuitem>
                         <p:menuitem
                             ajax="false"
-                            action="#{pharmacySaleForCashierController.navigateToPharmacyBillForCashier()}"
+                            action="#{pharmacySaleForCashierController.navigateToPharmacyBillForCashierFromMenu()}"
                             value="Sale for cashier"
                             icon="fas fa-cash-register"
                             rendered="#{webUserController.hasPrivilege('PharmacySaleForCashier')}" ></p:menuitem>
@@ -1055,10 +1072,10 @@
                         icon="fas fa-shopping-cart" 
                         rendered="#{webUserController.hasPrivilege('PharmacyProcurementMenu')}">
                         <!--Procurement Menu Items with Titles-->
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"  
-                            value="Create PO" 
+                        <p:menuitem
+                            ajax="false"
+                            action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"
+                            value="Create PO"
                             title="Create a new Purchase Order"
                             icon="fas fa-plus-circle"
                             rendered="#{webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>
@@ -1113,17 +1130,25 @@
                             icon="fas fa-hand-holding-usd"
                             rendered="#{webUserController.hasPrivilege('DirectPurchase') and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" 
                             actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
-                        <p:menuitem 
+                        <p:menuitem
                             ajax="false"
                             action="#{searchController.navigateToListPurchaseOrdersToReceive()}"
                             value="GRN"
                             title="Goods Receipt (GRN)"
                             icon="fas fa-dolly-flatbed"
                             rendered="#{webUserController.hasPrivilege('GoodsRecipt')}"  ></p:menuitem>
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{searchController.navigateToGrnListToFinalize()}"  
-                            value="GRN Finalize"  
+                        <p:menuitem
+                            ajax="false"
+                            action="#{searchController.navigateToListPurchaseOrdersToReceiveDto()}"
+                            value="Approved POs to Create GRN"
+                            title="Optimized list of Approved Purchase Orders for GRN Creation - Fast Loading"
+                            icon="fas fa-rocket"
+                            styleClass="ui-menuitem-success"
+                            rendered="#{webUserController.hasPrivilege('GoodsRecipt')}"  ></p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{searchController.navigateToGrnListToFinalize()}"
+                            value="GRN Finalize"
                             icon="fas fa-clipboard-check"
                             rendered="#{webUserController.hasPrivilege('PharmacyGrnFinalize')}" ></p:menuitem>
                         <p:menuitem  

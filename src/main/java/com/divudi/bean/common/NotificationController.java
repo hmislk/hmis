@@ -130,7 +130,6 @@ public class NotificationController implements Serializable {
     }
 
     private void createInwardRoomDischargeNotifications(PatientRoom pr) {
-        System.out.println("pr = " + pr);
         Date date = new Date();
         for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_DISCHARGED)) {
             Notification nn = new Notification();

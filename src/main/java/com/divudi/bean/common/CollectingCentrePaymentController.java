@@ -164,10 +164,9 @@ public class CollectingCentrePaymentController implements Serializable {
             setCurrentCollectingCentre(null);
             return;
         }
-
         //double paymentpending = getAllAgentHistory(currentCollectingCentre, false);
-        System.out.println("paymentDone = " + paymentDone);
         //System.out.println("paymentpending = " + paymentpending);
+
 
         findPendingCCBills();
 
@@ -732,7 +731,6 @@ public class CollectingCentrePaymentController implements Serializable {
             context.responseComplete();
 
         } catch (Exception e) {
-            System.err.println("Error exporting to Excel: " + e.getMessage());
         }
     }
 

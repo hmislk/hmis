@@ -780,9 +780,8 @@ public class InstitutionController implements Serializable {
             Long longId = Long.parseLong(id);
             return findInstitution(longId);
         } catch (NumberFormatException e) {
-            // Handle the case where the string is not a valid long number
-            System.err.println("Invalid institution ID format: " + id);
-            return null;
+// Handle the case where the string is not a valid long number
+                        return null;
         }
     }
 

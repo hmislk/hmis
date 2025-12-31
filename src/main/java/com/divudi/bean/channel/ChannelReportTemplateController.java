@@ -753,7 +753,6 @@ public class ChannelReportTemplateController implements Serializable {
 //        hm.put("class", BilledBill.class);
 //        hm.put("class", BilledBill.class);
 //        hm.put("class", BilledBill.class);
-        System.out.println("sql = " + sql);
         Long count = billFeeFacade.findLongByJpql(sql, hm, TemporalType.TIMESTAMP);
         return count;
     }
@@ -802,7 +801,6 @@ public class ChannelReportTemplateController implements Serializable {
         Long long7 = 0L;
         Long long8 = 0L;
 
-        System.out.println("Processing result rows...");
         for (ReportTemplateRow r : rs) {
             if (r == null) {
                 continue;
@@ -931,7 +929,6 @@ public class ChannelReportTemplateController implements Serializable {
             m.put("sp", speciality);
 
         }
-        System.out.println("here2");
         if (staff != null) {
             j += " and bs.sessionInstance.originatingSession.staff =:staff";
             m.put("staff", staff);

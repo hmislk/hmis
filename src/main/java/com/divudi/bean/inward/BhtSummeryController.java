@@ -1109,10 +1109,10 @@ public class BhtSummeryController implements Serializable {
         return dis;
     }
 
-    public void updatePatientItem(PatientItem patientItem) {
+    public void updatePatientItem(PatientItem patientItem, boolean isEstimatedBill) {
         getInwardTimedItemController().finalizeService(patientItem);
         createPatientItems();
-        createChargeItemTotals();
+        createChargeItemTotals(isEstimatedBill);
 
     }
 
@@ -2168,7 +2168,7 @@ public class BhtSummeryController implements Serializable {
         paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
 
         updateRoomChargeList();
-        createChargeItemTotals();
+        createChargeItemTotals(false);
 
         updateTotal();
         JsfUtil.addSuccessMessage("Recalculated Successfully");
@@ -2208,7 +2208,7 @@ public class BhtSummeryController implements Serializable {
         paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
 
         updateRoomChargeList();
-        createChargeItemTotals();
+        createChargeItemTotals(true);
 
         updateTotal();
 
@@ -2724,7 +2724,7 @@ public class BhtSummeryController implements Serializable {
         this.timedItemFeeFacade = timedItemFeeFacade;
     }
 
-    private void createChargeItemTotals() {
+    private void createChargeItemTotals(boolean isEstimatedBill) {
         chargeItemTotals = new ArrayList<>();
 
         for (InwardChargeType i : InwardChargeType.values()) {
@@ -2735,7 +2735,7 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (getPatientEncounter() != null) {
-            setKnownChargeTot();
+            setKnownChargeTot(isEstimatedBill);
             setServiceTotCategoryWise();
             setTimedServiceTotCategoryWise();
             setChargeValueFromAdditional();
@@ -2813,7 +2813,7 @@ public class BhtSummeryController implements Serializable {
             if (childPatientEncouters == null || childPatientEncouters.isEmpty()) {
                 childPatientEncouters = getInwardBean().fetchChildPatientEncounter(getPatientEncounter());
             }
-            createChargeItemTotals();
+            createChargeItemTotals(false);
         }
         return chargeItemTotals;
     }
@@ -2823,7 +2823,7 @@ public class BhtSummeryController implements Serializable {
 
     private List<Bill> additionalChargeBill;
 
-    private void setKnownChargeTot() {
+    private void setKnownChargeTot(boolean isEstimatedBill) {
 
         for (ChargeItemTotal i : chargeItemTotals) {
             switch (i.getInwardChargeType()) {
@@ -2869,7 +2869,7 @@ public class BhtSummeryController implements Serializable {
                     i.setTotal(getInwardBean().calCostOfIssue(getPatientEncounter(), BillType.StoreBhtPre, childPatientEncouters));
                     break;
                 case ProfessionalCharge:
-                    i.setTotal(getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters));
+                    i.setTotal(getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters, isEstimatedBill));
                     break;
                 case DoctorAndNurses:
                     i.setTotal(getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters));

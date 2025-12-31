@@ -19,12 +19,17 @@
                                 <p:outputLabel value="From" for="fromDate" styleClass="m-3" />
                             </h:panelGroup>
 
-                            <p:calendar
-                                id="fromDate"
-                                styleClass="w-100"
-                                inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy HH:mm"
-                                />
+                            <p:datePicker
+                            styleClass="w-100"
+                            inputStyleClass="w-100 form-control"
+                            id="fromDate"
+                            showTime="true"
+                            yearNavigator="true"
+                            monthNavigator="true"
+                            timeInput="true"
+                            value="#{patientInvestigationController.fromDate}"
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                            />
 
                             <p:spacer width="20"/>
 
@@ -33,37 +38,51 @@
                                               styleClass="fa mr-2"/> 
                                 <p:outputLabel value="To" for="toDate" class="m-3"/>
                             </h:panelGroup>
-                            <p:calendar
-                                styleClass="w-100"
-                                inputStyleClass="w-100 form-control"
-                                id="toDate"
-                                navigator="false"
-                                pattern="dd/MM/yyyy HH:mm"
-                                />
+                            <p:datePicker
+                            styleClass="w-100"
+                            inputStyleClass="w-100 form-control"
+                            id="toDate"
+                            showTime="true"
+                            yearNavigator="true"
+                            monthNavigator="true"
+                            timeInput="true"
+                            value="#{patientInvestigationController.toDate}"
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                            />
                            <p:spacer width="20"/>
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-university mr-2"/>
-                                <p:outputLabel value="Specialty" for="phmIns" class="m-3">
-                                </p:outputLabel>
+                           <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-user-doctor mr-2"/>
+                                <p:outputLabel value="By Doctor wise" for="docw" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu
-                                id="phmIns"
-                                class="w-100"
-                                filter="true">
-                                <f:selectItem itemLabel="All Specialties"/>
-                            </p:selectOneMenu>
-
-                            <p:spacer width="20"/>
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-university mr-2"/>
-                                <p:outputLabel value="Doctor" for="docName" class="m-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                id="docName"
+                                id="docw"
                                 class="w-100"
                                 filter="true">
                                 <f:selectItem itemLabel="All Doctors"/>
+                            </p:selectOneMenu>
+                           <p:spacer width="20"/>
+                           <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-user-doctor mr-2"/>
+                                <p:outputLabel value="By Specialty" for="specb" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="specb"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Specialty"/>
+                            </p:selectOneMenu>
+                           <p:spacer width="20"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university mr-2"/>
+                                <p:outputLabel value="Report Type" for="typeR" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="typeR"
+                                class="w-100"
+                                filter="false">
+                                <f:selectItem itemLabel="By Doctor "/>
+                                <f:selectItem itemLabel="By Specialty"/>
                             </p:selectOneMenu>
                             <p:spacer width="20"/>
                         </h:panelGrid>

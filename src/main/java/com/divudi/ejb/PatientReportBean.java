@@ -151,7 +151,6 @@ public class PatientReportBean {
         String sql = "";
         Investigation temIx = (Investigation) ptReport.getItem();
         for (ReportItem ii : temIx.getReportItems()) {
-            System.out.println("ii = " + ii);
             PatientReportItemValue val = null;
             if ((ii.getIxItemType() == InvestigationItemType.Value
                     || ii.getIxItemType() == InvestigationItemType.Image
@@ -163,7 +162,6 @@ public class PatientReportBean {
                     || ii.getIxItemType() == InvestigationItemType.Template)
                     && ii.isRetired() == false) {
                 if (ptReport.getId() == null || ptReport.getId() == 0) {
-                    System.out.println("val = " + val);
 
                     val = new PatientReportItemValue();
                     if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
@@ -256,11 +254,9 @@ public class PatientReportBean {
          System.out.println("addPatientReportItemValuesForTemplateReport");
         String sql = "";
         Investigation temIx = (Investigation) ptReport.getItem();
-         System.out.println("temIx = " + temIx);
         for (ReportItem ii : temIx.getReportItems()) {
             System.out.println("ii = " + ii);
             System.out.println("ii.getName = " + ii.getName());
-            System.out.println("ii.getIxItemType() = " + ii.getIxItemType());
             PatientReportItemValue val = null;
             if ((ii.getIxItemType() == InvestigationItemType.Value
                     || ii.getIxItemType() == InvestigationItemType.Image
@@ -272,7 +268,6 @@ public class PatientReportBean {
                     || ii.getIxItemType() == InvestigationItemType.Template)
                     && !ii.isRetired()) {
                 if (ptReport.getId() == null || ptReport.getId() == 0) {
-                    System.out.println("val = " + val);
 
                     val = new PatientReportItemValue();
                     if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {

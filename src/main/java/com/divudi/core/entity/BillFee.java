@@ -84,6 +84,7 @@ public class BillFee implements Serializable, RetirableEntity {
     private double feeDiscount;
     private double feeVat;
     private double feeVatPlusValue;
+    private boolean freeOfCharge;
 
     @Transient
     private double absoluteFeeValue;
@@ -122,6 +123,14 @@ public class BillFee implements Serializable, RetirableEntity {
 
     @Transient
     private final String uuid;
+
+    public boolean isFreeOfCharge() {
+        return freeOfCharge;
+    }
+
+    public void setFreeOfCharge(boolean freeOfCharge) {
+        this.freeOfCharge = freeOfCharge;
+    }
 
     public BillFee(String uuid) {
         this.uuid = uuid;
@@ -370,7 +379,6 @@ public class BillFee implements Serializable, RetirableEntity {
 
     public void setFeeValueForCreditCompany(boolean foriegn, double discountPercent) {
         System.out.println("setFeeValueForCreditCompany");
-        System.out.println("tmpChangedValue = " + tmpChangedValue);
         if (tmpChangedValue == null) {
             if (getFee().getFeeType() != FeeType.Staff) {
                 if (foriegn) {
@@ -410,7 +418,6 @@ public class BillFee implements Serializable, RetirableEntity {
 
     public void setFeeValueForeignAndDiscount(boolean foriegn, double discountPercent) {
         System.out.println("setFeeValueForeignAndDiscount");
-        System.out.println("tmpChangedValue = " + tmpChangedValue);
         if (tmpChangedValue == null) {
             if (getFee().getFeeType() != FeeType.Staff) {
                 if (foriegn) {

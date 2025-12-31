@@ -141,7 +141,6 @@ public class PatientReportUploadController implements Serializable {
             patientReportController.getCurrentPatientReport().getPatientInvestigation().setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
             patientReportController.getCurrentPatientReport().getPatientInvestigation().setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
             patientInvestigationFacade.edit(patientReportController.getCurrentPatientReport().getPatientInvestigation());
-            System.out.println("Investigation Updated.");
 
             JsfUtil.addSuccessMessage("File Uploaded Successfully.");
             file = null;
@@ -156,12 +155,10 @@ public class PatientReportUploadController implements Serializable {
     public void reportApproval() {
         System.out.println("reportApproval");
         if (patientReportController.getCurrentPatientReport() == null) {
-            System.out.println("Approval-1");
             JsfUtil.addErrorMessage("Please select a patient report.");
             return;
         }
         if (reportUpload.getBaImage() == null) {
-            System.out.println("Approval-2");
             JsfUtil.addErrorMessage("Please select a patient report.");
             return;
         }
@@ -175,7 +172,6 @@ public class PatientReportUploadController implements Serializable {
         patientReportController.getCurrentPatientReport().getPatientInvestigation().setApproveUser(sessionController.getLoggedUser());
         patientReportController.getCurrentPatientReport().getPatientInvestigation().setApproved(Boolean.TRUE);
         patientInvestigationFacade.edit(patientReportController.getCurrentPatientReport().getPatientInvestigation());
-        System.out.println("Investigation Approved.");
 
         JsfUtil.addSuccessMessage("Report Approved.");
     }
@@ -183,7 +179,6 @@ public class PatientReportUploadController implements Serializable {
     public void reportApprovalCancel() {
         System.out.println("reportApprovalCancel");
         if (patientReportController.getCurrentPatientReport() == null) {
-            System.out.println("Cancel-1");
             JsfUtil.addErrorMessage("Please select a patient report.");
             return;
         }
@@ -197,7 +192,6 @@ public class PatientReportUploadController implements Serializable {
         patientReportController.getCurrentPatientReport().getPatientInvestigation().setApproveUser(null);
         patientReportController.getCurrentPatientReport().getPatientInvestigation().setApproved(null);
         patientInvestigationFacade.edit(patientReportController.getCurrentPatientReport().getPatientInvestigation());
-        System.out.println("Investigation Cancel Approved.");
 
         JsfUtil.addSuccessMessage("Cancel Approved.");
     }
@@ -205,7 +199,6 @@ public class PatientReportUploadController implements Serializable {
     public void removeUploadedFile() {
         System.out.println("removeUploadedFile");
         if (reportUpload.getBaImage() == null) {
-            System.out.println("Remove-1");
             JsfUtil.addErrorMessage("Please select a patient report.");
             return;
         }
@@ -231,7 +224,6 @@ public class PatientReportUploadController implements Serializable {
         patientInvestigationFacade.edit(patientReportController.getCurrentPatientReport().getPatientInvestigation());
         System.out.println("Investigation Data Removed.");
 
-        System.out.println("Remove Successfully.");
         JsfUtil.addSuccessMessage("Remove Successfully.");
     }
 

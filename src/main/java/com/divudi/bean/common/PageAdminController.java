@@ -17,6 +17,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.annotation.PostConstruct;
+import org.primefaces.model.StreamedContent;
+import org.primefaces.model.DefaultStreamedContent;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Controller for the page administration interface.
@@ -33,6 +40,12 @@ public class PageAdminController implements Serializable {
 
     @Inject
     private PageMetadataRegistry metadataRegistry;
+
+    @Inject
+    private ConfigOptionController configOptionController;
+
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
 
     private String selectedPagePath;
     private PageMetadata currentMetadata;
@@ -199,6 +212,93 @@ public class PageAdminController implements Serializable {
         return currentMetadata.getConfigOptions().stream()
             .filter(config -> !config.getKey().contains("[Department Name]"))
             .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * Export configuration options for the current page to CSV format
+     * @return StreamedContent for file download
+     */
+    public StreamedContent exportPageConfiguration() {
+        if (currentMetadata == null || currentMetadata.getConfigOptions() == null) {
+            JsfUtil.addErrorMessage("No configuration metadata available for export");
+            return null;
+        }
+
+        try {
+            StringBuilder csvContent = new StringBuilder();
+
+            // CSV Header
+            csvContent.append("\"Option Key\",\"Option Value\",\"Value Type\",\"Enum Type\"\n");
+
+            // Export each configuration option for this page
+            for (ConfigOptionInfo configInfo : currentMetadata.getConfigOptions()) {
+                String optionKey = configInfo.getKey();
+
+                // Handle department-specific configs by removing the placeholder
+                if (optionKey.contains("[Department Name]")) {
+                    // Skip department-specific configs in export since they need actual department context
+                    continue;
+                }
+
+                // Get current value from the application configuration
+                String optionValue = configOptionApplicationController.getApplicationOption(optionKey) != null
+                    ? configOptionApplicationController.getApplicationOption(optionKey).getOptionValue()
+                    : "";
+
+                // Determine value type (default to SHORT_TEXT if not determinable)
+                String valueType = "SHORT_TEXT";
+                if (configOptionApplicationController.getApplicationOption(optionKey) != null) {
+                    valueType = configOptionApplicationController.getApplicationOption(optionKey).getValueType().toString();
+                }
+
+                String enumType = ""; // Most configs don't use enums
+
+                // Escape quotes in values
+                optionKey = escapeQuotes(optionKey);
+                optionValue = escapeQuotes(optionValue);
+                valueType = escapeQuotes(valueType);
+                enumType = escapeQuotes(enumType);
+
+                // Add CSV row
+                csvContent.append("\"").append(optionKey).append("\",")
+                          .append("\"").append(optionValue).append("\",")
+                          .append("\"").append(valueType).append("\",")
+                          .append("\"").append(enumType).append("\"\n");
+            }
+
+            // Generate filename with timestamp
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+            String timestamp = dateFormat.format(new Date());
+            String pageName = currentMetadata.getPageName() != null
+                ? currentMetadata.getPageName().replaceAll("[^a-zA-Z0-9_-]", "_")
+                : "page_config";
+            String filename = pageName + "_configuration_" + timestamp + ".csv";
+
+            // Create streamed content
+            InputStream stream = new ByteArrayInputStream(csvContent.toString().getBytes(StandardCharsets.UTF_8));
+            return DefaultStreamedContent.builder()
+                    .name(filename)
+                    .contentType("text/csv")
+                    .stream(() -> stream)
+                    .build();
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error exporting page configuration", e);
+            JsfUtil.addErrorMessage("Error exporting configuration: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Escape quotes in CSV values
+     * @param value The value to escape
+     * @return Escaped value
+     */
+    private String escapeQuotes(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("\"", "\"\"");
     }
 
     // Getters and Setters

@@ -260,6 +260,11 @@
                                 <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate * f.qty}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.costValueTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="MRP">
                                 <h:outputText value="#{f.pharmaceuticalBillItem.retailRate}" >

@@ -101,15 +101,17 @@
                                         rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        value="To Cancel"
-                                        icon="fa fa-cancel"
-                                        class="ui-button-danger m-1"
-                                        action="pharmacy_cancel_bill_retail?faces-redirect=true" 
-                                        disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.refunded}"
-                                        rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
-                                    </p:commandButton>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Accept Sale for Cashier Bill can be Cancelled', true)}">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="To Cancel"
+                                            icon="fa fa-cancel"
+                                            class="ui-button-danger m-1"
+                                            action="pharmacy_cancel_bill_retail?faces-redirect=true" 
+                                            disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.refunded}"
+                                            rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
+                                        </p:commandButton>
+                                    </h:panelGroup>
                                 </div>
                             </div>
                         </f:facet>

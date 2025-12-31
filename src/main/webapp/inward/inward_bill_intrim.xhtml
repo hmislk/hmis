@@ -184,12 +184,12 @@
                                         <h:panelGrid columns="3" >
                                             <h:outputLabel  value="Total Charges"/>
                                             <h:outputLabel value=":" class="mx-2"/>
-                                            <h:outputLabel value="#{bhtSummeryController.grantTotal}">
+                                            <h:outputLabel value="#{bhtSummeryController.grantTotal}" style="font-weight: bold">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                             <h:outputLabel value="Paid By Patient   " />
                                             <h:outputLabel value=":" class="mx-2"/>
-                                            <h:outputLabel value="#{bhtSummeryController.paid}" >
+                                            <h:outputLabel value="#{bhtSummeryController.paid}" style="font-weight: bold">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
 
@@ -199,7 +199,7 @@
                                             <h:outputLabel value=":" class="mx-2"/>
                                             <h:outputLabel  value="#{bhtSummeryController.due}"
                                                             rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit'
-                                                                        and bhtSummeryController.due > 0 }" >
+                                                                        and bhtSummeryController.due > 0 }" style="font-weight: bold">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </h:panelGrid>
@@ -209,20 +209,21 @@
                                             <h:outputText styleClass="fas fa-sign-out-alt" />
                                             <p:outputLabel value="Discharge" class="mx-2"/>
                                         </f:facet>
-                                        <h:panelGrid columns="2">
+                                        <h:panelGrid columns="2" class="w-100">
                                             <p:outputLabel value="Discharge Time"/>
 
                                             <p:datePicker
                                                 value="#{bhtSummeryController.date}"
                                                 id="dischargeTimeStamp"
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                                class="mx-2"
+                                                class="mx-2 w-100"
+                                                inputStyleClass="w-100" styleClass="w-100"
                                                 showTime="true"
                                                 showButtonBar="true"
                                                 timeInput="true">
                                             </p:datePicker>
                                         </h:panelGrid>
-                                        <div class="d-flex justify-content-end my-2">
+                                        <div class="d-flex justify-content-end my-2 mb-4">
                                             <p:commandButton
                                                 ajax="false"
                                                 style="float: right;"
@@ -256,28 +257,32 @@
                                 </h:panelGrid>
                             </div>
                             <div class="col-md-4">
-                                <p:dataTable 
-                                    id="sum"
-                                    value="#{bhtSummeryController.chargeItemTotals}"
-                                    var="c"
-                                    scrollHeight="350"
-                                    scrollable="true"
-                                    scrollRows="10"
-                                    >
+                                <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-money-bill" />
                                         <p:outputLabel value="Charges" class="mx-2"/>
                                     </f:facet>
-                                    <p:column headerText="Charge Type" rendered="#{c.total > 0}">
-                                        <h:outputLabel value="#{c.inwardChargeType.name}"/>
-                                    </p:column>
-                                    <p:column  sortBy="#{c.total}"  headerText="Total" rendered="#{c.total > 0}">
-                                        <h:outputLabel value="#{c.total}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </p:column>
-                                </p:dataTable>
 
+                                    <p:dataTable 
+                                        id="sum"
+                                        value="#{bhtSummeryController.chargeItemTotals}"
+                                        var="c"
+                                        style="height: 310px"
+                                        scrollHeight="310"
+                                        scrollable="true"
+                                        scrollRows="10"
+                                        >
+
+                                        <p:column headerText="Charge Type" rendered="#{c.total > 0}">
+                                            <h:outputLabel value="#{c.inwardChargeType.name}"/>
+                                        </p:column>
+                                        <p:column  sortBy="#{c.total}"  headerText="Total" rendered="#{c.total > 0}">
+                                            <h:outputLabel value="#{c.total}" style="font-weight: bold">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
                             </div>
                         </div>
 
@@ -445,7 +450,7 @@
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Update"
-                                                action="#{bhtSummeryController.updatePatientItem(pt)}" >
+                                                action="#{bhtSummeryController.updatePatientItem(pt, false)}" >
                                             </p:commandButton>
                                         </p:column>
                                         <p:column>
@@ -791,6 +796,8 @@
                                             <h:outputLabel value="#{pf.feeValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
+
+                                            <p:badge class="mx-2" value="Free Of Charge" rendered="#{pf.freeOfCharge}" severity="warning"></p:badge>
                                         </p:column>
                                         <p:column headerText="Fee At">
                                             <h:outputLabel value="#{pf.feeAt}">

@@ -4,6 +4,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PaymentScheme;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
@@ -45,6 +46,7 @@ public class BillLight {
     private BigDecimal totalRetailSaleValue;
     private PaymentMethod paymentMethod;
     private PatientEncounter patientEncounter;
+    private PaymentScheme paymentScheme;
     private String billItemNames;
 
     public BillLight() {
@@ -161,6 +163,26 @@ public class BillLight {
         this.totalRetailSaleValue = totalRetailSaleValue;
         this.paymentMethod = paymentMethod;
         this.patientEncounter = patientEncounter;
+    }
+
+    // Constructor for Pharmacy Sales with PaymentScheme (for proper discount scheme grouping)
+    public BillLight(Long id, BillTypeAtomic billTypeAtomic, Double total, Double netTotal,
+                     Double discount, Double margin, Double serviceCharge,
+                     BigDecimal totalCostValue, BigDecimal totalPurchaseValue, BigDecimal totalRetailSaleValue,
+                     PaymentMethod paymentMethod, PatientEncounter patientEncounter, PaymentScheme paymentScheme) {
+        this.id = id;
+        this.billTypeAtomic = billTypeAtomic;
+        this.total = total;
+        this.netTotal = netTotal;
+        this.discount = discount;
+        this.margin = margin;
+        this.serviceCharge = serviceCharge;
+        this.totalCostValue = totalCostValue;
+        this.totalPurchaseValue = totalPurchaseValue;
+        this.totalRetailSaleValue = totalRetailSaleValue;
+        this.paymentMethod = paymentMethod;
+        this.patientEncounter = patientEncounter;
+        this.paymentScheme = paymentScheme;
     }
 
     public Long getId() {
@@ -439,6 +461,14 @@ public class BillLight {
 
     public void setPatientAge(String patientAge) {
         this.patientAge = patientAge;
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
     }
 
 }

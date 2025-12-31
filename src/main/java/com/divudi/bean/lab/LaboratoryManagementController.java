@@ -369,7 +369,6 @@ public class LaboratoryManagementController implements Serializable {
             }
         }
         System.out.println("tempSelectedDTOItems = " + tempSelectedDTOItems.size());
-        System.out.println("selectedItems = " + selectedItems.size());
     }
 
     public void navigateToInvestigationsFromSelectedBill(Bill bill) {
@@ -549,7 +548,9 @@ public class LaboratoryManagementController implements Serializable {
 
     public String navigateToBackFormPatientReportEditingView() {
         if (sessionController.getLoggedUser().getLoginPage() == null) {
-            if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("The system uses the Old Laboratory Dashboard as its default interface", false)) {
+                return "/lab/search_for_reporting_ondemand?faces-redirect=true";
+            }else if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
                 listingEntity = ListingEntity.PATIENT_REPORTS;
                 return "/lab/laboratory_management_dashboard?faces-redirect=true";
             } else {
@@ -864,7 +865,6 @@ public class LaboratoryManagementController implements Serializable {
             patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
             System.out.println("patientSamples = " + patientSamples);
-            System.out.println("patientSamples = " + patientSamples.size());
             selectAll = false;
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientSamples", sessionController.getLoggedUser());
     }
@@ -986,7 +986,6 @@ public class LaboratoryManagementController implements Serializable {
             selectAll = false;
 
             System.out.println("sampleDtos = " + sampleDtos);
-            System.out.println("sampleDtos = " + sampleDtos.size());
 
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientSampleDTOs", sessionController.getLoggedUser());
     }
@@ -1458,7 +1457,6 @@ public class LaboratoryManagementController implements Serializable {
 
     public void collectDTOSamples() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("selectedSampleDtos = " + selectedSampleDtos);
             if (selectedSampleDtos == null || selectedSampleDtos.isEmpty()) {
                 JsfUtil.addErrorMessage("No samples selected");
                 return;
@@ -1659,7 +1657,6 @@ public class LaboratoryManagementController implements Serializable {
                 return;
             }
 
-            System.out.println("canSentSamples = " + canSentSamples);
 
             listingEntity = ListingEntity.PATIENT_SAMPLES;
 
@@ -1807,7 +1804,6 @@ public class LaboratoryManagementController implements Serializable {
                 return;
             }
 
-            System.out.println("canReciveSamples = " + canReciveSamples);
 
             listingEntity = ListingEntity.PATIENT_SAMPLES;
 
@@ -2302,7 +2298,6 @@ public class LaboratoryManagementController implements Serializable {
             System.out.println("jpql = " + jpql);
             System.out.println("params = " + params);
             System.out.println("investigationDTO = " + investigationDTO);
-            System.out.println("investigationDTO = " + investigationDTO.size());
             
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientInvestigationsDTOWithoutSampleId", sessionController.getLoggedUser());
     }
@@ -2445,22 +2440,17 @@ public class LaboratoryManagementController implements Serializable {
     }
     
     public void searchPatientReportsDTO() {
-        System.out.println("searchPatientReportsDTO");
         reportTimerController.trackReportExecution(() -> {
             if (filteringStatus == null) {
-                System.out.println("Filter Null ");
                 searchDTOPatientInvestigations();
             } else if (filteringStatus.equalsIgnoreCase("Processing")) {
-                System.out.println("Processing");
                 searchProcessingPatientReportsDTO();
             } else {
-                System.out.println("Else");
                 searchPendingAndApprovedPatientReportsDTO();
             }
             System.out.println("-------------------------------------------------------------- ");
             System.out.println("investigationDTO = " + investigationDTO);
             System.out.println("investigationDTO = " + investigationDTO.size());
-            System.out.println("-------------------------------------------------------------- ");
             listingEntity = ListingEntity.PATIENT_REPORTS;
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientReportsDTO", sessionController.getLoggedUser());
 
@@ -2485,7 +2475,6 @@ public class LaboratoryManagementController implements Serializable {
     
     
     public void searchProcessingPatientReportsDTO() {
-        System.out.println("searchProcessingPatientReportsDT");
         reportTimerController.trackReportExecution(() -> {
             searchDTOPatientInvestigations();
 
@@ -2498,7 +2487,6 @@ public class LaboratoryManagementController implements Serializable {
             }
             setInvestigationDTO(processingList);
             System.out.println("investigationDTO = " + investigationDTO);
-            System.out.println("investigationDTO = " + investigationDTO.size());
             listingEntity = ListingEntity.PATIENT_REPORTS;
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchProcessingPatientReportsDTO", sessionController.getLoggedUser());
     }
@@ -2629,7 +2617,6 @@ public class LaboratoryManagementController implements Serializable {
     }
     
     public void searchPendingAndApprovedPatientReportsDTO() {
-        System.out.println("searchPendingAndApprovedPatientReportsDTO");
         reportTimerController.trackReportExecution(() -> {
             listingEntity = ListingEntity.PATIENT_REPORTS;
             List<PatientInvestigationDTO> patientReports = new ArrayList<>();
@@ -2744,7 +2731,6 @@ public class LaboratoryManagementController implements Serializable {
             System.out.println("jpql = " + jpql);
             System.out.println("params = " + params);
             System.out.println("investigationDTO = " + investigationDTO);
-            System.out.println("investigationDTO = " + investigationDTO.size());
 
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPendingAndApprovedPatientReportsDTO", sessionController.getLoggedUser());
     }
@@ -2761,12 +2747,10 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     public void reloadSampleDTOList() {
-        System.out.println("reloadSampleDTOList" );
         for (int i = 0; i < sampleDtos.size(); i++) {
             SampleDTO dto = sampleDtos.get(i);
             if (selectedSampleDtos.contains(dto)) {
                 SampleDTO updatedDto = laboratoryCommonController.refreshPatientSampleDTO(dto.getSampleId());
-                System.out.println("updatedDto = " + updatedDto);
 
                 // Replace the original DTO with the updated one
                 sampleDtos.set(i, updatedDto);

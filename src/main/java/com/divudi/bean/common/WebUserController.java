@@ -1123,7 +1123,6 @@ public class WebUserController implements Serializable {
             return "";
         }
         String signatureType = staffImageController.getViewImageType();
-        System.out.println("signatureType = " + signatureType);
         if (signatureType == null || signatureType.isEmpty()) {
             JsfUtil.addErrorMessage("Please select a Type");
             return "";

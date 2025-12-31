@@ -180,7 +180,6 @@ public class CashBookEntryController implements Serializable {
         System.out.println("params = " + params);
         System.out.println("jpql = " + jpql);
         Double result = departmentFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("result = " + result);
         return result;
     }
 
@@ -199,7 +198,6 @@ public class CashBookEntryController implements Serializable {
         System.out.println("params = " + params);
         System.out.println("jpql = " + jpql);
         Double result = departmentFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("result = " + result);
         return result;
     }
 
@@ -219,7 +217,6 @@ public class CashBookEntryController implements Serializable {
         System.out.println("params = " + params);
         System.out.println("jpql = " + jpql);
         Double result = departmentFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("result = " + result);
         return result;
     }
 
@@ -238,11 +235,9 @@ public class CashBookEntryController implements Serializable {
         params.put("siteId", site.getId());
         params.put("st", CommonFunctions.getStartOfDay(date));
         System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
         if (cbe != null) {
             Double result = cbe.getFromSiteBalanceAfter();
-            System.out.println("result = " + result);
             return result;
         }
         return null;
@@ -263,7 +258,6 @@ public class CashBookEntryController implements Serializable {
         params.put("siteId", site.getId());
         params.put("st", CommonFunctions.getStartOfDay(date));
         System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
         PaymentMethod paymentMethod;
         try {
@@ -345,7 +339,6 @@ public class CashBookEntryController implements Serializable {
         params.put("siteId", site.getId());
         params.put("et", CommonFunctions.getEndOfDay(date));
         System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
         PaymentMethod paymentMethod;
         try {
@@ -427,11 +420,9 @@ public class CashBookEntryController implements Serializable {
         params.put("siteId", site.getId());
         params.put("et", CommonFunctions.getEndOfDay(date));
         System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         CashBookEntry cbe = cashbookEntryFacade.findFirstByJpql(jpql, params, TemporalType.TIMESTAMP);
         if (cbe != null) {
             Double result = cbe.getFromSiteBalanceAfter();
-            System.out.println("result = " + result);
             return result;
         }
         return null;
@@ -455,7 +446,6 @@ public class CashBookEntryController implements Serializable {
         System.out.println("params = " + params);
         System.out.println("jpql = " + jpql);
         Double result = departmentFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("result = " + result);
         return result;
     }
 
@@ -537,7 +527,6 @@ public class CashBookEntryController implements Serializable {
         System.out.println("params = " + params);
         System.out.println("jpql = " + jpql);
         Double result = departmentFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("result = " + result);
         return result;
     }
 
@@ -606,7 +595,6 @@ public class CashBookEntryController implements Serializable {
     }
 
     public List<CashBookEntry> writeCashBookEntryAtHandover(ReportTemplateRowBundle bundle, Bill bill, CashBook bundleCb) {
-        System.out.println("writeCashBookEntryAtHandover by Bundle");
 
         if (bundle == null) {
             JsfUtil.addErrorMessage("Cashbook Entry Error - No bundle !");
@@ -793,7 +781,6 @@ public class CashBookEntryController implements Serializable {
         CashBookEntry lastFromInstitutionEntry = fetchLastCashbookEntryForFromInstitution(entryData.getFromDepartment().getInstitution());
         CashBookEntry lastToInstitutionEntry = fetchLastCashbookEntryForToInstitution(entryData.getToDepartment().getInstitution());
         CashBookEntry lastFromSiteEntry = fetchLastCashbookEntryForFromSite(entryData.getFromDepartment().getSite());
-        System.out.println("lastFromSiteEntry = " + lastFromSiteEntry);
         CashBookEntry lastToSiteEntry = fetchLastCashbookEntryForToSite(entryData.getToDepartment().getSite());
 
         //ALL
@@ -1317,7 +1304,6 @@ public class CashBookEntryController implements Serializable {
     public void writeCashBookEntryAtHandover(Payment p, CashBook cb, Bill handoverAcceptBill) {
         System.out.println("writeCashBookEntryAtHandover");
         System.out.println("p = " + p);
-        System.out.println("cb = " + cb);
         if (p == null) {
             JsfUtil.addErrorMessage("Cashbook Entry Error !");
             return;

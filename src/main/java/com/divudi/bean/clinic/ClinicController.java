@@ -403,7 +403,6 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     }
 
     public void findSessionsForCalendar() {
-        System.out.println("Speciality = " + speciality);
         findSessions();
     }
 
@@ -441,7 +440,6 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     }
 
     public void findSessions() {
-        System.out.println("findSessions Start");
         if (getSpeciality() == null) {
             JsfUtil.addErrorMessage("Please Select the Speciality.");
             return;
@@ -490,7 +488,6 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     public void generateChaneelSessionEvents(List<SessionInstance> lsi) {
         channelModel = new DefaultScheduleModel();
         for (SessionInstance si : lsi) {
-            System.out.println("Name = " + si.getName());
 
             Calendar sdt = Calendar.getInstance();
             sdt.setTime(si.getSessionDate());
@@ -1315,7 +1312,6 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     }
 
     public void sessionInstanceSelected() {
-        System.out.println("sessionInstanceSelected");
         clearSessionInstanceData();
         fillSessionInstanceDetails();
         fillBaseFees();
@@ -1323,7 +1319,6 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     }
 
     public void clearSessionInstanceData() {
-        System.out.println("clearSessionInstanceData");
         additionalBillItems = new ArrayList<>();
         itemsAddedToBooking = new ArrayList<>();
         addedItemFees = new ArrayList<>();
@@ -1337,7 +1332,6 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         if (selectedSessionInstance == null) {
             return;
         }
-        System.out.println("selectedSessionInstance.getOriginatingSession() = " + selectedSessionInstance.getOriginatingSession());
         if (selectedSessionInstance.getOriginatingSession() == null) {
             return;
         }
@@ -1596,7 +1590,6 @@ public class ClinicController implements Serializable, ControllerWithPatientView
                 feeTotalForSelectedBill += tbf.getFee();
             }
         }
-        System.out.println("selectedItemFees = " + selectedItemFees);
     }
 
     @PostConstruct
@@ -1807,7 +1800,6 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     }
 
     public String navigateToManageBooking(BillSession bs) {
-        System.out.println("bs = " + bs);
         selectedBillSession = bs;
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Please select a Patient");
@@ -2789,7 +2781,6 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     }
 
     public void addItemToBooking() {
-        System.out.println("addItemToBooking");
         if (itemToAddToBooking == null) {
             JsfUtil.addErrorMessage("Item to add to booking");
             return;
@@ -5980,7 +5971,6 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         double calculatingGrossBillTotal = 0.0;
         double calculatingNetBillTotal = 0.0;
         for (BillItem bi : selectedBillSession.getBill().getBillItems()) {
-            System.out.println("bi = " + bi);
             double calculatingGrossBillItemTotal = 0.0;
             double calculatingNetBillItemTotal = 0.0;
             double billItemHospitalFee = 0.0;
@@ -5989,7 +5979,6 @@ public class ClinicController implements Serializable, ControllerWithPatientView
 
                 System.out.println("iteratingBillFee = " + updatingFee);
                 System.out.println("iteratingBillFee = " + updatingFee.getId());
-                System.out.println("iteratingBillFee = " + updatingFee.getFeeValue());
                 if (iteratingBillFee.getFee() == null) {
                     continue;
                 }
@@ -6059,7 +6048,6 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         }
         billToCaclculate.setDiscount(calculatingGrossBillTotal - calculatingNetBillTotal);
         billToCaclculate.setNetTotal(calculatingNetBillTotal);
-        System.out.println(calculatingNetBillTotal + " g " + calculatingGrossBillTotal);
         billToCaclculate.setTotal(calculatingGrossBillTotal);
         getBillFacade().edit(billToCaclculate);
     }
@@ -8494,7 +8482,6 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     public void setStrTenderedValue(String strTenderedValue) {
         this.strTenderedValue = strTenderedValue;
         try {
-            System.out.println("strTenderedValue = " + strTenderedValue);
             cashPaid = Double.parseDouble(strTenderedValue);
         } catch (NumberFormatException e) {
         }

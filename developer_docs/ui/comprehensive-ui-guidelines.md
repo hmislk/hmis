@@ -11,7 +11,6 @@
 ## Page Structure
 - **Use full HTML documents**: `<!DOCTYPE html>`, `<html>` with namespaces, `<h:head>`, and `<h:body>`.
 - **Embed the template inside the body** using `<ui:composition template="/resources/template/template.xhtml">`.
-- **One logical form**: Wrap related content in a single `<h:form>`; avoid one form per accordion tab or per button.
 - **Escape XML entities** (`&amp;`, `&lt;`, etc.) to keep XHTML valid.
 - **Case study – Accordion state loss**: Multiple forms inside accordion tabs broke tab persistence. Wrapping the whole accordion in one `<h:form>` and using the built-in `activeIndex` restored expected behaviour without extra controller logic.
 
@@ -53,7 +52,7 @@
 - Align labels and inputs with `p:outputLabel` + PrimeFaces components; include `for` attributes for accessibility.
 - Reuse controller state; avoid duplicating filters or adding new global variables when not required.
 - Heavy operations (report generation, exports) should use `ajax="false"` to allow file downloads.
-- Always include descriptive `title` attributes on interactive elements.
+- Include descriptive `title` attributes on interactive elements.
 
 ---
 

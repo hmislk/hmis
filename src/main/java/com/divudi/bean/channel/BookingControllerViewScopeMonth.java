@@ -449,7 +449,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
         List<BillFee> savingBillFeesFromSession = createBillFeeForSessions(printingBill, savingBillItem, true, priceMatrix);
 
-
         if (savingBillFeesFromSession != null) {
             savingBillFees.addAll(savingBillFeesFromSession);
         }
@@ -1180,7 +1179,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
             params.put("keyword", "%" + sessionInstanceFilter.trim().toLowerCase() + "%");
         }
 
-         // Adding sorting to JPQL with custom order
+        // Adding sorting to JPQL with custom order
         jpql.append(" order by case when i.completed = true then 1 else 0 end, i.completed asc, i.started desc, i.sessionDate asc, i.startingTime asc");
 
         Long numberOfSessionToLoad = configOptionApplicationController.getLongValueByKey("Maximum Number of Sessions to Load during channel booking by dates page.", 30L);
@@ -2622,7 +2621,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
 //        printPreview = false;
 //        return navigateBackToBookingsFromSessionInstance();
 //    }
-
     public String startNewChannelBookingForSelectingSession() {
         resetToStartFromSameSessionInstance();
         fillBillSessions();
@@ -2730,7 +2728,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
             return true;
         }
 
-        if(p.getPerson().getDob() == null){
+        if (p.getPerson().getDob() == null) {
             JsfUtil.addErrorMessage("Please enter patient age");
             return true;
         }
@@ -2745,7 +2743,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
             return true;
         }
 
-        if (p.getPerson().getArea()== null) {
+        if (p.getPerson().getArea() == null) {
             JsfUtil.addErrorMessage("Please enter a area");
             return true;
         }
@@ -2897,6 +2895,16 @@ public class BookingControllerViewScopeMonth implements Serializable {
             settleSucessFully = false;
             return;
         }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false)
+                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Channeling from the system", false)) {
+            if (patient.isBlacklisted()) {
+                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+                settleSucessFully = false;
+                return;
+            }
+        }
+
         if (paymentMethodErrorPresent()) {
             JsfUtil.addErrorMessage("Please Enter Payment Details");
             settleSucessFully = false;
@@ -2937,9 +2945,9 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
                 List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbers());
 
-                if(reservedBooking){
-                     bookedPatientCount = bookedPatientCount;
-                }else{
+                if (reservedBooking) {
+                    bookedPatientCount = bookedPatientCount;
+                } else {
                     bookedPatientCount = bookedPatientCount + reservedNumbers.size();
                 }
 
@@ -3767,7 +3775,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
 //        }
 //
 //    }
-
     public void generateSessionEvents(List<SessionInstance> sss) {
         eventModel = new DefaultScheduleModel();
         for (SessionInstance s : sss) {
@@ -3819,7 +3826,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
 //
 //        billSessions = new ArrayList<>();
 //    }
-
     public boolean isPrintPreview() {
         return printPreview;
     }
@@ -4804,11 +4810,11 @@ public class BookingControllerViewScopeMonth implements Serializable {
         if (collectingCentre != null) {
             savingBill.setCollectingCentre(collectingCentre);
         }
-         if (savingBill.getPaidAmount() == 0.0) {
+        if (savingBill.getPaidAmount() == 0.0) {
             if (!(savingBill.getPaymentMethod() == PaymentMethod.OnCall)) {
                 savingBill.setPaidAmount(feeNetTotalForSelectedBill);
             } else {
-                if(feeNetTotalForSelectedBill != null){
+                if (feeNetTotalForSelectedBill != null) {
                     savingBill.setNetTotal(feeNetTotalForSelectedBill);
                 }
             }
@@ -5310,12 +5316,10 @@ public class BookingControllerViewScopeMonth implements Serializable {
     }
 
     private void calculateBillTotalsFromBillFees(Bill billToCaclculate, List<BillFee> billfeesAvailable) {
-        System.out.println("calculateBillTotalsFromBillFees");
         double calculatingGrossBillTotal = 0.0;
         double calculatingNetBillTotal = 0.0;
 
         for (BillFee iteratingBillFee : billfeesAvailable) {
-            System.out.println("iteratingBillFee = " + iteratingBillFee);
             if (iteratingBillFee.getFee() == null) {
                 continue;
             }
@@ -5968,7 +5972,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
     public void setChannelSearchController(ChannelSearchController channelSearchController) {
         this.channelSearchController = channelSearchController;
     }
-
 
     public ItemFeeFacade getItemFeeFacade() {
         return ItemFeeFacade;
@@ -7171,7 +7174,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
         }
 
         System.out.println("feeTotalForSelectedBill = " + feeTotalForSelectedBill);
-        System.out.println("feeDiscountForSelectedBill = " + feeDiscountForSelectedBill);
         feeNetTotalForSelectedBill = feeTotalForSelectedBill - feeDiscountForSelectedBill;
     }
 
@@ -7572,7 +7574,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
     public double getCashBalance() {
         if (feeTotalForSelectedBill != null) {
-            System.out.println("feeNetTotalForSelectedBill = " + feeNetTotalForSelectedBill);
             if (feeNetTotalForSelectedBill == null) {
                 feeNetTotalForSelectedBill = 0.0;
             }

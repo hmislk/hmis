@@ -148,29 +148,37 @@
                                 </p:tab>
 
                                 <p:tab title="Float Management">
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-primary" 
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-primary"
                                         value="Float Transfer"
-                                        icon="pi pi-directions"  
-                                        ajax="false" 
+                                        icon="pi pi-directions"
+                                        ajax="false"
                                         action="#{financialTransactionController.navigateToFundTransferBill()}" >
                                     </p:commandButton>
 
                                     <p:badge severity="danger" value="#{financialTransactionController.fundTransferBillsToReceiveCount}">
-                                        <p:commandButton 
-                                            class="my-1 w-100 ui-button-warning"  
+                                        <p:commandButton
+                                            class="my-1 w-100 ui-button-warning"
                                             value="Float Transfers for me to Receive"
-                                            icon="pi pi-inbox" 
-                                            ajax="false" 
+                                            icon="pi pi-inbox"
+                                            ajax="false"
                                             action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
                                         </p:commandButton>
                                     </p:badge>
 
-                                    <p:commandButton 
-                                        class="my-1 w-100 ui-button-success"  
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-info"
+                                        value="My Float Outs"
+                                        icon="pi pi-sign-out"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToMyFundTransferBillsOut()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="my-1 w-100 ui-button-success"
                                         value="Transfer Bill Payment Method"
-                                        icon="pi pi-refresh" 
-                                        ajax="false" 
+                                        icon="pi pi-refresh"
+                                        ajax="false"
                                         action="#{financialTransactionController.navigateToTransferPaymentMethod()}" >
                                     </p:commandButton>
                                 </p:tab>

@@ -1093,6 +1093,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         getRefundBill().setReferenceBill(getItemReturnBill());
         getRefundBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getRefundBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        getRefundBill().setComments(refundComment);
+        getRefundBill().setCreater(getSessionController().getLoggedUser());
 
         getBillBean().setPaymentMethodData(getRefundBill(), getRefundBill().getPaymentMethod(), paymentMethodData);
 
@@ -1495,7 +1497,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
     }
 
     private void saveSaleReturnBillItems(List<Payment> refundPayments) {
-        for (BillItem tbi : getRefundBill().getBillItems()) {
+        for (BillItem tbi : itemReturnBill.getBillItems()) {
 
             BillItem sbi = new BillItem();
 

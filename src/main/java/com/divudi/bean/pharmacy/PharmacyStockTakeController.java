@@ -436,7 +436,6 @@ public class PharmacyStockTakeController implements Serializable {
        
 
         if (sessionController.getDepartment() == null || !department.equals(sessionController.getDepartment())) {
-            System.out.println("DEPARTMENT VERIFICATION FAILED - departments do not match");
             JsfUtil.addErrorMessage("Please log to the department you want to take the stock");
             return null;
         }
@@ -1011,16 +1010,13 @@ public class PharmacyStockTakeController implements Serializable {
         if (snapshotBill == null) {
             JsfUtil.addErrorMessage("No snapshot available");
             LOGGER.log(Level.WARNING, "[StockTake] Parse aborted. snapshotBill is null");
-            System.out.println("DEBUG: snapshotBill is NULL!");
             return;
         }
 
         System.out.println("DEBUG: snapshotBill.id = " + snapshotBill.getId());
-        System.out.println("DEBUG: snapshotBill.billItems = " + (snapshotBill.getBillItems() != null ? snapshotBill.getBillItems().size() : "NULL"));
         if (snapshotBill.getBillItems() != null && !snapshotBill.getBillItems().isEmpty()) {
             BillItem firstItem = snapshotBill.getBillItems().iterator().next();
             System.out.println("DEBUG: First billItem.id = " + firstItem.getId());
-            System.out.println("DEBUG: First billItem.pharmaceuticalBillItem = " + (firstItem.getPharmaceuticalBillItem() != null ? "NOT NULL" : "NULL"));
         }
 
         // Check if the stock taking is already completed
@@ -1083,11 +1079,9 @@ public class PharmacyStockTakeController implements Serializable {
                 // If Real Stock is blank, skip the row (do not treat as zero)
                 Double physicalObj = colRealStock >= 0 ? getDoubleNullable(row, colRealStock) : null;
 
-                System.out.println("DEBUG: Row " + i + " - code=" + code + ", batch=" + batch + ", physical=" + physicalObj);
 
                 if (physicalObj == null) {
                     skippedNoQty++;
-                    System.out.println("DEBUG: Row " + i + " - SKIPPED (No Qty)");
                     continue;
                 }
                 double physical = physicalObj;
@@ -1096,20 +1090,16 @@ public class PharmacyStockTakeController implements Serializable {
                 BillItem snapItem = null;
                 if (colBillItemId >= 0) {
                     Long bid = getLongNullable(row, colBillItemId);
-                    System.out.println("DEBUG: Row " + i + " - Trying to find by BillItem ID: " + bid);
                     if (bid != null && bid > 0) {
                         snapItem = findSnapshotBillItemById(bid);
-                        System.out.println("DEBUG: Row " + i + " - Found by ID? " + (snapItem != null));
                     }
                 }
                 if (snapItem == null && code != null && batch != null) {
                     System.out.println("DEBUG: Row " + i + " - Trying to find by Code+Batch: " + code + " / " + batch);
                     snapItem = findSnapshotBillItem(code, batch);
-                    System.out.println("DEBUG: Row " + i + " - Found by Code+Batch? " + (snapItem != null));
                 }
                 if (snapItem == null) {
                     skippedNoMatch++;
-                    System.out.println("DEBUG: Row " + i + " - SKIPPED (No Match)");
                     continue;
                 }
                 matched++;
@@ -1144,7 +1134,6 @@ public class PharmacyStockTakeController implements Serializable {
             System.out.println("DEBUG: Matched items: " + matched);
             System.out.println("DEBUG: Skipped (no qty): " + skippedNoQty);
             System.out.println("DEBUG: Skipped (no match): " + skippedNoMatch);
-            System.out.println("=== DEBUG: parseUploadedSheet() END ===");
 
             LOGGER.log(Level.INFO, "[StockTake] Parse completed. processedRows={0}, matchedItems={1}, skippedNoQty={2}, skippedNoMatch={3}",
                     new Object[]{processed, matched, skippedNoQty, skippedNoMatch});
@@ -1460,7 +1449,6 @@ public class PharmacyStockTakeController implements Serializable {
     public String gotoUploadAdjustments(Bill b) {
         System.out.println("=== DEBUG: gotoUploadAdjustments() called ===");
         if (b == null) {
-            System.out.println("DEBUG: Bill parameter is NULL");
             return null;
         }
 
@@ -1480,7 +1468,6 @@ public class PharmacyStockTakeController implements Serializable {
         this.file = null;
         this.physicalCountBill = null;
 
-        System.out.println("DEBUG: After assignment, snapshotBill.billItems = " + (this.snapshotBill.getBillItems() != null ? this.snapshotBill.getBillItems().size() : "NULL"));
 
         return "/pharmacy/pharmacy_stock_take_upload?faces-redirect=true";
     }
@@ -1500,7 +1487,6 @@ public class PharmacyStockTakeController implements Serializable {
         params.put("billId", billId);
         System.out.println("DEBUG: Executing eager fetch query for Bill...");
         Bill b = billFacade.findFirstByJpql(jpql, params);
-        System.out.println("DEBUG: After Step 1, billItems = " + (b != null && b.getBillItems() != null ? b.getBillItems().size() : "NULL"));
 
         if (b != null && b.getBillItems() != null) {
             // Step 2: Fetch PharmaceuticalBillItems for each BillItem
@@ -1511,11 +1497,9 @@ public class PharmacyStockTakeController implements Serializable {
                     + "where bi.bill.id = :billId";
             System.out.println("DEBUG: Executing eager fetch query for PharmaceuticalBillItems...");
             billItemFacade.findByJpql(jpql2, params);
-            System.out.println("DEBUG: After Step 2 (eager fetch), billItems size = " + b.getBillItems().size());
         }
 
         if (b == null) {
-            System.out.println("DEBUG: Bill was null after eager fetch, falling back to billFacade.find()");
             b = billFacade.find(billId); // Fallback to regular find
         }
         return gotoUploadAdjustments(b);

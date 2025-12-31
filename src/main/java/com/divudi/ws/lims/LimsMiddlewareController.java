@@ -44,6 +44,8 @@ import ca.uhn.hl7v2.parser.Parser;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.DepartmentMachineController;
 import com.divudi.bean.lab.MachineController;
+import com.divudi.bean.lab.ReportFormatController;
+import com.divudi.core.data.ReportType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.data.lab.SysMex;
 import com.divudi.core.data.lab.SysMexTypeA;
@@ -60,7 +62,9 @@ import com.divudi.core.entity.lab.Machine;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.entity.lab.PatientReportItemValue;
+import com.divudi.core.entity.lab.ReportFormat;
 import com.divudi.core.facade.InvestigationItemValueFlagFacade;
+import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PatientReportFacade;
 import com.divudi.core.facade.PatientReportItemValueFacade;
 import java.io.IOException;
@@ -1495,20 +1499,37 @@ public class LimsMiddlewareController {
             this.error = error;
         }
     }
+    
+    @EJB
+    PatientFacade patientFacade;
+    @Inject
+    ReportFormatController reportFormatController;
 
     public PatientReport createNewPatientReport(PatientInvestigation pi, Investigation ix) {
         //System.err.println("creating a new patient report");
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
+            Patient pt = patientFacade.find(pi.getPatient().getId());
+            
+            r.setPatientName(pt.getPerson().getNameWithTitle());
+            r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
+            r.setPatientGender(pt.getPerson().getSex().getLabel());
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             r.setCreater(loggedUser);
+            r.setReportType(ReportType.INTERFACE);
             r.setItem(ix);
             r.setDataEntryDepartment(loggedDepartment);
             r.setDataEntryInstitution(loggedInstitution);
             if (r.getTransInvestigation() != null) {
-                r.setReportFormat(r.getTransInvestigation().getReportFormat());
+                if (r.getTransInvestigation().getReportFormat() != null) {
+                    r.setReportFormat(r.getTransInvestigation().getReportFormat());
+                } else {
+                    ReportFormat nrf = reportFormatController.getValidReportFormat();
+                    r.setReportFormat(nrf);
+                }
             }
+            
             prFacade.create(r);
             r.setPatientInvestigation(pi);
             prBean.addPatientReportItemValuesForReport(r);
@@ -1524,9 +1545,15 @@ public class LimsMiddlewareController {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
+            Patient pt = patientFacade.find(pi.getPatient().getId());
+            
+            r.setPatientName(pt.getPerson().getNameWithTitle());
+            r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
+            r.setPatientGender(pt.getPerson().getSex().getLabel());
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             r.setCreater(loggedUser);
             r.setItem(ix);
+            r.setReportType(ReportType.INTERFACE);
             r.setDataEntryDepartment(loggedDepartment);
             r.setDataEntryInstitution(loggedInstitution);
             r.setAutomated(Boolean.TRUE);
@@ -1536,7 +1563,12 @@ public class LimsMiddlewareController {
             r.setAutomatedInstitution(deptAnalyzer.getDepartment().getInstitution());
             r.setAutomatedUser(u);
             if (r.getTransInvestigation() != null) {
-                r.setReportFormat(r.getTransInvestigation().getReportFormat());
+                if (r.getTransInvestigation().getReportFormat() != null) {
+                    r.setReportFormat(r.getTransInvestigation().getReportFormat());
+                } else {
+                    ReportFormat nrf = reportFormatController.getValidReportFormat();
+                    r.setReportFormat(nrf);
+                }
             }
             prFacade.create(r);
             r.setPatientInvestigation(pi);

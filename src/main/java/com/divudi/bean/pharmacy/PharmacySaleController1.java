@@ -2320,7 +2320,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
     }
 
     public String navigateToSaleBillForCashierPrint() {
-        return "/pharmacy/printing/retail_sale_for_cashier?faces-redirect=true";
+        return "/pharmacy/printing/retail_sale_for_cashier_1?faces-redirect=true";
     }
 
     @Deprecated // Plse use settlePreBillAndNavigateToPrint
@@ -2980,6 +2980,15 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
                     || getPatient().getPerson().getName() == null
                     || getPatient().getPerson().getName().trim().isEmpty()) {
                 JsfUtil.addErrorMessage("Please Select a Patient");
+                billSettlingStarted = false;
+                return;
+            }
+        }
+        
+        if(configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false) 
+                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Pharmacy from the system", false)){
+            if(getPatient().isBlacklisted()){
+                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
                 billSettlingStarted = false;
                 return;
             }
@@ -4194,7 +4203,7 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
             }
             try {
                 Long id = Long.valueOf(value);
-                PharmacySaleController controller = (PharmacySaleController) facesContext.getApplication().getELResolver()
+                PharmacySaleController1 controller = (PharmacySaleController1) facesContext.getApplication().getELResolver()
                         .getValue(facesContext.getELContext(), null, "pharmacySaleController1");
                 if (controller != null && controller.getStockDto() != null && id.equals(controller.getStockDto().getId())) {
                     return controller.getStockDto();
