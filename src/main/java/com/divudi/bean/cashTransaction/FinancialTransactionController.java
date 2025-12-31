@@ -1732,6 +1732,10 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Wrong Bill Type");
             return "";
         }
+        if (bill.isCancelled()) {
+            JsfUtil.addErrorMessage("This float transfer has been cancelled and cannot be received");
+            return "";
+        }
         floatTransferStarted = false;
         setSelectedBill(bill);
         resetClassVariablesWithoutSelectedBill();
@@ -5022,6 +5026,7 @@ public class FinancialTransactionController implements Serializable {
         StringBuilder jpql = new StringBuilder(
                 "select s from Bill s "
                 + "where s.retired=:ret "
+                + "and (s.cancelled = false or s.cancelled is null) "
                 + "and s.billTypeAtomic=:btype "
                 + "and s.referenceBill is null "
         );
@@ -5277,6 +5282,7 @@ public class FinancialTransactionController implements Serializable {
                 break;
             case FUND_TRANSFER_BILL:
                 jpql.append("and s.referenceBill is null ");
+                jpql.append("and (s.cancelled = false or s.cancelled is null) ");
                 break;
 
         }
@@ -5430,6 +5436,12 @@ public class FinancialTransactionController implements Serializable {
         if (currentBill.getReferenceBill().getBillType() != BillType.FundTransferBill) {
             floatTransferStarted = false;
             JsfUtil.addErrorMessage("Error - Reference bill type");
+            return "";
+        }
+
+        if (currentBill.getReferenceBill().isCancelled()) {
+            floatTransferStarted = false;
+            JsfUtil.addErrorMessage("This float transfer has been cancelled and cannot be accepted");
             return "";
         }
 
