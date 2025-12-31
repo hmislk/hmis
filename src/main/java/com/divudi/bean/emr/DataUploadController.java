@@ -879,6 +879,224 @@ public class DataUploadController implements Serializable {
         }
     }
 
+    /**
+     * Simplified stock upload for direct purchase using two-phase validation approach.
+     *
+     * Phase 1: Validate ALL rows - find items by Code AND Name
+     * Phase 2: Only proceed with upload if ALL items are found
+     *
+     * Required Excel columns:
+     * - C (2): Product/Item Name - for AMP lookup
+     * - D (3): Code - for AMP lookup
+     * - O (14): DOE - Date of Expiry
+     * - P (15): Batch - Batch number (optional, auto-generate if empty)
+     * - Q (16): Quantity - Stock quantity
+     * - R (17): Purchase Price - Purchase rate
+     * - S (18): Sale Price - Retail rate
+     *
+     * @return Navigation outcome to direct_purchase page or empty string on error
+     */
+    public String importStockForDirectPurchaseSimplified() {
+        // Clear previous errors
+        clearUploadErrors();
+
+        // 1. File validation
+        if (file == null || file.getFileName() == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+
+        // 2. Column indices (0-based)
+        final int COL_NAME = 2;      // C - Product Name
+        final int COL_CODE = 3;      // D - Code
+        final int COL_DOE = 14;      // O - Date of Expiry
+        final int COL_BATCH = 15;    // P - Batch
+        final int COL_QTY = 16;      // Q - Quantity
+        final int COL_PP = 17;       // R - Purchase Price
+        final int COL_SP = 18;       // S - Sale Price
+
+        int startRow = 1; // Skip header row
+
+        List<String> validationErrors = new ArrayList<>();
+        List<ValidatedStockRow> validatedRows = new ArrayList<>();
+
+        try (InputStream in = file.getInputStream();
+             Workbook workbook = new XSSFWorkbook(in)) {
+
+            Sheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.iterator();
+
+            // ============================================
+            // PHASE 1: VALIDATION - Check all items exist
+            // ============================================
+            int rowIndex = 0;
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                if (rowIndex++ < startRow) {
+                    continue; // Skip header row
+                }
+
+                int excelRowNumber = rowIndex; // 1-based row number for error messages
+
+                // Read required columns
+                String itemName = getCellValueAsString(row.getCell(COL_NAME));
+                String itemCode = getCellValueAsString(row.getCell(COL_CODE));
+
+                // Skip completely empty rows
+                if ((itemName == null || itemName.trim().isEmpty()) &&
+                    (itemCode == null || itemCode.trim().isEmpty())) {
+                    continue;
+                }
+
+                // Validate required fields are present
+                if (itemName == null || itemName.trim().isEmpty()) {
+                    validationErrors.add("Row " + excelRowNumber + ": Item name (Column C) is empty");
+                    continue;
+                }
+                if (itemCode == null || itemCode.trim().isEmpty()) {
+                    validationErrors.add("Row " + excelRowNumber + ": Item code (Column D) is empty");
+                    continue;
+                }
+
+                // Query for AMP by code AND name
+                Map<String, Object> params = new HashMap<>();
+                params.put("code", itemCode.trim());
+                params.put("name", itemName.trim().toUpperCase());
+                String jpql = "SELECT a FROM Amp a WHERE a.retired = false AND a.code = :code AND UPPER(a.name) = :name";
+                Amp amp = ampFacade.findFirstByJpql(jpql, params);
+
+                if (amp == null) {
+                    validationErrors.add("Row " + excelRowNumber + ": Item not found - Code: '" +
+                        itemCode.trim() + "', Name: '" + itemName.trim() + "'");
+                    continue;
+                }
+
+                // Read remaining columns
+                double quantity = parseDouble(getCellValueAsString(row.getCell(COL_QTY)));
+                double purchaseRate = parseDouble(getCellValueAsString(row.getCell(COL_PP)));
+                double saleRate = parseDouble(getCellValueAsString(row.getCell(COL_SP)));
+                String batch = getCellValueAsString(row.getCell(COL_BATCH));
+                Date doe = parseDate(getCellValueAsString(row.getCell(COL_DOE)));
+
+                // Validate quantity
+                if (quantity <= 0) {
+                    validationErrors.add("Row " + excelRowNumber + ": Invalid quantity (" + quantity + ") for item " + itemCode);
+                    continue;
+                }
+
+                // Validate purchase rate
+                if (purchaseRate <= 0) {
+                    validationErrors.add("Row " + excelRowNumber + ": Invalid purchase rate (" + purchaseRate + ") for item " + itemCode);
+                    continue;
+                }
+
+                // Validate sale rate
+                if (saleRate <= 0) {
+                    validationErrors.add("Row " + excelRowNumber + ": Invalid sale rate (" + saleRate + ") for item " + itemCode);
+                    continue;
+                }
+
+                // Create validated row
+                ValidatedStockRow validatedRow = new ValidatedStockRow();
+                validatedRow.rowNumber = excelRowNumber;
+                validatedRow.amp = amp;
+                validatedRow.quantity = java.math.BigDecimal.valueOf(quantity);
+                validatedRow.purchaseRate = java.math.BigDecimal.valueOf(purchaseRate);
+                validatedRow.saleRate = java.math.BigDecimal.valueOf(saleRate);
+                validatedRow.dateOfExpiry = doe;
+                validatedRow.batch = batch;
+
+                validatedRows.add(validatedRow);
+            }
+
+            // ============================================
+            // CHECK: If any errors, stop and show all errors
+            // ============================================
+            if (!validationErrors.isEmpty()) {
+                // Store errors for display
+                this.uploadErrors = validationErrors;
+
+                // Build detailed error message
+                StringBuilder errorBuilder = new StringBuilder();
+                errorBuilder.append("=== UPLOAD VALIDATION FAILED ===\n");
+                errorBuilder.append("Total Errors: ").append(validationErrors.size()).append("\n\n");
+                errorBuilder.append("=== ERROR DETAILS ===\n");
+                for (int i = 0; i < validationErrors.size(); i++) {
+                    errorBuilder.append((i + 1)).append(". ").append(validationErrors.get(i)).append("\n");
+                }
+                errorBuilder.append("\n=== INSTRUCTIONS ===\n");
+                errorBuilder.append("1. Ensure all item codes and names match existing items in the system\n");
+                errorBuilder.append("2. Check for typos in item codes and names\n");
+                errorBuilder.append("3. Verify items are not retired\n");
+                errorBuilder.append("4. Re-upload the corrected file\n");
+
+                this.uploadErrorDetails = errorBuilder.toString();
+
+                JsfUtil.addErrorMessage(validationErrors.size() + " validation errors found. No items were uploaded. See error details below.");
+                return "";
+            }
+
+            if (validatedRows.isEmpty()) {
+                JsfUtil.addErrorMessage("No valid rows found in the Excel file");
+                return "";
+            }
+
+            // ============================================
+            // PHASE 2: IMPORT - All items validated, proceed with upload
+            // ============================================
+            getPharmacyDirectPurchaseController().prepareForNewDIrectPurchaseBill();
+
+            for (ValidatedStockRow validRow : validatedRows) {
+                // Set item
+                getPharmacyDirectPurchaseController().getCurrentBillItem().setItem(validRow.amp);
+
+                // Set quantity via BillItemFinanceDetails
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setQuantity(validRow.quantity);
+
+                // Set purchase rate (lineGrossRate)
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setLineGrossRate(validRow.purchaseRate);
+
+                // Set sale rate (retailSaleRatePerUnit)
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setRetailSaleRatePerUnit(validRow.saleRate);
+
+                // Set free quantity to zero
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setFreeQuantity(java.math.BigDecimal.ZERO);
+
+                // Set date of expiry
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getPharmaceuticalBillItem()
+                    .setDoe(validRow.dateOfExpiry);
+
+                // Set batch - auto-generate if empty
+                if (validRow.batch == null || validRow.batch.trim().isEmpty()) {
+                    getPharmacyDirectPurchaseController().setBatch();
+                } else {
+                    getPharmacyDirectPurchaseController().getCurrentBillItem()
+                        .getPharmaceuticalBillItem()
+                        .setStringValue(validRow.batch);
+                }
+
+                // Add item to the bill
+                getPharmacyDirectPurchaseController().addItem();
+            }
+
+            JsfUtil.addSuccessMessage("Success! " + validatedRows.size() + " items uploaded to direct purchase bill.");
+            return "/pharmacy/direct_purchase";
+
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error reading file: " + e.getMessage());
+            return "";
+        }
+    }
+
     public String importFromExcelWithoutStock() {
         if (file == null) {
             JsfUtil.addErrorMessage("No File");
@@ -9069,6 +9287,20 @@ public class DataUploadController implements Serializable {
     public void clearUploadErrors() {
         this.uploadErrors = null;
         this.uploadErrorDetails = null;
+    }
+
+    /**
+     * Data transfer object for validated stock upload row.
+     * Used in simplified direct purchase stock upload.
+     */
+    private static class ValidatedStockRow {
+        int rowNumber;
+        Amp amp;
+        java.math.BigDecimal quantity;
+        java.math.BigDecimal purchaseRate;
+        java.math.BigDecimal saleRate;
+        Date dateOfExpiry;
+        String batch;
     }
 
 }
