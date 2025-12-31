@@ -186,7 +186,11 @@ public class PharmacyDirectPurchaseController implements Serializable {
             return;
         }
 
-        if (pbi.getDoe() != null) {
+        // Check if expired items are allowed (for stock upload scenarios)
+        boolean allowExpiredItems = configOptionApplicationController.getBooleanValueByKey(
+                "Allow Expired Items in Direct Purchase Stock Upload", false);
+
+        if (!allowExpiredItems && pbi.getDoe() != null) {
             if (pbi.getDoe().getTime() < Calendar.getInstance().getTimeInMillis()) {
                 JsfUtil.addErrorMessage("Check Date of Expiry");
                 return;

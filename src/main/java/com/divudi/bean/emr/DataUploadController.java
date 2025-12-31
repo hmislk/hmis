@@ -72,6 +72,7 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.VtmFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.MembershipSchemeController;
+import com.divudi.bean.pharmacy.PharmacyDirectPurchaseController;
 import com.divudi.bean.pharmacy.PharmacyPurchaseController;
 import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.SymanticHyrachi;
@@ -196,6 +197,8 @@ public class DataUploadController implements Serializable {
     FeeValueController feeValueController;
     @Inject
     private PharmacyPurchaseController pharmacyPurchaseController;
+    @Inject
+    private PharmacyDirectPurchaseController pharmacyDirectPurchaseController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
@@ -587,6 +590,289 @@ public class DataUploadController implements Serializable {
             }
             JsfUtil.addSuccessMessage("Successful. All the data in Excel File Imported to the database");
             return "/pharmacy/pharmacy_purchase";
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+            return "";
+        }
+    }
+
+    /**
+     * Imports pharmaceutical items with stock data from Excel file and navigates
+     * to the NEW direct purchase page (direct_purchase.xhtml).
+     *
+     * This method mirrors importToExcelWithStock() but uses PharmacyDirectPurchaseController
+     * instead of PharmacyPurchaseController, mapping data to BillItemFinanceDetails structure.
+     *
+     * Excel columns expected:
+     * A=Serial, B=Category, C=Product, D=Code, E=Barcode, F=Generic, G=Strength,
+     * H=StrengthUnit, I=PackSize, J=IssueUnit, K=PackUnit, L=Distributor,
+     * M=Manufacturer, N=Importer, O=DOE, P=Batch, Q=Quantity, R=PurchasePrice, S=SalePrice
+     *
+     * @return Navigation outcome to direct_purchase page or empty string on error
+     */
+    public String importToExcelWithStockNewDirectPurchase() {
+        if (file == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+        if (file.getFileName() == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+
+        catCol = 1;                   // B
+        ampCol = 2;                   // C
+        codeCol = 3;                  // D
+        barcodeCol = 4;               // E
+        vtmCol = 5;                   // F
+        strengthOfIssueUnitCol = 6;   // G
+        strengthUnitCol = 7;          // H
+        issueUnitsPerPackCol = 8;     // I
+        issueUnitCol = 9;             // J
+        packUnitCol = 10;             // K
+        distributorCol = 11;          // L
+        manufacturerCol = 12;         // M
+        importerCol = 13;             // N
+        doeCol = 14;                  // O
+        batchCol = 15;                // P
+        stockQtyCol = 16;             // Q
+        pruchaseRateCol = 17;         // R
+        saleRateCol = 18;             // S
+
+        startRow = 1; // If header is on row 0
+
+        String strCat;
+        String strAmp;
+        String strCode;
+        String strBarcode;
+        String strGenericName;
+        String strStrength;
+        String strStrengthUnit;
+        String strPackSize;
+        String strIssueUnit;
+        String strPackUnit;
+        String strDistributor;
+        String strManufacturer;
+        String strImporter;
+
+        PharmaceuticalItemCategory cat;
+        PharmaceuticalItemType phType;
+        Vtm vtm;
+        Atm atm;
+        Vmp vmp;
+        Amp amp;
+        Ampp ampp;
+        Vmpp vmpp;
+        VirtualProductIngredient vtmsvmps;
+        MeasurementUnit issueUnit;
+        MeasurementUnit strengthUnit;
+        MeasurementUnit packUnit;
+        double strengthUnitsPerIssueUnit;
+        double issueUnitsPerPack;
+        Institution distributor;
+        Institution manufacturer;
+        Institution importer;
+
+        double stockQty;
+        double pp;
+        double sp;
+        String batch;
+        Date doe;
+        StringBuilder warningMessages = new StringBuilder();
+
+        int rowCount = 0;
+
+        try (InputStream in = file.getInputStream(); Workbook workbook = new XSSFWorkbook(in)) {
+            rowCount++;
+            System.out.println("rowCount at Start of a row= " + rowCount);
+            Sheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.iterator();
+
+            JsfUtil.addSuccessMessage(file.getFileName());
+
+            // Initialize the new direct purchase controller
+            getPharmacyDirectPurchaseController().prepareForNewDIrectPurchaseBill();
+
+            int rowIndex = 0;
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                if (rowIndex++ < startRow) {
+                    continue; // Skip header or initial rows as per the startRow value
+                }
+
+                Map<String, Object> m = new HashMap<>();
+
+                // Category
+                Cell catCell = row.getCell(catCol);
+                strCat = getStringCellValue(catCell);
+                if (strCat == null || strCat.trim().isEmpty()) {
+                    continue;
+                }
+                cat = getPharmacyBean().getPharmaceuticalCategoryByName(strCat);
+                if (cat == null) {
+                    continue;
+                }
+                phType = getPharmacyBean().getPharmaceuticalItemTypeByName(strCat);
+
+                // Strength Unit
+                Cell strengthUnitCell = row.getCell(strengthUnitCol);
+                strStrengthUnit = getStringCellValue(strengthUnitCell);
+                strengthUnit = getPharmacyBean().getUnitByName(strStrengthUnit);
+                if (strengthUnit == null) {
+                    continue;
+                }
+
+                // Pack Unit
+                Cell packUnitCell = row.getCell(packUnitCol);
+                strPackUnit = getStringCellValue(packUnitCell);
+                packUnit = getPharmacyBean().getUnitByName(strPackUnit);
+                if (packUnit == null) {
+                    continue;
+                }
+
+                // Issue Unit
+                Cell issueUnitCell = row.getCell(issueUnitCol);
+                strIssueUnit = getStringCellValue(issueUnitCell);
+                issueUnit = getPharmacyBean().getUnitByName(strIssueUnit);
+                if (issueUnit == null) {
+                    continue;
+                }
+
+                // Strength Of A Measurement Unit
+                Cell strengthCell = row.getCell(strengthOfIssueUnitCol);
+                strStrength = getCellValueAsString(strengthCell);
+                strengthUnitsPerIssueUnit = parseDouble(strStrength);
+
+                // Issue Units Per Pack
+                Cell packSizeCell = row.getCell(issueUnitsPerPackCol);
+                strPackSize = getCellValueAsString(packSizeCell);
+                issueUnitsPerPack = parseDouble(strPackSize);
+
+                // Vtm
+                Cell vtmCell = row.getCell(vtmCol);
+                strGenericName = getCellValueAsString(vtmCell);
+                vtm = !strGenericName.isEmpty() ? getPharmacyBean().getVtmByName(strGenericName) : null;
+
+                // Vmp
+                vmp = getPharmacyBean().getVmp(vtm, strengthUnitsPerIssueUnit, strengthUnit, cat);
+                if (vmp == null) {
+                    continue;
+                } else {
+                    vmp.setCategory(phType);
+                    getVmpFacade().edit(vmp);
+                }
+
+                // Code & Barcode
+                strCode = getCellValueAsString(row.getCell(codeCol));
+                strBarcode = getCellValueAsString(row.getCell(barcodeCol));
+
+                // Distributor
+                strDistributor = getCellValueAsString(row.getCell(distributorCol));
+
+                // Amp
+                Cell ampCell = row.getCell(ampCol);
+                strAmp = getCellValueAsString(ampCell);
+                m.put("v", vmp);
+                m.put("n", strAmp.toUpperCase());
+                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where c.retired=false and (c.name)=:n AND c.vmp=:v", m);
+                if (amp == null) {
+                    amp = new Amp();
+                    amp.setName(strAmp);
+                    amp.setCode(strCode);
+                    amp.setBarcode(strBarcode);
+                    amp.setMeasurementUnit(strengthUnit);
+                    amp.setIssueUnit(issueUnit);
+                    amp.setStrengthUnit(strengthUnit);
+                    amp.setDblValue(strengthUnitsPerIssueUnit);
+                    amp.setCategory(cat);
+                    amp.setVmp(vmp);
+                    getAmpFacade().create(amp);
+                } else {
+                    amp.setRetired(false);
+                    getAmpFacade().edit(amp);
+                }
+
+                if (amp == null) {
+                    continue;
+                }
+
+                // Ampp
+                if (issueUnitsPerPack > 1.0) {
+                    ampp = getPharmacyBean().getAmpp(amp, issueUnitsPerPack, packUnit);
+                }
+                // Set Code and Barcode
+                amp.setCode(strCode);
+                getAmpFacade().edit(amp);
+                amp.setBarcode(strBarcode);
+                getAmpFacade().edit(amp);
+
+                // Manufacturer
+                strManufacturer = getCellValueAsString(row.getCell(manufacturerCol));
+                manufacturer = getInstitutionController().getInstitutionByName(strManufacturer, InstitutionType.Manufacturer);
+                amp.setManufacturer(manufacturer);
+
+                // Importer
+                strImporter = getCellValueAsString(row.getCell(importerCol));
+                importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Importer);
+                amp.setManufacturer(importer);
+
+                // Stock Quantity, Purchase Rate, Sale Rate, Batch, Date of Expiry
+                stockQty = parseDouble(getCellValueAsString(row.getCell(stockQtyCol)));
+                pp = parseDouble(getCellValueAsString(row.getCell(pruchaseRateCol)));
+                sp = parseDouble(getCellValueAsString(row.getCell(saleRateCol)));
+                batch = getCellValueAsString(row.getCell(batchCol));
+                doe = parseDate(getCellValueAsString(row.getCell(doeCol)));
+
+                System.out.println("amp = " + amp);
+                System.out.println("stockQty = " + stockQty);
+
+                // Set item
+                getPharmacyDirectPurchaseController().getCurrentBillItem().setItem(amp);
+
+                // Set quantity via BillItemFinanceDetails (BigDecimal)
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setQuantity(java.math.BigDecimal.valueOf(stockQty));
+
+                // Set purchase rate (lineGrossRate in BillItemFinanceDetails)
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setLineGrossRate(java.math.BigDecimal.valueOf(pp));
+
+                // Set sale rate (retailSaleRatePerUnit in BillItemFinanceDetails)
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setRetailSaleRatePerUnit(java.math.BigDecimal.valueOf(sp));
+
+                // Set free quantity to zero (required field)
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setFreeQuantity(java.math.BigDecimal.ZERO);
+
+                // Set date of expiry via PharmaceuticalBillItem
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getPharmaceuticalBillItem()
+                    .setDoe(doe);
+
+                // Set batch via PharmaceuticalBillItem
+                if (batch == null || batch.trim().isEmpty()) {
+                    getPharmacyDirectPurchaseController().setBatch();
+                } else {
+                    getPharmacyDirectPurchaseController().getCurrentBillItem()
+                        .getPharmaceuticalBillItem()
+                        .setStringValue(batch);
+                }
+
+                // Add item to the bill
+                getPharmacyDirectPurchaseController().addItem();
+                System.out.println("rowCount at End of a row= " + rowCount);
+            }
+
+            if (warningMessages.length() > 0) {
+                getPharmacyDirectPurchaseController().setWarningMessage(warningMessages.toString());
+            }
+            JsfUtil.addSuccessMessage("Successful. All the data in Excel File Imported to the database");
+            return "/pharmacy/direct_purchase";
         } catch (IOException e) {
             JsfUtil.addErrorMessage(e.getMessage());
             return "";
@@ -8698,6 +8984,10 @@ public class DataUploadController implements Serializable {
 
     public PharmacyPurchaseController getPharmacyPurchaseController() {
         return pharmacyPurchaseController;
+    }
+
+    public PharmacyDirectPurchaseController getPharmacyDirectPurchaseController() {
+        return pharmacyDirectPurchaseController;
     }
 
     public InstitutionController getInstitutionController() {

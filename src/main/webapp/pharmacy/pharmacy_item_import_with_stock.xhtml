@@ -10,8 +10,11 @@
         <h:form enctype="multipart/form-data">
             <p:panel>
                 <p:fileUpload value="#{dataUploadController.file}" mode="simple"/>
-                <p:commandButton ajax="false" value="Submit" 
+                <p:commandButton ajax="false" value="Submit"
                                  action="#{dataUploadController.importToExcelWithStock}"/>
+                <p:commandButton ajax="false" value="Submit to New Direct Purchase"
+                                 action="#{dataUploadController.importToExcelWithStockNewDirectPurchase}"
+                                 styleClass="ui-button-success ml-2"/>
 
                 <p:panel header="Import Stock from Excel" styleClass="mt-2" >
                     <h:outputLabel value="Instructions" ></h:outputLabel>
