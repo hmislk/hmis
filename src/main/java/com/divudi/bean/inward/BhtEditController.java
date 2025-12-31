@@ -474,7 +474,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             getEjbFacade().editAndFlush(current);    // SINGLE flush for ALL entities
             
             auditService.logAudit(originalAdmission, updatedAdmission, sessionController.getLoggedUser(), "PatientEncounter", "UpdateAdmission", current.getId());
-            updatedAdmission = null;  
+            originalAdmission.putAll(updatedAdmission);
+            updatedAdmission = null;
         }
 
         savePatientAllergies();
@@ -514,7 +515,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 //        }
         return current;
     }
-
+    
     public String navigateToEditAdmissionDetails() {
         if (current == null) {
             JsfUtil.addErrorMessage("No Admission to edit");
@@ -951,9 +952,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     // Admission edit: prepare data to log audit event
     public void admissionToAuditMap(Map<String, Object> m, Admission o) {
         if (o == null || m == null) {
-            JsfUtil.addErrorMessage(
-                "Audit event for admission edit was not created successfully."
-            );
             return;
         }
         
