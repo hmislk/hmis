@@ -470,9 +470,11 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         } else {
             updatedAdmission = new HashMap<>();
             admissionToAuditMap(updatedAdmission, current);
-            auditService.logAudit(originalAdmission, updatedAdmission, sessionController.getLoggedUser(), "PatientEncounter", "UpdateAdmission");
-            updatedAdmission = null;
+            
             getEjbFacade().editAndFlush(current);    // SINGLE flush for ALL entities
+            
+            auditService.logAudit(originalAdmission, updatedAdmission, sessionController.getLoggedUser(), "PatientEncounter", "UpdateAdmission", current.getId());
+            updatedAdmission = null;  
         }
 
         savePatientAllergies();
@@ -946,8 +948,12 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         // ToDo: Add Logic
     }
     
+    // Admission edit: prepare data to log audit event
     public void admissionToAuditMap(Map<String, Object> m, Admission o) {
         if (o == null || m == null) {
+            JsfUtil.addErrorMessage(
+                "Audit event for admission edit was not created successfully."
+            );
             return;
         }
         
@@ -957,10 +963,10 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         m.put("dateOfAdmission", o.getDateOfAdmission());
         
         if (o.getReferringConsultant() != null) {
-            m.put("consultant", o.getReferringConsultant().getName());
+            m.put("consultant", o.getReferringConsultant().toString());
         }
         if (o.getOpdDoctor() != null) {
-            m.put("medicalOfficer", o.getOpdDoctor().getName());
+            m.put("medicalOfficer", o.getOpdDoctor().toString());
         }
         if (o.getDepartment() != null) {
             m.put("department", o.getDepartment().getName());
