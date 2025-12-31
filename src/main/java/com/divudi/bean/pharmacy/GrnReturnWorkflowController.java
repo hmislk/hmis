@@ -236,13 +236,13 @@ public class GrnReturnWorkflowController implements Serializable {
         metadata.addConfigOption(new ConfigOptionInfo(
             "GRN Return Receipt Paper is Custom 1",
             "Uses custom format 1 for GRN return receipt printing",
-            OptionScope.APPLICATION
+            OptionScope.DEPARTMENT
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
             "GRN Return Receipt Paper is Custom 2",
             "Uses custom format 2 for GRN return receipt printing",
-            OptionScope.APPLICATION
+            OptionScope.DEPARTMENT
         ));
 
         // 🔧 PRIVILEGES
