@@ -658,6 +658,35 @@ public class PettyCashBillController implements Serializable {
         this.paymentMethodData = paymentMethodData;
     }
 
+    public void listnerForPaymentMethodChange() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+
+        if (current != null && current.getPaymentMethod() != null) {
+            // Initialize payment method specific data based on selection
+            switch (current.getPaymentMethod()) {
+                case Card:
+                    paymentMethodData.getCreditCard().setTotalValue(current.getNetTotal());
+                    break;
+                case Cheque:
+                    paymentMethodData.getCheque().setTotalValue(current.getNetTotal());
+                    break;
+                case Slip:
+                    paymentMethodData.getSlip().setTotalValue(current.getNetTotal());
+                    break;
+                case ewallet:
+                    paymentMethodData.getEwallet().setTotalValue(current.getNetTotal());
+                    break;
+                case Cash:
+                    paymentMethodData.getCash().setTotalValue(current.getNetTotal());
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
     public Title[] getTitle() {
         return Title.values();
     }

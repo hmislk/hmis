@@ -110,6 +110,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadReportMethodConfigurationDefaults();
             loadAllCashierSummaryConfigurationDefaults();
             loadOpdBillingConfigurationDefaults();
+            loadPettyCashBillingConfigurationDefaults();
             loadDatabaseVersionConfigurationDefaults();
         } finally {
             isLoadingApplicationOptions = false;
@@ -119,6 +120,15 @@ public class ConfigOptionApplicationController implements Serializable {
     private void loadOpdBillingConfigurationDefaults() {
         // Feature toggle: whether all departments share the same OPD payment methods
         getBooleanValueByKey("All Departments Use Same Payment Methods for OPD Billing", true);
+    }
+
+    private void loadPettyCashBillingConfigurationDefaults() {
+        // Cash enabled by default, all others disabled
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            String key = pm.getLabel() + " is available for Petty Cash Billing";
+            boolean defaultValue = (pm == PaymentMethod.Cash); // Only Cash = true
+            getBooleanValueByKey(key, defaultValue);
+        }
     }
 
     private void loadDatabaseVersionConfigurationDefaults() {
