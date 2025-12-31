@@ -973,7 +973,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         }
         if (o.getPatient() != null) {
             m.put("patient_ID", o.getPatient().getId());
-            m.put("patient_name", o.getPatient().getPerson().getName());
+            if (o.getPatient().getPerson() != null) {
+              m.put("patient_name", o.getPatient().getPerson().getName());           
+            }
         }
         if (o.getGuardian() != null) {
             m.put("guardian_name", o.getGuardian().getName());
