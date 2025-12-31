@@ -15,9 +15,14 @@
                 <p:commandButton ajax="false" value="Submit to New Direct Purchase"
                                  action="#{dataUploadController.importToExcelWithStockNewDirectPurchase}"
                                  styleClass="ui-button-success ml-2"/>
-                <p:commandButton ajax="false" value="Upload Stock (Simplified)"
-                                 action="#{dataUploadController.importStockForDirectPurchaseSimplified}"
-                                 styleClass="ui-button-warning ml-2"/>
+                <p:commandButton ajax="false" value="Check Errors"
+                                 action="#{dataUploadController.checkStockUploadErrors}"
+                                 styleClass="ui-button-warning ml-2"
+                                 icon="fa fa-check-circle"/>
+                <p:commandButton ajax="false" value="Upload Stock"
+                                 action="#{dataUploadController.uploadStockSkipErrors}"
+                                 styleClass="ui-button-success ml-2"
+                                 icon="fa fa-upload"/>
 
                 <p:panel header="Upload Errors" styleClass="mt-2 ui-state-error"
                          rendered="#{not empty dataUploadController.uploadErrors}">
