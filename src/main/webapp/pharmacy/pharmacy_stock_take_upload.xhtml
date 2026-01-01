@@ -74,7 +74,7 @@
                         </div>
                         <div class="card-body">
                             <p:messages id="msgs" showDetail="true" closable="true" autoUpdate="true"/>
-                            <h:panelGroup rendered="#{empty pharmacyStockTakeController.snapshotBill}">
+                            <h:panelGroup rendered="#{empty pharmacyStockTakeController.snapshotBillDisplay}">
                                 <div class="alert alert-warning d-flex align-items-center">
                                     <i class="fa fa-exclamation-triangle fa-lg" style="margin-right: 12px;"></i>
                                     <div>
@@ -84,9 +84,9 @@
                                 </div>
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{not empty pharmacyStockTakeController.snapshotBill}">
+                            <h:panelGroup rendered="#{not empty pharmacyStockTakeController.snapshotBillDisplay}">
                                 <!-- Display warning if stock taking is completed -->
-                                <h:panelGroup rendered="#{pharmacyStockTakeController.snapshotBill.completed}">
+                                <h:panelGroup rendered="#{pharmacyStockTakeController.snapshotBillDisplay.completed}">
                                     <div class="alert alert-danger d-flex align-items-center mb-4">
                                         <i class="fa fa-lock fa-lg" style="margin-right: 12px;"></i>
                                         <div>
@@ -104,25 +104,25 @@
                                                 <div class="info-item mb-2">
                                                     <i class="fa fa-building text-muted" style="margin-right: 8px;"></i>
                                                     <strong>Institution:</strong>
-                                                    <span style="margin-left: 8px;">#{pharmacyStockTakeController.snapshotBill.institution.name}</span>
+                                                    <span style="margin-left: 8px;">#{pharmacyStockTakeController.snapshotBillDisplay.institutionName}</span>
                                                 </div>
                                                 <div class="info-item mb-2">
                                                     <i class="fa fa-sitemap text-muted" style="margin-right: 8px;"></i>
                                                     <strong>Department:</strong>
-                                                    <span style="margin-left: 8px;">#{pharmacyStockTakeController.snapshotBill.department.name}</span>
+                                                    <span style="margin-left: 8px;">#{pharmacyStockTakeController.snapshotBillDisplay.departmentName}</span>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="info-item mb-2">
                                                     <i class="fa fa-file-alt text-muted" style="margin-right: 8px;"></i>
                                                     <strong>Bill No:</strong>
-                                                    <span class="badge badge-secondary" style="font-family: monospace; margin-left: 8px;">#{pharmacyStockTakeController.snapshotBill.deptId}</span>
+                                                    <span class="badge badge-secondary" style="font-family: monospace; margin-left: 8px;">#{pharmacyStockTakeController.snapshotBillDisplay.deptId}</span>
                                                 </div>
                                                 <div class="info-item mb-2">
                                                     <i class="fa fa-calendar text-muted" style="margin-right: 8px;"></i>
                                                     <strong>Created:</strong>
                                                     <span class="ml-2">
-                                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBill.createdAt}">
+                                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.createdAt}">
                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                         </h:outputText>
                                                     </span>
@@ -130,8 +130,8 @@
                                                 <div class="info-item mb-2">
                                                     <i class="fa fa-info-circle text-muted" style="margin-right: 8px;"></i>
                                                     <strong>Status:</strong>
-                                                    <span class="badge" style="margin-left: 8px; #{pharmacyStockTakeController.snapshotBill.completed ? 'background-color: #28a745;' : 'background-color: #ffc107;'}">
-                                                        #{pharmacyStockTakeController.snapshotBill.completed ? 'Completed' : 'Ongoing'}
+                                                    <span class="badge" style="margin-left: 8px; #{pharmacyStockTakeController.snapshotBillDisplay.completed ? 'background-color: #28a745;' : 'background-color: #ffc107;'}">
+                                                        #{pharmacyStockTakeController.snapshotBillDisplay.completed ? 'Completed' : 'Ongoing'}
                                                     </span>
                                                 </div>
                                             </div>
@@ -141,7 +141,8 @@
 
 
 
-                                <h:form id="frmUpload" enctype="multipart/form-data" rendered="#{not pharmacyStockTakeController.snapshotBill.completed}">
+                                <h:form id="frmUpload" enctype="multipart/form-data" rendered="#{not pharmacyStockTakeController.snapshotBillDisplay.completed}">
+                                    <p:poll ></p:poll>
                                     <div class="card">
                                         <div class="card-header bg-secondary text-white">
                                             <i class="fa fa-upload" style="margin-right: 8px;"></i>
