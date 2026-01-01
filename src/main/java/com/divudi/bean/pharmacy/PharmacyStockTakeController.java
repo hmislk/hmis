@@ -1481,31 +1481,42 @@ public class PharmacyStockTakeController implements Serializable {
 
         System.out.println("DEBUG: Optimized processing successful. Ready to persist " + physicalCountBill.getBillItems().size() + " items");
 
-        // Persist bill and items using batch operations
+        // CRITICAL FIX: Separate Bill and BillItem persistence to avoid cascade conflicts
+
+        // Step 1: Store BillItems temporarily and clear from Bill to prevent cascade persistence
+        java.util.List<BillItem> billItemsToProcess = new java.util.ArrayList<>(physicalCountBill.getBillItems());
+        physicalCountBill.setBillItems(new java.util.ArrayList<>()); // Clear to prevent cascade
+
+        // Step 2: Persist Bill only (without BillItems)
         if (physicalCountBill.getId() == null) {
             Department dept = physicalCountBill.getDepartment();
             String deptId = billNumberBean.departmentBillNumberGenerator(dept, BillType.PharmacyPhysicalCountBill, BillClassType.BilledBill, BillNumberSuffix.NONE);
             physicalCountBill.setInsId(deptId);
             physicalCountBill.setDeptId(deptId);
-            billFacade.create(physicalCountBill);
+            billFacade.create(physicalCountBill); // Bill persisted without BillItems
         } else {
             billFacade.edit(physicalCountBill);
         }
 
-        // Batch persistence of bill items (memory-safe with flush/clear cycles)
-        if (physicalCountBill.getBillItems() != null && !physicalCountBill.getBillItems().isEmpty()) {
-            // Set bill reference for all items
-            for (BillItem bi : physicalCountBill.getBillItems()) {
+        // Step 3: Batch persistence of bill items (memory-safe with flush/clear cycles)
+        if (billItemsToProcess != null && !billItemsToProcess.isEmpty()) {
+            // Set bill reference for all items (now that Bill has an ID)
+            for (BillItem bi : billItemsToProcess) {
                 if (bi != null) {
-                    bi.setBill(physicalCountBill);
+                    bi.setBill(physicalCountBill); // Set reference to persisted Bill
                     if (bi.getPharmaceuticalBillItem() != null) {
                         bi.getPharmaceuticalBillItem().setBillItem(bi);
                     }
                 }
             }
 
+            System.out.println("DEBUG: Batch persisting " + billItemsToProcess.size() + " bill items");
+
             // Use batch processing with automatic flush/clear cycles
-            billItemFacade.batchCreate(physicalCountBill.getBillItems(), getOptimalBatchSize());
+            billItemFacade.batchCreate(billItemsToProcess, getOptimalBatchSize());
+
+            // Step 4: Re-associate persisted items with Bill for consistency
+            physicalCountBill.setBillItems(billItemsToProcess);
         }
 
         printPreview = false;
