@@ -66,15 +66,15 @@
                             <h:panelGroup id="gpBillPreview" style="width: 212mm;">
 
                                 <ph:po_custom_1
-                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 1', true)}"
+                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approve Print - A4 Paper Custom 1', true)}"
                                     bill="#{pharmacyBillSearch.bill}" reprint="true" controller="#{purchaseOrderController}"/>
 
                                 <ph:po_custom_2
-                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - A4 Paper Custom 2', true)}"
+                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approve Print - A4 Paper Custom 2', true)}"
                                     bill="#{pharmacyBillSearch.bill}" reprint="true" controller="#{purchaseOrderController}"/>
 
                                 <ph:po_custom_3_letter
-                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Request Print - Letter Paper Format', true)}"
+                                    rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approve Print - Letter Paper Format', true)}"
                                     bill="#{pharmacyBillSearch.bill}" reprint="true" controller="#{purchaseOrderController}"/>
 
                             </h:panelGroup> 
