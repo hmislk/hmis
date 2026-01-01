@@ -40,6 +40,27 @@ jobs:
           with:
             distribution: 'temurin'
             java-version: '11'
+            cache: 'maven'
 
-        - name: Compile with Maven
-          run: mvn clean compile
+        - name: Configure Maven settings
+          run: |
+            mkdir -p ~/.m2
+            cat > ~/.m2/settings.xml << 'EOF'
+            <settings>
+              <mirrors>
+                <mirror>
+                  <id>maven-central-secure</id>
+                  <mirrorOf>central</mirrorOf>
+                  <url>https://repo1.maven.org/maven2/</url>
+                </mirror>
+              </mirrors>
+            </settings>
+            EOF
+
+        - name: Compile with Maven (with retry)
+          uses: nick-fields/retry@v3
+          with:
+            timeout_minutes: 15
+            max_attempts: 3
+            retry_wait_seconds: 30
+            command: mvn clean compile -B -U

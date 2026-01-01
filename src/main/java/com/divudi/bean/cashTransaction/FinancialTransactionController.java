@@ -7,6 +7,7 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SearchController;
+import com.divudi.bean.common.AuditEventController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.admin.ConfigOptionInfo;
@@ -14,6 +15,7 @@ import com.divudi.core.data.admin.PageMetadata;
 import com.divudi.core.data.admin.PrivilegeInfo;
 import javax.annotation.PostConstruct;
 import com.divudi.core.data.*;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Payment;
@@ -123,6 +125,8 @@ public class FinancialTransactionController implements Serializable {
     private DrawerController drawerController;
     @Inject
     PageMetadataRegistry pageMetadataRegistry;
+    @Inject
+    AuditEventController auditEventController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -1730,6 +1734,10 @@ public class FinancialTransactionController implements Serializable {
         }
         if (bill.getBillType() != BillType.FundTransferBill) {
             JsfUtil.addErrorMessage("Wrong Bill Type");
+            return "";
+        }
+        if (bill.isCancelled()) {
+            JsfUtil.addErrorMessage("This float transfer has been cancelled and cannot be received");
             return "";
         }
         floatTransferStarted = false;
@@ -5022,6 +5030,7 @@ public class FinancialTransactionController implements Serializable {
         StringBuilder jpql = new StringBuilder(
                 "select s from Bill s "
                 + "where s.retired=:ret "
+                + "and (s.cancelled = false or s.cancelled is null) "
                 + "and s.billTypeAtomic=:btype "
                 + "and s.referenceBill is null "
         );
@@ -5077,6 +5086,22 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/fund_transfer_bills_my_float_outs?faces-redirect=true";
     }
 
+    /**
+     * Navigates to the fund transfer bill cancellation page.
+     *
+     * Security validations already implemented:
+     * - Bill null check
+     * - Bill type validation (must be FUND_TRANSFER_BILL)
+     * - Already cancelled check (bill.isCancelled())
+     * - Already accepted check (referenceBill != null means accepted)
+     * - Ownership authorization (fromWebUser must match logged user)
+     *
+     * Added per GitHub issue #17652: Audit logging for unauthorized access attempts
+     * to track when non-originator users try to cancel another user's float transfer.
+     *
+     * @param bill The fund transfer bill to cancel
+     * @return Navigation outcome to cancellation page, or empty string if validation fails
+     */
     public String navigateToFundTransferBillCancel(Bill bill) {
         if (bill == null) {
             JsfUtil.addErrorMessage("No bill selected");
@@ -5092,6 +5117,27 @@ public class FinancialTransactionController implements Serializable {
         }
         if (bill.getReferenceBill() != null) {
             JsfUtil.addErrorMessage("This float transfer has already been accepted and cannot be cancelled");
+            return "";
+        }
+        // Ownership check: Only the originator (fromWebUser) can cancel their own float transfer
+        if (bill.getFromWebUser() == null
+                || !bill.getFromWebUser().equals(sessionController.getLoggedUser())) {
+            // Audit log unauthorized cancellation attempt (GitHub issue #17652)
+            String beforeJson = String.format(
+                    "{\"billId\": %d, \"billDeptId\": \"%s\", \"originatorUserId\": %d, \"attemptingUserId\": %d}",
+                    bill.getId(),
+                    bill.getDeptId() != null ? bill.getDeptId() : "",
+                    bill.getFromWebUser() != null ? bill.getFromWebUser().getId() : 0,
+                    sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : 0
+            );
+            AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                    "Unauthorized Fund Transfer Cancellation Attempt - Navigation",
+                    beforeJson,
+                    bill.getId()
+            );
+            auditEventController.failAuditEvent(auditEvent,
+                    "Non-originator user attempted to access fund transfer cancellation page");
+            JsfUtil.addErrorMessage("You can only cancel float transfers you created");
             return "";
         }
         fundTransferBillToCancel = bill;
@@ -5116,6 +5162,23 @@ public class FinancialTransactionController implements Serializable {
         return "/cashier/fund_transfer_bill_print?faces-redirect=true";
     }
 
+    /**
+     * Executes the fund transfer bill cancellation.
+     *
+     * Security validations already implemented:
+     * - Bill null check
+     * - Fresh database reload to prevent stale state attacks
+     * - Already cancelled check (freshBill.isCancelled())
+     * - Already accepted check (referenceBill != null means accepted)
+     * - Ownership authorization (fromWebUser must match logged user)
+     * - Cancellation reason required validation
+     *
+     * Added per GitHub issue #17652: Audit logging for unauthorized execution attempts
+     * to track when non-originator users try to execute cancellation of another user's
+     * float transfer (defense in depth - complements navigation check).
+     *
+     * @return Navigation outcome to cancellation print page, or empty string if validation fails
+     */
     public String cancelFundTransferBill() {
         // Re-validate before executing
         if (fundTransferBillToCancel == null) {
@@ -5130,6 +5193,27 @@ public class FinancialTransactionController implements Serializable {
         }
         if (freshBill.getReferenceBill() != null) {
             JsfUtil.addErrorMessage("This float transfer has been accepted and cannot be cancelled");
+            return "";
+        }
+        // Ownership check: Only the originator (fromWebUser) can execute cancellation
+        if (freshBill.getFromWebUser() == null
+                || !freshBill.getFromWebUser().equals(sessionController.getLoggedUser())) {
+            // Audit log unauthorized cancellation execution attempt (GitHub issue #17652)
+            String beforeJson = String.format(
+                    "{\"billId\": %d, \"billDeptId\": \"%s\", \"originatorUserId\": %d, \"attemptingUserId\": %d}",
+                    freshBill.getId(),
+                    freshBill.getDeptId() != null ? freshBill.getDeptId() : "",
+                    freshBill.getFromWebUser() != null ? freshBill.getFromWebUser().getId() : 0,
+                    sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : 0
+            );
+            AuditEvent auditEvent = auditEventController.createNewAuditEvent(
+                    "Unauthorized Fund Transfer Cancellation Attempt - Execution",
+                    beforeJson,
+                    freshBill.getId()
+            );
+            auditEventController.failAuditEvent(auditEvent,
+                    "Non-originator user attempted to execute fund transfer cancellation");
+            JsfUtil.addErrorMessage("You are not authorized to cancel this float transfer");
             return "";
         }
         if (fundTransferCancellationReason == null || fundTransferCancellationReason.trim().isEmpty()) {
@@ -5267,6 +5351,7 @@ public class FinancialTransactionController implements Serializable {
                 break;
             case FUND_TRANSFER_BILL:
                 jpql.append("and s.referenceBill is null ");
+                jpql.append("and (s.cancelled = false or s.cancelled is null) ");
                 break;
 
         }
@@ -5420,6 +5505,12 @@ public class FinancialTransactionController implements Serializable {
         if (currentBill.getReferenceBill().getBillType() != BillType.FundTransferBill) {
             floatTransferStarted = false;
             JsfUtil.addErrorMessage("Error - Reference bill type");
+            return "";
+        }
+
+        if (currentBill.getReferenceBill().isCancelled()) {
+            floatTransferStarted = false;
+            JsfUtil.addErrorMessage("This float transfer has been cancelled and cannot be accepted");
             return "";
         }
 
