@@ -50,6 +50,7 @@
                                         style="float: right"
                                         value="Back To Search"
                                         icon="fa-solid fa-arrow-left"
+                                        immediate="true"
                                         action="/patient_deposit/patient_deposit_search?faces-redirect=true"
                                         ajax="false">
                                     </p:commandButton>
@@ -252,7 +253,7 @@
                                             <div class="align-items-center my-2" style="max-width: 80%" >
                                                 <div>
                                                     <h:panelGroup id="billPanel" class="bill" layout="block">
-                                                        <prints:five_five_paper_patient_deposit bill="#{patientController.cancelBill}" />
+                                                        <prints:five_five_paper_custom_1_patient_deposit_cancel bill="#{patientController.bill}" />
                                                     </h:panelGroup>
                                                 </div>
                                             </div>

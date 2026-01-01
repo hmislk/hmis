@@ -33,12 +33,22 @@
                                     inputStyleClass="form-control"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                       
                                 </p:calendar>
+
+                                <hr/>
+                                <p:selectBooleanButton 
+                                    onLabel="Logged Department Only" 
+                                    offLabel="Any Department"
+                                    value="#{searchController.showLoggedDepartmentOnly}"
+                                    class="w-100">
+                                </p:selectBooleanButton>
+                                <hr/>
+
                                 <p:commandButton 
                                     ajax="false" 
-                                    action="#{searchController.createInwardServiceTableForLab()}" 
+                                    action="#{searchController.findInwardServiceBills()}" 
                                     value="Search" 
                                     icon="fa fa-search"
-                                    class="mb-3 mt-2 w-100 ui-button-warning">
+                                    class="mb-3 mt-1 w-100 ui-button-warning">
                                 </p:commandButton>
 
                                 <h:outputLabel value="Bill No" />
@@ -51,8 +61,6 @@
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.patientPhone}" />
                                 <h:outputLabel value="Item Name"/>   
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.itemName}" />
-                                <h:outputLabel value="Net Total"/>
-                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.netTotal}"/>
 
                             </div>
 
@@ -68,24 +76,27 @@
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="20,50,100"
                                     >    
-                                    <p:column headerText="#" style="padding: 10px; width: 3em;">  
+                                    <p:column headerText="#" style="padding: 10px; width: 3em;">
                                         <h:outputLabel value="#{i+1}"  ></h:outputLabel>   
                                     </p:column>
-                                    
-                                    <p:column headerText="Bill No" style="padding: 10px;">   
+
+                                    <p:column headerText="Bill No" style="padding: 10px;">
                                         <p:commandLink
                                             value="#{bill.deptId}"
                                             ajax="false"
                                             action="/inward/inward_reprint_bill_service?faces-redirect=true" >
                                             <f:setPropertyActionListener value="#{bill}" target="#{inwardSearch.bill}"/>
-                                        </p:commandLink>                              
+                                        </p:commandLink>
+                                        <h:panelGroup rendered="#{bill.cancelled}">
+                                            <h:outputLabel style="color: red;" value="#{bill.cancelledBill.deptId}" ></h:outputLabel> 
+                                        </h:panelGroup> 
                                     </p:column>
 
-                                    <p:column headerText="BHT No" style="padding: 10px; width: 6em;">                              
+                                    <p:column headerText="BHT No" style="padding: 10px; width: 6em;">
                                         <h:outputLabel value="#{bill.patientEncounter.bhtNo}"  ></h:outputLabel>                                    
                                     </p:column>
 
-                                    <p:column headerText="Bill Date" style="padding: 10px;">
+                                    <p:column headerText="Bill Date" style="padding: 10px;" sortBy="#{bill.createdAt}">
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -96,13 +107,16 @@
                                             </h:outputLabel>
                                         </h:panelGroup>        
                                     </p:column>
+
+                                    <p:column headerText="Billed Dept" sortBy="#{bill.department.name}" filterBy="#{bill.department.name}" filterMatchMode="contains" style="padding: 10px; width: 10em;"> 
+                                        <h:outputLabel value="#{bill.department.name}" ></h:outputLabel>
+                                    </p:column>
                                     
-                                    <p:column headerText="Billed Dept" style="padding: 10px; width: 10em;">  
-                                        <h:outputLabel value="#{bill.department.name}" ></h:outputLabel>                                   
+                                    <p:column headerText="Service Dept" sortBy="#{bill.toDepartment.name}" filterBy="#{bill.toDepartment.name}" filterMatchMode="contains" style="padding: 10px; width: 10em;">  
+                                        <h:outputLabel value="#{bill.toDepartment.name}" ></h:outputLabel>  
                                     </p:column>
 
-
-                                    <p:column headerText="Billed By" style="padding: 10px;">  
+                                    <p:column headerText="Billed By" style="padding: 10px;"> 
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                         </h:outputLabel>                                  
                                         <br/>
@@ -111,22 +125,22 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
-
+                                    
                                     <p:column headerText="Patient" style="padding: 10px; width: 20vw">                              
                                         <h:outputLabel value="#{bill.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
                                     </p:column>
-                                    
-                                    <p:column headerText="Remark" style="padding: 10px;">                              
+
+                                    <p:column headerText="Remark" style="padding: 10px;">
                                         <h:panelGroup id="remark">
                                             <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
                                         </h:panelGroup>
-                                        
+
                                         <h:panelGroup rendered="#{bill.currentRequest ne null}">
                                             <p:badge value="#{bill.currentRequest.status.label}" severity="warning" styleClass="mr-2"></p:badge>
                                         </h:panelGroup>
                                     </p:column>  
-                                    
-                                    <p:column headerText="Comments" style="padding: 10px;">                                
+
+                                    <p:column headerText="Comments" style="padding: 10px;">
                                         <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
                                         </h:outputLabel>
                                     </p:column>

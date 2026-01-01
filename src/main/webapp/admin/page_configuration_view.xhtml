@@ -96,6 +96,15 @@
 
                             <div class="mt-3 text-end">
                                 <p:commandButton
+                                    value="Export Page Configuration"
+                                    icon="pi pi-download"
+                                    ajax="false"
+                                    styleClass="ui-button-success me-2"
+                                    title="Export configuration options for this page to CSV file">
+                                    <p:fileDownload value="#{pageAdminController.exportPageConfiguration()}" />
+                                </p:commandButton>
+
+                                <p:commandButton
                                     value="Manage Application Configuration"
                                     icon="fa fa-cog"
                                     action="#{pageAdminController.navigateToPageSpecificConfigManagement()}"

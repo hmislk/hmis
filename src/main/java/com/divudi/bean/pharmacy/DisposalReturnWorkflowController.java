@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UserSettingsController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -54,6 +55,8 @@ public class DisposalReturnWorkflowController implements Serializable {
     private WebUserController webUserController;
     @Inject
     private IssueReturnController issueReturnController;
+    @Inject
+    UserSettingsController userSettingsController;
 
     // Lists for workflow management
     private List<Bill> disposalReturnsToFinalize;

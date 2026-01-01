@@ -234,7 +234,8 @@
                                 <ez:chequePayments id="chequePaymentPanel" bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportCheque'}"/>
                                 <ez:ewalletPayments  id="ewalletPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportEwallet'}"/>
                                 <ez:slipPayments  id="slipPaymentPanel"  bundle="#{myBundle}"  rendered="#{myBundle.bundleType eq 'paymentReportSlip'}"/>
-                                <ez:patientDepositReport id="patientDepositUsedPanel" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'paymentReportPatientDeposit'}"/>
+                                <ez:patientDepositUtilization id="patientDepositUtilizationPanel" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'patientDepositUtilization'}"/>
+                                <ez:opdPatientDepositPayments id="opdPatientDepositPaymentsPanel" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdPatientDepositPayments'}"/>
 
                                 <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'netCash'}"/>
 
@@ -255,6 +256,11 @@
                                     rendered="#{myBundle.bundleType eq 'PharmacyCreditRefund'}"/>
 
                                 <ez:netCashForTheDay bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'netCashPlusCredit'}"/>
+
+                                <!-- Patient Deposit Reconciliation Section -->
+                                <ez:patientDepositReceiptsSummary bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'patientDepositReceiptsSummary'}"/>
+                                <ez:patientDepositUtilization id="patientDepositUtilizationSummaryPanel" bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'patientDepositUtilizationSummary'}"/>
+                                <ez:carriedOutPatientDeposit bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'carriedOutPatientDeposit'}"/>
 
                             </ui:repeat>
 

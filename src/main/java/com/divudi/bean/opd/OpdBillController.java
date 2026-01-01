@@ -56,6 +56,8 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BooleanMessage;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.facade.FamilyFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.TokenFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -330,275 +332,412 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         // Navigation and UI Display Configurations
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Enable Navigation Button To Channel Booking By Date From OPD Billing",
-            "Shows navigation button to channel booking by dates in OPD billing page header",
-            "opd_bill_ac.xhtml line 38: Channel booking navigation button",
-            OptionScope.APPLICATION
+                "Enable Navigation Button To Channel Booking By Date From OPD Billing",
+                "Shows navigation button to channel booking by dates in OPD billing page header",
+                "opd_bill_ac.xhtml line 38: Channel booking navigation button",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Save the Patient with Patient Status",
-            "Enables patient status field for patient registration and display",
-            "opd_bill_ac.xhtml lines 335, 345, 424, 425, 427: Patient status input and display",
-            OptionScope.APPLICATION
+                "Save the Patient with Patient Status",
+                "Enables patient status field for patient registration and display",
+                "opd_bill_ac.xhtml lines 335, 345, 424, 425, 427: Patient status input and display",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Allow Local Number For Opd Billing",
-            "Shows local number panel for entering local reference numbers",
-            "opd_bill_ac.xhtml line 461: Local number panel",
-            OptionScope.APPLICATION
+                "Allow Local Number For Opd Billing",
+                "Shows local number panel for entering local reference numbers",
+                "opd_bill_ac.xhtml line 461: Local number panel",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Bill Item and Fee Active Index",
-            "Sets which tab (items or fees) is active by default in the bill entry section (0=Items, 1=Fees)",
-            "opd_bill_ac.xhtml line 694: TabView active index",
-            OptionScope.APPLICATION
+                "OPD Bill Item and Fee Active Index",
+                "Sets which tab (items or fees) is active by default in the bill entry section (0=Items, 1=Fees)",
+                "opd_bill_ac.xhtml line 694: TabView active index",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Bill - Show the Doctor Details",
-            "Shows the working staff/doctor details panel in OPD billing",
-            "opd_bill_ac.xhtml line 1395: Doctor details panel",
-            OptionScope.APPLICATION
+                "OPD Bill - Show the Doctor Details",
+                "Shows the working staff/doctor details panel in OPD billing",
+                "opd_bill_ac.xhtml line 1395: Doctor details panel",
+                OptionScope.APPLICATION
         ));
 
         // Item Listing and Fee Generation Configurations (CRITICAL for Add button)
         metadata.addConfigOption(new ConfigOptionInfo(
-            "List OPD Items by Department",
-            "Lists OPD items filtered by department in autocomplete",
-            "OpdBillController.java lines 462, 476: Item listing logic in autocomplete methods",
-            OptionScope.APPLICATION
+                "List OPD Items by Department",
+                "Lists OPD items filtered by department in autocomplete",
+                "OpdBillController.java lines 462, 476: Item listing logic in autocomplete methods",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Bill Fees are the same for all departments, institutions and sites for " + sessionController.getDepartment().getName(),
-            "Uses standard bill fees regardless of department, institution, or site when adding items to OPD bill",
-            "OpdBillController.java lines 2937, 3429: Fee generation in addToBill() method",
-            OptionScope.DEPARTMENT
+                "OPD Bill Fees are the same for all departments, institutions and sites for " + sessionController.getDepartment().getName(),
+                "Uses standard bill fees regardless of department, institution, or site when adding items to OPD bill",
+                "OpdBillController.java lines 2937, 3429: Fee generation in addToBill() method",
+                OptionScope.DEPARTMENT
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Bill Fees are based on the site for " + sessionController.getDepartment().getName(),
-            "Uses site-specific bill fees when adding items to OPD bill",
-            "OpdBillController.java lines 2938, 3430: Fee generation in addToBill() method",
-            OptionScope.DEPARTMENT
+                "OPD Bill Fees are based on the site for " + sessionController.getDepartment().getName(),
+                "Uses site-specific bill fees when adding items to OPD bill",
+                "OpdBillController.java lines 2938, 3430: Fee generation in addToBill() method",
+                OptionScope.DEPARTMENT
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Bill Fees are based on the department for " + sessionController.getDepartment().getName(),
-            "Uses department-specific bill fees when adding items to OPD bill",
-            "OpdBillController.java lines 2939, 3431: Fee generation in addToBill() method",
-            OptionScope.DEPARTMENT
+                "OPD Bill Fees are based on the department for " + sessionController.getDepartment().getName(),
+                "Uses department-specific bill fees when adding items to OPD bill",
+                "OpdBillController.java lines 2939, 3431: Fee generation in addToBill() method",
+                OptionScope.DEPARTMENT
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Clear Item After Adding To Opd Bill",
-            "Clears the item selection after successfully adding to bill (allows quick re-entry of same item if disabled)",
-            "OpdBillController.java line 2979: Item clearing logic in addToBill() method",
-            OptionScope.APPLICATION
+                "Clear Item After Adding To Opd Bill",
+                "Clears the item selection after successfully adding to bill (allows quick re-entry of same item if disabled)",
+                "OpdBillController.java line 2979: Item clearing logic in addToBill() method",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Number of Maximum Results for Item Search in Autocompletes",
-            "Maximum number of items returned in autocomplete search results",
-            "OpdBillController.java line 3425: Autocomplete query limit",
-            OptionScope.APPLICATION
+                "Number of Maximum Results for Item Search in Autocompletes",
+                "Maximum number of items returned in autocomplete search results",
+                "OpdBillController.java line 3425: Autocomplete query limit",
+                OptionScope.APPLICATION
         ));
 
         // Fee Value Editing Configurations
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Disable increasing the fee value in OPD Billing",
-            "Prevents users from increasing fee values above the standard rate",
-            "OpdBillController.java line 917: Fee value validation",
-            OptionScope.APPLICATION
+                "Disable increasing the fee value in OPD Billing",
+                "Prevents users from increasing fee values above the standard rate",
+                "OpdBillController.java line 917: Fee value validation",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Disable decreasing the fee value in OPD Billing",
-            "Prevents users from decreasing fee values below the standard rate",
-            "OpdBillController.java line 924: Fee value validation",
-            OptionScope.APPLICATION
+                "Disable decreasing the fee value in OPD Billing",
+                "Prevents users from decreasing fee values below the standard rate",
+                "OpdBillController.java line 924: Fee value validation",
+                OptionScope.APPLICATION
         ));
 
         // Payment Method Validation Configurations
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Billing - CreditCard Comment is Mandatory",
-            "Requires comment/reference for credit card payments in OPD billing",
-            "OpdBillController.java line 1811: Payment method validation in settleOpdBill()",
-            OptionScope.APPLICATION
+                "OPD Billing - CreditCard Comment is Mandatory",
+                "Requires comment/reference for credit card payments in OPD billing",
+                "OpdBillController.java line 1811: Payment method validation in settleOpdBill()",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Billing - Cheque Comment is Mandatory",
-            "Requires comment/reference for cheque payments in OPD billing",
-            "OpdBillController.java line 1816: Payment method validation in settleOpdBill()",
-            OptionScope.APPLICATION
+                "OPD Billing - Cheque Comment is Mandatory",
+                "Requires comment/reference for cheque payments in OPD billing",
+                "OpdBillController.java line 1816: Payment method validation in settleOpdBill()",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Billing - E-Wallet Comment is Mandatory",
-            "Requires comment/reference for e-wallet payments in OPD billing",
-            "OpdBillController.java line 1821: Payment method validation in settleOpdBill()",
-            OptionScope.APPLICATION
+                "OPD Billing - E-Wallet Comment is Mandatory",
+                "Requires comment/reference for e-wallet payments in OPD billing",
+                "OpdBillController.java line 1821: Payment method validation in settleOpdBill()",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Billing - Slip Comment is Mandatory",
-            "Requires comment/reference for slip payments in OPD billing",
-            "OpdBillController.java line 1826: Payment method validation in settleOpdBill()",
-            OptionScope.APPLICATION
+                "OPD Billing - Slip Comment is Mandatory",
+                "Requires comment/reference for slip payments in OPD billing",
+                "OpdBillController.java line 1826: Payment method validation in settleOpdBill()",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Billing - Credit Comment is Mandatory",
-            "Requires comment/reference for credit payments in OPD billing",
-            "OpdBillController.java line 1831: Payment method validation in settleOpdBill()",
-            OptionScope.APPLICATION
+                "OPD Billing - Credit Comment is Mandatory",
+                "Requires comment/reference for credit payments in OPD billing",
+                "OpdBillController.java line 1831: Payment method validation in settleOpdBill()",
+                OptionScope.APPLICATION
+        ));
+
+        // Payment Method Availability Configurations
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "All Departments Use Same Payment Methods for OPD Billing",
+                "When enabled, all departments use the same global payment method settings. When disabled, each department can have separate payment method configurations",
+                "ConfigOptionController.java lines 86-87: Global payment method configuration switch in getPaymentMethodsForOpdBilling()",
+                OptionScope.APPLICATION
+        ));
+
+        // Individual Payment Method Availability Controls
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Cash is available for OPD Billing",
+                "Enables/disables Cash payment method in OPD billing payment method dropdown",
+                "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Credit Card is available for OPD Billing",
+                "Enables/disables Credit Card payment method in OPD billing payment method dropdown",
+                "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Multiple Payment Methods is available for OPD Billing",
+                "Enables/disables Multiple Payment Methods option in OPD billing payment method dropdown",
+                "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Staff Credit is available for OPD Billing",
+                "Enables/disables Staff Credit payment method in OPD billing payment method dropdown",
+                "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Credit is available for OPD Billing",
+                "Enables/disables Credit payment method in OPD billing payment method dropdown",
+                "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Staff Welfare is available for OPD Billing",
+                "Enables/disables Staff Welfare payment method in OPD billing payment method dropdown",
+                "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Voucher is available for OPD Billing",
+                "Enables/disables Voucher payment method in OPD billing payment method dropdown",
+                "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "IOU is available for OPD Billing",
+                "Enables/disables IOU payment method in OPD billing payment method dropdown",
+                "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Agent Payment is available for OPD Billing",
+                "Enables/disables Agent Payment method in OPD billing payment method dropdown",
+                "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Cheque is available for OPD Billing",
+                "Enables/disables Cheque payment method in OPD billing payment method dropdown",
+                "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Slip Payment is available for OPD Billing",
+                "Enables/disables Slip Payment method in OPD billing payment method dropdown",
+                "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "e-Wallet Payment is available for OPD Billing",
+                "Enables/disables e-Wallet Payment method in OPD billing payment method dropdown",
+                "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Patient Deposit is available for OPD Billing",
+                "Enables/disables Patient Deposit payment method in OPD billing payment method dropdown",
+                "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Patient Points is available for OPD Billing",
+                "Enables/disables Patient Points payment method in OPD billing payment method dropdown",
+                "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Online Settlement is available for OPD Billing",
+                "Enables/disables Online Settlement payment method in OPD billing payment method dropdown",
+                "ConfigOptionController.java line 96: Payment method inclusion check in getPaymentMethodsForOpdBilling()",
+                OptionScope.APPLICATION
         ));
 
         // SMS Notification Configurations
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Send SMS after OPD Billing",
-            "Automatically sends SMS notification to patient after bill settlement",
-            "OpdBillController.java line 1864: SMS sending logic in settleOpdBill()",
-            OptionScope.APPLICATION
+                "Send SMS after OPD Billing",
+                "Automatically sends SMS notification to patient after bill settlement",
+                "OpdBillController.java line 1864: SMS sending logic in settleOpdBill()",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "SMS Tempalte for the Sms after OPD Billing",
-            "Template text for SMS sent to patients after OPD bill settlement (supports variables)",
-            "OpdBillController.java line 1865: SMS template retrieval",
-            OptionScope.APPLICATION
+                "SMS Tempalte for the Sms after OPD Billing",
+                "Template text for SMS sent to patients after OPD bill settlement (supports variables)",
+                "OpdBillController.java line 1865: SMS template retrieval",
+                OptionScope.APPLICATION
         ));
 
         // Bill Organization Strategies (CRITICAL)
         metadata.addConfigOption(new ConfigOptionInfo(
-            "One OPD Bill For All Departments and Categories",
-            "Creates a single bill combining all departments and categories (default behavior)",
-            "OpdBillController.java line 1887: Bill organization strategy in executeSettleBillActions()",
-            OptionScope.APPLICATION
+                "One OPD Bill For All Departments and Categories",
+                "Creates a single bill combining all departments and categories (default behavior)",
+                "OpdBillController.java line 1887: Bill organization strategy in executeSettleBillActions()",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "One OPD Bill For Each Department",
-            "Creates separate bills for each department",
-            "OpdBillController.java line 1888: Bill organization strategy in executeSettleBillActions()",
-            OptionScope.APPLICATION
+                "One OPD Bill For Each Department",
+                "Creates separate bills for each department",
+                "OpdBillController.java line 1888: Bill organization strategy in executeSettleBillActions()",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "One OPD Bill For Each Category",
-            "Creates separate bills for each category",
-            "OpdBillController.java line 1889: Bill organization strategy in executeSettleBillActions()",
-            OptionScope.APPLICATION
+                "One OPD Bill For Each Category",
+                "Creates separate bills for each category",
+                "OpdBillController.java line 1889: Bill organization strategy in executeSettleBillActions()",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "One OPD Bill For Each Department and Category Combination",
-            "Creates separate bills for each unique department and category combination",
-            "OpdBillController.java line 1890: Bill organization strategy in executeSettleBillActions()",
-            OptionScope.APPLICATION
+                "One OPD Bill For Each Department and Category Combination",
+                "Creates separate bills for each unique department and category combination",
+                "OpdBillController.java line 1890: Bill organization strategy in executeSettleBillActions()",
+                OptionScope.APPLICATION
         ));
 
         // Laboratory Integration Configuration
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Need to Generate Barcodes for Sample Tubes at OPD Billing Automatically",
-            "Automatically generates sample tube barcodes for laboratory investigations at billing time",
-            "OpdBillController.java line 1986: Barcode generation in executeSettleBillActions()",
-            OptionScope.APPLICATION
+                "Need to Generate Barcodes for Sample Tubes at OPD Billing Automatically",
+                "Automatically generates sample tube barcodes for laboratory investigations at billing time",
+                "OpdBillController.java line 1986: Barcode generation in executeSettleBillActions()",
+                OptionScope.APPLICATION
         ));
 
         // CRITICAL: Bill Number Generation Strategies
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Bill Numbers are based on Year.",
-            "Includes year in bill number generation format",
-            "OpdBillController.java line 2079: Bill numbering strategy control",
-            OptionScope.APPLICATION
+                "Bill Numbers are based on Year.",
+                "Includes year in bill number generation format",
+                "OpdBillController.java line 2079: Bill numbering strategy control",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepartment and BillTypes",
-            "Generates separate bill number sequences based on from department, to department, and bill type combinations",
-            "OpdBillController.java lines 2083, 2240: departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment() method selection",
-            OptionScope.APPLICATION
+                "OPD Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepartment and BillTypes",
+                "Generates separate bill number sequences based on from department, to department, and bill type combinations",
+                "OpdBillController.java lines 2083, 2240: departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment() method selection",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services",
-            "Uses a single unified bill number sequence for both OPD and inpatient investigations and services",
-            "OpdBillController.java lines 2086, 2243: Bill type list selection for unified numbering",
-            OptionScope.APPLICATION
+                "OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services",
+                "Uses a single unified bill number sequence for both OPD and inpatient investigations and services",
+                "OpdBillController.java lines 2086, 2243: Bill type list selection for unified numbering",
+                OptionScope.APPLICATION
         ));
 
         // CRITICAL: Bill Number Suffix Configurations
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Bill Number Suffix for OPD_BILL_WITH_PAYMENT",
-            "Custom suffix appended to OPD bill with payment numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearly methods)",
-            "OpdBillController.java lines 2247, 2250, 2252: Bill number generation for individual OPD bills",
-            OptionScope.APPLICATION
+                "Bill Number Suffix for OPD_BILL_WITH_PAYMENT",
+                "Custom suffix appended to OPD bill with payment numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearly methods)",
+                "OpdBillController.java lines 2247, 2250, 2252: Bill number generation for individual OPD bills",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Bill Number Suffix for OPD_BATCH_BILL_WITH_PAYMENT",
-            "Custom suffix appended to OPD batch bill with payment numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearly methods)",
-            "OpdBillController.java lines 2090, 2096, 2102: Bill number generation for batch bills",
-            OptionScope.APPLICATION
+                "Bill Number Suffix for OPD_BATCH_BILL_WITH_PAYMENT",
+                "Custom suffix appended to OPD batch bill with payment numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearly methods)",
+                "OpdBillController.java lines 2090, 2096, 2102: Bill number generation for batch bills",
+                OptionScope.APPLICATION
         ));
 
         // Patient Validation Configurations
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Need Patient Title And Gender To Save Patient",
-            "Requires patient title and gender before saving patient record",
-            "OpdBillController.java line 2561: Patient validation in settlement",
-            OptionScope.APPLICATION
+                "Need Patient Title And Gender To Save Patient",
+                "Requires patient title and gender before saving patient record",
+                "OpdBillController.java line 2561: Patient validation in settlement",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Need Patient Age to Save Patient",
-            "Requires patient age before saving patient record",
-            "OpdBillController.java line 2571: Patient validation in settlement",
-            OptionScope.APPLICATION
+                "Need Patient Age to Save Patient",
+                "Requires patient age before saving patient record",
+                "OpdBillController.java line 2571: Patient validation in settlement",
+                OptionScope.APPLICATION
         ));
 
         // Advanced Configuration
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Allow To Change Doctor Speciality And Doctor Added Bill Items in Opd Bill",
-            "Allows modification of doctor specialty and doctor-related bill items after initial entry",
-            "OpdBillController.java line 4685: Bill item editing permissions",
-            OptionScope.DEPARTMENT
+                "Allow To Change Doctor Speciality And Doctor Added Bill Items in Opd Bill",
+                "Allows modification of doctor specialty and doctor-related bill items after initial entry",
+                "OpdBillController.java line 4685: Bill item editing permissions",
+                OptionScope.DEPARTMENT
+        ));
+
+        // Patient Management and Security Configurations
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Enable blacklist patient management in the system",
+                "Enables global blacklist functionality for patients across the entire system",
+                "OpdBillController.java line 3022: Global blacklist check in settleOpdBill()",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Enable blacklist patient management for OPD from the system",
+                "Enables blacklist validation specifically for OPD billing to prevent billing blacklisted patients",
+                "OpdBillController.java line 3023: OPD-specific blacklist check in settleOpdBill()",
+                OptionScope.APPLICATION
+        ));
+
+        // Item Listing Strategy Configuration
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Item Listing Strategy",
+                "Determines how OPD items are listed and filtered in autocompletes and selection lists. Available strategies: ALL_ITEMS, SITE_FEE_ITEMS, ITEMS_OF_LOGGED_DEPARTMENT, ITEMS_OF_LOGGED_INSTITUTION, ITEMS_MAPPED_TO_LOGGED_DEPARTMENT, ITEMS_MAPPED_TO_LOGGED_INSTITUTION",
+                "OpdBillController.java lines 855, 828: Item listing strategy in fillOpdItems() and completeOpdItems() methods via UserPreference.getOpdItemListingStrategy()",
+                OptionScope.DEPARTMENT
         ));
 
         // PRIVILEGES
         metadata.addPrivilege(new PrivilegeInfo(
-            "OpdBilling",
-            "Primary access privilege for OPD billing functionality",
-            "opd_bill_ac.xhtml lines 15, 19: Page access control"
+                "OpdBilling",
+                "Primary access privilege for OPD billing functionality",
+                "opd_bill_ac.xhtml lines 15, 19: Page access control"
         ));
 
         metadata.addPrivilege(new PrivilegeInfo(
-            "LabCashier",
-            "Allows laboratory cashiers to access OPD billing for lab-related bills",
-            "opd_bill_ac.xhtml lines 15, 19: Page access control"
+                "LabCashier",
+                "Allows laboratory cashiers to access OPD billing for lab-related bills",
+                "opd_bill_ac.xhtml lines 15, 19: Page access control"
         ));
 
         metadata.addPrivilege(new PrivilegeInfo(
-            "OpdAddNewRefferalDoctor",
-            "Allows adding new referral doctors from within OPD billing interface",
-            "opd_bill_ac.xhtml line 1441: Add new doctor button visibility"
+                "OpdAddNewRefferalDoctor",
+                "Allows adding new referral doctors from within OPD billing interface",
+                "opd_bill_ac.xhtml line 1441: Add new doctor button visibility"
         ));
 
         metadata.addPrivilege(new PrivilegeInfo(
-            "OpdAddNewCollectingCentre",
-            "Allows adding new collecting centres from within OPD billing interface",
-            "opd_bill_ac.xhtml line 1523: Add new collecting centre button visibility"
+                "OpdAddNewCollectingCentre",
+                "Allows adding new collecting centres from within OPD billing interface",
+                "opd_bill_ac.xhtml line 1523: Add new collecting centre button visibility"
         ));
 
         metadata.addPrivilege(new PrivilegeInfo(
-            "Admin",
-            "Administrative access to page configuration management",
-            "opd_bill_ac.xhtml line 48: Config button visibility"
+                "Admin",
+                "Administrative access to page configuration management",
+                "opd_bill_ac.xhtml line 48: Config button visibility"
         ));
 
         pageMetadataRegistry.registerPage(metadata);
@@ -2385,17 +2524,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setIndication(indication);
         newBatchBill.setIpOpOrCc("OP");
         boolean billNumberByYear;
-        String batchBillId; 
+        String batchBillId;
         billNumberByYear = configOptionApplicationController.getBooleanValueByKey("Bill Numbers are based on Year.", false);
 
         boolean opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination
-                
                 = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepartment and BillTypes", false);
-        
+
         boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
                 = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
 
-        
         if (opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination) {
             batchBillId = getBillNumberGenerator().departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(null, department, BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
         } else if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
@@ -2414,9 +2551,20 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
             }
         }
+        
+        if(currentPatientMembershipScheme != null){
+            newBatchBill.setMembershipScheme(currentPatientMembershipScheme);
+        }
+        if(chiefHouseHolder != null){
+            newBatchBill.setChiefHouseHolder(chiefHouseHolder);
+        }
+        if(currentPatientFamily != null){
+            newBatchBill.setMemberFamily(currentPatientFamily);
+        }
+        
         newBatchBill.setInsId(batchBillId);
         newBatchBill.setDeptId(batchBillId);
-        
+
         newBatchBill.setGrantTotal(total);
         newBatchBill.setTotal(total);
         newBatchBill.setDiscount(discount);
@@ -2476,6 +2624,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setCashPaid(cashPaid);
         getBillFacade().edit(newBatchBill);
         setBatchBill(newBatchBill);
+
     }
 
     @Inject
@@ -2527,6 +2676,16 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setBillDate(new Date());
         newBill.setBillTime(new Date());
         newBill.setPatient(patient);
+        
+        if(currentPatientMembershipScheme != null){
+            newBill.setMembershipScheme(currentPatientMembershipScheme);
+        }
+        if(chiefHouseHolder != null){
+            newBill.setChiefHouseHolder(chiefHouseHolder);
+        }
+        if(currentPatientFamily != null){
+            newBill.setMemberFamily(currentPatientFamily);
+        }
 
         if (localNumber != null) {
             newBill.setLocalNumber(localNumber);
@@ -2545,14 +2704,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         String deptId;
 
-        
         boolean opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination
                 = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepartment and BillTypes", false);
-        
+
         boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
                 = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
 
-        
         if (opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination) {
             deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(bt, sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         } else if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
@@ -2608,6 +2765,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else {
             getFacade().edit(newBill);
         }
+
         return newBill;
 
     }
@@ -2675,8 +2833,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         String deptId = getBillNumberGenerator().departmentBillNumberGenerator(newBill.getDepartment(), newBill.getToDepartment(), newBill.getBillType(), BillClassType.BilledBill);
         newBill.setDeptId(deptId);
-        
+
         newBill.setSessionId(getBillNumberGenerator().generateDailyBillNumberForOpd(newBill.getDepartment()));
+        
+        if(currentPatientMembershipScheme != null){
+            newBill.setMembershipScheme(currentPatientMembershipScheme);
+        }
+        if(chiefHouseHolder != null){
+            newBill.setChiefHouseHolder(chiefHouseHolder);
+        }
+        if(currentPatientFamily != null){
+            newBill.setMemberFamily(currentPatientFamily);
+        }
 
         if (newBill.getId() == null) {
             getFacade().create(newBill);
@@ -2706,15 +2874,16 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return false;
     }
 
-    
     /**
-     * Calculates the total value for the selected payment method in a ComponentDetail.
-     * This helper method centralizes the logic for extracting the correct payment total
-     * based on the selected payment method, preventing code duplication and ensuring
-     * consistent handling across different parts of the billing process.
+     * Calculates the total value for the selected payment method in a
+     * ComponentDetail. This helper method centralizes the logic for extracting
+     * the correct payment total based on the selected payment method,
+     * preventing code duplication and ensuring consistent handling across
+     * different parts of the billing process.
      *
      * @param cd ComponentDetail containing payment method selection and data
-     * @return Total value for the selected payment method, or 0.0 if invalid/null
+     * @return Total value for the selected payment method, or 0.0 if
+     * invalid/null
      */
     private double calculateSelectedPaymentTotal(ComponentDetail cd) {
         if (cd == null || cd.getPaymentMethodData() == null || cd.getPaymentMethod() == null) {
@@ -2765,8 +2934,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     multiplePaymentMethodTotalValue += calculateSelectedPaymentTotal(cd);
                 }
             }
-            remainAmount = total - multiplePaymentMethodTotalValue;
-            return total - multiplePaymentMethodTotalValue;
+            remainAmount = netTotal - multiplePaymentMethodTotalValue;
+            return netTotal - multiplePaymentMethodTotalValue;
 
         }
         remainAmount = total;
@@ -2872,11 +3041,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     @Override
     public boolean isLastPaymentEntry(ComponentDetail cd) {
-        if (cd == null ||
-            paymentMethodData == null ||
-            paymentMethodData.getPaymentMethodMultiple() == null ||
-            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
-            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+        if (cd == null
+                || paymentMethodData == null
+                || paymentMethodData.getPaymentMethodMultiple() == null
+                || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null
+                || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
             return false;
         }
 
@@ -2904,15 +3073,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("Can not bill without a name for the Patient !");
             return true;
         }
-        
-        if(configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false) 
-                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for OPD from the system", false)){
-            if(getPatient().isBlacklisted()){
+
+        if (configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false)
+                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for OPD from the system", false)) {
+            if (getPatient().isBlacklisted()) {
                 JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
                 return true;
             }
         }
-        
+
         if (getPatient().getPerson().getSex() == null) {
             JsfUtil.addErrorMessage("Can not bill without sex for the Patient !");
             return true;
@@ -3551,7 +3720,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         setNetTotal(billNet);
         setVat(billVat);
         setNetPlusVat(getVat() + getNetTotal());
-
+        if (getPaymentMethod() == PaymentMethod.ewallet) {
+            getPaymentMethodData().getEwallet().setTotalValue(getNetTotal());
+        }
         if (getSessionController() != null) {
             if (getSessionController().getApplicationPreference() != null) {
 
@@ -3692,6 +3863,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 paymentScheme = null;
                 paymentMethod = PaymentMethod.Cash;
                 patientEncounter = null;
+                currentPatientMembershipScheme = null;
+                chiefHouseHolder = null;
+                currentPatientFamily = null;
                 collectingCentreBillController.setCollectingCentre(null);
                 if (sessionController.getOpdBillItemSearchByAutocomplete()) {
                     return "/opd/opd_bill_ac?faces-redirect=true";
@@ -3900,6 +4074,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return navigateLink;
     }
 
+    @Deprecated
     public String navigateToNewOpdBillWithPaymentScheme(Patient pt, PaymentScheme ps) {
         navigateToNewOpdBill();
         patient = pt;
@@ -3908,6 +4083,40 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             return "/opd/opd_bill_ac?faces-redirect=true";
         } else {
             return "/opd/opd_bill?faces-redirect=true";
+        }
+    }
+    
+    private Patient chiefHouseHolder;
+    private MembershipScheme currentPatientMembershipScheme;
+    private Family currentPatientFamily;
+    
+    @EJB 
+    FamilyFacade familyFacade;
+
+    public String navigateToNewOpdBillWithPaymentScheme(Patient pt, PaymentScheme ps, Family family) {
+        navigateToNewOpdBill();
+
+        Patient currentPatient = patientFacade.findWithoutCache(pt.getId());
+        Family currentFamily = familyFacade.findWithoutCache(family.getId());
+        
+        if (currentPatient == null) {
+            JsfUtil.addErrorMessage("Error in Patiemt");
+            return "";
+        }else if(currentFamily == null){
+            JsfUtil.addErrorMessage("Error in Family");
+            return "";
+        }else {
+            patient = currentPatient;
+            chiefHouseHolder = currentFamily.getChiefHouseHolder();
+            currentPatientFamily = currentFamily;
+            currentPatientMembershipScheme = currentFamily.getMembershipScheme();
+            paymentScheme = ps;
+
+            if (sessionController.getOpdBillItemSearchByAutocomplete()) {
+                return "/opd/opd_bill_ac?faces-redirect=true";
+            } else {
+                return "/opd/opd_bill?faces-redirect=true";
+            }
         }
     }
 
@@ -3925,12 +4134,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         paymentMethodData = null;
         paymentScheme = null;
         paymentMethod = PaymentMethod.Cash;
+        currentPatientMembershipScheme = null;
+        chiefHouseHolder = null;
+        currentPatientFamily = null;
         collectingCentreBillController.setCollectingCentre(null);
     }
 
     public void makeNull() {
         clearBillItemValues();
         clearBillValues();
+        currentPatientMembershipScheme = null;
+        chiefHouseHolder = null;
+        currentPatientFamily = null;
         paymentMethod = null;
     }
 
@@ -5167,6 +5382,30 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void setIndication(String indication) {
         this.indication = indication;
+    }
+
+    public Patient getChiefHouseHolder() {
+        return chiefHouseHolder;
+    }
+
+    public void setChiefHouseHolder(Patient chiefHouseHolder) {
+        this.chiefHouseHolder = chiefHouseHolder;
+    }
+
+    public MembershipScheme getCurrentPatientMembershipScheme() {
+        return currentPatientMembershipScheme;
+    }
+
+    public void setCurrentPatientMembershipScheme(MembershipScheme currentPatientMembershipScheme) {
+        this.currentPatientMembershipScheme = currentPatientMembershipScheme;
+    }
+
+    public Family getCurrentPatientFamily() {
+        return currentPatientFamily;
+    }
+
+    public void setCurrentPatientFamily(Family currentPatientFamily) {
+        this.currentPatientFamily = currentPatientFamily;
     }
 
 }

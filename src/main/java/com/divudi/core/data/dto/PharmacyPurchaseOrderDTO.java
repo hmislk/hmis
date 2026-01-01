@@ -53,8 +53,49 @@ public class PharmacyPurchaseOrderDTO implements Serializable {
     private String cancellerName;
     private Date cancelledAt;
 
+    // Bill status fields (for GRN page actions)
+    private Boolean billClosed;
+    private Boolean fullyIssued;
+
     // Default constructor required for JPA
     public PharmacyPurchaseOrderDTO() {
+    }
+
+    // Minimal constructor for testing (4 parameters)
+    public PharmacyPurchaseOrderDTO(Long billId, String deptId, Date createdAt, Double netTotal) {
+        this.billId = billId;
+        this.deptId = deptId;
+        this.billNumber = deptId;
+        this.createdAt = createdAt;
+        this.netTotal = netTotal;
+    }
+
+    // Constructor for GRN PO listing page (11 parameters - without cancelledBill fields)
+    // Used for pharmacy_purchase_order_list_for_recieve_dto.xhtml - optimized for approved POs awaiting GRN
+    public PharmacyPurchaseOrderDTO(
+            Long billId,
+            String deptId,
+            Date createdAt,
+            Double netTotal,
+            String creatorName,
+            String supplierName,
+            String departmentName,
+            Boolean consignment,
+            Boolean cancelled,
+            Boolean billClosed,
+            Boolean fullyIssued) {
+        this.billId = billId;
+        this.billNumber = deptId;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.netTotal = netTotal;
+        this.creatorName = creatorName;
+        this.supplierName = supplierName;
+        this.departmentName = departmentName;
+        this.consignment = consignment != null ? consignment : false;
+        this.cancelled = cancelled != null ? cancelled : false;
+        this.billClosed = billClosed != null ? billClosed : false;
+        this.fullyIssued = fullyIssued != null ? fullyIssued : false;
     }
 
     // Constructor for basic bill information (for requested and approved search)
@@ -269,6 +310,39 @@ public class PharmacyPurchaseOrderDTO implements Serializable {
         this.referenceBillCancelled = referenceBillCancelled != null ? (Boolean) referenceBillCancelled : false;
         this.checkedById = checkedById;
         this.checkedByName = checkedByName;
+    }
+
+    // Constructor for GRN PO listing page (13 parameters - JPQL compatible)
+    // Used for pharmacy_purchase_order_list_for_recieve_dto.xhtml - optimized for approved POs awaiting GRN
+    // Note: Uses Boolean wrapper types for JPQL compatibility (primitives cannot be auto-boxed to Object in JPQL)
+    public PharmacyPurchaseOrderDTO(
+            Long billId,
+            String deptId,
+            Date createdAt,
+            Double netTotal,
+            String creatorName,
+            String supplierName,
+            String departmentName,
+            Boolean consignment,
+            Boolean cancelled,
+            Boolean billClosed,
+            Boolean fullyIssued,
+            Date cancelledBillCreatedAt,
+            String cancellerName) {
+        this.billId = billId;
+        this.billNumber = deptId; // Use deptId as billNumber for display
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.netTotal = netTotal;
+        this.creatorName = creatorName;
+        this.supplierName = supplierName;
+        this.departmentName = departmentName;
+        this.consignment = consignment != null ? consignment : false;
+        this.cancelled = cancelled != null ? cancelled : false;
+        this.billClosed = billClosed != null ? billClosed : false;
+        this.fullyIssued = fullyIssued != null ? fullyIssued : false;
+        this.cancelledAt = cancelledBillCreatedAt;
+        this.cancellerName = cancellerName;
     }
 
     // Status check methods
@@ -511,6 +585,22 @@ public class PharmacyPurchaseOrderDTO implements Serializable {
 
     public void setCancelledAt(Date cancelledAt) {
         this.cancelledAt = cancelledAt;
+    }
+
+    public Boolean getBillClosed() {
+        return billClosed;
+    }
+
+    public void setBillClosed(Boolean billClosed) {
+        this.billClosed = billClosed;
+    }
+
+    public Boolean getFullyIssued() {
+        return fullyIssued;
+    }
+
+    public void setFullyIssued(Boolean fullyIssued) {
+        this.fullyIssued = fullyIssued;
     }
 
     @Override

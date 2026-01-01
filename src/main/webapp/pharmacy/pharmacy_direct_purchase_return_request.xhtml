@@ -92,7 +92,7 @@
                                 var="p"
                                 class="w-100 va-top"
                                 paginator="true"
-                                rows="10"
+                                rows="#{userSettingsController.pharmacyDirectPurchaseReturnRequestPageSize}"
                                 rowIndexVar="n"
                                 paginatorPosition="bottom"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -106,6 +106,7 @@
                                 headerText="Distributor"
                                 sortBy="#{p.fromInstitution.name}"
                                 filterBy="#{p.fromInstitution.name}"
+                                rendered="#{userSettingsController.pharmacyDirectPurchaseReturnRequestDistributorVisible}"
                                 filterMatchMode="contains"
                                 toggleable="true">
                                 <h:outputText value="#{p.fromInstitution.name}" />
@@ -118,7 +119,8 @@
                                 sortBy="#{p.deptId}"
                                 filterBy="#{p.deptId}"
                                 filterMatchMode="contains"
-                                toggleable="true">
+                                toggleable="true"
+                                rendered="#{userSettingsController.pharmacyDirectPurchaseReturnRequestPurchaseNoVisible}">
                                 <h:outputText value="#{p.deptId}" />
                             </p:column>
 
@@ -129,7 +131,8 @@
                                 sortBy="#{p.invoiceNumber}"
                                 filterBy="#{p.invoiceNumber}"
                                 filterMatchMode="contains"
-                                toggleable="true">
+                                toggleable="true"
+                                rendered="#{userSettingsController.pharmacyDirectPurchaseReturnRequestInvoiceNoVisible}">
                                 <h:outputText value="#{p.invoiceNumber}" />
                             </p:column>
 
@@ -137,7 +140,8 @@
                                 id="colDpDetails"
                                 headerText="Purchase Details"
                                 width="16em"
-                                toggleable="true">
+                                toggleable="true"
+                                rendered="#{userSettingsController.pharmacyDirectPurchaseReturnRequestPurchaseDetailsVisible}">
                                 <div class="d-flex flex-column">
                                     <div class="mb-1">
                                         <h:outputText styleClass="fw-bold text-primary" value="#{p.createdAt}">
@@ -195,7 +199,8 @@
                                 filterBy="#{p.netTotal}"
                                 filterMatchMode="equals"
                                 styleClass="text-end"
-                                toggleable="true">
+                                toggleable="true"
+                                rendered="#{userSettingsController.pharmacyDirectPurchaseReturnRequestPurchaseValueVisible}">
                                 <h:outputText value="#{p.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
@@ -219,7 +224,8 @@
                                 id="colPreviousReturns"
                                 headerText="Previous Returns"
                                 width="32em"
-                                toggleable="true">
+                                toggleable="true"
+                                rendered="#{userSettingsController.pharmacyDirectPurchaseReturnRequestPreviousReturnsVisible}">
                                 <h:dataTable 
                                     value="#{p.listOfBill}" 
                                     var="b" 
@@ -258,6 +264,46 @@
 
                             </p:column>
                         </p:dataTable>
+                            
+                          <!-- Column Visibility Settings - Subtle placement -->
+                            <div class="mt-3 pt-2" style="border-top: 1px solid #e9ecef;">
+                                <p:panel id="panelColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                    <f:facet name="header">
+                                        <span style="font-size: 0.85rem; color: #6c757d;">
+                                            <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                            Customize Columns
+                                        </span>
+                                    </f:facet>
+
+                                    <div class="d-flex flex-wrap gap-2 gap-2xl-0 justify-content-between align-items-center" style="font-size: 0.8rem">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDirectPurchaseReturnRequestDistributorVisible}"
+                                                                    itemLabel="Distributor">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDirectPurchaseReturnRequestPurchaseNoVisible}"
+                                                                     itemLabel="Purchase No">
+                                            </p:selectBooleanCheckbox>                                  
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDirectPurchaseReturnRequestInvoiceNoVisible}"
+                                                                       itemLabel="Invoice No">
+                                            </p:selectBooleanCheckbox> 
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDirectPurchaseReturnRequestPurchaseDetailsVisible}"
+                                                                     itemLabel="Purchase Details">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDirectPurchaseReturnRequestPurchaseValueVisible}"
+                                                                       itemLabel="Purchase Value">
+                                            </p:selectBooleanCheckbox>
+                                            <p:selectBooleanCheckbox value="#{userSettingsController.pharmacyDirectPurchaseReturnRequestPreviousReturnsVisible}"
+                                                                       itemLabel="Previous Returns">
+                                            </p:selectBooleanCheckbox>
+                                        </div>
+                                        <div class="flex">
+                                            <p:commandButton
+                                                value="Apply"
+                                                ajax="false" />
+                                        </div>
+                                    </div>
+                                </p:panel>
+                            </div>  
                         </p:panel>
 
                     </div>

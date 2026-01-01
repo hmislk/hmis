@@ -14,6 +14,7 @@ public class PharmacySnapshotBillLight implements Serializable {
     private Date createdAt;
     private String institutionName;
     private String departmentName;
+    private Long departmentId;
     private Long itemsCount;
     private Double netTotal;
     private Boolean completed;
@@ -53,6 +54,26 @@ public class PharmacySnapshotBillLight implements Serializable {
         this.departmentName = departmentName;
         this.itemsCount = itemsCount;
         this.netTotal = netTotal;
+        this.completed = completed;
+    }
+
+    /**
+     * Constructor with department ID for upload operations.
+     * Includes departmentId (Long) needed for parseAndPersistNavigate() method.
+     */
+    public PharmacySnapshotBillLight(Long id,
+                                     String deptId,
+                                     Date createdAt,
+                                     String institutionName,
+                                     String departmentName,
+                                     Long departmentId,
+                                     Boolean completed) {
+        this.id = id;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.institutionName = institutionName;
+        this.departmentName = departmentName;
+        this.departmentId = departmentId;
         this.completed = completed;
     }
 
@@ -97,6 +118,14 @@ public class PharmacySnapshotBillLight implements Serializable {
 
     public void setDepartmentName(String departmentName) {
         this.departmentName = departmentName;
+    }
+
+    public Long getDepartmentId() {
+        return departmentId;
+    }
+
+    public void setDepartmentId(Long departmentId) {
+        this.departmentId = departmentId;
     }
 
     public Long getItemsCount() {

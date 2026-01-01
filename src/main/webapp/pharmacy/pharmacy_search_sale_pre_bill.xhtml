@@ -263,7 +263,9 @@
                                                                                 </p:commandLink>-->
                                     </p:column>
 
-                                    <p:column headerText="Bill Details" width="280" styleClass="align-top">
+                                    <!-- Commented out for performance - reference bill details search is slow -->
+                                    <!--
+                                    <p:column id="colPaidBillDetails" headerText="Bill Details" width="280" styleClass="align-top">
                                         <f:facet name="header">
                                             <div class="d-flex align-items-center">
                                                 <i class="fas fa-receipt me-1"></i>
@@ -273,7 +275,6 @@
 
                                         <h:panelGroup rendered="#{bill.referenceBillId ne null}">
                                             <div class="d-flex flex-column">
-                                                <!-- Bill Number and Action -->
                                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                                     <div>
                                                         <i class="fas fa-receipt me-1 text-primary"></i>
@@ -299,7 +300,6 @@
                                                     </p:commandButton>
                                                 </div>
 
-                                                <!-- Billed At and By -->
                                                 <div class="mb-1">
                                                     <i class="fas fa-calendar-alt me-1 text-success"></i>
                                                     <h:outputText value="#{bill.referenceBillCreatedAt}" styleClass="small">
@@ -311,7 +311,6 @@
                                                     <h:outputText value="#{bill.referenceBillCreatorName}" styleClass="small"/>
                                                 </div>
 
-                                                <!-- Bill Status Messages -->
                                                 <h:panelGroup rendered="#{bill.referenceBillCancelled}">
                                                     <div class="mb-1">
                                                         <i class="fas fa-ban me-1 text-danger"></i>
@@ -326,7 +325,6 @@
                                                     </div>
                                                 </h:panelGroup>
 
-                                                <!-- Payment Information -->
                                                 <div class="border-top pt-2 mt-2">
                                                     <div class="mb-1">
                                                         <i class="fas fa-credit-card me-1 text-success"></i>
@@ -349,15 +347,16 @@
                                             </div>
                                         </h:panelGroup>
 
-                                        <!--                                        <p:commandButton 
+                                        <p:commandButton
                                                                                     id="btnViewSettledBill"
-                                                                                    title="View" 
-                                                                                    icon="fa fa-eye" 
+                                                                                    title="View"
+                                                                                    icon="fa fa-eye"
                                                                                     class="m-1 ui-button-info"
                                                                                     action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(bill.referenceBill.id)}"
                                                                                     ajax="false">
-                                                                                </p:commandButton>-->
-                                    </p:column>                      
+                                                                                </p:commandButton>
+                                    </p:column>
+                                    -->
 
                                     <p:column headerText="Client" width="200" styleClass="align-top">
                                         <f:facet name="header">

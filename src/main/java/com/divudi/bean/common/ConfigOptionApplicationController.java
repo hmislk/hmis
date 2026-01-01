@@ -110,6 +110,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadReportMethodConfigurationDefaults();
             loadAllCashierSummaryConfigurationDefaults();
             loadOpdBillingConfigurationDefaults();
+            loadPettyCashBillingConfigurationDefaults();
             loadDatabaseVersionConfigurationDefaults();
         } finally {
             isLoadingApplicationOptions = false;
@@ -119,6 +120,15 @@ public class ConfigOptionApplicationController implements Serializable {
     private void loadOpdBillingConfigurationDefaults() {
         // Feature toggle: whether all departments share the same OPD payment methods
         getBooleanValueByKey("All Departments Use Same Payment Methods for OPD Billing", true);
+    }
+
+    private void loadPettyCashBillingConfigurationDefaults() {
+        // Cash enabled by default, all others disabled
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            String key = pm.getLabel() + " is available for Petty Cash Billing";
+            boolean defaultValue = (pm == PaymentMethod.Cash); // Only Cash = true
+            getBooleanValueByKey(key, defaultValue);
+        }
     }
 
     private void loadDatabaseVersionConfigurationDefaults() {
@@ -175,6 +185,9 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Consignment Option is checked in new Pharmacy Purchasing Bills", false);
         getBooleanValueByKey("GRN Returns is only after Approval", true);
         getBooleanValueByKey("GRN Return can be done without Approval", true);
+
+        // Stock Upload Configuration
+        getBooleanValueByKey("Allow Expired Items in Direct Purchase Stock Upload", false);
 
         // Payment Generation Configuration
         getBooleanValueByKey("Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false);
@@ -357,6 +370,10 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Patient Address is required in Pharmacy Retail Sale", false);
         getBooleanValueByKey("Patient Area is required in Pharmacy Retail Sale", false);
         getBooleanValueByKey("Referring Doctor is required in Pharmacy Retail Sale", false);
+
+        // Pharmacy Sale UI Configuration Options
+        // These options control UI behavior in pharmacy retail sales
+        getBooleanValueByKey("Allow Editing Quantity of Added Items in Pharmacy Retail Sale for Cashier", false);
     }
 
     private void loadPharmacyIssueReceiptConfigurationDefaults() {
@@ -1091,6 +1108,9 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Pharmacy Income Report - Optimized Method", false);
         getBooleanValueByKey("Pharmacy Search Sale Bill - Legacy Method", true);
         getBooleanValueByKey("Pharmacy Search Sale Bill - Optimized Method", false);
+
+        // Inventory Reports
+        getBooleanValueByKey("Cost of Goods Sold Report - Display Stock Correction Section", true);
 
         // Analytics Reports
         getBooleanValueByKey("All Bill List Report - Legacy Method", true);

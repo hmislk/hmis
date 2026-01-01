@@ -1180,6 +1180,7 @@ public class PharmacySaleBhtController implements Serializable {
         try {
             savePreBillFinally(pt, matrixDepartment, btp, bta);
             savePreBillItemsFinally(tmpBillItems);
+            billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
 //        updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
             setPrintBill(getBillFacade().find(getPreBill().getId()));
@@ -1222,6 +1223,7 @@ public class PharmacySaleBhtController implements Serializable {
 
         savePreBillFinallyRequest(pt, matrixDepartment, btp, billNumberSuffix);
         savePreBillItemsFinallyRequest(tmpBillItems);
+        billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
         // Calculation Margin
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
@@ -1438,7 +1440,7 @@ public class PharmacySaleBhtController implements Serializable {
 
         savePreBillFinally(pt, matrixDepartment, btp, bta);
         savePreBillItemsFinally(tmpBillItems);
-        billService.createBillFinancialDetailsForPharmacyBill(getPreBill());
+        billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
         // Calculation Margin
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
