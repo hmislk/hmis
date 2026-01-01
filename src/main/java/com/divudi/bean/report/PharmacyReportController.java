@@ -2393,6 +2393,9 @@ public class PharmacyReportController implements Serializable {
             }
             totalSaleValue += saleValue;
         }
+
+        // Assign the calculated total to the property used in the UI
+        costValueTotal = totalCostValue;
     }
 
     private double resolveCostValueFromItemBatch(BillItem billItem) {

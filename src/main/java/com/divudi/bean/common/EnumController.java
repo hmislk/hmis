@@ -57,6 +57,7 @@ public class EnumController implements Serializable {
     List<PaymentMethod> paymentMethodsForChanneling;
     List<PaymentMethod> paymentMethodsForChannelSettling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
+    private List<PaymentMethod> paymentMethodsForPettyCashBilling;
     private List<PaymentMethod> paymentMethodsUnderMultipleForPharmacyBilling;
     private List<PaymentMethod> paymentMethodsForMultiplePaymentMethod;
     private List<PaymentMethod> paymentMethodsForPatientDepositRefund;
@@ -226,6 +227,13 @@ public class EnumController implements Serializable {
         return paymentMethodsForPharmacyBilling;
     }
 
+    public List<PaymentMethod> getPaymentMethodsForPettyCashBilling() {
+        if (paymentMethodsForPettyCashBilling == null) {
+            fillPaymentMethodsForPettyCashBilling();
+        }
+        return paymentMethodsForPettyCashBilling;
+    }
+
     public List<PaymentMethod> getPaymentMethodsForPharmacyBillCancellations() {
         List<PaymentMethod> paymentMethodsForPharmacyBillCancellations = new ArrayList<>();
         if (paymentMethodsForPharmacyBilling == null) {
@@ -252,6 +260,23 @@ public class EnumController implements Serializable {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Pharmacy Billing", true);
             if (include) {
                 paymentMethodsForPharmacyBilling.add(pm);
+            }
+        }
+    }
+
+    public void fillPaymentMethodsForPettyCashBilling() {
+        paymentMethodsForPettyCashBilling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = false;
+            if (pm == PaymentMethod.Cash) {
+                include = configOptionApplicationController.getBooleanValueByKey(
+                    pm.getLabel() + " is available for Petty Cash Billing", true); // DEFAULT TRUE
+            } else {
+                include = configOptionApplicationController.getBooleanValueByKey(
+                    pm.getLabel() + " is available for Petty Cash Billing", false); // DEFAULT FALSE
+            }
+            if (include) {
+                paymentMethodsForPettyCashBilling.add(pm);
             }
         }
     }
@@ -1185,6 +1210,7 @@ public class EnumController implements Serializable {
         p.add(PaymentMethod.Slip);
         p.add(PaymentMethod.OnlineSettlement);
         p.add(PaymentMethod.Staff_Welfare);
+        p.add(PaymentMethod.ewallet);
         p.add(PaymentMethod.PatientDeposit);
         paymentMethodsForMultiplePaymentMethod = p;
         return paymentMethodsForMultiplePaymentMethod;

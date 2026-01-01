@@ -5,6 +5,32 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Doctor Wise Surgery Count Report</title>
+        <style>
+            .subtotal-row {
+                background-color: #f0f0f0 !important;
+                font-weight: bold;
+            }
+            .grandtotal-row {
+                background-color: #d0d0d0 !important;
+                font-weight: bold;
+                font-size: 1.1em;
+            }
+            .specialty-header {
+                background-color: #9370DB !important;
+                color: white;
+                font-weight: bold;
+            }
+            .chart-container {
+                margin: 20px 0;
+                padding: 20px;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+        </style>
+    </h:head>
 
     <h:body>
         <ui:composition template="/reports/index.xhtml">
@@ -13,7 +39,7 @@
                 <h:form >
                     <p:panel header="Surgery Count (Doctor Wise)" >
                         <h:panelGrid columns="8" class="w-100" >
-                             <h:panelGroup layout="block" styleClass="form-group">
+                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;"
                                               styleClass="fa mr-2"/> 
                                 <p:outputLabel value="From Date" for="fromDate" class="m-3"/>
@@ -22,12 +48,12 @@
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="fromDate"
-                                value="#{searchController.fromDate}"
+                                value="#{inwardReportController.fromYearStartDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 />
-                                          
+
                             <p:spacer width="20"/>
-                            
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;"
                                               styleClass="fa mr-2"/> 
@@ -37,111 +63,166 @@
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="toDate"
-                                value="#{searchController.fromDate}"
+                                value="#{inwardReportController.toYearEndDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 />
-                             <p:spacer width="20"/>
-                              <h:panelGroup layout="block" styleClass="form-group">
+                            <p:spacer width="20"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-stethoscope mr-2"/> 
                                 <p:outputLabel value="Doctor Speciality"  class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="#{reportController.currentSpeciality}">
+                            <p:selectOneMenu value="#{inwardReportController.currentSpeciality}">
                                 <f:selectItem itemLabel="Select Speciality"/>
                                 <f:selectItems value="#{specialityController.items}" itemLabel="#{s.name}" var="s" itemValue="#{s}"/>
                             </p:selectOneMenu>
                         </h:panelGrid>
                         <div class="d-flex align-items-center my-3">
-                             <p:commandButton
+                            <p:commandButton
                                 class="ui-button-warning mx-1"
                                 icon="fas fa-cogs"
                                 ajax="false"
                                 value="Process"
-                                action="null">
+                                action="#{inwardReportController.processSurgeryCountDoctorWiseReport()}">
                             </p:commandButton>
 
                             <p:commandButton class="ui-button-primary mx-1"
                                              icon="fas fa-print"
                                              ajax="false"
                                              value="Print All">
-                                <p:printer target="" />
+                                <p:printer target="surgeryTable" />
                             </p:commandButton>
 
                             <p:commandButton
                                 class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
-                                <p:dataExporter type="xlsx" target="detailWise" fileName="Inpatient_Service_Detail.xlsx"/>
+                                <p:dataExporter type="xlsx" target="surgeryTable" fileName="Surgery_Count_Doctor_Wise.xlsx"/>
                             </p:commandButton>
 
                             <p:commandButton
-                                class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
-                                action="#">
+                                class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
+                                <p:dataExporter type="pdf" target="surgeryTable" fileName="Surgery_Count_Doctor_Wise.pdf"/>
                             </p:commandButton>
                         </div>
-                        
+
                         <p:separator/>
-                         <p:panel header="Surgery Count Doctor Wise">
-                        <p:chart type="line" style="height:400px;">
-                           
-                        </p:chart>
+
+                        <!-- Data Table Section -->
+                        <p:panel header="Surgery Count Summary - Year #{inwardReportController.selectedYear}" 
+                                 rendered="#{not empty inwardReportController.billList}"
+                                 style="margin-top: 20px;">
+                            <p:dataTable id="surgeryTable" 
+                                         value="#{inwardReportController.billList}" 
+                                         var="item"
+                                         rowStyleClass="#{item.subtotal ? 'subtotal-row' : (item.grandTotal ? 'grandtotal-row' : '')}"
+                                         paginator="false">
+
+                                <p:column headerText="Doctor Name" style="width: 250px;">
+                                    <h:outputText value="#{item.doctorName}" 
+                                                  style="#{item.subtotal or item.grandTotal ? 'font-weight:bold;' : ''}"/>
+                                </p:column>
+
+                                <p:column headerText="Speciality" style="width: 200px;">
+                                    <h:outputText value="#{item.specialityName}"
+                                                  rendered="#{!item.subtotal and !item.grandTotal}"/>
+                                </p:column>
+
+                                <p:column headerText="Jan" styleClass="text-center">
+                                    <h:outputText value="#{item.january}" 
+                                                  rendered="#{item.january > 0}"/>
+                                </p:column>
+
+                                <p:column headerText="Feb" styleClass="text-center">
+                                    <h:outputText value="#{item.february}" 
+                                                  rendered="#{item.february > 0}"/>
+                                </p:column>
+
+                                <p:column headerText="Mar" styleClass="text-center">
+                                    <h:outputText value="#{item.march}" 
+                                                  rendered="#{item.march > 0}"/>
+                                </p:column>
+
+                                <p:column headerText="Apr" styleClass="text-center">
+                                    <h:outputText value="#{item.april}" 
+                                                  rendered="#{item.april > 0}"/>
+                                </p:column>
+
+                                <p:column headerText="May" styleClass="text-center">
+                                    <h:outputText value="#{item.may}" 
+                                                  rendered="#{item.may > 0}"/>
+                                </p:column>
+
+                                <p:column headerText="Jun" styleClass="text-center">
+                                    <h:outputText value="#{item.june}" 
+                                                  rendered="#{item.june > 0}"/>
+                                </p:column>
+
+                                <p:column headerText="Jul" styleClass="text-center">
+                                    <h:outputText value="#{item.july}" 
+                                                  rendered="#{item.july > 0}"/>
+                                </p:column>
+
+                                <p:column headerText="Aug" styleClass="text-center">
+                                    <h:outputText value="#{item.august}" 
+                                                  rendered="#{item.august > 0}"/>
+                                </p:column>
+
+                                <p:column headerText="Sep" styleClass="text-center">
+                                    <h:outputText value="#{item.september}" 
+                                                  rendered="#{item.september > 0}"/>
+                                </p:column>
+
+                                <p:column headerText="Oct" styleClass="text-center">
+                                    <h:outputText value="#{item.october}" 
+                                                  rendered="#{item.october > 0}"/>
+                                </p:column>
+
+                                <p:column headerText="Nov" styleClass="text-center">
+                                    <h:outputText value="#{item.november}" 
+                                                  rendered="#{item.november > 0}"/>
+                                </p:column>
+
+                                <p:column headerText="Dec" styleClass="text-center">
+                                    <h:outputText value="#{item.december}" 
+                                                  rendered="#{item.december > 0}"/>
+                                </p:column>
+
+                                <p:column headerText="Total" styleClass="text-center" 
+                                          style="background-color: #FFA500; color: white; font-weight: bold;">
+                                    <h:outputText value="#{item.totalSurgeries}"/>
+                                </p:column>
+                            </p:dataTable>
                         </p:panel>
 
-
-                        
-                        <p:dataTable value="null" var="c">
-                            <p:column headerText="Performed Doctor Name" style="width: 100px" >
-                                <h:outputText value="" ></h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputLabel value="Total"></h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column headerText="Doctor Speciality" style="width: 100px" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Jan" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Feb" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Mar" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Apr" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="May" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Jun" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Jul" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Aug" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Sep" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Oct" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Nov" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Dec" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Total" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            
-
-                        </p:dataTable>
+                        <!-- Charts Section -->
+                        <p:panel header="Surgery Count Visual Reports" rendered="#{not empty inwardReportController.billList}">
+                            <p:tabView id="chartTabs" dynamic="true" cache="true">
+                                <p:tab title="Specialty-wise Line Chart" onTabShow="PF('specialtyLineWV').reinit();">
+                                    <p:panel header="Specialty Wise Surgery Trend">
+                                        <p:chart value="#{inwardReportController.specialtyLineChartModel}" widgetVar="specialtyLineWV" style="width:100%; height:500px;" />
+                                    </p:panel>
+                                </p:tab>
+                                <p:tab title="Specialty-wise Bar Chart" onTabShow="PF('specialtyBarWV').reinit();">
+                                    <p:panel header="Specialty Wise Surgery Count">
+                                        <p:chart value="#{inwardReportController.specialtyBarChartModel}" widgetVar="specialtyBarWV" style="width:100%; height:500px;" />
+                                    </p:panel>
+                                </p:tab>
+                                <p:tab title="Doctor-wise Line Chart" onTabShow="PF('doctorLineWV').reinit();">
+                                    <p:panel header="Doctor Wise Surgery Trend">
+                                        <p:chart value="#{inwardReportController.lineChartModel}" widgetVar="doctorLineWV" style="width:100%; height:500px;" />
+                                    </p:panel>
+                                </p:tab>
+                                <p:tab title="Doctor-wise Bar Chart" onTabShow="PF('doctorBarWV').reinit();">
+                                    <p:panel header="Doctor Wise Surgery Count">
+                                        <p:chart value="#{inwardReportController.barChartModel}" widgetVar="doctorBarWV" style="width:100%; height:500px;" />
+                                    </p:panel>
+                                </p:tab>
+                            </p:tabView>
+                        </p:panel>
 
                     </p:panel>
 
                 </h:form>
+
+                
 
             </ui:define>
         </ui:composition>

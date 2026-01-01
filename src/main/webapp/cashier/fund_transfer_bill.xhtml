@@ -12,6 +12,9 @@
         <ui:composition template="./index.xhtml">
 
             <ui:define name="subcontent">
+                <f:metadata>
+                    <f:viewAction action="#{financialTransactionController.ensureFundTransferBillInitialized()}" />
+                </f:metadata>
                 <h:form>
 
 
@@ -165,7 +168,7 @@
                                         icon="fa fa-plus"
                                         class="ui-button-success"
                                         process="btnAdd cmdPayment paymentDetails"
-                                        update="tblPayments totals cmdPayment paymentDetails"
+                                        update="tblPayments totals cmdPayment paymentDetails :growl"
                                         action="#{financialTransactionController.addPaymentToFundTransferBill()}" >
                                     </p:commandButton>
                                 </div>

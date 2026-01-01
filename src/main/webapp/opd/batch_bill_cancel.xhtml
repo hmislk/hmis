@@ -98,27 +98,30 @@
                                         </f:facet>
                                         <div class="row my-1"  >
                                             <div class="col-5" >
-                                                <p:selectOneMenu   
+                                                <p:selectOneMenu
                                                     id="pay"
                                                     class="w-100"
                                                     value="#{billController.paymentMethod}"
-                                                    >   
+                                                    disabled="#{billController.paymentMethod eq 'Credit'}">
                                                     <f:selectItem itemLabel="Same as Billed" ></f:selectItem>
-                                                    <f:selectItems 
-                                                        value="#{enumController.paymentMethodsForOpdBilling}"  
+                                                    <f:selectItems
+                                                        value="#{enumController.paymentMethodsForOpdBilling}"
                                                         var="pm"
                                                         itemLabel="#{pm.label}"
                                                         itemValue="#{pm}"/>
-                                                    <p:ajax 
-                                                        process="@this cmbPs" 
+                                                    <p:ajax
+                                                        process="@this cmbPs"
                                                         update="paymentDetails"
-                                                        event="change"/>
+                                                        event="change"
+                                                        listener="#{billController.onPaymentMethodChange()}"/>
                                                 </p:selectOneMenu>
                                             </div>
                                         </div>
 
                                         <div>
-                                            <h:panelGroup id="paymentDetails"  >
+                                            <h:panelGroup id="paymentDetails">
+                                                <fieldset disabled="#{billController.paymentMethod eq 'Credit'}"
+                                                         style="border: none; padding: 0; margin: 0;">
 
                                                 <h:panelGroup
                                                     class="row"
@@ -156,9 +159,9 @@
                                                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                         </h:outputText>
                                                                     </p:column>
-                                                                    <p:ajax process="@this" 
-                                                                            update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
-                                                                            event="itemSelect"  
+                                                                    <p:ajax process="@this"
+                                                                            update=":#{p:resolveFirstComponentWithId('payment',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}"
+                                                                            event="itemSelect"
                                                                             listener="#{billController.calTotals()}" />
                                                                 </p:autoComplete>
                                                             </div>
@@ -201,9 +204,9 @@
                                                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                                         </h:outputText>
                                                                     </p:column>
-                                                                    <p:ajax process="@this" 
-                                                                            update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
-                                                                            event="itemSelect"  
+                                                                    <p:ajax process="@this"
+                                                                            update=":#{p:resolveFirstComponentWithId('payment',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId}"
+                                                                            event="itemSelect"
                                                                             listener="#{billController.calTotals()}" />
                                                                 </p:autoComplete>
                                                             </div>
@@ -214,7 +217,7 @@
                                                     class="row my-1"
                                                     layout="block"  
                                                     id="creditCard" rendered="#{billController.paymentMethod eq 'Card'}" >
-                                                    <pa:creditCard paymentMethodData="#{billController.paymentMethodData}"/>
+                                                    <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{billController.paymentMethodData}"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup
                                                     class="row my-1"
@@ -226,19 +229,19 @@
                                                     class="row my-1"
                                                     layout="block" 
                                                     id="eWallet"  rendered="#{billController.paymentMethod eq 'ewallet'}" >
-                                                    <pa:ewallet paymentMethodData="#{billController.paymentMethodData}" />
+                                                    <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{billController.paymentMethodData}" />
                                                 </h:panelGroup>
                                                 <h:panelGroup
                                                     class="row my-1"
                                                     layout="block" 
                                                     id="cheque"  rendered="#{billController.paymentMethod eq 'Cheque'}" >
-                                                    <pa:cheque paymentMethodData="#{billController.paymentMethodData}"/>
+                                                    <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{billController.paymentMethodData}"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup 
                                                     class="row my-1"
                                                     layout="block" 
                                                     id="slip"  rendered="#{billController.paymentMethod eq 'Slip'}" >
-                                                    <pa:slip paymentMethodData="#{billController.paymentMethodData}"/>
+                                                    <pa:slipDetailsAsOnlyPayment paymentMethodData="#{billController.paymentMethodData}"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup 
                                                     class="row my-1"
@@ -254,7 +257,7 @@
                                                     <pa:multiple_payment_methods controller="#{billController}" paymentMethods="#{configOptionController.paymentMethodsUnderMultipleForOpdBilling}" class="w-100"/>
 
                                                 </h:panelGroup>
-
+                                                </fieldset>
                                             </h:panelGroup>
                                         </div>
 

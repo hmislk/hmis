@@ -168,6 +168,7 @@ public class UserPrivilageController implements Serializable {
 
         TreeNode roomNode = new DefaultTreeNode(new PrivilegeHolder(null, "Room"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoom, "Room Menu"), roomNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.WatingRoomAdmitPatient, "Waiting Room Admit Patient"), roomNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoomRoomOccupency, "Room Occupancy"), roomNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoomRoomChange, "Room Change"), roomNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoomGurdianRoomChange, "Guardian Room Change"), roomNode);
@@ -1184,6 +1185,63 @@ public class UserPrivilageController implements Serializable {
             getFacade().edit(wup);
         }
         return wup;
+    }
+
+    public void togglePrivilege(String privilegeName) {
+        if (privilegeName == null || privilegeName.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Invalid privilege name");
+            return;
+        }
+
+        if (currentWebUser == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return;
+        }
+
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+
+        try {
+            Privileges privilege = Privileges.valueOf(privilegeName);
+
+            // Check if user currently has this privilege
+            String j = "SELECT i "
+                    + " FROM WebUserPrivilege i "
+                    + " where i.webUser=:wu "
+                    + " and i.privilege=:p "
+                    + " and i.department=:dep "
+                    + " and i.retired=:ret";
+            Map<String, Object> m = new HashMap<>();
+            m.put("wu", currentWebUser);
+            m.put("p", privilege);
+            m.put("dep", department);
+            m.put("ret", false);
+
+            WebUserPrivilege existingPrivilege = getEjbFacade().findFirstByJpql(j, m);
+
+            if (existingPrivilege != null) {
+                // User has the privilege, so remove it (retire it)
+                existingPrivilege.setRetired(true);
+                existingPrivilege.setRetiredAt(new Date());
+                existingPrivilege.setRetirer(sessionController.getLoggedUser());
+                getFacade().edit(existingPrivilege);
+                JsfUtil.addSuccessMessage("Privilege '" + privilege.toString() + "' removed from " + currentWebUser.getName());
+            } else {
+                // User doesn't have the privilege, so add it
+                addUserPrivilege(privilege, currentWebUser, department);
+                JsfUtil.addSuccessMessage("Privilege '" + privilege.toString() + "' assigned to " + currentWebUser.getName());
+            }
+
+            // Reload privileges to reflect changes
+            fillUserPrivileges();
+
+        } catch (IllegalArgumentException e) {
+            JsfUtil.addErrorMessage("Invalid privilege: " + privilegeName);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error toggling privilege: " + e.getMessage());
+        }
     }
 
     public void makePrivilegesNeededToBeReloaded() {

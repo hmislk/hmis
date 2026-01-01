@@ -279,7 +279,13 @@
                             <div class="mb-3">
                                 <p>Upload a CSV file with the following format:</p>
                                 <p><strong>Option Key, Option Value, Value Type, Enum Type</strong></p>
-                                <p class="text-muted">Note: If an option key already exists, its value will be replaced with the imported value.</p>
+                                <div class="text-info">
+                                    <p><strong>Import Modes:</strong></p>
+                                    <ul>
+                                        <li><strong>Import and Replace:</strong> Updates existing options and creates new ones</li>
+                                        <li><strong>Import Missing Only:</strong> Only creates new options, skips existing ones</li>
+                                    </ul>
+                                </div>
                             </div>
 
                             <div class="mb-3">
@@ -292,17 +298,25 @@
                             </div>
 
                             <div class="mb-3">
-                                <p:commandButton 
-                                    value="Import CSV" 
+                                <p:commandButton
+                                    value="Import and Replace"
                                     icon="pi pi-upload"
                                     ajax="false"
-                                    action="#{configOptionController.importOptionsFromCsv}"
-                                    styleClass="ui-button-success" />
-                                <p:commandButton 
-                                    value="Cancel" 
+                                    action="#{configOptionController.importAndReplaceOptionsFromCsv}"
+                                    styleClass="ui-button-success mr-2"
+                                    title="Updates existing options and creates new ones" />
+                                <p:commandButton
+                                    value="Import Missing Only"
+                                    icon="pi pi-plus"
+                                    ajax="false"
+                                    action="#{configOptionController.importMissingOnlyOptionsFromCsv}"
+                                    styleClass="ui-button-warning mr-2"
+                                    title="Only creates new options, skips existing ones" />
+                                <p:commandButton
+                                    value="Cancel"
                                     icon="pi pi-times"
                                     onclick="PF('importDialog').hide();"
-                                    styleClass="ui-button-secondary ml-2" />
+                                    styleClass="ui-button-secondary" />
                             </div>
 
                             <div class="mt-3">

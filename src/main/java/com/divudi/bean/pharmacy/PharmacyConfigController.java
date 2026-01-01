@@ -154,6 +154,16 @@ public class PharmacyConfigController implements Serializable {
     private boolean creditSettlementCancellationPosHeader;
     private boolean creditSettlementCancellationPosCustom1;
 
+    // Patient Deposit Settings
+    private boolean patientDepositPosPaper;
+    private boolean patientDepositA4Paper;
+    private boolean patientDepositCustomPaper;
+
+    // Petty Cash Settings
+    private boolean pettyCashPosPaper;
+    private boolean pettyCashA4Paper;
+    private boolean pettyCashCustomPaper;
+
     public PharmacyConfigController() {
     }
     
@@ -291,6 +301,16 @@ public class PharmacyConfigController implements Serializable {
         creditSettlementCancellationPosHeader = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Header Paper", false);
         creditSettlementCancellationPosCustom1 = configOptionController.getBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Custom 1", false);
 
+        // Patient Deposit Settings
+        patientDepositPosPaper = configOptionController.getBooleanValueByKey("Patient Deposit Receipt POS Paper", true);
+        patientDepositA4Paper = configOptionController.getBooleanValueByKey("Patient Deposit Receipt A4 Paper", false);
+        patientDepositCustomPaper = configOptionController.getBooleanValueByKey("Patient Deposit Receipt Custom Paper", false);
+
+        // Petty Cash Settings
+        pettyCashPosPaper = configOptionController.getBooleanValueByKey("Petty Cash Receipt POS Paper", true);
+        pettyCashA4Paper = configOptionController.getBooleanValueByKey("Petty Cash Receipt A4 Paper", false);
+        pettyCashCustomPaper = configOptionController.getBooleanValueByKey("Petty Cash Receipt Custom Paper", false);
+
     }
 
     /**
@@ -412,6 +432,16 @@ public class PharmacyConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is Custom 3", creditSettlementCancellationCustom3);
             configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Header Paper", creditSettlementCancellationPosHeader);
             configOptionController.setBooleanValueByKey("Credit Settlement Cancellation Receipt is POS Custom 1", creditSettlementCancellationPosCustom1);
+
+            // Patient Deposit Settings
+            configOptionController.setBooleanValueByKey("Patient Deposit Receipt POS Paper", patientDepositPosPaper);
+            configOptionController.setBooleanValueByKey("Patient Deposit Receipt A4 Paper", patientDepositA4Paper);
+            configOptionController.setBooleanValueByKey("Patient Deposit Receipt Custom Paper", patientDepositCustomPaper);
+
+            // Petty Cash Settings
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt POS Paper", pettyCashPosPaper);
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt A4 Paper", pettyCashA4Paper);
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt Custom Paper", pettyCashCustomPaper);
 
             JsfUtil.addSuccessMessage("Configuration saved successfully");
 
@@ -637,6 +667,46 @@ public class PharmacyConfigController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving Credit Settlement Cancellation configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Patient Deposit configuration changes specifically
+     */
+    public void savePatientDepositConfig() {
+        try {
+            // Patient Deposit Settings
+            configOptionController.setBooleanValueByKey("Patient Deposit Receipt POS Paper", patientDepositPosPaper);
+            configOptionController.setBooleanValueByKey("Patient Deposit Receipt A4 Paper", patientDepositA4Paper);
+            configOptionController.setBooleanValueByKey("Patient Deposit Receipt Custom Paper", patientDepositCustomPaper);
+
+            JsfUtil.addSuccessMessage("Patient Deposit configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Patient Deposit configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Petty Cash configuration changes specifically
+     */
+    public void savePettyCashConfig() {
+        try {
+            // Petty Cash Settings
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt POS Paper", pettyCashPosPaper);
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt A4 Paper", pettyCashA4Paper);
+            configOptionController.setBooleanValueByKey("Petty Cash Receipt Custom Paper", pettyCashCustomPaper);
+
+            JsfUtil.addSuccessMessage("Petty Cash configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Petty Cash configuration: " + e.getMessage());
         }
     }
 
@@ -1345,6 +1415,56 @@ public class PharmacyConfigController implements Serializable {
 
     public void setRetailSaleReturnRefundBillPosPaperCustom1(boolean retailSaleReturnRefundBillPosPaperCustom1) {
         this.retailSaleReturnRefundBillPosPaperCustom1 = retailSaleReturnRefundBillPosPaperCustom1;
+    }
+
+    // Patient Deposit Getters and Setters
+    public boolean isPatientDepositPosPaper() {
+        return patientDepositPosPaper;
+    }
+
+    public void setPatientDepositPosPaper(boolean patientDepositPosPaper) {
+        this.patientDepositPosPaper = patientDepositPosPaper;
+    }
+
+    public boolean isPatientDepositA4Paper() {
+        return patientDepositA4Paper;
+    }
+
+    public void setPatientDepositA4Paper(boolean patientDepositA4Paper) {
+        this.patientDepositA4Paper = patientDepositA4Paper;
+    }
+
+    public boolean isPatientDepositCustomPaper() {
+        return patientDepositCustomPaper;
+    }
+
+    public void setPatientDepositCustomPaper(boolean patientDepositCustomPaper) {
+        this.patientDepositCustomPaper = patientDepositCustomPaper;
+    }
+
+    // Petty Cash Getters and Setters
+    public boolean isPettyCashPosPaper() {
+        return pettyCashPosPaper;
+    }
+
+    public void setPettyCashPosPaper(boolean pettyCashPosPaper) {
+        this.pettyCashPosPaper = pettyCashPosPaper;
+    }
+
+    public boolean isPettyCashA4Paper() {
+        return pettyCashA4Paper;
+    }
+
+    public void setPettyCashA4Paper(boolean pettyCashA4Paper) {
+        this.pettyCashA4Paper = pettyCashA4Paper;
+    }
+
+    public boolean isPettyCashCustomPaper() {
+        return pettyCashCustomPaper;
+    }
+
+    public void setPettyCashCustomPaper(boolean pettyCashCustomPaper) {
+        this.pettyCashCustomPaper = pettyCashCustomPaper;
     }
 
 }

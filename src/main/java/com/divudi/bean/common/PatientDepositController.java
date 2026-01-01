@@ -143,6 +143,10 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     }
 
     public String navigateToNewPatientDepositCancel() {
+        if (patientController.getBill() == null) {
+            JsfUtil.addErrorMessage("A Bill is not selected");
+            return "";
+        }
         if (patientController.getBill().isCancelled()) {
             JsfUtil.addErrorMessage("Already Canceled Bill");
             return "";
@@ -370,7 +374,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         List<Payment> p = billBeanController.createPayment(patientController.getCancelBill(),
                 patientController.getCancelBill().getPaymentMethod(),
                 patientController.getPaymentMethodData());
-        drawerController.updateDrawerForOuts(p);
+        drawerController.updateDrawerForOuts(p);        
     }
 
     public void settlePatientDepositReturn() {
@@ -378,10 +382,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             JsfUtil.addErrorMessage("Please Select a Patient");
             return;
         }
-        if (validatePaymentMethodDataForPatientDepositReturn()) {
-            return;
-        }
-
         if (current == null) {
             JsfUtil.addErrorMessage("No current. please start from beginning");
             return;
@@ -393,7 +393,12 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             JsfUtil.addErrorMessage("No Bill in patient controller. please start from beginning");
             return;
         }
+        
         patientController.setBillNetTotal();
+        
+        if (validatePaymentMethodDataForPatientDepositReturn()) {
+            return;
+        }
         if (current.getBalance() < patientController.getBill().getNetTotal()) {
             JsfUtil.addErrorMessage("Can't Refund a Total More that Deposit");
             return;

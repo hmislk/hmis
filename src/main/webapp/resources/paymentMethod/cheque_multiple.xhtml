@@ -45,7 +45,9 @@
                     disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
                     required="#{cc.attrs.componentDetail == null or cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
                     requiredMessage="Cheque No is required">
-                    <p:ajax process="@this"/>
+                    <p:ajax
+                        event="blur"
+                        process="@this"/>
                 </p:inputText>
             </div>
 
@@ -60,7 +62,9 @@
                     requiredMessage="Bank is required">
                     <f:selectItem itemLabel="Select Bank" noSelectionOption="true"/>
                     <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                    <p:ajax process="@this"/>
+                    <p:ajax
+                        event="change"
+                        process="@this"/>
                 </p:selectOneMenu>
             </div>
 
@@ -75,7 +79,9 @@
                     style="width: 150px;"
                     required="true"
                     requiredMessage="Date is required">
-                    <p:ajax process="@this"/>
+                    <p:ajax
+                        event="dateSelect"
+                        process="@this"/>
                 </p:calendar>
             </div>
 
@@ -88,7 +94,10 @@
                     styleClass="form-control"
                     required="true"
                     requiredMessage="Comment is required">
-                    <p:ajax process="@this"/>
+                    <p:ajax
+                        event="blur"
+                        process="@this"
+                        listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
                 </p:inputText>
             </div>
         </div>

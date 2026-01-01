@@ -328,10 +328,25 @@ public class CashRecieveBillController implements Serializable {
             return 0.0;
         }
 
+        Bill referenceBill = billItem.getReferenceBill();
+
+        // For Credit payment method bills, use the updated balance field directly
+        // This ensures we get the accurate balance after individual bill cancellations
+        if (referenceBill.getPaymentMethod() == PaymentMethod.Credit) {
+            // The balance field is automatically maintained during cancellations
+            // and represents the current due amount
+            double currentBalance = Math.abs(referenceBill.getBalance());
+
+            // Additional validation: ensure balance doesn't exceed original amount
+            double originalAmount = Math.abs(referenceBill.getNetTotal() + referenceBill.getVat());
+            return Math.min(currentBalance, originalAmount);
+        }
+
+        // For non-Credit bills, use the original calculation method
         double refBallance = 0;
-        double neTotal = Math.abs(billItem.getReferenceBill().getNetTotal() + billItem.getReferenceBill().getVat());
-        double refAmount = Math.abs(getCreditBean().getRefundAmount(billItem.getReferenceBill()));
-        double paidAmt = Math.abs(getCreditBean().getTotalCreditSettledAmount(billItem.getReferenceBill()));
+        double neTotal = Math.abs(referenceBill.getNetTotal() + referenceBill.getVat());
+        double refAmount = Math.abs(getCreditBean().getRefundAmount(referenceBill));
+        double paidAmt = Math.abs(getCreditBean().getTotalCreditSettledAmount(referenceBill));
         refBallance = neTotal - (paidAmt + refAmount);
         return refBallance;
     }
@@ -348,6 +363,19 @@ public class CashRecieveBillController implements Serializable {
             return 0.0;
         }
 
+        // For Credit payment method bills, use the updated balance field directly
+        // This ensures we get the accurate balance after individual bill cancellations
+        if (bill.getPaymentMethod() == PaymentMethod.Credit) {
+            // The balance field is automatically maintained during cancellations
+            // and represents the current due amount
+            double currentBalance = Math.abs(bill.getBalance());
+
+            // Additional validation: ensure balance doesn't exceed original amount
+            double originalAmount = Math.abs(bill.getNetTotal() + bill.getVat());
+            return Math.min(currentBalance, originalAmount);
+        }
+
+        // For non-Credit bills, use the original calculation method
         double neTotal = Math.abs(bill.getNetTotal() + bill.getVat());
         double refAmount = Math.abs(getCreditBean().getRefundAmount(bill));
         double paidAmt = Math.abs(getCreditBean().getTotalCreditSettledAmount(bill));

@@ -42,7 +42,7 @@
                                             class="ui-button-danger" 
                                             action="#{billSearch.cancelOpdBill()}">
                                         </p:commandButton>
-                                        
+
                                         <p:commandButton  
                                             class="ui-button-secondary"
                                             value="Back To Search"
@@ -57,7 +57,7 @@
 
                             <!--Payment Mode, Patient Details and Bill Details Panels -->
                             <div class="row">
-                                <div class="col-3">
+                                <div class="col-6">
                                     <p:panel>
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-money-bill"></h:outputText>
@@ -65,14 +65,97 @@
                                         </f:facet>
                                         <p:selectOneMenu
                                             id="cmbPs"
-                                            value="#{billSearch.paymentMethod}" >
-                                            <f:selectItem itemLabel="Same as Billed" ></f:selectItem>
+                                            value="#{billSearch.paymentMethod}"
+                                            disabled="#{billSearch.paymentMethod eq 'Credit'}" >
+                                            <f:selectItem itemLabel="Select a Cancellation Payment Method" ></f:selectItem>
                                             <f:selectItems value="#{enumController.paymentMethodsForOpdBillCanceling}"/>
-                                            <p:ajax process="@this" update="paymentDetails" event="change" />
+                                            <p:ajax process="@this" update="paymentDetails" event="change" listener="#{billSearch.onPaymentMethodChange()}" />
                                         </p:selectOneMenu>
                                     </p:panel>
+                                    <!-- Cancellation Payment Details Panel -->
+                                    <p:panel class="mt-2">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-credit-card me-2"></h:outputText>
+                                            <h:outputLabel value="Cancellation Payment Details"></h:outputLabel>
+                                        </f:facet>
+
+                                        <h:panelGroup id="paymentDetails">
+                                            <fieldset disabled="#{billSearch.paymentMethod eq 'Credit'}"
+                                                     style="border: none; padding: 0; margin: 0;">
+                                            <h:panelGroup
+                                                class="row"
+                                                layout="block"
+                                                rendered="#{billSearch.paymentMethod eq 'Credit'}" >
+                                                <pa:creditDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{billSearch.paymentMethodData}" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup
+                                                class="row"
+                                                layout="block"
+                                                rendered="#{billSearch.paymentMethod eq 'Staff'}" >
+                                                <pa:staff_credit valueRequired="false" paymentMethodData="#{billSearch.paymentMethodData}" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup
+                                                class="row"
+                                                layout="block"
+                                                rendered="#{billSearch.paymentMethod eq 'Staff_Welfare'}" >
+                                                <pa:staff_welfare_asOnlyPayment valueRequired="false" paymentMethodData="#{billSearch.paymentMethodData}" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup
+                                                id="creditCard"
+                                                rendered="#{billSearch.paymentMethod eq 'Card'}">
+                                                <pa:creditCardDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{billSearch.paymentMethodData}" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup
+                                                id="ptdeposit"
+                                                rendered="#{billSearch.paymentMethod eq 'PatientDeposit'}">
+                                                <pa:patient_deposit valueRequired="false" paymentMethodData="#{billSearch.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup
+                                                id="ewallet"
+                                                rendered="#{billSearch.paymentMethod eq 'ewallet'}" >
+                                                <pa:ewalletDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{billSearch.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup
+                                                id="cheque"
+                                                rendered="#{billSearch.paymentMethod eq 'Cheque'}">
+                                                <pa:chequeDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{billSearch.paymentMethodData}" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup
+                                                id="slip"
+                                                rendered="#{billSearch.paymentMethod eq 'Slip'}">
+                                                <pa:slipDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{billSearch.paymentMethodData}" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup
+                                                class="row my-1 w-100"
+                                                layout="block"
+                                                id="multiplePaymentMethods"
+                                                rendered="#{billSearch.paymentMethod eq 'MultiplePaymentMethods'}" >
+                                                <pa:multiple_payment_methods
+                                                    id="panelMultiplePaymentDetails"
+                                                    class="w-100"
+                                                    controller="#{billSearch}"
+                                                    paymentMethods="#{enumController.paymentMethodsUnderMultipleForOpdBilling}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{billSearch.paymentMethod eq 'Cash' or billSearch.paymentMethod eq null}">
+                                                <div class="alert alert-info">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    No additional payment details required for Cash payment.
+                                                </div>
+                                            </h:panelGroup>
+                                            </fieldset>
+                                        </h:panelGroup>
+                                    </p:panel>
                                 </div>
-                                <div class="col-4">
+                                <div class="col-6">
                                     <p:panel>
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
@@ -80,12 +163,10 @@
                                         </f:facet>
                                         <common:patient patient="#{billSearch.bill.patient}" class="w-100"/>
                                     </p:panel>
-                                </div>
-                                <div class="col-5">
                                     <p:panel>
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-list-alt"></h:outputText>
-                                            <h:outputLabel value="Bill Detail" class="mx-2"></h:outputLabel>
+                                            <h:outputLabel value="Original Bill Detail" class="mx-2"></h:outputLabel>
                                         </f:facet>
                                         <p:panelGrid columns="3">
                                             <h:outputLabel value="Bill No" ></h:outputLabel>
@@ -108,180 +189,104 @@
                                             </h:outputLabel>
                                         </p:panelGrid>
                                     </p:panel>
+                                    <!-- Bill Item Detail Panel -->
+                                    <p:panel class="mt-2">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                            <h:outputLabel value="Bill Item Detail" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+                                        <p:dataTable rowIndexVar="rowIndex" value="#{billSearch.billItems}" var="bip">
+                                            <p:column>
+                                                <f:facet name="header">No</f:facet>
+                                                <h:outputLabel value="#{rowIndex+1}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Item</f:facet>
+                                                <h:outputLabel value="#{bip.item.name}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Fee</f:facet>
+                                                <h:outputLabel value="#{bip.netValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:panel>
+
+                                    <!-- Original Payment Details Panel -->
+                                    <h:panelGroup layout="block" class="row mt-2" rendered="#{not empty billSearch.billPayments}">
+                                        <h:panelGroup layout="block" class="col-12">
+                                            <p:panel>
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-money-check-alt me-2"></h:outputText>
+                                                    <h:outputLabel value="Original Payment Details"></h:outputLabel>
+                                                </f:facet>
+                                                <p:dataTable
+                                                    value="#{billSearch.billPayments}"
+                                                    var="op"
+                                                    styleClass="table table-sm"
+                                                    emptyMessage="No original payments found">
+
+                                                    <p:column headerText="Method" width="120">
+                                                        <h:outputText value="#{op.paymentMethod}" />
+                                                    </p:column>
+
+                                                    <p:column headerText="Amount" styleClass="text-end" width="100">
+                                                        <h:outputText value="#{op.paidValue}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </p:column>
+
+                                                    <p:column headerText="Bank" rendered="#{op.paymentMethod eq 'Card' or op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'ewallet' or op.paymentMethod eq 'OnlineSettlement'}">
+                                                        <h:outputText value="#{op.bank.name}" rendered="#{op.bank ne null}"/>
+                                                        <h:outputText value="#{op.institution.name}" rendered="#{op.bank eq null and op.institution ne null}"/>
+                                                    </p:column>
+
+                                                    <p:column headerText="Ref/Card No" rendered="#{op.paymentMethod eq 'Card' or op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'ewallet' or op.paymentMethod eq 'OnlineSettlement'}">
+                                                        <h:outputText value="#{op.referenceNo}" rendered="#{op.referenceNo ne null and op.referenceNo ne ''}"/>
+                                                        <h:outputText value="#{op.chequeRefNo}" rendered="#{(op.referenceNo eq null or op.referenceNo eq '') and op.chequeRefNo ne null and op.chequeRefNo ne ''}"/>
+                                                        <h:outputText value="#{op.creditCardRefNo}" rendered="#{(op.referenceNo eq null or op.referenceNo eq '') and op.creditCardRefNo ne null and op.creditCardRefNo ne ''}"/>
+                                                    </p:column>
+
+                                                    <p:column headerText="Date" rendered="#{op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'OnlineSettlement'}">
+                                                        <h:outputText value="#{op.realizedAt}" rendered="#{op.realizedAt ne null}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                        </h:outputText>
+                                                        <h:outputText value="#{op.paymentDate}" rendered="#{op.realizedAt eq null and op.paymentDate ne null}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                        </h:outputText>
+                                                        <h:outputText value="#{op.chequeDate}" rendered="#{op.realizedAt eq null and op.paymentDate eq null and op.chequeDate ne null}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                        </h:outputText>
+                                                    </p:column>
+
+                                                    <p:column headerText="Credit Company" rendered="#{op.paymentMethod eq 'Credit'}">
+                                                        <h:outputText value="#{op.creditCompany.name}" rendered="#{op.creditCompany ne null}"/>
+                                                    </p:column>
+
+                                                    <p:column headerText="Policy No" rendered="#{op.paymentMethod eq 'Credit'}">
+                                                        <h:outputText value="#{op.policyNo}" />
+                                                    </p:column>
+
+                                                    <p:column headerText="Staff" rendered="#{op.paymentMethod eq 'Staff' or op.paymentMethod eq 'Staff_Welfare'}">
+                                                        <h:outputText value="#{op.toStaff.person.name}" rendered="#{op.toStaff ne null}"/>
+                                                    </p:column>
+
+                                                    <p:column headerText="Comments">
+                                                        <h:outputText value="#{op.comments}" styleClass="text-muted small"/>
+                                                    </p:column>
+
+                                                </p:dataTable>
+                                            </p:panel>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
                                 </div>
                             </div>
 
-                            <!-- Original Payment Details Panel -->
-                            <h:panelGroup layout="block" class="row mt-2" rendered="#{not empty billSearch.billPayments}">
-                                <h:panelGroup layout="block" class="col-12">
-                                    <p:panel>
-                                        <f:facet name="header">
-                                            <h:outputText styleClass="fas fa-money-check-alt me-2"></h:outputText>
-                                            <h:outputLabel value="Original Payment Details"></h:outputLabel>
-                                        </f:facet>
-                                        <p:dataTable
-                                            value="#{billSearch.billPayments}"
-                                            var="op"
-                                            styleClass="table table-sm"
-                                            emptyMessage="No original payments found">
 
-                                            <p:column headerText="Method" width="120">
-                                                <h:outputText value="#{op.paymentMethod}" />
-                                            </p:column>
 
-                                            <p:column headerText="Amount" styleClass="text-end" width="100">
-                                                <h:outputText value="#{op.paidValue}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputText>
-                                            </p:column>
 
-                                            <p:column headerText="Bank" rendered="#{op.paymentMethod eq 'Card' or op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'ewallet' or op.paymentMethod eq 'OnlineSettlement'}">
-                                                <h:outputText value="#{op.bank.name}" rendered="#{op.bank ne null}"/>
-                                                <h:outputText value="#{op.institution.name}" rendered="#{op.bank eq null and op.institution ne null}"/>
-                                            </p:column>
 
-                                            <p:column headerText="Ref/Card No" rendered="#{op.paymentMethod eq 'Card' or op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'ewallet' or op.paymentMethod eq 'OnlineSettlement'}">
-                                                <h:outputText value="#{op.referenceNo}" rendered="#{op.referenceNo ne null and op.referenceNo ne ''}"/>
-                                                <h:outputText value="#{op.chequeRefNo}" rendered="#{(op.referenceNo eq null or op.referenceNo eq '') and op.chequeRefNo ne null and op.chequeRefNo ne ''}"/>
-                                                <h:outputText value="#{op.creditCardRefNo}" rendered="#{(op.referenceNo eq null or op.referenceNo eq '') and op.creditCardRefNo ne null and op.creditCardRefNo ne ''}"/>
-                                            </p:column>
-
-                                            <p:column headerText="Date" rendered="#{op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'OnlineSettlement'}">
-                                                <h:outputText value="#{op.realizedAt}" rendered="#{op.realizedAt ne null}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                                </h:outputText>
-                                                <h:outputText value="#{op.paymentDate}" rendered="#{op.realizedAt eq null and op.paymentDate ne null}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                                </h:outputText>
-                                                <h:outputText value="#{op.chequeDate}" rendered="#{op.realizedAt eq null and op.paymentDate eq null and op.chequeDate ne null}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                                </h:outputText>
-                                            </p:column>
-
-                                            <p:column headerText="Credit Company" rendered="#{op.paymentMethod eq 'Credit'}">
-                                                <h:outputText value="#{op.creditCompany.name}" rendered="#{op.creditCompany ne null}"/>
-                                            </p:column>
-
-                                            <p:column headerText="Policy No" rendered="#{op.paymentMethod eq 'Credit'}">
-                                                <h:outputText value="#{op.policyNo}" />
-                                            </p:column>
-
-                                            <p:column headerText="Staff" rendered="#{op.paymentMethod eq 'Staff' or op.paymentMethod eq 'Staff_Welfare'}">
-                                                <h:outputText value="#{op.toStaff.person.name}" rendered="#{op.toStaff ne null}"/>
-                                            </p:column>
-
-                                            <p:column headerText="Comments">
-                                                <h:outputText value="#{op.comments}" styleClass="text-muted small"/>
-                                            </p:column>
-
-                                        </p:dataTable>
-                                    </p:panel>
-                                </h:panelGroup>
-                            </h:panelGroup>
-
-                            <!-- Bill Item Detail Panel -->
-                            <p:panel class="mt-2">
-                                <f:facet name="header">
-                                    <h:outputText styleClass="fas fa-list-alt"></h:outputText>
-                                    <h:outputLabel value="Bill Item Detail" class="mx-2"></h:outputLabel>
-                                </f:facet>
-                                <p:dataTable rowIndexVar="rowIndex" value="#{billSearch.billItems}" var="bip">
-                                    <p:column>
-                                        <f:facet name="header">No</f:facet>
-                                        <h:outputLabel value="#{rowIndex+1}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">Item</f:facet>
-                                        <h:outputLabel value="#{bip.item.name}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">Fee</f:facet>
-                                        <h:outputLabel value="#{bip.netValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </p:column>
-                                </p:dataTable>
-                            </p:panel>
-
-                            <!-- Cancellation Payment Details Panel -->
-                            <p:panel class="mt-2">
-                                <f:facet name="header">
-                                    <h:outputText styleClass="fas fa-credit-card me-2"></h:outputText>
-                                    <h:outputLabel value="Cancellation Payment Details"></h:outputLabel>
-                                </f:facet>
-
-                                <h:panelGroup id="paymentDetails">
-                                    <h:panelGroup
-                                        class="row"
-                                        layout="block"
-                                        rendered="#{billSearch.paymentMethod eq 'Credit'}" >
-                                        <pa:creditDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{billSearch.paymentMethodData}" />
-                                    </h:panelGroup>
-
-                                    <h:panelGroup
-                                        class="row"
-                                        layout="block"
-                                        rendered="#{billSearch.paymentMethod eq 'Staff'}" >
-                                        <pa:staff_credit valueRequired="false" paymentMethodData="#{billSearch.paymentMethodData}" />
-                                    </h:panelGroup>
-
-                                    <h:panelGroup
-                                        class="row"
-                                        layout="block"
-                                        rendered="#{billSearch.paymentMethod eq 'Staff_Welfare'}" >
-                                        <pa:staff_welfare_asOnlyPayment valueRequired="false" paymentMethodData="#{billSearch.paymentMethodData}" />
-                                    </h:panelGroup>
-
-                                    <h:panelGroup
-                                        id="creditCard"
-                                        rendered="#{billSearch.paymentMethod eq 'Card'}">
-                                        <pa:creditCardDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{billSearch.paymentMethodData}" />
-                                    </h:panelGroup>
-
-                                    <h:panelGroup
-                                        id="ptdeposit"
-                                        rendered="#{billSearch.paymentMethod eq 'PatientDeposit'}">
-                                        <pa:patient_deposit valueRequired="false" paymentMethodData="#{billSearch.paymentMethodData}"/>
-                                    </h:panelGroup>
-
-                                    <h:panelGroup
-                                        id="ewallet"
-                                        rendered="#{billSearch.paymentMethod eq 'ewallet'}" >
-                                        <pa:ewalletDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{billSearch.paymentMethodData}"/>
-                                    </h:panelGroup>
-
-                                    <h:panelGroup
-                                        id="cheque"
-                                        rendered="#{billSearch.paymentMethod eq 'Cheque'}">
-                                        <pa:chequeDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{billSearch.paymentMethodData}" />
-                                    </h:panelGroup>
-
-                                    <h:panelGroup
-                                        id="slip"
-                                        rendered="#{billSearch.paymentMethod eq 'Slip'}">
-                                        <pa:slipDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{billSearch.paymentMethodData}" />
-                                    </h:panelGroup>
-
-                                    <h:panelGroup
-                                        class="row my-1 w-100"
-                                        layout="block"
-                                        id="multiplePaymentMethods"
-                                        rendered="#{billSearch.paymentMethod eq 'MultiplePaymentMethods'}" >
-                                        <pa:multiple_payment_methods
-                                            id="panelMultiplePaymentDetails"
-                                            class="w-100"
-                                            controller="#{billSearch}"
-                                            paymentMethods="#{enumController.paymentMethodsUnderMultipleForOpdBilling}"/>
-                                    </h:panelGroup>
-
-                                    <h:panelGroup rendered="#{billSearch.paymentMethod eq 'Cash' or billSearch.paymentMethod eq null}">
-                                        <div class="alert alert-info">
-                                            <i class="fas fa-info-circle me-2"></i>
-                                            No additional payment details required for Cash payment.
-                                        </div>
-                                    </h:panelGroup>
-                                </h:panelGroup>
-                            </p:panel>
 
                         </p:panel>
                     </h:panelGroup>
