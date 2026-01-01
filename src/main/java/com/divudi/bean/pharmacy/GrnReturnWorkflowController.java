@@ -959,10 +959,7 @@ public class GrnReturnWorkflowController implements Serializable {
             }
 
             // Additional validation for payment method data completeness
-            if (currentBill.getNetTotal() <= 0) {
-                JsfUtil.addErrorMessage("Invalid bill total for payment creation");
-                return false;
-            }
+            // Note: Zero-value bills are allowed with any payment method for audit trail purposes
 
             return true;
         } catch (Exception e) {
