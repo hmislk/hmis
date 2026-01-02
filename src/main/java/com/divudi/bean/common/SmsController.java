@@ -226,7 +226,7 @@ public class SmsController implements Serializable {
 
         String jpql
                 = "select new com.divudi.core.data.dto.SmsDTO("
-                + " s.id, "
+                + " COALESCE(s.id, '') "
                 + " s.createdAt, "
                 + " s.sentAt, "
                 + " s.smsType, "
@@ -250,8 +250,7 @@ public class SmsController implements Serializable {
         params.put("fd", fromDate);
         params.put("td", toDate);
 
-        smsDtoList = (List<SmsDTO>) (List<?>) smsFacade.findLightsByJpqlWithoutCache(
-                jpql, params, TemporalType.TIMESTAMP
+        smsDtoList = (List<SmsDTO>) (List<?>) smsFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP
         );
 
     }
@@ -404,7 +403,7 @@ public class SmsController implements Serializable {
             return;
         }
 
-        Sms s = smsFacade.find(smsId);
+        Sms s = smsFacade.findWithoutCache(smsId);
 
         if (s == null) {
             JsfUtil.addErrorMessage("SMS not found");
