@@ -3568,6 +3568,11 @@ public class PharmacyStockTakeController implements Serializable {
         snapshotBill.setCompletedBy(sessionController.getLoggedUser());
         billFacade.edit(snapshotBill);
 
+        // Also update the DTO if available
+        if (snapshotBillDisplay != null) {
+            snapshotBillDisplay.setCompleted(true);
+        }
+
         LOGGER.log(Level.INFO, "[StockTake] Stock taking completed. billId={0}, department={1}",
                 new Object[]{snapshotBill.getId(), snapshotBill.getDepartment().getName()});
 
