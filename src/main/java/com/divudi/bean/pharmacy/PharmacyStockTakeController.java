@@ -3569,6 +3569,58 @@ public class PharmacyStockTakeController implements Serializable {
     }
 
     /**
+     * Reverse/reopen a completed stock taking session.
+     * Only users with Developer privilege can perform this action.
+     */
+    public void reverseStockTakingCompletion() {
+        LOGGER.log(Level.INFO, "[StockTake] reverseStockTakingCompletion() called. snapshotBillId={0}, snapshotBillDisplayId={1}",
+                new Object[]{snapshotBill != null ? snapshotBill.getId() : null,
+                            snapshotBillDisplay != null ? snapshotBillDisplay.getId() : null});
+
+        // Check Developer privilege
+        if (!webUserController.hasPrivilege(Privileges.Developers.toString())) {
+            JsfUtil.addErrorMessage("Not authorized. Only developers can reverse stock taking completion.");
+            LOGGER.log(Level.WARNING, "[StockTake] Reverse failed. User lacks Developer privilege");
+            return;
+        }
+
+        // Load the bill entity if only the DTO is available
+        if (snapshotBill == null && snapshotBillDisplay != null && snapshotBillDisplay.getId() != null) {
+            snapshotBill = billFacade.find(snapshotBillDisplay.getId());
+        }
+
+        if (snapshotBill == null) {
+            JsfUtil.addErrorMessage("No stock taking session to reverse");
+            LOGGER.log(Level.WARNING, "[StockTake] Reverse failed. snapshotBill is null");
+            return;
+        }
+
+        if (!snapshotBill.isCompleted()) {
+            JsfUtil.addErrorMessage("This stock taking session is not completed. Nothing to reverse.");
+            LOGGER.log(Level.WARNING, "[StockTake] Reverse failed. Bill is not completed. billId={0}", snapshotBill.getId());
+            return;
+        }
+
+        // Reverse the completion
+        snapshotBill.setCompleted(false);
+        snapshotBill.setCompletedAt(null);
+        snapshotBill.setCompletedBy(null);
+        billFacade.edit(snapshotBill);
+
+        // Also update the DTO if available
+        if (snapshotBillDisplay != null) {
+            snapshotBillDisplay.setCompleted(false);
+        }
+
+        LOGGER.log(Level.INFO, "[StockTake] Stock taking completion reversed. billId={0}, department={1}, reversedBy={2}",
+                new Object[]{snapshotBill.getId(),
+                            snapshotBill.getDepartment() != null ? snapshotBill.getDepartment().getName() : "N/A",
+                            sessionController.getLoggedUser().getName()});
+
+        JsfUtil.addSuccessMessage("Stock taking completion has been reversed. Uploads are now allowed again.");
+    }
+
+    /**
      * Persist prepared physical count bill.
      */
     public void savePhysicalCount() {
