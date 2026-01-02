@@ -359,6 +359,7 @@ public class PharmacyAdjustmentApiService implements Serializable {
         billItem.setItem(stock.getItemBatch().getItem());
         billItem.setQty(quantityChange);
         billItem.setGrossValue(stock.getItemBatch().getRetailsaleRate() * afterQty);
+        billItem.setNetRate(stock.getItemBatch().getRetailsaleRate());
         billItem.setNetValue(afterQty * billItem.getNetRate());
         billItem.setDiscount(billItem.getGrossValue() - billItem.getNetValue());
         billItem.setInwardChargeType(InwardChargeType.Medicine);
