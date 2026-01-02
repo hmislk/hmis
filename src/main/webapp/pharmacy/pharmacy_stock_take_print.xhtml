@@ -34,9 +34,19 @@
                                                                      styleClass="ui-button-success"
                                                                      action="#{pharmacyStockTakeController.completeStockTaking}"
                                                                      update="@form"
-                                                                     rendered="#{not pharmacyStockTakeController.snapshotBill.completed}">
+                                                                     rendered="#{not pharmacyStockTakeController.snapshotBillDisplay.completed}">
                                                         <p:confirm header="Complete Stock Taking"
                                                                    message="Are you sure you want to complete this stock taking session? Once completed, no further uploads will be allowed."
+                                                                   icon="fa fa-exclamation-triangle"/>
+                                                    </p:commandButton>
+                                                    <p:commandButton value="Reverse Completion"
+                                                                     icon="fa fa-undo"
+                                                                     styleClass="ui-button-warning mx-2"
+                                                                     action="#{pharmacyStockTakeController.reverseStockTakingCompletion}"
+                                                                     update="@form"
+                                                                     rendered="#{pharmacyStockTakeController.snapshotBillDisplay.completed and webUserController.hasPrivilege('Developers')}">
+                                                        <p:confirm header="Reverse Completion"
+                                                                   message="Are you sure you want to reverse the completion of this stock taking session? This will allow further uploads again."
                                                                    icon="fa fa-exclamation-triangle"/>
                                                     </p:commandButton>
                                                 </div>

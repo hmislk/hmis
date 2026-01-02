@@ -171,8 +171,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
             }
         }
 
-        if (BigDecimalUtil.isNullOrZero(f.getLineGrossRate()) || BigDecimalUtil.isNegative(f.getLineGrossRate())) {
-            JsfUtil.addErrorMessage("Please enter the purchase rate");
+        if (f.getLineGrossRate() == null || BigDecimalUtil.isNegative(f.getLineGrossRate())) {
+            JsfUtil.addErrorMessage("Please enter a valid purchase rate (negative values not allowed)");
             return;
         }
 

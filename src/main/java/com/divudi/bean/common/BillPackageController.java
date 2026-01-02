@@ -176,6 +176,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     //Interface Data
     private PaymentScheme paymentScheme;
     private PaymentMethod paymentMethod;
+    private PaymentMethod originalCancellationPaymentMethod;
     private Patient patient;
     private Doctor referredBy;
     private Institution creditCompany;
@@ -1417,14 +1418,28 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     /**
      * Called when user changes payment method in cancellation form.
-     * Resets paymentMethodData to prevent using old payment method data.
+     * Only resets paymentMethodData when user changes to a DIFFERENT payment method.
+     * If user keeps the same payment method as the original, the loaded data is preserved.
      */
     public void onPaymentMethodChange() {
-        // Reset payment method data to prevent using old payment method data
+        // If payment method is null (shouldn't happen but handle gracefully)
+        if (paymentMethod == null) {
+            // Restore original payment method
+            paymentMethod = originalCancellationPaymentMethod;
+            return;
+        }
+
+        // If payment method matches the original, don't reset - preserve the loaded data
+        if (paymentMethod == originalCancellationPaymentMethod) {
+            // User is keeping the same payment method - keep the original data
+            return;
+        }
+
+        // User changed to a DIFFERENT payment method - reset data
         paymentMethodData = new PaymentMethodData();
 
         // Initialize basic payment data based on newly selected payment method
-        if (paymentMethod != null && batchBill != null) {
+        if (batchBill != null) {
             double netTotal = Math.abs(batchBill.getNetTotal());
 
             switch (paymentMethod) {
@@ -2564,6 +2579,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         } else {
             paymentMethod = PaymentMethod.Cash;
         }
+
+        // Store original payment method to detect changes
+        originalCancellationPaymentMethod = paymentMethod;
 
         patient = batchBill.getPatient();
         comment = null;

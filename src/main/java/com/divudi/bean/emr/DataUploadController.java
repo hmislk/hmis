@@ -992,8 +992,8 @@ public class DataUploadController implements Serializable {
                 }
 
                 // Validate purchase rate
-                if (purchaseRate <= 0) {
-                    validationErrors.add("Row " + excelRowNumber + ": Invalid purchase rate (" + purchaseRate + ") for item " + itemCode);
+                if (purchaseRate < 0) {
+                    validationErrors.add("Row " + excelRowNumber + ": Invalid purchase rate (" + purchaseRate + ") for item " + itemCode + ". Negative rates are not allowed.");
                     continue;
                 }
 
@@ -1209,8 +1209,8 @@ public class DataUploadController implements Serializable {
 
                         if (quantity <= 0) {
                             errorMessage = "Invalid quantity (" + quantity + ")";
-                        } else if (purchaseRate <= 0) {
-                            errorMessage = "Invalid purchase rate (" + purchaseRate + ")";
+                        } else if (purchaseRate < 0) {
+                            errorMessage = "Invalid purchase rate (" + purchaseRate + "). Negative rates are not allowed.";
                         } else if (saleRate <= 0) {
                             errorMessage = "Invalid sale rate (" + saleRate + ")";
                         }
@@ -1374,8 +1374,8 @@ public class DataUploadController implements Serializable {
                 if (errorMessage == null) {
                     if (quantity <= 0) {
                         errorMessage = "Invalid quantity";
-                    } else if (purchaseRate <= 0) {
-                        errorMessage = "Invalid purchase rate";
+                    } else if (purchaseRate < 0) {
+                        errorMessage = "Invalid purchase rate. Negative rates are not allowed.";
                     } else if (saleRate <= 0) {
                         errorMessage = "Invalid sale rate";
                     }
