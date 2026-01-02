@@ -3541,8 +3541,14 @@ public class PharmacyStockTakeController implements Serializable {
      * bill as completed.
      */
     public void completeStockTaking() {
-        LOGGER.log(Level.INFO, "[StockTake] completeStockTaking() called. snapshotBillId={0}",
-                new Object[]{snapshotBill != null ? snapshotBill.getId() : null});
+        LOGGER.log(Level.INFO, "[StockTake] completeStockTaking() called. snapshotBillId={0}, snapshotBillDisplayId={1}",
+                new Object[]{snapshotBill != null ? snapshotBill.getId() : null,
+                            snapshotBillDisplay != null ? snapshotBillDisplay.getId() : null});
+
+        // Load the bill entity if only the DTO is available
+        if (snapshotBill == null && snapshotBillDisplay != null && snapshotBillDisplay.getId() != null) {
+            snapshotBill = billFacade.find(snapshotBillDisplay.getId());
+        }
 
         if (snapshotBill == null) {
             JsfUtil.addErrorMessage("No stock taking session to complete");
