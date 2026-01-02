@@ -268,7 +268,7 @@ public PharmacyPurchaseOrderDTO(
 | `Long` | `Long` | ✅ Works |
 | `String` | `String` | ✅ Works |
 
-**Note:** Primitive to wrapper auto-boxing works correctly in EclipseLink JPQL. The more common issue is **null relationship access** (see next section).
+**Note:** Primitive-to-wrapper auto-boxing works correctly in EclipseLink JPQL. The more common issue is **null relationship access** (see next section).
 
 ### Debugging Silent Failures
 
@@ -302,7 +302,7 @@ String jpql = "SELECT new DTO("
 - COUNT query on same data returns correct count (e.g., 1)
 - This is JPQL behavior, not a bug
 
-**✅ SOLUTION 1 (Recommended): Exclude nullable relationship fields from DTO**
+### ✅ SOLUTION 1 (Recommended): Exclude nullable relationship fields from DTO
 ```java
 // Simply don't include cancelledBill fields in the DTO query
 String jpql = "SELECT new DTO("
@@ -312,7 +312,7 @@ String jpql = "SELECT new DTO("
     + "FROM Bill b WHERE ...";
 ```
 
-**✅ SOLUTION 2: Use LEFT JOIN with explicit aliases (if fields are required)**
+### ✅ SOLUTION 2: Use LEFT JOIN with explicit aliases (if fields are required)
 ```java
 String jpql = "SELECT new DTO("
     + "cb.createdAt, "                           // Safe - cb can be null from LEFT JOIN

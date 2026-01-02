@@ -72,6 +72,7 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.VtmFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.MembershipSchemeController;
+import com.divudi.bean.pharmacy.PharmacyDirectPurchaseController;
 import com.divudi.bean.pharmacy.PharmacyPurchaseController;
 import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.SymanticHyrachi;
@@ -196,6 +197,8 @@ public class DataUploadController implements Serializable {
     FeeValueController feeValueController;
     @Inject
     private PharmacyPurchaseController pharmacyPurchaseController;
+    @Inject
+    private PharmacyDirectPurchaseController pharmacyDirectPurchaseController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
@@ -589,6 +592,881 @@ public class DataUploadController implements Serializable {
             return "/pharmacy/pharmacy_purchase";
         } catch (IOException e) {
             JsfUtil.addErrorMessage(e.getMessage());
+            return "";
+        }
+    }
+
+    /**
+     * Imports pharmaceutical items with stock data from Excel file and navigates
+     * to the NEW direct purchase page (direct_purchase.xhtml).
+     *
+     * This method mirrors importToExcelWithStock() but uses PharmacyDirectPurchaseController
+     * instead of PharmacyPurchaseController, mapping data to BillItemFinanceDetails structure.
+     *
+     * Excel columns expected:
+     * A=Serial, B=Category, C=Product, D=Code, E=Barcode, F=Generic, G=Strength,
+     * H=StrengthUnit, I=PackSize, J=IssueUnit, K=PackUnit, L=Distributor,
+     * M=Manufacturer, N=Importer, O=DOE, P=Batch, Q=Quantity, R=PurchasePrice, S=SalePrice
+     *
+     * @return Navigation outcome to direct_purchase page or empty string on error
+     */
+    public String importToExcelWithStockNewDirectPurchase() {
+        if (file == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+        if (file.getFileName() == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+
+        catCol = 1;                   // B
+        ampCol = 2;                   // C
+        codeCol = 3;                  // D
+        barcodeCol = 4;               // E
+        vtmCol = 5;                   // F
+        strengthOfIssueUnitCol = 6;   // G
+        strengthUnitCol = 7;          // H
+        issueUnitsPerPackCol = 8;     // I
+        issueUnitCol = 9;             // J
+        packUnitCol = 10;             // K
+        distributorCol = 11;          // L
+        manufacturerCol = 12;         // M
+        importerCol = 13;             // N
+        doeCol = 14;                  // O
+        batchCol = 15;                // P
+        stockQtyCol = 16;             // Q
+        pruchaseRateCol = 17;         // R
+        saleRateCol = 18;             // S
+
+        startRow = 1; // If header is on row 0
+
+        String strCat;
+        String strAmp;
+        String strCode;
+        String strBarcode;
+        String strGenericName;
+        String strStrength;
+        String strStrengthUnit;
+        String strPackSize;
+        String strIssueUnit;
+        String strPackUnit;
+        String strDistributor;
+        String strManufacturer;
+        String strImporter;
+
+        PharmaceuticalItemCategory cat;
+        PharmaceuticalItemType phType;
+        Vtm vtm;
+        Atm atm;
+        Vmp vmp;
+        Amp amp;
+        Ampp ampp;
+        Vmpp vmpp;
+        VirtualProductIngredient vtmsvmps;
+        MeasurementUnit issueUnit;
+        MeasurementUnit strengthUnit;
+        MeasurementUnit packUnit;
+        double strengthUnitsPerIssueUnit;
+        double issueUnitsPerPack;
+        Institution distributor;
+        Institution manufacturer;
+        Institution importer;
+
+        double stockQty;
+        double pp;
+        double sp;
+        String batch;
+        Date doe;
+        StringBuilder warningMessages = new StringBuilder();
+
+        int rowCount = 0;
+
+        try (InputStream in = file.getInputStream(); Workbook workbook = new XSSFWorkbook(in)) {
+            rowCount++;
+            System.out.println("rowCount at Start of a row= " + rowCount);
+            Sheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.iterator();
+
+            JsfUtil.addSuccessMessage(file.getFileName());
+
+            // Initialize the new direct purchase controller
+            getPharmacyDirectPurchaseController().prepareForNewDIrectPurchaseBill();
+
+            int rowIndex = 0;
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                if (rowIndex++ < startRow) {
+                    continue; // Skip header or initial rows as per the startRow value
+                }
+
+                Map<String, Object> m = new HashMap<>();
+
+                // Category
+                Cell catCell = row.getCell(catCol);
+                strCat = getStringCellValue(catCell);
+                if (strCat == null || strCat.trim().isEmpty()) {
+                    continue;
+                }
+                cat = getPharmacyBean().getPharmaceuticalCategoryByName(strCat);
+                if (cat == null) {
+                    continue;
+                }
+                phType = getPharmacyBean().getPharmaceuticalItemTypeByName(strCat);
+
+                // Strength Unit
+                Cell strengthUnitCell = row.getCell(strengthUnitCol);
+                strStrengthUnit = getStringCellValue(strengthUnitCell);
+                strengthUnit = getPharmacyBean().getUnitByName(strStrengthUnit);
+                if (strengthUnit == null) {
+                    continue;
+                }
+
+                // Pack Unit
+                Cell packUnitCell = row.getCell(packUnitCol);
+                strPackUnit = getStringCellValue(packUnitCell);
+                packUnit = getPharmacyBean().getUnitByName(strPackUnit);
+                if (packUnit == null) {
+                    continue;
+                }
+
+                // Issue Unit
+                Cell issueUnitCell = row.getCell(issueUnitCol);
+                strIssueUnit = getStringCellValue(issueUnitCell);
+                issueUnit = getPharmacyBean().getUnitByName(strIssueUnit);
+                if (issueUnit == null) {
+                    continue;
+                }
+
+                // Strength Of A Measurement Unit
+                Cell strengthCell = row.getCell(strengthOfIssueUnitCol);
+                strStrength = getCellValueAsString(strengthCell);
+                strengthUnitsPerIssueUnit = parseDouble(strStrength);
+
+                // Issue Units Per Pack
+                Cell packSizeCell = row.getCell(issueUnitsPerPackCol);
+                strPackSize = getCellValueAsString(packSizeCell);
+                issueUnitsPerPack = parseDouble(strPackSize);
+
+                // Vtm
+                Cell vtmCell = row.getCell(vtmCol);
+                strGenericName = getCellValueAsString(vtmCell);
+                vtm = !strGenericName.isEmpty() ? getPharmacyBean().getVtmByName(strGenericName) : null;
+
+                // Vmp
+                vmp = getPharmacyBean().getVmp(vtm, strengthUnitsPerIssueUnit, strengthUnit, cat);
+                if (vmp == null) {
+                    continue;
+                } else {
+                    vmp.setCategory(phType);
+                    getVmpFacade().edit(vmp);
+                }
+
+                // Code & Barcode
+                strCode = getCellValueAsString(row.getCell(codeCol));
+                strBarcode = getCellValueAsString(row.getCell(barcodeCol));
+
+                // Distributor
+                strDistributor = getCellValueAsString(row.getCell(distributorCol));
+
+                // Amp
+                Cell ampCell = row.getCell(ampCol);
+                strAmp = getCellValueAsString(ampCell);
+                m.put("v", vmp);
+                m.put("n", strAmp.toUpperCase());
+                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where c.retired=false and (c.name)=:n AND c.vmp=:v", m);
+                if (amp == null) {
+                    amp = new Amp();
+                    amp.setName(strAmp);
+                    amp.setCode(strCode);
+                    amp.setBarcode(strBarcode);
+                    amp.setMeasurementUnit(strengthUnit);
+                    amp.setIssueUnit(issueUnit);
+                    amp.setStrengthUnit(strengthUnit);
+                    amp.setDblValue(strengthUnitsPerIssueUnit);
+                    amp.setCategory(cat);
+                    amp.setVmp(vmp);
+                    getAmpFacade().create(amp);
+                } else {
+                    amp.setRetired(false);
+                    getAmpFacade().edit(amp);
+                }
+
+                if (amp == null) {
+                    continue;
+                }
+
+                // Ampp
+                if (issueUnitsPerPack > 1.0) {
+                    ampp = getPharmacyBean().getAmpp(amp, issueUnitsPerPack, packUnit);
+                }
+                // Set Code and Barcode
+                amp.setCode(strCode);
+                getAmpFacade().edit(amp);
+                amp.setBarcode(strBarcode);
+                getAmpFacade().edit(amp);
+
+                // Manufacturer
+                strManufacturer = getCellValueAsString(row.getCell(manufacturerCol));
+                manufacturer = getInstitutionController().getInstitutionByName(strManufacturer, InstitutionType.Manufacturer);
+                amp.setManufacturer(manufacturer);
+
+                // Importer
+                strImporter = getCellValueAsString(row.getCell(importerCol));
+                importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Importer);
+                amp.setManufacturer(importer);
+
+                // Stock Quantity, Purchase Rate, Sale Rate, Batch, Date of Expiry
+                stockQty = parseDouble(getCellValueAsString(row.getCell(stockQtyCol)));
+                pp = parseDouble(getCellValueAsString(row.getCell(pruchaseRateCol)));
+                sp = parseDouble(getCellValueAsString(row.getCell(saleRateCol)));
+                batch = getCellValueAsString(row.getCell(batchCol));
+                doe = parseDate(getCellValueAsString(row.getCell(doeCol)));
+
+                System.out.println("amp = " + amp);
+                System.out.println("stockQty = " + stockQty);
+
+                // Set item
+                getPharmacyDirectPurchaseController().getCurrentBillItem().setItem(amp);
+
+                // Set quantity via BillItemFinanceDetails (BigDecimal)
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setQuantity(java.math.BigDecimal.valueOf(stockQty));
+
+                // Set purchase rate (lineGrossRate in BillItemFinanceDetails)
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setLineGrossRate(java.math.BigDecimal.valueOf(pp));
+
+                // Set sale rate (retailSaleRatePerUnit in BillItemFinanceDetails)
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setRetailSaleRatePerUnit(java.math.BigDecimal.valueOf(sp));
+
+                // Set free quantity to zero (required field)
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setFreeQuantity(java.math.BigDecimal.ZERO);
+
+                // Set date of expiry via PharmaceuticalBillItem
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getPharmaceuticalBillItem()
+                    .setDoe(doe);
+
+                // Set batch via PharmaceuticalBillItem
+                if (batch == null || batch.trim().isEmpty()) {
+                    getPharmacyDirectPurchaseController().setBatch();
+                } else {
+                    getPharmacyDirectPurchaseController().getCurrentBillItem()
+                        .getPharmaceuticalBillItem()
+                        .setStringValue(batch);
+                }
+
+                // Add item to the bill
+                getPharmacyDirectPurchaseController().addItem();
+                System.out.println("rowCount at End of a row= " + rowCount);
+            }
+
+            if (warningMessages.length() > 0) {
+                getPharmacyDirectPurchaseController().setWarningMessage(warningMessages.toString());
+            }
+            JsfUtil.addSuccessMessage("Successful. All the data in Excel File Imported to the database");
+            return "/pharmacy/direct_purchase";
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+            return "";
+        }
+    }
+
+    /**
+     * Simplified stock upload for direct purchase using two-phase validation approach.
+     *
+     * Phase 1: Validate ALL rows - find items by Code AND Name
+     * Phase 2: Only proceed with upload if ALL items are found
+     *
+     * Required Excel columns:
+     * - C (2): Product/Item Name - for AMP lookup
+     * - D (3): Code - for AMP lookup
+     * - O (14): DOE - Date of Expiry
+     * - P (15): Batch - Batch number (optional, auto-generate if empty)
+     * - Q (16): Quantity - Stock quantity
+     * - R (17): Purchase Price - Purchase rate
+     * - S (18): Sale Price - Retail rate
+     *
+     * @return Navigation outcome to direct_purchase page or empty string on error
+     */
+    public String importStockForDirectPurchaseSimplified() {
+        // Clear previous errors
+        clearUploadErrors();
+
+        // 1. File validation
+        if (file == null || file.getFileName() == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+
+        // 2. Column indices (0-based)
+        final int COL_NAME = 2;      // C - Product Name
+        final int COL_CODE = 3;      // D - Code
+        final int COL_DOE = 14;      // O - Date of Expiry
+        final int COL_BATCH = 15;    // P - Batch
+        final int COL_QTY = 16;      // Q - Quantity
+        final int COL_PP = 17;       // R - Purchase Price
+        final int COL_SP = 18;       // S - Sale Price
+
+        int startRow = 1; // Skip header row
+
+        List<String> validationErrors = new ArrayList<>();
+        List<ValidatedStockRow> validatedRows = new ArrayList<>();
+
+        try (InputStream in = file.getInputStream();
+             Workbook workbook = new XSSFWorkbook(in)) {
+
+            Sheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.iterator();
+
+            // ============================================
+            // PHASE 1: VALIDATION - Check all items exist
+            // ============================================
+            int rowIndex = 0;
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                if (rowIndex++ < startRow) {
+                    continue; // Skip header row
+                }
+
+                int excelRowNumber = rowIndex; // 1-based row number for error messages
+
+                // Read required columns
+                String itemName = getCellValueAsString(row.getCell(COL_NAME));
+                String itemCode = getCellValueAsString(row.getCell(COL_CODE));
+
+                // Normalize item code - strip .0 suffix for consistent comparison
+                String itemCodeNormalized = itemCode;
+                if (itemCode != null && itemCode.endsWith(".0")) {
+                    itemCodeNormalized = itemCode.substring(0, itemCode.length() - 2);
+                }
+
+                // Skip completely empty rows
+                if ((itemName == null || itemName.trim().isEmpty()) &&
+                    (itemCodeNormalized == null || itemCodeNormalized.trim().isEmpty())) {
+                    continue;
+                }
+
+                // Validate required fields are present
+                if (itemName == null || itemName.trim().isEmpty()) {
+                    validationErrors.add("Row " + excelRowNumber + ": Item name (Column C) is empty");
+                    continue;
+                }
+                if (itemCodeNormalized == null || itemCodeNormalized.trim().isEmpty()) {
+                    validationErrors.add("Row " + excelRowNumber + ": Item code (Column D) is empty");
+                    continue;
+                }
+
+                // Query for AMP by code AND name - try both with and without .0 suffix
+                Map<String, Object> params = new HashMap<>();
+                params.put("name", itemName.trim().toUpperCase());
+                String jpql = "SELECT a FROM Amp a WHERE a.retired = false AND (a.code = :code1 OR a.code = :code2) AND UPPER(a.name) = :name";
+                params.put("code1", itemCodeNormalized.trim());           // Without .0 (e.g., "10021")
+                params.put("code2", itemCodeNormalized.trim() + ".0");    // With .0 (e.g., "10021.0")
+                Amp amp = ampFacade.findFirstByJpql(jpql, params);
+
+                if (amp == null) {
+                    validationErrors.add("Row " + excelRowNumber + ": Item not found - Code: '" +
+                        itemCodeNormalized.trim() + "', Name: '" + itemName.trim() + "'");
+                    continue;
+                }
+
+                // Read remaining columns
+                double quantity = parseDouble(getCellValueAsString(row.getCell(COL_QTY)));
+                double purchaseRate = parseDouble(getCellValueAsString(row.getCell(COL_PP)));
+                double saleRate = parseDouble(getCellValueAsString(row.getCell(COL_SP)));
+                String batch = getCellValueAsString(row.getCell(COL_BATCH));
+                Date doe = parseDate(getCellValueAsString(row.getCell(COL_DOE)));
+
+                // Validate quantity
+                if (quantity <= 0) {
+                    validationErrors.add("Row " + excelRowNumber + ": Invalid quantity (" + quantity + ") for item " + itemCode);
+                    continue;
+                }
+
+                // Validate purchase rate
+                if (purchaseRate < 0) {
+                    validationErrors.add("Row " + excelRowNumber + ": Invalid purchase rate (" + purchaseRate + ") for item " + itemCode + ". Negative rates are not allowed.");
+                    continue;
+                }
+
+                // Validate sale rate
+                if (saleRate <= 0) {
+                    validationErrors.add("Row " + excelRowNumber + ": Invalid sale rate (" + saleRate + ") for item " + itemCode);
+                    continue;
+                }
+
+                // Create validated row
+                ValidatedStockRow validatedRow = new ValidatedStockRow();
+                validatedRow.rowNumber = excelRowNumber;
+                validatedRow.amp = amp;
+                validatedRow.quantity = java.math.BigDecimal.valueOf(quantity);
+                validatedRow.purchaseRate = java.math.BigDecimal.valueOf(purchaseRate);
+                validatedRow.saleRate = java.math.BigDecimal.valueOf(saleRate);
+                validatedRow.dateOfExpiry = doe;
+                validatedRow.batch = batch;
+
+                validatedRows.add(validatedRow);
+            }
+
+            // ============================================
+            // CHECK: If any errors, stop and show all errors
+            // ============================================
+            if (!validationErrors.isEmpty()) {
+                // Store errors for display
+                this.uploadErrors = validationErrors;
+
+                // Build detailed error message
+                StringBuilder errorBuilder = new StringBuilder();
+                errorBuilder.append("=== UPLOAD VALIDATION FAILED ===\n");
+                errorBuilder.append("Total Errors: ").append(validationErrors.size()).append("\n\n");
+                errorBuilder.append("=== ERROR DETAILS ===\n");
+                for (int i = 0; i < validationErrors.size(); i++) {
+                    errorBuilder.append((i + 1)).append(". ").append(validationErrors.get(i)).append("\n");
+                }
+                errorBuilder.append("\n=== INSTRUCTIONS ===\n");
+                errorBuilder.append("1. Ensure all item codes and names match existing items in the system\n");
+                errorBuilder.append("2. Check for typos in item codes and names\n");
+                errorBuilder.append("3. Verify items are not retired\n");
+                errorBuilder.append("4. Re-upload the corrected file\n");
+
+                this.uploadErrorDetails = errorBuilder.toString();
+
+                JsfUtil.addErrorMessage(validationErrors.size() + " validation errors found. No items were uploaded. See error details below.");
+                return "";
+            }
+
+            if (validatedRows.isEmpty()) {
+                JsfUtil.addErrorMessage("No valid rows found in the Excel file");
+                return "";
+            }
+
+            // ============================================
+            // PHASE 2: IMPORT - All items validated, proceed with upload
+            // ============================================
+            getPharmacyDirectPurchaseController().prepareForNewDIrectPurchaseBill();
+
+            for (ValidatedStockRow validRow : validatedRows) {
+                // Set item
+                getPharmacyDirectPurchaseController().getCurrentBillItem().setItem(validRow.amp);
+
+                // Set quantity via BillItemFinanceDetails
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setQuantity(validRow.quantity);
+
+                // Set purchase rate (lineGrossRate)
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setLineGrossRate(validRow.purchaseRate);
+
+                // Set sale rate (retailSaleRatePerUnit)
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setRetailSaleRatePerUnit(validRow.saleRate);
+
+                // Set free quantity to zero
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setFreeQuantity(java.math.BigDecimal.ZERO);
+
+                // Set date of expiry
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getPharmaceuticalBillItem()
+                    .setDoe(validRow.dateOfExpiry);
+
+                // Set batch - auto-generate if empty
+                if (validRow.batch == null || validRow.batch.trim().isEmpty()) {
+                    getPharmacyDirectPurchaseController().setBatch();
+                } else {
+                    getPharmacyDirectPurchaseController().getCurrentBillItem()
+                        .getPharmaceuticalBillItem()
+                        .setStringValue(validRow.batch);
+                }
+
+                // Add item to the bill
+                getPharmacyDirectPurchaseController().addItem();
+            }
+
+            JsfUtil.addSuccessMessage("Success! " + validatedRows.size() + " items uploaded to direct purchase bill.");
+            return "/pharmacy/direct_purchase";
+
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error reading file: " + e.getMessage());
+            return "";
+        }
+    }
+
+    /**
+     * Validates stock upload Excel file and shows detailed errors.
+     * Does NOT perform any upload - validation only.
+     * Shows all fields (name, code, DOE, qty, purchase rate, sale rate) for each error.
+     * @return empty string to stay on same page
+     */
+    public String checkStockUploadErrors() {
+        // Clear previous errors
+        clearUploadErrors();
+
+        // 1. File validation
+        if (file == null || file.getFileName() == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+
+        // Log file name for debugging
+        JsfUtil.addSuccessMessage("Processing file: " + file.getFileName());
+
+        // 2. Column indices (0-based)
+        final int COL_NAME = 2;      // C - Product Name
+        final int COL_CODE = 3;      // D - Code
+        final int COL_DOE = 14;      // O - Date of Expiry
+        final int COL_BATCH = 15;    // P - Batch
+        final int COL_QTY = 16;      // Q - Quantity
+        final int COL_PP = 17;       // R - Purchase Price
+        final int COL_SP = 18;       // S - Sale Price
+
+        int startRow = 1; // Skip header row
+
+        List<ValidatedStockRow> errorRows = new ArrayList<>();
+        int validRowCount = 0;
+        int totalRowCount = 0;
+
+        try (InputStream in = file.getInputStream();
+             Workbook workbook = new XSSFWorkbook(in)) {
+
+            Sheet sheet = workbook.getSheetAt(0);
+
+            // Debug: Show first data row to confirm correct file
+            Row firstDataRow = sheet.getRow(1); // Row index 1 = Excel row 2
+            if (firstDataRow != null) {
+                String debugName = getCellValueAsString(firstDataRow.getCell(COL_NAME));
+                String debugCode = getCellValueAsString(firstDataRow.getCell(COL_CODE));
+                JsfUtil.addSuccessMessage("First data row - Name: '" + debugName + "', Code: '" + debugCode + "'");
+            }
+
+            Iterator<Row> rowIterator = sheet.iterator();
+
+            int rowIndex = 0;
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                if (rowIndex++ < startRow) {
+                    continue; // Skip header row
+                }
+
+                int excelRowNumber = rowIndex; // 1-based row number for error messages
+
+                // Read all columns for error reporting
+                String itemName = getCellValueAsString(row.getCell(COL_NAME));
+                String itemCode = getCellValueAsString(row.getCell(COL_CODE));
+                String doeStr = getCellValueAsString(row.getCell(COL_DOE));
+                String qtyStr = getCellValueAsString(row.getCell(COL_QTY));
+                String ppStr = getCellValueAsString(row.getCell(COL_PP));
+                String spStr = getCellValueAsString(row.getCell(COL_SP));
+
+                // Normalize item code - strip .0 suffix for consistent comparison
+                String itemCodeNormalized = itemCode;
+                if (itemCode != null && itemCode.endsWith(".0")) {
+                    itemCodeNormalized = itemCode.substring(0, itemCode.length() - 2);
+                }
+
+                // Skip completely empty rows
+                if ((itemName == null || itemName.trim().isEmpty()) &&
+                    (itemCodeNormalized == null || itemCodeNormalized.trim().isEmpty())) {
+                    continue;
+                }
+
+                totalRowCount++;
+                String errorMessage = null;
+
+                // Validate required fields are present
+                if (itemName == null || itemName.trim().isEmpty()) {
+                    errorMessage = "Item name (Column C) is empty";
+                } else if (itemCodeNormalized == null || itemCodeNormalized.trim().isEmpty()) {
+                    errorMessage = "Item code (Column D) is empty";
+                } else {
+                    // Query for AMP by code AND name - try both with and without .0 suffix
+                    Map<String, Object> params = new HashMap<>();
+                    params.put("name", itemName.trim().toUpperCase());
+                    String jpql = "SELECT a FROM Amp a WHERE a.retired = false AND (a.code = :code1 OR a.code = :code2) AND UPPER(a.name) = :name";
+                    params.put("code1", itemCodeNormalized.trim());           // Without .0
+                    params.put("code2", itemCodeNormalized.trim() + ".0");    // With .0
+                    Amp amp = ampFacade.findFirstByJpql(jpql, params);
+
+                    if (amp == null) {
+                        errorMessage = "Item not found in system";
+                    } else {
+                        // Validate numeric values
+                        double quantity = parseDouble(qtyStr);
+                        double purchaseRate = parseDouble(ppStr);
+                        double saleRate = parseDouble(spStr);
+
+                        if (quantity <= 0) {
+                            errorMessage = "Invalid quantity (" + quantity + ")";
+                        } else if (purchaseRate < 0) {
+                            errorMessage = "Invalid purchase rate (" + purchaseRate + "). Negative rates are not allowed.";
+                        } else if (saleRate <= 0) {
+                            errorMessage = "Invalid sale rate (" + saleRate + ")";
+                        }
+                    }
+                }
+
+                if (errorMessage != null) {
+                    // Create error row with all details
+                    ValidatedStockRow errorRow = new ValidatedStockRow();
+                    errorRow.rowNumber = excelRowNumber;
+                    errorRow.rawItemName = itemName != null ? itemName.trim() : "";
+                    errorRow.rawItemCode = itemCodeNormalized != null ? itemCodeNormalized.trim() : "";
+                    errorRow.rawDoe = doeStr != null ? doeStr.trim() : "";
+                    errorRow.rawQty = qtyStr != null ? qtyStr.trim() : "";
+                    errorRow.rawPurchaseRate = ppStr != null ? ppStr.trim() : "";
+                    errorRow.rawSaleRate = spStr != null ? spStr.trim() : "";
+                    errorRow.errorMessage = errorMessage;
+                    errorRows.add(errorRow);
+                } else {
+                    validRowCount++;
+                }
+            }
+
+            // Build validation report
+            StringBuilder report = new StringBuilder();
+            report.append("=== VALIDATION REPORT ===\n");
+            report.append("Total Rows: ").append(totalRowCount).append("\n");
+            report.append("Valid Rows: ").append(validRowCount).append("\n");
+            report.append("Error Rows: ").append(errorRows.size()).append("\n\n");
+
+            if (!errorRows.isEmpty()) {
+                report.append("=== ERROR DETAILS ===\n");
+                for (int i = 0; i < errorRows.size(); i++) {
+                    ValidatedStockRow err = errorRows.get(i);
+                    report.append((i + 1)).append(". Row ").append(err.rowNumber).append(": ").append(err.errorMessage).append("\n");
+                    report.append("   - Name: '").append(err.rawItemName).append("'\n");
+                    report.append("   - Code: '").append(err.rawItemCode).append("'\n");
+                    report.append("   - DOE: '").append(err.rawDoe).append("'\n");
+                    report.append("   - Qty: ").append(err.rawQty).append("\n");
+                    report.append("   - Purchase: ").append(err.rawPurchaseRate).append("\n");
+                    report.append("   - Sale: ").append(err.rawSaleRate).append("\n\n");
+                }
+
+                report.append("=== NEXT STEPS ===\n");
+                report.append("1. Fix errors in Excel and re-check, OR\n");
+                report.append("2. Click 'Upload Stock' to upload ").append(validRowCount).append(" valid rows (").append(errorRows.size()).append(" will be skipped)\n");
+
+                this.uploadErrors = new ArrayList<>();
+                for (ValidatedStockRow err : errorRows) {
+                    this.uploadErrors.add("Row " + err.rowNumber + ": " + err.errorMessage);
+                }
+                this.uploadErrorDetails = report.toString();
+
+                JsfUtil.addErrorMessage(errorRows.size() + " errors found. " + validRowCount + " rows are valid. See details below.");
+            } else {
+                this.uploadErrorDetails = report.toString();
+                JsfUtil.addSuccessMessage("All " + validRowCount + " rows are valid. You can proceed with upload.");
+            }
+
+            return ""; // Stay on same page
+
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error reading file: " + e.getMessage());
+            return "";
+        }
+    }
+
+    /**
+     * Uploads valid stock rows and silently skips rows with errors.
+     * Shows summary of uploaded vs skipped items.
+     * @return navigation to direct purchase page on success
+     */
+    public String uploadStockSkipErrors() {
+        // Clear previous errors
+        clearUploadErrors();
+
+        // 1. File validation
+        if (file == null || file.getFileName() == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+
+        // 2. Column indices (0-based)
+        final int COL_NAME = 2;      // C - Product Name
+        final int COL_CODE = 3;      // D - Code
+        final int COL_DOE = 14;      // O - Date of Expiry
+        final int COL_BATCH = 15;    // P - Batch
+        final int COL_QTY = 16;      // Q - Quantity
+        final int COL_PP = 17;       // R - Purchase Price
+        final int COL_SP = 18;       // S - Sale Price
+
+        int startRow = 1; // Skip header row
+
+        List<ValidatedStockRow> validatedRows = new ArrayList<>();
+        List<ValidatedStockRow> skippedRows = new ArrayList<>();
+
+        try (InputStream in = file.getInputStream();
+             Workbook workbook = new XSSFWorkbook(in)) {
+
+            Sheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.iterator();
+
+            int rowIndex = 0;
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                if (rowIndex++ < startRow) {
+                    continue; // Skip header row
+                }
+
+                int excelRowNumber = rowIndex; // 1-based row number
+
+                // Read all columns
+                String itemName = getCellValueAsString(row.getCell(COL_NAME));
+                String itemCode = getCellValueAsString(row.getCell(COL_CODE));
+                String doeStr = getCellValueAsString(row.getCell(COL_DOE));
+                String qtyStr = getCellValueAsString(row.getCell(COL_QTY));
+                String ppStr = getCellValueAsString(row.getCell(COL_PP));
+                String spStr = getCellValueAsString(row.getCell(COL_SP));
+                String batch = getCellValueAsString(row.getCell(COL_BATCH));
+
+                // Normalize item code
+                String itemCodeNormalized = itemCode;
+                if (itemCode != null && itemCode.endsWith(".0")) {
+                    itemCodeNormalized = itemCode.substring(0, itemCode.length() - 2);
+                }
+
+                // Skip completely empty rows
+                if ((itemName == null || itemName.trim().isEmpty()) &&
+                    (itemCodeNormalized == null || itemCodeNormalized.trim().isEmpty())) {
+                    continue;
+                }
+
+                String errorMessage = null;
+                Amp amp = null;
+
+                // Validate required fields
+                if (itemName == null || itemName.trim().isEmpty()) {
+                    errorMessage = "Item name empty";
+                } else if (itemCodeNormalized == null || itemCodeNormalized.trim().isEmpty()) {
+                    errorMessage = "Item code empty";
+                } else {
+                    // Query for AMP
+                    Map<String, Object> params = new HashMap<>();
+                    params.put("name", itemName.trim().toUpperCase());
+                    String jpql = "SELECT a FROM Amp a WHERE a.retired = false AND (a.code = :code1 OR a.code = :code2) AND UPPER(a.name) = :name";
+                    params.put("code1", itemCodeNormalized.trim());
+                    params.put("code2", itemCodeNormalized.trim() + ".0");
+                    amp = ampFacade.findFirstByJpql(jpql, params);
+
+                    if (amp == null) {
+                        errorMessage = "Item not found";
+                    }
+                }
+
+                // Parse numeric values
+                double quantity = parseDouble(qtyStr);
+                double purchaseRate = parseDouble(ppStr);
+                double saleRate = parseDouble(spStr);
+                Date doe = parseDate(doeStr);
+
+                if (errorMessage == null) {
+                    if (quantity <= 0) {
+                        errorMessage = "Invalid quantity";
+                    } else if (purchaseRate < 0) {
+                        errorMessage = "Invalid purchase rate. Negative rates are not allowed.";
+                    } else if (saleRate <= 0) {
+                        errorMessage = "Invalid sale rate";
+                    }
+                }
+
+                // Create row object
+                ValidatedStockRow stockRow = new ValidatedStockRow();
+                stockRow.rowNumber = excelRowNumber;
+                stockRow.rawItemName = itemName != null ? itemName.trim() : "";
+                stockRow.rawItemCode = itemCodeNormalized != null ? itemCodeNormalized.trim() : "";
+                stockRow.rawDoe = doeStr != null ? doeStr.trim() : "";
+                stockRow.rawQty = qtyStr != null ? qtyStr.trim() : "";
+                stockRow.rawPurchaseRate = ppStr != null ? ppStr.trim() : "";
+                stockRow.rawSaleRate = spStr != null ? spStr.trim() : "";
+                stockRow.errorMessage = errorMessage;
+
+                if (errorMessage != null) {
+                    skippedRows.add(stockRow);
+                } else {
+                    stockRow.amp = amp;
+                    stockRow.quantity = java.math.BigDecimal.valueOf(quantity);
+                    stockRow.purchaseRate = java.math.BigDecimal.valueOf(purchaseRate);
+                    stockRow.saleRate = java.math.BigDecimal.valueOf(saleRate);
+                    stockRow.dateOfExpiry = doe;
+                    stockRow.batch = batch;
+                    validatedRows.add(stockRow);
+                }
+            }
+
+            // Check if we have any valid rows to upload
+            if (validatedRows.isEmpty()) {
+                JsfUtil.addErrorMessage("No valid rows to upload. All " + skippedRows.size() + " rows have errors.");
+                return "";
+            }
+
+            // UPLOAD PHASE - Import all valid rows
+            getPharmacyDirectPurchaseController().prepareForNewDIrectPurchaseBill();
+
+            for (ValidatedStockRow validRow : validatedRows) {
+                // Set item
+                getPharmacyDirectPurchaseController().getCurrentBillItem().setItem(validRow.amp);
+
+                // Set quantity via BillItemFinanceDetails
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setQuantity(validRow.quantity);
+
+                // Set purchase rate (lineGrossRate)
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setLineGrossRate(validRow.purchaseRate);
+
+                // Set sale rate (retailSaleRatePerUnit)
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setRetailSaleRatePerUnit(validRow.saleRate);
+
+                // Set free quantity to zero
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getBillItemFinanceDetails()
+                    .setFreeQuantity(java.math.BigDecimal.ZERO);
+
+                // Set date of expiry
+                getPharmacyDirectPurchaseController().getCurrentBillItem()
+                    .getPharmaceuticalBillItem()
+                    .setDoe(validRow.dateOfExpiry);
+
+                // Set batch - auto-generate if empty
+                if (validRow.batch == null || validRow.batch.trim().isEmpty()) {
+                    getPharmacyDirectPurchaseController().setBatch();
+                } else {
+                    getPharmacyDirectPurchaseController().getCurrentBillItem()
+                        .getPharmaceuticalBillItem()
+                        .setStringValue(validRow.batch);
+                }
+
+                // Add item to the bill
+                getPharmacyDirectPurchaseController().addItem();
+            }
+
+            // Show success message with details
+            String successMsg = "Successfully uploaded " + validatedRows.size() + " items to direct purchase bill.";
+            if (!skippedRows.isEmpty()) {
+                successMsg += " " + skippedRows.size() + " rows were skipped due to errors.";
+            }
+            JsfUtil.addSuccessMessage(successMsg);
+
+            return "/pharmacy/direct_purchase";
+
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error reading file: " + e.getMessage());
             return "";
         }
     }
@@ -8700,6 +9578,10 @@ public class DataUploadController implements Serializable {
         return pharmacyPurchaseController;
     }
 
+    public PharmacyDirectPurchaseController getPharmacyDirectPurchaseController() {
+        return pharmacyDirectPurchaseController;
+    }
+
     public InstitutionController getInstitutionController() {
         return institutionController;
     }
@@ -8779,6 +9661,29 @@ public class DataUploadController implements Serializable {
     public void clearUploadErrors() {
         this.uploadErrors = null;
         this.uploadErrorDetails = null;
+    }
+
+    /**
+     * Data transfer object for validated stock upload row.
+     * Used in simplified direct purchase stock upload.
+     */
+    private static class ValidatedStockRow {
+        int rowNumber;
+        Amp amp;
+        java.math.BigDecimal quantity;
+        java.math.BigDecimal purchaseRate;
+        java.math.BigDecimal saleRate;
+        Date dateOfExpiry;
+        String batch;
+
+        // Raw values for error reporting
+        String rawItemName;
+        String rawItemCode;
+        String rawDoe;
+        String rawQty;
+        String rawPurchaseRate;
+        String rawSaleRate;
+        String errorMessage; // Populated only for error rows
     }
 
 }
