@@ -68,6 +68,14 @@
                                                 action="#{inwardStaffPaymentBillController.navigateToViewInwardPayProfessionalPayments()}" 
                                                 icon="fa fa-money-bill-wave"
                                                 rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
+                                            
+                                            <p:commandButton  
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false" 
+                                                value="Initiate Professional Payments By Surgies" title="Initiate Professional Payments"
+                                                action="/inward/inward_bill_surgery_payment?faces-redirect=true" 
+                                                icon="fa fa-money-bill-wave"
+                                                rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
 
                                             <p:commandButton  
                                                 styleClass="w-100 ui-button-info ui-button-outlined" 
