@@ -1,0 +1,303 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill"
+      >
+
+    <h:body>
+
+        <ui:composition template="/payments/pay_index.xhtml">
+
+            <ui:define name="admin">
+
+                <h:panelGroup rendered="#{!inwardSurgeryPaymentBillController.printPreview}" styleClass="alignTop" >
+
+                    <p:panel header="Inward Surgery Payment" >
+                        <h:form>
+                            <h:panelGrid columns="5" class="w-100">
+                                <p:outputLabel 
+                                    value="From" />
+                                <p:calendar 
+                                    value="#{inwardSurgeryPaymentBillController.fromDate}" 
+                                    id="fDate" 
+                                    class="w-100 m-1" 
+                                    inputStyleClass="w-100"                                                  
+                                    navigator="true" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                <p:spacer 
+                                    width="50" >
+                                </p:spacer>
+                                <p:outputLabel 
+                                    value="To" />
+                                <p:calendar 
+                                    value="#{inwardSurgeryPaymentBillController.toDate}" 
+                                    id="tDate" 
+                                    class="w-100 m-1" 
+                                    inputStyleClass="w-100" 
+                                    navigator="true" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                
+                                <h:outputLabel 
+                                    value="Surgery" ></h:outputLabel>
+                                <p:autoComplete 
+                                    forceSelection="true" 
+                                    onfocus="this.select()"
+                                    value="#{inwardSurgeryPaymentBillController.surgery}"
+                                    inputStyleClass="w-100" class="m-1 w-100"
+                                    id="scSurgery"
+                                    completeMethod="#{inwardSurgeryPaymentBillController.completeSurgery}"
+                                    var="mys" 
+                                    itemLabel="#{mys.item.name}" 
+                                    itemValue="#{mys}"
+                                    >
+                                </p:autoComplete>
+
+
+                                <h:outputLabel 
+                                    value="Surgeon" ></h:outputLabel>
+                                <p:autoComplete 
+                                    forceSelection="true" 
+                                    onfocus="this.select()"
+                                    value="#{inwardSurgeryPaymentBillController.currentSurgeon}"
+                                    inputStyleClass="w-100" class="m-1 w-100"
+                                    id="scSurgeon"
+                                    completeMethod="#{inwardSurgeryPaymentBillController.completeSurgeon}"
+                                    var="mys" 
+                                    itemLabel="#{mys.person.nameWithTitle}" 
+                                    itemValue="#{mys}"
+                                    >
+                                </p:autoComplete>
+                                <p:spacer width="50" ></p:spacer>
+                                <h:outputLabel></h:outputLabel>
+                                <h:outputLabel></h:outputLabel>
+                            </h:panelGrid>
+
+
+                            <p:commandButton 
+                                value="Find Due Surgeries" 
+                                action="#{inwardSurgeryPaymentBillController.calculateDueFeesForSurgeriesForSelectedPeriod()}" 
+                                ajax="false" 
+                                icon="fa-solid fa-arrows-rotate"
+                                class="ui-button-warning" />
+
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Download as Excel" 
+                                styleClass="noPrintButton" 
+                                icon="fa-solid fa-file-excel"
+                                class="ui-button-success mx-2 my-2" >
+                                <p:dataExporter type="xlsx" target=":#{p:resolveFirstComponentWithId('tblFee',view).clientId}" fileName="Surgery_Payment_Due_Inward"  />
+                            </p:commandButton>
+
+
+
+                            <p:dataTable   
+                                id="tblFee"
+                                value="#{inwardSurgeryPaymentBillController.dueSurgeryFees}"
+                                selection="#{inwardSurgeryPaymentBillController.payingSurgeryFees}"
+                                class="w-100 m-1"
+                                rows="10"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
+                                var="bf" 
+                                rowKey="#{bf.id}" >
+
+                                <p:ajax  event="rowSelectCheckbox" process="tblFee" listener="#{inwardSurgeryPaymentBillController.performCalculations()}"   
+                                         update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />  
+
+                                <p:ajax  event="rowUnselectCheckbox" process="tblFee" listener="#{inwardSurgeryPaymentBillController.performCalculations()}"   
+                                         update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />  
+
+                                <p:ajax  event="toggleSelect" process="tblFee" listener="#{inwardSurgeryPaymentBillController.performCalculations()}"   
+                                         update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />  
+
+                                <p:column selectionBox="true" width="20"></p:column>
+
+                                <p:column headerText="Surgery Date">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Surgery Date"/>
+                                    </f:facet>    
+                                    <h:outputLabel value="#{bf.bill.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Patient">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Patient"/>
+                                    </f:facet>    
+                                    <h:outputLabel value="#{bf.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.patientEncounter eq null}"/>                                    
+                                    <h:outputLabel value="#{bf.bill.patientEncounter.patient.person.nameWithTitle}"/>                                    
+                                </p:column>
+
+                                <p:column headerText="BHT No" filterBy="#{bf.bill.patientEncounter.bhtNo}" filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="BHT No"/>
+                                    </f:facet>                                        
+                                    <h:outputLabel value="#{bf.bill.patientEncounter.bhtNo}">
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Surgery Fee" width="7em;" class="text-end">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Surgery Fee"/>
+                                    </f:facet>    
+                                    <h:outputLabel value="#{bf.feeValue}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                            </p:dataTable>
+
+                            <p:panel   >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Payment Details" class="mt-2" />
+
+
+
+                                    <p:commandButton 
+                                        id="btnPay"
+                                        ajax="false"
+                                        value="&nbsp;&nbsp;&nbsp;&nbsp; Settle Surgery Payment" 
+                                        style="float: right;"
+                                        class="ui-button-success"
+                                        action="#{inwardSurgeryPaymentBillController.settle()}" 
+                                        actionListener="#{inwardSurgeryPaymentBillController.performCalculations()}">
+                                    </p:commandButton>
+                                    <p:defaultCommand target="btnPay"/>
+                                </f:facet>
+
+
+                                <div class="row" >
+                                    <div class="col " >
+                                        <p:panelGrid columns="2" layout="tabular" class="w-100" columnClasses="text-left, text-end">
+                                            <h:outputLabel value="WHT Calculation" ></h:outputLabel>
+
+                                            <h:panelGroup >
+                                                <p:selectOneMenu 
+                                                    id="mnuWht"
+                                                    required="true"
+                                                    class="w-100"
+                                                    rendered="#{inwardSurgeryPaymentBillController.allowUserToSelectPayWithholdingTaxDuringSurgeryPayments}"
+                                                    value="#{inwardSurgeryPaymentBillController.withholdingTaxCalculationStatus}">
+                                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                                    <f:selectItems value="#{inwardSurgeryPaymentBillController.withholdingTaxCalculationStatuses}" />
+                                                    <p:ajax 
+                                                        process="mnuWht" 
+                                                        listener="#{inwardSurgeryPaymentBillController.performCalculations()}"   
+                                                        update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />
+                                                </p:selectOneMenu>
+                                                <p:badge 
+                                                    rendered="#{!inwardSurgeryPaymentBillController.allowUserToSelectPayWithholdingTaxDuringSurgeryPayments}" 
+                                                    value="#{inwardSurgeryPaymentBillController.withholdingTaxCalculationStatus}" 
+                                                    styleClass="ui-widget ui-corner-all ui-state-highlight p-badge" />
+                                            </h:panelGroup>
+
+                                            <h:outputLabel value="Payment Method" ></h:outputLabel>
+                                            <p:selectOneMenu  id="cmbPay" value="#{inwardSurgeryPaymentBillController.paymentMethod}" class="mx-2 w-100">                                      
+                                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
+                                            </p:selectOneMenu>
+
+                                            <h:outputLabel value="Total Payment Completed for this month" ></h:outputLabel>
+                                            <h:outputLabel id="lblPayDoneForThisMonth"  value="#{inwardSurgeryPaymentBillController.totalPaidForCurrentSurgeonForCurrentMonthForCurrentInstitute}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Withholding Cutoff" ></h:outputLabel>
+                                            <h:outputLabel id="lblWhtCuroff"  value="#{inwardSurgeryPaymentBillController.withholdingTaxLimit}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Withholding Percentage" ></h:outputLabel>
+                                            <h:outputLabel id="lblWhtPercentage"  value="#{inwardSurgeryPaymentBillController.withholdingTaxPercentage}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+
+                                            <h:outputLabel value="Fee Collected by Surgeon" title="Check this if surgeon collected fee directly - no payment transaction needed"></h:outputLabel>
+                                            <p:selectBooleanCheckbox 
+                                                id="chkFeeCollected"
+                                                value="#{inwardSurgeryPaymentBillController.feeCollectedByDoctor}" 
+                                                itemLabel="Mark as fee collected directly (No payment record)" />
+                                        </p:panelGrid>
+                                    </div>
+                                    <div class="col" >
+                                        <p:panelGrid 
+                                            id="pTotals"
+                                            columns="2" layout="tabular" class="w-100" columnClasses="text-left, text-end">
+                                            <h:outputLabel value="Total Due" ></h:outputLabel>
+                                            <h:outputLabel id="lblDue" value="#{inwardSurgeryPaymentBillController.totalDue}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Paying This time" ></h:outputLabel>
+                                            <h:outputLabel id="lblPay"  value="#{inwardSurgeryPaymentBillController.totalPaying}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel> 
+                                            <h:outputLabel value="Withholding Tax" ></h:outputLabel>
+                                            <h:outputLabel id="lblTax" value="#{inwardSurgeryPaymentBillController.withholdingTax}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Paying This time without WHT" ></h:outputLabel>
+                                            <h:outputLabel id="lblPayWithTax"  value="#{inwardSurgeryPaymentBillController.totalPayingWithoutWht}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel> 
+
+                                        </p:panelGrid>
+                                    </div>
+                                </div>
+                            </p:panel>
+
+                        </h:form>
+
+                    </p:panel>
+
+                </h:panelGroup>
+
+                <h:form>
+
+                    <p:panel rendered="#{inwardSurgeryPaymentBillController.printPreview}">
+                        <f:facet name="header" >
+                            <div class="d-flex justify-content-between">
+                                <h:outputLabel value="Payment Bill View" class="mt-2"></h:outputLabel>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        ajax="false"  
+                                        value="New Payment"
+                                        icon="fa fa-plus"
+                                        class="ui-button-success"
+                                        action="#{inwardSurgeryPaymentBillController.navigateToInwardSurgeryPayment()}"  >
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="Print" 
+                                        icon="fa fa-print"
+                                        class="ui-button-info"
+                                        ajax="false" action="#" >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+                            </div>
+
+                        </f:facet>
+
+                        <h:panelGroup id="gpBillPreview">
+                            <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a A4 paper.', true)}">
+                                <!-- Using professional payment bill view until surgery-specific bill is created -->
+                                <bi:staffBill bill="#{inwardSurgeryPaymentBillController.current}" dup="false" />
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a five five paper.',false)}">
+                                <!-- Using professional payment bill view until surgery-specific bill is created -->
+                                <bi:staff_payment_five_five_paper_with_headings controller="#{inwardSurgeryPaymentBillController}" bill="#{inwardSurgeryPaymentBillController.current}" />
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
