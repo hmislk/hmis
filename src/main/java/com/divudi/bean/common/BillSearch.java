@@ -122,9 +122,11 @@ import com.divudi.bean.pharmacy.DirectPurchaseReturnController;
 import com.divudi.bean.pharmacy.GrnCostingController;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
+import com.divudi.bean.pharmacy.PharmacySaleForCashierController;
 import com.divudi.bean.pharmacy.PreReturnController;
 import com.divudi.bean.pharmacy.SaleReturnController;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
+import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.PatientReport;
@@ -235,6 +237,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     private AuditEventApplicationController auditEventApplicationController;
     @Inject
     PageMetadataRegistry pageMetadataRegistry;
+    @Inject
+    PharmacySaleForCashierController pharmacySaleForCashierController;
     @Inject
     PharmacyBillSearch pharmacyBillSearch;
     @Inject
@@ -416,98 +420,98 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
         // Configuration Options - Bill Operations
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Refund Allow for OPD Bill",
-            "Enables the 'To Refund Fees' button for OPD bill refunds",
-            "Line 76: Refund Fees button visibility",
-            OptionScope.APPLICATION
+                "Refund Allow for OPD Bill",
+                "Enables the 'To Refund Fees' button for OPD bill refunds",
+                "Line 76: Refund Fees button visibility",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "Return Allow for OPD Bill",
-            "Enables the 'To Return Items' button for OPD bill item returns",
-            "Line 85: Return Items button visibility",
-            OptionScope.APPLICATION
+                "Return Allow for OPD Bill",
+                "Enables the 'To Return Items' button for OPD bill item returns",
+                "Line 85: Return Items button visibility",
+                OptionScope.APPLICATION
         ));
 
         // Configuration Options - Bill Paper Formats
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Sale Bill is FiveFiveCustom3",
-            "Uses FiveFiveCustom3 format for OPD sale bill printing",
-            "Line 204: Custom3 bill format rendering",
-            OptionScope.APPLICATION
+                "OPD Sale Bill is FiveFiveCustom3",
+                "Uses FiveFiveCustom3 format for OPD sale bill printing",
+                "Line 204: Custom3 bill format rendering",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Bill Paper Size is FiveFivePaper",
-            "Uses 5x5 inch paper with headings for OPD bills",
-            "Line 210: FiveFive paper format",
-            OptionScope.APPLICATION
+                "OPD Bill Paper Size is FiveFivePaper",
+                "Uses 5x5 inch paper with headings for OPD bills",
+                "Line 210: FiveFive paper format",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Bill Paper Size is FiveFivePrintedPaper",
-            "Uses 5x5 inch pre-printed paper without headings for OPD bills",
-            "Line 216: FiveFive printed paper format",
-            OptionScope.APPLICATION
+                "OPD Bill Paper Size is FiveFivePrintedPaper",
+                "Uses 5x5 inch pre-printed paper without headings for OPD bills",
+                "Line 216: FiveFive printed paper format",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Bill Paper Size is PosPaper",
-            "Uses POS (Point of Sale) paper format for OPD bills",
-            "Lines 222, 251: POS paper format for bills and refunds",
-            OptionScope.APPLICATION
+                "OPD Bill Paper Size is PosPaper",
+                "Uses POS (Point of Sale) paper format for OPD bills",
+                "Lines 222, 251: POS paper format for bills and refunds",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Bill Paper Size is FiveFivePaperCoustom1",
-            "Uses 5x5 inch custom format 1 for OPD bills",
-            "Lines 228, 259: Custom 1 format for bills and refunds",
-            OptionScope.APPLICATION
+                "OPD Bill Paper Size is FiveFivePaperCoustom1",
+                "Uses 5x5 inch custom format 1 for OPD bills",
+                "Lines 228, 259: Custom 1 format for bills and refunds",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Bill Paper Size is FiveFiveCustom3",
-            "Uses 5x5 inch custom format 3 for OPD bills",
-            "Lines 234, 275: Custom 3 format for bills and refunds",
-            OptionScope.APPLICATION
+                "OPD Bill Paper Size is FiveFiveCustom3",
+                "Uses 5x5 inch custom format 3 for OPD bills",
+                "Lines 234, 275: Custom 3 format for bills and refunds",
+                OptionScope.APPLICATION
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
-            "OPD Bill Paper Size is 5x8 inch Paper",
-            "Uses 5x8 inch paper format for OPD bills",
-            "Lines 240, 283: 5x8 paper format for bills and refunds",
-            OptionScope.APPLICATION
+                "OPD Bill Paper Size is 5x8 inch Paper",
+                "Uses 5x8 inch paper format for OPD bills",
+                "Lines 240, 283: 5x8 paper format for bills and refunds",
+                OptionScope.APPLICATION
         ));
 
         // Privileges
         metadata.addPrivilege(new PrivilegeInfo(
-            "Admin",
-            "Administrative access to page configuration",
-            "Config button visibility"
+                "Admin",
+                "Administrative access to page configuration",
+                "Config button visibility"
         ));
 
         metadata.addPrivilege(new PrivilegeInfo(
-            "OpdReprintOriginalBill",
-            "Access to reprint original OPD bills",
-            "Line 40: 'Print to Original Bill' button"
+                "OpdReprintOriginalBill",
+                "Access to reprint original OPD bills",
+                "Line 40: 'Print to Original Bill' button"
         ));
 
         metadata.addPrivilege(new PrivilegeInfo(
-            "OpdIndividualCancel",
-            "Ability to cancel individual OPD bills",
-            "Line 57: 'To Cancel' button"
+                "OpdIndividualCancel",
+                "Ability to cancel individual OPD bills",
+                "Line 57: 'To Cancel' button"
         ));
 
         metadata.addPrivilege(new PrivilegeInfo(
-            "EditData",
-            "Edit bill data including referring doctor information",
-            "Line 122: Edit bill button and dialog"
+                "EditData",
+                "Edit bill data including referring doctor information",
+                "Line 122: Edit bill button and dialog"
         ));
 
         metadata.addPrivilege(new PrivilegeInfo(
-            "ChangeProfessionalFee",
-            "Change the staff member assigned to professional fees",
-            "Line 449: Professional fee staff assignment dropdown"
+                "ChangeProfessionalFee",
+                "Change the staff member assigned to professional fees",
+                "Line 449: Professional fee staff assignment dropdown"
         ));
 
         // Register the metadata
@@ -1882,8 +1886,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     /**
-     * Called when user changes payment method in individual bill cancellation form.
-     * Resets paymentMethodData to prevent using old payment method data.
+     * Called when user changes payment method in individual bill cancellation
+     * form. Resets paymentMethodData to prevent using old payment method data.
      */
     public void onPaymentMethodChange() {
         // Reset payment method data to prevent using old payment method data
@@ -2677,8 +2681,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     /**
-     * Validates payment method data for bill cancellation operations.
-     * Checks if mandatory fields are provided based on configuration settings.
+     * Validates payment method data for bill cancellation operations. Checks if
+     * mandatory fields are provided based on configuration settings.
      *
      * @return true if validation errors exist, false if validation passes
      */
@@ -4523,7 +4527,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             return null;
         }
 
-        Bill foundBill = billFacade.find(BillId);
+        Bill foundBill = billService.reloadBill(BillId);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -4540,7 +4544,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             return null;
         }
 
-        Bill foundBill = billFacade.find(BillId);
+        Bill foundBill = billService.reloadBill(BillId);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -4557,7 +4561,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             return null;
         }
 
-        Bill foundBill = billFacade.find(BillId);
+        Bill foundBill = billService.reloadBill(BillId);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -4574,7 +4578,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             return null;
         }
 
-        Bill foundBill = billFacade.find(selectedBillId);
+        Bill foundBill = billService.reloadBill(selectedBillId);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found for ID: " + selectedBillId);
             return null;
@@ -4601,7 +4605,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             return null;
         }
 
-        this.bill = foundBillItem.getBill();
+        this.bill = billService.reloadBill(foundBillItem.getBill().getId());
         return navigateToViewBillByAtomicBillType();
     }
 
@@ -4763,11 +4767,13 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return navigateToViewPharmacyDirectIssueCancellationForInpatientBill();
 
             case PHARMACY_RETAIL_SALE_PRE:
-                return navigateToViewPharmacyPreBill();
+                pharmacySaleForCashierController.setBillPreview(true);
+                pharmacySaleForCashierController.setPrintBill(bill);
+                return pharmacySaleForCashierController.toPharmacyRetailSaleForCashier();
             case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
-                pharmacySaleController.setPrintBill(bill);
-                return pharmacySaleController.navigateToSaleBillForCashierPrint();
-//                return navigateToViewPharmacySettledPreBill();
+                pharmacySaleForCashierController.setBillPreview(true);
+                pharmacySaleForCashierController.setPrintBill(bill);
+                return pharmacySaleForCashierController.toPharmacyRetailSaleForCashier();
             case PHARMACY_RETAIL_SALE:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigatePharmacyReprintRetailBill();
@@ -5039,7 +5045,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
                 return navigateToViewPharmacyDirectIssueCancellationForInpatientBill();
             case PHARMACY_RETAIL_SALE_PRE:
-                return navigateToViewPharmacyPreBill();
+                pharmacySaleForCashierController.setBillPreview(true);
+                pharmacySaleForCashierController.setPrintBill(bill);
+                return pharmacySaleForCashierController.toPharmacyRetailSaleForCashier();
             case PHARMACY_RETAIL_SALE:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigatePharmacyReprintRetailBill();
@@ -5062,9 +5070,12 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             case PHARMACY_DISPOSAL_ISSUE:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyDisposalIssueBill();
+            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+                pharmacySaleForCashierController.setBillPreview(true);
+                pharmacySaleForCashierController.setPrintBill(bill);
+                return pharmacySaleForCashierController.toPharmacyRetailSaleForCashier();
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL:
-            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
             case PHARMACY_RETAIL_SALE_REFUND:
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY:
             case PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS:
@@ -7563,26 +7574,33 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     /**
-     * Updates the batch bill's financial tracking fields when an individual OPD bill
-     * is cancelled within a credit payment batch.
+     * Updates the batch bill's financial tracking fields when an individual OPD
+     * bill is cancelled within a credit payment batch.
      *
-     * <p>This method ensures accurate credit balance tracking for partial batch bill
-     * cancellations by reducing the batch bill's balance, paidAmount, and increasing
-     * refundAmount proportionally to the cancelled individual bill's net total.</p>
+     * <p>
+     * This method ensures accurate credit balance tracking for partial batch
+     * bill cancellations by reducing the batch bill's balance, paidAmount, and
+     * increasing refundAmount proportionally to the cancelled individual bill's
+     * net total.</p>
      *
-     * <p><b>Healthcare Domain Context:</b> When OPD bills are paid using Credit payment
-     * method, the net total becomes the "due amount" (stored in balance field). Credit
-     * companies settle these dues periodically. Accurate balance tracking is critical
-     * for credit company settlement reports and financial reconciliation.</p>
+     * <p>
+     * <b>Healthcare Domain Context:</b> When OPD bills are paid using Credit
+     * payment method, the net total becomes the "due amount" (stored in balance
+     * field). Credit companies settle these dues periodically. Accurate balance
+     * tracking is critical for credit company settlement reports and financial
+     * reconciliation.</p>
      *
-     * <p><b>Pattern:</b> Mirrors pharmacy implementation in
+     * <p>
+     * <b>Pattern:</b> Mirrors pharmacy implementation in
      * {@link SaleReturnController#updateBillFinancialFields(Bill, double)}</p>
      *
      * @param individualBill The individual OPD bill being cancelled
-     * @param cancellationBill The cancellation bill created for the individual bill
+     * @param cancellationBill The cancellation bill created for the individual
+     * bill
      * @throws IllegalArgumentException if bills are null
      * @throws IllegalStateException if financial data is invalid
-     * @see <a href="https://github.com/hmislk/hmis/issues/17138">GitHub Issue #17138</a>
+     * @see <a href="https://github.com/hmislk/hmis/issues/17138">GitHub Issue
+     * #17138</a>
      */
     private void updateBatchBillFinancialFieldsForIndividualCancellation(Bill individualBill, Bill cancellationBill) {
         // Validate inputs
@@ -7624,10 +7642,10 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         // Validate refund amount doesn't exceed original batch bill total
         if (refundAmount > batchBill.getNetTotal()) {
             throw new IllegalStateException(
-                String.format("CRITICAL: Refund amount (%.2f) exceeds batch bill total (%.2f). " +
-                             "Batch Bill: %s, Individual Bill: %s",
-                             refundAmount, batchBill.getNetTotal(),
-                             batchBill.getInsId(), individualBill.getInsId())
+                    String.format("CRITICAL: Refund amount (%.2f) exceeds batch bill total (%.2f). "
+                            + "Batch Bill: %s, Individual Bill: %s",
+                            refundAmount, batchBill.getNetTotal(),
+                            batchBill.getInsId(), individualBill.getInsId())
             );
         }
 
@@ -7695,7 +7713,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 ),
                 batchBill
             );
-            */
+             */
 
             System.out.println("=== Batch Bill Balance Updated ===");
             System.out.println("Batch Bill ID: " + batchBill.getInsId());
