@@ -184,6 +184,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     //Interface Data
     private PaymentScheme paymentScheme;
     private PaymentMethod paymentMethod;
+    private PaymentMethod originalCancellationPaymentMethod;
     private List<PaymentMethod> paymentMethods;
     private Patient newPatient;
     private Patient searchedPatient;
@@ -2024,6 +2025,9 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                             initializePaymentDataFromOriginalPayments(batchBillPayments);
                         }
 
+                        // Store original payment method to detect changes
+                        originalCancellationPaymentMethod = paymentMethod;
+
                         printPreview = false;
                         batchBillCancellationStarted = false;
 
@@ -2048,6 +2052,9 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             if (batchBillPayments != null && !batchBillPayments.isEmpty()) {
                 initializePaymentDataFromOriginalPayments(batchBillPayments);
             }
+
+            // Store original payment method to detect changes
+            originalCancellationPaymentMethod = paymentMethod;
 
             printPreview = false;
             batchBillCancellationStarted = false;
@@ -2373,14 +2380,28 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     /**
      * Called when user changes payment method in cancellation form.
-     * Resets paymentMethodData to prevent using old payment method data.
+     * Only resets paymentMethodData when user changes to a DIFFERENT payment method.
+     * If user keeps the same payment method as the original, the loaded data is preserved.
      */
     public void onPaymentMethodChange() {
-        // Reset payment method data to prevent using old payment method data
+        // If payment method is null (shouldn't happen but handle gracefully)
+        if (paymentMethod == null) {
+            // Restore original payment method
+            paymentMethod = originalCancellationPaymentMethod;
+            return;
+        }
+
+        // If payment method matches the original, don't reset - preserve the loaded data
+        if (paymentMethod == originalCancellationPaymentMethod) {
+            // User is keeping the same payment method - keep the original data
+            return;
+        }
+
+        // User changed to a DIFFERENT payment method - reset data
         paymentMethodData = new PaymentMethodData();
 
         // Initialize basic payment data based on newly selected payment method
-        if (paymentMethod != null && batchBill != null) {
+        if (batchBill != null) {
             double netTotal = Math.abs(batchBill.getNetTotal());
 
             switch (paymentMethod) {

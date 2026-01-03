@@ -19,13 +19,13 @@
                                 <!-- Display status badge -->
                                 <div class="row mb-3">
                                     <div class="col-12">
-                                        <div class="alert" style="#{pharmacyStockTakeController.snapshotBill.completed ? 'background-color: #d4edda; border-color: #c3e6cb; color: #155724;' : 'background-color: #fff3cd; border-color: #ffeaa7; color: #856404;'}">
+                                        <div class="alert" style="#{pharmacyStockTakeController.snapshotBillDisplay.completed ? 'background-color: #d4edda; border-color: #c3e6cb; color: #155724;' : 'background-color: #fff3cd; border-color: #ffeaa7; color: #856404;'}">
                                             <div class="d-flex align-items-center justify-content-between">
                                                 <div>
-                                                    <i class="fa #{pharmacyStockTakeController.snapshotBill.completed ? 'fa-check-circle' : 'fa-clock'}" style="margin-right: 8px;"></i>
+                                                    <i class="fa #{pharmacyStockTakeController.snapshotBillDisplay.completed ? 'fa-check-circle' : 'fa-clock'}" style="margin-right: 8px;"></i>
                                                     <strong>Stock Taking Status:</strong>
                                                     <span style="margin-left: 8px; font-weight: bold;">
-                                                        #{pharmacyStockTakeController.snapshotBill.completed ? 'Completed' : 'Ongoing'}
+                                                        #{pharmacyStockTakeController.snapshotBillDisplay.completed ? 'Completed' : 'Ongoing'}
                                                     </span>
                                                 </div>
                                                 <div>
@@ -34,9 +34,19 @@
                                                                      styleClass="ui-button-success"
                                                                      action="#{pharmacyStockTakeController.completeStockTaking}"
                                                                      update="@form"
-                                                                     rendered="#{not pharmacyStockTakeController.snapshotBill.completed}">
+                                                                     rendered="#{not pharmacyStockTakeController.snapshotBillDisplay.completed}">
                                                         <p:confirm header="Complete Stock Taking"
                                                                    message="Are you sure you want to complete this stock taking session? Once completed, no further uploads will be allowed."
+                                                                   icon="fa fa-exclamation-triangle"/>
+                                                    </p:commandButton>
+                                                    <p:commandButton value="Reverse Completion"
+                                                                     icon="fa fa-undo"
+                                                                     styleClass="ui-button-warning mx-2"
+                                                                     action="#{pharmacyStockTakeController.reverseStockTakingCompletion}"
+                                                                     update="@form"
+                                                                     rendered="#{pharmacyStockTakeController.snapshotBillDisplay.completed and webUserController.hasPrivilege('Developers')}">
+                                                        <p:confirm header="Reverse Completion"
+                                                                   message="Are you sure you want to reverse the completion of this stock taking session? This will allow further uploads again."
                                                                    icon="fa fa-exclamation-triangle"/>
                                                     </p:commandButton>
                                                 </div>
@@ -66,7 +76,7 @@
                                                     icon="fa fa-file-pdf"
                                                     ajax="false"
                                                     styleClass="ui-button-secondary mx-1">
-                                                    <p:dataExporter type="pdf" target=":#{p:resolveFirstComponentWithId('tbl',view).clientId}" fileName="pharmacy_stock_count_#{pharmacyStockTakeController.snapshotBill.deptId}" />
+                                                    <p:dataExporter type="pdf" target=":#{p:resolveFirstComponentWithId('tbl',view).clientId}" fileName="pharmacy_stock_count_#{pharmacyStockTakeController.snapshotBillDisplay.deptId}" />
                                                 </p:commandButton>
                                             </div>
                                             <div class="btn-group mr-3" role="group" aria-label="Download Sheets">
@@ -100,13 +110,13 @@
                                                     <p:panelGrid columns="2" styleClass="ui-panelgrid-blank mt-2" 
                                                                  columnClasses="text-right pr-3 font-weight-bold,text-left">
                                                         <h:outputText value="Institution:" style="font-weight:bold; color: #6c757d;"/>
-                                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBill.institution.name}" 
+                                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.institutionName}"
                                                                       style="color: #495057;"/>
                                                         <h:outputText value="Department:" style="font-weight:bold; color: #6c757d;"/>
-                                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBill.department.name}" 
+                                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.departmentName}"
                                                                       style="color: #495057;"/>
                                                         <h:outputText value="Bill No:" style="font-weight:bold; color: #6c757d;"/>
-                                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBill.deptId}" 
+                                                        <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.deptId}"
                                                                       style="color: #495057; font-family: monospace;"/>
                                                     </p:panelGrid>
                                                 </div>
@@ -117,7 +127,7 @@
                                                 <div class="card-body text-center">
                                                     <h:outputText value="Total Stock Value" 
                                                                   style="font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 10px;"/>
-                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotBill.netTotal}" 
+                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.netTotal}"
                                                                   style="font-weight: bold; font-size: 2rem;">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputText>
@@ -178,7 +188,7 @@
 
                                     <p:dataTable id="tbl" 
                                                  widgetVar="tbl" 
-                                                 value="#{pharmacyStockTakeController.snapshotBill.billItems}" 
+                                                 value="#{pharmacyStockTakeController.snapshotBillItemsLazy}" 
                                                  var="bi" 
                                                  rows="25" 
                                                  paginator="true"
@@ -283,12 +293,12 @@
                                                                   style="font-weight: bold; color: #6c757d; font-size: 1.1rem; display: block; margin-bottom: 10px;"/>
                                                     <h:outputText value="Total Items: " 
                                                                   style="font-weight: bold; color: #6c757d;"/>
-                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotBill.billItems.size()}" 
+                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotBillItemsCount}"
                                                                   style="color: #495057; font-weight: bold;"/>
                                                     <br/>
                                                     <h:outputText value="Net Total: " 
                                                                   style="font-weight: bold; color: #6c757d;"/>
-                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotBill.netTotal}" 
+                                                    <h:outputText value="#{pharmacyStockTakeController.snapshotBillDisplay.netTotal}"
                                                                   style="font-weight: bold; color: #28a745; font-size: 1.3rem;">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputText>

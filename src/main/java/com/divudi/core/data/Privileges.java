@@ -544,6 +544,7 @@ public enum Privileges {
     PharmacyAdjustmentExpiryDate("Pharmacy Adjustment Expiry Date"),
     PharmacyAdjustmentSearchAdjustmentBills("Pharmacy Adjustment Search Adjustment Bills"),
     PharmacyAdjustmentTransferAllStock("Pharmacy Adjustment Transfer All Stock"),
+    PharmacyAdjustmentCreateBatch("Pharmacy Adjustment Create Batch"),
     PharmacyPhysicalCountApprove("Pharmacy Physical Count Approve"),
     PharmacyStockTakeApprove("Pharmacy Stock Take Approve"),
     // Pharmacy Dealer Payments
@@ -936,6 +937,7 @@ public enum Privileges {
             case PharmacyAdjustmentExpiryDate:
             case PharmacyAdjustmentSearchAdjustmentBills:
             case PharmacyAdjustmentTransferAllStock:
+            case PharmacyAdjustmentCreateBatch:
             case PharmacyPhysicalCountApprove:
             case PharmacyStockTakeApprove:
 
