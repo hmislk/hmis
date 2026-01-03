@@ -18,35 +18,59 @@
                 <p:panel>
 
                     <f:facet name="header">
-                        <h:panelGrid columns="6" style="size: 0.5rem; float: right" >
-                            <p:commandButton 
-                                value="Cancel" 
-                                icon="pi pi-ban"
-                                action="#{patientDepositController.navigateToNewPatientDepositCancel()}"
-                                class="ui-button-danger mx-1" 
-                                ajax="false">
-                            </p:commandButton>
-                            <p:commandButton value="Print Bill" icon="pi pi-print" class="ui-button-info mx-1" ajax="false">
-                                <p:printer target="billPanel"></p:printer>
-                            </p:commandButton>
-                            <p:commandButton icon="fas fa-plus" class="mx-1" value="New Bill"
-                                             ajax="false" action="/patient_deposit/receive?faces-redirect=true"
-                                             actionListener="#{patientDepositController.clearDataForPatientDeposit()}" >
-                            </p:commandButton>
-                            <p:commandButton ajax="false" icon="fas fa-search" value="Patient Lookup" class="mx-1 ui-button-warning"
-                                             action="#{patientController.navigateToSearchPatients}"></p:commandButton>
-                            <p:commandButton
-                                value="Profile"
-                                ajax="false"
-                                icon="fa fa-user"
-                                class="ui-button-warning  w-100"
-                                action="#{patientController.navigateToOpdPatientProfile()}"
-                                >
-                                <f:setPropertyActionListener
-                                    value="#{patientController.bill.patient}"
-                                    target="#{patientController.current}" ></f:setPropertyActionListener>
-                            </p:commandButton>
-                        </h:panelGrid>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h:outputText value="Patient Deposit Receipt - #{patientController.bill.deptId}" />
+                            </div>
+                            <div>
+                                <p:commandButton
+                                    value="Print"
+                                    ajax="false"
+                                    icon="fas fa-print"
+                                    class="ui-button-info mx-2">
+                                    <p:printer target="billPanel" />
+                                </p:commandButton>
+
+                                <!-- Settings button for paper type configuration -->
+                                <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                    value="Settings"
+                                    icon="fas fa-cog"
+                                    class="ui-button-secondary mx-1"
+                                    type="button"
+                                    onclick="PF('patientDepositReprintConfigDialog').show();" />
+
+                                <p:commandButton
+                                    value="Cancel"
+                                    icon="pi pi-ban"
+                                    action="#{patientDepositController.navigateToNewPatientDepositCancel()}"
+                                    class="ui-button-danger mx-1"
+                                    ajax="false" />
+                                <p:commandButton
+                                    icon="fas fa-plus"
+                                    class="mx-1"
+                                    value="New Bill"
+                                    ajax="false"
+                                    action="/patient_deposit/receive?faces-redirect=true"
+                                    actionListener="#{patientDepositController.clearDataForPatientDeposit()}" />
+                                <p:commandButton
+                                    ajax="false"
+                                    icon="fas fa-search"
+                                    value="Patient Lookup"
+                                    class="mx-1 ui-button-warning"
+                                    action="#{patientController.navigateToSearchPatients}" />
+                                <p:commandButton
+                                    value="Profile"
+                                    ajax="false"
+                                    icon="fa fa-user"
+                                    class="ui-button-warning"
+                                    action="#{patientController.navigateToOpdPatientProfile()}">
+                                    <f:setPropertyActionListener
+                                        value="#{patientController.bill.patient}"
+                                        target="#{patientController.current}" />
+                                </p:commandButton>
+                            </div>
+                        </div>
                     </f:facet>
 
 
@@ -60,7 +84,23 @@
                                 <div class="align-items-center my-2" style="max-width: 80%" >
                                     <div>
                                         <h:panelGroup id="billPanel" class="bill" layout="block">
-                                            <prints:five_five_paper_patient_deposit bill="#{patientController.bill}" duplicate="true" />
+                                            <!-- POS/5.5 inch Format (Default) -->
+                                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Patient Deposit Receipt POS Paper', true)}">
+                                                <prints:five_five_paper_patient_deposit bill="#{patientController.bill}" duplicate="true" />
+                                            </h:panelGroup>
+
+                                            <!-- A4 Format -->
+                                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Patient Deposit Receipt A4 Paper', false)}">
+                                                <!-- For now, use the same component until A4 format is created -->
+                                                <prints:five_five_paper_patient_deposit bill="#{patientController.bill}" duplicate="true" />
+                                                <h:outputText value="Note: A4 format composite component needs to be created" style="display:none;" />
+                                            </h:panelGroup>
+
+                                            <!-- Custom Format -->
+                                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Patient Deposit Receipt Custom Paper', false)}">
+                                                <!-- Use existing 5.5 inch format for now -->
+                                                <prints:five_five_paper_patient_deposit bill="#{patientController.bill}" duplicate="true" />
+                                            </h:panelGroup>
                                         </h:panelGroup>
                                     </div>
                                 </div>
@@ -71,6 +111,85 @@
             </h:form>
 
         </h:panelGroup>
+
+        <!-- Patient Deposit Printer Configuration Dialog -->
+        <p:dialog id="patientDepositReprintConfigDialog"
+                  header="Patient Deposit Printer Configuration"
+                  widgetVar="patientDepositReprintConfigDialog"
+                  modal="true"
+                  width="600"
+                  height="500"
+                  resizable="true"
+                  maximizable="true"
+                  closeOnEscape="true">
+
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="patientDepositReprintConfigForm" />
+
+            <h:form id="patientDepositReprintConfigForm">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <h:outputText value="Patient Deposit Receipt Paper Settings">
+                                    <f:facet name="before">
+                                        <i class="fas fa-file-alt"></i>
+                                    </f:facet>
+                                </h:outputText>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="patientDepositPosPaperReprint"
+                                        value="#{pharmacyConfigController.patientDepositPosPaper}" />
+                                    <p:outputLabel for="patientDepositPosPaperReprint" value="POS/5.5 inch Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Standard 5.5 inch thermal receipt format (Default)</small>
+                                </div>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="patientDepositA4PaperReprint"
+                                        value="#{pharmacyConfigController.patientDepositA4Paper}" />
+                                    <p:outputLabel for="patientDepositA4PaperReprint" value="A4 Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">A4 size paper format for detailed receipts</small>
+                                </div>
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="patientDepositCustomPaperReprint"
+                                        value="#{pharmacyConfigController.patientDepositCustomPaper}" />
+                                    <p:outputLabel for="patientDepositCustomPaperReprint" value="Custom Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Custom format for special printing requirements</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <p:messages id="patientDepositReprintConfigMessages" showDetail="true" closable="true" />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            value="Apply &amp; Close"
+                                            icon="fas fa-save"
+                                            class="ui-button-success"
+                                            ajax="false"
+                                            action="#{pharmacyConfigController.savePatientDepositConfig}" />
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('patientDepositReprintConfigDialog').hide(); return false;"
+                                            type="button" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </h:form>
+        </p:dialog>
 
     </ui:define>
 

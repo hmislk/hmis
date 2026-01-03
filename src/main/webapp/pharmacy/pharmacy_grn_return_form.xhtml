@@ -25,11 +25,20 @@
                                 <h:outputLabel value="GRN Return" ></h:outputLabel>
                             </div>
                             <div class="text-end col-9" >
-                                <p:commandButton 
-                                    value="List GRNs To Create a new Return" 
+                                <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('Admin')}"
+                                    value="Config"
+                                    icon="fa fa-cog"
+                                    title="Page Configuration Management"
+                                    action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_grn_return_form')}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary ms-5">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="List GRNs To Create a new Return"
                                     action="#{grnReturnWorkflowController.navigateToCreateGrnReturn}"
                                     ajax="false"
-                                    icon="fas fa-plus-circle" 
+                                    icon="fas fa-plus-circle"
                                     class="ui-button-info ui-button-outlined mx-1"
                                     rendered="#{webUserController.hasPrivilege('CreateGrnReturn')}"
                                     title="Create a new GRN Return Request">
