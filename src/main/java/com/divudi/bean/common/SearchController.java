@@ -16533,6 +16533,11 @@ public class SearchController implements Serializable {
             // OPD Patient Deposit Payments - bills paid using deposits (deducted from collection for the day)
             ReportTemplateRowBundle opdPatientDepositPayments = generateOpdPatientDepositPayments();
             opdPatientDepositPayments.calculateTotalByPayments();
+            // Fix sign for display - should show positive values
+            double opdDepositTotal = opdPatientDepositPayments.getTotal();
+            if (opdDepositTotal < 0) {
+                opdPatientDepositPayments.setTotal(-opdDepositTotal);
+            }
             bundle.getBundles().add(opdPatientDepositPayments);
             collectionForTheDay -= Math.abs(getSafeTotal(opdPatientDepositPayments));
             System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization for OPD Bills = " + getSafeTotal(opdPatientDepositPayments));
@@ -16542,6 +16547,11 @@ public class SearchController implements Serializable {
             // Pharmacy Patient Deposit Payments - bills paid using deposits (deducted from collection for the day)
             ReportTemplateRowBundle pharmacyPatientDepositPayments = generatePharmacyPatientDepositPayments();
             pharmacyPatientDepositPayments.calculateTotalByPayments();
+            // Fix sign for display - should show positive values
+            double pharmacyDepositTotal = pharmacyPatientDepositPayments.getTotal();
+            if (pharmacyDepositTotal < 0) {
+                pharmacyPatientDepositPayments.setTotal(-pharmacyDepositTotal);
+            }
             bundle.getBundles().add(pharmacyPatientDepositPayments);
             collectionForTheDay -= Math.abs(getSafeTotal(pharmacyPatientDepositPayments));
             System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization for Pharmacy Bills = " + getSafeTotal(pharmacyPatientDepositPayments));
