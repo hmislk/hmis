@@ -306,6 +306,8 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     @Column(nullable = false)
     private boolean consumptionAllowed = true;
+    
+    private boolean allowedForBillingPriority;
 
     public double getVatPercentage() {
         return 0;
@@ -1655,6 +1657,14 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setVtm(Item vtm) {
         this.vtm = vtm;
+    }
+
+    public boolean isAllowedForBillingPriority() {
+        return allowedForBillingPriority;
+    }
+
+    public void setAllowedForBillingPriority(boolean allowedForBillingPriority) {
+        this.allowedForBillingPriority = allowedForBillingPriority;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

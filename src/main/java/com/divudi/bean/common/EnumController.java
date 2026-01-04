@@ -19,7 +19,6 @@ import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.data.lab.Priority;
 import com.divudi.core.data.lab.SearchDateType;
 import com.divudi.core.data.lab.TestHistoryType;
-import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.Person;
 import com.divudi.service.BillService;
 import java.io.Serializable;
@@ -30,7 +29,6 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -343,7 +341,13 @@ public class EnumController implements Serializable {
     }
 
     public List<Priority> getPriorities() {
-        return Arrays.asList(Priority.values());
+        List<Priority> list = new ArrayList<>();
+        list.add(Priority.NORMAL);
+        list.add(Priority.HIGH);
+        list.add(Priority.URGENT);
+        list.add(Priority.CRITICAL);
+        
+        return list;
     }
 
     public List<CategoryType> getCategoryTypes() {
