@@ -3410,9 +3410,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public void addToBill() {
-        System.out.println("addToBill");
-        System.out.println("Before Priority = " + currentBillItemPriority);
-        System.out.println("Before Priority = " + getCurrentBillItemPriority());
         if (getCurrentBillItem() == null) {
             JsfUtil.addErrorMessage("Nothing to add");
             return;
@@ -3433,24 +3430,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         
         if (getCurrentBillItem().getItem().isAllowedForBillingPriority()) {
-            System.out.println("Billing Priority Allow");
             if (currentBillItemPriority == null) {
-                System.out.println("Priority Null");
-                getCurrentBillItem().setPriority(Priority.NORMAL);
                 currentBillItemPriority = Priority.NORMAL;
-                System.out.println("Set Priority.NORMAL");
-            }else{
-                System.out.println("Priority not Null");
-                System.out.println("Current Item Priority 1 = " + currentBillItemPriority);
-                System.out.println("Current Item Priority 2 = " + getCurrentBillItemPriority());
             }
         }else{
             currentBillItemPriority = null;
         }
         
-        System.out.println("Middle Item Priority 1 = " + currentBillItemPriority);
-        System.out.println("Middle Item Priority 2 = " + getCurrentBillItemPriority());
-
         if (getCurrentBillItem().getItem().isRequestForQuentity()) {
             if (getCurrentBillItemQty() == null || getCurrentBillItemQty() == 0.0) {
                 setCurrentBillItemQty(null);
@@ -3535,7 +3521,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else {
             setItemLight(itemLight);
         }
-        System.out.println("Final Priority of "+ bi.getItem().getName()+ " = " + bi.getPriority());
+        
         setCurrentBillItemQty(null);
         currentBillItemPriority = null;
         JsfUtil.addSuccessMessage("Added");

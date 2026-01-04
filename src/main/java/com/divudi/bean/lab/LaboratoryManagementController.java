@@ -2727,7 +2727,7 @@ public class LaboratoryManagementController implements Serializable {
                 params.put("approved", true);
             }
             if (priority != null ) {
-                jpql += " AND i.billItem.priority = :priority ";
+                jpql += " AND r.patientInvestigation.billItem.priority = :priority ";
                 params.put("priority", priority );
             }
 
