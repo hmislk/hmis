@@ -1104,10 +1104,10 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         pat.getPerson().setCreatedAt(new Date());
 
         if (pat.getPerson().getId() == null) {
-            getPersonFacade().create(pat.getPerson());
+            getPersonFacade().createAndFlush(pat.getPerson());
         }
         if (pat.getId() == null) {
-            getPatientFacade().create(pat);
+            getPatientFacade().createAndFlush(pat);
         }
         return pat;
     }
