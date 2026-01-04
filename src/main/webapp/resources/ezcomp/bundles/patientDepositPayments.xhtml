@@ -60,7 +60,7 @@
                                 </h:outputText>
                             </td>
                             <td>
-                                <h:outputText value="#{(row.bill.patient ne null and row.bill.patient.person ne null) ? row.bill.patient.person.nameWithTitle : 'N/A'}" />
+                                <h:outputText value="#{(row.bill.patient ne null and row.bill.patient.person ne null) ? row.bill.patient.person.name : 'N/A'}" />
                             </td>
                             <td class="text-end">
                                 <h:outputText value="#{row.bill.netTotal}">
