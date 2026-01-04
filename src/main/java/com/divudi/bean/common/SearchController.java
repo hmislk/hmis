@@ -20799,17 +20799,18 @@ public class SearchController implements Serializable {
     }
 
     private void updateAllCashierSummaryTotalsWithConfiguration() {
-        Map<PaymentMethod, Boolean> configuration = buildCashierCollectionConfiguration();
-
-        allCashierCollectionIncludedMethods = configuration.entrySet().stream()
-                .filter(Map.Entry::getValue)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
-
-        allCashierCollectionExcludedMethods = configuration.entrySet().stream()
-                .filter(e -> !e.getValue())
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
+        // Configuration commented out - Collection Total now equals Grand Total
+        // Map<PaymentMethod, Boolean> configuration = buildCashierCollectionConfiguration();
+        //
+        // allCashierCollectionIncludedMethods = configuration.entrySet().stream()
+        //         .filter(Map.Entry::getValue)
+        //         .map(Map.Entry::getKey)
+        //         .collect(Collectors.toList());
+        //
+        // allCashierCollectionExcludedMethods = configuration.entrySet().stream()
+        //         .filter(e -> !e.getValue())
+        //         .map(Map.Entry::getKey)
+        //         .collect(Collectors.toList());
 
         double totalGrand = 0.0;
         double totalCollection = 0.0;
@@ -20820,12 +20821,14 @@ public class SearchController implements Serializable {
                     continue;
                 }
                 double rowGrand = computeGrandTotal(row);
-                double rowCollection = calculateCollectionTotal(row, allCashierCollectionIncludedMethods);
+                // double rowCollection = calculateCollectionTotal(row, allCashierCollectionIncludedMethods);
+                double rowCollection = rowGrand; // Collection Total = Grand Total
 
-                double rowExcluded = rowGrand - rowCollection;
+                // double rowExcluded = rowGrand - rowCollection;
+                double rowExcluded = 0.0; // No exclusions when Collection = Grand Total
                 row.setCashierGrandTotal(rowGrand);
-                row.setCashierCollectionTotal(rowCollection);
-                row.setCashierExcludedTotal(rowExcluded);
+                row.setCashierCollectionTotal(rowGrand);
+                row.setCashierExcludedTotal(0.0);
 
                 totalGrand += rowGrand;
                 totalCollection += rowCollection;
@@ -20842,8 +20845,8 @@ public class SearchController implements Serializable {
             bundle.setCashierGrandTotal(totalGrand);
             bundle.setCashierCollectionTotal(totalCollection);
             bundle.setCashierExcludedTotal(totalExcluded);
-            bundle.setCashierCollectionPaymentMethods(allCashierCollectionIncludedMethods);
-            bundle.setCashierExcludedPaymentMethods(allCashierCollectionExcludedMethods);
+            // bundle.setCashierCollectionPaymentMethods(allCashierCollectionIncludedMethods);
+            // bundle.setCashierExcludedPaymentMethods(allCashierCollectionExcludedMethods);
         }
     }
 
