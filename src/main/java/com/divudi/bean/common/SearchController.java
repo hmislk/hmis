@@ -16535,9 +16535,18 @@ public class SearchController implements Serializable {
             opdPatientDepositPayments.calculateTotalByPayments();
             bundle.getBundles().add(opdPatientDepositPayments);
             collectionForTheDay -= Math.abs(getSafeTotal(opdPatientDepositPayments));
-            System.out.println("DEBUG generateDailyReturn: OPD Patient Deposit Payments = " + getSafeTotal(opdPatientDepositPayments));
-            System.out.println("DEBUG generateDailyReturn: OPD Patient Deposit Payments deducted from collection for the day");
+            System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization for OPD Bills = " + getSafeTotal(opdPatientDepositPayments));
+            System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization for OPD Bills deducted from collection for the day");
             System.out.println("DEBUG generateDailyReturn: Collection for the day after OPD patient deposit deduction = " + collectionForTheDay);
+
+            // Pharmacy Patient Deposit Payments - bills paid using deposits (deducted from collection for the day)
+            ReportTemplateRowBundle pharmacyPatientDepositPayments = generatePharmacyPatientDepositPayments();
+            pharmacyPatientDepositPayments.calculateTotalByPayments();
+            bundle.getBundles().add(pharmacyPatientDepositPayments);
+            collectionForTheDay -= Math.abs(getSafeTotal(pharmacyPatientDepositPayments));
+            System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization for Pharmacy Bills = " + getSafeTotal(pharmacyPatientDepositPayments));
+            System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization for Pharmacy Bills deducted from collection for the day");
+            System.out.println("DEBUG generateDailyReturn: Collection for the day after Pharmacy patient deposit deduction = " + collectionForTheDay);
 
             // Final collection for the day
             ReportTemplateRowBundle collectionForTheDayBundle = new ReportTemplateRowBundle();
@@ -19701,8 +19710,27 @@ public class SearchController implements Serializable {
                 department,
                 site);
 
-        ap.setName("OPD Patient Deposit Payments");
+        ap.setName("Patient Deposit Utilization for OPD Bills");
         ap.setBundleType("opdPatientDepositPayments");
+        return ap;
+    }
+
+    public ReportTemplateRowBundle generatePharmacyPatientDepositPayments() {
+        // Get Pharmacy bill types
+        List<BillTypeAtomic> pharmacyBillTypes = BillTypeAtomic.findByServiceType(ServiceType.PHARMACY);
+
+        // Use new payment report method with bill type filtering
+        ReportTemplateRowBundle ap = reportTemplateController.generatePaymentReportByBillTypes(
+                PaymentMethod.PatientDeposit,
+                pharmacyBillTypes,
+                fromDate,
+                toDate,
+                institution,
+                department,
+                site);
+
+        ap.setName("Patient Deposit Utilization for Pharmacy Bills");
+        ap.setBundleType("pharmacyPatientDepositPayments");
         return ap;
     }
 
