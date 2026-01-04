@@ -616,8 +616,7 @@
                                                 class="w-100 ui-button-success"
                                                 action="#{opdBillController.addToBill()}"  
                                                 process="txtQty slmPriority acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
-                                                update=" msg slmPriority tblBillItem :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty focusLstIx"
-                                                >
+                                                update=" msg slmPriority tblBillItem :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty focusLstIx">
                                             </p:commandButton>
                                             <p:focus rendered="#{opdBillController.patient.person.name ne null}" id="focusLstIx" for="acIx" ></p:focus>
 
