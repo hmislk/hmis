@@ -16488,7 +16488,10 @@ public class SearchController implements Serializable {
             pharmacyCollection.setCashierExcludedTotalComputed(false);
             System.out.println("DEBUG: Cleared pharmacy collection cached totals");
 
-            collectionForTheDay += bundleCashierCollectionTotal(pharmacyCollection);
+            // Use Grand Total instead of Collection Total to include ALL payment methods (including patient deposits)
+            double pharmacyGrandTotal = bundleCashierGrandTotal(pharmacyCollection);
+            collectionForTheDay += pharmacyGrandTotal;
+            System.out.println("DEBUG: Using Grand Total for pharmacy - pharmacyCollection.getCashierGrandTotal() = " + pharmacyGrandTotal);
             System.out.println("DEBUG: After recalculation - pharmacyCollection.getCashierCollectionTotal() = " + pharmacyCollection.getCashierCollectionTotal());
             System.out.println("DEBUG: After recalculation - pharmacyCollection.getCashierExcludedTotal() = " + pharmacyCollection.getCashierExcludedTotal());
 
@@ -20933,15 +20936,21 @@ public class SearchController implements Serializable {
 
     private Map<PaymentMethod, Boolean> buildCashierCollectionConfiguration() {
         Map<PaymentMethod, Boolean> configuration = new LinkedHashMap<>();
+        System.out.println("DEBUG buildCashierCollectionConfiguration: START");
         for (PaymentMethod paymentMethod : PaymentMethod.values()) {
             boolean defaultValue = defaultIncludePaymentMethodInCollection(paymentMethod);
             boolean configuredValue = defaultValue;
             if (configOptionApplicationController != null) {
                 configuredValue = configOptionApplicationController.getBooleanValueByKey(
                         buildCollectionConfigurationKey(paymentMethod), defaultValue);
+                if (configuredValue != defaultValue) {
+                    System.out.println("DEBUG buildCashierCollectionConfiguration: " + paymentMethod + " overridden from " + defaultValue + " to " + configuredValue + " by database config");
+                }
             }
             configuration.put(paymentMethod, configuredValue);
+            System.out.println("DEBUG buildCashierCollectionConfiguration: " + paymentMethod + " = " + configuredValue);
         }
+        System.out.println("DEBUG buildCashierCollectionConfiguration: COMPLETE");
         return configuration;
     }
 
@@ -20953,7 +20962,9 @@ public class SearchController implements Serializable {
             return false;
         }
         // PatientDeposit should be included in collection totals, then deducted separately
-        return !isDeprecatedPaymentMethod(paymentMethod);
+        boolean result = !isDeprecatedPaymentMethod(paymentMethod);
+        System.out.println("DEBUG defaultIncludePaymentMethodInCollection: " + paymentMethod + " = " + result);
+        return result;
     }
 
     private boolean isDeprecatedPaymentMethod(PaymentMethod paymentMethod) {
