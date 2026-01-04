@@ -19697,41 +19697,77 @@ public class SearchController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateOpdPatientDepositPayments() {
-        // Get OPD bill types
-        List<BillTypeAtomic> opdBillTypes = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+        try {
+            // Get OPD bill types
+            List<BillTypeAtomic> opdBillTypes = BillTypeAtomic.findByServiceType(ServiceType.OPD);
 
-        // Use new payment report method with bill type filtering
-        ReportTemplateRowBundle ap = reportTemplateController.generatePaymentReportByBillTypes(
-                PaymentMethod.PatientDeposit,
-                opdBillTypes,
-                fromDate,
-                toDate,
-                institution,
-                department,
-                site);
+            // Use new payment report method with bill type filtering
+            ReportTemplateRowBundle ap = reportTemplateController.generatePaymentReportByBillTypes(
+                    PaymentMethod.PatientDeposit,
+                    opdBillTypes,
+                    fromDate,
+                    toDate,
+                    institution,
+                    department,
+                    site);
 
-        ap.setName("Patient Deposit Utilization for OPD Bills");
-        ap.setBundleType("opdPatientDepositPayments");
-        return ap;
+            if (ap != null) {
+                ap.setName("Patient Deposit Utilization for OPD Bills");
+                ap.setBundleType("opdPatientDepositPayments");
+                return ap;
+            } else {
+                // Return empty bundle if result is null
+                ReportTemplateRowBundle emptyBundle = new ReportTemplateRowBundle();
+                emptyBundle.setName("Patient Deposit Utilization for OPD Bills");
+                emptyBundle.setBundleType("opdPatientDepositPayments");
+                return emptyBundle;
+            }
+        } catch (Exception e) {
+            // Log error and return empty bundle on any exception
+            System.err.println("Error generating OPD patient deposit payments report: " + e.getMessage());
+            e.printStackTrace();
+            ReportTemplateRowBundle emptyBundle = new ReportTemplateRowBundle();
+            emptyBundle.setName("Patient Deposit Utilization for OPD Bills (Error)");
+            emptyBundle.setBundleType("opdPatientDepositPayments");
+            return emptyBundle;
+        }
     }
 
     public ReportTemplateRowBundle generatePharmacyPatientDepositPayments() {
-        // Get Pharmacy bill types
-        List<BillTypeAtomic> pharmacyBillTypes = BillTypeAtomic.findByServiceType(ServiceType.PHARMACY);
+        try {
+            // Get Pharmacy bill types
+            List<BillTypeAtomic> pharmacyBillTypes = BillTypeAtomic.findByServiceType(ServiceType.PHARMACY);
 
-        // Use new payment report method with bill type filtering
-        ReportTemplateRowBundle ap = reportTemplateController.generatePaymentReportByBillTypes(
-                PaymentMethod.PatientDeposit,
-                pharmacyBillTypes,
-                fromDate,
-                toDate,
-                institution,
-                department,
-                site);
+            // Use new payment report method with bill type filtering
+            ReportTemplateRowBundle ap = reportTemplateController.generatePaymentReportByBillTypes(
+                    PaymentMethod.PatientDeposit,
+                    pharmacyBillTypes,
+                    fromDate,
+                    toDate,
+                    institution,
+                    department,
+                    site);
 
-        ap.setName("Patient Deposit Utilization for Pharmacy Bills");
-        ap.setBundleType("pharmacyPatientDepositPayments");
-        return ap;
+            if (ap != null) {
+                ap.setName("Patient Deposit Utilization for Pharmacy Bills");
+                ap.setBundleType("pharmacyPatientDepositPayments");
+                return ap;
+            } else {
+                // Return empty bundle if result is null
+                ReportTemplateRowBundle emptyBundle = new ReportTemplateRowBundle();
+                emptyBundle.setName("Patient Deposit Utilization for Pharmacy Bills");
+                emptyBundle.setBundleType("pharmacyPatientDepositPayments");
+                return emptyBundle;
+            }
+        } catch (Exception e) {
+            // Log error and return empty bundle on any exception
+            System.err.println("Error generating Pharmacy patient deposit payments report: " + e.getMessage());
+            e.printStackTrace();
+            ReportTemplateRowBundle emptyBundle = new ReportTemplateRowBundle();
+            emptyBundle.setName("Patient Deposit Utilization for Pharmacy Bills (Error)");
+            emptyBundle.setBundleType("pharmacyPatientDepositPayments");
+            return emptyBundle;
+        }
     }
 
     public void updateBillItemValues() {
