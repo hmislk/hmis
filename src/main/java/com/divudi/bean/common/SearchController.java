@@ -20941,9 +20941,10 @@ public class SearchController implements Serializable {
         if (paymentMethod == null) {
             return true;
         }
-        if (paymentMethod == PaymentMethod.PatientDeposit || paymentMethod == PaymentMethod.None) {
+        if (paymentMethod == PaymentMethod.None) {
             return false;
         }
+        // PatientDeposit should be included in collection totals, then deducted separately
         return !isDeprecatedPaymentMethod(paymentMethod);
     }
 
