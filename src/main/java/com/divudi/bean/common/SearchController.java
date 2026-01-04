@@ -16482,7 +16482,15 @@ public class SearchController implements Serializable {
             System.out.println("pharmacyCollection.getReportTemplateRows().size() = " + pharmacyCollection.getReportTemplateRows().size());
             bundle.getBundles().add(pharmacyCollection);
             System.out.println("Added pharmacy collection to main bundle. Total bundles: " + bundle.getBundles().size());
+
+            // Clear cached collection totals to force recalculation with updated configuration
+            pharmacyCollection.setCashierCollectionTotalComputed(false);
+            pharmacyCollection.setCashierExcludedTotalComputed(false);
+            System.out.println("DEBUG: Cleared pharmacy collection cached totals");
+
             collectionForTheDay += bundleCashierCollectionTotal(pharmacyCollection);
+            System.out.println("DEBUG: After recalculation - pharmacyCollection.getCashierCollectionTotal() = " + pharmacyCollection.getCashierCollectionTotal());
+            System.out.println("DEBUG: After recalculation - pharmacyCollection.getCashierExcludedTotal() = " + pharmacyCollection.getCashierExcludedTotal());
 
             // Generate collecting centre collection and add to the main bundle
             ReportTemplateRowBundle ccCollection = generateCcCollection();
