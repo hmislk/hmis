@@ -1788,7 +1788,7 @@ public class LimsMiddlewareController {
                         if (tii.getItem().getPriority() != null) {
                             samplePriority = tii.getItem().getPriority().toString();
                         } else {
-                            samplePriority = (Priority.Routeine).toString();
+                            samplePriority = (Priority.NORMAL).toString();
                         }
                         MySpeciman ms = new MySpeciman();
                         ms.setSpecimanName(sampleTypeName);
@@ -1993,7 +1993,7 @@ public class LimsMiddlewareController {
                     if (tii.getItem().getPriority() != null) {
                         samplePriority = tii.getItem().getPriority().toString();
                     } else {
-                        samplePriority = (Priority.Routeine).toString();
+                        samplePriority = (Priority.NORMAL).toString();
                     }
                     MySpeciman ms = new MySpeciman();
                     ms.setSpecimanName(sampleTypeName);
@@ -2121,7 +2121,7 @@ public class LimsMiddlewareController {
                     if (tii.getItem().getPriority() != null) {
                         samplePriority = tii.getItem().getPriority().toString();
                     } else {
-                        samplePriority = (Priority.Routeine).toString();
+                        samplePriority = (Priority.NORMAL).toString();
                     }
                     MySpeciman ms = new MySpeciman();
                     ms.setSpecimanName(sampleTypeName);

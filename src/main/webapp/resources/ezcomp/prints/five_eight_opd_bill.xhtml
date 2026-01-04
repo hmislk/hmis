@@ -188,7 +188,15 @@
                             <tr>
                                 <!-- Display the item number across all items -->
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
-                                <td>#{item.item.name}</td>
+                                <td>
+                                    <h:outputLabel value="#{item.item.name}"/>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show the Priority short name in Bill Preview.',false)}" >
+                                        <h:outputLabel 
+                                            value="(#{item.priority.shortName})" 
+                                            class="mx-1" 
+                                            rendered="#{!item.priority.shortName.blank and item.item.allowedForBillingPriority}"/>
+                                    </h:panelGroup>
+                                </td>
                                 <td style="text-align: right">
                                     <h:outputLabel value="#{item.grossValue}">
                                         <f:convertNumber pattern="#,##0.00" />
