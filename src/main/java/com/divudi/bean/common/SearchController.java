@@ -1496,6 +1496,16 @@ public class SearchController implements Serializable {
         departments = null;
         paymentMethod = null;
         searchKeyword = null;
+
+        // Additional filters to prevent persistence across reports
+        category = null;
+        item = null;
+        speciality = null;
+        staff = null;
+        billType = null;
+        billTypeAtomic = null;
+        creditCompany = null;
+        withProfessionalFee = false;
     }
 
     public void resetAllFiltersExceptDateRangeInstitueDepartmentSite() {
@@ -1633,6 +1643,12 @@ public class SearchController implements Serializable {
         resetAllFiltersExceptDateRange();
         bundle = new ReportTemplateRowBundle();
         return "/reports/cashier_reports/cashier_detailed?faces-redirect=true";
+    }
+
+    public String navigateToDailyReturn() {
+        resetAllFiltersExceptDateRange();
+        bundle = new ReportTemplateRowBundle();
+        return "/reports/financialReports/daily_return?faces-redirect=true";
     }
 
     public String navigateToListAllDrawers() {
