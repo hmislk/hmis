@@ -52,7 +52,7 @@ public enum Priority {
 
     @Override
     public String toString() {
-        return description;
+        return displayName;
     }
 
 }
