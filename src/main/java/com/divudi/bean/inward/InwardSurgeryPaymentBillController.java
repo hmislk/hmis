@@ -516,12 +516,15 @@ public class InwardSurgeryPaymentBillController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Autocomplete Methods">
     public List<Staff> completeSurgeon(String query) {
         List<Staff> suggestions;
-        String sql;
-        if (query == null) {
+        if (query == null || query.trim().isEmpty()) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%' or (p.code) like '%" + query.toUpperCase() + "%') order by p.person.name";
-            suggestions = staffFacade.findByJpql(sql);
+            Map<String, Object> params = new HashMap<>();
+            String jpql = "SELECT p FROM Staff p WHERE p.retired = false "
+                    + "AND (UPPER(p.person.name) LIKE :query OR UPPER(p.code) LIKE :query) "
+                    + "ORDER BY p.person.name";
+            params.put("query", "%" + query.toUpperCase() + "%");
+            suggestions = staffFacade.findByJpql(jpql, params);
         }
         return suggestions;
     }
@@ -635,6 +638,7 @@ public class InwardSurgeryPaymentBillController implements Serializable {
 
     public void setCurrent(Bill current) {
         this.current = current;
+        this.billFees = null;  // Clear cache when current bill changes
     }
 
     public List<Bill> getItems() {
