@@ -16482,7 +16482,18 @@ public class SearchController implements Serializable {
             System.out.println("pharmacyCollection.getReportTemplateRows().size() = " + pharmacyCollection.getReportTemplateRows().size());
             bundle.getBundles().add(pharmacyCollection);
             System.out.println("Added pharmacy collection to main bundle. Total bundles: " + bundle.getBundles().size());
-            collectionForTheDay += bundleCashierCollectionTotal(pharmacyCollection);
+
+            // Clear cached collection totals to force recalculation with updated configuration
+            pharmacyCollection.setCashierCollectionTotalComputed(false);
+            pharmacyCollection.setCashierExcludedTotalComputed(false);
+            System.out.println("DEBUG: Cleared pharmacy collection cached totals");
+
+            // Use Grand Total instead of Collection Total to include ALL payment methods (including patient deposits)
+            double pharmacyGrandTotal = bundleCashierGrandTotal(pharmacyCollection);
+            collectionForTheDay += pharmacyGrandTotal;
+            System.out.println("DEBUG: Using Grand Total for pharmacy - pharmacyCollection.getCashierGrandTotal() = " + pharmacyGrandTotal);
+            System.out.println("DEBUG: After recalculation - pharmacyCollection.getCashierCollectionTotal() = " + pharmacyCollection.getCashierCollectionTotal());
+            System.out.println("DEBUG: After recalculation - pharmacyCollection.getCashierExcludedTotal() = " + pharmacyCollection.getCashierExcludedTotal());
 
             // Generate collecting centre collection and add to the main bundle
             ReportTemplateRowBundle ccCollection = generateCcCollection();
@@ -16533,11 +16544,9 @@ public class SearchController implements Serializable {
             // OPD Patient Deposit Payments - bills paid using deposits (deducted from collection for the day)
             ReportTemplateRowBundle opdPatientDepositPayments = generateOpdPatientDepositPayments();
             opdPatientDepositPayments.calculateTotalByPayments();
-            // Fix sign for display - should show positive values
+            // Fix sign for display - invert the sign to show utilization as positive
             double opdDepositTotal = opdPatientDepositPayments.getTotal();
-            if (opdDepositTotal < 0) {
-                opdPatientDepositPayments.setTotal(-opdDepositTotal);
-            }
+            opdPatientDepositPayments.setTotal(-opdDepositTotal);
             bundle.getBundles().add(opdPatientDepositPayments);
             collectionForTheDay -= Math.abs(getSafeTotal(opdPatientDepositPayments));
             System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization for OPD Bills = " + getSafeTotal(opdPatientDepositPayments));
@@ -16547,16 +16556,20 @@ public class SearchController implements Serializable {
             // Pharmacy Patient Deposit Payments - bills paid using deposits (deducted from collection for the day)
             ReportTemplateRowBundle pharmacyPatientDepositPayments = generatePharmacyPatientDepositPayments();
             pharmacyPatientDepositPayments.calculateTotalByPayments();
-            // Fix sign for display - should show positive values
+            // Fix sign for display - invert the sign to show utilization as positive
             double pharmacyDepositTotal = pharmacyPatientDepositPayments.getTotal();
-            if (pharmacyDepositTotal < 0) {
-                pharmacyPatientDepositPayments.setTotal(-pharmacyDepositTotal);
-            }
+            System.out.println("DEBUG: Pharmacy deposit total BEFORE sign inversion = " + pharmacyDepositTotal);
+            pharmacyPatientDepositPayments.setTotal(-pharmacyDepositTotal);
+            System.out.println("DEBUG: Pharmacy deposit total AFTER sign inversion = " + pharmacyPatientDepositPayments.getTotal());
             bundle.getBundles().add(pharmacyPatientDepositPayments);
-            collectionForTheDay -= Math.abs(getSafeTotal(pharmacyPatientDepositPayments));
+            double collectionBeforeDeduction = collectionForTheDay;
+            double deductionAmount = Math.abs(getSafeTotal(pharmacyPatientDepositPayments));
+            collectionForTheDay -= deductionAmount;
+            System.out.println("DEBUG: Collection BEFORE pharmacy deduction = " + collectionBeforeDeduction);
+            System.out.println("DEBUG: Pharmacy deduction amount = " + deductionAmount);
+            System.out.println("DEBUG: Collection AFTER pharmacy deduction = " + collectionForTheDay);
             System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization for Pharmacy Bills = " + getSafeTotal(pharmacyPatientDepositPayments));
             System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization for Pharmacy Bills deducted from collection for the day");
-            System.out.println("DEBUG generateDailyReturn: Collection for the day after Pharmacy patient deposit deduction = " + collectionForTheDay);
 
             // Final collection for the day
             ReportTemplateRowBundle collectionForTheDayBundle = new ReportTemplateRowBundle();
@@ -20873,18 +20886,17 @@ public class SearchController implements Serializable {
     }
 
     private void updateAllCashierSummaryTotalsWithConfiguration() {
-        // Configuration commented out - Collection Total now equals Grand Total
-        // Map<PaymentMethod, Boolean> configuration = buildCashierCollectionConfiguration();
-        //
-        // allCashierCollectionIncludedMethods = configuration.entrySet().stream()
-        //         .filter(Map.Entry::getValue)
-        //         .map(Map.Entry::getKey)
-        //         .collect(Collectors.toList());
-        //
-        // allCashierCollectionExcludedMethods = configuration.entrySet().stream()
-        //         .filter(e -> !e.getValue())
-        //         .map(Map.Entry::getKey)
-        //         .collect(Collectors.toList());
+        Map<PaymentMethod, Boolean> configuration = buildCashierCollectionConfiguration();
+
+        allCashierCollectionIncludedMethods = configuration.entrySet().stream()
+                .filter(Map.Entry::getValue)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        allCashierCollectionExcludedMethods = configuration.entrySet().stream()
+                .filter(e -> !e.getValue())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
 
         double totalGrand = 0.0;
         double totalCollection = 0.0;
@@ -20895,14 +20907,12 @@ public class SearchController implements Serializable {
                     continue;
                 }
                 double rowGrand = computeGrandTotal(row);
-                // double rowCollection = calculateCollectionTotal(row, allCashierCollectionIncludedMethods);
-                double rowCollection = rowGrand; // Collection Total = Grand Total
+                double rowCollection = calculateCollectionTotal(row, allCashierCollectionIncludedMethods);
 
-                // double rowExcluded = rowGrand - rowCollection;
-                double rowExcluded = 0.0; // No exclusions when Collection = Grand Total
+                double rowExcluded = rowGrand - rowCollection;
                 row.setCashierGrandTotal(rowGrand);
-                row.setCashierCollectionTotal(rowGrand);
-                row.setCashierExcludedTotal(0.0);
+                row.setCashierCollectionTotal(rowCollection);
+                row.setCashierExcludedTotal(rowExcluded);
 
                 totalGrand += rowGrand;
                 totalCollection += rowCollection;
@@ -20919,22 +20929,28 @@ public class SearchController implements Serializable {
             bundle.setCashierGrandTotal(totalGrand);
             bundle.setCashierCollectionTotal(totalCollection);
             bundle.setCashierExcludedTotal(totalExcluded);
-            // bundle.setCashierCollectionPaymentMethods(allCashierCollectionIncludedMethods);
-            // bundle.setCashierExcludedPaymentMethods(allCashierCollectionExcludedMethods);
+            bundle.setCashierCollectionPaymentMethods(allCashierCollectionIncludedMethods);
+            bundle.setCashierExcludedPaymentMethods(allCashierCollectionExcludedMethods);
         }
     }
 
     private Map<PaymentMethod, Boolean> buildCashierCollectionConfiguration() {
         Map<PaymentMethod, Boolean> configuration = new LinkedHashMap<>();
+        System.out.println("DEBUG buildCashierCollectionConfiguration: START");
         for (PaymentMethod paymentMethod : PaymentMethod.values()) {
             boolean defaultValue = defaultIncludePaymentMethodInCollection(paymentMethod);
             boolean configuredValue = defaultValue;
             if (configOptionApplicationController != null) {
                 configuredValue = configOptionApplicationController.getBooleanValueByKey(
                         buildCollectionConfigurationKey(paymentMethod), defaultValue);
+                if (configuredValue != defaultValue) {
+                    System.out.println("DEBUG buildCashierCollectionConfiguration: " + paymentMethod + " overridden from " + defaultValue + " to " + configuredValue + " by database config");
+                }
             }
             configuration.put(paymentMethod, configuredValue);
+            System.out.println("DEBUG buildCashierCollectionConfiguration: " + paymentMethod + " = " + configuredValue);
         }
+        System.out.println("DEBUG buildCashierCollectionConfiguration: COMPLETE");
         return configuration;
     }
 
@@ -20942,10 +20958,13 @@ public class SearchController implements Serializable {
         if (paymentMethod == null) {
             return true;
         }
-        if (paymentMethod == PaymentMethod.PatientDeposit || paymentMethod == PaymentMethod.None) {
+        if (paymentMethod == PaymentMethod.None) {
             return false;
         }
-        return !isDeprecatedPaymentMethod(paymentMethod);
+        // PatientDeposit should be included in collection totals, then deducted separately
+        boolean result = !isDeprecatedPaymentMethod(paymentMethod);
+        System.out.println("DEBUG defaultIncludePaymentMethodInCollection: " + paymentMethod + " = " + result);
+        return result;
     }
 
     private boolean isDeprecatedPaymentMethod(PaymentMethod paymentMethod) {
