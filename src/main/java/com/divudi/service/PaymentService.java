@@ -436,7 +436,7 @@ public class PaymentService {
         } else {
             pt.setRunningBalance(0.0 - p.getPaidValue());
         }
-        patientFacade.editAndCommit(pt);
+        patientFacade.editAndFlush(pt);
         PatientDeposit pd = patientDepositService.getDepositOfThePatient(pt, p.getDepartment());
         patientDepositService.updateBalance(p, pd);
 
