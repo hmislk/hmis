@@ -42,10 +42,15 @@
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="Deposit Refund "   />
-                <h:outputLabel value="&nbsp;**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
-                <h:outputLabel value="&nbsp;**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
-                <h:outputLabel value=" &nbsp;Receipt"   />
+                <div>
+                    <h:outputLabel value="Deposit Receive Receipt"/>
+                </div>
+                <div>
+                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" style="font-size: small"/>
+                </div>
+                <div>
+                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" style="font-size: small"/>
+                </div>
             </div>
 
             <div class="billline">
