@@ -221,6 +221,15 @@ public class InwardReportController implements Serializable {
 
     }
 
+    public List<SurgeryCountDoctorWiseDTO> getExportableBillList() {
+        if (billList == null) {
+            return new ArrayList<>();
+        }
+        return billList.stream()
+                .filter(dto -> !dto.isGrandTotal())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     private List<SurgeryCountDoctorWiseDTO> billList;
 
     public void processSurgeryCountDoctorWiseReport() {
