@@ -1,0 +1,153 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill/cc_bill"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+
+    <h:body>
+        <ui:composition template="/collecting_centre/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form  >
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div></div>
+                                <div>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="To Cancel"
+                                        action="#{billSearch.navigateToCancelCollectingCentreBill}" 
+                                        disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 
+                                        class="ui-button-danger m-1" 
+                                        icon="fa fa-times" >                           
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false" 
+                                        value="To Refund" 
+                                        rendered="false"
+                                        action="#{billSearch.navigateToRefundCollectingCentreBill}" 
+                                        disabled="#{billSearch.bill.cancelled or not billReturnController.checkCanReturnBill(billSearch.bill)}" 
+                                        class="ui-button-warning m-1" 
+                                        icon="fa fa-money-bill-wave"> 
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false" 
+                                        value="To Return" 
+                                        actionListener="#{billReturnController.clear()}"
+                                        action="#{billReturnController.navigateToReturnCCBill()}" 
+                                        disabled="#{billSearch.bill.cancelled or not billReturnController.checkCanReturnBill(billSearch.bill)}" 
+                                        class="ui-button-warning m-1" 
+                                        icon="fa fa-money-bill-wave">      
+                                        <f:setPropertyActionListener 
+                                            value="#{billSearch.bill}" 
+                                            target="#{billReturnController.originalBillToReturn}" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="To Sample Management" 
+                                        icon="fas fa-flask"
+                                        class="ui-button-info mx-1"
+                                        action="#{patientInvestigationController.navigateToSampleManagementFromOPDBatchBillView(billSearch.bill)}"
+                                        ajax="false">
+                                    </p:commandButton> 
+                                </div>
+                            </div>
+                        </f:facet>
+                        <div class="row ">
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Bill for Collecting Center"  class="mt-2"/>
+                                        <p:commandButton 
+                                            value="Print" 
+                                            process="@this" 
+                                            update="@all" 
+                                            type="button"  
+                                            class="ui-button-info m-1"
+                                            icon="fa fa-print"
+                                            style="float: right;"
+                                            ajax="false">
+                                            <p:printer target="centerBillPriview" ></p:printer>
+                                        </p:commandButton>
+                                    </f:facet>
+
+                                    <h:panelGroup id="centerBillPriview">
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Collecting Center(CC) size is POS paper')}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:posCCBill_CC bill="#{pp}" duplicate="true"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill For Collecting Center(CC) size is FiveFive paper')}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:fiveFiveCCBill_CC bill="#{pp}" duplicate="true"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                        
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill For Collecting Center(CC) size is FiveFiveCustom1 paper')}" >
+                                            <bi:fiveFiveCCBill_CC_Custom1 bill="#{billSearch.bill}" duplicate="true"/>                        
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill For Collecting Center(CC) size is FiveFiveCustom3 paper')}" >
+                                            <bi:cc_five_five_custom_3 bill="#{billSearch.bill}" duplicate="true"/>                        
+                                        </h:panelGroup>
+                                        
+                                    </h:panelGroup>
+
+                                </p:panel>
+                            </div>
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Bill for Patinet " class="mt-2"/>
+                                        <p:commandButton 
+                                            value="Print Patient" 
+                                            class="ui-button-info m-1"
+                                            icon="fa fa-print"
+                                            process="@this" 
+                                            update="@all" 
+                                            style="float: right;"
+                                            type="button"  
+                                            ajax="false">
+                                            <p:printer target="parinetBillPriview" ></p:printer>
+                                        </p:commandButton>
+                                    </f:facet>
+                                    <h:panelGroup id="parinetBillPriview">
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Patient by CC is POS paper')}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:posCCBill_Patient bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Patient by CC is FiveFive paper')}" >
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:fiveFiveCCBill_Patient bill="#{pp}" duplicate="false"/>                        
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Patient by CC is FiveFiveCustom1 paper')}" >
+                                            <bi:fiveFiveCCBill_Patient_Custom1 bill="#{billSearch.bill}" duplicate="true"/>                        
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill For Patient size is FiveFiveCustom3 paper')}" >
+                                            <bi:cc_five_five_custom_3_patient bill="#{billSearch.bill}" duplicate="true"/>                        
+                                        </h:panelGroup>
+
+                                    </h:panelGroup>
+
+                                </p:panel>
+                            </div>                            
+                        </div>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
+
+

@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import javax.inject.Inject;
 
 /**
  *
@@ -17,6 +18,9 @@ public class NavigationController implements Serializable {
      */
     private int adminStaffMenuIndex;
 
+    @Inject
+    InstitutionController institutionController;
+
     public NavigationController() {
     }
 
@@ -26,6 +30,16 @@ public class NavigationController implements Serializable {
 
     public String navigateToManageDepartment() {
         return "/admin/institutions/department_management?faces-redirect=true";
+    }
+
+    public String navigateToManageDepartmentAll() {
+        return "/admin/institutions/department_management_all?faces-redirect=true";
+    }
+
+    public String navigateToManageSite() {
+        institutionController.fillAllSites();
+        institutionController.prepareAddSite();
+        return "/admin/institutions/site_management?faces-redirect=true";
     }
 
     public String navigateToManageInstitution() {
@@ -52,6 +66,10 @@ public class NavigationController implements Serializable {
         return "/admin/institutions/area?faces-redirect=true";
     }
 
+    public String navigateToHome() {
+        return "/home?faces-redirect=true";
+    }
+
     public String navigateToStaffSignature() {
         return "/admin/institutions/admin_staff_signature?faces-redirect=true";
     }
@@ -72,8 +90,6 @@ public class NavigationController implements Serializable {
         return "/admin/staff/admin_staff_signature.xhtml?faces-redirect=true";
     }
 
-   
-
     public String navigateToAdminDoctorConsultant() {
         return "/admin/staff/admin_doctor_consultant?faces-redirect=true";
     }
@@ -81,8 +97,6 @@ public class NavigationController implements Serializable {
     public String navigateToDoctorSpecilaity() {
         return "/admin/staff/admin_speciality?faces-redirect=true";
     }
-
-    
 
     public String navigateToAdminUserStaff() {
         return "/admin/staff/admin_user_staff?faces-redirect=true";
@@ -103,8 +117,6 @@ public class NavigationController implements Serializable {
     public String navigateToAdminStaffSignature() {
         return "/admin/staff/admin_staff_signature?faces-redirect=true";
     }
-
-    
 
     public String navigateToMembershipPaymentMethodAllowed() {
         return "/admin/pricing/membership_scheme_payment_method_allowed?faces-redirect=true";
@@ -130,7 +142,6 @@ public class NavigationController implements Serializable {
         return "/admin/pricing/membership_scheme_discount_channelling_by_department?faces-redirect=true";
     }
 
-
     public String navigateToPaymentSchemeDiscountChannel() {
         return "/admin/pricing/payment_scheme_discount_channel?faces-redirect=true";
     }
@@ -141,6 +152,10 @@ public class NavigationController implements Serializable {
 
     public String navigateToPaymentSchemeDiscountOpdByDepartment() {
         return "/admin/pricing/payment_scheme_discount_opd_by_department?faces-redirect=true";
+    }
+
+    public String navigateToPaymentSchemeDiscountOpdBySite() {
+        return "/admin/pricing/payment_scheme_discount_opd_by_site?faces-redirect=true";
     }
 
     public String navigateToPaymentSchemeDiscountOpdByItem() {

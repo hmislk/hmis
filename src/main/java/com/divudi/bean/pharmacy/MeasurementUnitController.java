@@ -8,15 +8,16 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.MeasurementUnit;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.facade.MeasurementUnitFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.facade.MeasurementUnitFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -62,17 +63,17 @@ public class MeasurementUnitController implements Serializable {
 
     public String navigateToAddMeasurementUnit() {
         current = new MeasurementUnit();
-        return "/pharmacy/admin/unit";
+        return "/pharmacy/admin/unit?faces-redirect=true";
     }
-    
+
     public String navigateToManageMeasurementUnit() {
         current = new MeasurementUnit();
-        return "/pharmacy/admin/manage_unit";
+        return "/pharmacy/admin/manage_unit?faces-redirect=true";
     }
 
     public String navigateToListAllMeasurementUnit() {
 
-        return "/pharmacy/admin/units";
+        return "/pharmacy/admin/units?faces-redirect=true";
     }
 
     public String navigateToEditMeasurementUnit() {
@@ -80,7 +81,7 @@ public class MeasurementUnitController implements Serializable {
             JsfUtil.addErrorMessage("Nothing");
             return "";
         }
-        return "/pharmacy/admin/unit";
+        return "/pharmacy/admin/unit?faces-redirect=true";
     }
 
     public void fillAllUnits() {
@@ -101,24 +102,32 @@ public class MeasurementUnitController implements Serializable {
         if (allUnits == null) {
             return;
         }
+        Set<MeasurementUnit> doseUnitSet = new HashSet<>();
+        Set<MeasurementUnit> durationUnitSet = new HashSet<>();
         for (MeasurementUnit mu : allUnits) {
             if (mu.isIssueUnit()) {
                 issueUnits.add(mu);
-                doseUnits.add(mu);
-                durationUnits.add(mu);
-            } else if (mu.isPackUnit()) {
-                doseUnits.add(mu);
+                doseUnitSet.add(mu);
+                durationUnitSet.add(mu);
+            }
+            if (mu.isPackUnit()) {
                 packUnits.add(mu);
-                durationUnits.add(mu);
-            } else if (mu.isStrengthUnit()) {
+                doseUnitSet.add(mu);
+                durationUnitSet.add(mu);
+            }
+            if (mu.isStrengthUnit()) {
                 strengthUnits.add(mu);
-                doseUnits.add(mu);
-            } else if (mu.isDurationUnit()) {
-                durationUnits.add(mu);
-            } else if (mu.isFrequencyUnit()) {
+                doseUnitSet.add(mu);
+            }
+            if (mu.isDurationUnit()) {
+                durationUnitSet.add(mu);
+            }
+            if (mu.isFrequencyUnit()) {
                 frequencyUnits.add(mu);
             }
         }
+        doseUnits.addAll(doseUnitSet);
+        durationUnits.addAll(durationUnitSet);
     }
 
     public MeasurementUnit findAndSaveMeasurementUnitByName(String name) {
@@ -134,7 +143,7 @@ public class MeasurementUnitController implements Serializable {
         if (mu == null) {
             mu = new MeasurementUnit();
             mu.setName(name);
-            mu.setCode("measurement_unit_" + CommonController.nameToCode(name));
+            mu.setCode("measurement_unit_" + CommonFunctions.nameToCode(name));
             getFacade().create(mu);
         }
         return mu;
@@ -267,7 +276,6 @@ public class MeasurementUnitController implements Serializable {
         }
         if (medicine instanceof Amp) {
 
-            List<MeasurementUnit> us = new ArrayList<>();
             Set<MeasurementUnit> uniqueUnits = new HashSet<>();
             Amp amp = (Amp) medicine;
             if (amp.getIssueUnit() != null) {
@@ -284,11 +292,9 @@ public class MeasurementUnitController implements Serializable {
                     uniqueUnits.add(amp.getVmp().getStrengthUnit());
                 }
             }
-            us.addAll(uniqueUnits);
-            return us;
+            return new ArrayList<>(uniqueUnits);
         } else if (medicine instanceof Vmp) {
 
-            List<MeasurementUnit> us = new ArrayList<>();
             Set<MeasurementUnit> uniqueUnits = new HashSet<>();
             Vmp vmp = (Vmp) medicine;
             if (vmp.getIssueUnit() != null) {
@@ -297,8 +303,7 @@ public class MeasurementUnitController implements Serializable {
             if (vmp.getStrengthUnit() != null) {
                 uniqueUnits.add(vmp.getStrengthUnit());
             }
-            us.addAll(uniqueUnits);
-            return us;
+            return new ArrayList<>(uniqueUnits);
         } else {
             return getDoseUnits();
         }
@@ -340,7 +345,7 @@ public class MeasurementUnitController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             MeasurementUnitController controller = (MeasurementUnitController) facesContext.getApplication().getELResolver().
@@ -349,15 +354,13 @@ public class MeasurementUnitController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
+            long key;
+            key = Long.parseLong(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

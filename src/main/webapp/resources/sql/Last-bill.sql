@@ -1,2 +1,4 @@
-select id, `NETTOTAL`, `SALEVALUE`, `BILLTYPE`, `DTYPE`, `DEPARTMENT_ID`, `CREATEDAT`,`BILLDATE` from bill
-order by id desc limit 1;
+select `ID`, `CREATEDAT`, `DEPTID`, `DTYPE`, `BILLTYPEATOMIC`,  `NETTOTAL`,  `DEPARTMENT_ID`, `CREATEDAT`,`BILLDATE` , `REFERENCEBILL_ID`
+from bill
+order by id desc 
+limit 10;

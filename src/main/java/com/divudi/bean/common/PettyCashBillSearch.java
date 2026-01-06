@@ -4,32 +4,35 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.SearchKeyword;
+import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.ejb.EjbApplication;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BilledBillFacade;
-import com.divudi.facade.CancelledBillFacade;
-import com.divudi.facade.RefundBillFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillComponent;
+import com.divudi.core.entity.BillEntry;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BilledBillFacade;
+import com.divudi.core.facade.CancelledBillFacade;
+import com.divudi.core.facade.RefundBillFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -43,6 +46,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
 import org.primefaces.model.LazyDataModel;
 
 /**
@@ -67,7 +71,6 @@ public class PettyCashBillSearch implements Serializable {
     private List<Bill> bills;
     private List<Bill> fillteredBill;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -84,6 +87,14 @@ public class PettyCashBillSearch implements Serializable {
     SessionController sessionController;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    PettyCashBillController pettyCashBillController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    BillController billController;
+    @Inject
+    DrawerController drawerController;
     @EJB
     EjbApplication ejbApplication;
     private List<BillItem> tempbillItems;
@@ -95,22 +106,24 @@ public class PettyCashBillSearch implements Serializable {
     WebUser user;
     private SearchKeyword searchKeyword;
 
-    public WebUser getUser() {
-        return user;
+
+    public String navigateToPettyCashCancel() {
+        return "petty_cash_bill_cancel";
+
     }
 
-    public void setUser(WebUser user) {
-        // recreateModel();
-        this.user = user;
-        recreateModel();
-    }
 
-    public EjbApplication getEjbApplication() {
-        return ejbApplication;
-    }
 
-    public void setEjbApplication(EjbApplication ejbApplication) {
-        this.ejbApplication = ejbApplication;
+    public void sendToApprovePettyCashBillCancellation() {
+        Bill b = new Bill();
+        b.setCreatedAt(new Date());
+        b.setCreater(webUserController.getCurrent());
+        b.setInstitution(webUserController.getInstitution());
+        b.setDepartment(webUserController.getDepartment());
+        b.setBillType(BillType.PettyCashCancelApprove);
+        b.setReferenceBill(bill);
+        billController.save(b);
+        JsfUtil.addSuccessMessage("Send To Approve");
     }
 
     public List<Bill> getUserBillsOwn() {
@@ -242,7 +255,7 @@ public class PettyCashBillSearch implements Serializable {
         CancelledBill cb = new CancelledBill();
         if (getBill() != null) {
             cb.copy(getBill());
-            cb.invertValue(getBill());
+            cb.invertAndAssignValuesFromOtherBill(getBill());
 
             cb.setBilledBill(getBill());
 
@@ -257,9 +270,12 @@ public class PettyCashBillSearch implements Serializable {
         cb.setCreater(getSessionController().getLoggedUser());
         cb.setDepartment(getSessionController().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
+        cb.setBillTypeAtomic(BillTypeAtomic.PETTY_CASH_BILL_CANCELLATION);
         cb.setPaymentMethod(paymentMethod);
         cb.setComments(comment);
-
+        cb.setStaff(getBill().getStaff());
+        cb.setPerson(getBill().getPerson());
+        cb.setToDepartment(getBill().getToDepartment());
         return cb;
     }
 
@@ -301,14 +317,32 @@ public class PettyCashBillSearch implements Serializable {
         this.cashTransactionBean = cashTransactionBean;
     }
 
+    public static Date getMidnight() {
+        Calendar calendar = Calendar.getInstance();
+        // Reset the time to midnight
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+
     public void cancelBill() {
+        Date current = new Date();
+        Date midNight = getMidnight();
+        if (configOptionApplicationController.getBooleanValueByKey("Enable PettyCash bill cancellation restriction after midnight")) {
+            if (current.before(midNight)) {
+                JsfUtil.addErrorMessage("Bill cancellation is not allowed after midnight.");
+                return;
+            }
+        }
+
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (errorCheck()) {
                 return;
             }
 
             CancelledBill cb = createCancelBill();
-
             //Copy & paste
             //if (webUserController.hasPrivilege("LabBillCancelling")) {
             if (true) {
@@ -321,6 +355,8 @@ public class PettyCashBillSearch implements Serializable {
 
                 WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
                 getSessionController().setLoggedUser(wb);
+                Payment p = pettyCashBillController.createPaymentForPettyCashBillCancellation(cb, paymentMethod);
+                drawerController.updateDrawerForIns(p);
                 printPreview = true;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);
@@ -501,7 +537,6 @@ public class PettyCashBillSearch implements Serializable {
                 billItems = new ArrayList<BillItem>();
             }
         }
-
         return billItems;
     }
 
@@ -526,7 +561,6 @@ public class PettyCashBillSearch implements Serializable {
                 }
             }
         }
-
         return billFees;
     }
 
@@ -630,7 +664,7 @@ public class PettyCashBillSearch implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -643,7 +677,7 @@ public class PettyCashBillSearch implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -652,14 +686,6 @@ public class PettyCashBillSearch implements Serializable {
         resetLists();
         this.fromDate = fromDate;
 
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public String getComment() {
@@ -716,4 +742,24 @@ public class PettyCashBillSearch implements Serializable {
     public List<Bill> getBills() {
         return bills;
     }
+
+
+public WebUser getUser() {
+        return user;
+    }
+
+    public void setUser(WebUser user) {
+        // recreateModel();
+        this.user = user;
+        recreateModel();
+    }
+
+    public EjbApplication getEjbApplication() {
+        return ejbApplication;
+    }
+
+    public void setEjbApplication(EjbApplication ejbApplication) {
+        this.ejbApplication = ejbApplication;
+    }
+
 }

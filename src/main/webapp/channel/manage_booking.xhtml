@@ -147,7 +147,7 @@
                                     <p:separator ></p:separator>
 
                                     <p:outputLabel value="Bill No"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.bill.insId}"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.bill.deptId}"/>
                                     <p:outputLabel value="Payment"/>
                                     <p:outputLabel value="#{bookingController.selectedBillSession.bill.paymentMethod}"/>
                                     <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
@@ -259,7 +259,7 @@
                             <p:panel header="Settling" class="mx-4" style="margin-bottom: 40%" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                 <h:panelGrid columns="2">
                                     <p:outputLabel value="Bill ID"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.insId}"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.deptId}"/>
                                     <p:outputLabel value="Payment Method"/>
                                     <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.paymentMethod}"/>
                                     <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>
@@ -276,129 +276,129 @@
                                 </h:panelGrid>                            
                             </p:panel>
 
-                            <p:panel header="Rescheduled From" class="w-100 mx-1" rendered="#{bookingController.selectedBillSession.referenceBillSession ne null}">
+                            <p:panel header="Rescheduled From" class="w-100 mx-1" rendered="#{bookingController.selectedBillSession.rescheduledFromBillSession ne null}">
                                 <h:panelGrid columns="2" styleClass="w-100" columnClasses="label,value">
                                     <p:outputLabel value="Consultant" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.sessionInstance.staff.name}"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledFromBillSession.sessionInstance.staff.name}"/>
 
                                     <p:outputLabel value="Session" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.sessionInstance.originatingSession.name}"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledFromBillSession.sessionInstance.originatingSession.name}"/>
 
                                     <p:outputLabel value="Appointment No" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.serialNo}"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledFromBillSession.serialNo}"/>
 
                                     <p:outputLabel value="Start At" style="font-weight: bold"/>
-                                    <h:outputText value="#{bookingController.selectedBillSession.referenceBillSession.sessionInstance.originatingSession.startingTime}">
+                                    <h:outputText value="#{bookingController.selectedBillSession.rescheduledFromBillSession.sessionInstance.originatingSession.startingTime}">
                                         <f:convertDateTime pattern="HH:mm a"/>
                                     </h:outputText>
 
                                     <p:outputLabel value="Booked At" style="font-weight: bold"/>
-                                    <h:outputText value="#{bookingController.selectedBillSession.referenceBillSession.bill.createdAt}">
+                                    <h:outputText value="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.createdAt}">
                                         <f:convertDateTime pattern="MM/dd/yyyy HH:mm a"/>
                                     </h:outputText>
 
 
 
                                     <p:outputLabel value="Payment Method" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod}"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.paymentMethod}"/>
 
-                                    <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Agent'}" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.fromInstitution.name}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                    <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.paymentMethod eq 'Agent'}" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.fromInstitution.name}" rendered="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.paymentMethod eq 'Agent'}"/>
 
                                     <p:outputLabel value="Agent Ref No" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.billItem.agentRefNo}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledFromBillSession.billItem.agentRefNo}" rendered="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.paymentMethod eq 'Agent'}"/>
 
-                                    <p:outputLabel value="Staff Name" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Staff'}" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingController.selectedBillSession.referenceBillSession.referenceBillSession.bill.toStaff.code})" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Staff'}"/>
+                                    <p:outputLabel value="Staff Name" rendered="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.paymentMethod eq 'Staff'}" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.toStaff.code})" rendered="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.paymentMethod eq 'Staff'}"/>
 
                                     <p:outputLabel value="User" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
 
 
 
-                                    <p:outputLabel value="Settled At" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paidBill ne null}" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.paidBill.createdAt}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paidBill ne null}">
+                                    <p:outputLabel value="Settled At" rendered="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.paidBill ne null}" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.paidBill.createdAt}" rendered="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.paidBill ne null}">
                                         <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" />
                                     </p:outputLabel>
 
-                                    <p:separator rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
-                                    <p:separator rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+                                    <p:separator rendered="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.cancelled == true or bookingController.selectedBillSession.rescheduledFromBillSession.bill.refunded == true}"/>
+                                    <p:separator rendered="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.cancelled == true or bookingController.selectedBillSession.rescheduledFromBillSession.bill.refunded == true}"/>
 
-                                    <p:outputLabel style="color: red" value="Payment" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
-                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.referenceBillSession.bill.billedBill.paymentMethod}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+                                    <p:outputLabel style="color: red" value="Payment" rendered="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.cancelled == true or bookingController.selectedBillSession.rescheduledFromBillSession.bill.refunded == true}"/>
+                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.billedBill.paymentMethod}" rendered="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.cancelled == true or bookingController.selectedBillSession.rescheduledFromBillSession.bill.refunded == true}"/>
 
                                     <p:outputLabel style="color: red" value="Cancel/Refund User" rendered="#{bookingController.selectedBillSession.bill.cancelled == true or bookingController.selectedBillSession.bill.refunded == true}"/>
-                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.referenceBillSession.bill.billedBill.creater.webUserPerson.nameWithTitle}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.billedBill.creater.webUserPerson.nameWithTitle}" rendered="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.cancelled == true or bookingController.selectedBillSession.rescheduledFromBillSession.bill.refunded == true}"/>
 
-                                    <p:outputLabel style="color: red" value="Cancel/Refund At" rendered="#{bookingController.selectedBillSession.referenceBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
-                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.referenceBillSession.bill.billedBill.createdAt}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}">
+                                    <p:outputLabel style="color: red" value="Cancel/Refund At" rendered="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.cancelled == true or bookingController.selectedBillSession.rescheduledFromBillSession.bill.refunded == true}"/>
+                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.billedBill.createdAt}" rendered="#{bookingController.selectedBillSession.rescheduledFromBillSession.bill.cancelled == true or bookingController.selectedBillSession.rescheduledFromBillSession.bill.refunded == true}">
                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a" />
                                     </p:outputLabel>
                                 </h:panelGrid>
 
                             </p:panel>
 
-                            <p:panel header="Rescheduled To" class="w-100 mx-1" rendered="#{bookingController.selectedBillSession.recheduledSession}">
+                            <p:panel header="Rescheduled To" class="w-100 mx-1" rendered="#{bookingController.selectedBillSession.rescheduledToBillSession ne null}">
                                 <h:panelGrid columns="2" styleClass="w-100" columnClasses="label,value">
                                     <p:outputLabel value="Consultant" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.sessionInstance.staff.name}"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledToBillSession.sessionInstance.staff.name}"/>
 
                                     <p:outputLabel value="Session" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.sessionInstance.originatingSession.name}"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledToBillSession.sessionInstance.originatingSession.name}"/>
 
                                     <p:outputLabel value="Appointment No" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.serialNo}"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledToBillSession.serialNo}"/>
 
                                     <p:outputLabel value="Start At" style="font-weight: bold"/>
-                                    <h:outputText value="#{bookingController.selectedBillSession.referenceBillSession.sessionInstance.originatingSession.startingTime}">
+                                    <h:outputText value="#{bookingController.selectedBillSession.rescheduledToBillSession.sessionInstance.originatingSession.startingTime}">
                                         <f:convertDateTime pattern="HH:mm a"/>
                                     </h:outputText>
 
                                     <p:outputLabel value="Session Date" style="font-weight: bold"/>
-                                    <h:outputText value="#{bookingController.selectedBillSession.referenceBillSession.sessionInstance.sessionDate}"  >
+                                    <h:outputText value="#{bookingController.selectedBillSession.rescheduledToBillSession.sessionInstance.sessionDate}"  >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputText>
 
                                     <p:outputLabel value="Booked At" style="font-weight: bold"/>
-                                    <h:outputText value="#{bookingController.selectedBillSession.referenceBillSession.bill.createdAt}">
+                                    <h:outputText value="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.createdAt}">
                                         <f:convertDateTime pattern="MM/dd/yyyy HH:mm a"/>
                                     </h:outputText>
 
 
 
                                     <p:outputLabel value="Payment Method" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod}"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.paymentMethod}"/>
 
-                                    <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Agent'}" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.fromInstitution.name}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                    <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.paymentMethod eq 'Agent'}" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.fromInstitution.name}" rendered="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.paymentMethod eq 'Agent'}"/>
 
                                     <p:outputLabel value="Agent Ref No" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.billItem.agentRefNo}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Agent'}"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledToBillSession.billItem.agentRefNo}" rendered="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.paymentMethod eq 'Agent'}"/>
 
-                                    <p:outputLabel value="Staff Name" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Staff'}" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingController.selectedBillSession.referenceBillSession.referenceBillSession.bill.toStaff.code})" rendered="#{bookingControllerViewScope.selectedBillSession.referenceBillSession.bill.paymentMethod eq 'Staff'}"/>
+                                    <p:outputLabel value="Staff Name" rendered="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.paymentMethod eq 'Staff'}" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingController.selectedBillSession.rescheduledToBillSession.bill.toStaff.code})" rendered="#{bookingControllerViewScope.selectedBillSession.rescheduledToBillSession.bill.paymentMethod eq 'Staff'}"/>
 
                                     <p:outputLabel value="User" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
 
 
 
-                                    <p:outputLabel value="Settled At" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paidBill ne null}" style="font-weight: bold"/>
-                                    <p:outputLabel value="#{bookingController.selectedBillSession.referenceBillSession.bill.paidBill.createdAt}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.paidBill ne null}">
+                                    <p:outputLabel value="Settled At" rendered="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.paidBill ne null}" style="font-weight: bold"/>
+                                    <p:outputLabel value="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.paidBill.createdAt}" rendered="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.paidBill ne null}">
                                         <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" />
                                     </p:outputLabel>
 
-                                    <p:separator rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
-                                    <p:separator rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+                                    <p:separator rendered="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.cancelled == true or bookingController.selectedBillSession.rescheduledToBillSession.bill.refunded == true}"/>
+                                    <p:separator rendered="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.cancelled == true or bookingController.selectedBillSession.rescheduledToBillSession.bill.refunded == true}"/>
 
-                                    <p:outputLabel style="color: red" value="Payment" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
-                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.referenceBillSession.bill.billedBill.paymentMethod}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+                                    <p:outputLabel style="color: red" value="Payment" rendered="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.cancelled == true or bookingController.selectedBillSession.rescheduledToBillSession.bill.refunded == true}"/>
+                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.billedBill.paymentMethod}" rendered="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.cancelled == true or bookingController.selectedBillSession.rescheduledToBillSession.bill.refunded == true}"/>
 
                                     <p:outputLabel style="color: red" value="Cancel/Refund User" rendered="#{bookingController.selectedBillSession.bill.cancelled == true or bookingController.selectedBillSession.bill.refunded == true}"/>
-                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.referenceBillSession.bill.billedBill.creater.webUserPerson.nameWithTitle}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
+                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.billedBill.creater.webUserPerson.nameWithTitle}" rendered="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.cancelled == true or bookingController.selectedBillSession.rescheduledToBillSession.bill.refunded == true}"/>
 
-                                    <p:outputLabel style="color: red" value="Cancel/Refund At" rendered="#{bookingController.selectedBillSession.referenceBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}"/>
-                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.referenceBillSession.bill.billedBill.createdAt}" rendered="#{bookingController.selectedBillSession.referenceBillSession.bill.cancelled == true or bookingController.selectedBillSession.referenceBillSession.bill.refunded == true}">
+                                    <p:outputLabel style="color: red" value="Cancel/Refund At" rendered="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.cancelled == true or bookingController.selectedBillSession.rescheduledToBillSession.bill.refunded == true}"/>
+                                    <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.billedBill.createdAt}" rendered="#{bookingController.selectedBillSession.rescheduledToBillSession.bill.cancelled == true or bookingController.selectedBillSession.rescheduledToBillSession.bill.refunded == true}">
                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a" />
                                     </p:outputLabel>
                                 </h:panelGrid>
@@ -450,13 +450,23 @@
 
                                                     <h:panelGroup id="gpBillPreviewad1">
                                                         <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
-                                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
+
+                                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Duplicate Bill is PosPaper',true)}">
                                                                 <ez:bmsChannelBill  bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
                                                             </h:panelGroup>
-                                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
+                                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Duplicate Bill is FiveFivePaper',true)}">
                                                                 <ez:bms5x5ChannelBill bill="#{channelBillController.billSession.billItem.bill}" duplicate="true"/>
-                            <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingController.printingBill}"/>  -->
                                                             </h:panelGroup>
+                                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Duplicate Bill is FiveFIvePaperCustom2',true)}">
+                                                                <ez:fivefivePapaerCustom2 bill="#{channelBillController.billSession.billItem.bill}" duplicate="true"/>
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Duplicate Bill is FiveFIvePaperCustom3',true)}">
+                                                                <ez:fivefivePapaerCustom3 bill="#{channelBillController.billSession.billItem.bill}" duplicate="true"/>
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Duplicate Bill is FiveFivePrintedPaper',true)}">
+                                                                <ez:bms5x5WIthoutHeaderChannelBill bill="#{channelBillController.billSession.billItem.bill}" duplicate="true"/>
+                                                            </h:panelGroup>
+
                                                         </ui:repeat>
                                                     </h:panelGroup>
                                                 </div>
@@ -503,13 +513,23 @@
 
                                                     <h:panelGroup id="gpBillPreviewad2">
                                                         <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
-                                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
+
+                                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Reprint Original Bill is PosPaper',true)}">
                                                                 <ez:bmsChannelBill  bill="#{channelBillController.billSession.billItem.bill}" />
                                                             </h:panelGroup>
-                                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
+                                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Reprint Original Bill is FiveFivePaper',true)}">
                                                                 <ez:bms5x5ChannelBill bill="#{channelBillController.billSession.billItem.bill}" />
-                            <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingController.printingBill}"/>  -->
                                                             </h:panelGroup>
+                                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Reprint Original Bill is FiveFIvePaperCustom2',true)}">
+                                                                <ez:fivefivePapaerCustom2 bill="#{channelBillController.billSession.billItem.bill}" />
+                                                            </h:panelGroup>
+                                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Reprint Original Bill is FiveFIvePaperCustom3',true)}">
+                                                                <ez:fivefivePapaerCustom3 bill="#{channelBillController.billSession.billItem.bill}" />
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Reprint Original Bill is FiveFivePrintedPaper',true)}">
+                                                                <ez:bms5x5WIthoutHeaderChannelBill bill="#{channelBillController.billSession.billItem.bill}" />
+                                                            </h:panelGroup>
+
                                                         </ui:repeat>
                                                     </h:panelGroup>
                                                 </div>
@@ -553,13 +573,23 @@
 
                                             <h:panelGroup id="gpBillPreview">
                                                 <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
-                                                    <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
+
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Reprint Original Bill is PosPaper',true)}">
                                                         <ez:bmsChannelBill  bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
                                                     </h:panelGroup>
-                                                    <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Reprint Original Bill is FiveFivePaper',true)}">
                                                         <ez:bms5x5ChannelBill bill="#{channelBillController.billSession.billItem.bill}" duplicate="true"/>
-                    <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingController.printingBill}"/>  -->
                                                     </h:panelGroup>
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Reprint Original Bill is FiveFIvePaperCustom2',true)}">
+                                                        <ez:fivefivePapaerCustom2 bill="#{channelBillController.billSession.billItem.bill}" duplicate="true"/>
+                                                    </h:panelGroup>
+                                                      <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Reprint Original Bill is FiveFIvePaperCustom3',true)}">
+                                                          <ez:fivefivePapaerCustom3 bill="#{channelBillController.billSession.billItem.bill}" duplicate="true"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Reprint Original Bill is FiveFivePrintedPaper',true)}">
+                                                        <ez:bms5x5WIthoutHeaderChannelBill bill="#{channelBillController.billSession.billItem.bill}" duplicate="true"/>
+                                                    </h:panelGroup>
+
                                                 </ui:repeat>
                                             </h:panelGroup>
                                         </div>
@@ -627,13 +657,23 @@
                             <div class="d-flex justify-content-center mt-4">
                                 <h:panelGroup id="gpCancelBillPreview">
                                     <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
-                                        <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Cancel Bill is PosPaper',true)}">
                                             <ez:bmsChannelBill  bill="#{channelBillController.billSession.billItem.bill}"/>
                                         </h:panelGroup>
-                                        <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Cancel Bill is FiveFivePaper',true)}">
                                             <ez:bms5x5ChannelBill bill="#{channelBillController.billSession.billItem.bill}"/>
-        <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingController.printingBill}"/>  -->
                                         </h:panelGroup>
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Cancel Bill is FiveFIvePaperCustom2',true)}">
+                                            <ez:fivefivePapaerCustom2  bill="#{channelBillController.billSession.billItem.bill}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Cancel Bill is FiveFIvePaperCustom3',true)}">
+                                            <ez:fivefivePapaerCustom3  bill="#{channelBillController.billSession.billItem.bill}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Cancel Bill is FiveFivePrintedPaper',true)}">
+                                            <ez:bms5x5WIthoutHeaderChannelBill bill="#{channelBillController.billSession.billItem.bill}"/>
+                                        </h:panelGroup>
+
                                     </ui:repeat>
                                 </h:panelGroup>
                             </div>
@@ -752,13 +792,23 @@
                             <div class="d-flex justify-content-center mt-4">
                                 <h:panelGroup id="gpRefundBillPreview">
                                     <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
-                                        <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Refund Bill is PosPaper',true)}">
                                             <ez:bmsChannelBill  bill="#{channelBillController.billSession.billItem.bill}" ref="true"/>
                                         </h:panelGroup>
-                                        <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Refund Bill is FiveFivePaper',true)}">
                                             <ez:bms5x5ChannelBill bill="#{channelBillController.billSession.billItem.bill}" ref="true"/>
-        <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingController.printingBill}"/>  -->
                                         </h:panelGroup>
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Refund Bill is FiveFIvePaperCustom2',true)}">
+                                            <ez:fivefivePapaerCustom2  bill="#{channelBillController.billSession.billItem.bill}" ref="true"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Refund Bill is FiveFIvePaperCustom3',true)}">
+                                            <ez:fivefivePapaerCustom3  bill="#{channelBillController.billSession.billItem.bill}" ref="true"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Refund Bill is FiveFivePrintedPaper',true)}">
+                                            <ez:bms5x5WIthoutHeaderChannelBill bill="#{channelBillController.billSession.billItem.bill}" ref="true"/>
+                                        </h:panelGroup>
+
                                     </ui:repeat>
                                 </h:panelGroup>
                             </div>
@@ -984,13 +1034,23 @@
                                     <div class="d-flex justify-content-center mt-4">
                                         <h:panelGroup id="gpSettleBillPreview">
                                             <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
-                                                <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
+
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Settling Bill is PosPaper',true)}">
                                                     <ez:bmsChannelBill  bill="#{channelBillController.billSession.billItem.bill}"/>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
-                                                    <ez:bms5x5ChannelBill bill="#{channelBillController.billSession.billItem.bill}"/> 
-                <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingController.printingBill}"/>  -->
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Settling Bill is FiveFivePaper',true)}">
+                                                    <ez:bms5x5ChannelBill bill="#{channelBillController.billSession.billItem.bill}"/>
                                                 </h:panelGroup>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Settling Bill is FiveFIvePaperCustom2',true)}">
+                                                    <ez:fivefivePapaerCustom2  bill="#{channelBillController.billSession.billItem.bill}"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Settling Bill is FiveFIvePaperCustom3',true)}">
+                                                    <ez:fivefivePapaerCustom3  bill="#{channelBillController.billSession.billItem.bill}"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Settling Bill is FiveFivePrintedPaper',true)}">
+                                                    <ez:bms5x5WIthoutHeaderChannelBill bill="#{channelBillController.billSession.billItem.bill}"/>
+                                                </h:panelGroup>
+
                                             </ui:repeat>
                                         </h:panelGroup>
                                     </div>
@@ -1015,7 +1075,7 @@
                                     <div class="col-6">
                                         <p:panel class="m-1">
                                             <f:facet name="header" >
-                                                <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                                <h:outputText styleClass="fa fa-money-bill-wave" /> 
                                                 <h:outputText value="Payment Details" class="mx-4"></h:outputText>
                                             </f:facet>
                                             <div class="row my-1"  >
@@ -1269,13 +1329,23 @@
                                 <div class="d-flex justify-content-center mt-4">
                                     <h:panelGroup id="gpADSettleBillPreview">
                                         <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
-                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}" >
+
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Settling Bill is PosPaper',true)}">
                                                 <ez:bmsChannelBill  bill="#{channelBillController.billSession.billItem.bill}"/>
                                             </h:panelGroup>
-                                            <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'FiveFivePaper'}" >
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Settling Bill is FiveFivePaper',true)}">
                                                 <ez:bms5x5ChannelBill bill="#{channelBillController.billSession.billItem.bill}"/>
-            <!--                                <bg:fiveFiveCCBill_CC bill="#{bookingController.printingBill}"/>  -->
                                             </h:panelGroup>
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Settling Bill is FiveFIvePaperCustom2',true)}">
+                                                <ez:fivefivePapaerCustom2  bill="#{channelBillController.billSession.billItem.bill}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Settling Bill is FiveFIvePaperCustom3',true)}">
+                                                <ez:fivefivePapaerCustom3  bill="#{channelBillController.billSession.billItem.bill}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking Settling Bill is FiveFivePrintedPaper',true)}">
+                                                <ez:bms5x5WIthoutHeaderChannelBill bill="#{channelBillController.billSession.billItem.bill}"/>
+                                            </h:panelGroup>
+
                                         </ui:repeat>
                                     </h:panelGroup>
                                 </div>

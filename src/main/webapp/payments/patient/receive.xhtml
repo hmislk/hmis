@@ -8,7 +8,8 @@
                 xmlns:p="http://primefaces.org/ui"            
                 xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
                 xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
-                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+                xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
 
     <ui:define name="content">
 
@@ -43,112 +44,6 @@
                                 editable="true"
                                 controller="#{patientController}"/>
 
-                            <!--                            <p:panel>
-                                                            <f:facet name="header">
-                                                                <h:outputLabel value="Patient Details" />
-                                                            </f:facet>
-                                                            <div class="row">
-                                                                <div class="col-md-3 p-1">
-                                                                    <p:selectOneMenu id="cmbTitle" class="form-control w-100"
-                                                                                     value="#{patientController.current.person.title}">
-                                                                        <f:selectItem itemLabel="Select Title" />
-                                                                        <f:selectItems value="#{enumController.title}" var="i"
-                                                                                       itemLabel="#{i.label}" itemValue="#{i}"/>
-                                                                    </p:selectOneMenu>
-                                                                </div>
-                                                                <div class="col-md-9 p-1">
-                                                                    <p:inputText 
-                                                                        autocomplete="off" id="txtNewPtName" placeholder="Enter the Name of the patient"
-                                                                        value="#{patientController.current.person.name}"
-                                                                        class="form-control" />
-                                                                </div>
-                                                            </div>
-                            
-                                                            <div class="row">
-                                                                <div class="col-md-3 p-1">
-                                                                    <p:selectOneMenu id="txtNewSex" value="#{patientController.current.person.sex}"
-                                                                                     class="form-control w-100">
-                                                                        <f:selectItem itemLabel="Select Gender"/>
-                                                                        <f:selectItems value="#{opdBillController.sex}"/>
-                                                                    </p:selectOneMenu>
-                                                                </div>
-                                                                <div class="col-md-9 p-1">
-                                                                    <div class="row">
-                                                                        <div class="col-md-2">
-                                                                            <p:inputText autocomplete="off" id="year" placeholder="Years"
-                                                                                         value="#{patientController.current.person.ageYearsComponent}"
-                                                                                         class="form-control">
-                                                                                <f:ajax event="blur" execute="@this" render="calDob" />
-                                                                            </p:inputText>
-                                                                        </div>
-                                                                        <div class="col-md-2">
-                                                                            <p:inputText autocomplete="off" id="month" placeholder="Months"
-                                                                                         value="#{patientController.current.person.ageMonthsComponent}"
-                                                                                         class="form-control">
-                                                                                <f:ajax event="blur" execute="@this"  render="calDob"  />
-                                                                            </p:inputText>
-                                                                        </div>
-                                                                        <div class="col-md-2">
-                                                                            <p:inputText autocomplete="off" id="day" placeholder="Days"
-                                                                                         value="#{patientController.current.person.ageDaysComponent}"
-                                                                                         class="form-control">
-                                                                                <f:ajax event="blur" execute="@this"  render="calDob" />
-                                                                            </p:inputText>
-                                                                        </div>
-                                                                        <div class="col-md-6">
-                                                                            <p:datePicker value="#{patientController.current.person.dob}"
-                                                                                          id="calDob" 
-                                                                                          class="w-100"
-                                                                                          inputStyleClass="form-control"
-                                                                                          pattern="#{sessionController.applicationPreference.shortDateFormat}"
-                                                                                          placeholder="Data of Birth (dd/MM/yyyy)"
-                                                                                          >
-                                                                                <f:ajax event="dateSelect" execute="@this" render="year month day" />
-                                                                            </p:datePicker>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                            
-                                                            <div class="row">
-                                                                <div class="col-md-4 p-1">
-                                                                    <p:inputText id="txtNewPtPhone" autocomplete="off" maxlength="11" placeholder="Phone Number"
-                                                                                 value="#{patientController.current.person.phone}"
-                                                                                 class="form-control" />
-                                                                </div>
-                                                                <div class="col-md-4 p-1">
-                                                                    <p:inputText autocomplete="off" id="txtEmail" placeholder="Enter Email here"
-                                                                                 value="#{patientController.current.person.email}"
-                                                                                 class="form-control">
-                                                                    </p:inputText>
-                                                                </div>
-                                                                <div class="col-md-4 p-1">
-                                                                    <p:inputText placeholder="National ID No."
-                                                                                 value="#{patientController.current.person.nic}"
-                                                                                 class="form-control"/>
-                                                                </div>
-                                                            </div>
-                            
-                                                            <div class="row">
-                                                                <div class="col-md-8 p-1">
-                                                                    <p:inputText placeholder="Address"
-                                                                                 value="#{patientController.current.person.address}"
-                                                                                 class="form-control"/>
-                                                                </div>
-                                                                <div class="col-md-4 p-1">
-                                                                    <p:autoComplete id="acNewPtArea" 
-                                                                                    placeholder="Search &amp; Select Area"
-                                                                                    completeMethod="#{areaController.completeArea}"
-                                                                                    var="pta" itemLabel="#{pta.name}"
-                                                                                    itemValue="#{pta}" forceSelection="true"
-                                                                                    value="#{patientController.current.person.area}"
-                                                                                    inputStyleClass="form-control"
-                                                                                    class="w-100"/>
-                                                                </div>
-                                                            </div>
-                                                        </p:panel>-->
-
-
                         </div>
                         <div class="col-6" >
                             <p:panel>
@@ -157,30 +52,34 @@
                                 </f:facet>
 
                                 <div class="d-flex flex-wrap w-100">
-                                    <p:selectOneMenu   id="cmbPs" value="#{patientController.bill.paymentMethod}">                                                                     
-                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                                        <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
+                                    <p:selectOneMenu id="cmbPs" value="#{patientController.bill.paymentMethod}"> 
+                                        <f:selectItems value="#{enumController.paymentMethodsForPatientDeposit}"/>
+                                        <p:ajax process="cmbPs" update="panelGroup creditCard cheque slip eWallet" event="change" />
                                     </p:selectOneMenu>
 
+                                    <h:panelGroup id="panelGroup" style="display: #{patientController.bill.paymentMethod eq 'Card' or patientController.bill.paymentMethod eq 'Cheque' or patientController.bill.paymentMethod eq 'Slip' or patientController.bill.paymentMethod eq 'ewallet' ? 'none' : 'block' };">
+                                        <p:inputText class="mx-1" value="#{patientController.bill.netTotal}" id="txtNetTotal"/>
+                                        
+                                        <p:inputText value="#{patientController.bill.comments}" id="comment"/>
+                                                                            </h:panelGroup>
 
-                                    <p:inputText class="mx-1" value="#{patientController.bill.netTotal}" id="txtNetTotal"/>
-                                    <p:watermark value="Total" for="txtNetTotal"/>
-
-                                    <p:inputText value="#{patientController.bill.comments}" id="comment"/>
-                                    <p:watermark value="Comment" for="comment"/>
-
-                                    <h:panelGroup id="creditCard" style="display: #{patientController.bill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                    <h:panelGroup id="creditCard" class="m-1" style="display: #{patientController.bill.paymentMethod eq 'Card' ? 'block' : 'none'};">
                                         <pa:creditCard paymentMethodData="#{patientController.paymentMethodData}"/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="cheque" style="display: #{patientController.bill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                    <h:panelGroup id="cheque" style="display: #{patientController.bill.paymentMethod eq 'Cheque' ? 'block' : 'none'};">
                                         <pa:cheque paymentMethodData="#{patientController.paymentMethodData}"/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="slip" style="display: #{patientController.bill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                    <h:panelGroup id="slip" style="display: #{patientController.bill.paymentMethod eq 'Slip' ? 'block' : 'none'};">
                                         <pa:slip paymentMethodData="#{patientController.paymentMethodData}"/>
                                     </h:panelGroup>
+                                    
+                                    <h:panelGroup id="eWallet" style="display: #{patientController.bill.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
+                                        <pa:ewallet class="m-2" paymentMethodData="#{patientController.paymentMethodData}"/>
+                                    </h:panelGroup>
                                 </div>
+
                             </p:panel>
                         </div>
                     </div>
@@ -219,7 +118,7 @@
                     </f:facet>
 
 
-                    <h:outputStylesheet library="css" name="/printing/fivefiveprinting.css" ></h:outputStylesheet>
+                    
 
 
 
@@ -229,90 +128,7 @@
                                 <div class="align-items-center my-2" style="max-width: 80%" >
                                     <div>
                                         <h:panelGroup id="billPanel" class="bill" layout="block">
-                                            <div class="header">
-                                                <h2>
-                                                    <h:outputText
-                                                        value="#{patientController.bill.department.printingName}"
-                                                        style="font-size: var(--font-size-bill) /2 ; font-weight: bold;"></h:outputText>
-                                                </h2>
-                                                <p>
-                                                    <h:outputText
-                                                        value="#{patientController.bill.department.address}"
-                                                        style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </p>
-                                                <p>
-                                                    <h:outputText
-                                                        value="Telephone: #{patientController.bill.department.telephone1}"
-                                                        style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </p>
-                                                <p>
-                                                    <h:outputText
-                                                        value="Email: #{patientController.bill.department.email}"
-                                                        style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </p>
-                                            </div>
-                                            <hr/>
-                                            <div class="header">
-                                                <h4>
-                                                    <h:outputText
-                                                        value="Patient Deposit Invoice"
-                                                        style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </h4>
-                                            </div>
-                                            <hr/>
-                                            <p>
-                                                <strong>
-                                                    <h:outputText value="Name:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </strong>
-                                                <h:outputText value="#{patientController.bill.patient.person.nameWithTitle}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                            </p>
-                                            <p>
-                                                <strong>
-                                                    <h:outputText value="Age:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </strong>
-                                                <h:outputText value="#{patientController.bill.ageAtBilledDate}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                            </p>
-                                            <p>
-                                                <strong>
-                                                    <h:outputText value="Sex:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </strong>
-                                                <h:outputText value="#{patientController.bill.patient.person.sex}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                            </p>
-                                            <p>
-                                                <strong>
-                                                    <h:outputText value="Phone:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </strong>
-                                                <h:outputText value="#{patientController.bill.patient.person.phone}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                            </p>
-                                            <p>
-                                                <strong>
-                                                    <h:outputText value="Address:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </strong>
-                                                <h:outputText value="#{patientController.bill.patient.person.address}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                            </p>
-                                            <hr/>
-                                            <p:barcode type="code39" value="#{patientController.bill.idStr}" style="width: 100%; height: 6rem;"></p:barcode>
-                                            <hr/>
-                                            <h4>Payment Details</h4>
-                                            <p>
-                                                <strong>
-                                                    <h:outputText value="Total:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </strong>
-                                                <h:outputText value="#{patientController.bill.netTotal}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                            </p>
-                                            <p>
-                                                <strong>
-                                                    <h:outputText value="Payment Method:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </strong>
-                                                <h:outputText value="#{patientController.bill.paymentMethod}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                            </p>
-                                            <hr/>
-                                            <p>
-                                                <strong>
-                                                    <h:outputText value="Cashier:" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                                </strong>
-                                                <h:outputText value="#{patientController.bill.creater.webUserPerson.name}" style="font-size: var(--font-size-bill) /2 ;"></h:outputText>
-                                            </p>
+                                            <prints:five_five_paper_patient_deposit bill="#{patientController.bill}" />
                                         </h:panelGroup>
                                     </div>
                                 </div>

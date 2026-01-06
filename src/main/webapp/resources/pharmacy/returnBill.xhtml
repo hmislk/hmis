@@ -172,7 +172,7 @@
 
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount (#{cc.attrs.bill.paymentScheme.discountPercentForPharmacy} %)"/>
+                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount (#{cc.attrs.bill.discountPercentPharmacy} %)"/>
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important; ">
                             <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{cc.attrs.bill.discount}" >

@@ -6,21 +6,21 @@ package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -71,7 +71,8 @@ public class StorePurchaseOrderController implements Serializable {
     // List<PharmaceuticalBillItem> pharmaceuticalBillItems;
     //////////
 
-    private CommonFunctions commonFunctions;
+    private BillItem currentBillItem;
+
     private LazyDataModel<Bill> searchBills;
 
     public void removeSelected() {
@@ -96,9 +97,33 @@ public class StorePurchaseOrderController implements Serializable {
         calTotal();
     }
 
-    private int maxResult = 50;
 
-   
+
+    public void addExtraItem() {
+        if (getCurrentBillItem().getItem() == null) {
+            JsfUtil.addErrorMessage("Please select and item from the list");
+            return;
+        }
+
+        for (BillItem bi : getBillItems()) {
+            if (getCurrentBillItem().getItem().equals(bi.getItem())) {
+                JsfUtil.addErrorMessage("Already added this item");
+                return;
+            }
+        }
+
+        getCurrentBillItem().setSearialNo(getBillItems().size());
+        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRateInUnit(getStoreBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRateInUnit(getStoreBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+
+        getBillItems().add(getCurrentBillItem());
+
+        calTotal();
+
+        currentBillItem = null;
+    }
+
+    private int maxResult = 50;
 
     public void clearList() {
         filteredValue = null;
@@ -111,14 +136,14 @@ public class StorePurchaseOrderController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -126,7 +151,7 @@ public class StorePurchaseOrderController implements Serializable {
     public void approve() {
         if (getAprovedBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Paymentmethod");
-            return ;
+            return;
         }
 
         calTotal();
@@ -140,9 +165,8 @@ public class StorePurchaseOrderController implements Serializable {
 
         printPreview = true;
 
-       // return viewRequestedList();
+        // return viewRequestedList();
         //   printPreview = true;
-
     }
 
     public String viewRequestedList() {
@@ -188,7 +212,6 @@ public class StorePurchaseOrderController implements Serializable {
 
 //        getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.StoreOrder, BillNumberSuffix.PO));
 //        getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getInstitution(), getAprovedBill(), BillType.StoreOrder, BillNumberSuffix.PO));
-        
         getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getRequestedBill().getDepartment(), BillType.StoreOrderApprove, BillClassType.BilledBill, BillNumberSuffix.PO));
         getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getRequestedBill().getInstitution(), BillType.StoreOrderApprove, BillClassType.BilledBill, BillNumberSuffix.PO));
 
@@ -242,7 +265,7 @@ public class StorePurchaseOrderController implements Serializable {
 
         getBillFacade().edit(getAprovedBill());
     }
-    
+
     public String navigateToPurchaseOrderApproval() {
         printPreview = false;
         return "/store/store_purhcase_order_approving?faces-redirect=true";
@@ -330,7 +353,7 @@ public class StorePurchaseOrderController implements Serializable {
     public void setStoreBean(StoreBean storeBean) {
         this.storeBean = storeBean;
     }
-    
+
     public void calTotal() {
         double tmp = 0;
         int serialNo = 0;
@@ -344,14 +367,6 @@ public class StorePurchaseOrderController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public void setFromDate(Date fromDate) {
@@ -374,7 +389,6 @@ public class StorePurchaseOrderController implements Serializable {
         this.billsToApprove = billsToApprove;
     }
 
-  
     public boolean getPrintPreview() {
         return printPreview;
     }
@@ -454,5 +468,16 @@ public class StorePurchaseOrderController implements Serializable {
 
     public void setMaxResult(int maxResult) {
         this.maxResult = maxResult;
+    }
+
+    public BillItem getCurrentBillItem() {
+        if(currentBillItem == null){
+            currentBillItem = new BillItem();
+        }
+        return currentBillItem;
+    }
+
+    public void setCurrentBillItem(BillItem currentBillItem) {
+        this.currentBillItem = currentBillItem;
     }
 }

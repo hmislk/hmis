@@ -36,7 +36,7 @@
                         <p:commandButton value="Excel" ajax="false"  
                                          icon="fa-solid fa-file-excel"
                                          class="ui-button-success mx-2" >
-                            <p:dataExporter type="xls" target="tblVisits" fileName="visits" />
+                            <p:dataExporter type="xlsx" target="tblVisits" fileName="visits" />
                         </p:commandButton>
                         <div class="my-2">
                             <p:dataTable id="tblVisits" value="#{patientEncounterController.items}"

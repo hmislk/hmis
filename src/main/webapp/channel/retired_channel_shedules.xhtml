@@ -1,0 +1,266 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      template="/resources/template/template.xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/channel/channel_scheduling/index.xhtml" >
+            <ui:define name="subcontent">
+                <h:form id="form">
+                    <p:growl id="msg" ></p:growl>
+
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputText styleClass="fa-solid fa-stethoscope"/>
+                            <h:outputText class="mx-4" value="Channel Schedule Management" />
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-4">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa-solid fa-clock"/>
+                                        <h:outputText class="mx-4" value="Select Session" />
+                                    </f:facet>
+                                    <h:panelGrid columns="2" class="w-100">
+                                        <h:outputLabel  value="Speciality" ></h:outputLabel>
+                                        <p:autoComplete 
+                                            onfocus="this.select()" 
+                                            inputStyleClass="w-100"
+                                            class="mx-2 w-100" 
+                                            value="#{channelScheduleController.speciality}" 
+                                            id="acSpeciality" 
+                                            placeholder="Speciality"
+                                            completeMethod="#{channelScheduleController.completeDOctorSpeciality}"
+                                            var="speciality" 
+                                            itemLabel="#{speciality.name}" 
+                                            itemValue="#{speciality}"
+                                            >
+                                            <p:ajax event="blur" process="@this" update="scStaff" />
+                                            <p:ajax process="@this" update="scStaff" />
+                                        </p:autoComplete>
+
+
+
+                                        <h:outputLabel  value="Doctor" ></h:outputLabel>
+                                        <p:selectOneMenu 
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            class="mx-2 w-100"  
+                                            value="#{channelScheduleController.currentStaff}" 
+                                            id="scStaff" 
+                                            > 
+                                            <f:selectItem itemLabel="Please Select"/>
+                                            <f:selectItems 
+                                                value="#{channelScheduleController.specialityStaff}" 
+                                                var="mys" 
+                                                itemLabel="#{mys.person.nameWithTitle}" 
+                                                itemValue="#{mys}">
+                                            </f:selectItems>
+                                            <p:ajax 
+                                                listener="#{channelScheduleController.fillRetiredServiceSessions}"
+                                                process="scStaff" 
+                                                update="lstSelect gpDetail" />
+                                        </p:selectOneMenu>
+
+                                        <h:outputLabel  value="Sessions" ></h:outputLabel>
+                                        <p:selectOneListbox 
+                                            id="lstSelect" 
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            converter="sscon" 
+                                            value="#{channelScheduleController.current}" 
+                                            class="mx-2 w-100" >
+                                            <f:selectItems  value="#{channelScheduleController.retiredItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                            <p:ajax 
+                                                update="gpDetail" 
+                                                process="lstSelect" >
+                                            </p:ajax>
+                                        </p:selectOneListbox>
+
+                                    </h:panelGrid>
+                                    
+
+
+
+                                </p:panel>
+                            </div>
+                            <div class="col-8">
+                                <p:panel id="gpDetail" >  
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa-solid fa-calendar-week"/>
+                                        <h:outputText class="mx-4" value="Session Details" />
+                                    </f:facet>
+                                    <h:panelGrid columns="3" class="d-flex justify-content-end my-1">
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            id="btnSave" 
+                                            value="UNRETIRE"  
+                                            action="#{channelScheduleController.unretireCurrentServiceSession}"
+                                            class="ui-button-warning" 
+                                            icon="fas fa-save" >
+
+                                        </p:commandButton>
+                                    </h:panelGrid>
+
+                                    <p:panelGrid columns="2" columnClasses="custom-col-38 , custom-col-58" class="w-100" >
+
+
+                                        <p:outputLabel value="Session Name"/>
+                                        <p:inputText class="w-100" autocomplete="off" value="#{channelScheduleController.current.name}" disabled="#{channelScheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulName')}"/>
+
+                                        <p:outputLabel value="Session Category"/>
+                                        <p:autoComplete 
+                                            inputStyleClass="w-100"
+                                            class="w-100" 
+                                            autocomplete="off" 
+                                            value="#{channelScheduleController.current.category}"
+                                            completeMethod="#{categoryController.completeServiceCategory}"
+                                            var="cat"
+                                            itemLabel="#{cat.name}"
+                                            itemValue="#{cat}"
+                                            ></p:autoComplete>
+
+
+                                        <h:panelGroup rendered="#{channelScheduleController.current.id ne null}" >
+                                            <h:panelGroup rendered="#{channelScheduleController.current.sessionDate eq null}" >
+                                                <p:outputLabel value="Weekday"></p:outputLabel>
+                                            </h:panelGroup>
+                                            <h:panelGroup 
+                                                rendered="#{channelScheduleController.current.sessionDate ne null}" >
+                                                <p:outputLabel value="Session Date"></p:outputLabel>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{channelScheduleController.current.id ne null}" >
+                                            <h:panelGroup rendered="#{channelScheduleController.current.sessionDate eq null}" >
+                                                <p:inputText class="w-100" disabled="true" value="Sunday" rendered="#{channelScheduleController.current.sessionWeekday eq 1 and channelScheduleController.current.sessionWeekday ne null}"/>
+                                                <p:inputText class="w-100" disabled="true"  value="Monday" rendered="#{channelScheduleController.current.sessionWeekday eq 2 and channelScheduleController.current.sessionWeekday ne null}"/>
+                                                <p:inputText class="w-100" disabled="true"  value="Tuesday" rendered="#{channelScheduleController.current.sessionWeekday eq 3 and channelScheduleController.current.sessionWeekday ne null}"/>
+                                                <p:inputText class="w-100" disabled="true"  value="Wednesday" rendered="#{channelScheduleController.current.sessionWeekday eq 4 and channelScheduleController.current.sessionWeekday ne null}"/>
+                                                <p:inputText class="w-100" disabled="true"  value="Thursday" rendered="#{channelScheduleController.current.sessionWeekday eq 5 and channelScheduleController.current.sessionWeekday ne null}"/>
+                                                <p:inputText class="w-100" disabled="true"  value="Friday" rendered="#{channelScheduleController.current.sessionWeekday eq 6 and channelScheduleController.current.sessionWeekday ne null}"/>
+                                                <p:inputText class="w-100" disabled="true"  value="Sutarday" rendered="#{channelScheduleController.current.sessionWeekday eq 7 and channelScheduleController.current.sessionWeekday ne null}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{channelScheduleController.current.sessionDate ne null}" >
+                                                <p:inputText class="w-100" disabled="true"  value="#{channelScheduleController.current.sessionDate}" rendered="#{channelScheduleController.current.sessionWeekday eq null}">
+                                                    <f:convertDateTime pattern="yyyy MMM dd" />
+                                                </p:inputText>
+                                            </h:panelGroup>
+
+                                        </h:panelGroup>
+
+
+                                        <h:outputText value="Institution" ></h:outputText>
+                                        <p:selectOneMenu class="w-100" id="cmbIns" value="#{channelScheduleController.current.institution}" >
+                                            <f:selectItem itemLabel="Please select a Institution"/>
+                                            <f:selectItems value="#{institutionController.companies}" 
+                                                           var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />    
+                                            <f:ajax execute="cmbIns" render="cmbDep" event="change"/>
+                                        </p:selectOneMenu>
+
+
+
+                                        <p:outputLabel for="cmbDep" value="Department"></p:outputLabel>        
+                                        <p:selectOneMenu 
+                                            class="w-100" 
+                                            id="cmbDep" 
+                                            required="true"
+                                            requiredMessage="Please enter a department"
+                                            value="#{channelScheduleController.current.department}">
+                                            <f:selectItem itemLabel="Please select a Department" />
+                                            <f:selectItems value="#{channelScheduleController.institutionDepatrments}"
+                                                           var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
+                                        </p:selectOneMenu>
+                                        <p:outputLabel value="Start Time"/>                        
+                                        <p:datePicker 
+                                            pattern="HH:mm"
+                                            value="#{channelScheduleController.current.startingTime}" 
+                                            timeOnly="true">                            
+                                        </p:datePicker>
+
+
+                                        <p:outputLabel value="End Time"/>                        
+                                        <p:datePicker
+                                            value="#{channelScheduleController.current.endingTime}"
+                                            pattern="HH:mm"
+                                            timeOnly="true">                            
+                                        </p:datePicker>
+
+                                        <p:outputLabel value="Max Number"/>
+                                        <p:inputText class="w-100" autocomplete="off" value="#{channelScheduleController.current.maxNo}"/>
+
+                                        <p:outputLabel value="Duration in Minutes"/>
+                                        <p:inputText class="w-100" autocomplete="off" value="#{channelScheduleController.current.duration}"/>
+
+                                        <p:outputLabel value="Room Number"/>
+                                        <p:inputText class="w-100" autocomplete="off" value="#{channelScheduleController.current.roomNo}" disabled="#{channelScheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulRoomNo')}"/>
+
+                                        <p:outputLabel value="Before Session" rendered="false"/>
+                                        <p:autoComplete class="w-100" inputStyleClass="w-100"  rendered="false" forceSelection="true" value="#{channelScheduleController.current.beforeSession}" 
+                                                        completeMethod="#{channelScheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                        converter="sscon">                            
+                                        </p:autoComplete>
+                                        <p:outputLabel value="After Session" rendered="false"/>
+                                        <p:autoComplete class="w-100" inputStyleClass="w-100"   rendered="false" forceSelection="true" value="#{channelScheduleController.current.afterSession}" 
+                                                        completeMethod="#{channelScheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                        converter="sscon">   
+                                        </p:autoComplete>
+
+                                        <p:outputLabel value="Number of days for autocreation of Sessions"></p:outputLabel>
+                                        <p:inputText class="w-100" autocomplete="off" value="#{channelScheduleController.current.numberOfDaysForAutomaticInstanceCreation}" disabled="#{channelScheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulMaxRowNo')}"></p:inputText>
+
+                                        <p:outputLabel value="Refundable"/>
+                                        <p:selectBooleanCheckbox value="#{channelScheduleController.current.refundable}"/>
+
+                                        <p:outputLabel value="Paid Appointment Only"/>
+                                        <p:selectBooleanCheckbox value="#{channelScheduleController.current.paidAppointmentsOnly}" />
+
+                                        <p:outputLabel value="Exclude From Patient Portal"/>
+                                        <p:selectBooleanCheckbox value="#{channelScheduleController.current.excludeFromPatientPortal}" />
+
+                                        <p:outputLabel value="Vatable" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative' or sessionController.loggedPreference.applicationInstitution eq 'Arogya'}" />
+                                        <p:selectBooleanCheckbox value="#{channelScheduleController.current.vatable}" disabled="#{!webUserController.hasPrivilege('ChannelActiveVat')}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'or sessionController.loggedPreference.applicationInstitution eq 'Arogya'}"/>
+
+                                        <p:outputLabel value="Channel Type" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" />
+                                        <p:selectOneMenu class="w-100" id="cmbChanType" value="#{channelScheduleController.current.forBillType}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >
+                                            <f:selectItem itemLabel="Please Select a Type"/>
+                                            <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
+                                        </p:selectOneMenu>
+
+                                        <h:outputLabel value="Activities" />
+                                        <p:inputTextarea
+                                            completeMethod="#{appointmentActivityController.completeAppointmentActivityCodes}"
+                                            class="mx-2 w-100 my-1" rows="4" value="#{channelScheduleController.current.activities}" />
+                                        <h:outputLabel value="Actions" />
+                                        <p:inputTextarea class="mx-2 w-100"  rows="4" value="#{channelScheduleController.current.actions}"/>
+                                        <h:outputLabel value="Forms" />
+                                        <p:inputTextarea class="mx-2 w-100"  rows="4" value="#{channelScheduleController.current.dataEntryForms}"/>
+                                        <h:outputLabel value="Special Notice" />
+                                        <p:inputTextarea class="mx-2 w-100"  rows="4" value="#{channelScheduleController.current.specialNotice}"/>
+
+
+                                    </p:panelGrid>
+
+
+                                </p:panel>
+                            </div>
+                        </div>
+
+                    </p:panel>
+
+
+
+
+
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+
+</html>

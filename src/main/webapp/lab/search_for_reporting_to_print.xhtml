@@ -42,7 +42,7 @@
                         <p:dataTable  id="tblBills" value="#{searchController.patientInvestigations}" var="pi"  >
 
                             <p:column headerText="Billing" styleClass="alignTop" >
-                                <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
+                                <h:outputLabel value="Bill No : #{pi.billItem.bill.deptId}" ></h:outputLabel>
                                 <br/>
                                 <h:outputLabel value="Name : #{pi.billItem.bill.patient.person.nameWithTitle}" >
                                 </h:outputLabel>

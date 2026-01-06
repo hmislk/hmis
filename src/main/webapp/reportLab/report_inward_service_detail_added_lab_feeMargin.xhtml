@@ -102,23 +102,23 @@
                     </p:column>
 
                     <p:column headerText="Bill No"
-                              sortBy="#{d.billItem.bill.insId}" 
-                              filterBy="#{d.billItem.bill.insId}"
+                              sortBy="#{d.billItem.bill.deptId}" 
+                              filterBy="#{d.billItem.bill.deptId}"
                               filterMatchMode="contains">
                         <f:facet name="header">
                             <p:outputLabel value="Bill No"/>
                         </f:facet>
-                        <p:outputLabel value="#{d.billItem.bill.insId}" />
+                        <p:outputLabel value="#{d.billItem.bill.deptId}" />
                     </p:column>
 
                     <p:column headerText="Billed Bill No"
-                              sortBy="#{d.billItem.bill.billedBill.insId}" 
-                              filterBy="#{d.billItem.bill.billedBill.insId}"
+                              sortBy="#{d.billItem.bill.billedBill.deptId}" 
+                              filterBy="#{d.billItem.bill.billedBill.deptId}"
                               filterMatchMode="contains">
                         <f:facet name="header">
                             <p:outputLabel value="Billed Bill No"/>
                         </f:facet>
-                        <p:outputLabel value="#{d.billItem.bill.billedBill.insId}" />
+                        <p:outputLabel value="#{d.billItem.bill.billedBill.deptId}" />
                     </p:column>
 
                     <p:column headerText="BHT No"

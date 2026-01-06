@@ -1,24 +1,24 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/resources/template/template.xhtml" 
+                template="/resources/template/template.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
-                
+
                 xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <ui:define name="content">
         <h:form>
-            <p:selectOneMenu id="advanced" 
-                             value="#{salaryCycleController.current}" 
-                             var="t" 
-                             filter="true" 
+            <p:selectOneMenu id="advanced"
+                             value="#{salaryCycleController.current}"
+                             var="t"
+                             filter="true"
                              filterMatchMode="startsWith">
 
-                <f:selectItems value="#{salaryCycleController.salaryCycles}" 
-                               var="theme" 
-                               itemLabel="#{theme.name}" 
+                <f:selectItems value="#{salaryCycleController.salaryCycles}"
+                               var="theme"
+                               itemLabel="#{theme.name}"
                                itemValue="#{theme}" ></f:selectItems>
 
                 <p:column style="width:10%" headerText="Name">
@@ -68,7 +68,7 @@
                             <f:convertNumber pattern="0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel style="text-align: right;" 
+                            <h:outputLabel style="text-align: right;"
                                            value="#{salaryCycleController.basicValueTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -98,7 +98,7 @@
                             <f:convertNumber pattern="0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel style="text-align: right;" 
+                            <h:outputLabel style="text-align: right;"
                                            value="#{salaryCycleController.extraDutyValueTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -113,7 +113,7 @@
                             <f:convertNumber pattern="0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel style="text-align: right;" 
+                            <h:outputLabel style="text-align: right;"
                                            value="#{salaryCycleController.noPayValueTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -128,7 +128,7 @@
                             <f:convertNumber pattern="0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel style="text-align: right;" 
+                            <h:outputLabel style="text-align: right;"
                                            value="#{salaryCycleController.holyDayAllowancesTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -143,7 +143,7 @@
                             <f:convertNumber pattern="0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel style="text-align: right;" 
+                            <h:outputLabel style="text-align: right;"
                                            value="#{salaryCycleController.dayOffValueTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -173,7 +173,7 @@
                             <f:convertNumber pattern="0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel style="text-align: right;" 
+                            <h:outputLabel style="text-align: right;"
                                            value="#{salaryCycleController.deductionalComponentTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -218,7 +218,7 @@
                             <f:convertNumber pattern="0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel style="text-align: right;" 
+                            <h:outputLabel style="text-align: right;"
                                            value="#{salaryCycleController.epfStaffValueTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -233,7 +233,7 @@
                             <f:convertNumber pattern="0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel style="text-align: right;" 
+                            <h:outputLabel style="text-align: right;"
                                            value="#{salaryCycleController.epfCompanyValueTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -248,7 +248,7 @@
                             <f:convertNumber pattern="0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel style="text-align: right;" 
+                            <h:outputLabel style="text-align: right;"
                                            value="#{salaryCycleController.etfStaffValueTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -263,7 +263,7 @@
                             <f:convertNumber pattern="0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel style="text-align: right;" 
+                            <h:outputLabel style="text-align: right;"
                                            value="#{salaryCycleController.etfCompanValueTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -272,14 +272,14 @@
                     <f:facet name="footer">
                         <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                         <p:outputLabel value="Print At : " />
-                        <p:outputLabel value="#{commonController.currentDateTime}" >
+                        <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                             <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                         </p:outputLabel>
                     </f:facet>
                 </p:dataTable>
 
             </p:panel>
-        </h:form>        
+        </h:form>
     </ui:define>
 
 </ui:composition>

@@ -9,14 +9,14 @@ import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.inward.RoomCategoryController;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.inward.InwardChargeType;
-import com.divudi.entity.Institution;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.inward.RoomCategory;
-import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.facade.PriceMatrixFacade;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.RoomCategory;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.facade.PriceMatrixFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,8 +54,8 @@ public class InwardMemberShipDiscount implements Serializable {
         this.priceMatrixController = priceMatrixController;
     }
 
-    
-   
+
+
     public void edit(PriceMatrix inwardPriceAdjustment) {
         getPriceMatrixFacade().edit(inwardPriceAdjustment);
     }
@@ -104,7 +104,7 @@ public class InwardMemberShipDiscount implements Serializable {
                     items.add(getPriceMatrixController().getInwardMemberShipDiscount(getCurrentMembershipScheme(), getInstitution(), getCurrentPaymentMethod(), ict, admissionType, rm, getSessionController().getLoggedUser()));
                 }
             }
-           
+
             items.add(getPriceMatrixController().getInwardMemberShipDiscount(getCurrentMembershipScheme(), getInstitution(), getCurrentPaymentMethod(), ict, admissionType, getSessionController().getLoggedUser()));
 
         }

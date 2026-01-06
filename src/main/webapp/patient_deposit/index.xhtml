@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <p:panel header="Patient Deposit Management">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h:form>
+                                <p:accordionPanel activeIndex="#{patientDepositController.patientDepositManagementIndex}">
+                                    <p:ajax process="@this"></p:ajax>
+
+                                    <!-- Manage Section -->
+                                    <p:tab title="Manage" rendered="#{webUserController.hasPrivilege('Payment')}">
+                                        <h:panelGrid columns="1" class="w-100" >
+                                            <p:commandButton 
+                                                icon="fa fa-check-circle" 
+                                                ajax="false" 
+                                                value="Accept Patient Deposits"
+                                                action="#{patientDepositController.navigateToAddNewPatientDeposit()}"
+                                                class="w-100 m-1"/>
+                                            
+                                            <p:commandButton 
+                                                icon="fa fa-search" 
+                                                ajax="false" 
+                                                value="Search Patient Deposits"
+                                                action="/patient_deposit/patient_deposit_search?faces-redirect=true"
+                                                actionListener="#{patientDepositController.clearDataForPatientDeposit()}"
+                                                class="w-100 m-1"/>
+                                            
+                                            <p:commandButton 
+                                                icon="fa fa-search" 
+                                                ajax="false" 
+                                                value="Return Patient Deposits"
+                                                action="/patient_deposit/pay?faces-redirect=true"
+                                                actionListener="#{patientDepositController.clearDataForPatientDeposit()}"
+                                                class="w-100 m-1"/>
+                                            
+                                            <p:commandButton 
+                                                icon="fa fa-search" 
+                                                ajax="false" 
+                                                value="Search Patient Deposit Return"
+                                                action="/patient_deposit/patient_deposit_return_search?faces-redirect=true"
+                                                actionListener="#{patientDepositController.clearDataForPatientDeposit()}"
+                                                class="w-100 m-1"/>
+
+                                            <p:commandButton 
+                                                icon="fa fa-book" 
+                                                ajax="false" 
+                                                value="Patient Deposit History"
+                                                action="/patient_deposit/patient_deposit_history?faces-redirect=true"
+                                                actionListener="#{patientDepositController.clearDataForPatientDepositHistory()}"
+                                                class="w-100 m-1"/>
+                                            
+                                            <p:commandButton 
+                                                icon="fa fa-list-alt" 
+                                                ajax="false" 
+                                                value="Patient Deposit Trancefer"
+                                                action="/patient_deposit/report_collecting_center_referece_book?faces-redirect=true"
+                                                class="w-100 m-1"/>
+                                            
+                                            <p:commandButton 
+                                                icon="fa fa-credit-card" 
+                                                ajax="false" 
+                                                value="Patient Deposit Recive"
+                                                action="/patient_deposit/cc_update_credit_limit?faces-redirect=true"
+                                                actionListener="#{institutionController.makeNull()}"
+                                                rendered="#{webUserController.hasPrivilege('ChangeCreditLimitInCC')}"
+                                                class="w-100 m-1"/>
+
+                                            <p:commandButton 
+                                                icon="fa fa-check-circle" 
+                                                ajax="false" 
+                                                value="Search Patient Deposit Trancefers"
+                                                action="#{collectingCentreController.navigateToPayToCollectingCentre()}"
+                                                class="w-100 m-1"/>
+
+                                            <p:commandButton  
+                                                class="w-100 ui-button-secondary" 
+                                                ajax="false" 
+                                                action="#{patientController.navigateToPatientDepositRefund()}" 
+                                                value="Return Patient Deposit">
+                                            </p:commandButton>
+
+                                        </h:panelGrid>
+                                    </p:tab>
+
+
+                                </p:accordionPanel>
+                            </h:form>
+                        </div>
+
+                        <div class="col-md-9">
+                            <ui:insert name="subcontent">
+                            </ui:insert>
+                        </div>
+                    </div>
+                </p:panel>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

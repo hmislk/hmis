@@ -9,9 +9,9 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.inward.PatientRoom;
-import com.divudi.facade.PatientRoomFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.facade.PatientRoomFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -48,7 +48,7 @@ public class PatientRoomController implements Serializable {
     }
 
     public List<PatientRoom> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from PatientRoom c where c.retired=false and i.patientRoomType = com.divudi.data.PatientRoomType.Pharmacy and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from PatientRoom c where c.retired=false and i.patientRoomType = com.divudi.core.data.PatientRoomType.Pharmacy and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 

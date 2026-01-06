@@ -22,43 +22,43 @@
                                     <p:calendar
                                         class="my-1 w-100"
                                         inputStyleClass="form-control"
-                                        id="fromDate" 
-                                        value="#{searchController.fromDate}" 
+                                        id="fromDate"
+                                        value="#{searchController.fromDate}"
                                         navigator="false"
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                        maxdate="#{commonController.endOfDayOnCurrentDate}"
-                                        >      
+                                        maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}"
+                                        >
                                     </p:calendar>
                                     <h:outputLabel value="To Date"/>
                                     <p:calendar
-                                        class="my-1 w-100" 
-                                        id="toDate" 
-                                        value="#{searchController.toDate}" 
+                                        class="my-1 w-100"
+                                        id="toDate"
+                                        value="#{searchController.toDate}"
                                         inputStyleClass="form-control"
-                                        navigator="false" 
+                                        navigator="false"
                                         pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                        >                                                                              
+                                        >
                                     </p:calendar>
- 
-                                    <p:commandButton 
+
+                                    <p:commandButton
                                         class="ui-button-success mt-2 w-100"
                                         icon="fas fa-clock"
                                         ajax="false"
                                         value="Search Unsettled Bills"
                                         action="#{searchController.searchOpdBatchBillsToSettleAtCashier()}" />
 
-                                    <p:commandButton  
-                                        id="btnSearch" 
-                                        icon="fas fa-search" 
-                                        class="ui-button-primary w-100 my-1" 
-                                        ajax="false" 
+                                    <p:commandButton
+                                        id="btnSearch"
+                                        icon="fas fa-search"
+                                        class="ui-button-primary w-100 my-1"
+                                        ajax="false"
                                         value="Search All Bills"
                                         action="#{searchController.searchOpdBatchBillsSettledOrNotSettled()}" />
 
                                     <p:commandButton
                                         ajax="false"
                                         icon="fas fa-check"
-                                        class=" ui-button-secondary w-100" 
+                                        class=" ui-button-secondary w-100"
                                         value="Search Settled Bills"
                                         action="#{searchController.searchOpdBatchBillsSettledAtCashier()}" />
                             </div>
@@ -66,12 +66,12 @@
 
                                 <p:defaultCommand target="btnSearch"/>
 
-                                <p:dataTable 
+                                <p:dataTable
                                     class="mt-4 w-100"
                                     rowIndexVar="i"
-                                    id="tblBills" 
-                                    value="#{searchController.bills}" 
-                                    var="bill"  
+                                    id="tblBills"
+                                    value="#{searchController.bills}"
+                                    var="bill"
 
                                     rowKey="#{bill.id}"
 
@@ -83,8 +83,8 @@
 
                                     >
 
-                                   
-                                    
+
+
                                     <p:column headerText="No" styleClass="alignTop" width="3em">
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
@@ -95,15 +95,15 @@
 
                                     <p:column headerText="Patient Name"  sortBy="#{bill.patient.person.nameWithTitle}" filterBy="#{bill.patient.person.nameWithTitle}" filterMatchMode="contains" >
                                         <h:outputLabel value="#{bill.patient.person.nameWithTitle}"  ></h:outputLabel>
-                                    </p:column> 
+                                    </p:column>
 
                                     <p:column headerText="Patient Phone"  sortBy="#{bill.patient.person.phone}" filterBy="#{bill.patient.person.phone}" filterMatchMode="contains" >
                                         <h:outputLabel value="#{bill.patient.person.phone}"  ></h:outputLabel>
-                                    </p:column> 
+                                    </p:column>
 
                                     <p:column headerText="Department"   sortBy="#{bill.department.name}" filterBy="#{bill.department.name}" filterMatchMode="contains" >
                                         <h:outputLabel value="#{bill.department.name}"  ></h:outputLabel>
-                                    </p:column> 
+                                    </p:column>
 
                                     <p:column headerText="Billed At"  sortBy="#{bill.createdAt}">
                                         <h:outputLabel value="#{bill.createdAt}" >
@@ -112,22 +112,22 @@
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled At " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" 
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}"
                                                            value="#{bill.cancelledBill.createdAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
-                                        </h:panelGroup>                             
-                                    </p:column>                 
+                                        </h:panelGroup>
+                                    </p:column>
                                     <p:column headerText="Billed By"  sortBy="#{bill.creater.webUserPerson.name}" filterBy="#{bill.creater.webUserPerson.name}" filterMatchMode="contains"  >
-                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >
                                         </h:outputLabel>
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled By " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >
                                             </h:outputLabel>
-                                        </h:panelGroup>                               
-                                    </p:column>                                                          
+                                        </h:panelGroup>
+                                    </p:column>
                                     <p:column headerText="Net Value"  sortBy="#{bill.netTotal}" filterBy="#{bill.netTotal}" filterMatchMode="contains" >
 
                                         <h:outputLabel value="#{bill.netTotal}" >
@@ -135,8 +135,8 @@
                                         </h:outputLabel>
 
                                     </p:column>
-                                    
-                                   
+
+
                                     <p:column headerText="Settling" >
                                         <ui:repeat value="#{bill.cashBillsOpdPre}" var="rb">
                                             <h:panelGroup layout="block" style="margin-bottom: 10px;">
@@ -164,14 +164,14 @@
                                     </p:column>
 
                                     <p:column style="width: 10em;" headerText="Actions">
-                                        <p:commandButton ajax="false"  value="To Accept Payment" 
+                                        <p:commandButton ajax="false"  value="To Accept Payment"
                                                          class="ui-button-primary"
-                                                         action="#{opdPreSettleController.toSettle(bill)}" 
-                                                         disabled="#{bill.referenceBill ne null or bill.cancelled}">     
+                                                         action="#{opdPreSettleController.toSettle(bill)}"
+                                                         disabled="#{bill.referenceBill ne null or bill.cancelled}">
                                         </p:commandButton>
                                     </p:column>
 
-                                  
+
 
                                 </p:dataTable>
 

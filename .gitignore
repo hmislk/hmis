@@ -1,13 +1,43 @@
 /build/
 /dist/
 /target/
+
 /src/main/resources/version.txt
 /src/main/resources/VERSION.txt
 /src/main/webapp/WEB-INF/glassfish-resources.xml
 /faces-config.NavData
+
 .idea
 
 # Wiki temp folders - these are GitHub wiki submodules cloned locally for editing
 # Do not track as they are separate repositories
 /wiki/
 /hmis.wiki/
+.vscode
+nb-configuration.xml
+*.stackdump
+
+# Temporary files
+/tmp/
+*~
+*.swp
+*.swo
+.LCK*
+*.LCK*
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Wiki sync temporary directories
+wiki/
+wiki-temp/
+wiki-backup/
+hmis.wiki/
+
+# Windows reserved filename
+nul
+
+# Log files
+*.log
+logs/
+hs_err_pid*.log

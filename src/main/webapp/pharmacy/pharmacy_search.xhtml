@@ -29,7 +29,11 @@
                                 <p:spacer height="1" ></p:spacer>
 
                                 <h:outputLabel value="Bill Type"/>
-                                <p:selectOneMenu value="#{searchController.billType}" class="w-100">
+                                <p:selectOneMenu 
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    value="#{searchController.billType}" 
+                                    class="w-100">
                                     <f:selectItem itemLabel="Select Bill Type"/>
                                     <f:selectItems value="#{enumController.pharmacyBillTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />
                                     <f:ajax  event="change" execute="@this" render="detail" listener="#{searchController.makeNull}"/>
@@ -39,11 +43,21 @@
                                 <h:outputLabel value="List Count"/>
                                 <p:inputText autocomplete="off" value="#{searchController.maxResult}" class="w-100" />
 
-                                <p:commandButton id="btnSearch" ajax="false"
-                                                  icon="fas fa-search"
-                                                 class="ui-button-warning w-100 mt-2"
-                                                 value="Search" action="#{searchController.createTableByBillType}"/>
-                                <p:commandButton ajax="false" value="Search All" action="#{searchController.createTableByBillTypeAllDepartment}" rendered="false"/>                                
+                                <p:commandButton 
+                                    id="btnSearch" 
+                                    ajax="false"
+                                    icon="fas fa-search"
+                                    class="ui-button-warning w-100 mt-2"
+                                    value="Search" 
+                                    action="#{searchController.createTableByBillType}">
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Search All" 
+                                    action="#{searchController.createTableByBillTypeAllDepartment}" 
+                                    rendered="false">
+                                </p:commandButton>                                
                             </div>
                             <div class="col-10">
                                 <h:panelGroup id="detail">
@@ -54,7 +68,7 @@
                                     <h:panelGroup rendered="#{searchController.billType eq 'PharmacyGrnReturn'}" >
                                         <se:grn_return />
                                     </h:panelGroup>
-                                    
+
                                     <h:panelGroup rendered="#{searchController.billType eq 'PharmacyReturnWithoutTraising'}" >
                                         <se:grn_return_without_traising />
                                     </h:panelGroup>
@@ -110,7 +124,7 @@
                                     <h:panelGroup rendered="#{searchController.billType eq 'PharmacyTransferReceive'}" >
                                         <se:pharmacy_transfer_recieve />
                                     </h:panelGroup>
-                                    
+
                                     <h:panelGroup rendered="#{searchController.billType eq 'GrnPaymentPre'}" >
                                         <se:grn_payment />
                                     </h:panelGroup>

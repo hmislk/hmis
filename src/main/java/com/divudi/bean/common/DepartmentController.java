@@ -8,17 +8,21 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.DepartmentType;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.entity.Route;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -55,70 +59,231 @@ public class DepartmentController implements Serializable {
 
     List<Department> itemsToRemove;
 
+    private List<DepartmentDuplicateGroup> duplicateGroups;
+
     public Department findAndSaveDepartmentByName(String name) {
-        System.out.println("name = " + name);
-        if (name == null || name.trim().equals("")) {
+        if (name == null) {
             return null;
         }
-        String sql;
-        Map m = new HashMap();
-        m.put("name", name);
+
+        String cleanedName = name.trim();
+        if (cleanedName.isEmpty()) {
+            return null;
+        }
+
+        String sql = "select i from Department i where upper(i.name)=:name and i.retired=:ret";
+        Map<String, Object> m = new HashMap<>();
+        m.put("name", cleanedName.toUpperCase());
         m.put("ret", false);
-        sql = "select i "
-                + " from Department i "
-                + " where i.name=:name"
-                + " and i.retired=:ret";
         Department i = getFacade().findFirstByJpql(sql, m);
+
         if (i == null) {
-            i = new Department(); 
-            i.setName(name);
+            i = new Department();
+            i.setName(cleanedName);
             getFacade().create(i);
-        } else {
+        } else if (i.isRetired()) {
             i.setRetired(false);
             getFacade().edit(i);
         }
+
         return i;
     }
-    
+
     public Department findAndSaveDepartmentByName(String name, Institution ins) {
-        if (name == null || name.trim().equals("")) {
+        if (name == null) {
             return null;
         }
-        String sql;
-        Map m = new HashMap();
-        m.put("name", name);
+
+        String cleanedName = name.trim();
+        if (cleanedName.isEmpty()) {
+            return null;
+        }
+
+        String sql = "select i from Department i where upper(i.name)=:name and i.retired=:ret";
+        Map<String, Object> m = new HashMap<>();
+        m.put("name", cleanedName.toUpperCase());
         m.put("ret", false);
-        sql = "select i "
-                + " from Department i "
-                + " where i.name=:name"
-                + " and i.retired=:ret";
         Department i = getFacade().findFirstByJpql(sql, m);
+
         if (i == null) {
-            i = new Department(); 
-            i.setName(name);
+            i = new Department();
+            i.setName(cleanedName);
             i.setInstitution(ins);
             getFacade().create(i);
-        } else {
+        } else if (i.isRetired()) {
             i.setRetired(false);
             getFacade().edit(i);
         }
+
         return i;
     }
-    
+
+    public Department findExistingDepartmentByName(String name, Institution ins) {
+        if (name == null) {
+            return null;
+        }
+
+        String cleanedName = name.trim();
+        if (cleanedName.isEmpty()) {
+            return null;
+        }
+
+        String sql = "select i from Department i where upper(i.name)=:name and i.retired=:ret";
+        Map<String, Object> m = new HashMap<>();
+        m.put("name", cleanedName.toUpperCase());
+        m.put("ret", false);
+        Department i = getFacade().findFirstByJpql(sql, m);
+        return i;
+    }
+
+    public DepartmentType findDepartmentType(String deptType) {
+        if (deptType == null || deptType.trim().isEmpty()) {
+            return DepartmentType.Other; // Default to 'Other' if the input is null or empty
+        }
+
+        String cleanedDeptType = deptType.trim().toLowerCase();
+
+        // First, try to match with enum name
+        for (DepartmentType type : DepartmentType.values()) {
+            if (type.name().equalsIgnoreCase(cleanedDeptType)) {
+                return type;
+            }
+        }
+
+        // Next, try to match with labels
+        for (DepartmentType type : DepartmentType.values()) {
+            if (type.getLabel().equalsIgnoreCase(cleanedDeptType)) {
+                return type;
+            }
+        }
+
+        // Finally, attempt partial match with labels
+        for (DepartmentType type : DepartmentType.values()) {
+            if (type.getLabel().toLowerCase().contains(cleanedDeptType)) {
+                return type;
+            }
+        }
+
+        // If no match found, default to 'Other'
+        return DepartmentType.Other;
+    }
+
     public void fillItems() {
         String j;
         j = "select i from Department i where i.retired=false order by i.name";
         items = getFacade().findByJpql(j);
     }
-    
-    public List<Department> getInstitutionDepatrments(Institution ins) {
+
+    public List<Department> getInstitutionDepartments(Institution ins) {
+        List<Department> deps;
+        if (ins == null) {
+            deps = new ArrayList<>();
+        } else {
+            Map<String, Object> m = new HashMap<>();
+            m.put("ins", ins);
+            String jpql = "Select d From Department d "
+                    + " where d.retired=false "
+                    + " and d.institution=:ins "
+                    + " and TYPE(d) <> Route "
+                    + " order by d.name";
+            deps = getFacade().findByJpql(jpql, m);
+        }
+        return deps;
+    }
+
+    public List<Department> getInstitutionLabDepartments(Institution ins) {
+        List<Department> deps;
+        if (ins == null) {
+            deps = new ArrayList<>();
+        } else {
+            Map<String, Object> m = new HashMap<>();
+            m.put("ins", ins);
+            m.put("type", DepartmentType.Lab);
+            String jpql = "Select d From Department d "
+                    + " where d.retired=false "
+                    + " and d.institution=:ins "
+                    + " and d.departmentType=:type "
+                    + " and TYPE(d) <> Route "
+                    + " order by d.name";
+            deps = getFacade().findByJpql(jpql, m);
+        }
+        return deps;
+    }
+
+    public List<Department> getInstitutionAllLabTypesDepartments(Institution ins) {
+        List<Department> deps;
+        if (ins == null) {
+            deps = new ArrayList<>();
+        } else {
+            List<DepartmentType> dtypes = Arrays.asList(DepartmentType.Lab, DepartmentType.External_Lab);
+            Map<String, Object> m = new HashMap<>();
+            m.put("ins", ins);
+            m.put("types", dtypes);
+
+            String jpql = "Select d From Department d "
+                    + " where d.retired=false "
+                    + " and d.institution=:ins "
+                    + " and d.departmentType in :types "
+                    + " and TYPE(d) <> (Route)" // Adjust based on your entity structure
+                    + " order by d.name";
+
+            deps = getFacade().findByJpql(jpql, m);
+        }
+        return deps;
+    }
+
+    public List<Department> getAllDepartmentsWithInstitutionFilter(Institution ins) {
+        List<Department> deps;
+        Map<String, Object> m = new HashMap<>();
+
+        String jpql = "Select d From Department d "
+                + " where d.retired=false "
+                + " and TYPE(d) <> Route "
+                + " and d.name IS NOT NULL "
+                + " and TRIM(d.name) <> '' ";
+
+        if (ins != null) {
+            m.put("ins", ins);
+            jpql += " and d.institution=:ins ";
+        }
+
+        jpql += " order by d.name";
+
+        deps = getFacade().findByJpql(jpql, m);
+
+        return deps != null ? deps : new ArrayList<>();
+    }
+
+    public List<Department> getInstitutionDepartmentsWithSite(Institution ins, Institution site) {
+        List<Department> deps;
+        Map<String, Object> m = new HashMap<>();
+        String jpql = "Select d From Department d "
+                + " where d.retired=false ";
+        if (site != null) {
+            jpql += " and d.site=:site ";
+            m.put("site", site);
+        }
+        if (ins != null) {
+            jpql += " and d.institution=:ins ";
+            m.put("ins", ins);
+        }
+
+        jpql += " and TYPE(d) <> Route "
+                + " order by d.name ";
+
+        deps = getFacade().findByJpql(jpql, m);
+
+        return deps;
+    }
+
+    public List<Department> getInstitutionRoutes(Institution ins) {
         List<Department> deps;
         if (ins == null) {
             deps = new ArrayList<>();
         } else {
             Map m = new HashMap();
             m.put("ins", ins);
-            String sql = "Select d From Department d "
+            String sql = "Select d From Route d "
                     + " where d.retired=false "
                     + " and d.institution=:ins "
                     + " order by d.name";
@@ -128,19 +293,19 @@ public class DepartmentController implements Serializable {
     }
 
     @Deprecated
-    public List<Department> getInsDepartments(Institution currentInstituion) {
+    public List<Department> getInsDepartments(Institution currentInstitution) {
         // Please use public List<Department> getInstitutionDepatrments(Institution ins) {
         List<Department> currentInsDepartments = new ArrayList<>();
-        if (currentInstituion == null) {
+        if (currentInstitution == null) {
             return currentInsDepartments;
         }
         Map m = new HashMap();
-        m.put("ins", currentInstituion);
+        m.put("ins", currentInstitution);
         m.put("ret", false);
         String jpql = "SELECT d "
                 + " FROM Department d "
                 + " where d.retired=:ret "
-                + " and d.institution=:ins"
+                + " and d.institution=:ins "
                 + " order by d.name";
         currentInsDepartments = getFacade().findByJpql(jpql, m);
         if (currentInsDepartments == null) {
@@ -149,6 +314,97 @@ public class DepartmentController implements Serializable {
         return currentInsDepartments;
     }
 
+    public List<Department> getDepartmentsOfInstitutionAndSite() {
+        return getDepartmentsOfInstitutionAndSiteHelper(null, null);
+    }
+
+    public List<Department> getDepartmentsOfInstitutionAndSite(Institution site) {
+        return getDepartmentsOfInstitutionAndSiteHelper(null, site);
+    }
+
+    public List<Department> getDepartmentsOfInstitutionAndSiteForInstitution(Institution ins) {
+        return getDepartmentsOfInstitutionAndSiteHelper(ins, null);
+    }
+
+    public List<Department> getDepartmentsOfInstitutionAndSite(Institution ins, Institution site) {
+        return getDepartmentsOfInstitutionAndSiteHelper(ins, site);
+    }
+
+    private List<Department> getDepartmentsOfInstitutionAndSiteHelper(Institution ins, Institution site) {
+        Map<String, Object> parameters = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("SELECT d FROM Department d WHERE d.retired = :ret AND TYPE(d) NOT IN :excludedTypes");
+        parameters.put("ret", false);
+
+        // Create a list of classes to exclude (e.g., Route)
+        List<Class<?>> excludedTypes = new ArrayList<>();
+        excludedTypes.add(Route.class); // Add any other subclasses to exclude if needed
+        parameters.put("excludedTypes", excludedTypes);
+
+        // Exclude departments without names or with blank names
+        jpql.append(" AND d.name IS NOT NULL AND TRIM(d.name) <> ''");
+
+        // Exclude departments with institution type of CollectingCentre
+        jpql.append(" AND d.institution.institutionType <> :cc ");
+        parameters.put("cc", InstitutionType.CollectingCentre);
+
+        if (ins != null) {
+            jpql.append(" AND d.institution = :ins");
+            parameters.put("ins", ins);
+        }
+
+        if (site != null) {
+            jpql.append(" AND d.site = :site");
+            parameters.put("site", site);
+        }
+
+        jpql.append(" ORDER BY d.name");
+
+        List<Department> departments = getFacade().findByJpql(jpql.toString(), parameters);
+        return departments != null ? departments : new ArrayList<>();
+    }
+
+    public DepartmentType findDepaermentTypeFromDeoaermnrt(Department department) {
+        if (department == null || department.getId() == null) {
+            return DepartmentType.Other;
+        }
+        
+        Department d = getFacade().find(department.getId());
+
+        if (d == null) {
+            return DepartmentType.Other;
+        }
+
+        DepartmentType type = d.getDepartmentType();
+
+        if (type == null) {
+            return DepartmentType.Other;
+        }
+        
+        return type;
+    }
+
+//    public List<Department> getDepartmentsOfInstitutionAndSite(Institution ins, Institution site) {
+//        if (ins == null && site == null) {
+//            return new ArrayList<>();
+//        }
+//        Map<String, Object> parameters = new HashMap<>();
+//        StringBuilder jpql = new StringBuilder("SELECT d FROM Department d WHERE d.retired = :ret ");
+//        parameters.put("ret", false);
+//        if (ins != null) {
+//            jpql.append(" AND d.institution = :ins");
+//            parameters.put("ins", ins);
+//        }
+//        if (site != null) {
+//            jpql.append(" AND d.site = :site");
+//            parameters.put("site", site);
+//        }
+//        if (ins == null && site == null) {
+//            return new ArrayList<>();
+//        }
+//        jpql.append(" ORDER BY d.name");
+//        List<Department> currentInsDepartments = getFacade().findByJpql(jpql.toString(), parameters);
+//        return currentInsDepartments != null ? currentInsDepartments : new ArrayList<>();
+//    }
     public String toListDepartments() {
         fillItems();
         return "/admin/institutions/departments?faces-redirect=true";
@@ -180,6 +436,17 @@ public class DepartmentController implements Serializable {
     public String saveSelectedDepartment() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        if (current.getName() != null) {
+            current.setName(current.getName().trim());
+        }
+        String sql = "select d from Department d where upper(d.name)=:nm and d.retired=false";
+        Map<String, Object> m = new HashMap<>();
+        m.put("nm", current.getName() == null ? "" : current.getName().toUpperCase());
+        Department existing = getFacade().findFirstByJpql(sql, m);
+        if (existing != null && (current.getId() == null || !existing.getId().equals(current.getId()))) {
+            JsfUtil.addErrorMessage("Department with same name already exists");
             return "";
         }
         if (current.getId() == null) {
@@ -271,7 +538,16 @@ public class DepartmentController implements Serializable {
         return departments;
     }
 
-    
+    public List<Department> listAllLabDepartments() {
+        List<Department> departments;
+        Map<String, Object> m = new HashMap<>();
+        m.put("type", DepartmentType.Lab);
+        String sql = "Select d From Department d "
+                + " where d.retired=false "
+                + " and d.departmentType=:type";
+        departments = getFacade().findByJpql(sql, m);
+        return departments;
+    }
 
     public Department getDefaultDepatrment(Institution ins) {
         Department dep;
@@ -388,11 +664,19 @@ public class DepartmentController implements Serializable {
     }
 
     public List<Department> completeDeptPharmacy(String qry) {
+        List<Department> results = new ArrayList<>();
+        if (qry == null) {
+            return results;
+        }
+        if (qry.trim().equals("")) {
+            return results;
+        }
+        qry = qry.trim();
         String sql;
         HashMap hm = new HashMap();
         sql = "select c from Department c "
                 + " where c.retired=false "
-                + " and (c.name) like :q "
+                + " and c.name like :q "
                 + " and c.institution=:ins "
                 + " and c.departmentType=:dt"
                 + " order by c.name";
@@ -400,8 +684,22 @@ public class DepartmentController implements Serializable {
         hm.put("dt", DepartmentType.Pharmacy);
         hm.put("ins", getSessionController().getInstitution());
         hm.put("q", "%" + qry.toUpperCase() + "%");
+        results = getFacade().findByJpql(sql, hm);
 
-        return getFacade().findByJpql(sql, hm);
+        if (results != null && !results.isEmpty()) {
+            return results;
+        }
+        results = new ArrayList<>();
+        if (qry.length() > 2) {
+            hm = new HashMap();
+            sql = "select c from Department c "
+                    + " where c.retired=false "
+                    + " and c.name like :q "
+                    + " order by c.name";
+            hm.put("q", "%" + qry.toUpperCase() + "%");
+            results = getFacade().findByJpql(sql, hm);
+        }
+        return results;
     }
 
     public List<Department> completeDeptWithDeptOrIns(String qry) {
@@ -413,6 +711,22 @@ public class DepartmentController implements Serializable {
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
         return getFacade().findByJpql(sql, hm);
+    }
+
+    public List<Department> completeDepartments(String qry) {
+        List<Department> results;
+        if (qry == null) {
+            qry = "";
+        }
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Department c "
+                + " where c.retired=false "
+                + " and upper(c.name) like :q "
+                + " order by c.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        results = getFacade().findByJpql(sql, hm);
+        return results;
     }
 
     public void prepareAdd() {
@@ -462,6 +776,10 @@ public class DepartmentController implements Serializable {
 
     public List<Department> getInstitutionDepatrments(DepartmentType departmentType) {
         return getInstitutionDepatrments(null, true, departmentType);
+    }
+
+    public List<Department> getInstitutionDepatrments(Institution ins) {
+        return getInstitutionDepatrments(ins, true, null);
     }
 
     public List<Department> getDepartments(String jpql, Map m) {
@@ -629,12 +947,78 @@ public class DepartmentController implements Serializable {
         return getFacade().find(id);
     }
 
+    public Department findDepartment(String strId) {
+        if (strId == null) {
+            return null;
+        }
+        Long id;
+        try {
+            id = Long.valueOf(strId);
+        } catch (Exception e) {
+            return null;
+        }
+        return getFacade().find(id);
+    }
+
     public Department getSuperDepartment() {
         return superDepartment;
     }
 
     public void setSuperDepartment(Department superDepartment) {
         this.superDepartment = superDepartment;
+    }
+
+    public List<DepartmentDuplicateGroup> getDuplicateGroups() {
+        return duplicateGroups;
+    }
+
+    public String navigateToDuplicateDepartments() {
+        detectDuplicateDepartments();
+        return "/admin/institutions/department_duplicates?faces-redirect=true";
+    }
+
+    public void detectDuplicateDepartments() {
+        String jpql = "SELECT d FROM Department d WHERE d.retired=false ORDER BY UPPER(TRIM(d.name)), d.id";
+        List<Department> all = getFacade().findByJpql(jpql);
+        Map<String, List<Department>> grouped = all.stream()
+                .collect(Collectors.groupingBy(d -> d.getName() == null ? "" : d.getName().trim().toUpperCase()));
+        duplicateGroups = grouped.values().stream()
+                .filter(l -> l.size() > 1)
+                .map(l -> new DepartmentDuplicateGroup(l))
+                .collect(Collectors.toList());
+    }
+
+    public void retireDuplicateGroup(DepartmentDuplicateGroup g) {
+        if (g == null || g.getDepartments() == null || g.getDepartments().size() < 2) {
+            return;
+        }
+        g.getDepartments().sort((a, b) -> a.getId().compareTo(b.getId()));
+        for (int i = 1; i < g.getDepartments().size(); i++) {
+            Department d = g.getDepartments().get(i);
+            d.setRetired(true);
+            d.setRetiredAt(new Date());
+            d.setRetirer(sessionController.getLoggedUser());
+            getFacade().edit(d);
+        }
+        detectDuplicateDepartments();
+        JsfUtil.addSuccessMessage("Duplicates retired for " + g.getName());
+    }
+
+    public static class DepartmentDuplicateGroup {
+
+        private List<Department> departments;
+
+        public DepartmentDuplicateGroup(List<Department> departments) {
+            this.departments = departments;
+        }
+
+        public List<Department> getDepartments() {
+            return departments;
+        }
+
+        public String getName() {
+            return departments.get(0).getName();
+        }
     }
 
     /**

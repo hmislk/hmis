@@ -10,7 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
     </cc:interface>
 
@@ -20,7 +20,7 @@
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
         <div class="a4bill" style="width: 210mm;" >
 
-            <div style="height: 55mm!important;"></div>
+            <div style="height: #{configOptionApplicationController.getShortTextValueByKey('Inward Servise Bill Header Height',55)}mm!important;"></div>
 
             <div class="billDetailsFiveFive" >
                 <table style="width: 99%!important;" >
@@ -171,6 +171,33 @@
                         <td style="width: 5px;"></td>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.patient.phn}" class="billDetailsFiveFive" >
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 50px;"></td>
+                        <td>
+                            <h:outputLabel value="Batch Bill" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.deptId}" class="billDetailsFiveFive">
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>
+
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td ></td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="" class="billDetailsFiveFive" >
                             </h:outputLabel>
 
                         </td>
@@ -359,6 +386,13 @@
                     <h:outputLabel value="#{sessionController.currentDate}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                     </h:outputLabel>
+                </div>
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
+                <div class="d-flex gap-2" style="font-size: 12px;">
+                    <h:outputLabel value="Remark :"/>
+                    <h:outputLabel value="#{cc.attrs.bill.cancelledBill.comments}"/>
                 </div>
             </h:panelGroup>
 

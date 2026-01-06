@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/admin/users/index.xhtml">
+            <ui:define name="subcontent">
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers') and !sessionController.firstLogin }" >
+                    <h:outputText value="You are NOT authorized"/>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
+                    <h:form id="form">
+                        <p:panel header="Send Bulk SMS to Patients" class="m-1 w-100">
+                            <div class="row">
+                                <div class="col-6">
+                                    <h:panelGrid columns="8" class="w-100 p-2" >
+                                <h:outputLabel value="Age From" class="w-100"/>
+                                <p:inputText value="#{smsController.ageFrom}" class="w-100"/>
+                                <p:spacer width="5em"></p:spacer>
+                                <h:outputLabel value="Age To" class="w-100"/>
+                                <p:inputText value="#{smsController.ageTo}" class="w-100"/>
+                                <p:spacer width="5em"></p:spacer>
+                                <h:outputLabel value="Max Number to List" class="w-100"/>
+                                <p:inputText value="#{smsController.maxNumberToList}" class="w-100"/>
+
+
+                                <h:outputLabel value="Sex"/>
+                                <p:selectOneMenu class="w-100" value="#{smsController.sex}" >
+                                    <f:selectItem itemLabel="Select Sex" />
+                                    <f:selectItems value="#{enumController.gender}" var="s" itemLabel="#{s}" itemValue="#{s}"/>
+                                </p:selectOneMenu>
+                                <p:spacer></p:spacer>
+                                <h:outputLabel value="Area"/>
+                                <p:autoComplete
+                                    inputStyleClass="w-100"
+                                    class="w-100"
+                                    value="#{smsController.area}" completeMethod="#{areaController.completeArea}" var="a" itemLabel="#{a.name}" itemValue="#{a}" forceSelection="true"/>
+                                <p:spacer></p:spacer>
+                                <h:outputLabel value=""/>
+                                <p:commandButton value="Search" action="#{smsController.searchPatientsForBulkSms}" update="tbl" icon="fa fa-search" class="ui-button-warning"/>
+                                    </h:panelGrid>
+
+                                </div>
+                                <div class="col-6">
+                                    <h:panelGrid columns="1" class="w-100">
+                                        <h:outputLabel value="SMS Template"/>
+                                        <p:inputTextarea value="#{smsController.smsTemplate}" class="w-100"/>
+                                        <h:outputText value="Use placeholders {name}, {phone1}, {phone2}, {address}, {area}, {he/she}, {sir/madam}, {title}" styleClass="text-muted small mt-1"/>
+                                        <p:commandButton
+                                            value="Send SMS"
+                                            action="#{smsController.sendBulkSmsToPatients}"
+                                            icon="fa fa-paper-plane"
+                                            ajax="false"
+                                            class="ui-button-success mt-2"/>
+                                    </h:panelGrid>
+                                </div>
+                            </div>
+                            <p:dataTable
+                                id="tbl"
+                                value="#{smsController.patientsForSms}"
+                                var="pt"
+                                rowKey="#{pt.id}"
+                                selection="#{smsController.selectedPatients}"
+                                selectionMode="multiple"
+                                paginator="true"
+                                rows="10"
+                                paginatorAlwaysVisible="false"
+                                class="w-100 mt-3"
+                                rowsPerPageTemplate="5,10,20">
+                                <p:column selectionBox="true" style="width:3%"/>
+                                <p:column headerText="Name" filterMatchMode="contains" filterBy="#{pt.person.name}" sortBy="#{pt.person.name}" >
+                                    <h:outputText value="#{pt.person.name}"/>
+                                </p:column>
+                                <p:column headerText="Phone" filterMatchMode="contains" filterBy="#{pt.person.phone}" sortBy="#{pt.person.phone}" >
+                                    <h:outputText value="#{pt.person.phone}"/>
+                                </p:column>
+                                <p:column headerText="Mobile" filterMatchMode="contains" filterBy="#{pt.person.mobile}" sortBy="#{pt.person.mobile}" >
+                                    <h:outputText value="#{pt.person.mobile}"/>
+                                </p:column>
+                                <p:column headerText="Area" filterMatchMode="contains" filterBy="#{pt.person.area.name}" sortBy="#{pt.person.area.name}" >
+                                    <h:outputText value="#{pt.person.area.name}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                    </h:form>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -35,7 +35,7 @@
                         <p:commandButton class="ui-button-warning" icon="fas fa-magnifying-glass" id="btnSearch" ajax="false" value="Search" 
                                          action="#{searchController.fillOtherInstitutionBills}"/>
                         <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
-                            <p:dataExporter fileName="All Bills" type="xls" target="tblBills" ></p:dataExporter>
+                            <p:dataExporter fileName="All Bills" type="xlsx" target="tblBills" ></p:dataExporter>
                         </p:commandButton>
                     </h:panelGrid>
 
@@ -91,8 +91,8 @@
                             <h:outputLabel value="Invoice No" rendered="#{not empty bill.invoiceNumber}"/>
                             <h:outputLabel value="#{bill.invoiceNumber}" rendered="#{not empty bill.invoiceNumber}"/>
 
-                            <h:outputLabel value="Ins ID" rendered="#{not empty bill.insId}"/>
-                            <h:outputLabel value="#{bill.insId}" rendered="#{not empty bill.insId}"/>
+                            <h:outputLabel value="Ins ID" rendered="#{not empty bill.deptId}"/>
+                            <h:outputLabel value="#{bill.deptId}" rendered="#{not empty bill.deptId}"/>
 
                             <h:outputLabel value="Dept ID" rendered="#{not empty bill.deptId}"/>
                             <h:outputLabel value="#{bill.deptId}" rendered="#{not empty bill.deptId}"/>

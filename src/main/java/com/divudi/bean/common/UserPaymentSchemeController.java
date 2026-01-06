@@ -7,13 +7,13 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.entity.Institution;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.WebUserPaymentScheme;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.PaymentSchemeFacade;
-import com.divudi.facade.WebUserPaymentSchemeFacade;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.WebUserPaymentScheme;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.PaymentSchemeFacade;
+import com.divudi.core.facade.WebUserPaymentSchemeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -26,7 +26,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
@@ -164,7 +164,7 @@ public  class UserPaymentSchemeController implements Serializable {
         getEjbFacade().create(d);
         currentPaymentScheme = null;
     }
-    
+
     public List<WebUserPaymentScheme> getItemsBill() {
 
 
@@ -213,7 +213,7 @@ public  class UserPaymentSchemeController implements Serializable {
         //////// // System.out.println("Setting user");
         items=null;
         this.selectedUser = selectedUser;
-        
+
     }
 
     public List<PaymentScheme> getSelectedUserDeparment() {

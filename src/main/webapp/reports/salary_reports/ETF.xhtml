@@ -1,0 +1,271 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <p:panel header="EPF" >
+
+                    <div>
+                       
+
+                        <div class="row mb-2">
+                            <div class="col-md-2">                             
+                                <i class="fa fa-repeat" aria-hidden="true"></i>
+                                <p:outputLabel value="Salary Cycle From" class="mx-2"/>
+                            </div>
+                            <div class="col-md-4">
+                                <p:datePicker
+                                    class="w-100" inputStyleClass="w-100"
+                                    showTime="true"
+                                    value="#{reportController.fromDate}" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </div>
+                            <div class="col-md-2">                             
+                                <i class="fa fa-repeat" aria-hidden="true"></i>
+                                <p:outputLabel value="Salary Cycle To" class="mx-2"/>
+                            </div>
+                            <div class="col-md-4">
+                                <p:datePicker
+                                    class="w-100" inputStyleClass="w-100"
+                                    showTime="true"
+                                    value="#{reportController.fromDate}" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+
+                            <div class="col-md-2">
+                                <i class="fa fa-university" aria-hidden="true"></i>
+                                <p:outputLabel value="Institution" class="mx-2"/>
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu filter="true" id="cmdInstitution" 
+                                                 style=" max-width: 100%; overflow-x: auto; "
+                                                 class="w-100"
+                                                 value="#{reportController.institution}">
+                                    <f:selectItem itemLabel="Select Institution" />
+                                    <f:selectItems value="#{institutionController.companies}"
+                                                   var="i"
+                                                   itemLabel="#{i.name}"
+                                                   itemValue="#{i}" />
+                                </p:selectOneMenu>
+
+                            </div>
+
+                            <div class="col-md-2">
+                                <i class="fa fa-hospital" aria-hidden="true"></i>
+                                <p:outputLabel value="Department" class="mx-2"/>
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu filter="true" id="cmdDepartment" 
+                                                 style=" max-width: 100%; overflow-x: auto; "
+                                                 class="w-100"
+                                                 value="#{reportController.institution}">
+                                    <f:selectItem itemLabel="Select Department" />
+                                    <f:selectItems value="#{institutionController.companies}"
+                                                   var="i"
+                                                   itemLabel="#{i.name}"
+                                                   itemValue="#{i}" />
+                                </p:selectOneMenu>
+                            </div>
+
+                        </div>
+
+                        <div class="row mb-2">
+
+                            <div class="col-md-2">
+                                <i class="fa fa-user" aria-hidden="true"></i>
+                                <p:outputLabel value="Employee" class="mx-2"/>
+                            </div>
+                            <div class="col-md-4">
+                                <p:inputText value="" class="w-100" />
+                            </div>
+
+                            <div class="col-md-2">
+                                <i class="fa fa-user" aria-hidden="true"></i>
+                                <p:outputLabel value="Staff Catogary" class="mx-2"/>
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu
+                                    value=""
+                                    style=" max-width: 100%; overflow-x: auto; "
+                                    class="w-100">
+                                    <f:selectItem itemLabel="Select Catogary" />
+                                    <f:selectItems value="" var="sts" itemLabel="#{sts.label}" itemValue="#{sts}" ></f:selectItems>
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+
+                        <!--                        <div class="row mb-2">
+                                                    <div class="col-md-2">
+                                                        <p:outputLabel value="Collecting Centre Sites" />
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <p:selectOneMenu 
+                                                            style=" max-width: 100%; overflow-x: auto; "
+                                                            class="w-100"
+                                                            value="#{institutionController.sites}"
+                                                            filter="true"
+                                                            filterMatchMode="contains">
+                                                            <f:selectItem itemLabel="All" />
+                                                            <f:selectItems value="#{routeController.site}"
+                                                                           var="r"
+                                                                           itemLabel="#{r.name}"
+                                                                           itemValue="#{r}" />
+                                                        </p:selectOneMenu>
+                                                    </div>
+                                                </div>-->
+
+                        <div class="row mb-2">
+
+
+                            <div class="col-md-2">
+                                <i class="fa fa-address-card" aria-hidden="true"></i>
+                                <p:outputLabel value="Staff Designation" class="mx-2"/>
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectOneMenu filter="true" id="designation" 
+                                                 style=" max-width: 100%; overflow-x: auto; "
+                                                 class="w-100"
+                                                 value="#{reportController.institution}">
+                                    <f:selectItem itemLabel="Select Designation" />
+                                    <f:selectItems value="#{institutionController.companies}"
+                                                   var="i"
+                                                   itemLabel="#{i.name}"
+                                                   itemValue="#{i}" />
+                                </p:selectOneMenu>
+                            </div>
+
+                            <div class="col-md-2">
+                                <i class="fa fa-clock" aria-hidden="true"></i>
+                                <p:outputLabel value="Staff Roster" class="mx-2"/>
+                            </div>
+                            <div class="col-md-4">
+                                <p:selectCheckboxMenu id="rosters" 
+                                                      style="width:100%"
+                                                      label="Select Items" 
+                                                      multiple="true">
+                                    <f:selectItem itemLabel="Option 1" itemValue="1" />                                    
+                                </p:selectCheckboxMenu>
+                            </div>
+
+
+
+                        </div>
+
+                        <div class="row mb-2">
+
+
+
+                        </div>
+                    </div>
+
+
+                    <p:commandButton ajax="false" 
+                                     class="ui-button-warning mx-2"
+                                     icon="fas fa-cogs"
+                                     value="Process"
+                                     style="width: 150px"
+                                     action="#{reportController.listCcReportPrint()}" />
+                    <p:commandButton ajax="false" 
+                                     class="ui-button-help mx-2"
+                                     icon="fas fa-stop"
+                                     value="Hold"
+                                     style="width: 150px"
+                                     action="#{reportController.listCcReportPrint()}" />
+
+                    <p:commandButton ajax="false" 
+                                     class="ui-button-danger mx-2"
+                                     icon="fas fa-lock"
+                                     value="Blocked"
+                                     style="width: 150px"
+                                     action="#{reportController.listCcReportPrint()}" />
+                    <p:commandButton 
+                        icon="fa-solid fa-print"
+                        class="mx-1 ui-button-info"
+                        style="width: 150px"
+                        ajax="false" 
+                        value="Print">
+                        <p:printer target="tblExport" />
+                    </p:commandButton>
+                    <p:commandButton id="btnExcel" class="m-1 ui-button-success"
+                                     icon="fas fa-file-excel"
+                                     style="width: 150px"
+                                     ajax="false" value="Excel">
+                        <p:dataExporter type="xlsx" target="tbl" fileName="ETF" />
+                    </p:commandButton>
+                    <p:commandButton 
+                        class="m-2 ui-button-danger" 
+                        icon="fa-solid fa-file-pdf"
+                        style="width: 150px"
+                        ajax="false" 
+                        value="PDF">
+                        <p:dataExporter type="pdf" target="tblExport"  fileName="ETF" ></p:dataExporter>
+                    </p:commandButton>
+                    
+                    </p:panel>
+
+
+
+
+
+
+
+                    <p:dataTable value="#{reportController.bills}" var="bi" id="tblExport">
+                        <!--                        //Mandatory filters
+                        #{bi.bill.retired} - boolean - false
+                        #{bi.retired} - boolean - false
+                        #{bi.bill.billType} - public enum BillType - CollectingCentreBill
+
+                        //For User input Filters
+                        #{bi.bill.billDate} - Date - for user input from and to
+                        #{bi.bill.institution} - Institution - for Instituion or branch
+                        #{bi.bill.fromInstitution} - Institution - COllecting Centre
+                        #{bi.bill.fromInstitution.route} - Route - Route
+
+
+                        #{bi.bill.patient.phn}    Patient MRN
+                        #{bi.bill.deptId} Invoice Number
+                        #{bi.item} - Investigation
+                        #{bi.bill.toDepartment} - Laboratory
+
+                        #{bi.bill.referredBy} Referring Doctor Name
+
+                        #{bi.billItemStatus} - Status
+
+                        -->
+
+                        <p:column headerText="Employee Name" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="NIC / Passport No" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="EPF No" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Company (3%)" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="EPF / ETF Deductable Salary " width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+
+
+                    </p:dataTable>
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

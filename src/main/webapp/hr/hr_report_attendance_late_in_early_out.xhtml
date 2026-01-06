@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      
+
       xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -24,7 +24,7 @@
                             <h:outputLabel value="To : " />
                             <p:calendar value="#{hrReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             <h:outputLabel value="Institution : "/>
-                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>                           
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                             <h:outputLabel value="Employee : "/>
@@ -51,10 +51,10 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder" >                    
+                        <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder" >
                             <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss" rowStyleClass="#{ss.considerForLateIn eq true ? 'greenText':''}">
                                 <f:facet name="header">
-                                    
+
                                     <h:outputLabel value="Attendance Report (Late In and Early Out)"/><br/>
                                     <h:outputLabel value="  From : "  />
                                     <h:outputLabel  value="#{hrReportController.fromDate}" >
@@ -62,7 +62,7 @@
                                     </h:outputLabel>
                                     <h:outputLabel/>
                                     <h:outputLabel/>
-                                    <h:outputLabel value="  To : "/> 
+                                    <h:outputLabel value="  To : "/>
                                     <h:outputLabel  value="#{hrReportController.toDate}">
                                         <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
                                     </h:outputLabel><br/>
@@ -80,7 +80,7 @@
                                     </h:panelGroup>
                                 </f:facet>
                                 <p:column headerText="Emp No">
-                                    <f:facet name="header">                                     
+                                    <f:facet name="header">
                                         <h:outputLabel value="Emp No"  />
                                     </f:facet>
                                     <p:outputLabel value=" #{ss.staff.code}"></p:outputLabel>
@@ -99,38 +99,38 @@
                                     </f:facet>
                                     <p:outputLabel value="#{ss.staff.department.name}"></p:outputLabel>
 
-                                </p:column>                               
+                                </p:column>
                                 <p:column headerText="In Checked ">
                                     <f:facet name="header">
                                         <h:outputLabel value="In Checked"  />
                                     </f:facet>
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
-                                    </h:outputLabel>                                     
-                                </p:column>           
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column>
                                     <f:facet name="header">
                                         <h:outputLabel value="Shift In Time"  />
                                     </f:facet>
                                     <h:outputLabel value="#{ss.shiftStartTime}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
-                                    </h:outputLabel>                                     
-                                </p:column>           
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Late In Minute Varified">
                                     <f:facet name="header">
                                         <h:outputLabel value="Late In Minute Varified"  />
                                     </f:facet>
-                                    <h:outputLabel value="#{ss.lateInVarified}">                                        
+                                    <h:outputLabel value="#{ss.lateInVarified}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
-                                </p:column>   
+                                </p:column>
                                 <p:column headerText="Out Checked ">
                                     <f:facet name="header">
                                         <h:outputLabel value="Out Checked"  />
                                     </f:facet>
                                     <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
-                                    </h:outputLabel>                                     
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column>
                                     <f:facet name="header">
@@ -138,21 +138,21 @@
                                     </f:facet>
                                     <h:outputLabel value="#{ss.shiftEndTime}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
-                                    </h:outputLabel>                                     
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Early Out Minute Varified">
                                     <f:facet name="header">
                                         <h:outputLabel value="Early Out Minute Varified"  />
                                     </f:facet>
-                                    <h:outputLabel value="#{ss.earlyOutVarified}">                                        
+                                    <h:outputLabel value="#{ss.earlyOutVarified}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
-                                </p:column> 
+                                </p:column>
                                 <p:column headerText="Late In Minute Varified">
                                     <f:facet name="header">
                                         <h:outputLabel value="Late In Minute Varified"  />
                                     </f:facet>
-                                    <h:outputLabel value="#{ss.lateInVarified}">                                        
+                                    <h:outputLabel value="#{ss.lateInVarified}">
                                     </h:outputLabel>
                                 </p:column>
                                 <!--                                <p:column headerText="n">
@@ -218,7 +218,7 @@
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>

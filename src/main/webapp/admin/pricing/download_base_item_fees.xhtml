@@ -1,0 +1,351 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:head>
+    </h:head>
+    <h:body>
+
+        <ui:composition template="/admin/pricing/index.xhtml">
+
+            <ui:define name="subcontent">
+
+
+                <p:growl id="msg"/>
+                
+                <!-- Main Content Panel -->
+                <p:panel styleClass="ui-panel-titlebar-center">
+                    <f:facet name="header">
+                        <div class="d-flex align-items-center">
+                            <i class="fa fa-money-bill-wave fa-lg text-primary me-3"></i>
+                            <h3 class="mb-0">Base Items Fees Management</h3>
+                        </div>
+                    </f:facet>
+
+                    <!-- Action Buttons Section -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fa fa-cogs me-2"></i>
+                                        Actions
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <!-- Fill Items Action -->
+                                        <div class="col-lg-4 col-md-6">
+                                            <div class="d-grid">
+                                                <h:form id="fill">
+                                                    <p:commandButton value="Fill Items" 
+                                                                     ajax="false" 
+                                                                     action="#{itemFeeManager.fillBaseItemFees()}" 
+                                                                     icon="fa fa-file" 
+                                                                     styleClass="ui-button-primary ui-button-lg w-100">
+                                                        <f:attribute name="title" value="Initialize base item fees in the system"/>
+                                                    </p:commandButton>
+                                                </h:form>
+                                            </div>
+                                            <small class="text-muted mt-1 d-block">Initialize base item fees in the system</small>
+                                        </div>
+
+                                        <!-- Download Action -->
+                                        <div class="col-lg-4 col-md-6">
+                                            <div class="d-grid">
+                                                <h:form id="download">
+                                                    <p:commandButton value="Download Excel" 
+                                                                     ajax="false" 
+                                                                     icon="fa fa-download" 
+                                                                     styleClass="ui-button-success ui-button-lg w-100" 
+                                                                     action="#{itemFeeManager.downloadBaseItemFeesAsExcel()}">
+                                                        <f:attribute name="title" value="Download base item fees as Excel file"/>
+                                                    </p:commandButton>
+                                                </h:form>
+                                            </div>
+                                            <small class="text-muted mt-1 d-block">Export current fees to Excel format</small>
+                                        </div>
+
+                                        <!-- Upload Action -->
+                                        <div class="col-lg-4 col-md-12">
+                                            <h:form id="upload" enctype="multipart/form-data">
+                                                <div class="input-group">
+                                                    <p:fileUpload value="#{dataUploadController.file}"
+                                                                  mode="simple"
+                                                                  label="Choose Excel File"
+                                                                  accept=".xlsx,.xls"
+                                                                  styleClass="form-control"/>
+                                                    <p:commandButton icon="fa fa-upload"
+                                                                     value="Upload &amp; Replace"
+                                                                     action="#{dataUploadController.uploadAddReplaceFeesFromId()}"
+                                                                     ajax="false"
+                                                                     styleClass="ui-button-warning">
+                                                        <f:attribute name="title" value="Upload Excel file to replace fee values"/>
+                                                    </p:commandButton>
+                                                </div>
+                                                <small class="text-muted mt-1 d-block">Upload Excel file to update fee values</small>
+                                            </h:form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Data Table Section -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fa fa-table me-2"></i>
+                                        Base Item Fees Data
+                                    </h5>
+                                </div>
+                                <div class="card-body p-0">
+                                    <h:form id="dataForm">
+                                        <p:dataTable id="tblFees" 
+                                                     value="#{itemFeeManager.itemFees}" 
+                                                     var="f" 
+                                                     rowIndexVar="n" 
+                                                     rowKey="#{f.id}" 
+                                                     paginator="true" 
+                                                     rows="25" 
+                                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} entries"
+                                                     rowsPerPageTemplate="10,25,50,100,500,1000"
+                                                     styleClass="table table-striped table-hover"
+                                                     paginatorPosition="both"
+                                                     emptyMessage="No base item fees found."
+                                                     widgetVar="feesTable"
+                                                     scrollable="true"
+                                                     scrollHeight="600px">
+                                            
+                                            <f:facet name="header">
+                                                <div class="d-flex justify-content-between align-items-center p-2">
+                                                    <div>
+                                                        <strong>Total Records: #{itemFeeManager.itemFees.size()}</strong>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-muted">Use column filters below to search specific fields</span>
+                                                    </div>
+                                                </div>
+                                            </f:facet>
+                                            
+                                            <p:ajax event="filter" oncomplete="handleFilterComplete()"/>
+                                            
+                                            <script>
+                                                function handleFilterComplete() {
+                                                    // Optional: Add any post-filter logic here
+                                                }
+                                            </script>
+
+                            <!-- Primary Information Columns -->
+                            <p:column headerText="ID" 
+                                      width="60px" 
+                                      sortBy="#{f.id}" 
+                                      filterBy="#{f.id}" 
+                                      filterMatchMode="contains"
+                                      styleClass="text-center">
+                                <f:facet name="header">
+                                    <div class="text-center">
+                                        <i class="fa fa-hashtag me-1"></i>
+                                        ID
+                                    </div>
+                                </f:facet>
+                                <h:outputText value="#{f.id}" styleClass="fw-bold"/>
+                            </p:column>
+
+                            <p:column headerText="Item Code" 
+                                      width="120px" 
+                                      sortBy="#{f.item.code}" 
+                                      filterBy="#{f.item.code}" 
+                                      filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <div class="text-center">
+                                        <i class="fa fa-barcode me-1"></i>
+                                        Item Code
+                                    </div>
+                                </f:facet>
+                                <h:outputText value="#{f.item.code}" styleClass="text-primary fw-semibold"/>
+                            </p:column>
+
+                            <p:column headerText="Item Name" 
+                                      width="200px" 
+                                      sortBy="#{f.item.name}" 
+                                      filterBy="#{f.item.name}" 
+                                      filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <div class="text-center">
+                                        <i class="fa fa-box me-1"></i>
+                                        Item Name
+                                    </div>
+                                </f:facet>
+                                <h:outputText value="#{f.item.name}" styleClass="fw-medium"/>
+                            </p:column>
+
+                            <!-- Fee Information Columns -->
+                            <p:column headerText="Fee Name" 
+                                      width="150px" 
+                                      sortBy="#{f.name}" 
+                                      filterBy="#{f.name}" 
+                                      filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <div class="text-center">
+                                        <i class="fa fa-tag me-1"></i>
+                                        Fee Name
+                                    </div>
+                                </f:facet>
+                                <h:outputText value="#{f.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Fee Type" 
+                                      width="130px" 
+                                      sortBy="#{f.feeType.label}" 
+                                      filterBy="#{f.feeType.label}" 
+                                      filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <div class="text-center">
+                                        <i class="fa fa-list-alt me-1"></i>
+                                        Fee Type
+                                    </div>
+                                </f:facet>
+                                <span class="badge bg-secondary">#{f.feeType.label}</span>
+                            </p:column>
+
+                            <!-- Fee Values Columns -->
+                            <p:column headerText="Local Fee" 
+                                      width="100px" 
+                                      sortBy="#{f.fee}" 
+                                      filterBy="#{f.fee}" 
+                                      filterMatchMode="contains"
+                                      styleClass="text-end">
+                                <f:facet name="header">
+                                    <div class="text-center">
+                                        <i class="fa fa-coins me-1 text-success"></i>
+                                        Local Fee
+                                    </div>
+                                </f:facet>
+                                <h:outputText value="#{f.fee}" styleClass="fw-bold text-success">
+                                    <f:convertNumber type="currency" currencySymbol="Rs. " maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Foreign Fee" 
+                                      width="100px" 
+                                      sortBy="#{f.ffee}" 
+                                      filterBy="#{f.ffee}" 
+                                      filterMatchMode="contains"
+                                      styleClass="text-end">
+                                <f:facet name="header">
+                                    <div class="text-center">
+                                        <i class="fa fa-dollar-sign me-1 text-warning"></i>
+                                        Foreign Fee
+                                    </div>
+                                </f:facet>
+                                <h:outputText value="#{f.ffee}" styleClass="fw-bold text-warning">
+                                    <f:convertNumber type="currency" currencySymbol="$ " maxFractionDigits="2"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <!-- Status Columns -->
+                            <p:column headerText="Discount" 
+                                      width="80px" 
+                                      sortBy="#{f.discountAllowed}" 
+                                      filterBy="#{f.discountAllowed}" 
+                                      filterMatchMode="exact"
+                                      styleClass="text-center">
+                                <f:facet name="header">
+                                    <div class="text-center">
+                                        <i class="fa fa-percentage me-1"></i>
+                                        Discount
+                                    </div>
+                                </f:facet>
+                                <span class="badge #{f.discountAllowed ? 'bg-success' : 'bg-secondary'}">
+                                    <i class="fa #{f.discountAllowed ? 'fa-check' : 'fa-times'} me-1"></i>
+                                    #{f.discountAllowed ? 'Yes' : 'No'}
+                                </span>
+                            </p:column>
+
+                            <p:column headerText="Status" 
+                                      width="80px" 
+                                      sortBy="#{f.retired}" 
+                                      filterBy="#{f.retired}" 
+                                      filterMatchMode="exact"
+                                      styleClass="text-center">
+                                <f:facet name="header">
+                                    <div class="text-center">
+                                        <i class="fa fa-info-circle me-1"></i>
+                                        Status
+                                    </div>
+                                </f:facet>
+                                <span class="badge #{f.retired ? 'bg-danger' : 'bg-success'}">
+                                    <i class="fa #{f.retired ? 'fa-times-circle' : 'fa-check-circle'} me-1"></i>
+                                    #{f.retired ? 'Retired' : 'Active'}
+                                </span>
+                            </p:column>
+
+                            <!-- Organizational Columns -->
+                            <p:column headerText="Institution" 
+                                      width="180px" 
+                                      sortBy="#{f.institution.name}" 
+                                      filterBy="#{f.institution.name}" 
+                                      filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <div class="text-center">
+                                        <i class="fa fa-building me-1"></i>
+                                        Institution
+                                    </div>
+                                </f:facet>
+                                <h:outputText value="#{f.institution.name}" rendered="#{f.institution ne null}"/>
+                                <span class="text-muted" rendered="#{f.institution eq null}">N/A</span>
+                            </p:column>
+
+                            <p:column headerText="Department" 
+                                      width="180px" 
+                                      sortBy="#{f.department.name}" 
+                                      filterBy="#{f.department.name}" 
+                                      filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <div class="text-center">
+                                        <i class="fa fa-sitemap me-1"></i>
+                                        Department
+                                    </div>
+                                </f:facet>
+                                <h:outputText value="#{f.department.name}" rendered="#{f.department ne null}"/>
+                                <span class="text-muted" rendered="#{f.department eq null}">N/A</span>
+                            </p:column>
+
+                            <p:column headerText="Staff" 
+                                      width="200px" 
+                                      sortBy="#{f.staff.person.nameWithTitle}" 
+                                      filterBy="#{f.staff.person.nameWithTitle}" 
+                                      filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <div class="text-center">
+                                        <i class="fa fa-user-md me-1"></i>
+                                        Staff
+                                    </div>
+                                </f:facet>
+                                <h:outputText value="#{f.staff.person.nameWithTitle}" rendered="#{f.staff ne null}"/>
+                                <span class="text-muted" rendered="#{f.staff eq null}">N/A</span>
+                            </p:column>
+
+                                        </p:dataTable>
+                                    </h:form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </p:panel>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

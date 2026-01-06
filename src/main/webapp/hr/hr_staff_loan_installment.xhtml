@@ -135,11 +135,12 @@
                     <p:dataTable value="#{staffLoanController.paysheetComponents}" id="tb5"
                                  var="i" scrollHeight="200"
                                  rowKey="#{i.id}" rowIndexVar="a"
+                                 selectionMode="multiple"
                                  selection="#{staffLoanController.selectedList}" >
                         <f:facet name="header">
                             <h:outputLabel value="#{staffLoanController.paysheetComponent.name}"/>
                         </f:facet>
-                        <p:column  selectionMode="multiple" styleClass="noPrintButton" >                            
+                        <p:column   styleClass="noPrintButton" >                            
                         </p:column>
                         <p:column headerText="No">
                             <f:facet name="header">

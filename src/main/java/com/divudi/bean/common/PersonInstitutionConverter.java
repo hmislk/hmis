@@ -5,7 +5,7 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.PersonInstitution;
+import com.divudi.core.entity.PersonInstitution;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
@@ -33,8 +33,8 @@ public class PersonInstitutionConverter implements Converter {
             PersonInstitution o = (PersonInstitution) object;
             return o.getId() == null ? "" : o.getId().toString();
         } else {
-            throw new IllegalArgumentException("object " + object + " is of type " + object.getClass().getName() + "; expected type: com.divudi.entity.PersonInstitution");
+            throw new IllegalArgumentException("object " + object + " is of type " + object.getClass().getName() + "; expected type: com.divudi.core.entity.PersonInstitution");
         }
     }
-    
+
 }

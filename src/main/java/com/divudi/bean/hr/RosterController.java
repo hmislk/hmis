@@ -8,9 +8,9 @@
  */
 package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.hr.Roster;
-import com.divudi.facade.RosterFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.hr.Roster;
+import com.divudi.core.facade.RosterFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -193,5 +193,5 @@ public class RosterController implements Serializable {
         }
     }
 
-   
+
 }

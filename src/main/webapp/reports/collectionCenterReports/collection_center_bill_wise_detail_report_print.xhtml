@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:report="http://xmlns.jcp.org/jsf/composite/ezcomp/reports"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="#{reportController.reportTemplateFileIndexName}">
+            <ui:define name="content">
+
+                <h:form >
+                    <p:panel styleClass="w-100">
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Collection Center Bill Wise Detail Report - #{reportsController.reportType}" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false" 
+                                        value="Print">
+                                        <p:printer target="reportView" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back to Report" 
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="collection_center_bill_wise_detail_report?faces-redirect=true" >
+                                    </p:commandButton>
+                                </div>
+
+                            </div>
+                        </f:facet>
+
+                        <h:panelGroup id="reportView">
+                            <!--table 2 / report type - Summary With Letter-->
+                            <h:panelGroup rendered="#{reportsController.reportType eq 'SummaryWithLetter'}" class="mt-2">
+                                <report:cc_bill_wise_detail_summary_with_letter/>                               
+                            </h:panelGroup>
+
+                            <!--table 3 / report type - Summary With Letter and Test Name-->
+                            <h:panelGroup rendered="#{reportsController.reportType eq 'SummaryWithLetterAndTestName'}" class="mt-2">
+                                <report:cc_bill_wise_detail_summary_with_letter_and_test_name/>                               
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

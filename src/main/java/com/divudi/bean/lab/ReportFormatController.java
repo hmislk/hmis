@@ -12,15 +12,19 @@ import com.divudi.bean.clinical.PhotoCamBean;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UploadController;
 
-import com.divudi.entity.Upload;
-import com.divudi.entity.lab.ReportFormat;
-import com.divudi.facade.ReportFormatFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.Upload;
+import com.divudi.core.entity.lab.ReportFormat;
+import com.divudi.core.facade.ReportFormatFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.lab.PatientReport;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -56,6 +60,15 @@ public class ReportFormatController implements Serializable {
     private List<ReportFormat> items = null;
     private Upload upload;
     String selectText = "";
+
+    private String fileUrl;
+    private String viewImageType;
+
+    public String navigateToReportTemplateImageUpload() {
+        viewImageType = "UPLOADIMAGE";
+        makeNull();
+        return "/admin/lims/report_template_image_upload?faces-redirect=true";
+    }
 
     public List<ReportFormat> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from ReportFormat c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -140,22 +153,44 @@ public class ReportFormatController implements Serializable {
             return;
         }
     }
-    
-    public void removeUploadedFile(){
+
+    public void makeNull() {
+        current = null;
+        fileUrl = null;
+    }
+
+    public void removeUploadedFile() {
         if (getUpload() == null || getUpload().getId() == null) {
             JsfUtil.addErrorMessage("Select Category");
             return;
         }
-        byte[] fileBytes;
         try {
             getUpload().setBaImage(null);
             uploadController.saveUpload(getUpload());
-            
+            JsfUtil.addSuccessMessage("Removed Successfully");
         } catch (Exception ex) {
             Logger.getLogger(PhotoCamBean.class.getName()).log(Level.SEVERE, null, ex);
             JsfUtil.addErrorMessage("Error");
             return;
         }
+    }
+
+    public void removeUrlFile() {
+        System.out.println("URL");
+        getUpload().setFileUrl(null);
+        uploadController.saveUpload(getUpload());
+        JsfUtil.addSuccessMessage("Removed Successfully");
+
+    }
+
+    public void saveFileUrl() {
+        if (getUpload() == null || getUpload().getId() == null) {
+            JsfUtil.addErrorMessage("Select Category");
+            return;
+        }
+        getUpload().setFileUrl(fileUrl);
+        uploadController.saveUpload(getUpload());
+        JsfUtil.addSuccessMessage("Save Successfullt");
     }
 
     public ReportFormat getCurrent() {
@@ -165,9 +200,27 @@ public class ReportFormatController implements Serializable {
         return current;
     }
 
+    public ReportFormat getValidReportFormat() {
+        String jpql = "select f "
+                + " from ReportFormat f"
+                + " where f.retired=:ret"
+                + " order by f.id asc";
+        Map params = new HashMap();
+        params.put("ret", false);
+        ReportFormat r = getFacade().findFirstByJpql(jpql, params);
+        if (r == null) {
+            r = new ReportFormat();
+            r.setName("Common Report Format");
+            r.setCreatedAt(new Date());
+            r.setCreater(sessionController.getLoggedUser());
+            getFacade().create(r);
+        }
+        return r;
+    }
+
     public void setCurrent(ReportFormat current) {
         this.current = current;
-        if (current != null && current.getId()!=null) {
+        if (current != null && current.getId() != null) {
             upload = uploadController.findUpload(current);
             if (upload == null) {
                 upload = new Upload();
@@ -176,7 +229,7 @@ public class ReportFormatController implements Serializable {
                 upload.setCreatedAt(new Date());
                 uploadController.saveUpload(upload);
             }
-        }else{
+        } else {
             upload = null;
         }
     }
@@ -202,16 +255,59 @@ public class ReportFormatController implements Serializable {
         return ejbFacade;
     }
 
+    public List<ReportFormat> fillParentReportFormats() {
+
+        List<ReportFormat> formats = new ArrayList<>();
+        Map params = new HashMap();
+        String jpql = "SELECT i "
+                + " FROM ReportFormat i "
+                + " where i.retired=false "
+                + " and i.parentCategory=null ";
+
+        jpql += " order by i.name";
+
+        formats = ejbFacade.findByJpql(jpql, params);
+        return formats;
+    }
+
+    public List<ReportFormat> fillReportFormatsForLoggedDepartmentSite(PatientReport patientReport) {
+        List<ReportFormat> formats = new ArrayList<>();
+        Map params = new HashMap();
+        String jpql = "SELECT i "
+                + " FROM ReportFormat i "
+                + " WHERE i.retired = false "
+                + " AND i.parentCategory IS NOT NULL "
+                + " AND i.parentCategory =:rf ";
+
+        if (sessionController.getDepartment() != null && sessionController.getDepartment().getSite() != null) {
+            jpql += " AND i.institution = :site";
+            params.put("site", sessionController.getDepartment().getSite());
+        }
+
+        ReportFormat  parentCategory = ejbFacade.find(patientReport.getPatientInvestigation().getInvestigation().getReportFormat().getId());
+        params.put("rf", parentCategory  );
+
+        jpql += " ORDER BY i.orderNo ASC";
+
+        try {
+            formats = ejbFacade.findByJpql(jpql, params);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return formats;
+    }
+
     public StreamedContent getImage() throws IOException {
         FacesContext context = FacesContext.getCurrentInstance();
         if (context.getCurrentPhaseId() == PhaseId.RENDER_RESPONSE) {
-            // So, we're rendering the HTML. Return a stub StreamedContent so that it will generate right URL.
-            return DefaultStreamedContent.builder().build();
-        } else if (getUpload() == null) {
-            return DefaultStreamedContent.builder().build();
+            return DefaultStreamedContent.builder().contentType("image/png").stream(() -> new ByteArrayInputStream(new byte[0])).build();
+        } else if (getUpload() == null || getUpload().getBaImage() == null) {
+            // Return a placeholder StreamedContent when no image is available
+            return DefaultStreamedContent.builder().contentType("image/png").stream(() -> new ByteArrayInputStream(new byte[0])).build();
         } else {
             String imageType = getUpload().getFileType();
-            if (imageType == null || imageType.trim().equals("")) {
+            if (imageType == null || imageType.trim().isEmpty()) {
                 imageType = "image/png";
             }
             return DefaultStreamedContent.builder()
@@ -227,6 +323,20 @@ public class ReportFormatController implements Serializable {
             items = getEjbFacade().findByJpql(sql);
         }
         return items;
+    }
+
+    private List<ReportFormat> parentFormat;
+
+    public List<ReportFormat> getParentFormat() {
+        if (parentFormat == null) {
+            String sql = "SELECT i FROM ReportFormat i where i.retired=false and i.parentCategory=null order by i.name";
+            parentFormat = getEjbFacade().findByJpql(sql);
+        }
+        return parentFormat;
+    }
+
+    public void setParentFormat(List<ReportFormat> parentFormat) {
+        this.parentFormat = parentFormat;
     }
 
     public void setItems(List<ReportFormat> items) {
@@ -247,6 +357,22 @@ public class ReportFormatController implements Serializable {
 
     public void setUpload(Upload upload) {
         this.upload = upload;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+
+    public String getViewImageType() {
+        return viewImageType;
+    }
+
+    public void setViewImageType(String viewImageType) {
+        this.viewImageType = viewImageType;
     }
 
     /**

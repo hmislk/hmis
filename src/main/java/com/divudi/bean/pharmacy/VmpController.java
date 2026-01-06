@@ -9,22 +9,23 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.SymanticType;
-import com.divudi.entity.Category;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.MeasurementUnit;
-import com.divudi.entity.pharmacy.PharmaceuticalItem;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.entity.pharmacy.VirtualProductIngredient;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.SpecialityFacade;
-import com.divudi.facade.VmpFacade;
-import com.divudi.facade.VirtualProductIngredientFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.SymanticType;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.entity.pharmacy.VirtualProductIngredient;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.SpecialityFacade;
+import com.divudi.core.facade.VmpFacade;
+import com.divudi.core.facade.VirtualProductIngredientFacade;
+import com.divudi.core.util.CommonFunctions;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,16 +73,14 @@ public class VmpController implements Serializable {
     boolean reportedAs;
     VirtualProductIngredient addingVtmInVmp;
     VirtualProductIngredient removingVtmInVmp;
-    @Inject
-    VtmInVmpController vtmInVmpController;
+
     @EJB
     VirtualProductIngredientFacade vivFacade;
     List<VirtualProductIngredient> vivs;
 
     @EJB
     VmpFacade vmpFacade;
-
-    List<Vmp> vmpList;
+    private boolean editable;
 
     public String navigateToListAllVmps() {
         String jpql = "Select vmp "
@@ -107,7 +106,7 @@ public class VmpController implements Serializable {
         if (vmp == null) {
             vmp = new Vmp();
             vmp.setName(vmpName);
-            String vmpCode = CommonController.nameToCode("vmp_" + vmpName);
+            String vmpCode = CommonFunctions.nameToCode("vmp_" + vmpName);
             vmp.setSymanticType(SymanticType.Pharmacologic_Substance);
             getFacade().create(vmp);
         }
@@ -220,7 +219,7 @@ public class VmpController implements Serializable {
                 + " and a.vmp=:vmp "
                 + " order by a.name";
         m.put("ret", false);
-        m.put("vmp", (Vmp) vmp);
+        m.put("vmp", vmp);
         suggestions = ampFacade.findByJpql(jpql, m);
         return suggestions;
     }
@@ -267,7 +266,7 @@ public class VmpController implements Serializable {
         String j;
         Map m = new HashMap();
         j = "Select vmp "
-                + " from VtmsVmps viv join viv.vmp vmp"
+                + " from VirtualProductIngredient viv join viv.vmp vmp"
                 + " where viv.retired=:ret "
                 + " and viv.vtm=:vtm "
                 + " order by vmp.name";
@@ -294,7 +293,7 @@ public class VmpController implements Serializable {
         }
         v = new Vmp();
         v.setName(vmpName);
-        v.setCode("vmp_" + CommonController.nameToCode(vmpName));
+        v.setCode("vmp_" + CommonFunctions.nameToCode(vmpName));
         v.setVtm(vtm);
         v.setDosageForm(dosageForm);
         v.setStrengthOfAnIssueUnit(strengthOfAnIssueUnit);
@@ -324,7 +323,7 @@ public class VmpController implements Serializable {
         }
         v = new Vmp();
         v.setName(vmpName);
-        v.setCode("vmp_" + CommonController.nameToCode(vmpName));
+        v.setCode("vmp_" + CommonFunctions.nameToCode(vmpName));
         v.setVtm(vtm);
         v.setDosageForm(dosageForm);
         v.setStrengthUnit(strengthUnit);
@@ -378,7 +377,7 @@ public class VmpController implements Serializable {
         if (vmp == null) {
             return new ArrayList<>();
         } else {
-            String j = "select v from VtmsVmps v where v.vmp=:vmp";
+            String j = "select v from VirtualProductIngredient v where v.vmp=:vmp";
             Map m = new HashMap();
             m.put("vmp", vmp);
             gs = getVivFacade().findByJpql(j, m);
@@ -441,7 +440,7 @@ public class VmpController implements Serializable {
     }
 
     private void saveVmp() {
-        if (current.getName() == null || current.getName().equals("")) {
+        if (current.getName() == null || current.getName().isEmpty()) {
             current.setName(createVmpName());
         }
 
@@ -531,7 +530,7 @@ public class VmpController implements Serializable {
     }
 
     public List<Vmp> getSelectedItems() {
-        if (selectText.trim().equals("")) {
+        if (selectText.trim().isEmpty()) {
             selectedItems = getFacade().findByJpql("select c from Vmp c where c.retired=false order by c.name");
         } else {
             String sql = "select c from Vmp c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
@@ -543,10 +542,24 @@ public class VmpController implements Serializable {
     public void prepareAdd() {
         current = new Vmp();
         addingVtmInVmp = new VirtualProductIngredient();
+        editable = true;
+    }
+
+    public void edit() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select one to edit");
+            return;
+        }
+        editable = true;
+    }
+
+    public void cancel() {
+        current = null;
+        editable = false;
     }
 
     public void bulkUpload() {
-        List<String> lstLines = Arrays.asList(getBulkText().split("\\r?\\n"));
+        String[] lstLines = getBulkText().split("\\r?\\n");
         for (String s : lstLines) {
             List<String> w = Arrays.asList(s.split(","));
             try {
@@ -561,9 +574,8 @@ public class VmpController implements Serializable {
                 tix.setName(ix);
                 tix.setDepartment(null);
 
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
-
         }
     }
 
@@ -586,6 +598,7 @@ public class VmpController implements Serializable {
         }
         recreateModel();
         getItems();
+        editable = false;
     }
 
     public void save() {
@@ -650,6 +663,7 @@ public class VmpController implements Serializable {
         getItems();
         current = null;
         getCurrent();
+        editable = false;
     }
 
     private VmpFacade getFacade() {
@@ -676,6 +690,14 @@ public class VmpController implements Serializable {
         this.specialityFacade = specialityFacade;
     }
 
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
+    }
+
     /**
      *
      */
@@ -684,7 +706,7 @@ public class VmpController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             VmpController controller = (VmpController) facesContext.getApplication().getELResolver().
@@ -693,15 +715,13 @@ public class VmpController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
+            long key;
+            key = Long.parseLong(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

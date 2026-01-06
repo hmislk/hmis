@@ -82,12 +82,12 @@
                         </f:facet>
 
                         <p:column headerText="Bill No" 
-                                  sortBy="#{d.bill.insId}">
+                                  sortBy="#{d.bill.deptId}">
                             <f:facet name="header">
                                 <h:outputLabel value="Bill No"/>
                             </f:facet>
-                            <h:outputLabel value="#{d.bill.insId}"/>
-                            <h:outputLabel value=" - #{d.bill.billedBill.insId}" rendered="#{d.bill.billedBill ne null}"/>
+                            <h:outputLabel value="#{d.bill.deptId}"/>
+                            <h:outputLabel value=" - #{d.bill.billedBill.deptId}" rendered="#{d.bill.billedBill ne null}"/>
                             <f:facet name="footer">
                                 <h:outputLabel value="Total"/>
                             </f:facet>

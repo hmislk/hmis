@@ -4,33 +4,32 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
+import com.divudi.bean.cashTransaction.CashBookEntryController;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.CreditBean;
 import com.divudi.ejb.EjbApplication;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BilledBillFacade;
-import com.divudi.facade.CancelledBillFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.RefundBillFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.*;
+import com.divudi.service.PaymentService;
+import com.divudi.service.StaffService;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BilledBillFacade;
+import com.divudi.core.facade.CancelledBillFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.RefundBillFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -65,7 +64,6 @@ public class CreditCompanyBillSearch implements Serializable {
     PaymentMethod paymentMethod;
     PaymentScheme paymentScheme;
     List<Bill> bills;
-    private CommonFunctions commonFunctions;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -79,11 +77,21 @@ public class CreditCompanyBillSearch implements Serializable {
     @EJB
     private BillComponentFacade billCommponentFacade;
     @EJB
+    StaffService staffBean;
+    @EJB
+    PaymentFacade paymentFacade;
+    @EJB
+    PaymentService paymentService;
+    @Inject
+    CashBookEntryController cashBookEntryController;
+    @EJB
     private RefundBillFacade refundBillFacade;
     @Inject
     SessionController sessionController;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    PatientDepositController patientDepositController;
     @EJB
     EjbApplication ejbApplication;
     private List<BillItem> tempbillItems;
@@ -93,6 +101,7 @@ public class CreditCompanyBillSearch implements Serializable {
     private Date toDate;
     private String comment;
     WebUser user;
+    private PaymentMethodData paymentMethodData;
 
     public WebUser getUser() {
         return user;
@@ -139,6 +148,22 @@ public class CreditCompanyBillSearch implements Serializable {
             }
         }
         return bills;
+    }
+
+    public String navigateToBillPreview(Bill b) {
+        String page;
+        switch (b.getBillTypeAtomic()) {
+            case INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED:
+                page = "/credit/inpatient_credit_company_bill_reprint?faces-redirect=true";
+                break;
+            case OPD_CREDIT_COMPANY_PAYMENT_RECEIVED:
+                page = "/credit/credit_company_bill_reprint?faces-redirect=true";
+                break;
+            default:
+                page = "credit_company_bill_reprint?faces-redirect=true";
+                break;
+        }
+        return page;
     }
 
     public BillFeeFacade getBillFeeFacade() {
@@ -242,13 +267,13 @@ public class CreditCompanyBillSearch implements Serializable {
         return false;
     }
 
-    private CancelledBill createCancelBill() {
+    private CancelledBill createCancelBill(BillNumberSuffix billSuffix) {
         CancelledBill cb = new CancelledBill();
         cb.copy(getBill());
-        cb.invertValue(getBill());
+        cb.invertAndAssignValuesFromOtherBill(getBill());
 
-        cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
-        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.CashRecieveBill, BillClassType.CancelledBill, BillNumberSuffix.CRDCAN));
+        cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.CancelledBill, billSuffix));
+        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.CashRecieveBill, BillClassType.CancelledBill, billSuffix));
 
         cb.setBilledBill(getBill());
         cb.setBillDate(new Date());
@@ -277,6 +302,12 @@ public class CreditCompanyBillSearch implements Serializable {
             return true;
         }
 
+        // Check if this is a cancellation bill (bill created during cancellation process)
+        if (isBillACancellationBill(getBill())) {
+            JsfUtil.addErrorMessage("This is a Cancellation Bill and cannot be cancelled again.");
+            return true;
+        }
+
         if (checkPaid()) {
             JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
             return true;
@@ -291,6 +322,34 @@ public class CreditCompanyBillSearch implements Serializable {
         }
 
         return false;
+    }
+
+    /**
+     * Checks if the given bill is a cancellation bill (bill created during cancellation process).
+     * Cancellation bills have specific BillTypeAtomic values and should not be allowed to be cancelled again.
+     *
+     * @param bill The bill to check
+     * @return true if the bill is a cancellation bill, false otherwise
+     */
+    private boolean isBillACancellationBill(Bill bill) {
+        if (bill == null || bill.getBillTypeAtomic() == null) {
+            return false;
+        }
+
+        BillTypeAtomic billType = bill.getBillTypeAtomic();
+        return billType == BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION
+            || billType == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION
+            || billType == BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION;
+    }
+
+    /**
+     * Public method to check if the current bill is a cancellation bill.
+     * Used by the UI to disable cancel button and show appropriate messages.
+     *
+     * @return true if the current bill is a cancellation bill, false otherwise
+     */
+    public boolean isBillACancellationBill() {
+        return isBillACancellationBill(getBill());
     }
 
 //    if (getTabId().equals("tabBht")) {
@@ -318,7 +377,7 @@ public class CreditCompanyBillSearch implements Serializable {
 //
 //        return tmp;
 //    }
-//      
+//
 //       private void saveBhtBillItem(Bill b) {
 //        BillItem temBi = new BillItem();
 //        temBi.setBill(b);
@@ -344,11 +403,12 @@ public class CreditCompanyBillSearch implements Serializable {
                 return;
             }
 
-            CancelledBill cb = createCancelBill();
+            CancelledBill cb = createCancelBill(BillNumberSuffix.CRDCAN);
 
             //Copy & paste
             //  if (webUserController.hasPrivilege("LabBillCancelling")) {
             if (true) {
+                cb.setBillTypeAtomic(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
                 getCancelledBillFacade().create(cb);
                 cancelBillItems(cb);
                 getBill().setCancelled(true);
@@ -357,6 +417,8 @@ public class CreditCompanyBillSearch implements Serializable {
                 JsfUtil.addSuccessMessage("Cancelled");
                 WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
                 getSessionController().setLoggedUser(wb);
+                paymentService.createPaymentsForCancelling(cb);
+//                createPayment(cb, paymentMethod);
                 printPreview = true;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);
@@ -368,9 +430,232 @@ public class CreditCompanyBillSearch implements Serializable {
         }
 
     }
+
+    public void cancelCreditCompanyPaymentBill() {
+        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+            if (errorCheck()) {
+                return;
+            }
+
+            CancelledBill cb = createCancelBill(BillNumberSuffix.INWCCPAYCAN);
+
+            //Copy & paste
+            //  if (webUserController.hasPrivilege("LabBillCancelling")) {
+            if (true) {
+                cb.setBillTypeAtomic(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+                getCancelledBillFacade().create(cb);
+                cancelBillItems(cb);
+                getBill().setCancelled(true);
+                getBill().setCancelledBill(cb);
+                getBilledBillFacade().edit(getBill());
+                JsfUtil.addSuccessMessage("Cancelled");
+                WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
+                for(BillItem cancellingBillItem : cb.getBillItems()){
+                    getBillBean().updateInwardDipositList(cancellingBillItem.getPatientEncounter(), cb);
+                }
+                getSessionController().setLoggedUser(wb);
+                paymentService.createPayment(cb, getPaymentMethodData());
+                //createPayment(cb, paymentMethod);
+                printPreview = true;
+                paymentMethodData = null;
+            } else {
+                getEjbApplication().getBillsToCancel().add(cb);
+                JsfUtil.addSuccessMessage("Awaiting Cancellation");
+            }
+
+        } else {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+        }
+
+    }
+
+    /**
+     * @deprecated This method will be removed in the next iteration.
+     * Pharmacy credit company payment cancellations are now handled through the unified OPD credit
+     * cancellation methods, as pharmacy credit bills are being consolidated with OPD credit bills.
+     * The separate Pharmacy Credit Settle bill type (BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_RECEIVED)
+     * and its cancellation type (BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION) are being deprecated
+     * in favor of the unified OPD Credit Settle bill type.
+     */
+    @Deprecated
+    public void cancelPharmacyCreditCompanyPaymentBill() {
+        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+            if (errorCheck()) {
+                return;
+            }
+
+            CancelledBill cb = createCancelBill(BillNumberSuffix.PHACCPAYCAN);
+
+            //Copy & paste
+            //  if (webUserController.hasPrivilege("LabBillCancelling")) {
+            if (true) {
+                cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+                getCancelledBillFacade().create(cb);
+                cancelBillItems(cb);
+                getBill().setCancelled(true);
+                getBill().setCancelledBill(cb);
+                getBilledBillFacade().edit(getBill());
+                JsfUtil.addSuccessMessage("Cancelled");
+                WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
+                getSessionController().setLoggedUser(wb);
+                paymentService.createPayment(cb, getPaymentMethodData());
+                printPreview = true;
+                paymentMethodData = null;
+            } else {
+                getEjbApplication().getBillsToCancel().add(cb);
+                JsfUtil.addSuccessMessage("Awaiting Cancellation");
+            }
+
+        } else {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+        }
+
+    }
+
+    public void listnerForPaymentMethodChange(Bill b) {
+        if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
+            getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
+            getPaymentMethodData().getPatient_deposit().setTotalValue(b.getTotal());
+            com.divudi.core.entity.PatientDeposit pd = patientDepositController.checkDepositOfThePatient(b.getPatientEncounter().getPatient(), sessionController.getDepartment());
+            if (pd != null && pd.getId() != null) {
+                getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+            }
+        } else if (getPaymentMethod() == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(b.getTotal());
+        } else if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
+//            getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
+            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(b.getPatientEncounter().getPatient(), sessionController.getDepartment());
+
+            if (pd != null && pd.getId() != null) {
+                boolean hasPatientDeposit = false;
+                for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                        hasPatientDeposit = true;
+                        cd.getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
+                        cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+
+                    }
+                }
+            }
+
+        }
+    }
+
     List<Bill> billsToApproveCancellation;
     List<Bill> billsApproving;
     private Bill billForCancel;
+
+    public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
+        List<Payment> ps = new ArrayList<>();
+        if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                Payment p = new Payment();
+                p.setBill(bill);
+                p.setInstitution(getSessionController().getInstitution());
+                p.setDepartment(getSessionController().getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(getSessionController().getLoggedUser());
+                p.setPaymentMethod(cd.getPaymentMethod());
+
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        break;
+                    case Cheque:
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        break;
+                    case Cash:
+                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        break;
+                    case ewallet:
+                        break;
+                    case Agent:
+                        break;
+                    case Credit:
+                        break;
+                    case PatientDeposit:
+                        break;
+                    case Slip:
+                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
+                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
+                        break;
+                    case OnCall:
+                        break;
+                    case OnlineSettlement:
+                        break;
+                    case Staff:
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+                        }
+                        break;
+                    case YouOweMe:
+                        break;
+                    case MultiplePaymentMethods:
+                        break;
+                }
+
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+        } else {
+            Payment p = new Payment();
+            p.setBill(bill);
+            p.setInstitution(getSessionController().getInstitution());
+            p.setDepartment(sessionController.getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(getSessionController().getLoggedUser());
+            p.setPaymentMethod(pm);
+
+            switch (pm) {
+                case Card:
+                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    break;
+                case Cheque:
+                    p.setChequeDate(paymentMethodData.getCheque().getDate());
+                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    break;
+                case Cash:
+                    break;
+                case ewallet:
+                    break;
+                case Agent:
+                    break;
+                case Credit:
+                    break;
+                case PatientDeposit:
+                    break;
+                case Slip:
+                    p.setBank(paymentMethodData.getSlip().getInstitution());
+                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
+                case OnCall:
+                    break;
+                case OnlineSettlement:
+                    break;
+                case Staff:
+                    break;
+                case YouOweMe:
+                    break;
+                case MultiplePaymentMethods:
+                    break;
+            }
+
+            p.setPaidValue(p.getBill().getNetTotal());
+            paymentFacade.create(p);
+            cashBookEntryController.writeCashBookEntryAtPaymentCreation(p);
+            ps.add(p);
+        }
+        return ps;
+    }
 
     public void approveCancellation() {
 
@@ -442,19 +727,49 @@ public class CreditCompanyBillSearch implements Serializable {
     @EJB
     private CreditBean creditBean;
 
-    private void updateReferenceBill(BillItem tmp) {
-        double dbl = getCreditBean().getPaidAmount(tmp.getReferenceBill(), BillType.CashRecieveBill);
+    private void updateReferenceBill(BillItem cancellationBillItem) {
+        Bill referenceBill = cancellationBillItem.getReferenceBill();
 
-        tmp.getReferenceBill().setPaidAmount(0 - dbl);
-        getBillFacade().edit(tmp.getReferenceBill());
+        // The cancellation bill item has negative netValue (inverted from original)
+        // The amount that was originally added during settlement is the absolute value
+        double originalSettlementAmount = Math.abs(cancellationBillItem.getNetValue());
+
+        // Reverse the settlement by subtracting the original amount from paidAmount
+        double currentPaidAmount = referenceBill.getPaidAmount();
+        referenceBill.setPaidAmount(currentPaidAmount - originalSettlementAmount);
+
+        // Recalculate settled amounts (will exclude the cancelled settlement)
+        double settledCreditValueByCompanies = getCreditBean().getSettledAmountByCompany(referenceBill);
+        double settledCreditValueByPatient = getCreditBean().getSettledAmountByPatient(referenceBill);
+
+        // Update the settled amount fields
+        referenceBill.setSettledAmountByPatient(settledCreditValueByPatient);
+        referenceBill.setSettledAmountBySponsor(settledCreditValueByCompanies);
+
+        // CRITICAL FIX: Update balance field to stay synchronized with paid amount changes
+        // Calculate the accurate current balance using the same formula used in settlement process
+        double totalSettlement = settledCreditValueByCompanies + settledCreditValueByPatient;
+        double netTotal = Math.abs(referenceBill.getNetTotal() + referenceBill.getVat());
+        double refundAmount = Math.abs(getCreditBean().getRefundAmount(referenceBill));
+        double currentBalance = netTotal - (totalSettlement + refundAmount);
+        referenceBill.setBalance(Math.max(0, currentBalance)); // Ensure balance doesn't go negative
+
+        getBillFacade().edit(referenceBill);
 
     }
 
-    private void updateReferenceBht(BillItem tmp) {
-        double dbl = getCreditBean().getPaidAmount(tmp.getPatientEncounter(), BillType.CashRecieveBill);
+    private void updateReferenceBht(BillItem cancellationBillItem) {
+        PatientEncounter encounter = cancellationBillItem.getPatientEncounter();
 
-        tmp.getPatientEncounter().setCreditPaidAmount(0 - dbl);
-        getPatientEncounterFacade().edit(tmp.getPatientEncounter());
+        // The cancellation bill item has negative netValue (inverted from original)
+        // The amount that was originally added during settlement is the absolute value
+        double originalSettlementAmount = Math.abs(cancellationBillItem.getNetValue());
+
+        // Reverse the settlement by subtracting the original amount from creditPaidAmount
+        double currentPaidAmount = encounter.getCreditPaidAmount();
+        encounter.setCreditPaidAmount(currentPaidAmount - originalSettlementAmount);
+
+        getPatientEncounterFacade().edit(encounter);
 
     }
 
@@ -720,7 +1035,7 @@ public class CreditCompanyBillSearch implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -732,7 +1047,7 @@ public class CreditCompanyBillSearch implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -740,14 +1055,6 @@ public class CreditCompanyBillSearch implements Serializable {
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
         resetLists();
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public String getComment() {
@@ -788,5 +1095,16 @@ public class CreditCompanyBillSearch implements Serializable {
 
     public void setPatientEncounterFacade(PatientEncounterFacade patientEncounterFacade) {
         this.patientEncounterFacade = patientEncounterFacade;
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
     }
 }

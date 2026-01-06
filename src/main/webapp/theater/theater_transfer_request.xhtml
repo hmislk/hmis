@@ -11,29 +11,29 @@
     <ui:define name="content">
         <h:form>
             <p:panel rendered="#{!transferRequestController.printPreview}">
-                <f:facet name="header" >                                  
-                    <h:panelGrid columns="4" style="min-width: 100%;" >                        
-                        <h:outputLabel value="To :#{transferRequestController.bill.toDepartment.name} " />     
+                <f:facet name="header" >
+                    <h:panelGrid columns="4" style="min-width: 100%;" >
+                        <h:outputLabel value="To :#{transferRequestController.bill.toDepartment.name} " />
                         <p:commandButton  value="Request" action="#{transferRequestController.request}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                         </p:commandButton>
                         <p:commandButton  value="New Bill" action="#{transferRequestController.recreate}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
-                        </p:commandButton>                        
+                        </p:commandButton>
 
                     </h:panelGrid>
                 </f:facet>
                 <p:panelGrid columns="2">
-                    <p:panelGrid columns="3">                        
+                    <p:panelGrid columns="3">
                         <f:facet name="header">
                             Select Department To Request For
                         </f:facet>
-                        <p:autoComplete  value="#{transferRequestController.bill.toDepartment}" 
+                        <p:autoComplete  value="#{transferRequestController.bill.toDepartment}"
                                         forceSelection="true"
-                                        completeMethod="#{departmentController.completeDept}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />                    
+                                        completeMethod="#{departmentController.completeDept}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                     </p:panelGrid>
                     <p:panel header="Add Item ">
                         <p:autoComplete  value="#{transferRequestController.currentBillItem.item}"
-                                         forceSelection="true"  
-                                         completeMethod="#{itemController.completeAmpItem}" 
+                                         forceSelection="true"
+                                         completeMethod="#{itemController.completeAmpItem}"
                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                             <p:column headerText="Item" >
                                 <h:outputLabel value="#{vt.name}"></h:outputLabel>
@@ -42,8 +42,8 @@
                                 <h:outputLabel value="#{vt.code}"></h:outputLabel>
                             </p:column>
                             <p:column headerText="Pack Size" >
-                                <p:outputLabel value=" X #{vt.dblValue}" 
-                                               rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
+                                <p:outputLabel value=" X #{vt.dblValue}"
+                                               rendered="#{vt.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}"/>
                             </p:column>
                             <f:ajax execute="@this" event="blur" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{transferRequestController.onEdit()}"/>
                         </p:autoComplete>
@@ -51,35 +51,35 @@
                         <p:commandButton value="Add Item" action="#{transferRequestController.addItem}" ajax="false"/>
                     </p:panel>
                 </p:panelGrid>
-                <p:dataTable styleClass="noBorder" var="bi"  scrollable="true" 
+                <p:dataTable styleClass="noBorder" var="bi"  scrollable="true"
                              scrollHeight="250"  value="#{transferRequestController.billItems}"
-                              id="itemList" editable="true" >  
+                              id="itemList" editable="true" >
 
-                    <f:facet name="header">  
-                        Bill Item 
-                    </f:facet>  
+                    <f:facet name="header">
+                        Bill Item
+                    </f:facet>
 
-                    <p:column headerText="Item Name" >  
-                        #{bi.item.name} 
-                    </p:column>  
+                    <p:column headerText="Item Name" >
+                        #{bi.item.name}
+                    </p:column>
 
-                    <p:column headerText="Qty" >                          
-                        <p:inputText autocomplete="off"  id="qty" value="#{bi.tmpQty}" label="Qty">                         
+                    <p:column headerText="Qty" >
+                        <p:inputText autocomplete="off"  id="qty" value="#{bi.tmpQty}" label="Qty">
                             <f:ajax event="blur" render=":#{p:resolveFirstComponentWithId('tab',view).clientId} "  execute="@this" listener="#{transferRequestController.onEdit(bi)}" ></f:ajax>
                             <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId} "  execute="@this" listener="#{transferRequestController.onEdit(bi)}" ></f:ajax>
                         </p:inputText>
-                    </p:column>  
+                    </p:column>
 
                     <p:column>
                         <p:commandButton ajax="false" value="Remove" action="#{transferRequestController.remove(bi)}"/>
                     </p:column>
-                </p:dataTable>  
+                </p:dataTable>
 
                 <p:spacer height="50"/>
                 <th:history></th:history>
- 
 
-            </p:panel>   
+
+            </p:panel>
             <p:panel rendered="#{transferRequestController.printPreview}" >
                 <p:commandButton value="New Bill" ajax="false" action="#{transferRequestController.recreate}" >
                 </p:commandButton>
@@ -87,11 +87,11 @@
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
                 <h:panelGroup id="gpBillPreview">
-                    <ph:transferRequest  bill="#{transferRequestController.bill}" />    
+                    <ph:transferRequest  bill="#{transferRequestController.bill}" />
                 </h:panelGroup>
             </p:panel>
 
         </h:form>
-    </ui:define>  
+    </ui:define>
 
 </ui:composition>

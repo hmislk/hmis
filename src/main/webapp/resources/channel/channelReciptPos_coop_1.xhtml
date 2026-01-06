@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" class="com.divudi.entity.Bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" class="com.divudi.core.entity.Bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="dup" />
     </cc:interface>
 
@@ -54,22 +54,22 @@
                         <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.roomNo}" style="font-size: 14px!important;">
                         </h:outputLabel>
                     </div>
-                    <div style="position: absolute!important; font-size: 15px!important; left: 60%!important; top: 67%!important;">                        
+                    <div style="position: absolute!important; font-size: 15px!important; left: 60%!important; top: 67%!important;">
                         <h:outputLabel value="#{cc.attrs.bill.netTotal-cc.attrs.bill.staffFee}" style="font-size: 14px!important;">
                             <f:convertNumber pattern="0.00"/>
-                        </h:outputLabel>                        
+                        </h:outputLabel>
                     </div>
 
-                    <div style="position: absolute!important; font-size: 15px!important; left: 20%!important; top: 67%!important;">                        
+                    <div style="position: absolute!important; font-size: 15px!important; left: 20%!important; top: 67%!important;">
                         <h:outputLabel value="#{cc.attrs.bill.staffFee}" style="font-size: 14px!important;">
                             <f:convertNumber pattern="0.00"/>
-                        </h:outputLabel>                        
+                        </h:outputLabel>
                     </div>
 
-                    <div style="position: absolute!important; font-size: 15px!important; left: 15%!important; top: 79%!important;">                        
+                    <div style="position: absolute!important; font-size: 15px!important; left: 15%!important; top: 79%!important;">
                         <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size: 14px!important;">
                             <f:convertNumber pattern="0.00"/>
-                        </h:outputLabel>                        
+                        </h:outputLabel>
                     </div>
 
                     <div style="position: absolute!important; font-size: 15px!important; left: 55%!important; top: 88%!important;">
@@ -77,7 +77,7 @@
                             <f:convertDateTime pattern="dd MM yy hh:mm a" ></f:convertDateTime>
                         </h:outputLabel>
                     </div>
-                    
+
                     <div style="position: absolute!important; font-size: 15px!important; left: 55%!important; top: 80%!important;">
                         <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.code}" style="font-size: 14px!important;" rendered="#{cc.attrs.bill.paidBill ne null}" ></h:outputLabel>
                     </div>

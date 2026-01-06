@@ -9,10 +9,10 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.pharmacy.Atm;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.facade.AtmFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.pharmacy.Atm;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.facade.AtmFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,6 +47,7 @@ public class AtmController implements Serializable {
     private List<Atm> items;
     List<Atm> atmList;
     String selectText;
+    private boolean editable;
 
     public String navigateToListAllAtms() {
         String jpql = "Select atm "
@@ -145,7 +146,7 @@ public class AtmController implements Serializable {
 
     public List<Atm> getSelectedItems() {
 
-        if (selectText == null || selectText.trim().equals("")) {
+        if (selectText == null || selectText.trim().isEmpty()) {
             selectedItems = getFacade().findByJpql("select c from Atm c where c.retired=false order by c.name");
         } else {
             String sql = "select c from Atm c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
@@ -157,6 +158,20 @@ public class AtmController implements Serializable {
 
     public void prepareAdd() {
         current = new Atm();
+        editable = true;
+    }
+
+    public void edit() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select one to edit");
+            return;
+        }
+        editable = true;
+    }
+
+    public void cancel() {
+        current = null;
+        editable = false;
     }
 
     public void setSelectedItems(List<Atm> selectedItems) {
@@ -184,11 +199,12 @@ public class AtmController implements Serializable {
         }
         recreateModel();
         getItems();
+        editable = false;
     }
-    
+
     public void saveAtm(Atm atm) {
         if(atm==null) return;
-        
+
         if (atm.getId() != null) {
             getFacade().edit(atm);
         } else {
@@ -244,6 +260,7 @@ public class AtmController implements Serializable {
         getItems();
         current = null;
         getCurrent();
+        editable = false;
     }
 
     private AtmFacade getFacade() {
@@ -263,6 +280,14 @@ public class AtmController implements Serializable {
         this.items = items;
     }
 
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
+    }
+
     /**
      *
      */
@@ -271,7 +296,7 @@ public class AtmController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             AtmController controller = (AtmController) facesContext.getApplication().getELResolver().
@@ -280,15 +305,13 @@ public class AtmController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
+            long key;
+            key = Long.parseLong(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

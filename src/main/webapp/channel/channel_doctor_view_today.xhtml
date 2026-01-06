@@ -17,7 +17,7 @@
                 </f:facet>
                 <p:panel>
                     <h:panelGrid columns="2" >
-                        <p:selectOneRadio value="#{channelReportController.reportKeyWord.string}" 
+                        <p:selectOneRadio value="#{channelReportController.reportKeyWord.string}"
                                           rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}">
                             <f:selectItem itemValue="0" itemLabel="All" />
                             <f:selectItem itemValue="1" itemLabel="Morning(Till 11.59 am)" />
@@ -25,7 +25,7 @@
                         </p:selectOneRadio>
                     </h:panelGrid>
                     <h:panelGrid columns="3" >
-                       
+
                         <p:outputLabel value="With Agency" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" styleClass="noPrintButton"/>
                         <p:selectBooleanCheckbox value="#{channelReportController.agncy}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" styleClass="noPrintButton"/>
                         <p:commandButton value="Process" action="#{channelReportController.createTotalDoctor()}" styleClass="noPrintButton" ajax="false">
@@ -36,7 +36,7 @@
                             <p:printer target="pan1" />
                         </p:commandButton>
                         <p:commandButton value="Excel" action="#" ajax="false">
-                            <p:dataExporter target="tbl" type="xls" fileName="all_doctor" />
+                            <p:dataExporter target="tbl" type="xlsx" fileName="all_doctor" />
                         </p:commandButton>
                     </h:panelGrid>
                 </p:panel>
@@ -46,9 +46,9 @@
                         <p:outputLabel value="#{sessionController.loggedUser.institution.address}"/><br></br>
                         <p:outputLabel value="Total Doctor Fees"/><br></br>
                         <p:outputLabel value="Date: "/>
-                        <p:outputLabel value="#{commonController.currentDateTime}" >
+                        <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                        </p:outputLabel>     
+                        </p:outputLabel>
                     </f:facet>
                     <p:column headerText="Consultant" style="width: 10px!important;">
                         <f:facet name="header">
@@ -61,7 +61,7 @@
                             <p:outputLabel value="Consultant" style="float: left;"/>
                         </f:facet>
                         <p:outputLabel value="#{bs.consultant.person.nameWithTitle}" />
-                    </p:column>   
+                    </p:column>
                     <p:column headerText="Not Paid Bill" styleClass="numberCol">
                         <p:outputLabel value="#{bs.notPaidBillCount}" >
                             <f:convertNumber pattern="#,##0"/>

@@ -7,21 +7,21 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Department;
-import com.divudi.entity.Fee;
-import com.divudi.entity.Item;
-import com.divudi.entity.MedicalPackage;
-import com.divudi.entity.MedicalPackageFee;
-import com.divudi.entity.MedicalPackageItem;
-import com.divudi.entity.Staff;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InvestigationFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.MedicalPackageFeeFacade;
-import com.divudi.facade.MedicalPackageItemFacade;
-import com.divudi.facade.PackegeFacade;
-import com.divudi.facade.StaffFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Fee;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.MedicalPackage;
+import com.divudi.core.entity.MedicalPackageFee;
+import com.divudi.core.entity.MedicalPackageItem;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.MedicalPackageFeeFacade;
+import com.divudi.core.facade.MedicalPackageItemFacade;
+import com.divudi.core.facade.PackegeFacade;
+import com.divudi.core.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

@@ -3,7 +3,7 @@
         position: relative!important;
         margin-top: -2cm!important;
         width: 100%;
-        padding: 0px!important;
+        padding-left: 5%;
         margin: 0px!important;
         border: none!important;
         font-family:Arial, Helvetica, sans-serif!important;
@@ -14,20 +14,24 @@
 
     }
 
-    .fiveinchbill{
-        position: relative!important;
-        padding: 5px!important;
-        width: 12cm!important;
-        height: 14cm!important;
-
-        font-family: sans-serif!important;
-        font-size: 11px!important;
-        margin: auto!important;
-        background-size: 100% auto!important;
-        /*        border: 1px solid!important;*/
+    .fiveinchbill {
+        position: relative !important;
+        padding: 5px !important;
+        width: 21cm !important; /* Changed from 12cm to A4 width */
+        height: auto !important; /* Changed from fixed height to auto */
+        min-height: 14cm !important;
+        font-family: sans-serif !important;
+        font-size: 11px !important;
+        margin: auto !important;
+        background-size: 100% auto !important;
         font-size: 130%;
-        text-transform: capitalize!important;
+        text-transform: capitalize !important;
+    }
 
+    /* Add this new rule to hide the header specifically for inward service bills */
+    .inward-service-bill .institutionName,
+    .inward-service-bill .institutionContact {
+        display: none!important;
     }
 
     .channelRecipt_24_2x9_3{
@@ -113,6 +117,30 @@
         font-size: 50px!important;
     }
 
+    .fivefivecustom3bill{
+        position: relative!important;
+        padding: 0px!important;
+        height: 14cm!important;
+        width: 12cm!important;
+        padding-right: 1cm;
+        font-size: 11px!important;
+        font-family: serif;
+        text-transform: capitalize!important;
+    }
+
+    .medicineListTable{
+        margin-right: 1cm;
+        padding-right: 1cm;
+    }
+
+    .billFooter{
+        position: sticky;
+        top:11.5cm!important;
+        width: 90%;
+        font-size: 11px!important;
+        color: black;
+    }
+
 }
 
 
@@ -132,7 +160,33 @@
         text-transform: capitalize!important;
 
     }
-    
+
+    .fivefivecustom3bill{
+        position: relative!important;
+        padding: 0px!important;
+        height: 14cm!important;
+        width: 12cm!important;
+        font-size: 11px!important;
+        font-family: serif;
+        text-transform: capitalize!important;
+        padding-right: 1cm;
+        border: 1px solid black;
+        background-color: lightgray;
+    }
+
+    .medicineListTable{
+        margin-right: 1cm;
+        padding-right: 1cm;
+    }
+
+    .billFooter{
+        position: sticky;
+        top:11.5cm!important;
+        width: 90%;
+        font-size: 12px;
+        color: black;
+    }
+
     .posbill{
         position: relative!important;
 
@@ -360,6 +414,7 @@ itemsBlockRight{
 .totalsBlock{
     font-size: 15px!important;
     font-family:Verdana, Helvetica, sans-serif!important;
+    font-weight: bold;
 }
 
 .totalsItemBlock{
@@ -370,4 +425,8 @@ itemsBlockRight{
 .totalsBlockFiveFiveNo{
     font-size: 10px!important;
     font-family:Arial, Helvetica, sans-serif!important;
+}
+.bill-data {
+    padding: 5px;
+    text-align: left;
 }

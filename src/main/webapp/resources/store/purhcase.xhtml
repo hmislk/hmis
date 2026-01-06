@@ -111,14 +111,14 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    
+
                     <p:column>
                         <f:facet name="header">P. Value</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    
+
 
 <!--                    <p:column rendered="#{webUserController.hasPrivilege('PharmacyPurchaseWh')}">
                         <f:facet name="header">Whole S.P</f:facet>
@@ -139,7 +139,7 @@
                             <p:column ></p:column>-->
                             <p:column footerText="#{0-cc.attrs.bill.total}">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{cc.attrs.bill.total}">
+                                    <h:outputLabel value="#{0 - cc.attrs.bill.total}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
@@ -155,13 +155,27 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-
                         </p:row>
-                        <p:row rendered="#{cc.attrs.bill.discount!=0}">
-                            <p:column colspan="8" footerText="Discount"/>
-                            <p:column footerText="#{0-cc.attrs.bill.discount}">
+                        <p:row rendered="#{cc.attrs.bill.expenseTotal!=0}">
+                            <p:column colspan="5" footerText="Expense"/>
+                            <p:column colspan="2" >
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{0-cc.attrs.bill.discount}">
+                                    <p:dataTable rowIndexVar="rowIndex" value="#{cc.attrs.bill.billExpenses}" var="bex" class="w-100">
+                                        <p:column>
+                                            <h:outputText value="#{bex.item.name}" ></h:outputText>
+                                        </p:column>
+                                        <p:column >
+                                            <h:outputLabel value="#{bex.grossValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                                </f:facet>
+                            </p:column>
+                            <p:column colspan="1" footerText="" />
+                            <p:column footerText="#{0-cc.attrs.bill.expenseTotal}">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{0-cc.attrs.bill.expenseTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>

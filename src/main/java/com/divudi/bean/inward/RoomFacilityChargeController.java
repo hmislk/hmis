@@ -9,13 +9,13 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.inward.RoomFacility;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.inward.RoomFacilityCharge;
-import com.divudi.entity.inward.TimedItemFee;
-import com.divudi.facade.RoomFacilityChargeFacade;
-import com.divudi.facade.TimedItemFeeFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.inward.RoomFacility;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
+import com.divudi.core.entity.inward.TimedItemFee;
+import com.divudi.core.facade.RoomFacilityChargeFacade;
+import com.divudi.core.facade.TimedItemFeeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -69,7 +69,7 @@ public class RoomFacilityChargeController implements Serializable {
 //                    + " AND (rm.name) LIKE :q"
 //                    + " ORDER BY rm.name";
     public List<RoomFacilityCharge> completeRoom(String query) {
-        
+
         List<RoomFacilityCharge> suggestions;
         String sql;
         HashMap hm = new HashMap();
@@ -135,7 +135,7 @@ public class RoomFacilityChargeController implements Serializable {
 //                    + " and (p.room.filled=false or p.room=:rm) "
 //                    + " and (p.name) like :q"
 //                    + " order by p.name";
-//            
+//
 //            hm.put("rm", getCurrent().getRoom());
 //            hm.put("q", "%" + query.toUpperCase() + "%");
 //            suggestions = getFacade().findByJpql(sql, hm);

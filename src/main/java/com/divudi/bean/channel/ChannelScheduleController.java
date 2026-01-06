@@ -4,7 +4,6 @@
  */
 package com.divudi.bean.channel;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.DoctorSpecialityController;
@@ -12,63 +11,62 @@ import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.FeeChangeType;
-import com.divudi.data.FeeType;
-import com.divudi.data.PersonInstitutionType;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.Department;
-import com.divudi.entity.FeeChange;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.SessionNumberGenerator;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.FeeChangeFacade;
-import com.divudi.facade.FeeFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.SessionNumberGeneratorFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillType;
-import com.divudi.data.MessageType;
-import com.divudi.data.OptionScope;
-import com.divudi.data.SmsSentResponse;
-import com.divudi.data.channel.ChannelScheduleEvent;
+import com.divudi.core.data.FeeChangeType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.dto.ChannelHospitalFeeDTO;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.FeeChange;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.SessionNumberGenerator;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.FeeChangeFacade;
+import com.divudi.core.facade.FeeFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.ServiceSessionFacade;
+import com.divudi.core.facade.SessionNumberGeneratorFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.MessageType;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.channel.ChannelScheduleEvent;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.SmsManagerEjb;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.DoctorSpeciality;
-import com.divudi.entity.Item;
-import com.divudi.entity.ServiceSessionInstance;
-import com.divudi.entity.Sms;
-import com.divudi.entity.channel.SessionInstance;
-import com.divudi.entity.lab.ItemForItem;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.DoctorSpecialityFacade;
-import com.divudi.facade.ItemForItemFacade;
-import com.divudi.facade.ServiceSessionInstanceFacade;
-import com.divudi.facade.SessionInstanceFacade;
-import com.divudi.facade.SmsFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.DoctorSpeciality;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Sms;
+import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.entity.lab.ItemForItem;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.DoctorSpecialityFacade;
+import com.divudi.core.facade.ItemForItemFacade;
+import com.divudi.core.facade.SessionInstanceFacade;
+import com.divudi.core.facade.SmsFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.annotation.FacesConfig;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.mail.Session;
 import javax.persistence.TemporalType;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
+import org.primefaces.event.SelectEvent;
 import org.primefaces.model.DefaultScheduleModel;
 import org.primefaces.model.ScheduleModel;
 
@@ -159,8 +157,9 @@ public class ChannelScheduleController implements Serializable {
     private String sessionInstanceOldTimeFormatted;
     private Date sessionInstanceOldDayMonth;
     private Date sessionInstanceOldTime;
+    private List<ServiceSession> retiredItems;
 
-    public void channelSheduleForAllDoctor(Staff stf) {
+    public String channelSheduleForAllDoctor(Staff stf) {
         if (stf == null) {
             getSelectedConsultants();
             for (Staff st : listConsultant) {
@@ -169,6 +168,58 @@ public class ChannelScheduleController implements Serializable {
         }
         generateSessions(stf);
 
+        return "/channel/all_doctor_channel?faces-redirect=true";
+    }
+
+    public String navigateSheduleManagementFromChannelBooking(Speciality speciality, Staff staff, SessionInstance session) {
+        if (speciality != null) {
+            this.speciality = speciality;
+        }
+        if (staff != null) {
+            this.currentStaff = staff;
+        }
+        if (session != null) {
+            this.current = session.getOriginatingSession();
+            fillFees();
+        }
+
+        return "/channel/channel_shedule?faces-redirect=true";
+    }
+
+    public String navigateSessionManagementFromChannelBooking(Speciality speciality, Staff staff, SessionInstance session) {
+        if (speciality != null) {
+            this.speciality = speciality;
+        }
+        if (staff != null) {
+            this.currentStaff = staff;
+        }
+        if (session != null) {
+            this.current = session.getOriginatingSession();
+            fillSessionInstance();
+            this.currentSessionInstance = session;
+            assignOlddateAndOldTimFromCurrentSessionInstance();
+        }
+
+        return "/channel/session_instance_management?faces-redirect=true";
+    }
+
+    public void updateSessionEndTime() {
+        String sessionDuration = configOptionApplicationController.getShortTextValueByKey("Default Channel Session Duration", "2");
+        int duration = 0;
+        if (isNumeric(sessionDuration)) {
+            duration = Integer.parseInt(sessionDuration);
+        } else {
+            duration = 2;
+        }
+
+        if (getCurrent().getStartingTime() == null) {
+            getCurrent().setEndingTime(null);
+        } else {
+            Calendar e = Calendar.getInstance();
+            e.setTime(getCurrent().getStartingTime());
+            e.add(Calendar.HOUR, duration);
+            getCurrent().setEndingTime(e.getTime());
+        }
     }
 
     public void generateSessions(Staff st) {
@@ -218,6 +269,13 @@ public class ChannelScheduleController implements Serializable {
         }
     }
 
+    public void onEventSelect(SelectEvent<ChannelScheduleEvent> selectEvent) {
+        ChannelScheduleEvent event = selectEvent.getObject();
+        if (event != null && event.getSessionInstance() != null) {
+            currentSessionInstance = event.getSessionInstance();
+        }
+    }
+
     public List<Staff> getSelectedConsultants() {
         String sql;
         Map m = new HashMap();
@@ -250,6 +308,10 @@ public class ChannelScheduleController implements Serializable {
     public String navigateToChannelSchedule() {
 //        itemController.fillItemsForInward();
         return "/channel/channel_shedule?faces-redirect=true";
+    }
+
+    public String navigateToListRetiredChannelSchedules() {
+        return "/channel/retired_channel_shedules?faces-redirect=true";
     }
 
     public String navigateToChannelScheduleManagement() {
@@ -358,8 +420,8 @@ public class ChannelScheduleController implements Serializable {
         ServiceSession ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
         String s;
 
-        String sessionTime = CommonController.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
-        String sessionDate = CommonController.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
+        String sessionTime = CommonFunctions.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
+        String sessionDate = CommonFunctions.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
         String doc = bs.getStaff().getPerson().getNameWithTitle();
         String patientName = b.getPatient().getPerson().getNameWithTitle();
 
@@ -402,7 +464,7 @@ public class ChannelScheduleController implements Serializable {
             JsfUtil.addErrorMessage("Select Item Fee");
             return;
         }
-        if (itemFee.getName() == null || itemFee.getName().trim().equals("")) {
+        if (itemFee.getName() == null || itemFee.getName().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please Fill Fee Name");
             return;
         }
@@ -583,17 +645,19 @@ public class ChannelScheduleController implements Serializable {
 
     public List<Staff> getSpecialityStaff() {
         List<Staff> suggestions = new ArrayList<>();
-        if (getSpeciality() == null) {
-            return suggestions;
-        }
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         jpql = "select p "
                 + " from Staff p "
-                + " where p.retired=false "
-                + " and p.speciality =:sp "
-                + " order by p.person.name";
-        params.put("sp", speciality);
+                + " where p.retired=false ";
+
+        if (getSpeciality() != null) {
+            jpql += " and p.speciality = :sp ";
+            params.put("sp", getSpeciality());
+        }
+
+        jpql += " order by p.person.name";
+
         suggestions = getStaffFacade().findByJpql(jpql, params);
         return suggestions;
     }
@@ -662,7 +726,9 @@ public class ChannelScheduleController implements Serializable {
             return;
         }
         if (current.getId() == null) {
-            saveSelected();
+            JsfUtil.addErrorMessage("Please save the session and add the additional items");
+            return;
+            // saveSelected();
         }
         if (additionalItemToAdd == null) {
             JsfUtil.addErrorMessage("No Item Selected to add");
@@ -743,6 +809,7 @@ public class ChannelScheduleController implements Serializable {
             current = new ServiceSession();
             current.setInstitution(sessionController.getInstitution());
             current.setDepartment(sessionController.getDepartment());
+            current.setAcceptOnlineBookings(true);
 //            createFees();
         }
         return current;
@@ -777,6 +844,35 @@ public class ChannelScheduleController implements Serializable {
         return items;
     }
 
+    public void fillRetiredServiceSessions() {
+        System.out.println("fillRetiredServiceSessions");
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "Select s From ServiceSession s "
+                + " where s.retired=:ret "
+                + " and type(s)=:class "
+                + " and s.staff=:stf "
+                + " and s.originatingSession is null "
+                + " order by s.sessionWeekday,s.startingTime ";
+        hm.put("ret", true);
+        hm.put("stf", currentStaff);
+        hm.put("class", ServiceSession.class);
+        retiredItems = getFacade().findByJpql(sql, hm);
+    }
+
+    public void unretireCurrentServiceSession() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Current Service Session");
+            return;
+        }
+        if (current.isRetired() == false) {
+            JsfUtil.addErrorMessage("THis is NOT a retired Service Session");
+            return;
+        }
+        current.setRetired(false);
+        getFacade().edit(current);
+    }
+
     public List<ItemFee> fetchStaffServiceSessions() {
         String sql;
         HashMap m = new HashMap();
@@ -803,8 +899,8 @@ public class ChannelScheduleController implements Serializable {
         itemFees = null;
         createFees();
     }
-    
-    public void assignOlddateAndOldTimFromCurrentSessionInstance(){
+
+    public void assignOlddateAndOldTimFromCurrentSessionInstance() {
         setSessionInstanceOldTime(currentSessionInstance.getStartingTime());
         setSessionInstanceOldDayMonth(currentSessionInstance.getSessionDate());
     }
@@ -825,6 +921,7 @@ public class ChannelScheduleController implements Serializable {
         if (sessionInstanceOldTimeFormatted != updatedSessionStartTimeFormatted || sessionInstanceOldDayMonthFormatted != updatedSessionDateFormatted) {
             sendSmsOnChannelAppointmentTimeChange();
         }
+        fillSessionInstance();
 
         JsfUtil.addSuccessMessage("Saved successfully");
 
@@ -872,6 +969,12 @@ public class ChannelScheduleController implements Serializable {
     }
 
     private boolean checkError() {
+        if (configOptionApplicationController.getBooleanValueByKey("The Session Category is mandatory in Channel Schedule Management")) {
+            if (current.getCategory() == null) {
+                JsfUtil.addErrorMessage("Please add the Session Category");
+                return true;
+            }
+        }
         if (current.getStartingTime() == null) {
             JsfUtil.addErrorMessage("Starting time Must be Filled");
             return true;
@@ -986,11 +1089,40 @@ public class ChannelScheduleController implements Serializable {
         //System.out.println("session name"+current.getName());
         if (checkError()) {
             return;
+
         }
 
         if (getCurrent().getSessionNumberGenerator() == null) {
             SessionNumberGenerator ss = saveSessionNumber();
             current.setSessionNumberGenerator(ss);
+        }
+
+        if (current.getEndingTime() == null) {
+            JsfUtil.addErrorMessage("Can't save session without session endtime !");
+            return;
+        }
+
+        if (current.getDepartment() == null) {
+            JsfUtil.addErrorMessage("Can't save session without a department !");
+            return;
+        }
+
+        if (current.getSessionStartingNumber() != null) {
+            if (!current.getSessionStartingNumber().trim().equals("")) {
+                int[] resnumbers = Arrays.stream(current.getReserveNumbers().split(","))
+                        .filter(s -> !s.isEmpty())
+                        .mapToInt(Integer::parseInt)
+                        .toArray();
+                if (resnumbers.length != 0) {
+                    int sessStartnumber = Integer.valueOf(current.getSessionStartingNumber());
+                    boolean allLower = IntStream.of(resnumbers).allMatch(n -> n < sessStartnumber);
+                    if (allLower) {
+                        JsfUtil.addErrorMessage("All reserveNumbers are lower than session starting number");
+                        return;
+                    }
+                }
+
+            }
         }
 
         getCurrent().setStaff(currentStaff);
@@ -1019,7 +1151,7 @@ public class ChannelScheduleController implements Serializable {
         getCurrent().setTotalForForeigner(calFTot());
         facade.edit(getCurrent());
         updateCreatedServicesesions(getCurrent());
-        prepareAdd();
+        //prepareAdd();
         getItems();
     }
 
@@ -1084,7 +1216,7 @@ public class ChannelScheduleController implements Serializable {
                 + " order by s.sessionWeekday,s.startingTime ";
         m.put("ss", ss);
         m.put("sd", CommonFunctions.getStartOfDay());
-        items = sessionInstanceFacade.findByJpql(sql, m);
+        items = sessionInstanceFacade.findByJpqlWithoutCache(sql, m);
         SessionInstance s = new SessionInstance();
         return items;
     }
@@ -1643,6 +1775,189 @@ public class ChannelScheduleController implements Serializable {
 
     public void setSessionInstanceOldTime(Date sessionInstanceOldTime) {
         this.sessionInstanceOldTime = sessionInstanceOldTime;
+    }
+
+    public List<ServiceSession> getRetiredItems() {
+        return retiredItems;
+    }
+
+    public void setRetiredItems(List<ServiceSession> retiredItems) {
+        this.retiredItems = retiredItems;
+    }
+
+    // Bulk Hospital Fee Editing Properties
+    private List<ChannelHospitalFeeDTO> hospitalFeeDTOs;
+    private ChannelHospitalFeeDTO[] selectedHospitalFeeDTOs;
+    private Double newHospitalFee;
+    private Double newHospitalForeignerFee;
+
+    /**
+     * Navigate to bulk hospital fee editing page
+     */
+    public String navigateToBulkHospitalFeeEdit() {
+        loadHospitalFeeDTOs();
+        return "/channel/bulk_hospital_fee_edit?faces-redirect=true";
+    }
+
+    /**
+     * Load all hospital fees (OwnInstitution fees) as DTOs
+     */
+    public void loadHospitalFeeDTOs() {
+        String jpql = "SELECT new com.divudi.core.data.dto.ChannelHospitalFeeDTO("
+                + "f.id, "
+                + "ss.id, "
+                + "ss.name, "
+                + "st.person.name, "
+                + "sp.name, "
+                + "d.name, "
+                + "ss.sessionWeekday, "
+                + "f.fee, "
+                + "f.ffee) "
+                + "FROM ItemFee f "
+                + "JOIN f.serviceSession ss "
+                + "LEFT JOIN ss.staff st "
+                + "LEFT JOIN st.speciality sp "
+                + "LEFT JOIN ss.department d "
+                + "WHERE f.retired = false "
+                + "AND ss.retired = false "
+                + "AND f.feeType = com.divudi.core.data.FeeType.OwnInstitution "
+                + "ORDER BY st.person.name, ss.sessionWeekday, ss.name";
+
+        hospitalFeeDTOs = (List<ChannelHospitalFeeDTO>) itemFeeFacade.findLightsByJpql(jpql);
+
+        if (hospitalFeeDTOs == null) {
+            hospitalFeeDTOs = new ArrayList<>();
+        }
+
+        // Reset selection and new fee values
+        selectedHospitalFeeDTOs = null;
+        newHospitalFee = null;
+        newHospitalForeignerFee = null;
+    }
+
+    /**
+     * Update selected hospital fees with new values
+     */
+    public void updateSelectedHospitalFees() {
+        if (selectedHospitalFeeDTOs == null || selectedHospitalFeeDTOs.length == 0) {
+            JsfUtil.addErrorMessage("Please select at least one hospital fee to update");
+            return;
+        }
+
+        if (newHospitalFee == null && newHospitalForeignerFee == null) {
+            JsfUtil.addErrorMessage("Please enter at least one fee value (Local or Foreigner)");
+            return;
+        }
+
+        int updatedCount = 0;
+        Map<Long, ServiceSession> affectedSessions = new HashMap<>();
+
+        // Update ItemFees and track affected sessions
+        for (ChannelHospitalFeeDTO dto : selectedHospitalFeeDTOs) {
+            ItemFee itemFee = itemFeeFacade.find(dto.getItemFeeId());
+            if (itemFee != null) {
+                if (newHospitalFee != null) {
+                    itemFee.setFee(newHospitalFee);
+                    dto.setHospitalFee(newHospitalFee);
+                }
+                if (newHospitalForeignerFee != null) {
+                    itemFee.setFfee(newHospitalForeignerFee);
+                    dto.setHospitalForeignerFee(newHospitalForeignerFee);
+                }
+                itemFee.setEditer(sessionController.getLoggedUser());
+                itemFee.setEditedAt(new Date());
+                itemFeeFacade.edit(itemFee);
+                updatedCount++;
+
+                // Track affected ServiceSession
+                ServiceSession serviceSession = itemFee.getServiceSession();
+                if (serviceSession != null && serviceSession.getId() != null) {
+                    affectedSessions.put(serviceSession.getId(), serviceSession);
+                }
+            }
+        }
+
+        // Recalculate and update totals for all affected ServiceSessions
+        for (ServiceSession session : affectedSessions.values()) {
+            recalculateServiceSessionTotals(session);
+        }
+
+        JsfUtil.addSuccessMessage("Successfully updated " + updatedCount + " hospital fee(s) and "
+                + affectedSessions.size() + " session total(s)");
+
+        // Clear selection and reload the list to reflect changes
+        selectedHospitalFeeDTOs = null;
+        loadHospitalFeeDTOs();
+    }
+
+    /**
+     * Recalculate and persist ServiceSession totals based on all its ItemFees
+     */
+    private void recalculateServiceSessionTotals(ServiceSession session) {
+        if (session == null || session.getId() == null) {
+            return;
+        }
+
+        // Load all ItemFees for this ServiceSession
+        String jpql = "SELECT f FROM ItemFee f "
+                + "WHERE f.serviceSession.id = :sessionId "
+                + "AND f.retired = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("sessionId", session.getId());
+
+        List<ItemFee> fees = itemFeeFacade.findByJpql(jpql, params);
+
+        // Calculate totals
+        double total = 0.0;
+        double totalForForeigner = 0.0;
+
+        if (fees != null) {
+            for (ItemFee fee : fees) {
+                total += fee.getFee();
+                totalForForeigner += fee.getFfee();
+            }
+        }
+
+        // Update ServiceSession totals
+        session.setTotal(total);
+        session.setTotalForForeigner(totalForForeigner);
+        session.setEditer(sessionController.getLoggedUser());
+        session.setEditedAt(new Date());
+
+        // Persist the ServiceSession
+        facade.edit(session);
+    }
+
+    public List<ChannelHospitalFeeDTO> getHospitalFeeDTOs() {
+        return hospitalFeeDTOs;
+    }
+
+    public void setHospitalFeeDTOs(List<ChannelHospitalFeeDTO> hospitalFeeDTOs) {
+        this.hospitalFeeDTOs = hospitalFeeDTOs;
+    }
+
+    public Double getNewHospitalFee() {
+        return newHospitalFee;
+    }
+
+    public void setNewHospitalFee(Double newHospitalFee) {
+        this.newHospitalFee = newHospitalFee;
+    }
+
+    public Double getNewHospitalForeignerFee() {
+        return newHospitalForeignerFee;
+    }
+
+    public void setNewHospitalForeignerFee(Double newHospitalForeignerFee) {
+        this.newHospitalForeignerFee = newHospitalForeignerFee;
+    }
+
+    public ChannelHospitalFeeDTO[] getSelectedHospitalFeeDTOs() {
+        return selectedHospitalFeeDTOs;
+    }
+
+    public void setSelectedHospitalFeeDTOs(ChannelHospitalFeeDTO[] selectedHospitalFeeDTOs) {
+        this.selectedHospitalFeeDTOs = selectedHospitalFeeDTOs;
     }
 
 }

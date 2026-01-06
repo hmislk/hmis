@@ -1,11 +1,9 @@
 package com.divudi.bean.common;
 
-import com.divudi.entity.Patient;
+import com.divudi.core.entity.Patient;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import javax.enterprise.context.RequestScoped;
 import javax.faces.context.FacesContext;

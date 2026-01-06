@@ -71,11 +71,12 @@
                     <p:dataTable id="tblBookingsOfSelectedSession"
                                  value="#{bookingController.billSessions}" var='bs'
                                  rowKey="#{bs.id}"
+                                 selectionMode="multiple"
                                  selection="#{bookingController.getSelectedBillSession}" scrollable="true" scrollHeight="260">                        
                         <p:ajax event="rowSelect" process="@this" update="" 
                                 listener="#{channelBillController.createBillfees}" />  
 
-                        <p:column  selectionMode="multiple" >                            
+                        <p:column  selectionBox="true" >                            
                         </p:column>
                         <p:column headerText="No">#{bs.serialNo}</p:column>
                         <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>

@@ -8,10 +8,12 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.bean.common.RequestController;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.lab.PatientReportController;
-import com.divudi.entity.Staff;
-import com.divudi.facade.StaffFacade;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.facade.StaffFacade;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -37,17 +39,19 @@ import org.primefaces.model.file.UploadedFile;
 @RequestScoped
 public class StaffImageController implements Serializable {
 
-    StreamedContent scCircular;
-    StreamedContent scCircularById;
-    private UploadedFile file;
     @EJB
     StaffFacade staffFacade;
+
     @Inject
     StaffController staffController;
     @Inject
-    private PatientReportController patientReportController;
 
+    private PatientReportController patientReportController;
+    StreamedContent scCircular;
+    StreamedContent scCircularById;
+    private UploadedFile file;
     private static final long serialVersionUID = 1L;
+    private String viewImageType;
 
     public StaffFacade getStaffFacade() {
         return staffFacade;
@@ -73,7 +77,7 @@ public class StaffImageController implements Serializable {
         this.file = file;
     }
 
-    public String saveSignature() {
+    public String uploadSignature() {
         InputStream in;
         if (file == null || "".equals(file.getFileName())) {
             return "";
@@ -86,8 +90,7 @@ public class StaffImageController implements Serializable {
             JsfUtil.addErrorMessage("Please select staff member");
             return "";
         }
-        //////System.out.println("file name is not null");
-        //////System.out.println(file.getFileName());
+
         try {
             in = getFile().getInputStream();
             File f = new File(getStaffController().getCurrent().toString() + getStaffController().getCurrent().getFileType());
@@ -191,7 +194,6 @@ public class StaffImageController implements Serializable {
         }
     }
     
-
     public StreamedContent getSignatureFromPatientReport() {
         FacesContext context = FacesContext.getCurrentInstance();
         if (context.getRenderResponse()) {
@@ -208,24 +210,83 @@ public class StaffImageController implements Serializable {
             if (patientReportController.getCurrentPatientReport().getApproveUser().getStaff() == null) {
             }
             Staff temImg = patientReportController.getCurrentPatientReport().getApproveUser().getStaff();
-
             if (temImg != null) {
-
+                temImg = staffController.findStaffById(temImg.getId());
                 byte[] imgArr = null;
                 try {
                     imgArr = temImg.getBaImage();
                 } catch (Exception e) {
                     return new DefaultStreamedContent();
                 }
-
                 InputStream targetStream = new ByteArrayInputStream(temImg.getBaImage());
                 StreamedContent str = DefaultStreamedContent.builder().contentType(temImg.getFileType()).name(temImg.getFileName()).stream(() -> targetStream).build();
-
                 return str;
             } else {
                 return new DefaultStreamedContent();
             }
         }
+    }
+    
+    @Inject
+    RequestController requestController;
+
+    public StreamedContent getSignatureFromRequestApproval() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context.getRenderResponse()) {
+            //System.err.println("Contex Response");
+            // So, we're rendering the view. Return a stub StreamedContent so that it will generate right URL.
+            return new DefaultStreamedContent();
+        } else {
+            if (requestController == null || requestController.getCurrentRequest() == null || requestController.getCurrentRequest().getApprovedBy() == null || requestController.getCurrentRequest().getApprovedBy().getStaff() == null) {
+                return new DefaultStreamedContent();
+            }
+            
+            Staff temImg = requestController.getCurrentRequest().getApprovedBy().getStaff();
+            if (temImg != null) {
+                temImg = staffController.findStaffById(temImg.getId());
+                byte[] imgArr = null;
+                try {
+                    imgArr = temImg.getBaImage();
+                } catch (Exception e) {
+                    return new DefaultStreamedContent();
+                }
+                InputStream targetStream = new ByteArrayInputStream(temImg.getBaImage());
+                StreamedContent str = DefaultStreamedContent.builder().contentType(temImg.getFileType()).name(temImg.getFileName()).stream(() -> targetStream).build();
+                return str;
+            } else {
+                return new DefaultStreamedContent();
+            }
+        }
+    }
+
+    public StreamedContent getSignatureForPatientReport(PatientReport paramPatientReport) {
+        if (paramPatientReport == null) {
+            return null;
+        }
+        if (paramPatientReport.getApproveUser() == null) {
+        }
+        if (paramPatientReport.getApproveUser().getStaff() == null) {
+        }
+        if (patientReportController == null) {
+        }
+        if (patientReportController.getCurrentPatientReport() == null) {
+        }
+        Staff temImg = paramPatientReport.getApproveUser().getStaff();
+        if (temImg != null) {
+            temImg = staffController.findStaffById(temImg.getId());
+            byte[] imgArr = null;
+            try {
+                imgArr = temImg.getBaImage();
+            } catch (Exception e) {
+                return new DefaultStreamedContent();
+            }
+            InputStream targetStream = new ByteArrayInputStream(temImg.getBaImage());
+            StreamedContent str = DefaultStreamedContent.builder().contentType(temImg.getFileType()).name(temImg.getFileName()).stream(() -> targetStream).build();
+            return str;
+        } else {
+            return new DefaultStreamedContent();
+        }
+
     }
 
     public StreamedContent displaySignature(Long stfId) {
@@ -259,4 +320,11 @@ public class StaffImageController implements Serializable {
         return patientReportController;
     }
 
+    public String getViewImageType() {
+        return viewImageType;
+    }
+
+    public void setViewImageType(String viewImageType) {
+        this.viewImageType = viewImageType;
+    }
 }

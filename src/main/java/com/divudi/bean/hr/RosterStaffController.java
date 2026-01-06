@@ -5,12 +5,12 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.Roster;
-import com.divudi.facade.RosterFacade;
-import com.divudi.facade.StaffFacade;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.Roster;
+import com.divudi.core.facade.RosterFacade;
+import com.divudi.core.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.List;
 import javax.ejb.EJB;

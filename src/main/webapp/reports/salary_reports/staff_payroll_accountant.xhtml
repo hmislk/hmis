@@ -1,0 +1,414 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+
+                    <p:panel class="p-1">
+
+                        <div>
+                            <f:facet name="header" >
+                                <h:outputLabel value="Staff Payroll (Accountant)" ></h:outputLabel>
+                            </f:facet>
+
+                            <div class="row mb-2">
+                                <div class="col-md-2">
+                                    <i class="fa fa-repeat" aria-hidden="true"></i>
+                                    <p:outputLabel value="Salary Cycle" class="mx-2"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:inputText value="" class="w-100" />
+                                </div>
+                                <div class="col-md-2">
+                                    <i class="fa fa-university" aria-hidden="true"></i>
+                                    <p:outputLabel value="Institution" class="mx-2"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu filter="true" id="cmdInstitution" 
+                                                     style=" max-width: 100%; overflow-x: auto; "
+                                                     class="w-100"
+                                                     value="#{reportController.institution}">
+                                        <f:selectItem itemLabel="Select Institution" />
+                                        <f:selectItems value="#{institutionController.companies}"
+                                                       var="i"
+                                                       itemLabel="#{i.name}"
+                                                       itemValue="#{i}" />
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-md-2">
+                                    <i class="fa fa-hospital" aria-hidden="true"></i>
+                                    <p:outputLabel value="Department" class="mx-2"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu filter="true" id="cmdDepartment" 
+                                                     style=" max-width: 100%; overflow-x: auto; "
+                                                     class="w-100"
+                                                     value="#{reportController.institution}">
+                                        <f:selectItem itemLabel="Select Department" />
+                                        <f:selectItems value="#{institutionController.companies}"
+                                                       var="i"
+                                                       itemLabel="#{i.name}"
+                                                       itemValue="#{i}" />
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="col-md-2">
+                                    <i class="fa fa-user" aria-hidden="true"></i>
+                                    <p:outputLabel value="Employee" class="mx-2"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:inputText value="" class="w-100" />
+                                </div>
+                            </div>
+
+                            <!--                        <div class="row mb-2">
+                                                        <div class="col-md-2">
+                                                            <p:outputLabel value="Collecting Centre Sites" />
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <p:selectOneMenu 
+                                                                style=" max-width: 100%; overflow-x: auto; "
+                                                                class="w-100"
+                                                                value="#{institutionController.sites}"
+                                                                filter="true"
+                                                                filterMatchMode="contains">
+                                                                <f:selectItem itemLabel="All" />
+                                                                <f:selectItems value="#{routeController.site}"
+                                                                               var="r"
+                                                                               itemLabel="#{r.name}"
+                                                                               itemValue="#{r}" />
+                                                            </p:selectOneMenu>
+                                                        </div>
+                                                    </div>-->
+
+                            <div class="row mb-2">
+                                <div class="col-md-2">
+                                    <i class="fa fa-user" aria-hidden="true"></i>
+                                    <p:outputLabel value="Staff Catogary" class="mx-2"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu
+                                        value=""
+                                        style=" max-width: 100%; overflow-x: auto; "
+                                        class="w-100">
+                                        <f:selectItem itemLabel="Select Catogary" />
+                                        <f:selectItems value="" var="sts" itemLabel="#{sts.label}" itemValue="#{sts}" ></f:selectItems>
+                                    </p:selectOneMenu>
+                                </div>
+
+                                <div class="col-md-2">
+                                    <i class="fa fa-address-card" aria-hidden="true"></i>
+                                    <p:outputLabel value="Staff Designation" class="mx-2"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:inputText value="" class="w-100" />
+                                </div>
+
+                                <!--                                <p:commandButton ajax="false"
+                                                                                 value="Process"
+                                                                                 class="ui-button-warning"
+                                                                                 action="#{reportController.processCollectingCentreReciptReport()}" />-->
+                                <!--                                <p:commandButton ajax="false"
+                                                                                 value="Download to Excel"
+                                                                                 class="mx-1 ui-button-success"
+                                                                                 ><p:dataExporter 
+                                                                        type="xlsx" 
+                                                                        target="tblExport"
+                                                                        fileName="c_transaction_reports"
+                                                                        /></p:commandButton>-->
+
+                            </div>
+
+                            <div class="row mb-2">
+                                <div class="col-md-2">
+                                    <i class="fa fa-clock" aria-hidden="true"></i>
+                                    <p:outputLabel value="Staff Roster" class="mx-2"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectCheckboxMenu id="rosters" 
+                                                          style="width:100%"
+                                                          label="Select Items" 
+                                                          multiple="true">
+                                        <f:selectItem itemLabel="Option 1" itemValue="1" />                                    
+                                    </p:selectCheckboxMenu>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <p:commandButton ajax="false" 
+                                                     class="ui-button-warning"
+                                                     icon="fas fa-cogs"
+                                                     value="Process"
+                                                     style="width: 150px"
+                                                     />
+                                    <p:commandButton ajax="false" 
+                                                     class="ui-button-info mx-2"
+                                                     icon="fas fa-print"
+                                                     value="Print"
+                                                     style="width: 150px"
+                                                     >
+                                        <p:printer target="tblExport"></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton ajax="false" 
+                                                     class="ui-button-success"
+                                                     icon="fas fa-file-excel"
+                                                     value="Exel"
+                                                     style="width: 150px"
+                                                     >
+                                        <p:dataExporter fileName="Collection Centre Reports Print- #{reportController.institution}" type="xlsx" target="tblExport"></p:dataExporter>
+
+                                    </p:commandButton>
+                                    <p:commandButton ajax="false" 
+                                                     class="ui-button-danger mx-2"
+                                                     icon="fas fa-file-pdf"
+                                                     value="PDF"
+                                                     style="width: 150px"
+                                                     >
+                                        <p:dataExporter fileName="Collection Centre Reports Print- #{reportController.institution}" type="pdf" target="tblExport"></p:dataExporter>   
+                                    </p:commandButton>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </p:panel>
+
+
+                    <p:dataTable value="#{reportController.bills}" var="bi" id="tblExport">
+                        <!--                        //Mandatory filters
+                        #{bi.bill.retired} - boolean - false
+                        #{bi.retired} - boolean - false
+                        #{bi.bill.billType} - public enum BillType - CollectingCentreBill
+
+                        //For User input Filters
+                        #{bi.bill.billDate} - Date - for user input from and to
+                        #{bi.bill.institution} - Institution - for Instituion or branch
+                        #{bi.bill.fromInstitution} - Institution - COllecting Centre
+                        #{bi.bill.fromInstitution.route} - Route - Route
+
+
+                        #{bi.bill.patient.phn}    Patient MRN
+                        #{bi.bill.deptId} Invoice Number
+                        #{bi.item} - Investigation
+                        #{bi.bill.toDepartment} - Laboratory
+
+                        #{bi.bill.referredBy} Referring Doctor Name
+
+                        #{bi.billItemStatus} - Status
+
+                        -->
+
+                        <p:column headerText="Code" width="5rem">
+                            <h:outputText value="#{bi.id}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="EPF" width="5rem">
+                            <h:outputText value="#{bi.referenceNumber}" ></h:outputText>
+                            <!--                            <p:commandLink 
+                                                            ajax="false"
+                                                            rendered="#{bi ne null}"
+                                                            action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                                            <h:outputText title="View Bill" styleClass="fa fa-eye" />
+                                                            <f:setPropertyActionListener 
+                                                                value="#{bi}" 
+                                                                target="#{billSearch.bill}" >
+                                                            </f:setPropertyActionListener>
+                                                        </p:commandLink>-->
+
+                        </p:column>
+                        <p:column headerText="Join" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Resign" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Retired" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Staff" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Des" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Cycle" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Basic Val" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Basic+BR" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Sal Gen. Days " width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Wor. Days" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Wor. Days Befo." width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Wor. Days This" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Wor. Days Aft." width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Wor. Days Adit." width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Anual" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Caual" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Medical" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Mer Val" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Merchan" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Mer Cou" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Poya Val" width="5rem" >
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Poya" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Poya Cou" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Day Off" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column><p:column headerText="Day Val" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Day Cou" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Basic Adjust" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Total Salary" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="No Pay Basic" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="No Pay Val" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="No Pay Cou" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Late No Pay Cou " width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="EPF/ETF Diductable Salary" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Tra Val" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Per Val " width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Per percent" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Traveling Allowance" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Assit. Charges" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column><p:column headerText="Chemo Allowance" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="COL Allowance" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Per Allowance" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Other Allowance" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Allowance Adjust" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="No Pay Allowance " width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Total Allowance" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Gross Salary" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="EPF Staff" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Company Loan Installment" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Telephone charges" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Loan Interest" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Bank Loan Installment(A)" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="PayeeTax Deduction" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Festival Advance" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Other Deduction" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Salary Advance" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Total Diduct" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Net Salary" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="EPF Company" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="ETF Company" width="5rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Comment" width="10rem">
+                            <h:outputText value="" ></h:outputText>
+                        </p:column>
+
+
+                    </p:dataTable>
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

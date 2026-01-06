@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      
+
       xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -21,14 +21,14 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Select Salary Cycle"/>
-                            <p:selectOneMenu id="advanced" 
-                                             value="#{hrReportController.salaryCycle}" 
-                                             var="t" 
-                                             filter="true" 
+                            <p:selectOneMenu id="advanced"
+                                             value="#{hrReportController.salaryCycle}"
+                                             var="t"
+                                             filter="true"
                                              filterMatchMode="startsWith">
-                                <f:selectItems value="#{salaryCycleController.salaryCycles}" 
-                                               var="theme" 
-                                               itemLabel="#{theme.name}" 
+                                <f:selectItems value="#{salaryCycleController.salaryCycles}"
+                                               var="theme"
+                                               itemLabel="#{theme.name}"
                                                itemValue="#{theme}" ></f:selectItems>
 
                                 <p:column style="width:10%" headerText="Name">
@@ -43,7 +43,7 @@
                                 </p:column>
                             </p:selectOneMenu>
                             <h:outputLabel value="Staff : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>                          
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                         </h:panelGrid>
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffWrokedDetail()}"/>
@@ -54,7 +54,7 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">                     
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
                             <p:dataTable id="tb1" value="#{hrReportController.staffShiftsNormal}" var="ss">
                                 <f:facet name="header" >
                                     <p:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
@@ -67,33 +67,33 @@
 
                                 </f:facet><br/>
                                 <f:facet name="header">
-                                    <h:outputLabel style="text-align: center" value="  Worked Normal Day : "  />                                 
-                                </f:facet>                                                                                              
+                                    <h:outputLabel style="text-align: center" value="  Worked Normal Day : "  />
+                                </f:facet>
                                 <p:column headerText=" Shift">
                                     <f:facet name="header" >
                                         <p:outputLabel value=" Shift" ></p:outputLabel>
                                     </f:facet>
                                     <p:outputLabel value="#{ss.shift.name}" ></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Staff Shift id">                                  
+                                <p:column headerText="Staff Shift id">
                                     <p:outputLabel value="#{ss.id}" ></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Form id">                                  
+                                <p:column headerText="Form id">
                                     <p:outputLabel value="#{ss.leaveForm.id}" ></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Late In">                                  
+                                <p:column headerText="Late In">
                                     <p:outputLabel value="#{ss.lateInVarified}" rendered="#{ss.lateInVarified>=(10*60)}" > <f:converter converterId="longToTime"/></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Late In Ref Shift id">                                  
+                                <p:column headerText="Late In Ref Shift id">
                                     <p:outputLabel value="#{ss.referenceStaffShiftLateIn.id}" ></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Early Out">                                  
+                                <p:column headerText="Early Out">
                                     <p:outputLabel value="#{ss.earlyOutVarified}"  rendered="#{ss.earlyOutVarified>=(10*60)}" > <f:converter converterId="longToTime"/></p:outputLabel><br/>
                                 </p:column>
-                                <p:column headerText="Early OutRef Shift id">                                  
+                                <p:column headerText="Early OutRef Shift id">
                                     <p:outputLabel value="#{ss.referenceStaffShiftEarlyOut.id}" ></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Auto">                                  
+                                <p:column headerText="Auto">
                                     <p:outputLabel value="#{ss.considerForLateIn}" ></p:outputLabel>
                                     <p:outputLabel value="#{ss.considerForEarlyOut}" ></p:outputLabel>
                                     <p:outputLabel value="#{ss.autoLeave}" ></p:outputLabel>
@@ -129,16 +129,16 @@
                                     </f:facet>
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
-                                    </h:outputLabel>  
-                                </p:column>                           
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Out Time">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Out Time" ></p:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
-                                    </h:outputLabel>  
-                                </p:column>  
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Worked Time">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Worked Time" />
@@ -151,14 +151,14 @@
                                             <f:converter converterId="longToTime"/>
                                         </h:outputLabel>
                                     </f:facet>
-                                </p:column>                     
+                                </p:column>
 
                             </p:dataTable>
 
                             <p:dataTable id="tb2" value="#{hrReportController.staffShiftsHoliday}" var="ss">
                                 <f:facet name="header">
-                                    <h:outputLabel style="text-align: center" value=" Worked  Holiday Day : "  />                                 
-                                </f:facet>                                                                                              
+                                    <h:outputLabel style="text-align: center" value=" Worked  Holiday Day : "  />
+                                </f:facet>
                                 <p:column headerText="Staff Shift">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Staff Shift" ></p:outputLabel>
@@ -183,16 +183,16 @@
                                     </f:facet>
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
-                                    </h:outputLabel>  
-                                </p:column>                           
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Out Time">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Out Time" ></p:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
-                                    </h:outputLabel>  
-                                </p:column>  
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Worked Time">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Worked Time" />
@@ -200,13 +200,13 @@
                                     <h:outputLabel value="#{ss.workedWithinTimeFrameVarified}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
-                                </p:column>                                 
+                                </p:column>
                             </p:dataTable>
 
                             <p:dataTable id="tb3" value="#{hrReportController.staffShiftsDayOff}" var="ss">
                                 <f:facet name="header">
-                                    <h:outputLabel style="text-align: center" value=" Worked  Day Off Day : "  />                                 
-                                </f:facet>                                                                                              
+                                    <h:outputLabel style="text-align: center" value=" Worked  Day Off Day : "  />
+                                </f:facet>
                                 <p:column headerText="Staff Shift">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Staff Shift " ></p:outputLabel>
@@ -229,16 +229,16 @@
                                     </f:facet>
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
-                                    </h:outputLabel>  
-                                </p:column>                           
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Out Time">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Out Time" ></p:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
-                                    </h:outputLabel>  
-                                </p:column>  
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Worked Time">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Worked Time" />
@@ -246,13 +246,13 @@
                                     <h:outputLabel value="#{ss.workedWithinTimeFrameVarified}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
-                                </p:column>                                 
+                                </p:column>
                             </p:dataTable>
 
                             <p:dataTable id="tb4" value="#{hrReportController.staffShiftExtraDuties}" rowIndexVar="i" var="ss">
                                 <f:facet name="header">
-                                    <h:outputLabel style="text-align: center" value="  Extra Duties Report : "  />                                 
-                                </f:facet>            
+                                    <h:outputLabel style="text-align: center" value="  Extra Duties Report : "  />
+                                </f:facet>
                                 <p:column headerText="No">
                                     <h:outputLabel value="#{i+1}"/>
                                 </p:column>
@@ -271,16 +271,16 @@
                                     </f:facet>
                                     <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
-                                    </h:outputLabel>  
-                                </p:column>                           
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Out Time">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Out Time" ></p:outputLabel>
                                     </f:facet>
                                     <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
-                                    </h:outputLabel>  
-                                </p:column>  
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Worked Time">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Worked Time" />
@@ -288,7 +288,7 @@
                                     <h:outputLabel value="#{ss.workedWithinTimeFrameVarified}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
-                                </p:column>  
+                                </p:column>
 
                                 <p:column headerText="Extra Time">
                                     <f:facet name="header" >
@@ -297,33 +297,33 @@
                                     <h:outputLabel value="#{ss.extraTimeFromStartRecordVarified+ss.extraTimeFromEndRecordVarified}">
                                         <f:converter converterId="longToTime"/>
                                     </h:outputLabel>
-                                </p:column>  
+                                </p:column>
                             </p:dataTable>
 
                             <p:dataTable id="tb5" value="#{hrReportController.staffLeavesNoPay}" var="ss">
                                 <f:facet name="header" >
                                     <h:panelGrid columns="4" style="border-style: hidden!important">
-                                        <h:outputLabel value="No Pay Add By User "/>                                      
+                                        <h:outputLabel value="No Pay Add By User "/>
                                     </h:panelGrid>
-                                </f:facet> 
+                                </f:facet>
                                 <p:column headerText="Leave Date" >
                                     <p:outputLabel value="#{ss.leaveDate}"></p:outputLabel>
-                                </p:column>  
+                                </p:column>
                                 <p:column headerText="Leave Qty" >
                                     <p:outputLabel value="#{ss.qty}"></p:outputLabel>
-                                </p:column> 
+                                </p:column>
                                 <p:column headerText="Comments" >
                                     <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
-                                </p:column> 
+                                </p:column>
 
                             </p:dataTable>
 
                             <p:dataTable id="tb6" value="#{hrReportController.staffLeaveSystem}" var="ss">
                                 <f:facet name="header" >
                                     <h:panelGrid columns="4" style="border-style: hidden!important">
-                                        <h:outputLabel value="Late Attendance Leave"/>                                      
+                                        <h:outputLabel value="Late Attendance Leave"/>
                                     </h:panelGrid>
-                                </f:facet> 
+                                </f:facet>
                                 <p:column headerText="id" >
                                     <p:outputLabel value="#{ss.id}"></p:outputLabel>
                                 </p:column>
@@ -336,15 +336,15 @@
 
                                 <p:column headerText="Leave Qty" >
                                     <p:outputLabel value="#{ss.qty}"></p:outputLabel>
-                                </p:column> 
+                                </p:column>
                                 <p:column headerText="Comments" >
                                     <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
-                                </p:column> 
+                                </p:column>
 
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>

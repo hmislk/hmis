@@ -54,9 +54,10 @@
                     <p:dataTable  value="#{dataAdministrationController.institutions}" 
                                   var="a" 
                                   rowKey="#{a.id}" 
+                                  selectionMode="multiple"
                                   selection="#{dataAdministrationController.selectedInstitutions}"
                                   rowIndexVar="i">
-                        <p:column  selectionMode="multiple" >                            
+                        <p:column  selectionBox="true" >                            
                         </p:column>
                         <p:column >
                             <f:facet name="header" >

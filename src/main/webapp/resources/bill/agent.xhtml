@@ -1,9 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html  xmlns:cc="http://xmlns.jcp.org/jsf/composite"
-       xmlns:h="http://xmlns.jcp.org/jsf/html"
-       xmlns:p="http://primefaces.org/ui"
-       xmlns:f="http://xmlns.jcp.org/jsf/core">
+<html xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -12,275 +13,171 @@
         <cc:attribute name="dup" />
     </cc:interface>
 
-    <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-        <div >
+        <style>
+            .receipt-container {
+                max-width: 21cm;
+                padding: 1.5cm;
+                margin: 0 auto;
+                border: 1px solid #000;
+                font-size: 1rem;
+                background: #f9f9f9;
+                box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+            }
 
-            <div >
-                <div >
+            .receipt-header {
+                text-align: center;
+                font-weight: bold;
+                font-size: 1.2em;
+                margin-bottom: 20px;
+                border-bottom: 2px solid #ddd;
+                padding-bottom: 10px;
+            }
 
+            .receipt-info, .receipt-details{
+                background: #fff;
+                padding: 15px;
+                border-radius: 5px;
+                margin-bottom: 15px;
+            }
 
-                    <h:outputStylesheet name="printing.css" library="css" />
+            .receipt-info div, .receipt-details div {
+                display: flex;
+                justify-content: space-between;
+                padding: 5px 0;
+            }
 
-                    <p:commandButton value="Print" ajax="false" action="#" >
-                        <p:printer target="gpBillPreview" ></p:printer>
-                    </p:commandButton>
+            .receipt-info div label, .receipt-details div label {
+                font-weight: bold;
+                color: #555;
+            }
 
-                    <div  >
+            .receipt-info div span, .receipt-details div span {
+                flex: 2;
+                text-align: right;
+            }
 
-                        <p:panel   id="gpBillPreview">
+            .receipt-total {
+                text-align: right;
+                font-weight: bold;
+                font-size: 1.4rem;
+                margin: 20px 0;
+                background: #e0e0e0;
+                padding: 10px;
+                border-radius: 5px;
+            }
 
-                            <div >
-                                <div>
-
-
-                                    <div class="fiveinchbill" style="font-size: 130%;">
-
-                                        <div style="position: absolute!important;left: 60%!important; font-weight: bold!important; 
-                                             top: 0%!important;font-size: 15px!important; text-decoration: underline!important;" >
-                                            <h:outputLabel value="Agency Receipt" rendered="#{cc.attrs.bill.billType eq 'AgentPaymentReceiveBill'}" />                           
-                                        </div>
-                                        <div style="position: absolute!important;left: 57%!important; font-weight: bold!important;
-                                             top: 0%!important;font-size: 12px!important; text-decoration: underline!important;"  >
-                                            <p:outputLabel value="Collection Center Receipt" rendered="#{cc.attrs.bill.billType eq 'CollectingCentrePaymentReceiveBill'}" />                           
-                                        </div>
-
-                                        <div style="position: absolute;
-                                             left: 0%!important;
-                                             top: 7%!important;
-                                             font-size: 12px!important;">
-                                            <h:outputLabel value="Receipt No"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 23%;
-                                             top: 7%;
-                                             font-size:12px!important;">
-                                            <h:outputLabel value=":"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 25%!important;
-                                             top: 7%!important;
-                                             font-size: 12px!important;">                                                  
-                                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled"  
-                                                           rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"/> 
-                                            <h:outputLabel value="#{cc.attrs.bill.insId}" 
-                                                           rendered="#{cc.attrs.bill.cancelledBill.insId eq null}"/>  
-                                            <h:outputLabel value="  **Duplicate" 
-                                                           rendered="#{cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true }" />
-                                        </div>
-
-                                        <div style="position: absolute;
-                                             left: 71%!important;
-                                             top: 7%!important;
-                                             font-size: 12px!important;">
-                                            <h:outputLabel value="Date"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 80%;
-                                             top: 7%;
-                                             font-size:12px!important;">
-                                            <h:outputLabel value=":"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 82%!important;
-                                             top: 7%!important;
-                                             font-size: 12px!important;" >                  
-                                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
-                                                           rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"  >
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                            </h:outputLabel>                      
-                                            <h:outputLabel value="#{cc.attrs.bill.billDate}"
-                                                           rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                            </h:outputLabel>
-                                        </div>
-
-                                        <div style="position: absolute;
-                                             left: 71%!important;
-                                             top: 11%!important;
-                                             font-size: 12px!important;">
-                                            <h:outputLabel value="Time"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 80%;
-                                             top: 11%;
-                                             font-size:12px!important;">
-                                            <h:outputLabel value=":"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 82%;
-                                             top: 11%;
-                                             font-size:12px!important;" >                                                  
-                                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  
-                                                           rendered="#{cc.attrs.bill.cancelledBill.insId ne null}">
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
-                                            </h:outputLabel>                        
-                                            <h:outputLabel value="#{cc.attrs.bill.billTime}" 
-                                                           rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
-                                            </h:outputLabel>
-                                        </div>
-
-                                        <div style="position: absolute;
-                                             left: 0%!important;
-                                             top: 30%!important;
-                                             font-size: 12px!important;">
-                                            <h:outputLabel value="Agency"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 25%;
-                                             top: 30%;
-                                             font-size:12px!important;">
-                                            <h:outputLabel value=":"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 27%;
-                                             top: 30%;
-                                             font-size:12px!important;" >                    
-                                            <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"   /> 
-                                        </div>
-
-                                        <div style="position: absolute;
-                                             left: 0%!important;
-                                             top: 34%!important;
-                                             font-size: 12px!important;
-                                             font-weight: bold!important;">
-                                            <h:outputLabel value="Code"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 25%;
-                                             top: 34%;
-                                             font-size:12px!important;
-                                             font-weight: bold!important;">
-                                            <h:outputLabel value=":"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 27%;
-                                             top: 34%;
-                                             font-size:12px!important;
-                                             font-weight: bold!important;" >                    
-                                            <h:outputLabel value="#{cc.attrs.bill.fromInstitution.institutionCode}" /> 
-                                        </div>
-
-                                        <div style="position: absolute;
-                                             left: 0%!important;
-                                             top: 38%!important;
-                                             font-size: 12px!important;">
-                                            <h:outputLabel value="Payment Type"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 25%;
-                                             top: 38%;
-                                             font-size:12px!important;">
-                                            <h:outputLabel value=":"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 27%;
-                                             top: 38%;
-                                             font-size:12px!important;" >                    
-                                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" 
-                                                           rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" />                        
-                                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" 
-                                                           rendered="#{cc.attrs.bill.cancelledBill.insId eq null }"/>
-                                        </div>
-
-                                        <div style="position: absolute;
-                                             left: 0%!important;
-                                             top: 42%!important;
-                                             font-size: 12px!important;">
-                                            <h:outputLabel value="Bank" rendered="#{cc.attrs.bill.bank ne null}"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 25%;
-                                             top: 42%;
-                                             font-size:12px!important;">
-                                            <h:outputLabel value=":" rendered="#{cc.attrs.bill.bank ne null}"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 27%;
-                                             top: 42%;
-                                             font-size:12px!important;" >                    
-                                            <h:outputLabel value="#{cc.attrs.bill.bank.name}" rendered="#{cc.attrs.bill.bank ne null}" />
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 0%!important;
-                                             top: 46%!important;
-                                             font-size: 12px!important;">
-                                            <h:outputLabel value="Date" rendered="#{cc.attrs.bill.chequeDate ne null}"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 25%;
-                                             top: 46%;
-                                             font-size:12px!important;">
-                                            <h:outputLabel value=":" rendered="#{cc.attrs.bill.chequeDate ne null}"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 27%;
-                                             top: 46%;
-                                             font-size:12px!important;" >                    
-                                            <h:outputLabel value="#{cc.attrs.bill.chequeDate}" rendered="#{cc.attrs.bill.chequeDate ne null}" >
-                                                <f:convertDateTime pattern="yyyy MM dd"/>
-                                            </h:outputLabel>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 0%!important;
-                                             top: 50%!important;
-                                             font-size: 12px!important;">
-                                            <h:outputLabel value="Cheque No" rendered="#{cc.attrs.bill.chequeRefNo ne null}"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 25%;
-                                             top: 50%;
-                                             font-size:12px!important;">
-                                            <h:outputLabel value=":" rendered="#{cc.attrs.bill.chequeRefNo ne null}"/>
-                                        </div>
-                                        <div style="position: absolute;
-                                             left: 27%;
-                                             top: 50%;
-                                             font-size:12px!important;" >                    
-                                            <h:outputLabel value="#{cc.attrs.bill.chequeRefNo}" rendered="#{cc.attrs.bill.chequeRefNo ne null}" />
-                                        </div>
-
-                                        <div style="position: absolute;
-                                             left: 15%;
-                                             top: 50%;
-                                             font-size: 150%!important;">
-                                            <table>
-                                                <tr>
-                                                    <td style="min-width: 3.5cm;text-align: left;">
-                                                        <h:outputLabel value="Total"/>
-                                                    </td>
-                                                    <td>
-                                                        <h:outputLabel value="#{cc.attrs.bill.netTotal}"  style="font-size: 110%; font-weight: bold ; text-align: right;    ">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                    </td>
-                                                </tr>
-                                            </table>
-                                        </div>
-
-                                        <div style="position: absolute;
-                                             left: 20%!important;
-                                             bottom:  3%!important;
-                                             font-size: 12px!important;
-                                             text-decoration: overline;">
-                                            <h:outputLabel  value="Cashier : #{cc.attrs.bill.creater.code}"   />
-                                        </div>
-
-                                    </div>
+            .receipt-footer {
+                text-align: center;
+                font-style: italic;
+                font-size: 0.9em;
+                color: #666;
+                border-top: 1px solid #ddd;
+                padding-top: 10px;
+            }
+        </style>
 
 
-                                </div>
-                            </div>
+        <div class="receipt-container">
 
-                        </p:panel>
-                    </div>
-
-                </div>
+            <!-- Header Section -->
+            <div class="receipt-header">
+                <h:outputLabel value="#{sessionController.institution.name}" style="font-size: 1.6em" /><br/>
+                <h:outputLabel value="#{sessionController.institution.address}" style="font-size: 1.1em" /><br/>
+                <h:outputLabel value="#{sessionController.institution.phone}" style="font-size: 1.1em" /><br/>
+                <h:outputLabel value="#{sessionController.institution.email} | #{sessionController.institution.web}" style="font-size: 1.0em" /><br/>
+                <h:outputLabel value=" **Duplicate" rendered="#{cc.attrs.dup eq true }"/>
+                <h:outputLabel value=" **Cancelled" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"/><br/>
+                <h:outputLabel value="Collecting Centre Credit Note"/>
             </div>
-        </div>
 
+            <!-- Receipt Details -->
+            <div class="receipt-info">
+                <div>
+                    <label>Receipt No:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.deptId}"/>
+                    </span>
+                </div>
+                <div>
+                    <label>Date:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                        </h:outputLabel>                      
+                        <h:outputLabel value="#{cc.attrs.bill.billDate}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                        </h:outputLabel>
+                    </span>
+                </div>
+                <div>
+                    <label>Time:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                        </h:outputLabel>                        
+                        <h:outputLabel value="#{cc.attrs.bill.billTime}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                        </h:outputLabel>
+                    </span>
+                </div>
+                <div>
+                    <label>Agency:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" />
+                    </span>
+                </div>
+                <div>
+                    <label>Code:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.fromInstitution.institutionCode}" />
+                    </span>
+                </div>
+
+                <div>
+                    <label>Payment Type:</label>
+                    <span>
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />
+                        <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}" />
+                    </span>
+                </div>
+
+            </div>
+
+            <!-- Receipt Total -->
+            <div class="receipt-total">
+                <label>Total:</label>
+                <span>
+                    <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size: 1.2rem;">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputLabel>
+                </span>
+            </div>
+            <div class="receipt-footer my-2">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h:outputLabel value=" Generated by : #{sessionController.loggedUser.name}" />
+                    </div>
+                    <div>
+                        <h:outputLabel value="#{sessionController.currentDate}" >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                        </h:outputLabel>
+                    </div>
+                </div>
+                <h:panelGroup rendered="#{cc.attrs.dup}">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h:outputLabel value=" Billed by : #{cc.attrs.bill.creater.name}" />
+                        </div>
+                    </div>
+                </h:panelGroup>
+            </div>
+
+
+
+
+        </div>
 
     </cc:implementation>
 </html>

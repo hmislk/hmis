@@ -28,6 +28,17 @@
                     <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
                     <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.bhtNo}" /></div>
                 </div>
+              
+                <h:panelGroup rendered="#{cc.attrs.admission.referringConsultant ne null 
+                                         and cc.attrs.admission.referringConsultant.person ne null}">
+                    <div class="row">
+                        <div class="col-md-3"><p:outputLabel value="Consultant Name"/></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                        <div class="col-md-8">
+                            <h:outputLabel value="#{cc.attrs.admission.referringConsultant.person.nameWithTitle}" />
+                        </div>
+                    </div>
+              </h:panelGroup>
 
                 <div class="row">
                     <div class="col-md-3"><p:outputLabel value="Admission Type"  /></div>
@@ -44,7 +55,9 @@
                 <div class="row">
                     <div class="col-md-2"><p:outputLabel value="Room"  /></div>
                     <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":"/></div>
-                    <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" /></div>
+                    <div class="col-md-8">
+                        <h:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" />
+                    </div>
                 </div>
 
                 <div class="row">
@@ -56,7 +69,7 @@
                         </h:outputLabel>
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-md-2"><p:outputLabel value="Nationality"  /></div>
                     <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" /></div>
@@ -80,12 +93,12 @@
                         </div>
                     </div>
                 </h:panelGroup>
-                
+
 
 
                 <h:panelGrid  columns="3" rendered="#{cc.attrs.admission!=null}" >
 
-                    
+
 
                     <p:inputText value="#{cc.attrs.admission.admissionType.admissionFee}" alt="off" rendered="#{sessionController.loggedPreference.inwardChangeAdmissionFee}"/>
                     <p:commandButton ajax="false" value="Update" action="#{bhtSummeryController.updateAdmissionFee(cc.attrs.admission.admissionType)}" rendered="#{sessionController.loggedPreference.inwardChangeAdmissionFee}"></p:commandButton>

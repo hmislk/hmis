@@ -5,37 +5,44 @@
  */
 package com.divudi.bean.inward;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.data.inward.InwardChargeType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dto.InwardAdmissionDTO;
+import com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.inward.InwardChargeType;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Institution;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.inward.Admission;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.facade.AdmissionTypeFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Consultant;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.facade.AdmissionTypeFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -43,6 +50,25 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.primefaces.model.charts.bar.BarChartModel;
+import org.primefaces.model.charts.line.LineChartModel;
+
+import software.xdev.chartjs.model.charts.BarChart;
+import software.xdev.chartjs.model.charts.LineChart;
+import software.xdev.chartjs.model.color.RGBAColor;
+import software.xdev.chartjs.model.data.BarData;
+import software.xdev.chartjs.model.data.LineData;
+import software.xdev.chartjs.model.dataset.BarDataset;
+import software.xdev.chartjs.model.dataset.LineDataset;
+import software.xdev.chartjs.model.options.BarOptions;
+import software.xdev.chartjs.model.options.LineOptions;
+import software.xdev.chartjs.model.options.Legend;
+import software.xdev.chartjs.model.options.Plugins;
+import software.xdev.chartjs.model.options.Title;
+import software.xdev.chartjs.model.options.elements.Fill;
+import software.xdev.chartjs.model.options.scale.Scales;
+import software.xdev.chartjs.model.options.scale.cartesian.linear.LinearScaleOptions;
+import software.xdev.chartjs.model.options.scale.cartesian.linear.LinearTickOptions;
 
 /**
  *
@@ -58,11 +84,34 @@ public class InwardReportController implements Serializable {
     public InwardReportController() {
     }
 
+    @EJB
+    PatientEncounterFacade peFacade;
+    @EJB
+    AdmissionTypeFacade admissionTypeFacade;
+    @EJB
+    PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
+    BillFacade billFacade;
+    @EJB
+    BillItemFacade billItemFacade;
+    @EJB
+    BillFeeFacade billFeeFacade;
+
+    @Inject
+    SessionController sessionController;
+    @Inject
+    InwardReportControllerBht inwardReportControllerBht;
+    @Inject
+    BhtSummeryController bhtSummeryController;
+
     PaymentMethod paymentMethod;
     AdmissionType admissionType;
     Institution institution;
     Date fromDate;
     Date toDate;
+    private Date fromYearStartDate;
+    private Date toYearEndDate;
+
     Admission patientEncounter;
     double grossTotals;
     double discounts;
@@ -70,25 +119,16 @@ public class InwardReportController implements Serializable {
     boolean withFooter;
     String invoceNo;
     String vatRegNo;
+    Bill bill;
+    private String patientCode;
 
     List<IncomeByCategoryRecord> incomeByCategoryRecords;
     List<IndividualBhtIncomeByCategoryRecord> individualBhtIncomeByCategoryRecord;
-
     List<AdmissionType> admissionty;
-
-    //////////////
-    @Inject
-    CommonController commonController;
-
-    @EJB
-    PatientEncounterFacade peFacade;
-    @EJB
-    AdmissionTypeFacade admissionTypeFacade;
-    @EJB
-    PatientInvestigationFacade patientInvestigationFacade;
+    private List<AdmissionType> admissionTypes;
     List<PatientEncounter> patientEncounters;
+    List<BillItem> billItems;
 
-    Bill bill;
     List<BillItem> billedBill;
     List<BillItem> cancelledBill;
     List<BillItem> refundBill;
@@ -96,13 +136,7 @@ public class InwardReportController implements Serializable {
     double totalBilledBill;
     double totalCancelledBill;
     double totalRefundBill;
-    @Inject
-    SessionController sessionController;
-    List<BillItem> billItems;
-    @EJB
-    BillFacade billFacade;
-    @EJB
-    BillItemFacade billItemFacade;
+
     // for disscharge book
     boolean dischargeDate = true;
     boolean bhtNo = true;
@@ -123,6 +157,7 @@ public class InwardReportController implements Serializable {
     boolean developers = false;
     // for disscharge book
     boolean withoutCancelBHT = true;
+    private Speciality currentSpeciality;
 
     private ReportKeyWord reportKeyWord;
 
@@ -141,7 +176,6 @@ public class InwardReportController implements Serializable {
 
         fillAdmissions(null, null);
 
-        
     }
 
     public void fillAdmissionBookNew() {
@@ -159,7 +193,7 @@ public class InwardReportController implements Serializable {
         } else if (getReportKeyWord().getString().equals("3")) {
             fillAdmissions(true, true);
         }
-        
+
     }
 
     public void fillAdmissionBookOnlyInward() {
@@ -167,21 +201,17 @@ public class InwardReportController implements Serializable {
 
         fillAdmissions(false, null);
 
-        
     }
 
     public void fillAdmissionBookOnlyDischarged() {
         Date startTime = new Date();
         fillAdmissions(true, null);
 
-        
     }
 
     public void fillAdmissionBookOnlyDischargedNotFinalized() {
         Date startTime = new Date();
         fillAdmissions(true, false);
-
-        
 
     }
 
@@ -189,7 +219,585 @@ public class InwardReportController implements Serializable {
         Date startTime = new Date();
         fillAdmissions(true, true);
 
-        
+    }
+
+    public List<SurgeryCountDoctorWiseDTO> getExportableBillList() {
+        if (billList == null) {
+            return new ArrayList<>();
+        }
+        return billList.stream()
+                .filter(dto -> !dto.isGrandTotal())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    private List<SurgeryCountDoctorWiseDTO> billList;
+
+    public void processSurgeryCountDoctorWiseReport() {
+        billList = new ArrayList<>();
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append(" Select new com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO(")
+                .append(" b.staff, ")
+                .append(" b.staff.person.name, ")
+                .append(" b.staff.speciality.name, ")
+                .append(" b.createdAt")
+                .append(") ")
+                .append(" from BillFee b ")
+                .append(" Where b.retired = false ")
+                .append(" And b.bill.billTypeAtomic = :bta ")
+                .append(" And (type(b.staff) = :doctorClass OR type(b.staff) = :consultantClass) ")
+                .append(" AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+        params.put("bta", BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL);
+        params.put("fromDate", fromYearStartDate);
+        params.put("toDate", toYearEndDate);
+        params.put("doctorClass", Doctor.class);
+        params.put("consultantClass", Consultant.class);
+
+        if (currentSpeciality != null) {
+            jpql.append(" AND b.staff.speciality = :spe ");
+            params.put("spe", currentSpeciality);
+        }
+
+        jpql.append(" ORDER BY b.staff.speciality.name, b.staff.person.name ");
+
+        List<SurgeryCountDoctorWiseDTO> rawList = (List<SurgeryCountDoctorWiseDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        // Group by specialty and doctor, count surgeries month-wise
+        Map<String, Map<Long, SurgeryCountDoctorWiseDTO>> specialtyDoctorMap = new LinkedHashMap<>();
+        Calendar cal = Calendar.getInstance();
+
+        for (SurgeryCountDoctorWiseDTO dto : rawList) {
+            String speciality = dto.getSpecialityName();
+            Long staffId = dto.getStaff().getId();
+
+            // Get or create specialty map
+            Map<Long, SurgeryCountDoctorWiseDTO> doctorMap = specialtyDoctorMap.get(speciality);
+            if (doctorMap == null) {
+                doctorMap = new LinkedHashMap<>();
+                specialtyDoctorMap.put(speciality, doctorMap);
+            }
+
+            // Get or create doctor aggregation
+            SurgeryCountDoctorWiseDTO aggregated = doctorMap.get(staffId);
+            if (aggregated == null) {
+                aggregated = new SurgeryCountDoctorWiseDTO(
+                        dto.getStaff(),
+                        dto.getDoctorName(),
+                        dto.getSpecialityName(),
+                        null
+                );
+                doctorMap.put(staffId, aggregated);
+            }
+
+            // Increment month counter
+            cal.setTime(dto.getCreatedAt());
+            int month = cal.get(Calendar.MONTH);
+            aggregated.addMonthCount(month, 1);
+        }
+
+        // Build final list with subtotals and grand total
+        billList = new ArrayList<>();
+        SurgeryCountDoctorWiseDTO grandTotal = new SurgeryCountDoctorWiseDTO();
+
+        for (Map.Entry<String, Map<Long, SurgeryCountDoctorWiseDTO>> specialtyEntry : specialtyDoctorMap.entrySet()) {
+            String speciality = specialtyEntry.getKey();
+            Map<Long, SurgeryCountDoctorWiseDTO> doctorMap = specialtyEntry.getValue();
+
+            SurgeryCountDoctorWiseDTO subtotal = new SurgeryCountDoctorWiseDTO(speciality);
+
+            // Add all doctors for this specialty
+            for (SurgeryCountDoctorWiseDTO doctor : doctorMap.values()) {
+                billList.add(doctor);
+                subtotal.addAllCounts(doctor);
+                grandTotal.addAllCounts(doctor);
+            }
+
+            // Add subtotal row
+            billList.add(subtotal);
+        }
+
+        // Add grand total row
+        billList.add(grandTotal);
+
+        createChartModels();
+    }
+
+    private String lineChartModel;
+    private String barChartModel;
+    private String specialtyLineChartModel;
+    private String specialtyBarChartModel;
+
+    public void createChartModels() {
+        createDoctorCharts();
+        createSpecialtyCharts();
+    }
+
+    private void createDoctorCharts() {
+        // Define color palette (RGB strings without alpha for now)
+        String[] colors = {
+            "75, 192, 192", "255, 99, 132", "54, 162, 235", "255, 206, 86",
+            "153, 102, 255", "255, 159, 64", "199, 199, 199", "83, 102, 255",
+            "255, 99, 255", "99, 255, 132"
+        };
+        int colorIndex = 0;
+
+        // Line Chart
+        LineChart lineChart = new LineChart();
+        LineData lineData = new LineData();
+        lineData.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+        for (SurgeryCountDoctorWiseDTO dto : billList) {
+            if (dto.isSubtotal() || dto.isGrandTotal()) {
+                continue;
+            }
+            String[] rgb = colors[colorIndex % colors.length].split(",");
+            RGBAColor borderColor = new RGBAColor(Integer.parseInt(rgb[0].trim()), Integer.parseInt(rgb[1].trim()), Integer.parseInt(rgb[2].trim()), 1);
+            LineDataset dataset = new LineDataset()
+                    .setLabel(dto.getDoctorName())
+                    .addData(dto.getJanuary()).addData(dto.getFebruary()).addData(dto.getMarch())
+                    .addData(dto.getApril()).addData(dto.getMay()).addData(dto.getJune())
+                    .addData(dto.getJuly()).addData(dto.getAugust()).addData(dto.getSeptember())
+                    .addData(dto.getOctober()).addData(dto.getNovember()).addData(dto.getDecember())
+                    .setBorderColor(borderColor)
+                    .setFill(new Fill(false))
+                    .setTension(0.4f);
+            lineData.addDataset(dataset);
+            colorIndex++;
+        }
+        lineChart.setData(lineData);
+        LineOptions lineOptionsObj = new LineOptions();
+        Plugins plugins = new Plugins();
+        plugins.setTitle(new Title().setDisplay(true).setText("Doctor Wise Surgery Count - Year " + getSelectedYear()));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.RIGHT));
+        lineOptionsObj.setPlugins(plugins);
+        Scales scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions().setBeginAtZero(true).setTicks(new LinearTickOptions().setStepSize(1)));
+        lineOptionsObj.setScales(scales);
+        lineChart.setOptions(lineOptionsObj);
+        lineChartModel = lineChart.toJson();
+
+        // Bar Chart (similar logic)
+        BarChart barChart = new BarChart();
+        BarData barData = new BarData();
+        barData.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+        colorIndex = 0;
+        for (SurgeryCountDoctorWiseDTO dto : billList) {
+            if (dto.isSubtotal() || dto.isGrandTotal()) {
+                continue;
+            }
+            String[] rgb = colors[colorIndex % colors.length].split(",");
+            RGBAColor bgColor = new RGBAColor(Integer.parseInt(rgb[0].trim()), Integer.parseInt(rgb[1].trim()), Integer.parseInt(rgb[2].trim()), 0.7);
+            RGBAColor borderColor = new RGBAColor(Integer.parseInt(rgb[0].trim()), Integer.parseInt(rgb[1].trim()), Integer.parseInt(rgb[2].trim()), 1);
+            BarDataset dataset = new BarDataset()
+                    .setLabel(dto.getDoctorName())
+                    .addData(dto.getJanuary()).addData(dto.getFebruary()).addData(dto.getMarch())
+                    .addData(dto.getApril()).addData(dto.getMay()).addData(dto.getJune())
+                    .addData(dto.getJuly()).addData(dto.getAugust()).addData(dto.getSeptember())
+                    .addData(dto.getOctober()).addData(dto.getNovember()).addData(dto.getDecember())
+                    .setBackgroundColor(bgColor)
+                    .setBorderColor(borderColor)
+                    .setBorderWidth(1);
+            barData.addDataset(dataset);
+            colorIndex++;
+        }
+        barChart.setData(barData);
+        BarOptions barOptionsObj = new BarOptions();
+        plugins = new Plugins();
+        plugins.setTitle(new Title().setDisplay(true).setText("Doctor Wise Surgery Count - Year " + getSelectedYear()));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.TOP));
+        barOptionsObj.setPlugins(plugins);
+        scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions().setBeginAtZero(true).setTicks(new LinearTickOptions().setStepSize(1)));
+        barOptionsObj.setScales(scales);
+        barChart.setOptions(barOptionsObj);
+        barChartModel = barChart.toJson();
+    }
+
+    private void createSpecialtyCharts() {
+        // Similar to createDoctorCharts, but for specialties (use subtotals)
+        String[] colors = {
+            "220, 20, 60", "65, 105, 225", "255, 140, 0",
+            "34, 139, 34", "138, 43, 226", "255, 215, 0"
+        };
+        int colorIndex = 0;
+
+        // Line Chart
+        LineChart lineChart = new LineChart();
+        LineData lineData = new LineData();
+        lineData.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+        for (SurgeryCountDoctorWiseDTO dto : billList) {
+            if (!dto.isSubtotal()) {
+                continue;
+            }
+            String[] rgb = colors[colorIndex % colors.length].split(",");
+            RGBAColor borderColor = new RGBAColor(Integer.parseInt(rgb[0].trim()), Integer.parseInt(rgb[1].trim()), Integer.parseInt(rgb[2].trim()), 1);
+            LineDataset dataset = new LineDataset()
+                    .setLabel(dto.getSpecialityName())
+                    .addData(dto.getJanuary()).addData(dto.getFebruary()).addData(dto.getMarch())
+                    .addData(dto.getApril()).addData(dto.getMay()).addData(dto.getJune())
+                    .addData(dto.getJuly()).addData(dto.getAugust()).addData(dto.getSeptember())
+                    .addData(dto.getOctober()).addData(dto.getNovember()).addData(dto.getDecember())
+                    .setBorderColor(borderColor)
+                    .setBorderWidth(3)
+                    .setFill(new Fill(false))
+                    .setTension(0.4f);
+            lineData.addDataset(dataset);
+            colorIndex++;
+        }
+        lineChart.setData(lineData);
+        LineOptions lineOptionsObj = new LineOptions();
+        Plugins plugins = new Plugins();
+        plugins.setTitle(new Title().setDisplay(true).setText("Specialty Wise Surgery Count - Year " + getSelectedYear()));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.RIGHT));
+        lineOptionsObj.setPlugins(plugins);
+        Scales scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions().setBeginAtZero(true).setTicks(new LinearTickOptions().setStepSize(5)));
+        lineOptionsObj.setScales(scales);
+        lineChart.setOptions(lineOptionsObj);
+        specialtyLineChartModel = lineChart.toJson();
+
+        // Bar Chart (similar)
+        BarChart barChart = new BarChart();
+        BarData barData = new BarData();
+        barData.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+        colorIndex = 0;
+        for (SurgeryCountDoctorWiseDTO dto : billList) {
+            if (!dto.isSubtotal()) {
+                continue;
+            }
+            String[] rgb = colors[colorIndex % colors.length].split(",");
+            RGBAColor bgColor = new RGBAColor(Integer.parseInt(rgb[0].trim()), Integer.parseInt(rgb[1].trim()), Integer.parseInt(rgb[2].trim()), 0.7);
+            RGBAColor borderColor = new RGBAColor(Integer.parseInt(rgb[0].trim()), Integer.parseInt(rgb[1].trim()), Integer.parseInt(rgb[2].trim()), 1);
+            BarDataset dataset = new BarDataset()
+                    .setLabel(dto.getSpecialityName())
+                    .addData(dto.getJanuary()).addData(dto.getFebruary()).addData(dto.getMarch())
+                    .addData(dto.getApril()).addData(dto.getMay()).addData(dto.getJune())
+                    .addData(dto.getJuly()).addData(dto.getAugust()).addData(dto.getSeptember())
+                    .addData(dto.getOctober()).addData(dto.getNovember()).addData(dto.getDecember())
+                    .setBackgroundColor(bgColor)
+                    .setBorderColor(borderColor)
+                    .setBorderWidth(2);
+            barData.addDataset(dataset);
+            colorIndex++;
+        }
+        barChart.setData(barData);
+        BarOptions barOptionsObj = new BarOptions();
+        plugins = new Plugins();
+        plugins.setTitle(new Title().setDisplay(true).setText("Specialty Wise Surgery Count - Year " + getSelectedYear()));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.TOP));
+        barOptionsObj.setPlugins(plugins);
+        scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions().setBeginAtZero(true).setTicks(new LinearTickOptions().setStepSize(5)));
+        barOptionsObj.setScales(scales);
+        barChart.setOptions(barOptionsObj);
+        specialtyBarChartModel = barChart.toJson();
+    }
+
+    public int getSelectedYear() {
+        Calendar cal = Calendar.getInstance();
+        if (fromYearStartDate != null) {
+            cal.setTime(fromYearStartDate);
+        }
+        return cal.get(Calendar.YEAR);
+    }
+
+    private String doctorLineData;
+    private String doctorLineOptions;
+    private String doctorBarData;
+    private String doctorBarOptions;
+    private String specialtyLineData;
+    private String specialtyLineOptions;
+    private String specialtyBarData;
+    private String specialtyBarOptions;
+
+    public String getDoctorLineData() {
+        return doctorLineData;
+    }
+
+    public String getDoctorLineOptions() {
+        return doctorLineOptions;
+    }
+
+    public String getDoctorBarData() {
+        return doctorBarData;
+    }
+
+    public String getDoctorBarOptions() {
+        return doctorBarOptions;
+    }
+
+    public String getSpecialtyLineData() {
+        return specialtyLineData;
+    }
+
+    public String getSpecialtyLineOptions() {
+        return specialtyLineOptions;
+    }
+
+    public String getSpecialtyBarData() {
+        return specialtyBarData;
+    }
+
+    public String getSpecialtyBarOptions() {
+        return specialtyBarOptions;
+    }
+
+    private List<InwardAdmissionDTO> list;
+
+    public void processAdmissionCountConsultantWiseReport() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append(" Select new com.divudi.core.data.dto.InwardAdmissionDTO(")
+                .append(" e.referringConsultant.id, ")
+                .append(" e.referringConsultant.person.name, ")
+                .append(" e.referringConsultant.speciality.name, ")
+                .append(" e.dateOfDischarge ")
+                .append(") ")
+                .append(" from PatientEncounter e ")
+                .append(" Where e.retired = false ")
+                .append(" And type(e.referringConsultant) = :consultantClass ")
+                .append(" AND e.dateOfDischarge BETWEEN :fromDate AND :toDate ");
+
+        params.put("fromDate", fromYearStartDate);
+        params.put("toDate", toYearEndDate);
+        params.put("consultantClass", Consultant.class);
+
+        if (currentSpeciality != null) {
+            jpql.append(" AND e.referringConsultant.speciality = :spe ");
+            params.put("spe", currentSpeciality);
+        }
+
+        jpql.append(" ORDER BY e.referringConsultant.speciality.name, e.referringConsultant.person.name ");
+
+        List<InwardAdmissionDTO> rawList = (List<InwardAdmissionDTO>) peFacade.findLightsByJpqlWithoutCache(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        // Group by specialty and doctor, count surgeries month-wise
+        Map<String, Map<Long, InwardAdmissionDTO>> specialtyDoctorMap = new LinkedHashMap<>();
+        Calendar cal = Calendar.getInstance();
+
+        for (InwardAdmissionDTO dto : rawList) {
+            String speciality = dto.getSpecialityName();
+            Long staffId = dto.getStaffId();
+
+            // Get or create specialty map
+            Map<Long, InwardAdmissionDTO> doctorMap = specialtyDoctorMap.get(speciality);
+            if (doctorMap == null) {
+                doctorMap = new LinkedHashMap<>();
+                specialtyDoctorMap.put(speciality, doctorMap);
+            }
+
+            // Get or create doctor aggregation
+            InwardAdmissionDTO aggregated = doctorMap.get(staffId);
+            if (aggregated == null) {
+                aggregated = new InwardAdmissionDTO(
+                        dto.getStaffId(),
+                        dto.getDoctorName(),
+                        dto.getSpecialityName(),
+                        null
+                );
+                doctorMap.put(staffId, aggregated);
+            }
+
+            // Increment month counter
+            if (dto.getDateOfDischarge() != null) {
+                cal.setTime(dto.getDateOfDischarge());
+                int month = cal.get(Calendar.MONTH);
+                aggregated.addMonthCount(month, 1);
+            }
+        }
+
+        // Build final list with subtotals and grand total
+        list = new ArrayList<>();
+        InwardAdmissionDTO grandTotal = new InwardAdmissionDTO();
+
+        for (Map.Entry<String, Map<Long, InwardAdmissionDTO>> specialtyEntry : specialtyDoctorMap.entrySet()) {
+            String speciality = specialtyEntry.getKey();
+            Map<Long, InwardAdmissionDTO> doctorMap = specialtyEntry.getValue();
+
+            InwardAdmissionDTO subtotal = new InwardAdmissionDTO(speciality);
+
+            // Add all doctors for this specialty
+            for (InwardAdmissionDTO doctor : doctorMap.values()) {
+                list.add(doctor);
+                subtotal.addAllCounts(doctor);
+                grandTotal.addAllCounts(doctor);
+            }
+
+            // Add subtotal row
+            list.add(subtotal);
+        }
+
+        // Add grand total row
+        list.add(grandTotal);
+
+        createAdmissionCountCharts();
+    }
+
+    public void createAdmissionCountCharts() {
+        createConsultantWiseCharts();
+        createSpecialtyWiseCharts();
+    }
+
+    private void createConsultantWiseCharts() {
+        // Define color palette (RGB strings without alpha for now)
+        String[] colors = {
+            "75, 192, 192", "255, 99, 132", "54, 162, 235", "255, 206, 86",
+            "153, 102, 255", "255, 159, 64", "199, 199, 199", "83, 102, 255",
+            "255, 99, 255", "99, 255, 132"
+        };
+        int colorIndex = 0;
+
+        // Line Chart
+        LineChart lineChart = new LineChart();
+        LineData lineData = new LineData();
+        lineData.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+        for (InwardAdmissionDTO dto : list) {
+            if (dto.isSubtotal() || dto.isGrandTotal()) {
+                continue;
+            }
+            String[] rgb = colors[colorIndex % colors.length].split(",");
+            RGBAColor borderColor = new RGBAColor(Integer.parseInt(rgb[0].trim()), Integer.parseInt(rgb[1].trim()), Integer.parseInt(rgb[2].trim()), 1);
+            LineDataset dataset = new LineDataset()
+                    .setLabel(dto.getDoctorName())
+                    .addData(dto.getJanuary()).addData(dto.getFebruary()).addData(dto.getMarch())
+                    .addData(dto.getApril()).addData(dto.getMay()).addData(dto.getJune())
+                    .addData(dto.getJuly()).addData(dto.getAugust()).addData(dto.getSeptember())
+                    .addData(dto.getOctober()).addData(dto.getNovember()).addData(dto.getDecember())
+                    .setBorderColor(borderColor)
+                    .setFill(new Fill(false))
+                    .setTension(0.4f);
+            lineData.addDataset(dataset);
+            colorIndex++;
+        }
+        lineChart.setData(lineData);
+        LineOptions lineOptionsObj = new LineOptions();
+        Plugins plugins = new Plugins();
+        plugins.setTitle(new Title().setDisplay(true).setText("Doctor Wise Count"));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.RIGHT));
+        lineOptionsObj.setPlugins(plugins);
+        Scales scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions().setBeginAtZero(true).setTicks(new LinearTickOptions().setStepSize(1)));
+        lineOptionsObj.setScales(scales);
+        lineChart.setOptions(lineOptionsObj);
+        lineChartModel = lineChart.toJson();
+
+        // Bar Chart (similar logic)
+        BarChart barChart = new BarChart();
+        BarData barData = new BarData();
+        barData.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+        colorIndex = 0;
+        for (InwardAdmissionDTO dto : list) {
+            if (dto.isSubtotal() || dto.isGrandTotal()) {
+                continue;
+            }
+            String[] rgb = colors[colorIndex % colors.length].split(",");
+            RGBAColor bgColor = new RGBAColor(Integer.parseInt(rgb[0].trim()), Integer.parseInt(rgb[1].trim()), Integer.parseInt(rgb[2].trim()), 0.7);
+            RGBAColor borderColor = new RGBAColor(Integer.parseInt(rgb[0].trim()), Integer.parseInt(rgb[1].trim()), Integer.parseInt(rgb[2].trim()), 1);
+            BarDataset dataset = new BarDataset()
+                    .setLabel(dto.getDoctorName())
+                    .addData(dto.getJanuary()).addData(dto.getFebruary()).addData(dto.getMarch())
+                    .addData(dto.getApril()).addData(dto.getMay()).addData(dto.getJune())
+                    .addData(dto.getJuly()).addData(dto.getAugust()).addData(dto.getSeptember())
+                    .addData(dto.getOctober()).addData(dto.getNovember()).addData(dto.getDecember())
+                    .setBackgroundColor(bgColor)
+                    .setBorderColor(borderColor)
+                    .setBorderWidth(1);
+            barData.addDataset(dataset);
+            colorIndex++;
+        }
+        barChart.setData(barData);
+        BarOptions barOptionsObj = new BarOptions();
+        plugins = new Plugins();
+        plugins.setTitle(new Title().setDisplay(true).setText("Doctor Wise Count"));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.TOP));
+        barOptionsObj.setPlugins(plugins);
+        scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions().setBeginAtZero(true).setTicks(new LinearTickOptions().setStepSize(1)));
+        barOptionsObj.setScales(scales);
+        barChart.setOptions(barOptionsObj);
+        barChartModel = barChart.toJson();
+    }
+
+    private void createSpecialtyWiseCharts() {
+        // Similar to createDoctorCharts, but for specialties (use subtotals)
+        String[] colors = {
+            "220, 20, 60", "65, 105, 225", "255, 140, 0",
+            "34, 139, 34", "138, 43, 226", "255, 215, 0"
+        };
+        int colorIndex = 0;
+
+        // Line Chart
+        LineChart lineChart = new LineChart();
+        LineData lineData = new LineData();
+        lineData.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+        for (InwardAdmissionDTO dto : list) {
+            if (!dto.isSubtotal()) {
+                continue;
+            }
+            String[] rgb = colors[colorIndex % colors.length].split(",");
+            RGBAColor borderColor = new RGBAColor(Integer.parseInt(rgb[0].trim()), Integer.parseInt(rgb[1].trim()), Integer.parseInt(rgb[2].trim()), 1);
+            LineDataset dataset = new LineDataset()
+                    .setLabel(dto.getSpecialityName())
+                    .addData(dto.getJanuary()).addData(dto.getFebruary()).addData(dto.getMarch())
+                    .addData(dto.getApril()).addData(dto.getMay()).addData(dto.getJune())
+                    .addData(dto.getJuly()).addData(dto.getAugust()).addData(dto.getSeptember())
+                    .addData(dto.getOctober()).addData(dto.getNovember()).addData(dto.getDecember())
+                    .setBorderColor(borderColor)
+                    .setBorderWidth(3)
+                    .setFill(new Fill(false))
+                    .setTension(0.4f);
+            lineData.addDataset(dataset);
+            colorIndex++;
+        }
+        lineChart.setData(lineData);
+        LineOptions lineOptionsObj = new LineOptions();
+        Plugins plugins = new Plugins();
+        plugins.setTitle(new Title().setDisplay(true).setText("Specialty Wise Count"));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.RIGHT));
+        lineOptionsObj.setPlugins(plugins);
+        Scales scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions().setBeginAtZero(true).setTicks(new LinearTickOptions().setStepSize(5)));
+        lineOptionsObj.setScales(scales);
+        lineChart.setOptions(lineOptionsObj);
+        specialtyLineChartModel = lineChart.toJson();
+
+        // Bar Chart (similar)
+        BarChart barChart = new BarChart();
+        BarData barData = new BarData();
+        barData.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+        colorIndex = 0;
+        for (InwardAdmissionDTO dto : list) {
+            if (!dto.isSubtotal()) {
+                continue;
+            }
+            String[] rgb = colors[colorIndex % colors.length].split(",");
+            RGBAColor bgColor = new RGBAColor(Integer.parseInt(rgb[0].trim()), Integer.parseInt(rgb[1].trim()), Integer.parseInt(rgb[2].trim()), 0.7);
+            RGBAColor borderColor = new RGBAColor(Integer.parseInt(rgb[0].trim()), Integer.parseInt(rgb[1].trim()), Integer.parseInt(rgb[2].trim()), 1);
+            BarDataset dataset = new BarDataset()
+                    .setLabel(dto.getSpecialityName())
+                    .addData(dto.getJanuary()).addData(dto.getFebruary()).addData(dto.getMarch())
+                    .addData(dto.getApril()).addData(dto.getMay()).addData(dto.getJune())
+                    .addData(dto.getJuly()).addData(dto.getAugust()).addData(dto.getSeptember())
+                    .addData(dto.getOctober()).addData(dto.getNovember()).addData(dto.getDecember())
+                    .setBackgroundColor(bgColor)
+                    .setBorderColor(borderColor)
+                    .setBorderWidth(2);
+            barData.addDataset(dataset);
+            colorIndex++;
+        }
+        barChart.setData(barData);
+        BarOptions barOptionsObj = new BarOptions();
+        plugins = new Plugins();
+        plugins.setTitle(new Title().setDisplay(true).setText("Specialty Wise Count"));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.TOP));
+        barOptionsObj.setPlugins(plugins);
+        scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions().setBeginAtZero(true).setTicks(new LinearTickOptions().setStepSize(5)));
+        barOptionsObj.setScales(scales);
+        barChart.setOptions(barOptionsObj);
+        specialtyBarChartModel = barChart.toJson();
     }
 
     public void fillAdmissions(Boolean discharged, Boolean finalized) {
@@ -229,9 +837,6 @@ public class InwardReportController implements Serializable {
 //        calTtoal();
         calTtoal(patientEncounters);
     }
-
-    @Inject
-    BhtSummeryController bhtSummeryController;
 
     private void calTtoal() {
         if (patientEncounters == null) {
@@ -282,7 +887,6 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         patientEncounters = getPeFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        
     }
 
     double total;
@@ -292,9 +896,6 @@ public class InwardReportController implements Serializable {
     double calTotal;
     double totalVat;
     double totalVatCalculatedValue;
-
-    @Inject
-    InwardReportControllerBht inwardReportControllerBht;
 
     public void fillDischargeBook() {
         Map m = new HashMap();
@@ -372,7 +973,7 @@ public class InwardReportController implements Serializable {
         for (PatientEncounter p : patientEncounters) {
             p.setTransPaidByPatient(calPaidByPatient(p));
             p.setTransPaidByCompany(calPaidByCompany(p));
-            if (p.getFinalBill()==null) {
+            if (p.getFinalBill() == null) {
                 continue;
             }
             for (BillItem bi : p.getFinalBill().getBillItems()) {
@@ -526,7 +1127,6 @@ public class InwardReportController implements Serializable {
 
         calTotalDischargedNoChanges();
 
-        
     }
 
     public void fillDischargeBookPaymentFinalizedNoChangesOnlyDue() {
@@ -571,7 +1171,7 @@ public class InwardReportController implements Serializable {
         creditPaid = 0;
         creditUsed = 0;
         for (PatientEncounter p : list) {
-            if (p.getFinalBill()==null) {
+            if (p.getFinalBill() == null) {
                 continue;
             }
             p.setTransPaidByPatient(calPaidByPatient(p));
@@ -589,8 +1189,6 @@ public class InwardReportController implements Serializable {
             }
 
         }
-
-        
 
     }
 
@@ -672,8 +1270,6 @@ public class InwardReportController implements Serializable {
             total += b.getBill().getNetTotal();
         }
 
-        
-
     }
 
 //    public void createOutSideBillsByAddedDate() {
@@ -709,7 +1305,7 @@ public class InwardReportController implements Serializable {
 //            setTotal(getTotal() + b.getBill().getNetTotal());
 //        }
 //
-//        
+//
 //
 //    }
 //
@@ -747,7 +1343,7 @@ public class InwardReportController implements Serializable {
 //            setTotal(getTotal() + b.getBill().getNetTotal());
 //        }
 //
-//        
+//
 //
 //    }
     public void createPatientInvestigationsTableAll() {
@@ -764,18 +1360,20 @@ public class InwardReportController implements Serializable {
             sql += "and pi.encounter=:en";
             temMap.put("en", patientEncounter);
         }
-//       
 
+        if (getPatientCode() != null && !getPatientCode().trim().equals("")) {
+            sql += " and  (((pi.billItem.bill.patientEncounter.patient.code) =:number ) or ((pi.billItem.bill..patientEncounter.patient.phn) =:number )) ";
+            temMap.put("number", getPatientCode().trim().toUpperCase());
+        }
+//
         sql += " order by pi.id desc  ";
-//    
+//
 
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
         //System.err.println("Sql " + sql);
         patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-
-        
 
     }
 
@@ -892,7 +1490,6 @@ public class InwardReportController implements Serializable {
             individualBhtIncomeByCategoryRecord.add(ibr);
         }
 
-        
     }
 
     public void listDischargedBhtIncomeByCategories() {
@@ -972,7 +1569,6 @@ public class InwardReportController implements Serializable {
         totalCancelledBill = calTotalCreateCancelBillRefundBillProfessionalPaymentTableInwardAll(new CancelledBill());
         totalRefundBill = calTotalCreateCancelBillRefundBillProfessionalPaymentTableInwardAll(new RefundBill());
 
-        
     }
 
     public void fillProfessionalPaymentDoneOPD() {
@@ -988,7 +1584,6 @@ public class InwardReportController implements Serializable {
         totalCancelledBill = createProfessionalPaymentTableTotals(new CancelledBill(), BillType.PaymentBill, null);
         totalRefundBill = createProfessionalPaymentTableTotals(new RefundBill(), BillType.PaymentBill, null);
 
-        
     }
 
     List<BillItem> createBilledBillProfessionalPaymentTableInwardAll(Bill bill) {
@@ -1030,7 +1625,6 @@ public class InwardReportController implements Serializable {
             temMap.put("cc", institution);
         }
 
-
         return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
@@ -1066,7 +1660,6 @@ public class InwardReportController implements Serializable {
             sql = sql + " and b.bill.patientEncounter.creditCompany=:cc ";
             temMap.put("cc", institution);
         }
-
 
         return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
@@ -1260,6 +1853,7 @@ public class InwardReportController implements Serializable {
         this.admissionType = admissionType;
     }
 
+    @Deprecated
     public List<AdmissionType> getAdmissionty() {
         admissionty = getAdmissionTypeFacade().findAll("name", true);
         return admissionty;
@@ -1277,12 +1871,9 @@ public class InwardReportController implements Serializable {
         this.admissionTypeFacade = admissionTypeFacade;
     }
 
-
-    CommonFunctions commonFunctions;
-
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -1341,7 +1932,7 @@ public class InwardReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.core.util.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }
@@ -1415,6 +2006,126 @@ public class InwardReportController implements Serializable {
 
     public void setReportKeyWord(ReportKeyWord reportKeyWord) {
         this.reportKeyWord = reportKeyWord;
+    }
+
+    public List<AdmissionType> getAdmissionTypes() {
+        if (admissionTypes == null) {
+            fillAdmissionTypes();
+        }
+        return admissionTypes;
+    }
+
+    public void setAdmissionTypes(List<AdmissionType> admissionTypes) {
+        this.admissionTypes = admissionTypes;
+    }
+
+    private void fillAdmissionTypes() {
+        String jpql = "select ad from AdmissionType ad "
+                + "where ad.retired=false "
+                + "order by ad.name";
+        admissionTypes = admissionTypeFacade.findByJpql(jpql);
+    }
+
+    public String getPatientCode() {
+        return patientCode;
+    }
+
+    public void setPatientCode(String patientCode) {
+        this.patientCode = patientCode;
+    }
+
+    public Date getFromYearStartDate() {
+        if (fromYearStartDate == null) {
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.MONTH, Calendar.JANUARY);
+            cal.set(Calendar.DAY_OF_MONTH, 1);
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+
+            fromYearStartDate = cal.getTime();
+        }
+        return fromYearStartDate;
+    }
+
+    public void setFromYearStartDate(Date fromYearStartDate) {
+        this.fromYearStartDate = fromYearStartDate;
+    }
+
+    public Date getToYearEndDate() {
+        if (toYearEndDate == null) {
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.MONTH, Calendar.DECEMBER);
+            cal.set(Calendar.DAY_OF_MONTH, 31);
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            cal.set(Calendar.MILLISECOND, 999);
+
+            toYearEndDate = cal.getTime();
+        }
+        return toYearEndDate;
+    }
+
+    public void setToYearEndDate(Date toYearEndDate) {
+        this.toYearEndDate = toYearEndDate;
+    }
+
+    public List<SurgeryCountDoctorWiseDTO> getBillList() {
+        return billList;
+    }
+
+    public void setBillList(List<SurgeryCountDoctorWiseDTO> billList) {
+        this.billList = billList;
+    }
+
+    public Speciality getCurrentSpeciality() {
+        return currentSpeciality;
+    }
+
+    public void setCurrentSpeciality(Speciality currentSpeciality) {
+        this.currentSpeciality = currentSpeciality;
+    }
+
+    public String getLineChartModel() {
+        return lineChartModel;
+    }
+
+    public void setLineChartModel(String lineChartModel) {
+        this.lineChartModel = lineChartModel;
+    }
+
+    public String getBarChartModel() {
+        return barChartModel;
+    }
+
+    public void setBarChartModel(String barChartModel) {
+        this.barChartModel = barChartModel;
+    }
+
+    public String getSpecialtyLineChartModel() {
+        return specialtyLineChartModel;
+    }
+
+    public void setSpecialtyLineChartModel(String specialtyLineChartModel) {
+        this.specialtyLineChartModel = specialtyLineChartModel;
+    }
+
+    public String getSpecialtyBarChartModel() {
+        return specialtyBarChartModel;
+    }
+
+    public void setSpecialtyBarChartModel(String specialtyBarChartModel) {
+        this.specialtyBarChartModel = specialtyBarChartModel;
+    }
+
+    public List<InwardAdmissionDTO> getList() {
+        return list;
+    }
+
+    public void setList(List<InwardAdmissionDTO> list) {
+        this.list = list;
     }
 
     public class IncomeByCategoryRecord {
@@ -1610,14 +2321,6 @@ public class InwardReportController implements Serializable {
         this.inwardReportControllerBht = inwardReportControllerBht;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public Bill getBill() {
         return bill;
     }
@@ -1800,14 +2503,6 @@ public class InwardReportController implements Serializable {
 
     public void setWithoutCancelBHT(boolean withoutCancelBHT) {
         this.withoutCancelBHT = withoutCancelBHT;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public String getInvoceNo() {

@@ -16,7 +16,7 @@
     <cc:implementation>
         <p:dataTable  value="#{bhtSummeryFinalizedController.billFees}" var="bi"
                       sortBy="#{bi.billItem.id}"
-                      rowStyleClass="#{(bi.bill.billClass eq 'class com.divudi.entity.CancelledBill')? '':'noDisplayRow'}">                               
+                      rowStyleClass="#{(bi.bill.billClass eq 'class com.divudi.core.entity.CancelledBill')? '':'noDisplayRow'}">
             <p:column headerText="Item Name">
                 #{bi.billItem.item.name}
             </p:column>

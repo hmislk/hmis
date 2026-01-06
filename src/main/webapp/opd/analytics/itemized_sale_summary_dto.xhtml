@@ -1,0 +1,249 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/opd/analytics/index.xhtml">
+            <ui:define name="subcontent">
+                <!-- DTO-OPTIMIZED VERSION: Uses database aggregation for better performance -->
+                <h:form>
+                    <p:panel header="Itemized Sales Summary (Fast - DTO-Based)">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h:panelGrid columns="2" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                        <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:calendar 
+                                        styleClass="w-100" 
+                                        inputStyleClass="w-100 form-control" 
+                                        id="fromDate" 
+                                        value="#{searchController.fromDate}" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                        />
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                        <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:calendar 
+                                        styleClass="w-100" 
+                                        inputStyleClass="w-100 form-control" 
+                                        id="toDate" 
+                                        value="#{searchController.toDate}" 
+                                        navigator="false" 
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                        />
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                        <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu
+                                        id="cmbIns"
+                                        styleClass="w-100 form-control" 
+                                        value="#{searchController.institution}" 
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Institutions" />
+                                        <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                        <p:ajax process="cmbIns" update="cmbDept" />
+                                    </p:selectOneMenu>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                        <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu
+                                        id="cmbDept"
+                                        styleClass="w-100 form-control"  
+                                        value="#{searchController.department}" 
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Departments" />
+                                        <f:selectItems value="#{departmentController.getInsDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                    </p:selectOneMenu>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                        <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu
+                                        id="siteMenu"
+                                        styleClass="w-100 form-control"  
+                                        value="#{searchController.site}" 
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Sites" />
+                                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                    </p:selectOneMenu>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText title="Category" value="&#xf02d;" styleClass="fa mr-2" /> <!-- FontAwesome book icon -->
+                                        <h:outputLabel value="Category"  class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:autoComplete value="#{searchController.category}"
+                                                    completeMethod="#{categoryController.completeCategory}" 
+                                                    var="category"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    itemLabel="#{category.name}"
+                                                    itemValue="#{category}">
+                                    </p:autoComplete>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText title="Item" value="&#xf0f6;" styleClass="fa mr-2" /> <!-- FontAwesome box icon -->
+                                        <h:outputLabel value="Item"  class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:autoComplete value="#{searchController.item}"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
+                                                    var="item"
+                                                    itemLabel="#{item.name}"
+                                                    itemValue="#{item}">
+                                    </p:autoComplete>
+                                </h:panelGrid>
+
+                                <p:commandButton id="btnList" class="m-1 ui-button-danger"
+                                                 icon="fas fa-list"
+                                                 ajax="false" value="View List"
+                                                 action="#{searchController.createItemizedSalesSummaryDto()}" />
+
+                                <p:commandButton id="btnPdf" class="m-1 ui-button-info"
+                                                 rendered="false"
+                                                 ajax="false"
+                                                 icon="fas fa-file-pdf"
+                                                 value="Export as PDF">
+                                    <p:dataExporter type="pdf" target="tbl" fileName="itemized_sale_summary" />
+                                </p:commandButton>
+
+                                <p:commandButton id="btnPrint" class="m-1 ui-button-primary"
+                                                 icon="fas fa-print"
+                                                 ajax="false"
+                                                 value="Print Table">
+                                    <p:printer target="tbl" />
+                                </p:commandButton>
+
+                                <p:commandButton id="btnExcel" class="m-1 ui-button-success"
+                                                 icon="fas fa-file-excel"
+                                                 ajax="false" value="Export to Excel">
+                                    <p:dataExporter type="xlsx" target="tbl" fileName="itemized_sale_summary" />
+                                </p:commandButton>
+
+
+
+                            </div>
+
+                        </div>
+
+                        <h:panelGroup rendered="#{not empty searchController.opdSaleSummaryDtos}">
+                            <div class="alert alert-success mt-3" role="alert">
+                                <h:outputText value="&#xf058;" styleClass="fa mr-2"/>
+                                <strong>Performance Optimized:</strong> Using DTO-based queries for improved memory usage and load times.
+                            </div>
+                        </h:panelGroup>
+
+                                <p:dataTable id="tbl"
+                                             value="#{searchController.opdSaleSummaryDtos}"
+                                             var="row"
+                                             paginator="true"
+                                             rows="10"
+                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                             rowsPerPageTemplate="5,10,20"
+                                             rowKey="#{row.itemId}">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Itemized Sales Summary (DTO - Optimized)" ></h:outputText>
+                                    </f:facet>
+                                    <f:facet name="footer" >
+                                        <h:outputText value="Total" ></h:outputText>
+                                        <p:spacer width="50" ></p:spacer>
+                                        <h:outputText value="#{searchController.opdSaleSummaryTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                    </f:facet>
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Category" />
+                                        </f:facet>
+                                        <h:outputText value="#{row.categoryName}"  />
+                                        <p:commandLink
+                                            class="mx-2"
+                                            rendered="#{row.categoryId ne null}"
+                                            action="#{searchController.navigateToOpdBillItemListFromDto(row)}"
+                                            ajax="false">
+                                            <h:outputText title="View Category Details" value="&#xf02d;" styleClass="fa mr-2" />
+                                        </p:commandLink>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Item / Service" />
+                                        </f:facet>
+                                        <h:outputText value="#{row.itemName}"  />
+                                        <p:commandLink
+                                            class="mx-2"
+                                            rendered="#{row.itemId ne null}"
+                                            action="#{searchController.navigateToOpdBillItemListFromDto(row)}">
+                                            <h:outputText title="View Item Details" value="&#xf0f6;" styleClass="fa mr-2" />
+                                        </p:commandLink>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Count" />
+                                        </f:facet>
+                                        <h:outputText value="#{row.itemCount}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column class="text-end">
+                                        <f:facet name="header">
+                                            <h:outputText value="Hospital Fee" />
+                                        </f:facet>
+                                        <h:outputText value="#{row.hospitalFee} ">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column class="text-end">
+                                        <f:facet name="header">
+                                            <h:outputText value="Professional Fee" />
+                                        </f:facet>
+                                        <h:outputText value="#{row.professionalFee}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column class="text-end">
+                                        <f:facet name="header">
+                                            <h:outputText value="Gross Amount" />
+                                        </f:facet>
+                                        <h:outputText value="#{row.grossAmount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column class="text-end">
+                                        <f:facet name="header">
+                                            <h:outputText value="Discount" />
+                                        </f:facet>
+                                        <h:outputText value="#{row.discountAmount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column class="text-end">
+                                        <f:facet name="header">
+                                            <h:outputText value="Net Amount" />
+                                        </f:facet>
+                                        <h:outputText value="#{row.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+
+                                                  
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

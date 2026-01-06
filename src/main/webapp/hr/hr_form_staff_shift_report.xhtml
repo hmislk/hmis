@@ -13,22 +13,22 @@
                 <f:facet name="header" >
                     <h:outputLabel value="Staff Shift Report" />
                 </f:facet>
-                <h:panelGroup id="panelError" 
+                <h:panelGroup id="panelError"
                               rendered="#{shiftFingerPrintAnalysisController.errorMessage ne null and shiftFingerPrintAnalysisController.errorMessage.size()!=0}"
                               style="background-color: yellow; color: red; display: block; margin: 2px; border: 1px solid red; padding: 3px; width: 95%;" >
                     <ui:repeat var="mes"
                                value="#{shiftFingerPrintAnalysisController.errorMessage}" >
                         <p:outputLabel value="#{mes}" /><br/>
-                    </ui:repeat>               
+                    </ui:repeat>
                 </h:panelGroup>
                 <h:panelGrid columns="2">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar id="frmDate" 
+                    <p:calendar id="frmDate"
                                 value="#{shiftFingerPrintAnalysisController.fromDate}"
                                 pattern="#{sessionController.applicationPreference.longDateFormat}" />
                     <h:outputLabel value="To Date"/>
-                    <p:calendar id="toDate" 
-                                value="#{shiftFingerPrintAnalysisController.toDate}" 
+                    <p:calendar id="toDate"
+                                value="#{shiftFingerPrintAnalysisController.toDate}"
                                 pattern="#{sessionController.applicationPreference.longDateFormat}" />
 
                     <h:outputLabel value="Staff : "/>
@@ -38,19 +38,19 @@
                                          process="@this frmDate toDate roster"
                                          update="lst"
                                          actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                         action="#{shiftFingerPrintAnalysisController.createShiftTableByStaff()}" 
-                                          /> 
+                                         action="#{shiftFingerPrintAnalysisController.createShiftTableByStaff()}"
+                                          />
 
                         <p:commandButton value="Fill Additional Only"
                                          process="@this frmDate toDate roster"
                                          update="lst"
                                          actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                         action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}" 
-                                          /> 
+                                         action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}"
+                                          />
                     </h:panelGroup>
                 </h:panelGrid>
 
-                <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">   
+                <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
                     <p:dataGrid  id="lst" columns="1" var="data"
                                  value="#{shiftFingerPrintAnalysisController.shiftTables}" >
                         <f:facet name="header">
@@ -66,7 +66,7 @@
                             </h:outputLabel>
                             <h:outputLabel/>
                             <h:outputLabel/>
-                            <h:outputLabel value="  To : "/> 
+                            <h:outputLabel value="  To : "/>
                             <h:outputLabel  value="#{shiftFingerPrintAnalysisController.toDate}">
                                 <f:convertDateTime pattern="dd MM yy "/>
                             </h:outputLabel>
@@ -97,12 +97,12 @@
                                 </h:outputLabel>
 
                             </p:column>
-                            <p:column headerText="Leave/Replace" styleClass="singleLine">                       
-                                <h:outputLabel value="#{sts.leaveType}"  />                     
+                            <p:column headerText="Leave/Replace" styleClass="singleLine">
+                                <h:outputLabel value="#{sts.leaveType}"  />
                             </p:column>
 
-                            <p:column headerText="Halfday" styleClass="singleLine">                       
-                                <h:outputLabel value="#{sts.shift.halfShift}"  />                     
+                            <p:column headerText="Halfday" styleClass="singleLine">
+                                <h:outputLabel value="#{sts.shift.halfShift}"  />
                             </p:column>
 
                             <p:column>
@@ -111,15 +111,15 @@
                                 </f:facet>
                                 <h:outputLabel value="#{sts.staff.person.name}"/>
 
-                            </p:column> 
+                            </p:column>
                             <p:column>
                                 <f:facet name="header">
                                     <h:outputLabel value="Staff Code"/>
                                 </f:facet>
                                 <h:outputLabel value="#{sts.staff.code}"/>
-                            </p:column>     
+                            </p:column>
 
-                            <p:column headerText="Starting Record Frm Attendence"> 
+                            <p:column headerText="Starting Record Frm Attendence">
 
                                 <h:panelGroup rendered="#{sts.previousStaffShift eq null}" >
                                     <h:outputLabel value="#{sts.startRecord.recordTimeStamp}"></h:outputLabel>
@@ -134,18 +134,18 @@
                                 <h:outputLabel value="Next" rendered="#{sts.nextStaffShift ne null}"/>
                             </p:column>
 
-                        </p:dataTable>  
+                        </p:dataTable>
                         <f:facet name="footer">
                             <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                             <p:outputLabel value="Print At : " />
-                            <p:outputLabel value="#{commonController.currentDateTime}" >
+                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                 <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                             </p:outputLabel>
                         </f:facet>
                     </p:dataGrid>
                 </p:panel>
             </p:panel>
-        </h:form>  
+        </h:form>
 
 
 

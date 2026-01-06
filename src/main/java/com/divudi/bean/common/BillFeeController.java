@@ -7,12 +7,15 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.BillFee;
-import com.divudi.facade.BillFeeFacade;
+
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.facade.BillFeeFacade;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -24,8 +27,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -79,6 +82,32 @@ public class BillFeeController implements Serializable {
         }
         recreateModel();
         getItems();
+    }
+
+    public void save(BillFee billFee) {
+        if (billFee == null) {
+            return;
+        }
+        if (billFee.getId() == null) {
+            if (billFee.getCreatedAt() == null) {
+                billFee.setCreatedAt(new Date());
+            }
+            if (billFee.getCreater() == null) {
+                billFee.setCreater(sessionController.getLoggedUser());
+            }
+            getFacade().create(billFee);
+        } else {
+            getFacade().edit(billFee);
+        }
+    }
+
+    public void save(List<BillFee> billFees) {
+        if (billFees == null || billFees.isEmpty()) {
+            return;
+        }
+        for (BillFee billFee : billFees) {
+            save(billFee);
+        }
     }
 
     public void setSelectText(String selectText) {
@@ -138,6 +167,71 @@ public class BillFeeController implements Serializable {
         return items;
     }
 
+    @FacesConverter(value = "billFeeConverter")
+    public static class BillFeeConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.trim().isEmpty() || "null".equals(value.trim())) {
+                return null;
+            }
+
+            if (value.startsWith("TEMP_")) {
+                // Handle objects without ID
+                Map<String, BillFee> billFeeMap = (Map<String, BillFee>) facesContext.getExternalContext().getSessionMap().get("billFeeMap");
+                return billFeeMap.get(value);
+            } else {
+                // Handle objects with ID
+                BillFeeController controller = (BillFeeController) facesContext.getApplication().getELResolver().
+                        getValue(facesContext.getELContext(), null, "billFeeController");
+
+                Long key = getKey(value);
+                if (key == null) {
+                    // key is null, return null to avoid calling find with a null PK
+                    return null;
+                }
+                return controller.getEjbFacade().find(key);
+            }
+        }
+
+        Long getKey(String value) {
+            try {
+                return Long.valueOf(value.trim());
+            } catch (NumberFormatException e) {
+                // Log or handle the error as appropriate
+                return null; // Return null if the input is not a valid long
+            }
+        }
+
+        String getStringKey(Long value) {
+            if (value == null) {
+                return null; // Handle null values gracefully
+            }
+            return value.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof BillFee) {
+                BillFee billFee = (BillFee) object;
+                if (billFee.getId() != null) {
+                    return getStringKey(billFee.getId());
+                } else {
+                    // Use a temporary key for objects without ID
+                    String key = "TEMP_" + billFee.hashCode();
+                    Map<String, BillFee> billFeeMap = (Map<String, BillFee>) facesContext.getExternalContext().getSessionMap().computeIfAbsent("billFeeMap", k -> new HashMap<>());
+                    billFeeMap.put(key, billFee);
+                    return key;
+                }
+            } else {
+                throw new IllegalArgumentException("Object is not of type BillFee: " + object.getClass().getName());
+            }
+        }
+    }
+
     /**
      *
      */
@@ -154,16 +248,20 @@ public class BillFeeController implements Serializable {
             return controller.getEjbFacade().find(getKey(value));
         }
 
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
+        Long getKey(String value) {
+            try {
+                return Long.valueOf(value.trim());
+            } catch (NumberFormatException e) {
+                // Log or handle the error as appropriate
+                return null; // Return null if the input is not a valid long
+            }
         }
 
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+        String getStringKey(Long value) {
+            if (value == null) {
+                return null; // Handle null values gracefully
+            }
+            return value.toString();
         }
 
         @Override
@@ -176,7 +274,7 @@ public class BillFeeController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + BillFeeController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + BillFee.class.getName());
             }
         }
     }

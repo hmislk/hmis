@@ -22,59 +22,59 @@
                         <div class="row">
                             <div class="col-md-2">
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar class="w-100" 
-                                            inputStyleClass="w-100" 
-                                            id="fromDate" 
-                                            value="#{opdPreBillController.fromDate}" 
-                                            navigator="false" 
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                            maxdate="#{commonController.endOfDayOnCurrentDate}"  >      
+                                <p:calendar class="w-100"
+                                            inputStyleClass="w-100"
+                                            id="fromDate"
+                                            value="#{opdPreBillController.fromDate}"
+                                            navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}"  >
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar class="w-100" 
-                                            inputStyleClass="w-100" 
-                                            id="toDate" 
-                                            value="#{opdPreBillController.toDate}" 
-                                            navigator="false" 
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                            maxdate="#{commonController.endOfDayOnCurrentDate}"  >                                                                              
+                                <p:calendar class="w-100"
+                                            inputStyleClass="w-100"
+                                            id="toDate"
+                                            value="#{opdPreBillController.toDate}"
+                                            navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}"  >
                                 </p:calendar>
-                                
+
                                 <div class="d-grid gap-2 my-2">
-                                    <p:commandButton id="btnSearch" 
-                                                     class="ui-button-warning" 
-                                                     icon="fas fa-search" 
-                                                     ajax="false" 
-                                                     value="Search" 
+                                    <p:commandButton id="btnSearch"
+                                                     class="ui-button-warning"
+                                                     icon="fas fa-search"
+                                                     ajax="false"
+                                                     value="Search"
                                                      action="#{opdPreBillController.createBillFeePayments}" />
-                                    <p:commandButton 
+                                    <p:commandButton
                                             id="btnClear"
                                             icon="fas fa-broom"
-                                            value="Clear" 
-                                            class="w-100 mt-1 mb-2 ui-button-warning" 
+                                            value="Clear"
+                                            class="w-100 mt-1 mb-2 ui-button-warning"
                                             action="#{opdPreBillController.clearPreBillSearchData}"
                                             process="btnClear"
                                             update="searchKeyword">
                                         </p:commandButton>
                                 </div>
-                                
-                                
+
+
                                 <p:defaultCommand target="btnSearch" />
                                 <p:spacer height="10" width="5" ></p:spacer><!-- comment -->
                                 <h:panelGroup id="searchKeyword">
                                     <h:outputLabel value="Bill No"/>
-                                    <p:inputText autocomplete="off" 
+                                    <p:inputText autocomplete="off"
                                                      class="w-100"
                                                      value="#{opdPreBillController.searchKeyword.billNo}" />
 
                                         <h:outputLabel value="Billed By"/>
                                         <p:inputText class="form-control my-1"
-                                                     autocomplete="off" 
+                                                     autocomplete="off"
                                                      value="#{opdPreBillController.searchKeyword.patientName}" />
-                                        
+
                                         <h:outputLabel value="Balance"/>
                                         <p:inputText class="form-control my-1"
-                                                     autocomplete="off"  
+                                                     autocomplete="off"
                                                      value="#{opdPreBillController.searchKeyword.total}"
                                                      />
 
@@ -86,10 +86,10 @@
                             </div>
 
                             <div class="col-md-10">
-                                <p:dataTable rowIndexVar="i" 
-                                             id="tblBills" 
-                                             value="#{opdPreBillController.billFeePayments}" 
-                                             var="bfp" 
+                                <p:dataTable rowIndexVar="i"
+                                             id="tblBills"
+                                             value="#{opdPreBillController.billFeePayments}"
+                                             var="bfp"
                                              rows ="10"
                                              rowStyleClass="#{bill.cancelled?'text-danger':''} "
                                              paginator="true"
@@ -100,64 +100,64 @@
                                     <p:column headerText="No" styleClass="alignTop">
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
-                                    <p:column headerText="Bill No" >                                
-                                        <p:commandLink id="billNo" 
-                                                       ajax="false" 
-                                                       value="#{bfp.billFee.bill.deptId}" 
+                                    <p:column headerText="Bill No" >
+                                        <p:commandLink id="billNo"
+                                                       ajax="false"
+                                                       value="#{bfp.billFee.bill.deptId}"
                                                        action="#{billSearch.navigateToViewOpdBill()}">
                                             <f:setPropertyActionListener value="#{bfp.billFee.bill}" target="#{billSearch.bill}"/>
                                         </p:commandLink>
-                                    </p:column>    
-                                    <p:column headerText="Batch Bill No">                                
+                                    </p:column>
+                                    <p:column headerText="Batch Bill No">
                                         <h:outputLabel   value="#{bfp.billFee.bill.backwardReferenceBill.deptId}"/>
-                                    </p:column> 
+                                    </p:column>
                                     <p:column headerText="Billed At"  >
                                         <h:outputLabel value="#{bfp.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
-                                    </p:column> 
-                                    <p:column headerText="Bill Net Total" >                                
+                                    </p:column>
+                                    <p:column headerText="Bill Net Total" >
                                         <h:outputLabel   value="#{bfp.billFee.bill.netTotal}"/>
                                     </p:column>
-                                    <p:column headerText="Bill Balance" >                                
+                                    <p:column headerText="Bill Balance" >
                                         <h:outputLabel   value="#{bfp.billFee.bill.balance}"/>
                                     </p:column>
-                                    <p:column headerText="Bill Cash Paid" >                                
+                                    <p:column headerText="Bill Cash Paid" >
                                         <h:outputLabel   value="#{bfp.billFee.bill.cashPaid}"/>
                                     </p:column>
                                     <p:column headerText="Payment Amount for BFP" >
-                                        <h:outputLabel value="#{bfp.amount}" >                                      
+                                        <h:outputLabel value="#{bfp.amount}" >
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Payment Amount" >
-                                        <h:outputLabel value="#{bfp.payment.paidValue}" >                                      
+                                        <h:outputLabel value="#{bfp.payment.paidValue}" >
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Dep" >
-                                        <h:outputLabel value="#{bfp.department.name}" >                                      
+                                        <h:outputLabel value="#{bfp.department.name}" >
                                         </h:outputLabel>
-                                    </p:column> 
+                                    </p:column>
                                     <p:column headerText="Dep Payment" >
-                                        <h:outputLabel value="#{bfp.payment.department.name}" >                                      
+                                        <h:outputLabel value="#{bfp.payment.department.name}" >
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Institution" >
-                                        <h:outputLabel value="#{bfp.institution.name}" >                                      
+                                        <h:outputLabel value="#{bfp.institution.name}" >
                                         </h:outputLabel>
-                                    </p:column> 
+                                    </p:column>
                                     <p:column headerText="Institution Payment" >
-                                        <h:outputLabel value="#{bfp.payment.institution.name}" >                                      
+                                        <h:outputLabel value="#{bfp.payment.institution.name}" >
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Billed by" >
-                                        <h:outputLabel value="#{bfp.creater.webUserPerson.name}" >                                      
+                                        <h:outputLabel value="#{bfp.creater.webUserPerson.name}" >
                                         </h:outputLabel>
-                                    </p:column>    
+                                    </p:column>
 
                                 </p:dataTable>
 
                             </div>
-                        </div>                           
+                        </div>
 
 
                     </p:panel>

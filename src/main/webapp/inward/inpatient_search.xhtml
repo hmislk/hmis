@@ -13,32 +13,32 @@
 
             <ui:define name="content">
                 <h:form id="form">
-                    <p:panel header="Admissions" style="height: 100vh" >
+                    <p:panel header="Admissions">
                         <div class="row">
-                            <div class="col-3">
+                            <div class="col-2">
                                 <p:outputLabel value="From Date"></p:outputLabel>
                                 <p:datePicker
-                                    value="#{admissionController.fromDate}" 
+                                    value="#{admissionController.fromDate}"
                                     class="w-100"
                                     showTime="true"
                                     showButtonBar="true"
                                     timeInput="true"
                                     inputStyleClass="form-control"
-                                    maxdate="#{commonFunctionsController.endOfDay}"
+                                    maxdate="#{commonFunctionsProxy.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
                                 </p:datePicker>
                                 <p:outputLabel value="To Date"></p:outputLabel>
-                                <p:datePicker 
+                                <p:datePicker
                                     class="w-100"
                                     showTime="true"
-                                            showButtonBar="true"
-                                            timeInput="true"
+                                    showButtonBar="true"
+                                    timeInput="true"
                                     inputStyleClass="form-control"
                                     value="#{admissionController.toDate}"
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                                 </p:datePicker>
 
-                                <p:commandButton 
+                                <p:commandButton
                                     ajax="false"
                                     value="Search"
                                     icon="fas fa-search"
@@ -47,31 +47,37 @@
                                 </p:commandButton>
 
                                 <p:outputLabel value="BHT No" ></p:outputLabel>
-                                <p:inputText 
+                                <p:inputText
                                     class="w-100"
                                     value="#{admissionController.bhtNumberForSearch}" >
                                 </p:inputText>
 
                                 <p:outputLabel value="Patient Name" ></p:outputLabel>
-                                <p:inputText 
+                                <p:inputText
                                     class="w-100"
                                     value="#{admissionController.patientNameForSearch}" >
                                 </p:inputText>
 
+                                <p:outputLabel value="MRN / PHN No" ></p:outputLabel>
+                                <p:inputText
+                                    class="w-100"
+                                    value="#{admissionController.patientNumberForSearch}" >
+                                </p:inputText>
+
                                 <p:outputLabel value="Patient Phone" ></p:outputLabel>
-                                <p:inputText 
+                                <p:inputText
                                     class="w-100"
                                     value="#{admissionController.patientPhoneNumberForSearch}" >
                                 </p:inputText>
 
-                                <p:outputLabel value="Patient NIC" ></p:outputLabel>
-                                <p:inputText 
+                                <p:outputLabel value="Patient NIC / Passport" ></p:outputLabel>
+                                <p:inputText
                                     class="w-100"
                                     value="#{admissionController.patientIdentityNumberForSearch}" >
                                 </p:inputText>
 
                                 <p:outputLabel value="Referring Doctor" ></p:outputLabel>
-                                <p:autoComplete 
+                                <p:autoComplete
                                     forceSelection="true"
                                     id="cmbDoc"
                                     value="#{admissionController.referringDoctorForSearch}"
@@ -88,7 +94,7 @@
                                 </p:autoComplete>
 
                                 <p:outputLabel value="Status" ></p:outputLabel>
-                                <p:selectOneMenu 
+                                <p:selectOneMenu
                                     class="w-100"
                                     value="#{admissionController.admissionStatusForSearch}" >
                                     <f:selectItems value="#{enumController.admissionStatuses}"
@@ -96,8 +102,16 @@
                                                    itemValue="#{status}" itemLabel="#{status.label}" />
                                 </p:selectOneMenu>
 
+                                <p:outputLabel value="Admission Type" ></p:outputLabel>
+                                <p:selectOneMenu
+                                    class="w-100"
+                                    value="#{admissionController.admissionTypeForSearch}" >
+                                    <f:selectItem itemLabel="All"></f:selectItem>
+                                    <f:selectItems value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                </p:selectOneMenu>
+
                                 <p:outputLabel value="Institution"></p:outputLabel>
-                                <p:selectOneMenu 
+                                <p:selectOneMenu
                                     class="w-100"
                                     id="cmbFromInstitution"
                                     value="#{admissionController.institutionForSearch}"
@@ -105,20 +119,47 @@
                                     autoWidth="false"
                                     >
                                     <f:selectItem itemLabel="All"></f:selectItem>
-                                    <f:selectItems 
-                                        value="#{institutionController.items}"
-                                        var="i"
-                                        itemLabel="#{i.name}"
-                                        itemValue="#{i}">
-                                    </f:selectItems>
+                                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                    <p:ajax process="cmbFromInstitution" update="cmbSite" />
                                 </p:selectOneMenu>
+
+                                <h:panelGroup  rendered="#{webUserController.hasPrivilege('InwardSearchServiceBillUnrestrictedAccess') or !configOptionApplicationController.getBooleanValueByKey('Restirct Inward Admission Search to Logged Department of the User')}" >
+                                    <p:outputLabel value="Site"></p:outputLabel>
+                                    <p:selectOneMenu
+                                        class="w-100"
+                                        id="cmbSite"
+                                        value="#{admissionController.site}"
+                                        filter="true"
+                                        autoWidth="false"
+                                        >
+                                        <f:selectItem itemLabel="All"></f:selectItem>
+                                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                        <p:ajax process="cmbSite" update="cmbFromLoggedDepartment" />
+                                    </p:selectOneMenu>
+
+                                    <p:outputLabel value="Department"></p:outputLabel>
+                                    <p:selectOneMenu
+                                        class="w-100"
+                                        id="cmbFromLoggedDepartment"
+                                        value="#{admissionController.loggedDepartment}"
+                                        filter="true"
+                                        autoWidth="false"
+                                        >
+                                        <f:selectItem itemLabel="All"></f:selectItem>
+                                        <f:selectItems
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(admissionController.institutionForSearch,admissionController.site)}"
+                                            var="d"
+                                            itemLabel="#{d.name}"
+                                            itemValue="#{d}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
 
 
                             </div>
-                            <div class="col-9">
+                            <div class="col-10">
                                 <div class="p-1" >
-                                    <p:dataTable id="tblBills" 
-                                                 value="#{admissionController.items}" 
+                                    <p:dataTable id="tblBills"
+                                                 value="#{admissionController.items}"
                                                  var="a"
                                                  emptyMessage="No records found"
                                                  rowKey="#{a.id}"
@@ -129,22 +170,23 @@
                                                  paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                                  currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                                  rowsPerPageTemplate="5,10,{ShowAll|'All'}"
-                                                 >  
-
-
+                                                 >
                                         <p:column headerText="BHT No" >
                                             <h:outputText value="#{a.bhtNo}"></h:outputText>
                                         </p:column>
                                         <p:column headerText="Patient Name"  >
-                                            <h:outputText value="#{a.patient.person.name}" ></h:outputText>
+                                            <h:outputText value="#{a.patient.person.nameWithTitle}" ></h:outputText>
                                         </p:column>
                                         <p:column headerText="Phone/Mobile" >
                                             <h:outputText value="#{a.patient.person.phone}" ></h:outputText>
                                             <h:outputText value="&nbsp;&nbsp;" ></h:outputText>
                                             <h:outputText value=", #{a.patient.person.mobile}" ></h:outputText>
                                         </p:column>
-                                        <p:column headerText="Address" >
+                                        <p:column headerText="Address" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Address in Admission Search',true)}" >
                                             <h:outputText value="#{a.patient.person.address}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Dr. Name" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Doctor Name in Admission Search',false)}" >
+                                            <h:outputText value="#{a.referringConsultant.person.nameWithTitle}" ></h:outputText>
                                         </p:column>
                                         <p:column headerText="Status" >
                                             <h:panelGroup class="my-1">
@@ -191,18 +233,31 @@
                                         </p:column>
                                         <p:column headerText="Actions" >
                                             <h:outputText value="#{a.currentPatientRoom.name}" ></h:outputText>
-                                            <p:commandButton ajax="false" 
-                                                             class="m-1"
-                                                             icon="fa fa-fw fa-bed" 
-                                                             action="#{admissionController.navigateToAdmissionProfilePage}">
+                                            <p:commandButton 
+                                                ajax="false"
+                                                class="m-1"
+                                                icon="fa fa-fw fa-bed"
+                                                action="#{admissionController.navigateToAdmissionProfilePage}">
                                                 <f:setPropertyActionListener value="#{a}" target="#{admissionController.current}" />
                                             </p:commandButton>
 
-                                            <p:commandButton ajax="false" 
-                                                             class="m-1"
-                                                             icon="fa fa-user-md" 
-                                                             action="#{patientController.navigateToOpdPatientProfile()}">
+                                            <p:commandButton 
+                                                ajax="false"
+                                                class="m-1"
+                                                icon="fa fa-user-md"
+                                                action="#{patientController.navigateToOpdPatientProfile()}">
                                                 <f:setPropertyActionListener value="#{a.patient}" target="#{patientController.current}" />
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                ajax="false"
+                                                class="m-1"
+                                                icon="fa fa-repeat"
+                                                title="Convert"
+                                                action="#{patientController.navigateToConvertNonBhtToBht(a)}"
+                                                rendered="#{a.currentPatientRoom eq null and configOptionApplicationController.getBooleanValueByKey('Enable Button to Convert Admissions to new Admission',false)}"
+                                                disabled="#{a.convertedToAnotherEncounter}">
+                                                <f:setPropertyActionListener value="#{a}" target="#{admissionController.current}" />
                                             </p:commandButton>
 
                                         </p:column>

@@ -9,20 +9,15 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.*;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.FeeType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.channel.ChannelScheduleEvent;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.ChannelBean;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.Staff;
-import com.divudi.entity.channel.AppointmentActivity;
-import com.divudi.entity.channel.SessionInstance;
-import com.divudi.facade.AppointmentActivityFacade;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.SessionInstanceFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.channel.AppointmentActivity;
+import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.facade.AppointmentActivityFacade;
+import com.divudi.core.facade.ServiceSessionFacade;
+import com.divudi.core.facade.SessionInstanceFacade;
+import com.divudi.core.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,7 +32,6 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.primefaces.model.DefaultScheduleModel;
 import org.primefaces.model.ScheduleModel;
 
 /**

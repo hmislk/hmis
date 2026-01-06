@@ -8,46 +8,43 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
-import com.divudi.bean.common.FormItemValue;
+import com.divudi.core.entity.FormItemValue;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.InvestigationItemType;
-import com.divudi.data.Sex;
-import com.divudi.data.hr.EmployeeStatus;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.data.hr.SalaryPaymentFrequency;
-import com.divudi.data.hr.SalaryPaymentMethod;
-import com.divudi.entity.Category;
-import com.divudi.entity.Consultant;
-import com.divudi.entity.Department;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Person;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.Roster;
-import com.divudi.entity.hr.StaffDesignation;
-import com.divudi.entity.hr.StaffEmployeeStatus;
-import com.divudi.entity.hr.StaffEmployment;
-import com.divudi.entity.hr.StaffGrade;
-import com.divudi.entity.hr.StaffSalary;
-import com.divudi.entity.hr.StaffStaffCategory;
-import com.divudi.entity.hr.StaffWorkingDepartment;
-import com.divudi.entity.lab.CommonReportItem;
-import com.divudi.entity.lab.ReportItem;
-import com.divudi.facade.CommonReportItemFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.FormItemValueFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.StaffEmploymentFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.StaffSalaryFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.InvestigationItemType;
+import com.divudi.core.data.hr.EmployeeStatus;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.hr.SalaryPaymentFrequency;
+import com.divudi.core.data.hr.SalaryPaymentMethod;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Consultant;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.Roster;
+import com.divudi.core.entity.hr.StaffDesignation;
+import com.divudi.core.entity.hr.StaffEmployeeStatus;
+import com.divudi.core.entity.hr.StaffEmployment;
+import com.divudi.core.entity.hr.StaffGrade;
+import com.divudi.core.entity.hr.StaffSalary;
+import com.divudi.core.entity.hr.StaffStaffCategory;
+import com.divudi.core.entity.hr.StaffWorkingDepartment;
+import com.divudi.core.entity.lab.CommonReportItem;
+import com.divudi.core.entity.lab.ReportItem;
+import com.divudi.core.facade.CommonReportItemFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.FormItemValueFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.StaffEmploymentFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.StaffSalaryFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -75,19 +72,9 @@ import org.primefaces.model.file.UploadedFile;
 @SessionScoped
 public class StaffController implements Serializable {
 
-    StreamedContent scCircular;
-    StreamedContent scCircularById;
-    private UploadedFile file;
     private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
-    @Inject
-    HrReportController hrReportController;
-    @Inject
-    StaffSalaryController staffSalaryController;
-    @Inject
-    CommonController commonController;
-    ////
+
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private StaffEmploymentFacade staffEmploymentFacade;
     @EJB
@@ -98,26 +85,78 @@ public class StaffController implements Serializable {
     private DepartmentFacade departmentFacade;
     @EJB
     StaffSalaryFacade staffSalaryFacade;
-    List<Staff> selectedItems;
-    List<Staff> selectedList;
-    private List<Staff> staff;
-    private List<Staff> filteredStaff;
-    private Staff selectedStaff;
-    private Staff current;
-    List<Staff> staffWithCode;
-    private List<Staff> items = null;
-    String selectText = "";
-
     @EJB
     private CommonReportItemFacade criFacade;
     @EJB
     FormItemValueFacade fivFacade;
-    Category formCategory;
-    private List<CommonReportItem> formItems = null;
-    List<Staff> itemsToRemove;
-    Date tempRetireDate = null;
-    boolean removeResign = false;
 
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
+    @Inject
+    SessionController sessionController;
+    @Inject
+    HrReportController hrReportController;
+    @Inject
+    StaffSalaryController staffSalaryController;
+
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
+    private StreamedContent scCircular;
+    private StreamedContent scCircularById;
+    private UploadedFile file;
+    private List<Staff> selectedItems;
+    private List<Staff> selectedList;
+    private List<Staff> staff;
+    private List<Staff> filteredStaff;
+    private Staff selectedStaff;
+    private Staff current;
+    private Person currentPerson;
+    private List<Staff> staffWithCode;
+    private List<Staff> items = null;
+    private String selectText = "";
+
+    private Category formCategory;
+    private List<CommonReportItem> formItems = null;
+    private List<Staff> itemsToRemove;
+    private Date tempRetireDate = null;
+    private boolean removeResign = false;
+    private Double eligibleWelfareLimit;
+
+    public Double getEligibleWelfareLimit() {
+        return eligibleWelfareLimit;
+    }
+
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Constructors">
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Functions">
+    public void assignEligibleWelfareLimitToSelectedStaff() {
+        if (selectedItems == null || selectedItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No staff selected.");
+            return;
+        }
+
+        int count = 0;
+        for (Staff staff : selectedItems) {
+            staff.setAnnualWelfareQualified(eligibleWelfareLimit);
+            ejbFacade.edit(staff);
+            count++;
+        }
+
+        JsfUtil.addSuccessMessage("Welfare eligibility limit assigned to " + count + " staff member(s).");
+    }
+
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
+    public void setEligibleWelfareLimit(Double eligibleWelfareLimit) {
+        this.eligibleWelfareLimit = eligibleWelfareLimit;
+    }
+
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Inner Classes">
+    // </editor-fold>
     public void removeSelectedItems() {
         for (Staff s : itemsToRemove) {
             s.setRetired(true);
@@ -127,6 +166,94 @@ public class StaffController implements Serializable {
         }
         itemsToRemove = null;
         items = null;
+    }
+
+    private String signatureUrl;
+
+    public void saveSignatureUrl() {
+        System.out.println("saveSignatureUrl");
+        if (current.getId() == null || current.getId() == 0) {
+            JsfUtil.addErrorMessage("Please Select Staff Member");
+        }
+        if (getSignatureUrl() == null || getSignatureUrl().trim() == "") {
+            JsfUtil.addErrorMessage("Add Signature Url");
+        }
+        System.out.println("getStaffController().getCurrent = " + getCurrent());
+
+        current.setSignatureUrl(getSignatureUrl());
+        ejbFacade.edit(getCurrent());
+        signatureUrl = null;
+        JsfUtil.addSuccessMessage("Added Signature Url");
+    }
+
+    public void removeSignatureUrl() {
+        System.out.println("RemoveSignatureUrl");
+        if (current.getId() == null || current.getId() == 0) {
+            JsfUtil.addErrorMessage("Please Select Staff Member");
+        }
+
+        current.setSignatureUrl(null);
+        ejbFacade.edit(getCurrent());
+        JsfUtil.addSuccessMessage("Remove Signature Url");
+    }
+
+    public String navigateToListStaff() {
+        fillItems();
+        return "/admin/staff/staff_list?faces-redirect=true";
+    }
+
+    public String navigateToStaffWelfareEligibilityAdjustmentList() {
+        fillItems();
+        return "/admin/staff/staff_welfare_eligibility_adjustment_list?faces-redirect=true";
+    }
+
+    public String navigateToManageStaff(Staff staff) {
+        if (staff == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return "";
+        }
+        current = staff;
+        if (current.getPerson() == null) {
+            JsfUtil.addErrorMessage("No Person. New Person Added");
+            currentPerson = new Person();
+            current.setPerson(currentPerson);
+        }
+        return "/admin/staff/staff?faces-redirect=true";
+    }
+
+    public String navigateToAddNewStaff() {
+        current = new Staff();
+        currentPerson = new Person();
+        current.setPerson(currentPerson);
+        return "/admin/staff/staff?faces-redirect=true";
+    }
+
+    public void saveCurrentStaff() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Staff");
+            return;
+        }
+        if (current.getPerson() == null) {
+            JsfUtil.addErrorMessage("No Person");
+            return;
+        }
+        if (current.getPerson().getId() != null) {
+            personFacade.edit(current.getPerson());
+        } else {
+            current.getPerson().setCreatedAt(new Date());
+            current.getPerson().setCreater(sessionController.getLoggedUser());
+            personFacade.edit(current.getPerson());
+        }
+        if (current.getId() != null) {
+            ejbFacade.edit(current);
+            JsfUtil.addSuccessMessage("Updated");
+        } else {
+            current.setCreater(sessionController.getLoggedUser());
+            current.setCreatedAt(new Date());
+            ejbFacade.create(current);
+            JsfUtil.addSuccessMessage("Saved");
+        }
+
     }
 
     public void deleteStaff() {
@@ -277,7 +404,7 @@ public class StaffController implements Serializable {
         staffWithCode = getEjbFacade().findByJpql(sql, hm);
 
     }
-    
+
     public Staff getstaffByName(String name) {
         String jpql = "select s "
                 + " from Staff s "
@@ -288,7 +415,7 @@ public class StaffController implements Serializable {
         m.put("name", name);
         return getFacade().findFirstByJpql(jpql, m);
     }
-    
+
     public void save(Staff stf) {
         if (stf == null) {
             return;
@@ -365,9 +492,6 @@ public class StaffController implements Serializable {
     }
 
     public void createActiveStaffTable(Date ssDate) {
-        Date startTime = new Date();
-        Date toDate = null;
-
         HashMap hm = new HashMap();
         hm.put("class", Consultant.class);
         String sql = "select ss from Staff ss "
@@ -480,7 +604,7 @@ public class StaffController implements Serializable {
     }
 
     public void createActiveStaffOnylSalaryNotGeneratedTable(Date ssDate) {
-        List<Staff> salaryGeneratedStaff = new ArrayList<>();
+        List<Staff> salaryGeneratedStaff;
         hrReportController.getReportKeyWord().setSalaryCycle(staffSalaryController.getSalaryCycle());
         salaryGeneratedStaff = hrReportController.fetchOnlySalaryGeneratedStaff();
         createActiveStaffTable(ssDate);
@@ -489,10 +613,6 @@ public class StaffController implements Serializable {
     }
 
     public void createActiveStaffTable() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         HashMap hm = new HashMap();
         hm.put("class", Consultant.class);
         String sql = "select ss from Staff ss "
@@ -728,6 +848,7 @@ public class StaffController implements Serializable {
         } else {
             sql = "select p from Staff p where p.retired=false  and"
                     + " ((p.person.name) like :q or  "
+                    + " (p.staffCode) like :q or "
                     + " (p.code) like :q or "
                     + " (p.epfNo) like :q ) "
                     + " order by p.person.name";
@@ -738,7 +859,7 @@ public class StaffController implements Serializable {
         }
 
         return suggestions;
-    }
+    }  
     Roster roster;
 
     public List<Staff> getSuggestions() {
@@ -798,11 +919,13 @@ public class StaffController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             sql = "select p from Staff p where p.retired=false and "
-                    + "((p.person.name) like '%" + query.toUpperCase() + "%' or "
-                    + " (p.code) like '%" + query.toUpperCase() + "%' ) and type(p) != Doctor"
+                    + "((p.person.name) like :q or "
+                    + " (p.code) like :q or "
+                    + " (p.staffCode) like :q ) and type(p) != Doctor"
                     + " order by p.person.name";
-            //////System.out.println(sql);
-            suggestions = getFacade().findByJpql(sql, 20);
+            HashMap hm = new HashMap();
+            hm.put("q", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findByJpql(sql, hm, 20);
         }
         return suggestions;
     }
@@ -844,20 +967,19 @@ public class StaffController implements Serializable {
         } else {
             // So, browser is requesting the image. Get ID value from actual request param.
             String id = context.getExternalContext().getRequestParameterMap().get("id");
-            Long l;
+            long l;
             try {
-                l = Long.valueOf(id);
+                l = Long.parseLong(id);
             } catch (NumberFormatException e) {
-                l = 0l;
+                l = 0L;
             }
             Staff temImg = getFacade().find(Long.valueOf(id));
             if (temImg != null) {
 
                 InputStream targetStream = new ByteArrayInputStream(temImg.getBaImage());
-                StreamedContent str = DefaultStreamedContent.builder().contentType(temImg.getFileType()).name(temImg.getFileName()).stream(() -> targetStream).build();
 
 //                return new DefaultStreamedContent(new ByteArrayInputStream(temImg.getBaImage()), temImg.getFileType());
-                return str;
+                return DefaultStreamedContent.builder().contentType(temImg.getFileType()).name(temImg.getFileName()).stream(() -> targetStream).build();
             } else {
                 return new DefaultStreamedContent();
             }
@@ -883,9 +1005,8 @@ public class StaffController implements Serializable {
 //            return new DefaultStreamedContent(new ByteArrayInputStream(current.getBaImage()), current.getFileType(), current.getFileName());
 
             InputStream targetStream = new ByteArrayInputStream(current.getBaImage());
-            StreamedContent str = DefaultStreamedContent.builder().contentType(current.getFileType()).name(current.getFileName()).stream(() -> targetStream).build();
 
-            return str;
+            return DefaultStreamedContent.builder().contentType(current.getFileType()).name(current.getFileName()).stream(() -> targetStream).build();
         } else {
             //////System.out.println("nulls");
             return new DefaultStreamedContent();
@@ -939,7 +1060,7 @@ public class StaffController implements Serializable {
     }
 
     private void fillSelectedItemsWithAllStaff() {
-        String jpql = "";
+        String jpql;
         HashMap params = new HashMap();
         jpql = "select c "
                 + " from Staff c "
@@ -954,7 +1075,7 @@ public class StaffController implements Serializable {
     }
 
     private void fillSelectedItemsWithNonDoctorStaff() {
-        String jpql = "";
+        String jpql;
         HashMap params = new HashMap<>();
         jpql = "SELECT c "
                 + "FROM Staff c "
@@ -967,7 +1088,7 @@ public class StaffController implements Serializable {
     }
 
     public void resetWorkingHour() {
-        String sql = "";
+        String sql;
         HashMap hm = new HashMap();
         sql = "select c from Staff c "
                 + " where c.retired=false "
@@ -986,7 +1107,7 @@ public class StaffController implements Serializable {
     }
 
     public void resetLateInEarlyOutLeaveAllowed() {
-        String sql = "";
+        String sql;
         HashMap hm = new HashMap();
         sql = "select c from Staff c "
                 + " where c.retired=false "
@@ -1131,60 +1252,98 @@ public class StaffController implements Serializable {
             current.setDateLeft(tempRetireDate);
         }
 
-        ////System.out.println("current.getId() = " + current.getId());
-        ////System.out.println("current.getPerson().getId() = " + current.getPerson().getId());
-//        if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
-//            getPersonFacade().create(current.getPerson());
-//        } else {
-//            getPersonFacade().edit(current.getPerson());
-//        }
         getCurrent().chageCodeToInteger();
 
-        if (getCurrent().getPerson().getDob() != null && getCurrent().getPerson().getSex() != null) {
-            Calendar dob = Calendar.getInstance();
-            dob.setTime(getCurrent().getPerson().getDob());
-            Calendar dor = Calendar.getInstance();
-            dor.setTime(getCurrent().getPerson().getDob());
-            if (getCurrent().getPerson().getSex() == Sex.Female) {
-                dor.set(Calendar.YEAR, (dob.get(Calendar.YEAR) + 50));
-            }
-            if (getCurrent().getPerson().getSex() == Sex.Male) {
-                dor.set(Calendar.YEAR, (dob.get(Calendar.YEAR) + 55));
-            }
-            if (getCurrent().getPerson().getSex() == Sex.Male || getCurrent().getPerson().getSex() == Sex.Female) {
-                if (getCurrent().getDateRetired() != null) {
-//                    if (dor.getTime().after(getCurrent().getDateRetired())) {
-//                        getCurrent().setDateRetired(dor.getTime());
-//                    }
-                    getCurrent().setDateRetired(dor.getTime());
-                } else {
-                    getCurrent().setDateRetired(dor.getTime());
-                }
+        current.getName();
+        current.getPerson().getName();
+        current.getPerson().getFullName();
+        current.getPerson().getNameWithInitials();
 
-            }
-        }
-        if (getCurrent().isWithOutNotice()) {
-            getCurrent().setDateWithOutNotice(null);
+        System.out.println(" current.getName() = " + current.getName());
+        System.out.println(" current.getPerson().getName() = " + current.getPerson().getName());
+        System.out.println("current.getPerson().getFullName() = " + current.getPerson().getFullName());
+        System.out.println("current.getPerson().getNameWithInitials() = " + current.getPerson().getNameWithInitials());
+
+        if (current.getPerson().getId() == null) {
+            current.getPerson().setCreatedAt(new Date());
+            current.getPerson().setCreater(getSessionController().getLoggedUser());
+            getPersonFacade().createAndFlush(current.getPerson());
+            JsfUtil.addSuccessMessage("New Person Created");
+        } else {
+            getPersonFacade().editAndFlush(current.getPerson());
+            JsfUtil.addSuccessMessage("Person Updated");
         }
 
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-//            current.getPerson().setEditer(getSessionController().getLoggedUser());
-//            current.getPerson().setEditedAt(new Date());
+        if (getCurrent().getId() != null) {
             getPersonFacade().edit(current.getPerson());
-            getFacade().edit(current);
+            getFacade().editAndFlush(current);
             JsfUtil.addSuccessMessage("Staff Details Updated");
         } else {
             current.getPerson().setCreatedAt(new Date());
             current.getPerson().setCreater(getSessionController().getLoggedUser());
-            getPersonFacade().create(current.getPerson());
+            getPersonFacade().createAndFlush(current.getPerson());
 
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
-            getFacade().create(current);
+            getFacade().createAndFlush(current);
             JsfUtil.addSuccessMessage("New Staff Created");
         }
 
+        System.out.println(" current.getName() = " + current.getName());
+
         updateStaffEmployment();
+
+        recreateModel();
+        getItems();
+        fillSelectedItemsWithAllStaff();
+    }
+
+    public void saveStaff() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+        if (current.getPerson() == null) {
+            JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+
+        current.getName();
+        current.getPerson().getName();
+        current.getPerson().getFullName();
+        current.getPerson().getNameWithInitials();
+
+        System.out.println(" current.getName() = " + current.getName());
+        System.out.println(" current.getPerson().getName() = " + current.getPerson().getName());
+        System.out.println("current.getPerson().getFullName() = " + current.getPerson().getFullName());
+        System.out.println("current.getPerson().getNameWithInitials() = " + current.getPerson().getNameWithInitials());
+
+        if (current.getPerson().getId() == null) {
+            current.getPerson().setCreatedAt(new Date());
+            current.getPerson().setCreater(getSessionController().getLoggedUser());
+            getPersonFacade().createAndFlush(current.getPerson());
+            JsfUtil.addSuccessMessage("New Person Created");
+        } else {
+            getPersonFacade().editAndFlush(current.getPerson());
+            JsfUtil.addSuccessMessage("Person Updated");
+        }
+
+        if (getCurrent().getId() != null) {
+            getPersonFacade().edit(current.getPerson());
+            getFacade().editAndFlush(current);
+            JsfUtil.addSuccessMessage("Staff Details Updated");
+        } else {
+            current.getPerson().setCreatedAt(new Date());
+            current.getPerson().setCreater(getSessionController().getLoggedUser());
+            getPersonFacade().createAndFlush(current.getPerson());
+
+            current.setCreatedAt(new Date());
+            current.setCreater(getSessionController().getLoggedUser());
+            getFacade().createAndFlush(current);
+            JsfUtil.addSuccessMessage("New Staff Created");
+        }
+
+        System.out.println(" current.getName() = " + current.getName());
 
         recreateModel();
         getItems();
@@ -1412,13 +1571,31 @@ public class StaffController implements Serializable {
     }
 
     public Staff findStaffByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        name = name.trim();
         String jpql = "select c "
                 + " from Staff c "
-                + " where c.retired=:ret "
+                + " where c.retired<>:ret "
                 + " and c.person.name=:name";
         Map m = new HashMap();
-        m.put("ret", false);
+        m.put("ret", true);
         m.put("name", name);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+
+    public Staff findStaffById(Long id) {
+        if (id == null) {
+            return null;
+        }
+        String jpql = "select c "
+                + " from Staff c "
+                + " where c.retired<>:ret "
+                + " and c.id=:id";
+        Map m = new HashMap();
+        m.put("ret", true);
+        m.put("id", id);
         return getFacade().findFirstByJpql(jpql, m);
     }
 
@@ -1494,11 +1671,7 @@ public class StaffController implements Serializable {
 
         List<StaffSalary> cycles = staffSalaryFacade.findByJpql(sql, m, TemporalType.DATE);
 
-        if (cycles.size() > 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return !cycles.isEmpty();
 
     }
 
@@ -1524,18 +1697,31 @@ public class StaffController implements Serializable {
         this.staff = staff;
     }
 
+    public Person getCurrentPerson() {
+        return currentPerson;
+    }
+
+    public void setCurrentPerson(Person currentPerson) {
+        this.currentPerson = currentPerson;
+    }
+
+    public String getSignatureUrl() {
+        return signatureUrl;
+    }
+
+    public void setSignatureUrl(String signatureUrl) {
+        this.signatureUrl = signatureUrl;
+    }
+
     /**
      * Converters
-     */
-    /**
-     *
      */
     @FacesConverter(forClass = Staff.class)
     public static class StaffControllerConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             StaffController controller = (StaffController) facesContext.getApplication().getELResolver().
@@ -1551,15 +1737,13 @@ public class StaffController implements Serializable {
             try {
                 key = Long.valueOf(value);
             } catch (Exception e) {
-                key = 0l;
+                key = 0L;
             }
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -1572,21 +1756,13 @@ public class StaffController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + StaffController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Staff.class.getName());
             }
         }
     }
 
     public String navigateToManageStaffIndex() {
         return "/admin/staff/admin_manage_staff_index.xhtml?faces-redirect=true";
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
 }

@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="#{reportController.reportTemplateFileIndexName}">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Current Collection Center Balance Report" >
+                        <div class="row mb-2">
+                            <div class="col-md-2">
+                                <p:commandButton 
+                                    ajax="false" 
+                                    value="Process" 
+                                    action="#{reportController.processCurrentCollectionCenterBalance}" >
+                                </p:commandButton>
+                            </div>
+                            <p:commandButton id="btnExcel" class="mx-2 ui-button-success"
+                                             style="width: 150px"
+                                             icon="fas fa-file-excel"
+                                             ajax="false" value="Excel">
+                                <p:dataExporter type="xlsx" fileName="Collecting Center Current Balance Report" target="agentHistoriesTable"  />
+                            </p:commandButton>
+                        </div>
+
+                        <p:dataTable 
+                            id="agentHistoriesTable" 
+                            value="#{reportController.bundle.reportTemplateRows}"  
+                            var="ah" 
+                            rowIndexVar="i" 
+                            paginator="true" 
+                            rows="10" 
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"  
+                            rowsPerPageTemplate="5,10,20" 
+                            sortBy="#{ah.institution.name}" >
+
+                            <p:column headerText="S. No" width="20" sortBy="#{i+1}">
+                                <h:outputText value="#{i+1}" />
+                            </p:column>
+
+                            <p:column headerText="CC Name" sortBy="#{ah.institution.name}" filterBy="#{ah.institution.name}" filterMatchMode="contains">
+                                <h:outputText value="#{ah.institution.name}" />
+                            </p:column>
+
+                            <p:column headerText="CC Route" sortBy="#{ah.institution.route.name}" filterBy="#{ah.institution.route.name}" filterMatchMode="contains">
+                                <h:outputText value="#{ah.institution.route.name}" />
+                            </p:column>
+
+                            <p:column headerText="CC Code" sortBy="#{ah.institution.code}" filterBy="#{ah.institution.code}" filterMatchMode="contains">
+                                <h:outputText value="#{ah.institution.code}" />
+                            </p:column>
+
+                            <p:column headerText="CC Phone No" sortBy="#{ah.institution.phone}" filterBy="#{ah.institution.phone}" filterMatchMode="contains">
+                                <h:outputText value="#{ah.institution.phone}" />
+                            </p:column>
+
+                            <p:column headerText="CC Credit Limit" style="text-align: right" sortBy="#{ah.institution.maxCreditLimit}" filterBy="#{ah.institution.maxCreditLimit}" filterMatchMode="gte">
+                                <h:outputText value="#{ah.institution.maxCreditLimit}">
+                                    <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Max Credit Limit" style="text-align: right" sortBy="#{ah.institution.maxCreditLimit}" filterBy="#{ah.institution.maxCreditLimit}" filterMatchMode="gte">
+                                <h:outputText value="#{ah.institution.maxCreditLimit}">
+                                    <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="CC Balance" style="text-align: right" sortBy="#{ah.institution.ballance}" filterBy="#{ah.institution.ballance}" filterMatchMode="gte">
+                                <h:outputText value="#{ah.institution.ballance}">
+                                    <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column
+                                rendered="#{webUserController.hasPrivilege('Developers')}"
+                                headerText="Last Hx Balance" >
+                                <h:outputText value="#{collectingCentreController.lastAgentBalance(ah.institution)}">
+                                    <f:convertNumber groupingUsed="true" maxFractionDigits="2" minFractionDigits="2" />
+                                </h:outputText>
+
+                                <p:commandButton   
+                                    ajax="false" 
+                                    title="Edit Collecting Centre"
+                                    icon="pi pi-building"
+                                    class="m-1"
+                                    action="#{navigationController.navigateToCollectingCenter()}" >
+                                    <f:setPropertyActionListener value="#{ah.institution}" target="#{collectingCentreController.current}" ></f:setPropertyActionListener>
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    ajax="false"
+                                    class="m-1"
+                                    title="Edit Entry"
+                                    icon="pi pi-pencil"
+                                    action="#{collectingCentreController.navigateToEditCollectingCentreBalanceEntry(collectingCentreController.lastAgentHistory(ah.institution))}" >
+                                </p:commandButton>
+
+
+                            </p:column>
+
+                        </p:dataTable>
+
+
+
+
+                    </p:panel>
+
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -1,0 +1,202 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/analytics/index.xhtml">
+
+            <ui:define name="report">
+
+                <p:panel>
+                    <f:facet name="header" >
+                        <h:outputLabel value="Channelling Payment List "/>                          
+                    </f:facet>
+
+                    <h:form>
+                        <h:panelGrid columns="2" class="my-2" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}"  navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                            </p:calendar>
+
+
+
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                            </p:calendar>
+
+
+                            <h:outputLabel value="Institution"/>
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeIns}" 
+                                            var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{searchController.institution}" ></p:autoComplete>
+
+                            <h:outputLabel value="Department" />
+                            <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" value="#{searchController.department}" 
+                                            forceSelection="true"
+                                            completeMethod="#{departmentController.completeDept}" 
+                                            var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" >
+                                <p:column>
+                                    <h:outputLabel value="#{dep.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{dep.institution.name}"/>
+                                </p:column>
+                            </p:autoComplete>
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" class="my-2" >
+                            <p:commandButton class="ui-button-warning" icon="fas fa-magnifying-glass" id="btnSearch" ajax="false" value="Search" 
+                                             action="#{searchController.searchChannelProfessionalPaymentBills()}"/>
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
+                                <p:dataExporter fileName="Chanelling Professional Payments" type="xlsx" target="tblBills" ></p:dataExporter>
+                            </p:commandButton>
+                        </h:panelGrid>
+
+                        <p:dataTable 
+                            rowIndexVar="i" 
+                            id="tblBills" 
+                            value="#{searchController.bills}" 
+                            var="bill" 
+                            class="w-100"
+                            rows="20"
+                            paginator="true" 
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                            rowsPerPageTemplate="20,50,{ShowAll|'All'}"
+                            scrollable="true"
+                            scrollWidth="100%">
+
+
+                            <p:column headerText="ID" width="3em" style="text-align: right;" sortBy="#{bill.id}" filterBy="#{bill.id}">
+
+                                <p:commandLink 
+                                    value="#{bill.id}" 
+                                    ajax="false"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}"
+                                    >
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" ></f:setPropertyActionListener>
+                                </p:commandLink>
+
+
+                            </p:column>
+
+                            <p:column headerText="Date" width="6em" style="text-align: center;" sortBy="#{bill.billDate}" >
+                                <p:outputLabel value="#{bill.billDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Time" width="5em" style="text-align: center;" sortBy="#{bill.billTime}">
+                                <p:outputLabel value="#{bill.billTime}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Receipt No" width="10em" style="text-align: left;" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
+                                <p:outputLabel value="#{bill.deptId}" />
+                            </p:column>
+
+
+                            <p:column headerText="Cashier" width="10em" style="text-align: left;" 
+                                      sortBy="#{bill.creater.webUserPerson.name}" 
+                                      filterBy="#{bill.creater.webUserPerson.name}">
+                                <p:outputLabel value="#{bill.creater.webUserPerson.name}" />
+                            </p:column>
+
+
+                            <p:column headerText="Payment Type" 
+                                      width="10em" 
+                                      style="text-align: left;" 
+                                      sortBy="#{bill.billTypeAtomic.label}" 
+                                      filterBy="#{bill.billTypeAtomic.label}">
+                                <p:outputLabel value="#{bill.billTypeAtomic.label}" />
+                            </p:column>
+
+                            <p:column headerText="Date" width="10em" style="text-align: left;" rendered="false">
+                                <p:commandLink id="insNo" ajax="false" value="#{bill.deptId}" action="#{searchController.viewOPD(bill)}">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
+                                </p:commandLink>
+                            </p:column>
+
+
+                            <p:column 
+                                headerText="Staff" 
+                                sortBy="#{bill.staff.person.name}"
+                                filterBy="#{bill.staff.person.name}"
+                                filterMatchMode="contains"
+                                style="text-align: left;">
+                                <h:outputLabel value="#{bill.toStaff.person.name}" />
+                            </p:column>
+
+                            <p:column style="text-align: right;" headerText="Value" width="100" sortBy="#{bill.netTotal}" filterBy="#{bill.netTotal}" >                              
+                                <h:outputLabel value="#{bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+                            </p:column>
+
+
+
+                            <p:column headerText="Status" width="400"  rendered="false">
+
+                                <f:facet name="header">
+                                    <h:outputLabel value="Status" class="w-100 d-flex justify-content-center" />
+                                </f:facet>
+                                <div class="d-flex justify-content-center">
+                                    <h:panelGroup rendered="#{bill.cancelled}" class="d-flex gap-2">
+                                        <p:badge value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
+                                        <h:outputLabel value="By " />
+                                        <h:outputLabel 
+                                            style="color: red;"
+                                            value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                        </h:outputLabel>
+                                        <h:outputLabel value="At " />
+                                        <h:outputLabel 
+                                            style="color: red;"
+                                            value="#{bill.cancelledBill.createdAt}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{bill.refunded}" class="d-flex gap-2">
+                                        <p:badge value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
+                                        <h:outputLabel value="By " />
+                                        <h:outputLabel 
+                                            style="color: orange;"
+                                            value="#{bill.refundedBill.creater.webUserPerson.name}" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value="At " />
+                                        <h:outputLabel 
+                                            style="color: orange;"
+                                            value="#{bill.refundedBill.createdAt}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </div>
+                            </p:column>
+
+                            <p:column  headerText="Actions" 
+                                       width="100"  >                              
+                                <p:commandButton value="View" ajax="false" 
+                                                 action="#{searchController.navigateTobill(bill)}">
+                                </p:commandButton>
+                            </p:column>
+
+
+                        </p:dataTable>
+
+                    </h:form>
+
+
+
+                </p:panel>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

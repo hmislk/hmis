@@ -8,10 +8,10 @@
  */
 package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.hr.PaysheetComponentType;
-import com.divudi.entity.hr.PaysheetComponent;
-import com.divudi.facade.PaysheetComponentFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.hr.PaysheetComponentType;
+import com.divudi.core.entity.hr.PaysheetComponent;
+import com.divudi.core.facade.PaysheetComponentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

@@ -50,8 +50,8 @@
             <p:panel>
                 <p:dataTable id="bSession" value="#{bookingPastController.billSessions}" var='bs' sortBy="#{bs.bill.billClass}"
                              filteredValue="#{bookingPastController.filltredBillSession}">
-                    <p:column headerText="Serial No" filterBy="#{bs.bill.insId}" filterMatchMode="contains">
-                        <h:outputLabel value="#{bs.bill.insId}"/>
+                    <p:column headerText="Serial No" filterBy="#{bs.bill.deptId}" filterMatchMode="contains">
+                        <h:outputLabel value="#{bs.bill.deptId}"/>
                     </p:column>
                     <p:column headerText="Booking Id" filterBy="#{bs.bill.bookingId}" filterMatchMode="contains">
                         <h:outputLabel value="#{bs.bill.bookingId}"/>                    

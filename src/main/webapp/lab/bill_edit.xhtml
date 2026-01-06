@@ -44,7 +44,7 @@
                         <p:panel header="Bill Detail">
                             <p:panelGrid columns="2">
                                 <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                <h:outputLabel value="#{labBillEditController.bill.insId}" ></h:outputLabel>
+                                <h:outputLabel value="#{labBillEditController.bill.deptId}" ></h:outputLabel>
                                 <h:outputLabel value="Total :" ></h:outputLabel>
                                 <h:outputLabel value="#{labBillEditController.bill.total}" ></h:outputLabel>
                                 <h:outputLabel value="Discount :" ></h:outputLabel>
@@ -93,55 +93,55 @@
 
 
                                                 <div  class="receiptno">
-                                                    <h:outputLabel value="#{labBillEditController.bill.cancelledBill.insId} **Cancelled"  
-                                                                   rendered="#{labBillEditController.bill.cancelledBill.insId ne null}"/> 
+                                                    <h:outputLabel value="#{labBillEditController.bill.cancelledBill.deptId} **Cancelled"  
+                                                                   rendered="#{labBillEditController.bill.cancelledBill.deptId ne null}"/> 
 
-                                                    <h:outputLabel value="#{labBillEditController.bill.refundedBill.insId} **Refunded" 
-                                                                   rendered="#{labBillEditController.bill.refundedBill.insId ne null}"/> 
+                                                    <h:outputLabel value="#{labBillEditController.bill.refundedBill.deptId} **Refunded" 
+                                                                   rendered="#{labBillEditController.bill.refundedBill.deptId ne null}"/> 
 
-                                                    <h:outputLabel value="#{labBillEditController.bill.insId} **Duplicate" 
-                                                                   rendered="#{labBillEditController.bill.refundedBill.insId eq null and
-                                                                               labBillEditController.bill.cancelledBill.insId eq null }"/> 
+                                                    <h:outputLabel value="#{labBillEditController.bill.deptId} **Duplicate" 
+                                                                   rendered="#{labBillEditController.bill.refundedBill.deptId eq null and
+                                                                               labBillEditController.bill.cancelledBill.deptId eq null }"/> 
                                                 </div>
 
                                                 <div  class="billdate">
                                                     <h:outputLabel value="#{labBillEditController.bill.cancelledBill.billDate}"
-                                                                   rendered="#{labBillEditController.bill.cancelledBill.insId ne null}"  >
+                                                                   rendered="#{labBillEditController.bill.cancelledBill.deptId ne null}"  >
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                     </h:outputLabel>
                                                     <h:outputLabel value="#{labBillEditController.bill.refundedBill.billDate}"
-                                                                   rendered="#{labBillEditController.bill.refundedBill.insId ne null}">
+                                                                   rendered="#{labBillEditController.bill.refundedBill.deptId ne null}">
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                     </h:outputLabel>
                                                     <h:outputLabel value="#{labBillEditController.bill.billDate}"
-                                                                   rendered="#{labBillEditController.bill.refundedBill.insId eq null and 
-                                                                               labBillEditController.bill.cancelledBill.insId eq null }">
+                                                                   rendered="#{labBillEditController.bill.refundedBill.deptId eq null and 
+                                                                               labBillEditController.bill.cancelledBill.deptId eq null }">
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                     </h:outputLabel>
                                                 </div>
 
                                                 <div class="payment">
                                                     <h:outputLabel value="#{labBillEditController.bill.cancelledBill.paymentMethod}" 
-                                                                   rendered="#{labBillEditController.bill.cancelledBill.insId ne null}" />
+                                                                   rendered="#{labBillEditController.bill.cancelledBill.deptId ne null}" />
                                                     <h:outputLabel value="#{labBillEditController.bill.refundedBill.paymentMethod}" 
-                                                                   rendered="#{labBillEditController.bill.refundedBill.insId ne null}"/>
+                                                                   rendered="#{labBillEditController.bill.refundedBill.deptId ne null}"/>
                                                     <h:outputLabel value="#{labBillEditController.bill.paymentMethod}" 
-                                                                   rendered="#{labBillEditController.bill.refundedBill.insId eq null and 
-                                                                               labBillEditController.bill.cancelledBill.insId eq null }"/>
+                                                                   rendered="#{labBillEditController.bill.refundedBill.deptId eq null and 
+                                                                               labBillEditController.bill.cancelledBill.deptId eq null }"/>
                                                 </div>
 
                                                 <div class="billtime">
                                                     <h:outputLabel value="#{labBillEditController.bill.cancelledBill.billTime}"  
-                                                                   rendered="#{labBillEditController.bill.cancelledBill.insId ne null}">
+                                                                   rendered="#{labBillEditController.bill.cancelledBill.deptId ne null}">
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                                                     </h:outputLabel>
                                                     <h:outputLabel value="#{labBillEditController.bill.refundedBill.billTime}"  
-                                                                   rendered="#{labBillEditController.bill.refundedBill.insId ne null}">
+                                                                   rendered="#{labBillEditController.bill.refundedBill.deptId ne null}">
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                                                     </h:outputLabel>
                                                     <h:outputLabel value="#{labBillEditController.bill.billTime}" 
-                                                                   rendered="#{labBillEditController.bill.refundedBill.insId eq null and 
-                                                                               labBillEditController.bill.cancelledBill.insId eq null }">
+                                                                   rendered="#{labBillEditController.bill.refundedBill.deptId eq null and 
+                                                                               labBillEditController.bill.cancelledBill.deptId eq null }">
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                                                     </h:outputLabel>
                                                 </div>
@@ -217,12 +217,12 @@
 
                                                 <div class="cashier" >
                                                     <h:outputLabel value="Cashier : #{labBillEditController.bill.cancelledBill.creater.code}"  
-                                                                   rendered="#{labBillEditController.bill.cancelledBill.insId ne null}" />
+                                                                   rendered="#{labBillEditController.bill.cancelledBill.deptId ne null}" />
                                                     <h:outputLabel value="Cashier : #{labBillEditController.bill.refundedBill.creater.code}"
-                                                                   rendered="#{labBillEditController.bill.refundedBill.insId ne null}"   />
+                                                                   rendered="#{labBillEditController.bill.refundedBill.deptId ne null}"   />
                                                     <h:outputLabel value="Cashier : #{labBillEditController.bill.creater.code}" 
-                                                                   rendered="#{labBillEditController.bill.refundedBill.insId eq null and
-                                                                               labBillEditController.bill.cancelledBill.insId eq null }"/>
+                                                                   rendered="#{labBillEditController.bill.refundedBill.deptId eq null and
+                                                                               labBillEditController.bill.cancelledBill.deptId eq null }"/>
 
 
                                                 </div>

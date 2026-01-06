@@ -6,14 +6,14 @@ package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.hr.PaysheetComponentType;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.data.hr.PaysheetComponentType;
+import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.hr.PaysheetComponent;
-import com.divudi.entity.hr.StaffPaysheetComponent;
-import com.divudi.facade.PaysheetComponentFacade;
-import com.divudi.facade.StaffPaysheetComponentFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.hr.PaysheetComponent;
+import com.divudi.core.entity.hr.StaffPaysheetComponent;
+import com.divudi.core.facade.PaysheetComponentFacade;
+import com.divudi.core.facade.StaffPaysheetComponentFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
@@ -118,7 +118,7 @@ public class StaffLoanController implements Serializable {
             if(!getCurrent().isCompleted()){
                 getCurrent().setCompletedAt(null);
             }
-            
+
             getStaffPaysheetComponentFacade().create(getCurrent());
             JsfUtil.addSuccessMessage("Saved");
         } else {
@@ -193,7 +193,7 @@ public class StaffLoanController implements Serializable {
 
         sql = "Select ss from StaffPaysheetComponent ss "
                 + " where ss.retired=false ";
-        
+
         if (getFromDate() != null) {
             sql += " and ((ss.fromDate <=:fd "
                     + " and ss.toDate >=:fd) or ss.fromDate >=:fd) ";
@@ -254,7 +254,7 @@ public class StaffLoanController implements Serializable {
 
         sql = "Select ss from StaffPaysheetComponent ss "
                 + " where ss.retired=true ";
-        
+
         if (getFromDate() != null) {
             sql += " and ((ss.fromDate <=:fd "
                     + " and ss.toDate >=:fd) or ss.fromDate >=:fd) ";

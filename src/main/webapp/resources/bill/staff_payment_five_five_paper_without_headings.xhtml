@@ -10,7 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
         <cc:attribute name="payments" ></cc:attribute>
         <cc:attribute name="controller" />
@@ -27,21 +27,21 @@
                 </div>
 
                 <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                    <h:outputLabel value="Payment Invoice"/>                  
+                    <h:outputLabel value="Payment Invoice"/>
                     <h:outputLabel value="(#{cc.attrs.bill.deptId})" class="mx-2"></h:outputLabel>
                     <br/>
-                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
-                    
+                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
+
                 </div>
 
                 <div class="billline">
-                    <hr></hr>   
+                    <hr/>
                 </div>
 
                 <div class="billDetailsFiveFive" >
 
-                    <div class="d-flex gap-2">     
+                    <div class="d-flex gap-2">
                         <h:outputLabel value="Doctor Name :" ></h:outputLabel>
                         <h:outputLabel value="#{cc.attrs.bill.staff.person.nameWithTitle}" ></h:outputLabel>
                     </div>
@@ -49,7 +49,7 @@
                 </div>
 
                 <div class="billline">
-                    <hr></hr>   
+                    <hr/>
                 </div>
 
                 <div >

@@ -117,17 +117,17 @@
 
                             </td>
                             <td styleClass="itemsBlockRight" style=" text-align: right;">
-                                <h:outputLabel    value="#{bip.qty}"    styleClass="itemsBlock"   style="text-align: right; font-size: 12px;" >
+                                <h:outputLabel    value="#{0 - bip.pharmaceuticalBillItem.qty}"    styleClass="itemsBlock"   style="text-align: right; font-size: 12px;" >
                                     <f:convertNumber integerOnly="true" />
-                                </h:outputLabel>
+                                </h:outputLabel> 
                             </td>
                             <td  styleClass="itemsBlockRight"  style="text-align: right; font-size: 12px;" >
-                                <h:outputLabel    value="#{bip.pharmaceuticalBillItem.itemBatch.purcahseRate}" >
+                                <h:outputLabel    value="#{bip.rate}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                             <td  styleClass="itemsBlockRight" style="text-align: right; font-size: 12px;" >
-                                <h:outputLabel    value="#{0-bip.pharmaceuticalBillItem.itemBatch.purcahseRate*bip.pharmaceuticalBillItem.qty}"    >
+                                <h:outputLabel    value="#{0-bip.netValue}"    >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>

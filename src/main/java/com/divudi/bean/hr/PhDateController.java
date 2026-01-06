@@ -8,14 +8,12 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.hr.DayType;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.hr.DayType;
 
-import com.divudi.entity.hr.PhDate;
-import com.divudi.facade.PhDateFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.hr.PhDate;
+import com.divudi.core.facade.PhDateFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,12 +42,10 @@ public class PhDateController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
+
     @EJB
     private PhDateFacade ejbFacade;
 
-    CommonFunctions commonFunctions;
     private PhDate current;
     private List<PhDate> items = null;
 
@@ -89,7 +85,7 @@ public class PhDateController implements Serializable {
 
     public void createHollydays() {
         Date startTime = new Date();
-        
+
         String sql;
         HashMap m = new HashMap();
 
@@ -102,8 +98,8 @@ public class PhDateController implements Serializable {
         m.put("td", toDate);
 
         phDates = getFacade().findByJpql(sql, m);
-        
-        
+
+
 
     }
 
@@ -208,7 +204,7 @@ public class PhDateController implements Serializable {
 
     public Date getFrDate() {
         if (frDate == null) {
-            frDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            frDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return frDate;
     }
@@ -219,7 +215,7 @@ public class PhDateController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
+            toDate = com.divudi.core.util.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }
@@ -244,7 +240,7 @@ public class PhDateController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             PhDateController controller = (PhDateController) facesContext.getApplication().getELResolver().
@@ -259,9 +255,7 @@ public class PhDateController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -278,14 +272,4 @@ public class PhDateController implements Serializable {
             }
         }
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-    
-    
 }

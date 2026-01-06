@@ -1,0 +1,306 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body class="w-100 border">
+
+        <ui:composition template="/reports/index.xhtml" class="w-100 border">
+            <ui:define name="subcontent">
+                <h:form class="w-100">
+                    <p:panel header="Service Category Wise Bill Detail Report for OPD" class="w-100">
+                        <h:panelGrid columns="8" class="w-100 ">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="From Date" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100"
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+
+                            <p:spacer width="20"></p:spacer>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf271;" styleClass="fa mr-2" />
+                                <p:outputLabel value="To Date" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                value="#{searchController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{searchController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup  id="cmbDept" >
+                                <p:selectOneMenu
+                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
+                                    styleClass="w-100 form-control"  
+                                    value="#{searchController.department}" 
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText title="Category" value="&#xf02d;" styleClass="fa mr-2" /> <!-- FontAwesome book icon -->
+                                <h:outputLabel value="Category"  class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete 
+                                id="acCat"
+                                value="#{searchController.category}"
+                                completeMethod="#{categoryController.completeCategory}" 
+                                var="category"
+                                class="w-100"
+                                forceSelection="true"
+                                inputStyleClass="w-100"
+                                itemLabel="#{category.name}"
+                                itemValue="#{category}">
+                                <p:ajax event="itemSelect" process="acCat" update="gpItem" ></p:ajax>
+                            </p:autoComplete>
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText title="Item" value="&#xf0f6;" styleClass="fa mr-2" /> <!-- FontAwesome box icon -->
+                                <h:outputLabel value="Item"  class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="gpItem" >
+                                <p:selectOneMenu 
+                                    rendered="#{searchController.category ne null}"
+                                    value="#{searchController.item}" 
+                                    filter="true"
+                                    styleClass="w-100"
+                                    filterMatchMode="contains" >
+                                    <f:selectItem itemLabel="All" ></f:selectItem>
+                                    <f:selectItems value="#{itemController.getCategoryServicesAndInvestigations(searchController.category)}" var="item" itemLabel="#{item.name}" itemValue="#{item}" ></f:selectItems>
+                                </p:selectOneMenu>
+                                <p:autoComplete 
+                                    rendered="#{searchController.category eq null}"
+                                    value="#{searchController.item}"
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
+                                    var="itemAc"
+                                    minQueryLength="3"
+                                    maxResults="10"
+                                    itemLabel="#{itemAc.name}"
+                                    itemValue="#{itemAc}">
+                                    <p:column headerText="Name" >
+                                        <h:outputLabel value="#{itemAc.name}"    ></h:outputLabel> 
+                                    </p:column>
+                                     <p:column headerText="Code" >
+                                        <h:outputLabel value="#{itemAc.code}"    ></h:outputLabel> 
+                                    </p:column>
+                                    
+                                </p:autoComplete>
+
+                            </h:panelGroup>
+
+
+
+
+                        </h:panelGrid><br />
+
+
+
+                        <div class="d-flex align-items-center">
+                            <p:commandButton class="ui-button-warning mx-1" ajax="false" value="Process"
+                                             action="#{searchController.createItemizedSalesReportOpd()}"
+                                             icon="fas fa-cogs" >
+                            </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" 
+                                             icon="fas fa-print" ajax="false" 
+                                             value="Print">
+                                <p:printer target="tbl" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" 
+                                             icon="fas fa-file-excel" 
+                                             ajax="false" value="Download">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Service Category Wise Bill Detail Report for OPD" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                            </p:commandButton>
+                        </div>
+
+
+                        <div style="display: none;" >
+                            #{searchController.bundle.reportTemplateRows}
+                        </div>
+
+
+                        <p:dataTable id="tbl"
+                                     value="#{searchController.bundle.reportTemplateRows}"
+                                     var="row"
+                                     class="mt-3"
+                                     paginator="true"
+                                     rows="10"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,20"
+                                     rowKey="#{row.id}">
+                            <f:facet name="header" >
+                                <h:outputText value="#{searchController.bundle.name}" ></h:outputText>
+                            </f:facet>
+                            <f:facet name="footer" >
+                                <h:outputText value="Total" ></h:outputText>
+                                <p:spacer width="50" ></p:spacer>
+                                <h:outputText value="#{searchController.bundle.total}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                            </f:facet>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Category" />
+                                </f:facet>
+                                <h:outputText value="#{row.category.name}"  />
+                                <p:commandLink
+                                    class="mx-2"
+                                    rendered="#{row.category ne null}"
+                                    action="#{searchController.navigateToOpdBillItemList(row)}"
+                                    ajax="false">
+                                    <h:outputText title="View Category Details" value="&#xf02d;" styleClass="fa mr-2" />
+                                </p:commandLink>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Code" />
+                                </f:facet>
+                                <h:outputText value="#{row.item.code}"  />
+                                <p:commandLink
+                                    class="mx-2"
+                                    rendered="#{row.item ne null}"
+                                    action="#{searchController.navigateToOpdBillItemList(row)}">
+                                    <h:outputText title="View Item Details" value="&#xf0f6;" styleClass="fa mr-2" />
+                                </p:commandLink>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Item / Service" />
+                                </f:facet>
+                                <h:outputText value="#{row.item.name}"  />
+                                <p:commandLink
+                                    class="mx-2"
+                                    rendered="#{row.item ne null}"
+                                    action="#{searchController.navigateToOpdBillItemList(row)}">
+                                    <h:outputText title="View Item Details" value="&#xf0f6;" styleClass="fa mr-2" />
+                                </p:commandLink>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Count" />
+                                </f:facet>
+                                <h:outputText value="#{row.itemCount}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Bill No" />
+                                </f:facet>
+                                <h:outputText value="#{row.billItem.bill.deptId}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Patient" />
+                                </f:facet>
+                                <h:outputText value="#{row.billItem.bill.patient.person.nameWithTitle}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="text-end">
+                                <f:facet name="header">
+                                    <h:outputText value="Hospital Fee" />
+                                </f:facet>
+                                <h:outputText value="#{row.itemHospitalFee}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="text-end">
+                                <f:facet name="header">
+                                    <h:outputText value="Professional Fee" />
+                                </f:facet>
+                                <h:outputText value="#{row.itemProfessionalFee}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="text-end">
+                                <f:facet name="header">
+                                    <h:outputText value="Discount" />
+                                </f:facet>
+                                <h:outputText value="#{row.itemDiscountAmount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="text-end">
+                                <f:facet name="header">
+                                    <h:outputText value="Net Amount" />
+                                </f:facet>
+                                <h:outputText value="#{row.itemNetTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

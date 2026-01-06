@@ -14,14 +14,14 @@
                 <f:facet name="header">
                     <h:outputLabel value="Managing Director"/>
                 </f:facet>
-                <h:panelGrid columns="2" class="my-2" >                    
+                <h:panelGrid columns="2" class="my-2" >
                     <h:outputLabel value="From Date"/>
-                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{mdReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" maxdate="#{commonController.endOfDayOnCurrentDate}" >
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{mdReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}" >
                         <f:ajax event="dateSelect"  listener="#{mdReportController.makeBillNull}"/>
                     </p:calendar>
 
                     <h:outputLabel value="To Data"/>
-                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{mdReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" maxdate="#{commonController.endOfDayOnCurrentDate}" >
+                    <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{mdReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}" >
                         <f:ajax event="dateSelect"   listener="#{mdReportController.makeBillNull}"/>
                     </p:calendar>
                     <h:outputLabel value="Payment Method"/>
@@ -30,7 +30,7 @@
                         <f:selectItems value="#{mdReportController.paymentMethods}"/>
                         <f:ajax event="change"   listener="#{mdReportController.makeBillNull}"/>
                     </p:selectOneMenu>
-                    </h:panelGrid>   
+                    </h:panelGrid>
                 <h:panelGrid columns="6" class="my-2">
                     <p:commandButton class="ui-button-warning" icon="fas fa-cogs" id="btnRefresh" ajax="false" value="Process"/>
                     <p:defaultCommand target="btnRefresh"/>
@@ -39,17 +39,17 @@
                     </p:commandButton>
                     <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false">
                         <p:dataExporter type="xlsx" target="tbl" fileName="Report by Bill OPD From #{mdReportController.fromDate} To #{mdReportController.toDate}"
-                                       
-                                            
+
+
                                        />
                     </p:commandButton>
                     </h:panelGrid>
 
-                
+
 
                 <p:dataTable id="tbl" value="#{mdReportController.itemWithFees}"
                              rowIndexVar="i"
-                             var="iwf" filteredValue="#{mdReportController.fillterItemWithFees}" 
+                             var="iwf" filteredValue="#{mdReportController.fillterItemWithFees}"
                          paginator="false"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,15,20">
@@ -64,7 +64,7 @@
                         <h:outputLabel  value="#{mdReportController.toDate}" >
                             <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </h:outputLabel>
-                    </f:facet>  
+                    </f:facet>
 
                     <p:column headerText="No">
                         <h:outputLabel value="#{i+1}"/>
@@ -76,15 +76,15 @@
 
                     <p:column headerText="Department" filterBy="#{iwf.item.department.name}" filterMatchMode="contains">
                         <h:outputLabel value="#{iwf.item.department.name}"/>
-                    </p:column>    
+                    </p:column>
 
                     <p:column headerText="Parent Categoy" filterBy="#{iwf.item.category.parentCategory.name}" filterMatchMode="contains">
                         <h:outputLabel value="#{iwf.item.category.parentCategory.name}"/>
-                    </p:column>   
+                    </p:column>
 
                     <p:column headerText="Categoy" filterBy="#{iwf.item.category.name}" filterMatchMode="contains">
                         <h:outputLabel value="#{iwf.item.category.name}"/>
-                    </p:column> 
+                    </p:column>
 
                     <p:column headerText="Name" filterBy="#{iwf.item.name}" filterMatchMode="contains">
                         <h:outputLabel value="#{iwf.item.name}"/>

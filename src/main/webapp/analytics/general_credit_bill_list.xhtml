@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/analytics/index.xhtml">
+
+            <ui:define name="report">
+
+                <p:panel>
+                    <f:facet name="header" >
+                        <h:outputLabel value="General Credit Bill List "/>                          
+                    </f:facet>
+
+                    <h:form>
+                        <h:panelGrid columns="2" class="my-2" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}"  navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                            </p:calendar>
+
+
+
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                            </p:calendar>
+
+                            <h:outputLabel value="Company"/>
+                            <p:autoComplete 
+                                id="creditCompany" 
+                                class="w-100 -mx-2"
+                                inputStyleClass="form-control"
+                                forceSelection="true"
+                                value="#{searchController.creditCompany}"  
+                                completeMethod="#{institutionController.completeIns}" 
+                                var="ix"
+                                minQueryLength="4"
+                                placeholder="Company (Type at least 4 letters to search)"
+                                itemLabel="#{ix.name}" 
+                                itemValue="#{ix}" 
+                                size="10"  >
+                            </p:autoComplete>
+
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" class="my-2" >
+                            <p:commandButton class="ui-button-warning" icon="fas fa-magnifying-glass" id="btnSearch" ajax="false" value="Search" 
+                                             action="#{searchController.createGeneralCreditBillList()}"/>
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
+                                <p:dataExporter fileName="Staff Credit Bill List" type="xlsx" target="tblBills" ></p:dataExporter>
+                            </p:commandButton>
+                        </h:panelGrid>
+
+
+                        <p:dataTable 
+                            rowIndexVar="i" 
+                            id="tblBills" 
+                            value="#{searchController.bills}" 
+                            var="b" 
+                            class="w-100"
+                            rows="20"
+                            paginator="true" 
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                            rowsPerPageTemplate="20,50,{ShowAll|'All'}"
+                            scrollable="true"
+                            scrollWidth="100%">
+
+                            <p:column width="8em" style="text-align: left;" sortBy="#{b.creditCompany.name}" filterBy="#{b.creditCompany.name}">
+                                <f:facet name="header">
+                                    <h:outputText value="Company" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.creditCompany.name}" />
+                            </p:column>
+
+                            <p:column width="8em" style="text-align: left;" sortBy="#{b.patient.person.nameWithTitle}" filterBy="#{b.patient.person.nameWithTitle}">
+                                <f:facet name="header">
+                                    <h:outputText value="Patient Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.patient.person.nameWithTitle}" />
+                            </p:column>
+
+                            <p:column width="4em" style="text-align: left;" sortBy="#{b.billDate}" filterBy="#{b.billDate}">
+                                <f:facet name="header">
+                                    <h:outputText value="Bill Date" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.billDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column width="4em" style="text-align: left;" sortBy="#{b.billTime}" filterBy="#{b.billTime}">
+                                <f:facet name="header">
+                                    <h:outputText value="Bill Time" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.billTime}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column width="4em" style="text-align: left;" sortBy="#{b.id}" filterBy="#{b.id}">
+                                <f:facet name="header">
+                                    <h:outputText value="Bill ID" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.id}" />
+                            </p:column>
+
+                            <p:column width="10em" style="text-align: left;" sortBy="#{b.billTypeAtomic.label}" filterBy="#{b.billTypeAtomic.label}">
+                                <f:facet name="header">
+                                    <h:outputText value="Bill Type" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.billTypeAtomic.label}" />
+                            </p:column>
+
+                            <p:column width="6em" style="text-align: left;" sortBy="#{b.total}" filterBy="#{b.total}">
+                                <f:facet name="header">
+                                    <h:outputText value="Total" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.total}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column width="6em" style="text-align: left;" sortBy="#{b.discount}" filterBy="#{b.discount}">
+                                <f:facet name="header">
+                                    <h:outputText value="Discount" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.discount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column width="6em" style="text-align: left;" sortBy="#{b.netTotal}" filterBy="#{b.netTotal}">
+                                <f:facet name="header">
+                                    <h:outputText value="Net" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+
+
+
+
+                        </p:dataTable>
+
+                    </h:form>
+
+
+
+                </p:panel>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

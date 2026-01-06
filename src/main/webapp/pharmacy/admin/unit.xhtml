@@ -11,9 +11,15 @@
             <ui:define name="subcontent">
 
                 <h:form id="measurementUnitForm">
-                    <p:panelGrid columns="2" >
+                    <p:panelGrid
+                        layout="tabular"
+                        class="w-100"
+                        columns="2" >
                         <p:outputLabel value="Name:" />
-                        <p:inputText value="#{measurementUnitController.current.name}" />
+                        <p:inputText value="#{measurementUnitController.current.name}" class="w-100" />
+
+                        <p:outputLabel value="Descreption:" />
+                        <p:inputTextarea value="#{measurementUnitController.current.description}" class="w-100" />
 
                         <p:outputLabel value="Strength Unit:" />
                         <p:selectBooleanCheckbox value="#{measurementUnitController.current.strengthUnit}" />
@@ -37,10 +43,15 @@
                         <p:inputNumber value="#{measurementUnitController.current.frequencyInHours}" />
                     </p:panelGrid>
 
-                    <p:commandButton value="Save" action="#{measurementUnitController.saveSelected()}" update="@form" />
+                    <p:commandButton
+                        ajax="false"
+                        class="m-1 ui-button-success"
+                        icon="pi pi-save"
+                        value="Save"
+                        action="#{measurementUnitController.saveSelected()}" />
                 </h:form>
 
-    
+
 
 
             </ui:define>

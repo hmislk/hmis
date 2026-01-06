@@ -26,6 +26,7 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton 
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Cancellation of Pharmacy Refunds Allowed',false)}"
                                 ajax="false" 
                                 value="Cancel"
                                 icon="fa fa-cancel"
@@ -39,7 +40,13 @@
                         </f:facet>
                         
                         <h:panelGroup id="gpBillPreview" >
-                        <ph:returnBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                            <h:panelGroup id="gpBillPreviewPos" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}">
+                                <ph:returnBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                            </h:panelGroup>
+                        
+                         <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
+                        <ph:saleBill_Header_Return bill="#{pharmacyBillSearch.bill}" duplicate="true"></ph:saleBill_Header_Return>
+                    </h:panelGroup>
                     </h:panelGroup>
 
                     </p:panel>

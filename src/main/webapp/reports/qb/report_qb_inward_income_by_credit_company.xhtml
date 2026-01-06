@@ -1,0 +1,185 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                 template="/reports/index.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"  >
+
+    <ui:define name="subcontent">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+
+        <h:form id="panelPrint">
+
+            <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+            <p:panel>
+                <f:facet name="header" >
+                    <h:outputLabel value="Book Keeping Summary Without Pro (DAY)"  styleClass="noPrintButton" />
+                    <h:panelGrid columns="2"  styleClass="noPrintButton">
+                        <h:outputLabel value="from Date"/>
+                        <p:calendar id="frmDate" value="#{quickBookReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy hh:mm:ss a"  >
+                        </p:calendar>
+                        <h:outputLabel value="to Date"/>
+                        <p:calendar id="tdate" value="#{quickBookReportController.toDate}" navigator="true"  pattern="dd MMMM yyyy hh:mm:ss a" >
+                        </p:calendar>
+
+
+
+                        <h:outputLabel value="Select Institution"/>
+
+                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
+                                        forceSelection="true"
+                                        requiredMessage="Please Select Institution" value="#{quickBookReportController.institution}"
+                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
+                    </h:panelGrid>
+
+                    <h:panelGrid columns="5">
+                        <p:spacer width="110" height="1"/>
+                        <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
+                                         action="#{quickBookReportController.createQBFormatInwardIncome()}"/>
+                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;"  >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                        </p:commandButton>
+                    </h:panelGrid>
+
+
+                </f:facet>
+            </p:panel>
+
+            <p:panel styleClass="noBorder summeryBorder">
+            <p:dataTable value="#{quickBookReportController.quickBookFormats}" var="qbf" >
+                <p:columnGroup  type="header">
+                    <p:row>
+                        <p:column headerText="!TRANS"/>
+                        <p:column headerText="TRNSTYPE" />
+                        <p:column headerText="DATE" />
+                        <p:column headerText="ACCNT" />
+                        <p:column headerText="NAME" />
+                        <p:column headerText="INVITEMTYPE" />
+                        <p:column headerText="INVITEM" />
+                        <p:column headerText="AMOUNT" />
+                        <p:column headerText="DOCNUM" />
+                        <p:column headerText="PONUM"/>
+                        <p:column headerText="CLASS" />
+                        <p:column headerText="MEMO"/>
+                        <p:column headerText="CUSTFLD1"/>
+                        <p:column headerText="CUSTFLD2"/>
+                        <p:column headerText="CUSTFLD3"/>
+                    </p:row>
+                    <p:row>
+                        <p:column headerText="!SPL"/>
+                        <p:column headerText="TRNSTYPE" />
+                        <p:column headerText="DATE" />
+                        <p:column headerText="ACCNT" />
+                        <p:column headerText="NAME" />
+                        <p:column headerText="INVITEMTYPE" />
+                        <p:column headerText="INVITEM" />
+                        <p:column headerText="AMOUNT" />
+                        <p:column headerText="DOCNUM" />
+                        <p:column headerText="PONUM"/>
+                        <p:column headerText="CLASS" />
+                        <p:column headerText="MEMO"/>
+                        <p:column headerText="CUSTFLD1"/>
+                        <p:column headerText="CUSTFLD2"/>
+                        <p:column headerText="CUSTFLD3"/>
+                    </p:row>
+                    <p:row>
+                        <p:column headerText="!ENDTRNS"/>
+                        <p:column headerText="" />
+                        <p:column headerText="" />
+                        <p:column headerText="" />
+                        <p:column headerText="" />
+                        <p:column headerText="" />
+                        <p:column headerText="" />
+                        <p:column headerText="" />
+                        <p:column headerText="" />
+                        <p:column headerText=""/>
+                        <p:column headerText="" />
+                        <p:column headerText=""/>
+                        <p:column headerText=""/>
+                        <p:column headerText=""/>
+                        <p:column headerText=""/>
+                    </p:row>
+                </p:columnGroup> 
+                <p:column>
+                    <p:outputLabel value="#{qbf.rowType}" />
+                </p:column>
+                <p:column>
+
+                    <p:outputLabel value="#{qbf.trnsType}" />
+                </p:column>
+                <p:column>
+
+                    <p:outputLabel value="#{qbf.date}" /> 
+                </p:column>
+                <p:column>
+
+                    <p:outputLabel value=" #{qbf.accnt}" />
+
+                </p:column>
+                <p:column>
+
+                    <p:outputLabel value=" #{qbf.name}" />
+
+                </p:column>
+                <p:column>
+
+                    <p:outputLabel value=" #{qbf.invItemType}" />
+
+                </p:column>
+                <p:column>
+
+                    <p:outputLabel value=" #{qbf.invItem}" />
+
+                </p:column>
+                <p:column>
+                    <p:outputLabel value=" #{qbf.amount}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                </p:column>
+                <p:column>
+
+                    <p:outputLabel value=" #{qbf.docNum}" />
+
+                </p:column>
+                <p:column>
+
+                    <p:outputLabel value=" #{qbf.poNum}" />
+
+                </p:column>
+                <p:column>
+
+                    <p:outputLabel value=" #{qbf.qbClass}" />
+
+                </p:column>
+                <p:column>
+
+                    <p:outputLabel value=" #{qbf.memo}" />
+
+                </p:column>
+                <p:column>
+
+                    <p:outputLabel value=" #{qbf.custFld1}" />
+
+                </p:column>
+                <p:column>
+
+                    <p:outputLabel value=" #{qbf.custFld2}" />
+
+                </p:column>
+                <p:column>
+
+                    <p:outputLabel value=" #{qbf.custFld3}" />
+
+                </p:column>
+
+            </p:dataTable>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>
+

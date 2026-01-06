@@ -10,50 +10,47 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.clinical.*;
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
-import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.pharmacy.PharmacySaleController;
-import com.divudi.data.BillType;
-import com.divudi.data.SymanticType;
-import com.divudi.data.clinical.ClinicalFindingValueType;
-import com.divudi.data.clinical.PrescriptionTemplateType;
-import com.divudi.data.inward.PatientEncounterType;
-import com.divudi.data.lab.InvestigationResultForGraph;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Person;
-import com.divudi.entity.Upload;
-import com.divudi.entity.clinical.ClinicalEntity;
-import com.divudi.entity.clinical.ClinicalFindingValue;
-import com.divudi.entity.clinical.DocumentTemplate;
-import com.divudi.entity.clinical.ItemUsage;
-import com.divudi.entity.clinical.Prescription;
-import com.divudi.entity.clinical.PrescriptionTemplate;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientReportItemValue;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.ClinicalEntityFacade;
-import com.divudi.facade.ClinicalFindingValueFacade;
-import com.divudi.facade.ItemUsageFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.PrescriptionFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.SymanticType;
+import com.divudi.core.data.clinical.ClinicalFindingValueType;
+import com.divudi.core.data.clinical.PrescriptionTemplateType;
+import com.divudi.core.data.inward.PatientEncounterType;
+import com.divudi.core.data.lab.InvestigationResultForGraph;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.Upload;
+import com.divudi.core.entity.clinical.ClinicalEntity;
+import com.divudi.core.entity.clinical.ClinicalFindingValue;
+import com.divudi.core.entity.clinical.DocumentTemplate;
+import com.divudi.core.entity.clinical.ItemUsage;
+import com.divudi.core.entity.clinical.Prescription;
+import com.divudi.core.entity.clinical.PrescriptionTemplate;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.InvestigationItem;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.lab.PatientReportItemValue;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.ClinicalEntityFacade;
+import com.divudi.core.facade.ClinicalFindingValueFacade;
+import com.divudi.core.facade.ItemUsageFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.PrescriptionFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -62,44 +59,29 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import org.primefaces.model.DefaultStreamedContent;
 import javax.faces.context.FacesContext;
 import javax.faces.event.PhaseId;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.faces.component.UIComponent;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFRun;
+
+import com.divudi.core.util.CommonFunctions;
 import org.primefaces.event.CaptureEvent;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.pdf.PdfWriter;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
@@ -136,15 +118,11 @@ public class InpatientClinicalDataController implements Serializable {
      * Controllers
      */
     @Inject
-    private CommonFunctionsController commonFunctions;
-    @Inject
     SessionController sessionController;
     @Inject
     PharmacySaleController pharmacySaleController;
     @Inject
     BillController billController;
-    @Inject
-    CommonController commonController;
     @Inject
     DocumentTemplateController documentTemplateController;
     @Inject
@@ -299,21 +277,21 @@ public class InpatientClinicalDataController implements Serializable {
         String sex = encounter.getPatient().getPerson().getSex() != null ? encounter.getPatient().getPerson().getSex().name() : "";
         String address = encounter.getPatient().getPerson().getAddress() != null ? encounter.getPatient().getPerson().getAddress() : "";
         String phone = encounter.getPatient().getPerson().getPhone() != null ? encounter.getPatient().getPerson().getPhone() : "";
-        String visitDate = CommonController.formatDate(encounter.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
-        String doa = CommonController.formatDate(encounter.getDateOfAdmission(), sessionController.getApplicationPreference().getLongDateFormat());
+        String visitDate = CommonFunctions.formatDate(encounter.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
+        String doa = CommonFunctions.formatDate(encounter.getDateOfAdmission(), sessionController.getApplicationPreference().getLongDateFormat());
         String dod;
         if (encounter.getDateOfDischarge() == null) {
-            dod = CommonController.formatDate(new Date(), sessionController.getApplicationPreference().getLongDateFormat());
+            dod = CommonFunctions.formatDate(new Date(), sessionController.getApplicationPreference().getLongDateFormat());
         } else {
-            dod = CommonController.formatDate(encounter.getDateOfDischarge(), sessionController.getApplicationPreference().getLongDateFormat());
+            dod = CommonFunctions.formatDate(encounter.getDateOfDischarge(), sessionController.getApplicationPreference().getLongDateFormat());
         }
         String bht = encounter.getBhtNo();
         String room = "";
         if (encounter.getCurrentPatientRoom() != null) {
             encounter.getCurrentPatientRoom().getName();
         }
-        String weight = CommonController.formatNumber(encounter.getWeight(), "0.0") + " kg";
-        String height = CommonController.formatNumber(encounter.getHeight(), "0") + " cm";
+        String weight = CommonFunctions.formatNumber(encounter.getWeight(), "0.0") + " kg";
+        String height = CommonFunctions.formatNumber(encounter.getHeight(), "0") + " cm";
         String bmi = encounter.getBmiFormatted();
         String rr = encounter.getRespiratoryRate()+" bpm";
         String bp = encounter.getBp();
@@ -522,9 +500,9 @@ public class InpatientClinicalDataController implements Serializable {
         String address = e.getPatient().getPerson().getAddress() != null ? e.getPatient().getPerson().getAddress() : "";
         String phone = e.getPatient().getPerson().getPhone() != null ? e.getPatient().getPerson().getPhone() : "";
 
-        String visitDate = CommonController.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
-        String weight = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
-        String height = CommonController.formatNumber(e.getHeight(), "0") + " cm";
+        String visitDate = CommonFunctions.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
+        String weight = CommonFunctions.formatNumber(e.getWeight(), "0.0") + " kg";
+        String height = CommonFunctions.formatNumber(e.getHeight(), "0") + " cm";
         String bmi = e.getBmiFormatted();
         String bp = e.getBp();
         String comments = e.getComments();
@@ -990,7 +968,7 @@ public class InpatientClinicalDataController implements Serializable {
             m.put("doc", doctor);
         }
         items = getFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        
+
         return "/clinical/clinical_reports_all_opd_visits?faces-redirect=true";
     }
 
@@ -1939,7 +1917,7 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
 //    public List<PatientEncounter> getSelectedItems() {
-//        selectedItems = getFacade().findByJpql("select c from PatientEncounter c where c.retired=false and i.institutionType = com.divudi.data.PatientEncounterType.Agency and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+//        selectedItems = getFacade().findByJpql("select c from PatientEncounter c where c.retired=false and i.institutionType = com.divudi.core.data.PatientEncounterType.Agency and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
 //        return selectedItems;
 //    }
     public void prepareAdd() {
@@ -2469,7 +2447,7 @@ public class InpatientClinicalDataController implements Serializable {
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = new Date();
-            fromDate = getCommonFunctions().getStartOfDay(fromDate);
+            fromDate = CommonFunctions.getStartOfDay(fromDate);
         }
         return fromDate;
     }
@@ -2481,7 +2459,7 @@ public class InpatientClinicalDataController implements Serializable {
     public Date getToDate() {
         if (toDate == null) {
             toDate = new Date();
-            toDate = getCommonFunctions().getEndOfDay(toDate);
+            toDate = CommonFunctions.getEndOfDay(toDate);
         }
         return toDate;
     }
@@ -2530,10 +2508,6 @@ public class InpatientClinicalDataController implements Serializable {
         return patientFacade;
     }
 
-    public CommonFunctionsController getCommonFunctions() {
-        return commonFunctions;
-    }
-
     public BillFacade getBillFacade() {
         return billFacade;
     }
@@ -2572,14 +2546,6 @@ public class InpatientClinicalDataController implements Serializable {
 
     public void setGraphInvestigationItem(InvestigationItem graphInvestigationItem) {
         this.graphInvestigationItem = graphInvestigationItem;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public List<PatientEncounter> getSelectedItems() {
@@ -2722,6 +2688,7 @@ public class InpatientClinicalDataController implements Serializable {
 
     public void setRemovingClinicalFindingValue(ClinicalFindingValue removingClinicalFindingValue) {
         this.removingClinicalFindingValue = removingClinicalFindingValue;
+        this.removingCfv = removingClinicalFindingValue;
     }
 
     public Patient getPatient() {

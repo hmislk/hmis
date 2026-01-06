@@ -1,8 +1,7 @@
 package com.divudi.bean.common;
 
-import com.divudi.entity.Staff;
-import com.divudi.entity.Upload;
-import com.divudi.facade.UploadFacade;
+import com.divudi.core.entity.Upload;
+import com.divudi.core.facade.UploadFacade;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -11,6 +10,8 @@ import javax.ejb.EJB;
 import javax.inject.Named;
 import javax.enterprise.context.RequestScoped;
 import javax.faces.context.FacesContext;
+
+import com.divudi.core.util.CommonFunctions;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -60,7 +61,7 @@ public class UploadViewController {
     }
 
     private Upload findCategoryUploadById(String id) {
-        Long lid = CommonController.convertStringToLong(id);
+        Long lid = CommonFunctions.convertStringToLongOrZero(id);
         String jpql = "select u "
                 + " from Upload u "
                 + " where u.retired=:ret "
@@ -70,6 +71,18 @@ public class UploadViewController {
         m.put("ret", false);
         m.put("cid", lid);
         return uploadFacade.findFirstByJpql(jpql, m);
+    }
+
+    public String getReportTemplate(String id) {
+        Upload u = findCategoryUploadById(id);
+
+        String url = "";
+        if (u == null) {
+
+        } else {
+            url = u.getFileUrl();
+        }
+        return url;
     }
 
 }

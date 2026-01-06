@@ -27,7 +27,7 @@
                                 <p:commandButton ajax="false" value="Cancel"
                                                  icon="fa fa-cancel"
                                                  class="ui-button-danger mx-1"
-                                                 action="inward_cancel_bill_refund" 
+                                                 action="#{inwardPaymentController.navigateToPatientRefund()}"
                                                  disabled="#{inwardSearch.bill.cancelled}"  >                           
                                 </p:commandButton>
                                 <p:commandButton ajax="false" value="Mark As Checked"
@@ -89,7 +89,7 @@
                                     <h:panelGrid columns="3" class="w-100">
                                         <h:outputLabel value="Bill No " ></h:outputLabel>
                                         <h:outputLabel value=":" ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="#{inwardSearch.bill.deptId}" ></h:outputLabel>
                                         <h:outputLabel value="Payment Type " ></h:outputLabel>
                                         <h:outputLabel value=":" ></h:outputLabel>
                                         <h:outputLabel value="#{inwardSearch.bill.paymentMethod}" ></h:outputLabel>

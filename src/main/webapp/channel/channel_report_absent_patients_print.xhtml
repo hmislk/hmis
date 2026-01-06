@@ -1,0 +1,307 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<h:body>
+    <ui:composition template="/resources/template/template.xhtml">
+        <ui:define name="content">
+
+            <h:form >
+                <p:panel header="Patient Absent Report Print View" styleClass="w-100">
+                    <f:facet name="header"  >
+                        <div class="d-flex justify-content-between">
+                            <h:outputText value="Patient Absent Report Print View" class="mt-2"/>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false"
+                                        value="Print">
+                                    <p:printer target="reportView" />
+                                </p:commandButton>
+                                <p:commandButton
+                                        ajax="false"
+                                        value="Back to Report"
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="channel_report_absent_patients?faces-redirect=true" >
+                                </p:commandButton>
+                            </div>
+
+                        </div>
+                    </f:facet>
+
+                    <style>
+
+                        @media screen{
+                            .paper{
+                                position: static !important;
+                                width: 297mm!important;
+                                zoom: 2.0;
+                            }
+
+                            table {
+                                border-collapse: collapse;
+                                width: 100%;
+                                font-size: 12px!important;
+                                margin-top: 1mm!important;
+                            }
+
+                            th, td {
+                                border: 1px solid #000;
+                                padding: 0px!important;
+                                margin: 2px!important;
+                                text-align: left;
+                                margin-left: 10mm!important;
+                                font-size: 11px!important;
+                            }
+
+                            .header{
+                                font-size: 16px!important;
+                            }
+
+                            tfoot{
+                                font-weight: 700!important;
+                                font-size: 11px!important;
+                            }
+                        }
+
+                        @media print {
+                            @page {
+                                @bottom-right {
+                                    content: "Page " counter(page) " of " counter(pages);
+                                    font-family: Arial, sans-serif;
+                                    font-size: 10pt;
+                                }
+                                size: A4 landscape!important;
+                            }
+
+                            body {
+                                counter-reset: page;
+                            }
+
+                            .paper{
+                                position: static !important;
+                                width: 297mm!important;
+
+
+                            }
+
+                            .header{
+                                line-height: 1.1;
+                                margin: 0mm!important;
+                                font-size: 13px!important;
+                            }
+
+                            table {
+                                border-collapse: collapse;
+                                width: 99.9%;
+                                font-size: 12px!important;
+                                margin-top: 1mm!important;
+                            }
+                            th, td {
+                                border: 1px solid #000;
+                                padding: 0px!important;
+                                margin: 2px!important;
+                                text-align: left;
+                                margin-left: 10mm!important;
+                            }
+                            th {
+
+                            }
+                            tfoot{
+                                font-weight: 700!important;
+                                font-size: 11px!important;
+                            }
+                        }
+                    </style>
+
+                    <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                        <div class="paper">
+                            <div class="header" >
+                                <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 22px;margin-bottom: 5px;">
+                                    <h:outputText value="#{sessionController.institution.name}"/>
+                                </div>
+                                <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 400; font-size: 20px;margin-bottom: 5px;">
+                                    <h:outputText value="Patient Absent Report"/>
+                                </div>
+                                <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
+                                    <h:outputText value="From Date - "/>
+                                    <h:outputText value="#{channelReportController.fromDate}">
+                                        <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                    </h:outputText>
+                                    <h:outputText value="" style="width: 2em!important;" class="text-center"/>
+                                    <h:outputText value="To Date - "/>
+                                    <h:outputText value="#{channelReportController.toDate}">
+                                        <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                    </h:outputText>
+                                </div>
+                            </div>
+
+                            <div>
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                    <tr>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Channel Receipt No" />
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Session Name" />
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Booking Type" />
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Appinment No" />
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px; min-width: 150px;">
+                                            <h:outputText value="Patient Name" />
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Cashier Name" />
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Doctor Name" />
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Doctor Fee" />
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Hospital Fee" />
+                                        </th>
+                                        <th style="font-weight: 700; text-align: center; padding: 4px;">
+                                            <h:outputText value="Net Total" />
+                                        </th>
+                                    </tr>
+                                    </thead>
+
+                                    <tbody>
+                                    <ui:repeat value="#{channelReportController.channelBills}" var="b">
+                                        <tr>
+                                            <td style="font-weight: 500; text-align: left; padding: 4px;">
+                                                <h:outputText value="#{b.deptId}" >
+                                                    <p:tag rendered="#{b.cancelled}" value="Cancelled - #{b.cancelledBill.deptId}" severity="danger" />
+                                                    <p:tag rendered="#{b.refunded}" value="Refunded - #{b.refundedBill.deptId}"  severity="warning" />
+                                                    <p:tag rendered="#{bookingControllerViewScope.checkBillClass(b) eq 'RefundBill'}" value="Refund Bill"  severity="warning" />
+                                                    <p:tag rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="danger" />
+                                                </h:outputText>
+                                            </td>
+                                            <td style="font-weight: 500; text-align: left; padding: 4px;">
+                                                <h:outputText value="#{b.singleBillSession.serviceSession.name}"/>
+                                            </td>
+                                            <td style="font-weight: 500; text-align: left; padding: 4px;">
+                                                <h:outputText value="Online Booking"  rendered="#{b.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' or b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}"/>
+                                                <h:outputText value="System Booking"  rendered="#{b.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and b.billTypeAtomic ne 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}"/>
+                                            </td>
+                                            <td style="font-weight: 500; text-align: center; padding: 4px;">
+                                                <h:outputText value="#{b.singleBillSession.serialNo}" />
+                                            </td>
+                                            <td style="font-weight: 500; text-align: left; padding: 4px;">
+                                                <h:outputText value="#{b.patient.person.name}" rendered="#{b.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" />
+                                                <h:outputText value="#{b.referenceBill.onlineBooking.patientName}" rendered="#{b.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" />
+                                                <h:outputText value="#{b.billedBill.referenceBill.onlineBooking.patientName}" rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" />
+                                            </td>
+                                            <td style="font-weight: 500; text-align: left; padding: 4px;">
+                                                <h:outputText value="#{b.creater.name}" />
+                                                <h:outputText value="-" rendered="#{empty b.creater}"/>
+                                            </td>
+                                            <td style="font-weight: 500; text-align: left; padding: 4px;">
+                                                <h:outputText value="#{b.staff.person.name}" />
+                                            </td>
+                                            <td style="font-weight: 500; text-align: right; padding: 4px;">
+                                                <h:outputLabel styleClass="staffFee" value="#{b.staffFee}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </td>
+                                            <td style="font-weight: 500; text-align: right; padding: 4px;">
+                                                <h:outputLabel styleClass="hosFee" value="#{b.hospitalFee}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </td>
+                                            <td style="font-weight: 500; text-align: right; padding: 4px;">
+                                                <h:outputLabel styleClass="netFee" value="#{b.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                    </tbody>
+
+                                    <tfoot>
+                                    <tr>
+                                        <td colspan="7" style="text-align: center; font-weight: 700;" >
+                                            <h:outputText value="Total" />
+                                        </td>
+                                        <td style="text-align: right; font-weight: 700; padding: 4px;">
+                                            <h:outputText styleClass="staffFeeTotal" value="0.00">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td style="text-align: right; font-weight: 700; padding: 4px;">
+                                            <h:outputText styleClass="hosFeeTotal" value="0.00">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td style="text-align: right; font-weight: 700; padding: 4px;">
+                                            <h:outputText styleClass="netFeeTotal" value="0.00">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+
+                                <!-- JavaScript to calculate totals -->
+                                <script>
+                                    function calculateTotals(selector, targeter) {
+                                        const values = Array.from(document.querySelectorAll(selector));
+                                        const totalValue = values
+                                            .map(value => {
+                                                const cleanValue = value.innerText.replace(/,/g, "");
+                                                return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
+                                            })
+                                            .reduce((total, value) => total + value, 0);
+
+                                        const targetElement = document.querySelector(targeter);
+                                        if (targetElement) {
+                                            targetElement.innerText = totalValue.toLocaleString('en-US', {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                            });
+                                        }
+                                    }
+
+                                    function updateTotals() {
+                                        calculateTotals('.netFee', '.netFeeTotal');
+                                        calculateTotals('.staffFee', '.staffFeeTotal');
+                                        calculateTotals('.hosFee', '.hosFeeTotal');
+                                    }
+
+                                    // Run the calculation after page loads
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        setTimeout(updateTotals, 1000);
+                                    });
+
+                                    // Also run on window load as backup
+                                    window.addEventListener('load', function() {
+                                        setTimeout(updateTotals, 500);
+                                    });
+                                </script>
+                            </div>
+
+                        </div>
+                    </h:panelGroup>
+
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+
+</h:body>
+</html>

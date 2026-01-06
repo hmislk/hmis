@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <p:panel header="Online Booking Agent Management">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h:form>
+                                <p:accordionPanel activeIndex="#{agencyController.tabIndex}">
+                                    <p:ajax process="@this"></p:ajax>
+
+                                    <!-- Manage Section -->
+                                    <p:tab title="Manage" rendered="#{webUserController.hasPrivilege('Payment')}">
+                                        <h:panelGrid columns="1" class="w-100" >
+                                            <p:commandButton icon="fa fa-check-circle" 
+                                                             ajax="false" 
+                                                             value="View and Registering"
+                                                             action="/online_booking_agent_management/OB_agent_management?faces-redirect=true"
+                                                             actionListener="#{onlineBookingAgentController.prepareAdd()}"
+                                                             class="w-100 m-1"/>
+                                            <p:commandButton icon="fa-solid fa-money-bill-transfer" ajax="false" value="Online Booking Agent Payments "
+                                                             action="/online_booking_agent_management/OB_payment_handle?faces-redirect=true"
+                                                             actionListener="#{onlineBookingAgentController.clearPreviousValues()}"
+                                                             class="w-100 m-1"/>
+                                            
+                                            <p:commandButton icon="fa-solid fa-globe" ajax="false" value="View All Online Bookings"
+                                                             action="/online_booking_agent_management/view_all_online_bookings?faces-redirect=true"
+                                                             actionListener="#{onlineBookingAgentController.clearPreviousValues()}"
+                                                             class="w-100 m-1"/>
+                                            
+                                            <p:commandButton icon="fa-solid fa-money-bills" ajax="false" value="View Agent Payment Bills"
+                                                             action="/online_booking_agent_management/OB_payment_bill_search?faces-redirect=true"
+                                                             actionListener="#{onlineBookingAgentController.clearPreviousValues()}"
+                                                             class="w-100 m-1"/>
+
+                                        </h:panelGrid>
+                                    </p:tab>
+                                    
+                                    <p:tab title="Direct Funds" rendered="#{webUserController.hasPrivilege('Payment')}">
+                                        <h:panelGrid columns="1" class="w-100" >
+                                            <p:commandButton icon="fa fa-check-circle" 
+                                                             ajax="false" 
+                                                             value="Agency Direct Funds"
+                                                             action="/online_booking_agent_management/OB_agent_direct_funds?faces-redirect=true"
+                                                             actionListener="#{onlineBookingAgentController.clearPreviousValues()}"
+                                                             class="w-100 m-1"/>
+                                            <p:commandButton icon="fa-solid fa-money-bill-transfer" ajax="false" value="Search Agency Direct Funds "
+                                                             action="/online_booking_agent_management/OB_agency_direct_fund_bill_search?faces-redirect=true"
+                                                             actionListener="#{onlineBookingAgentController.clearPreviousValues()}"
+                                                             class="w-100 m-1"/>
+                                            
+                                            <p:commandButton icon="fa-solid fa-globe" ajax="false" value="Agency Transaction Analytics"
+                                                             action="/online_booking_agent_management/online_booking_agency_analytics?faces-redirect=true"
+                                                             actionListener="#{onlineBookingAgentController.clearPreviousValues()}"
+                                                             class="w-100 m-1"/>
+                                            
+                                        </h:panelGrid>
+                                    </p:tab>
+
+                                </p:accordionPanel>
+                            </h:form>
+                        </div>
+
+                        <div class="col-md-9">
+                            <ui:insert name="subcontent">
+                            </ui:insert>
+                        </div>
+                    </div>
+                </p:panel>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

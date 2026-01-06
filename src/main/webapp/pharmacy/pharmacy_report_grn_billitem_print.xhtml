@@ -1,0 +1,254 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form >
+                    <p:panel header="GRN Bill Item Report Print View" styleClass="w-100">
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="GRN Bill Item Report Print View" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        icon="fa-solid fa-print"
+                                        styleClass="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false" 
+                                        value="Print">
+                                        <p:printer target="reportView" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back to Report" 
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        styleClass="ui-button-warning"
+                                        action="pharmacy_report_grn_billitem?faces-redirect=true" >
+                                    </p:commandButton>
+                                </div>
+
+                            </div>
+                        </f:facet>
+
+                        <style>
+
+                            @media screen{
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    zoom: 2.0;
+                                }
+                                
+                                table {
+                                    border-collapse: collapse;
+                                    width: 100%;
+                                    font-size: 12px!important;
+                                    margin-top: 1mm!important;
+                                }
+                                
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+                                
+                                .header{
+                                    font-size: 16px!important;
+                                }
+                                
+                                tfoot{
+                                    font-weight: 700!important;
+                                    font-size: 11px!important;
+                                }
+                            }
+
+                            @media print {
+                                @page {
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 10pt;
+                                    }
+                                    size: A4 landscape!important;
+                                }
+
+                                body {
+                                    counter-reset: page;
+                                }
+
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+
+
+                                }
+
+                                .header{
+                                    line-height: 1.1;
+                                    margin: 0mm!important;
+                                    font-size: 13px!important;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 99.9%;
+                                    font-size: 12px!important;
+                                    margin-top: 1mm!important;
+                                }
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+                                th {
+
+                                }
+                                tfoot{
+                                    font-weight: 700!important;
+                                    font-size: 11px!important;
+                                }
+                            }
+                        </style>
+
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header" >
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 22px;margin-bottom: 5px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 400; font-size: 20px;margin-bottom: 5px;">
+                                        <h:outputText value="GRN Bill Item Report"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
+                                        <h:outputLabel value="From Date :  "/>&nbsp;&nbsp;
+                                        <h:outputLabel value="#{pharmacySaleReportController.fromDate}"  >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="-"/>
+                                        <h:outputLabel value="To Date  :"/>&nbsp;&nbsp;
+                                        <h:outputLabel value="#{pharmacySaleReportController.toDate}"  >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputLabel>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <thead>
+                                        <tr>
+                                            <th style="width: 25mm; text-align: center;">PO Number</th>
+                                            <th style="width: 25mm; text-align: center;">GRN Number</th>
+                                            <th style="width: 25mm; text-align: center;">PO Value</th>
+                                            <th style="width: 25mm;text-align: center;">PO Value(Sale)</th>
+                                            <th style="text-align: right;">Supplier Name</th>
+                                            <th style="text-align: right;">Item Name</th>
+                                            <th style="text-align: right;">Free Quantity</th>
+                                            <th style="text-align: right;">Purchase Rate</th>
+                                            <th style="text-align: right;">Free Qty Value</th>
+                                            <th style="text-align: right;">Order Quantity</th>
+                                            <th style="text-align: right;">Department</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <ui:repeat value="#{pharmacySaleReportController.billItems}" var="i">
+                                            <tr>
+                                                <td><h:outputText value="#{i.bill.referenceBill.deptId}" /></td>
+                                                <td>
+                                                    <h:outputLabel value="#{i.bill.deptId}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </td>
+                                                <td>
+                                                    <h:outputLabel value="#{i.bill.referenceBill.netTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </td>
+                                                <td>
+                                                    <h:outputLabel value="#{i.bill.referenceBill.saleValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel value="#{i.bill.fromInstitution.name}"/>
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel value="#{i.item.name}"/>
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.freeQty}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.purchaseRate}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.purchaseRate*i.pharmaceuticalBillItem.freeQty}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.qty}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel value="#{i.bill.department.name}"/>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                        </tbody>
+                                        <tfoot>
+                                        <tr>
+                                            <td colspan="6" style="text-align: left; font-weight: 700;" >
+                                                <h:outputText value="Total" />
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{pharmacySaleReportController.totalFreeQuantity}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </td>
+                                            <td>
+
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{pharmacySaleReportController.totalPurchaseValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </td>
+                                            <td>
+
+                                            </td>
+                                            <td>
+
+                                            </td>
+                                        </tr>
+                                        </tfoot>
+                                    </table>
+
+
+                                </div>
+
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

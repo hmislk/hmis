@@ -14,18 +14,18 @@
             <h:panelGroup rendered="#{!storeGoodsReturnController.printPreview}" styleClass="alignTop" >
                 <p:panel>
 
-                    <f:facet name="header" >    
+                    <f:facet name="header" >
                         <div class="w-100 d-flex" >
                             <h:outputLabel value="Supplier : " class="my-1"/>
-                            <p:autoComplete converter="deal" value="#{storeGoodsReturnController.returnBill.toInstitution}"  
+                            <p:autoComplete converter="deal" value="#{storeGoodsReturnController.returnBill.toInstitution}"
                                             forceSelection="true"
                                             completeMethod="#{dealerController.completeDealor}"
-                                            var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >                               
+                                            var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                             </p:autoComplete>
 
-                            <p:selectOneMenu   id="cmbPs" value="#{storeGoodsReturnController.returnBill.paymentMethod}" class="mx-4">                                                                     
+                            <p:selectOneMenu   id="cmbPs" value="#{storeGoodsReturnController.returnBill.paymentMethod}" class="mx-4">
                                 <f:selectItems value="#{enumController.paymentMethods}"/>
-                                <p:ajax process="cmbPs" update="lblCardRef txtCardRef lblCheqRef txtCheqRef 
+                                <p:ajax process="cmbPs" update="lblCardRef txtCardRef lblCheqRef txtCheqRef
                                         bank lblSlipRef txtSlipRef slipBank" event="change" />
                             </p:selectOneMenu>
                             <h:outputLabel id="lblCardRef" value="Card Ref. No" style="display: #{storeGoodsReturnController.returnBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; " />
@@ -46,14 +46,14 @@
                             </h:selectOneMenu>
                             <p:inputText placeholder="Enter Comments to Return Bill" value="#{storeGoodsReturnController.returnBill.comments}" class="p-2 w-25"/>
 
-                            <p:outputLabel  value="Recievable Amount" class="mx-4 my-2"/> 
+                            <p:outputLabel  value="Recievable Amount" class="mx-4 my-2"/>
                             <div class="my-2">
                                 <p:outputLabel id="total"  value="#{storeGoodsReturnController.returnBill.total}" style=" my-4">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </div>
                             <div style="float: right">
-                                <p:commandButton  value="Return" 
+                                <p:commandButton  value="Return"
                                                   action="#{storeGoodsReturnController.settle}" ajax="false" icon="fa fa-cancel" style="float: right;" class="mx-5 ui-button-danger">
                                 </p:commandButton>
                             </div>
@@ -64,86 +64,86 @@
 
                 <p:dataTable var="ph" value="#{storeGoodsReturnController.billItems}"
                              scrollable="true" scrollHeight="250"
-                             id="itemList" editable="true">  
+                             id="itemList" editable="true">
 
-                    <p:ajax event="rowEdit" listener="#{storeGoodsReturnController.onEdit(ph)}" 
-                            update=":#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('tab',view).clientId}" />  
-                    <p:ajax event="rowEditCancel" listener="#{storeGoodsReturnController.onEdit(ph)}" 
-                            update=":#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('tab',view).clientId}" /> 
+                    <p:ajax event="rowEdit" listener="#{storeGoodsReturnController.onEdit(ph)}"
+                            update=":#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('tab',view).clientId}" />
+                    <p:ajax event="rowEditCancel" listener="#{storeGoodsReturnController.onEdit(ph)}"
+                            update=":#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('tab',view).clientId}" />
 
 
-                    <f:facet name="header">  
-                        Returning Item 
+                    <f:facet name="header">
+                        Returning Item
                     </f:facet>
 
-                    <p:column style="width:10px!important;">  
-                        <p:rowEditor />  
+                    <p:column style="width:10px!important;">
+                        <p:rowEditor />
                     </p:column>
 
-                    <p:column headerText="Item Name" style="width: 250px!important;"  > 
-                        <h:outputText id="item" value="#{ph.item.name}" >                                   
+                    <p:column headerText="Item Name" style="width: 250px!important;"  >
+                        <h:outputText id="item" value="#{ph.item.name}" >
                         </h:outputText>
-                    </p:column>  
+                    </p:column>
 
-                    <p:column  headerText="Balance Qty in Unit" style="width:25px!important;"> 
-                        <h:outputText id="qty" value="#{ph.pharmaceuticalBillItem.qty}" />                   
-                    </p:column>  
-                    
-                    <p:column  headerText="Balance Free Qty in Unit" style="width:25px!important;"> 
-                        <h:outputText id="freeQty" value="#{ph.referanceBillItem.pharmaceuticalBillItem.freeQty}" />                   
-                    </p:column>  
+                    <p:column  headerText="Balance Qty in Unit" style="width:25px!important;">
+                        <h:outputText id="qty" value="#{ph.pharmaceuticalBillItem.qty}" />
+                    </p:column>
 
-                    <p:column headerText="Purchase Rate" style="width:25px!important;"> 
+                    <p:column  headerText="Balance Free Qty in Unit" style="width:25px!important;">
+                        <h:outputText id="freeQty" value="#{ph.referanceBillItem.pharmaceuticalBillItem.freeQty}" />
+                    </p:column>
+
+                    <p:column headerText="Purchase Rate" style="width:25px!important;">
                         <h:panelGroup id="purchase" >
                             <h:outputText  value="#{ph.pharmaceuticalBillItem.purchaseRate}"  >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
-                            <h:outputText value="perPack" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}" />    
+                            <h:outputText value="perPack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                         </h:panelGroup>
-                    </p:column>                 
-
-
-                    <p:column headerText="Batch No" style="width:25px!important;">                       
-                        <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />                        
-                    </p:column>  
-
-                    <p:column headerText="Date of Expirey" style="width:25px!important;">                     
-                        <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" /> 
                     </p:column>
 
 
-                    <p:column headerText="Returning Qty in Unit" style="width:25px!important;">     
-                        <p:cellEditor>  
-                            <f:facet name="output">  
+                    <p:column headerText="Batch No" style="width:25px!important;">
+                        <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />
+                    </p:column>
+
+                    <p:column headerText="Date of Expirey" style="width:25px!important;">
+                        <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" />
+                    </p:column>
+
+
+                    <p:column headerText="Returning Qty in Unit" style="width:25px!important;">
+                        <p:cellEditor>
+                            <f:facet name="output">
                                 <h:outputLabel value="#{ph.tmpQty}" />
 
                             </f:facet>
-                            <f:facet name="input">  
+                            <f:facet name="input">
                                 <p:inputText autocomplete="off" value="#{ph.tmpQty}" onfocus="this.select()">
                                 </p:inputText>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
-                    <p:column headerText="Returning Free Qty in Unit" style="width:25px!important;">     
-                        <p:cellEditor>  
-                            <f:facet name="output">  
+                    <p:column headerText="Returning Free Qty in Unit" style="width:25px!important;">
+                        <p:cellEditor>
+                            <f:facet name="output">
                                 <h:outputLabel value="#{ph.pharmaceuticalBillItem.freeQty}" />
 
                             </f:facet>
-                            <f:facet name="input">  
+                            <f:facet name="input">
                                 <p:inputText autocomplete="off" value="#{ph.tmpFreeQty}" onfocus="this.select()">
                                 </p:inputText>
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
 
-                </p:dataTable>  
+                </p:dataTable>
                 <p:spacer height="50"/>
                 <st:history/>
             </h:panelGroup>
 
             <p:panel rendered="#{storeGoodsReturnController.printPreview}">
-                <p:commandButton ajax="false" action="store_grn_list_for_return" value="GRN List"/>                    
+                <p:commandButton ajax="false" action="store_grn_list_for_return" value="GRN List"/>
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
@@ -155,6 +155,6 @@
             </p:panel>
 
         </h:form>
-    </ui:define>  
+    </ui:define>
 
 </ui:composition>

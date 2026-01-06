@@ -50,7 +50,9 @@
                                 </p:column>
 
                                 <p:column headerText="Product" 
-                                          sortBy="#{i.item.name}" >
+                                          sortBy="#{i.item.name}" 
+                                          filterBy="#{i.item.name}"
+                                          filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="Product"/>
                                     </f:facet>

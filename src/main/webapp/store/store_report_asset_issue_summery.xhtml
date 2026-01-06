@@ -33,9 +33,7 @@
                         <p:dataExporter type="xlsx" target="sum1" fileName="report_store_issue_by_item_summery"  />
                     </p:commandButton>
                 </h:panelGrid>
-                <p:watermark value="From Department" for="fromDep"/>
-                <p:watermark value="To Department" for="toDep"/>
-            </p:panel> 
+                                            </p:panel> 
             <p:panel id="panelPrint" >
                 <p:dataTable id="sum1" value="#{storeSaleReport.billItem}" var="i">   
                     <f:facet name="header">

@@ -11,30 +11,30 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.CssFontStyle;
-import com.divudi.data.CssTextAlign;
-import com.divudi.data.CssTextDecoration;
-import com.divudi.data.CssVerticalAlign;
-import com.divudi.data.InvestigationItemType;
-import com.divudi.data.InvestigationItemValueType;
-import com.divudi.data.ItemType;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.InvestigationItemValue;
-import com.divudi.entity.lab.InvestigationTube;
-import com.divudi.entity.lab.Machine;
-import com.divudi.entity.lab.ReportItem;
-import com.divudi.entity.lab.Sample;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InvestigationFacade;
-import com.divudi.facade.InvestigationItemFacade;
-import com.divudi.facade.InvestigationItemValueFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ReportItemFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.CssFontStyle;
+import com.divudi.core.data.CssTextAlign;
+import com.divudi.core.data.CssTextDecoration;
+import com.divudi.core.data.CssVerticalAlign;
+import com.divudi.core.data.InvestigationItemType;
+import com.divudi.core.data.InvestigationItemValueType;
+import com.divudi.core.data.ItemType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.InvestigationItem;
+import com.divudi.core.entity.lab.InvestigationItemValue;
+import com.divudi.core.entity.lab.InvestigationTube;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.entity.lab.ReportItem;
+import com.divudi.core.entity.lab.Sample;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.InvestigationItemFacade;
+import com.divudi.core.facade.InvestigationItemValueFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ReportItemFacade;
+import com.divudi.core.util.JsfUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -139,6 +139,16 @@ public class InvestigationItemController implements Serializable {
     private int specialCode;
     String fontFamily;
     double fontSize;
+
+    private String cssBackColor;
+    private String cssColor;
+    private String cssBorderRadius;
+    private String cssMargin;
+    private String cssPadding;
+    private String cssBorder;
+    private String customCss;
+
+    private CssVerticalAlign cssVerticalAlign;
 
     Double movePercent;
     Double fixHeight;
@@ -670,6 +680,22 @@ public class InvestigationItemController implements Serializable {
                 ri.setRiFontSize(fontSize);
                 riFacade.edit(ri);
             }
+
+            if (cssVerticalAlign != null) {
+                ri.setCssVerticalAlign(cssVerticalAlign);
+                riFacade.edit(ri);
+            }
+
+            if (customCss != null && !customCss.trim().equals("")) {
+                ri.setCustomCss(customCss);
+                riFacade.edit(ri);
+            }
+
+            if (cssBorder != null) {
+                ri.setCssBorder(cssBorder);
+                riFacade.edit(ri);
+            }
+
         }
 
         JsfUtil.addSuccessMessage("Update Success");
@@ -708,7 +734,7 @@ public class InvestigationItemController implements Serializable {
 //            return new ArrayList<>();
 //        } else {
 //            String sql;
-//            sql = "select i from InvestigationItem i where i.retired=false and i.ixItemType = com.divudi.data.InvestigationItemType.Value and (i.name) like '%" + qry.toUpperCase() + "%' and i.item.id = " + currentInvestigation.getId();
+//            sql = "select i from InvestigationItem i where i.retired=false and i.ixItemType = com.divudi.core.data.InvestigationItemType.Value and (i.name) like '%" + qry.toUpperCase() + "%' and i.item.id = " + currentInvestigation.getId();
 //            iivs = getEjbFacade().findByJpql(sql);
 //        }
 //        if (iivs == null) {
@@ -772,7 +798,7 @@ public class InvestigationItemController implements Serializable {
             return new ArrayList<>();
         } else {
             String sql;
-            sql = "select i from InvestigationItem i where i.retired=false and i.ixItemType = com.divudi.data.InvestigationItemType.Value and i.item.id = " + currentInvestigation.getId();
+            sql = "select i from InvestigationItem i where i.retired=false and i.ixItemType = com.divudi.core.data.InvestigationItemType.Value and i.item.id = " + currentInvestigation.getId();
             iivs = getEjbFacade().findByJpql(sql);
         }
         if (iivs == null) {
@@ -1660,6 +1686,29 @@ public class InvestigationItemController implements Serializable {
         listInvestigationItem();
     }
 
+    public void addNewImage() {
+        if (currentInvestigation == null) {
+            JsfUtil.addErrorMessage("Please select an investigation");
+            return;
+        }
+        current = new InvestigationItem();
+        current.setName("New Image");
+        current.setItem(currentInvestigation);
+        current.setIxItemType(InvestigationItemType.Image);
+        InvestigationItem lastItem = getLastReportItem();
+        if (lastItem != null) {
+            current.setCssFontFamily(lastItem.getCssFontFamily());
+            current.setCssFontSize(lastItem.getCssFontSize());
+            current.setCssFontStyle(lastItem.getCssFontStyle());
+            current.setCssFontWeight(lastItem.getCssFontWeight());
+        }
+//        getEjbFacade().create(current);
+        currentInvestigation.getReportItems().add(current);
+        getIxFacade().edit(currentInvestigation);
+        listInvestigationItem();
+        listInvestigationItem();
+    }
+
     public void prepareAdd() {
         current = new InvestigationItem();
     }
@@ -1788,7 +1837,16 @@ public class InvestigationItemController implements Serializable {
             return "";
         }
         listInvestigationItem();
-        return "/admin/lims/investigation_format";
+        return "/admin/lims/investigation_format?faces-redirect=true";
+    }
+
+    public String toEditInvestigationFormatPastData() {
+        if (currentInvestigation == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return "";
+        }
+        listInvestigationItem();
+        return "/admin/lims/investigation_format_pastdata?faces-redirect=true";
     }
 
     public String toEditInvestigationFormatMultiple() {
@@ -1797,7 +1855,7 @@ public class InvestigationItemController implements Serializable {
             return "";
         }
         listInvestigationItem();
-        return "/admin/lims/investigation_format_multiple";
+        return "/admin/lims/investigation_format_multiple?faces-redirect=true";
     }
 
     public ReportItemFacade getRiFacade() {
@@ -2104,12 +2162,15 @@ public class InvestigationItemController implements Serializable {
         l.add(InvestigationItemType.Flag);
         l.add(InvestigationItemType.Calculation);
         l.add(InvestigationItemType.Css);
+        l.add(InvestigationItemType.Html);
         l.add(InvestigationItemType.DynamicLabel);
         l.add(InvestigationItemType.Investigation);
         l.add(InvestigationItemType.AntibioticList);
         l.add(InvestigationItemType.Template);
         l.add(InvestigationItemType.Barcode);
         l.add(InvestigationItemType.BarcodeVertical);
+        l.add(InvestigationItemType.Image);
+        l.add(InvestigationItemType.ReportImage);
 //            Label,
 //    Value,
 //    Calculation,
@@ -2167,6 +2228,70 @@ public class InvestigationItemController implements Serializable {
 
     public void setDepartmentFacade(DepartmentFacade departmentFacade) {
         this.departmentFacade = departmentFacade;
+    }
+
+    public String getCssBackColor() {
+        return cssBackColor;
+    }
+
+    public void setCssBackColor(String cssBackColor) {
+        this.cssBackColor = cssBackColor;
+    }
+
+    public String getCssColor() {
+        return cssColor;
+    }
+
+    public void setCssColor(String cssColor) {
+        this.cssColor = cssColor;
+    }
+
+    public String getCssBorderRadius() {
+        return cssBorderRadius;
+    }
+
+    public void setCssBorderRadius(String cssBorderRadius) {
+        this.cssBorderRadius = cssBorderRadius;
+    }
+
+    public String getCssMargin() {
+        return cssMargin;
+    }
+
+    public void setCssMargin(String cssMargin) {
+        this.cssMargin = cssMargin;
+    }
+
+    public String getCssPadding() {
+        return cssPadding;
+    }
+
+    public void setCssPadding(String cssPadding) {
+        this.cssPadding = cssPadding;
+    }
+
+    public String getCssBorder() {
+        return cssBorder;
+    }
+
+    public void setCssBorder(String cssBorder) {
+        this.cssBorder = cssBorder;
+    }
+
+    public CssVerticalAlign getCssVerticalAlign() {
+        return cssVerticalAlign;
+    }
+
+    public void setCssVerticalAlign(CssVerticalAlign cssVerticalAlign) {
+        this.cssVerticalAlign = cssVerticalAlign;
+    }
+
+    public String getCustomCss() {
+        return customCss;
+    }
+
+    public void setCustomCss(String customCss) {
+        this.customCss = customCss;
     }
 
     public enum EditMode {

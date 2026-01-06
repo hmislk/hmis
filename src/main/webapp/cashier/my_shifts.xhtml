@@ -1,0 +1,166 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ezb="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <h:body>
+
+        <ui:composition template="/cashier/index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel  class="m-1 p-1 container-flex">
+                        <f:facet name="header">
+                            <p:outputLabel value="My Shifts" />
+                        </f:facet>
+
+                        <p:panelGrid layout="tabular" columns="2" class="w-100" >
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="fromDate" 
+                                value="#{financialTransactionController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                value="#{financialTransactionController.toDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                        </p:panelGrid>
+                        <p:panelGrid columns="1" styleClass="m-3">
+                            <h:panelGroup layout="block" styleClass="form-group">
+
+                                <!-- Button to List All Shifts -->
+                                <p:commandButton 
+                                    value="List All My Shifts"
+                                    action="#{financialTransactionController.fillMyShifts}"
+                                    ajax="false"
+                                    styleClass="ui-button-success m-1"
+                                    icon="pi pi-list"
+                                    ></p:commandButton>
+
+                                <!-- Button to List Handover Completed Bills -->
+                                <p:commandButton 
+                                    value="List Handover Completed Bills"
+                                    action="#{financialTransactionController.fillMyCompletedShifts}"
+                                    icon="pi pi-check" 
+                                    ajax="false"
+                                    styleClass="ui-button-success m-1"
+                                    ></p:commandButton>
+
+                                <!-- Button to List Handover Uncompleted Bills -->
+                                <p:commandButton 
+                                    value="List Handover Uncompleted Bills"
+                                    action="#{financialTransactionController.fillMyUncompletedShifts}"
+                                    icon="pi pi-times" 
+                                    ajax="false"
+                                    styleClass="ui-button-danger m-1"
+                                    ></p:commandButton>
+
+                            </h:panelGroup>
+                        </p:panelGrid>
+
+
+
+
+
+                        <p:dataTable 
+                            value="#{financialTransactionController.bundle.reportTemplateRows}" 
+                            var="ssb" 
+                            rowKey="#{ssb.id}">
+
+
+                            <p:column headerText="Shift Start">
+                                <h:panelGroup>
+                                    <i class="fa fa-calendar" aria-hidden="true"></i>&nbsp;
+                                    <h:outputText value="#{ssb.bill.billDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                    <br />
+                                    <i class="fas fa-clock" aria-hidden="true"></i>&nbsp;
+                                    <h:outputText value="#{ssb.bill.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                                    </h:outputText>
+                                    <br />
+                                    <i class="fa fa-building" aria-hidden="true"></i>&nbsp;
+                                    <h:outputText value="#{ssb.bill.deptId}" rendered="#{ssb.bill.deptId ne null}" />
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Shift End" rendered="true">
+                                <h:panelGroup rendered="#{ssb.bill.referenceBill ne null}" class="text-success">
+                                    <i class="fa fa-calendar" aria-hidden="true"></i>&nbsp;
+                                    <h:outputText value="#{ssb.bill.referenceBill.billDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                    <br />
+                                    <i class="fas fa-clock" aria-hidden="true"></i>&nbsp;
+                                    <h:outputText value="#{ssb.bill.referenceBill.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                                    </h:outputText>
+                                    <br />
+                                    <i class="fa fa-building" aria-hidden="true"></i>&nbsp;
+                                    <h:outputText value="#{ssb.bill.referenceBill.deptId}" rendered="#{ssb.bill.referenceBill.deptId ne null}" />
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Status"  styleClass="text-center">
+                                <p:badge value="Started" severity="info"  rendered="#{ssb.bill.referenceBill eq null}" styleClass="m-1">
+                                </p:badge>
+                                <h:panelGroup rendered="#{ssb.bill.referenceBill ne null}">
+                                    <p:badge value="Shift Ended" severity="warning" styleClass="m-1">
+                                    </p:badge>
+                                    <p:badge value="Handover Completed" severity="success" styleClass="m-1" rendered="#{ssb.bill.referenceBill.completed}">
+                                    </p:badge>
+                                    <p:badge value="Handover NOT Complete" severity="danger" styleClass="m-1" rendered="#{not ssb.bill.referenceBill.completed}">
+                                    </p:badge>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Actions">
+                                <p:commandButton 
+                                    ajax="false"
+                                    class="ui-button-warning m-1" 
+                                    value="Start Handover" 
+                                    disabled="#{ssb.bill.referenceBill.completed}"
+                                    icon="pi pi-play" 
+                                    action="#{financialTransactionController.navigateToHandoverCreateBillForSelectedShift(ssb.bill)}">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false"
+                                    class="ui-button-success m-1" 
+                                    value="View Handovers" 
+                                    icon="pi pi-eye"  >
+                                </p:commandButton>
+                            </p:column>
+
+
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

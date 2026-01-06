@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="patient" type="com.divudi.entity.Patient" class="com.divudi.entity.Patient" />
+        <cc:attribute name="patient" type="com.divudi.core.entity.Patient" class="com.divudi.core.entity.Patient" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -58,7 +58,7 @@
                                         </p:inputText>
                                     </div>
                                     <div class="col-md-4">
-                                        <p:inputText autocomplete="off" id="month" placeholder="months" class="form-control" 
+                                        <p:inputText autocomplete="off" id="month" placeholder="months" class="form-control"
                                                      value="#{patientController.ageMonthComponant}">
                                             <f:ajax event="blur" execute="@this" render="calNewPtDob"
                                                     listener="#{patientController.calculateDobFromAgeComponants(cc.attrs.patient)}" />
@@ -97,7 +97,7 @@
                                 <p:inputText value="#{cc.attrs.patient.person.email}" class="form-control" />
                             </div>
                             <div class="col-md-3">
-                                <h:outputLabel class="form-label" value="NIC No:" />
+                                <h:outputLabel class="form-label" value="NIC / Passport No:" />
                                 <h:panelGroup>
                                     <p:inputText autocomplete="off" id="txtNIC" value="#{cc.attrs.patient.person.nic}" class="form-control" />
                                 </h:panelGroup>

@@ -1,18 +1,18 @@
 /*
  * Open Hospital Management Information System
- * 
- * Dr M H B Ariyaratne 
- * Acting Consultant (Health Informatics) 
+ *
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
  * (94) 71 5812399
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.DoctorSpeciality;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.facade.SpecialityFacade;
-import com.divudi.facade.StaffFacade;
+import com.divudi.core.entity.DoctorSpeciality;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.SpecialityFacade;
+import com.divudi.core.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,7 +32,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.DualListModel;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
+
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
@@ -153,6 +154,10 @@ public class SpecialityController implements Serializable {
         return selectedItems;
     }
 
+    public List<Speciality> completeDoctorSpeciality() {
+        return completeDoctorSpeciality("");
+    }
+
     public Speciality findSpeciality(String name, boolean createNewIfNotExists) {
         String j;
         j = "select s "
@@ -171,6 +176,39 @@ public class SpecialityController implements Serializable {
             getFacade().create(ds);
         }
         return ds;
+    }
+
+    // Original method modified to accept a Long directly
+    public Speciality findSpeciality(Long id) {
+        if (id == null) {
+            return null;
+        }
+        String jpql = "select s from Speciality s where s.retired=:ret and s.id=:id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("id", id);
+        return getFacade().findFirstByJpql(jpql, params);
+    }
+
+    // Overloaded method to handle String input
+    public Speciality findSpeciality(String idString) {
+        if (idString == null || idString.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            Long id = Long.parseLong(idString);
+            return findSpeciality(id);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    // Overloaded method to handle Integer input
+    public Speciality findSpeciality(Integer id) {
+        if (id == null) {
+            return null;
+        }
+        return findSpeciality(Long.valueOf(id));
     }
 
     public List<Speciality> getSelectedItems() {
@@ -329,9 +367,6 @@ public class SpecialityController implements Serializable {
         return staffFacade;
     }
 
-    /**
-     *
-     */
     @FacesConverter(forClass = Speciality.class)
     public static class SpecialityControllerConverter implements Converter {
 
@@ -340,21 +375,23 @@ public class SpecialityController implements Serializable {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            SpecialityController controller = (SpecialityController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "specialityController");
+
+            // Check if the value is a valid Long
+            if (!isNumeric(value)) {
+                throw new IllegalArgumentException("The provided value '" + value + "' is not a valid ID.");
+            }
+
+            SpecialityController controller = (SpecialityController) facesContext.getApplication().getELResolver()
+                    .getValue(facesContext.getELContext(), null, "specialityController");
             return controller.getEjbFacade().find(getKey(value));
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
+            return Long.valueOf(value);
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return value.toString();
         }
 
         @Override
@@ -366,8 +403,17 @@ public class SpecialityController implements Serializable {
                 Speciality o = (Speciality) object;
                 return getStringKey(o.getId());
             } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
+                throw new IllegalArgumentException("Object " + object + " is of type "
                         + object.getClass().getName() + "; expected type: " + Speciality.class.getName());
+            }
+        }
+
+        private boolean isNumeric(String str) {
+            try {
+                Long.parseLong(str);
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
             }
         }
     }

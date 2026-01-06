@@ -5,7 +5,6 @@
 package com.divudi.bean.clinical.tmp;
 
 import javax.inject.Named;
-import javax.faces.view.ViewScoped;
 import java.io.Serializable;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;

@@ -1,0 +1,237 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="QB Import Report" />
+                        </f:facet>
+
+                        <h:panelGrid columns="6" class="my-2 w-100">
+                            <h:panelGroup >
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From Date"  class="mx-3"/>
+                            </h:panelGroup>
+                            <p:outputLabel value=" : " />
+                            <p:datePicker
+                                value="#{reportController.fromDate}"
+                                class="w-75"
+                                showTime="true"
+                                showButtonBar="true"
+                                timeInput="true"
+                                inputStyleClass="form-control"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                            </p:datePicker>
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To Date"  class="mx-3"/>
+                            </h:panelGroup>
+                            <p:outputLabel value=" : " />
+                            <p:datePicker
+                                value="#{reportController.toDate}"
+                                class="w-75"
+                                showTime="true"
+                                showButtonBar="true"
+                                timeInput="true"
+                                inputStyleClass="form-control"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
+                            </p:datePicker>
+
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution/Branch" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:outputLabel value=" : " />
+                            <p:autoComplete
+                                value="#{reportController.institution}"
+                                completeMethod="#{institutionController.completeCompany}"
+                                var="ins"
+                                class="w-75 mt-1"
+                                inputStyleClass="form-control"
+                                itemLabel="#{ins.name}"
+                                itemValue="#{ins}">
+
+                            </p:autoComplete>
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf02c;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Types" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:outputLabel value=" : " />
+                            <p:inputText value="#{reportController.phn}" class="w-75 mt-1" />
+
+
+                            <h:panelGroup >
+                                <h:outputText value="&#xf02c;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <p:outputLabel value="Admission Types" class="mx-3"></p:outputLabel>
+                            </h:panelGroup>
+                            <p:outputLabel value=" : " />
+                            <p:autoComplete 
+                                completeMethod="#{categoryController.completeCategory}" 
+                                var="pta" 
+                                itemLabel="#{pta.name}"
+                                itemValue="#{pta}" 
+                                value="#{itemController.current.category}"
+                                class="w-75 mt-1"
+                                inputStyleClass="form-control"
+                                >                                    
+                                <p:column>#{pta.name}</p:column>
+                                <p:column>#{pta.parentCategory}</p:column>                                        
+                            </p:autoComplete>
+
+
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning"  >
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success mx-1" >
+                                <p:dataExporter fileName="Petty Cash Payment - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.fromDate})" type="xlsx" target="dtaPr" />
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info"  >
+                                <p:printer target="dtaPr"/>
+                            </p:commandButton>
+                            <p:commandButton 
+                                class="m-2 ui-button-danger" 
+                                icon="fa-solid fa-file-pdf"
+                                ajax="false" 
+                                value="PDF">
+                                <p:dataExporter type="pdf" target="dtQ"  fileName="qb_import_report" ></p:dataExporter>
+                            </p:commandButton>
+                        </h:panelGrid>
+
+                        <h:panelGrid>
+
+                            <p:dataTable id="dtaPr"  var="returnItem" rowIndexVar="rowIndex">
+                                <f:facet name="header">
+                                    <h:outputLabel value="QB Exported Daily Return" />
+                                </f:facet>
+
+                                <p:column headerText="!TRANS" width="2em">
+                                    <h:outputText value="#{returnItem.trans}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="TRNSTYPE">
+                                    <h:outputText value="#{returnItem.trnsType}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="DATE">
+                                    <h:outputText value="#{returnItem.date}" >
+                                        <f:convertDateTime pattern="yyyy-MM-dd" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="ACCNT">
+                                    <h:outputText value="#{returnItem.account}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="NAME">
+                                    <h:outputText value="#{returnItem.name}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="INVITEMTYPE">
+                                    <h:outputText value="#{returnItem.invItemType}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="INVITEM">
+                                    <h:outputText value="#{returnItem.invItem}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="AMOUNT">
+                                    <h:outputText value="#{returnItem.amount}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="DOCNUM">
+                                    <h:outputText value="#{returnItem.docNum}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="CLASS">
+                                    <h:outputText value="#{returnItem.class}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="MEMO">
+                                    <h:outputText value="#{returnItem.memo}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="CUSTFLD1">
+                                    <h:outputText value="#{returnItem.custFld1}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="CUSTFLD2">
+                                    <h:outputText value="#{returnItem.custFld2}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="CUSTFLD3">
+                                    <h:outputText value="#{returnItem.custFld3}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="CUSTFLD4">
+                                    <h:outputText value="#{returnItem.custFld4}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="CUSTFLD5">
+                                    <h:outputText value="#{returnItem.custFld5}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="CUSTFLD6">
+                                    <h:outputText value="#{returnItem.custFld6}" ></h:outputText>
+                                </p:column>
+                            </p:dataTable>
+
+
+                            <p:spacer height="5"></p:spacer>
+
+                            <p:dataTable id="dtQ" var="item" rowIndexVar="rowIndex">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Item List for QB Export" />
+                                </f:facet>
+
+                                <p:column headerText="!INVITEM" >
+                                    <h:outputText value="#{item.invItem}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="NAME">
+                                    <h:outputText value="#{item.name}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="REFNUM">
+                                    <h:outputText value="#{item.refNum}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="TIMESTAMP">
+                                    <h:outputText value="#{item.timestamp}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="INVITEMTYPE">
+                                    <h:outputText value="#{item.invItemType}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="DESC">
+                                    <h:outputText value="#{item.description}" ></h:outputText>
+                                </p:column>
+
+                                <p:column headerText="ACCNT">
+                                    <h:outputText value="#{item.account}" ></h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGrid>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

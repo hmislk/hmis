@@ -73,7 +73,7 @@
                                             value="Search" 
                                             action="#{searchController.listOpdBatcuBills()}" class="w-100"/>
                                         <p:commandButton id="btnExcel" ajax="false" value="Download" class="w-100">
-                                            <p:dataExporter fileName="OPD Bills" type="xls" target="tblBillsExport" ></p:dataExporter>
+                                            <p:dataExporter fileName="OPD Bills" type="xlsx" target="tblBillsExport" ></p:dataExporter>
                                         </p:commandButton>
                                     </div>
 
@@ -151,10 +151,10 @@
                                               styleClass="alignTop" >
                                         <h:outputLabel value="#{bill.id}"/>
                                     </p:column>
-                                    <p:column headerText="Institution Bill No" sortBy="#{bill.insId}" filterBy="#{bill.insId}" >                                
+                                    <p:column headerText="Institution Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" >                                
                                         <p:commandLink id="billNo" 
                                                        ajax="false" 
-                                                       value="#{bill.insId}" 
+                                                       value="#{bill.deptId}" 
                                                        action="#{opdSearchController.navigateToViewOpdBillByBillLight()}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{opdSearchController.billLight}"/>
                                         </p:commandLink>

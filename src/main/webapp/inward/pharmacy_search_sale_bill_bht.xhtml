@@ -7,8 +7,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/theater/issue_index.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Search Bills" >
                         <f:facet name="header" >       
@@ -59,6 +59,11 @@
                                     autocomplete="off" 
                                     class="w-100"
                                     value="#{searchController.searchKeyword.patientName}" />
+                                <h:outputLabel value="MRN / PHN No"/>
+                                <p:inputText 
+                                    autocomplete="off" 
+                                    value="#{searchController.searchKeyword.number}" 
+                                    class="w-100"/>
                                 <h:outputLabel value="Department Name"/>   
                                 <p:inputText 
                                     autocomplete="off" 
@@ -93,7 +98,7 @@
                                     <p:column headerText="Bill No" > 
                                         <h:commandLink
                                             value="#{bill.deptId}" 
-                                            action="pharmacy_reprint_bill_sale_bht"  >
+                                            action="#{pharmacyBillSearch.navigateToViewPharmacyDirectIssueForInpatientBill()}"  >
                                             <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                                         </h:commandLink>
                                     </p:column>
@@ -136,7 +141,7 @@
                                     </p:column>                      
 
                                     <p:column headerText="Net Value"  >
-                                        <h:outputLabel value="#{bill.total}" >
+                                        <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
@@ -176,7 +181,7 @@
                                                 </h:panelGroup> 
                                             </p:column>                                                     
                                             <p:column >
-                                                <h:outputLabel value="#{rb.total}">
+                                                <h:outputLabel value="#{rb.netTotal}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>                                  
                                             </p:column>

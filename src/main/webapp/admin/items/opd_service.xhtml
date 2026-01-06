@@ -50,7 +50,11 @@
                                                 filter="true"
                                                 filterMatchMode="contains"
                                                 class="form-control h-100">
-                                                <f:selectItems  value="#{serviceController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
+                                                <f:selectItems  
+                                                    value="#{serviceController.selectedItems}" 
+                                                    var="myItem" 
+                                                    itemValue="#{myItem != null ? myItem : ''}" 
+                                                    itemLabel="#{myItem.name != null ? myItem.name : 'Unnamed'}">
                                                 </f:selectItems>
                                                 <f:ajax render="gpDetail" execute="lstSelect" >
                                                 </f:ajax>
@@ -133,7 +137,7 @@
                                                     value="#{serviceController.current.inwardChargeType}" 
                                                     class="form-control mx-2">
                                                     <f:selectItem itemLabel="Please select Charge"/>
-                                                    <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
+                                                    <f:selectItems value="#{enumController.inwardChargeTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                                 </p:selectOneMenu>
 
                                                 <p:outputLabel value="Item Code"/>
@@ -165,6 +169,9 @@
                                                 <h:outputText value="" ></h:outputText>
                                                 <p:selectBooleanCheckbox value="#{serviceController.current.requestForQuentity}" itemLabel="Request for Quentity"/>
 
+                                                <h:outputText value="" ></h:outputText>
+                                                <p:selectBooleanCheckbox value="#{serviceController.current.printSessionNumber}" itemLabel="Print Session Number"/>
+
 
                                                 <h:outputText value="" ></h:outputText>
                                                 <p:selectBooleanCheckbox value="#{serviceController.current.discountAllowed}" itemLabel="Discount Allowed"/>
@@ -188,7 +195,7 @@
                                             <h:outputText value="VATable" ></h:outputText>
                                             <p:selectBooleanCheckbox  value="#{serviceController.current.vatable}" >
                                             </p:selectBooleanCheckbox>
-                                            <p:selectBooleanCheckbox   id="chkBilledAs" value="#{serviceController.billedAs}" itemLabel="Billed as a seperate investigation"  >
+                                            <p:selectBooleanCheckbox   id="chkBilledAs" value="#{serviceController.billedAs}" itemLabel="Billed as a separate investigation"  >
                                                 <p:ajax event="change" process="@this" update="billedAsIx" />
                                             </p:selectBooleanCheckbox>
                                             <p:autoComplete   disabled="#{!serviceController.billedAs}" 
@@ -196,7 +203,7 @@
                                                               value="#{serviceController.current.billedAs}" completeMethod="#{serviceController.completeItem}" var="ix1" itemLabel="#{ix1.name}" itemValue="#{ix1}" size="30"  >
                                             </p:autoComplete>
 
-                                            <p:selectBooleanCheckbox  id="chkReportedAs" value="#{serviceController.reportedAs}" itemLabel="Reported as a seperate investigation" >
+                                            <p:selectBooleanCheckbox  id="chkReportedAs" value="#{serviceController.reportedAs}" itemLabel="Reported as a separate investigation" >
                                                 <p:ajax event="change" process="@this" update="reportedAsIx" />
                                             </p:selectBooleanCheckbox>
                                             <p:autoComplete  disabled="#{!serviceController.reportedAs}" widgetVar="aIx2" id="reportedAsIx" forceSelection="true" value="#{serviceController.current.reportedAs}" completeMethod="#{serviceController.completeItem}" var="ix2" itemLabel="#{ix2.name}" itemValue="#{ix2}" size="30"  >

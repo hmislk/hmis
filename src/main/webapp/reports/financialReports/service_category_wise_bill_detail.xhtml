@@ -13,113 +13,371 @@
                 <h:form class="w-100">
                     <p:panel header="Service Category Wise Bill Detail Report" class="w-100">
                         <h:panelGrid columns="5" class="w-100 ">
-                            <p:outputLabel value="Discharge Date" >
-                            </p:outputLabel>
-                            <p:datePicker 
-                                pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="From Date" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:calendar 
+                                class="w-100 "  
+                                inputStyleClass="w-100"
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
                             <p:spacer width="20"></p:spacer>
-                            <p:outputLabel value="Service Added Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf271;" styleClass="fa mr-2" />
+                                <p:outputLabel value="To Date" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                value="#{searchController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
 
-                            <p:outputLabel value="Invoice Date" >
-                            </p:outputLabel>
-                            <p:datePicker
-                                pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf571;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Invoice Date" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
 
-                                <p:spacer width="20"></p:spacer>
-                            <p:outputLabel value="Admission Type" for="institutionMenu"></p:outputLabel>
-                            <p:selectOneMenu id="institutionMenu" required="true">
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf084;" styleClass="fa mr-2" /> 
+                                <p:outputLabel value="Admission Type" for="institutionMenu" class="mx-3"></p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="institutionMenu"  class="w-100">
                                 <f:selectItem itemLabel="Select Institution Type"/>
                                 <f:selectItems value="#{admissionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                 <!--                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>-->
                             </p:selectOneMenu>
 
-                            <p:outputLabel value="Room Category" for="institutionMenu"></p:outputLabel>
-                            <p:selectOneMenu required="true">
-                                <f:selectItem itemLabel="Select Institution Type"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf236;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Room Category" for="institutionMenu" class="mx-3"></p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu  class="w-100" >
+                                <f:selectItem itemLabel="Select Room Category"/>
                                 <f:selectItems value="#{roomCategoryController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                 <!--                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>-->
                             </p:selectOneMenu>
 
+                            <p:spacer width="20"></p:spacer>
 
-                            <p:spacer/>
-                            <p:outputLabel value="Service Department">
-                            </p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmdDepartment"
-                                value="#{reportController.department}" 
-                                filter="true"
-                                >
-                                <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{departmentController.items}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}"></f:selectItems>
-                            </p:selectOneMenu>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf59c;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Service Department" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:autoComplete 
+                                value="#{searchController.serviceDepartment}"
+                                completeMethod="#{departmentController.completeDept}" 
+                                var="dept"
+                                class="w-100"
+                                minQueryLength="3"
+                                placeholder="Select Service Department"
+                                maxResults="15"
+                                inputStyleClass="w-100"
+                                itemLabel="#{dept.name}"
+                                itemValue="#{dept}">
+                            </p:autoComplete>
 
-                            <p:outputLabel value="Billed Department">
-                            </p:outputLabel>
-                            <p:selectOneMenu 
-                               
-                                filter="true"
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf571;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Billed Department" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+
+                            <p:autoComplete 
+                                value="#{searchController.billedDepartment}"
+                                completeMethod="#{departmentController.completeDept}" 
+                                var="dept"
+                                class="w-100"
+                                minQueryLength="3"
+                                placeholder="Select Billed Department"
+                                maxResults="15"
+                                inputStyleClass="w-100"
+                                itemLabel="#{dept.name}"
+                                itemValue="#{dept}">
+                            </p:autoComplete>
+
+                            <p:spacer width="50" ></p:spacer>
+                            <p:spacer width="50" ></p:spacer>
+                            <p:selectBooleanButton
+                                onLabel="With Professional Fee" 
+                                offLabel="without Professional Fee" 
+                                value="#{searchController.withProfessionalFee}"
+                                onIcon="pi pi-check" 
+                                class="w-100"
+                                offIcon="pi pi-times" 
                                 >
-                                <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{departmentController.items}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}"></f:selectItems>
+                            </p:selectBooleanButton>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0c0;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Service Group" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:autoComplete 
+                                widgetVar="acCat" 
+                                id="acCat" 
+                                forceSelection="true" 
+                                value="#{searchController.category}" 
+                                completeMethod="#{categoryController.completeCategory}" 
+                                var="cat" 
+                                itemLabel="#{cat.name}" 
+                                inputStyleClass="w-100" 
+                                itemValue="#{cat}" 
+                                class="w-100" 
+                                size="10" 
+                                minQueryLength="3">
+                                <p:column headerText="Name">
+                                    #{cat.name}
+                                </p:column>
+                                <p:column headerText="Code">
+                                    #{cat.code}
+                                </p:column>
+                                <p:ajax event="itemSelect" process="acCat" update="gpItem" ></p:ajax>
+                            </p:autoComplete> 
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf059;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Service Name" class="mx-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <h:panelGroup id="gpItem" layout="block" styleClass="form-group">
+                                <p:autoComplete 
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    rendered="#{searchController.category eq null}"
+                                    completeMethod="#{itemController.completeServicesPlusInvestigationsAll}"
+                                    var="acitem"
+                                    itemLabel="#{acitem.name}"
+                                    itemValue="#{acitem}">
+                                </p:autoComplete>
+                                <p:selectOneMenu
+                                    rendered="#{searchController.category ne null}" 
+                                    class="w-100">
+                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    <f:selectItems 
+                                        value="#{itemController.getItems(searchController.category)}" 
+                                        var="item"
+                                        itemLabel="#{item.name}"
+                                        itemValue="#{item}"></f:selectItems>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Visit Type" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100" value="#{searchController.visitType}">
+                                <f:selectItem itemValue="Any" itemLabel="Any"/>
+                                <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                                <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>
-                            
-                            <p:outputLabel value="Visit Type" >
-                            </p:outputLabel>
-                            <p:selectOneMenu >
-                                <f:selectItem itemLabel="Select visit type"/>
 
-                            </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Service Group" >
-                            </p:outputLabel>
-                            <p:selectOneMenu >
-                                <f:selectItem itemLabel="Select service group"/>
-
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <i class="fas fa-credit-card" style="color: green; font-size: 18px;"></i>                                       
+                                <h:outputLabel value="Payment Type" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100" value="#{searchController.methodType}">
+                                <f:selectItem itemValue="Any" itemLabel="Any"/>
+                                <f:selectItem itemValue="Credit" itemLabel="Credit"/>
+                                <f:selectItem itemValue="NonCredit" itemLabel="Non Credit"/>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20"></p:spacer>
-
-                            <p:outputLabel value="Service Name" >
-                            </p:outputLabel>
-                            <p:selectOneMenu >
-                                <f:selectItem itemLabel="Select service name"/>
-
-                            </p:selectOneMenu>
-
-                           
-                            <p:outputLabel value="Type" >
-                            </p:outputLabel>
-                            <p:selectOneMenu >
-                                <f:selectItem itemLabel="Select type"/>
-                            </p:selectOneMenu>
-
-                            
-                            <p:spacer></p:spacer><!-- comment -->
-                            <p:spacer></p:spacer><!-- comment -->
-                            <p:spacer></p:spacer>
-                            <p:commandButton ajax="false" value="Process" action="null" >
-                            </p:commandButton>
                         </h:panelGrid><br />
 
-                        <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
-                                     rowKey="#{b}" 
-                                     rows="#{searchController.rows}"
-                                     selection="#{searchController.selectedTelephoneNumbers}"
-                                     paginator="true"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="20, 50, 100, 1000, 1500" class="w-100">
+                        <div class="d-flex align-items-center mb-2">
+                            <p:commandButton 
+                                class="ui-button-warning mx-1" 
+                                ajax="false" 
+                                value="Process"
+                                action="#{searchController.createItemizedSalesReport()}"
+                                icon="fas fa-cogs" >
+                            </p:commandButton>
+
+                            <p:commandButton  
+                                value="Download PDF" 
+                                ajax="false" 
+                                icon="pi pi-file-pdf" 
+                                class="ui-button-info  m-1"
+                                style="background-color: #17a2b8; border-color: #17a2b8;" 
+                                onclick="PrimeFaces.monitorDownload(start, stop);">
+                                <p:fileDownload value="#{searchController.bundleAsPdf}" />
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                class="ui-button- mx-1" 
+                                icon="fas fa-print" 
+                                ajax="false" 
+                                value="Print All">
+                                <p:printer target="tbl"></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="Download Excel" 
+                                ajax="false" 
+                                class="mx-2 ui-button-success" 
+                                icon="fa fa-file-excel">
+                                <p:dataExporter target="tbl" fileName="#{searchController.bundle.name}" type="xlsx" ></p:dataExporter>
+                            </p:commandButton>
+
+                        </div>
+
+                        <div style="display: none;" >
+                            #{searchController.bundle.reportTemplateRows}
+                        </div>
+
+                        <p:dataTable 
+                            id="tbl"
+                            value="#{searchController.bundle.reportTemplateRows}"
+                            var="row"
+                            paginator="true"
+                            rows="20"
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="20,50,100"
+                            rowKey="#{row.id}">
+                            <f:facet name="header" >
+                                <h:outputText value="#{searchController.bundle.name}" ></h:outputText>
+                            </f:facet>
+                            <f:facet name="footer" >
+                                <h:outputText value="Total" ></h:outputText>
+                                <p:spacer width="50" ></p:spacer>
+                                <h:outputText value="#{searchController.bundle.total}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                            </f:facet>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Category" />
+                                </f:facet>
+                                <h:outputText value="#{row.category.name}"  />
+                                <p:commandLink
+                                    class="mx-2"
+                                    rendered="#{row.category ne null}"
+                                    action="#{searchController.navigateToOpdBillItemList(row)}"
+                                    ajax="false">
+                                    <h:outputText title="View Category Details" value="&#xf02d;" styleClass="fa mr-2" />
+                                </p:commandLink>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Code" />
+                                </f:facet>
+                                <h:outputText value="#{row.item.code}"  />
+                                <p:commandLink
+                                    class="mx-2"
+                                    rendered="#{row.item ne null}"
+                                    action="#{searchController.navigateToOpdBillItemList(row)}">
+                                    <h:outputText title="View Item Details" value="&#xf0f6;" styleClass="fa mr-2" />
+                                </p:commandLink>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Item / Service" />
+                                </f:facet>
+                                <h:outputText value="#{row.item.name}"  />
+                                <p:commandLink
+                                    class="mx-2"
+                                    rendered="#{row.item ne null}"
+                                    action="#{searchController.navigateToOpdBillItemList(row)}">
+                                    <h:outputText title="View Item Details" value="&#xf0f6;" styleClass="fa mr-2" />
+                                </p:commandLink>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Count" />
+                                </f:facet>
+                                <h:outputText value="#{row.itemCount}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Bill No" />
+                                </f:facet>
+                                <h:outputText value="#{row.billItem.bill.deptId}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Patient" />
+                                </f:facet>
+                                <h:outputText value="#{row.billItem.bill.patient.person.nameWithTitle}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="text-end">
+                                <f:facet name="header">
+                                    <h:outputText value="Hospital Fee" />
+                                </f:facet>
+                                <h:outputText value="#{row.itemHospitalFee}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="text-end" rendered="#{searchController.withProfessionalFee}">
+                                <f:facet name="header">
+                                    <h:outputText value="Professional Fee" />
+                                </f:facet>
+                                <h:outputText value="#{row.itemProfessionalFee}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="text-end">
+                                <f:facet name="header">
+                                    <h:outputText value="Discount" />
+                                </f:facet>
+                                <h:outputText value="#{row.itemDiscountAmount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column class="text-end">
+                                <f:facet name="header">
+                                    <h:outputText value="Net Amount" />
+                                </f:facet>
+                                <h:outputText value="#{row.itemNetTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+
+                        <p:dataTable 
+                            value="#{searchController.telephoneNumbers}" 
+                            var="b" 
+                            rendered="false"
+                            id="tb11" 
+                            rowIndexVar="i"
+                            rowKey="#{b}" 
+                            rows="#{searchController.rows}"
+                            selection="#{searchController.selectedTelephoneNumbers}"
+                            paginatorPosition="bottom"
+                            paginator="true"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="20, 50, 100, 1000, 1500" 
+                            class="w-100">
 
                             <f:facet name="header" >
                                 <p:outputLabel value="Service Category Wise Bill Detail Report" />                                
@@ -131,7 +389,7 @@
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
-                            
+
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Group Name" >
@@ -187,7 +445,7 @@
                                 </f:facet>
                             </p:column>
 
-                            
+
 
                         </p:dataTable>
 

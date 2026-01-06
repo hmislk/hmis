@@ -19,7 +19,7 @@
                     <p:panel>
                         <f:facet name="header">
                             <h:outputText styleClass="fa fa-fw fa-money-bill-wave"></h:outputText>
-                            <p:outputLabel class="m-2">Manage Items Fees</p:outputLabel>
+                            <p:outputLabel class="m-2">Manage Base Fees</p:outputLabel>
 
                         </f:facet>
                         <p:panelGrid columns="2" class="w-100" >
@@ -34,7 +34,10 @@
                                             class="w-100"
                                             maxResults="10"
                                             inputStyleClass="w-100">
-                                <p:ajax event="itemSelect" process="@this" update="gpFees lblTotal" listener="#{itemFeeManager.fillFees()}"></p:ajax>
+                                <p:ajax event="itemSelect" process="@this" update="gpFees lblTotal lblCode" listener="#{itemFeeManager.fillFees()}"></p:ajax>
+                                <p:column headerText="Code" style="padding: 6px;" >
+                                    <p:outputLabel value="#{ix.code}" ></p:outputLabel>
+                                </p:column>
                                 <p:column headerText="Type" style="padding: 6px;" >
                                     <p:outputLabel value="#{ix.class.simpleName}" ></p:outputLabel>
                                 </p:column>
@@ -53,6 +56,10 @@
                                     </p:outputLabel>
                                 </p:column>
                             </p:autoComplete>
+
+                            <p:outputLabel value="Item Code" />
+                            <p:outputLabel id="lblCode" value="#{itemFeeManager.item.code}" >
+                            </p:outputLabel>
 
                             <p:outputLabel value="Total Fee" />
                             <p:outputLabel id="lblTotal" value="#{itemFeeManager.item.total}" >
@@ -77,7 +84,6 @@
                                 </p:commandButton>
                             </div>
                             <div class="col-md-2">
-
                                 <p:commandButton value="Back" ajax="false"
                                                  action="#{itemFeeManager.navigateToItemFees()}" icon="fa fa-arrow-right" class="w-100 ui-button-warning mt-2">   
                                 </p:commandButton>

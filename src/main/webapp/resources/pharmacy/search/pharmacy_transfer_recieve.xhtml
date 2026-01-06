@@ -26,10 +26,10 @@
         </h:panelGrid>
         <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill" >
             <f:facet name="header">
-                <h:outputLabel value="Pharmacy Transfer Recieve"/>
+                <h:outputLabel value="Pharmacy Transfer Receive"/>
             </f:facet>
             <p:column>
-                <p:commandButton ajax="false" value="View Bill" action="pharmacy_reprint_transfer_receive">
+                <p:commandButton ajax="false" value="View Bill" action="pharmacy_reprint_transfer_receive?faces-redirect=true">
                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{bill}"/>
                 </p:commandButton>
             </p:column>

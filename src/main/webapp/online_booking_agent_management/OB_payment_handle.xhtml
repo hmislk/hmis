@@ -1,0 +1,386 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/channel"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+        <ui:composition template="/online_booking_agent_management/index.xhtml">
+
+            <ui:define name="subcontent">
+
+                <h:form >
+
+                    <p:panel header="Online Booking payment Handle" class="m-1">
+
+                        <h:panelGrid columns="6" class="w-100">
+                            <h:outputLabel value="From"/>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="fromDate" 
+                                value="#{onlineBookingAgentController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+                            <p:spacer></p:spacer>
+                            <p:spacer ></p:spacer>
+
+                            <h:outputLabel value="To"/>                                
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                value="#{onlineBookingAgentController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+
+                            <h:outputLabel value="Booking Agent"/> 
+                            <p:selectOneMenu  id="lstSelect"
+                                              value="#{onlineBookingAgentController.agentForBookings}" 
+                                              style="w-100"
+                                              styleClass="w-100"
+                                              filter="true">
+                                <f:selectItems  value="#{onlineBookingAgentController.allAgents}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                <f:selectItem itemLabel="Select A Agent" ></f:selectItem>
+                                <p:ajax update="gpDetail onlineBookingsToPay" process="lstSelect" ></p:ajax>
+
+                            </p:selectOneMenu>
+                            <p:spacer></p:spacer>
+                            <p:spacer></p:spacer>
+
+                            <h:outputLabel value="Institution"/>                                
+                            <p:selectOneMenu class="w-100 " value="#{onlineBookingAgentController.institutionForBookings}" filter="true" >
+                                <f:selectItem itemLabel="Select Institution" ></f:selectItem>
+                                <f:selectItems value="#{onlineBookingAgentController.institutionForOnlineBookingManegement}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
+                                <p:ajax event="itemSelect" process="@this"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20" ></p:spacer>
+                            <p:spacer></p:spacer>
+
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="6" class="my-2" >
+
+                            <p:commandButton  
+                                value="Process" 
+                                ajax="false"
+                                action="#{onlineBookingAgentController.fetchOnlineBookingsForManagement}" 
+                                class="ui-button-warning" icon="fas fa-cogs">
+                            </p:commandButton>
+
+                            <p:commandButton  
+                                value="Settle Payment" 
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable Mark completion as Paid to Hospital for Completed Online Bookings.', false)}"
+                                update="dialogContentForPayment onlineBookingsToPay cmbPs cashValue totalToPay txtNetTotal" 
+                                process="@this onlineBookings cmbPs"
+                                oncomplete="PF('payementSettle').show()"
+                                actionListener="#{onlineBookingAgentController.createTotalAmountToPay()}"
+                                class="ui-button-success" icon="fas fa-cogs">
+                            </p:commandButton>
+                            
+                            <p:commandButton  
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Mark completion as Paid to Hospital for Completed Online Bookings.', false)}"
+                                value="Mark Complete" 
+                                ajax="false"
+                                action="#{onlineBookingAgentController.markCompletePaidToHospitalOnlineBookings}"
+                                class="ui-button-success" icon="fas fa-cogs">
+                            </p:commandButton>
+
+                            <!--                            <p:commandButton  
+                                                            value="Print" 
+                                                            ajax="false"
+                                                            class="ui-button-info mx-1" 
+                                                            icon="fas fa-print">
+                                                            <p:printer target="printdata" />
+                                                        </p:commandButton>-->
+
+                            <!--                            <p:commandButton  
+                                                            value="Preview" 
+                                                            ajax="false"
+                                                            icon="fas fa-eye"
+                                                            class="ui-button-danger mx-1"
+                                                            onclick="window.open('#{request.contextPath}/faces/reports/cashier_reports/all_cashier_summary_preview.xhtml', '_blank'); return false;" />
+                            
+                            
+                            
+                                                        <p:commandButton  
+                                                            value="Excel" 
+                                                            ajax="false"
+                                                            class="ui-button-success" icon="fas fa-file-excel">
+                                                            <p:dataExporter type="xlsx" target="printdata" fileName="All Cashier Summury Report #{sessionController.currentDate} - #{sessionController.institution.name} #{sessionController.department.name}" />
+                                                        </p:commandButton>
+                            
+                                                        <p:commandButton  
+                                                            value="PDF" 
+                                                            ajax="false"
+                                                            class="ui-button-danger mx-1" icon="fas fa-file-pdf">
+                                                            <p:dataExporter type="pdf" target="printdata" fileName="All Cashier Summury Report #{sessionController.currentDate} - #{sessionController.institution.name} #{sessionController.department.name}" />
+                                                        </p:commandButton>-->
+
+                        </h:panelGrid>
+
+                        <p:dialog 
+                            widgetVar="payementSettle" 
+                            modal="true" 
+                            closable="false"
+                            id="payementSettleDlg"
+                            resizable="false" 
+                            draggable="false" 
+                            height="400"
+                            width="800">
+
+                            <p:ajax event="close" update="onlineBookings"></p:ajax>
+
+                            <f:facet name="header">
+                                <h:panelGroup class="d-flex align-items-center justify-content-between">
+                                    <h:outputText id="onlineBookingsToPay" value="#{ empty onlineBookingAgentController.paidToHospitalList ? 'No Selected' : onlineBookingAgentController.paidToHospitalList.size()} Appoinments of #{onlineBookingAgentController.agentForBookings.name}" ></h:outputText>
+                                    <a href="#" onclick="PF('payementSettle').hide();" style="font-size: 20px; text-decoration: none; border: 4px solid #000; border-radius: 100px; padding: 2px 10px; color: #000">X <p:ajax event="click" update="onlineBookings"></p:ajax></a> 
+                                </h:panelGroup>
+
+                                <p:panel class="my-1">
+                                    <f:facet name="header" >
+                                        <h:panelGroup class="d-flex align-items-center justify-content-between">
+                                            <h:outputLabel value="Paid To Hospital List" />
+                                            <h:panelGroup id="totalToPay">
+                                                <h:outputLabel value="Total :" />
+                                                <h:outputLabel value="#{onlineBookingAgentController.paidToHospitalTotal}" />
+                                            </h:panelGroup>
+                                            <p:commandButton  
+                                                value="Settle" 
+                                                ajax="true"
+                                                action="#{onlineBookingAgentController.createPaymentForHospital()}"
+                                                update="onlineBookings printPaidBill"
+                                                class="ui-button-success" icon="fas fa-cogs">
+                                            </p:commandButton>
+                                        </h:panelGroup>
+
+                                    </f:facet>
+
+                                    <h:panelGrid columns="2" columnClasses="label-column, input-column" style="width:100%" >
+                                        <p:outputLabel value="Payment Method" ></p:outputLabel>
+                                        <p:selectOneMenu id="cmbPs" value="#{onlineBookingAgentController.paidToHospitalPaymentMethod}" style="width:200px">
+                                            <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                            <p:ajax process="cmbPs" update="gpPaymentDetails" event="change" listener="#{onlineBookingAgentController.setTotalForPaymentMethodData()}"/>
+                                        </p:selectOneMenu>
+
+                                        <p:outputLabel value="Value" ></p:outputLabel>
+                                        <p:inputText onfocus="this.select()" value="#{onlineBookingAgentController.paidToHospitalBill.netTotal}" id="txtNetTotal" style="width:200px">
+                                            <p:ajax event="keyup" process="@this" listener="#{onlineBookingAgentController.setTotalForPaymentMethodData()}" update="gpPaymentDetails"></p:ajax>
+                                        </p:inputText>
+
+                                        <p:outputLabel class="my-2" value="Comments" ></p:outputLabel>
+                                        <p:inputText value="#{onlineBookingAgentController.paidToHospitalBill.comments}" placeholder="Enter a Comment" id="comment" style="width:200px"/>
+
+                                    </h:panelGrid>
+
+                                    <div class="d-flex flex-wrap w-100 gap-2">
+                                        <h:panelGroup id="gpPaymentDetails" >
+                                            <h:panelGroup id="creditCard" class="m-1" rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'Card'}">
+                                                <pa:creditCard paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup id="cheque"  rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'Cheque'}" >
+                                                <pa:cheque paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="slip"   rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'Slip'}" >
+                                                <pa:slip paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="eWallet"   rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'ewallet'}" >
+                                                <pa:ewallet_collect paymentMethodData="#{onlineBookingAgentController.paymentMethodData}" />
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+
+                                    </div>
+
+                                </p:panel>
+
+                            </f:facet>
+
+                            <h:panelGroup id="dialogContentForPayment">
+                                <p:dataTable value="#{onlineBookingAgentController.paidToHospitalList}" 
+                                             var="ob" 
+                                             scrollable="true"
+                                             selection="false" 
+                                             rowKey="#{ob.id}">
+
+                                    <p:column width="5em" headerText="Name">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Ref No" ></h:outputText>
+                                        </f:facet>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <h:outputText value="#{ob.referenceNo}" style="font-weight: bold"/> 
+                                        </div>
+                                    </p:column>
+
+                                    <p:column headerText="Name">
+                                        <f:facet name="header" >
+                                            <h:outputText value="Patient Name" ></h:outputText>
+                                        </f:facet>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <h:outputText value="#{ob.title}. #{ob.patientName}" /> 
+                                        </div>
+                                    </p:column>
+
+                                    <p:column headerText="Date" >
+                                        <h:outputText value="#{ob.createdAt}">
+                                            <f:convertDateTime pattern="dd MMM"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Agent">
+                                        <h:outputText value="#{ob.agency.name}">
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Appoinment Fee" >
+                                        <h:outputText value="#{ob.appoinmentTotalAmount}">
+                                        </h:outputText>
+                                    </p:column>
+
+                                </p:dataTable>
+                            </h:panelGroup>
+                        </p:dialog>
+
+
+
+                        <p:dataTable value="#{onlineBookingAgentController.onlineBookingList}" var="ob"
+                                     paginator="true" rows="10"
+                                     id="onlineBookings"
+                                     selection="#{onlineBookingAgentController.paidToHospitalList}"
+                                     scrollable="true"
+                                     selectionMode="multiple"
+                                     rowKey="#{ob.id}"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                     currentPageReportTemplate="(Page {currentPage} of {totalPages})"
+                                     paginatorPosition="bottom">
+
+                            <p:column selectionBox="true" width="20"></p:column>
+                            <p:ajax event="rowSelect" process="@this" listener="#{onlineBookingAgentController.onRowSelect()}" />
+                            <p:ajax event="rowUnselect" process="@this" listener="#{onlineBookingAgentController.onRowUnselect()}" />
+
+                            <p:column headerText="OB ID">
+                                <h:outputText value="#{ob.id}">
+                                </h:outputText>
+                                <p:tag class="mr-2" style="font-size: 0.8rem" severity="danger" value="Cancelled" rendered="#{ob.canceled}"/>
+                            </p:column>
+
+                            <p:column headerText="Ref No">
+                                <h:outputText value="#{ob.referenceNo}" style="font-weight: bold">
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Patient">
+                                <h:outputText value="#{ob.title}. #{ob.patientName}">
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Phone">
+                                <h:outputText value="#{ob.phoneNo}">
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Date" >
+                                <h:outputText value="#{ob.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Foreign Status">
+                                <f:facet name="footer">
+                                    <h:outputText value="Totals"></h:outputText>
+                                </f:facet>
+                                <h:outputText rendered="#{ob.foreignStatus}" value="Foreign">
+                                </h:outputText>
+                                <h:outputText rendered="#{!ob.foreignStatus}" value="Local">
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Appoinment Fee">
+                                <f:facet name="footer">
+                                    <h:outputText styleClass="totalAppoinmentFee" value=""><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                                </f:facet>
+                                <h:outputText styleClass="calValues" value="#{ob.hospitalFee+ob.doctorFee}"><f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Agent Fee">
+                                <f:facet name="footer">
+                                    <h:outputText styleClass="totalAgentFee" value=""><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                                </f:facet>
+                                <h:outputText styleClass="calAgentValues" value="#{ob.onlineBookingPayment}"><f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Net Total">
+                                <f:facet name="footer">
+                                    <h:outputText styleClass="totalNetFee" value=""><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                                </f:facet>
+                                <h:outputText styleClass="calNetValues" value="#{ob.netTotalForOnlineBooking}"><f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Agent">
+                                <h:outputText value="#{ob.agency.name}">
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Paid to Hospital">
+                                <h:outputText value="#{ob.paidToHospital ? 'Paid': 'Not Paid'}" style="color: #{ob.paidToHospital ? 'black':'red'}; font-weight: bold">
+                                </h:outputText>
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:panel>
+
+
+                </h:form>
+
+                <script>
+                    function calculateTotals(valuesToCalculate, totalUpdate) {
+                        let total = 0;
+                        document.querySelectorAll(valuesToCalculate).forEach(cell => {
+                            const rawText = cell.textContent.trim().replace(/,/g, '');
+                            const value = parseFloat(rawText);
+
+                            if (!isNaN(value)) {
+                                total += value;
+                            }
+                        });
+                        document.querySelectorAll(totalUpdate).forEach(el => {
+                            el.textContent = total.toFixed(2);
+                        });
+                    }
+
+                    function createAllTotals() {
+                        try{
+                            calculateTotals('.calValues', '.totalAppoinmentFee');
+                            calculateTotals('.calNetValues', '.totalNetFee');
+                            calculateTotals('.calAgentValues', '.totalAgentFee');
+
+                        }catch(e){
+                            
+                             console.error('Error calculating totals:', error);
+                        }
+
+                    }
+
+                    setTimeout(createAllTotals, 500);
+
+                </script>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

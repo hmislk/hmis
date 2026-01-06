@@ -1,11 +1,11 @@
 package com.divudi.bean.common;
 
-import com.divudi.data.UploadType;
-import com.divudi.entity.Category;
-import com.divudi.entity.Upload;
-import com.divudi.entity.WebContent;
-import com.divudi.facade.UploadFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.UploadType;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Upload;
+import com.divudi.core.entity.WebContent;
+import com.divudi.core.facade.UploadFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -45,8 +45,8 @@ public class UploadController implements Serializable {
 
     private Upload selected;
     private UploadedFile file;
-    
-  
+
+
 
     public String toAddNewWebImageUpload() {
         selected = new Upload();
@@ -62,7 +62,7 @@ public class UploadController implements Serializable {
         return "/inward/upload?faces-redirect=true";
     }
 
- 
+
 
     public String toAddNewUpload() {
         selected = new Upload();
@@ -119,13 +119,13 @@ public class UploadController implements Serializable {
         return "/inward/upload_view?faces-redirect=true";
     }
 
-   
 
-   
 
-   
-   
-   
+
+
+
+
+
 
     public void listUploads() {
         listUploads(null);
@@ -148,7 +148,7 @@ public class UploadController implements Serializable {
         j += " order by u.webContent.name";
         return getFacade().findByJpql(j, m, TemporalType.DATE);
     }
-    
+
     public Upload findUpload(Category category) {
         String j = "select u "
                 + " from Upload u "
@@ -157,8 +157,8 @@ public class UploadController implements Serializable {
         Map m = new HashMap();
         m.put("ret", false);
         m.put("cat", category);
-       
-        
+
+
         return getFacade().findFirstByJpql(j, m, TemporalType.DATE);
     }
 
@@ -206,7 +206,7 @@ public class UploadController implements Serializable {
         return toListWebImageUploads();
     }
 
-   
+
     public UploadController() {
     }
 

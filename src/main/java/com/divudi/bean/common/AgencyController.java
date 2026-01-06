@@ -8,12 +8,12 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.HistoryType;
-import com.divudi.data.InstitutionType;
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Institution;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.InstitutionFacade;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.InstitutionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +25,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
@@ -47,6 +47,65 @@ public class AgencyController implements Serializable {
     private List<Institution> items = null;
     String selectText = "";
 
+    private int tabIndex = 0;
+
+
+
+  public Institution findAgencyByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        if (name.trim().equals("")) {
+            return null;
+        }
+        String jpql = "select c "
+                + " from Institution c "
+                + " where c.retired=:ret "
+                + " and c.institutionType=:t "
+                + " and c.name=:name";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("t", InstitutionType.Agency);
+        m.put("name", name);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+
+  public Institution findAgencyByCode(String code) {
+        if (code == null) {
+            return null;
+        }
+        if (code.trim().equals("")) {
+            return null;
+        }
+        String jpql = "select c "
+                + " from Institution c "
+                + " where c.retired=:ret "
+                + " and c.institutionType=:t "
+                + " and c.code=:code";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("t", InstitutionType.Agency);
+        m.put("code", code);
+
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+
+
+
+  public void save(Institution ins) {
+        if (ins == null) {
+            return;
+        }
+        if (ins.getId() != null) {
+            getFacade().edit(ins);
+            JsfUtil.addSuccessMessage("Updated Successfully.");
+        } else {
+            ins.setCreatedAt(new Date());
+            ins.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(ins);
+            JsfUtil.addSuccessMessage("Saved Successfully");
+        }
+    }
     public void randomlySetAgencyBalances() {
         List<Institution> suggestions;
         String sql;
@@ -70,7 +129,7 @@ public class AgencyController implements Serializable {
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(getSessionController().getLoggedUser());
             agentHistory.setBill(null);
-            agentHistory.setBeforeBallance(pb);
+            agentHistory.setBalanceBeforeTransaction(pb);
             agentHistory.setTransactionValue(b1);
             agentHistory.setHistoryType(HistoryType.ChannelBalanceReset);
             agentHistoryFacade.create(agentHistory);
@@ -84,7 +143,7 @@ public class AgencyController implements Serializable {
             agentHistory.setCreatedAt(new Date());
             agentHistory.setCreater(getSessionController().getLoggedUser());
             agentHistory.setBill(null);
-            agentHistory.setBeforeBallance(pb);
+            agentHistory.setBalanceBeforeTransaction(pb);
             agentHistory.setTransactionValue(b2);
             agentHistory.setHistoryType(HistoryType.ChannelBalanceReset);
             agentHistoryFacade.create(agentHistory);
@@ -92,7 +151,7 @@ public class AgencyController implements Serializable {
             ejbFacade.edit(i);
         }
 
-        
+
     }
 
     public List<Institution> completeAgency(String query) {
@@ -116,7 +175,7 @@ public class AgencyController implements Serializable {
     }
 
     public List<Institution> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Institution c where c.retired=false and i.institutionType = com.divudi.data.InstitutionType.Agency and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Institution c where c.retired=false and i.institutionType = com.divudi.core.data.InstitutionType.Agency and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -206,10 +265,20 @@ public class AgencyController implements Serializable {
 
     public List<Institution> getItems() {
         if (items == null) {
-            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.Agency order by i.name";
+            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.core.data.InstitutionType.Agency order by i.name";
             items = getEjbFacade().findByJpql(sql);
         }
         return items;
     }
+
+    public int getTabIndex() {
+        return tabIndex;
+    }
+
+    public void setTabIndex(int tabIndex) {
+        this.tabIndex = tabIndex;
+    }
+
+
 
 }

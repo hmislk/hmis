@@ -8,32 +8,16 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.SymanticType;
-import com.divudi.entity.Category;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.MeasurementUnit;
-import com.divudi.entity.pharmacy.PharmaceuticalItem;
-import com.divudi.entity.pharmacy.Vmpp;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.entity.pharmacy.VirtualProductIngredient;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.SpecialityFacade;
-import com.divudi.facade.VmppFacade;
-import com.divudi.facade.VirtualProductIngredientFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.facade.VmppFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -58,7 +42,7 @@ public class VmppController implements Serializable {
     @EJB
     private VmppFacade ejbFacade;
     private Vmpp current;
-    private List<Vmpp> items = null;
+    private boolean editable;
 
     @Deprecated
     public String navigateToListAllVmpps() {
@@ -85,7 +69,7 @@ public class VmppController implements Serializable {
     }
 
     private void saveVmpp() {
-        if (current.getName() == null || current.getName().equals("")) {
+        if (current.getName() == null || current.getName().isEmpty()) {
             JsfUtil.addErrorMessage("No Name");
             return;
         }
@@ -100,19 +84,36 @@ public class VmppController implements Serializable {
 
     public void prepareAdd() {
         current = new Vmpp();
+        editable = true;
+    }
+
+    public void edit() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select one to edit");
+            return;
+        }
+        editable = true;
+    }
+
+    public void cancel() {
+        current = null;
+        editable = false;
     }
 
     private void recreateModel() {
-        items = null;
+        // No longer caching Vmpp items
     }
 
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Updated Successfully.");
+        }else{
+            getFacade().create(getCurrent());
+            JsfUtil.addSuccessMessage("Saved Successfully.");
         }
         recreateModel();
-        getItems();
+        editable = false;
     }
 
     public void save() {
@@ -124,7 +125,6 @@ public class VmppController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully.");
         }
         recreateModel();
-        getItems();
     }
 
     public VmppFacade getEjbFacade() {
@@ -166,35 +166,21 @@ public class VmppController implements Serializable {
             JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        getItems();
         current = null;
         getCurrent();
+        editable = false;
     }
 
     private VmppFacade getFacade() {
         return ejbFacade;
     }
 
-    public List<Vmpp> getItems() {
-        if (items == null) {
-            items = fillItems();
-        }
-        return items;
+    public boolean isEditable() {
+        return editable;
     }
 
-    public List<Vmpp> fillItems() {
-        String jpql = "SELECT v FROM Vmpp v WHERE v.retired = :ret AND v.name IS NOT NULL AND v.name <> '' ORDER BY v.name";
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("ret", false);
-
-        List<Vmpp> vmpps = getFacade().findByJpql(jpql, parameters);
-
-        // If vmpps is null, initialize it to prevent NullPointerException
-        if (vmpps == null) {
-            vmpps = new ArrayList<>();
-        }
-
-        return vmpps;
+    public void setEditable(boolean editable) {
+        this.editable = editable;
     }
 
     /**
@@ -205,7 +191,7 @@ public class VmppController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             VmppController controller = (VmppController) facesContext.getApplication().getELResolver().
@@ -214,15 +200,13 @@ public class VmppController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
+            long key;
+            key = Long.parseLong(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

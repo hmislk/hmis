@@ -9,10 +9,10 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.InstitutionType;
-import com.divudi.entity.Institution;
-import com.divudi.facade.InstitutionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.InstitutionFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -126,7 +126,7 @@ public class ImporterController implements Serializable {
 
     public List<Institution> getItems() {
         if (items == null) {
-            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.Importer order by i.name";
+            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.core.data.InstitutionType.Importer order by i.name";
             items = getEjbFacade().findByJpql(sql);
         }
         return items;

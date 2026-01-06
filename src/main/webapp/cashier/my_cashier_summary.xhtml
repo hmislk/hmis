@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+
+        <ui:composition template="/cashier/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="My Cashier Summary" class="m-1">
+                        <p:panelGrid columns="2" class="w-100 text-center">
+                            <p:panelGrid columns="2" class="w-100">
+                                <h:outputLabel value="From"/>
+                                <p:calendar 
+                                    class="w-100 " 
+                                    inputStyleClass="w-100" 
+                                    id="fromDate" 
+                                    value="#{searchController.fromDate}" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                </p:calendar>
+                                <h:outputLabel value="To"/>                                
+                                <p:calendar 
+                                    class="w-100 " 
+                                    inputStyleClass="w-100" 
+                                    id="toDate" 
+                                    value="#{searchController.toDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                </p:calendar>
+                            </p:panelGrid>
+                            <p:panelGrid columns="1"  >
+                                <p:commandButton  
+                                    value="Process" 
+                                    ajax="false"
+                                    action="#{searchController.generateMyCashierSummary}" 
+                                    class="ui-button-warning" icon="fas fa-cogs">
+                                </p:commandButton>
+                            </p:panelGrid>
+                        </p:panelGrid>
+
+
+                        <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
+                            <h:panelGroup rendered="#{not empty myBundle.reportTemplateRows}">
+
+
+                                <ez:cashierSummaryOpd bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'cashierSummaryOpd'}"/>
+                                <ez:opdServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceCancellations'}"/>
+                                <ez:opdServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceRefunds'}"/>
+
+                                <!-- Pharmacy Collections -->
+                                <ez:pharmacyCollection bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyCollection'}"/>
+                                <ez:pharmacyServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyServiceCancellations'}"/>
+                                <ez:pharmacyServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyServiceRefunds'}"/>
+
+                                <!-- Professional Payments OPD -->
+                                <ez:professionalPaymentsOpd bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsOPD'}"/>
+                                <ez:professionalPaymentsOpdCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsOPDCancel'}"/>
+
+                                <!-- Professional Payments Inward -->
+                                <ez:professionalPaymentsInward bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsInward'}"/>
+                                <ez:professionalPaymentsInwardCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsInwardCancel'}"/>
+
+                                <!-- Petty Cash Payments -->
+                                <ez:pettyCashPayment bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PettyCashPayment'}"/>
+                                <ez:pettyCashPaymentCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PettyCashPaymentCancel'}"/>
+
+                                <!-- Inward Payments -->
+                                <ez:inwardPayments bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'InwardPayments'}"/>
+                                <ez:inwardPaymentsCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'InwardPaymentsCancel'}"/>
+                                <ez:inwardPaymentsRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'InwardPaymentsRefund'}"/>
+
+                                <!-- Credit Company Payments OPD -->
+                                <ez:creditCompanyPaymentOpReceive bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPReceive'}"/>
+                                <ez:creditCompanyPaymentOpCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPCancel'}"/>
+
+                                <!-- Credit Company Payments Inpatient -->
+                                <ez:creditCompanyPaymentIpReceive bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentIPReceive'}"/>
+                                <ez:creditCompanyPaymentIpCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentIPReceive'}"/>
+
+                                <!-- Patient Deposits -->
+                                <ez:patientDeposit bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PatientDeposit'}"/>
+                                <ez:patientDepositCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PatientDepositCancel'}"/>
+                                <ez:patientDepositRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PatientDepositRefund'}"/>
+
+                                <!-- Collecting Centre Payments -->
+                                <ez:collectingCentrePaymentReceive bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CollectingCentrePaymentReceive'}"/>
+                                <ez:collectingCentrePaymentCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CollectingCentrePaymentCancel'}"/>
+
+                                <!-- OPD Credits -->
+                                <ez:opdCredit bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCredit'}"/>
+                                <ez:opdCreditCancelled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCreditCancelled'}"/>
+                                <ez:opdCreditRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCreditRefund'}"/>
+
+                                <!-- Pharmacy Credit Bills -->
+                                <ez:pharmacyCreditBills bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PharmacyCreditBills'}"/>
+                                <ez:pharmacyCreditCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PharmacyCreditCancel'}"/>
+                                <ez:pharmacyCreditRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PharmacyCreditRefund'}"/>
+
+                                <p:splitterPanel ></p:splitterPanel>
+                            </h:panelGroup>
+                        </ui:repeat>
+
+                        <!-- Net Cash Summary -->
+                        <ez:netCash bundle="#{searchController.bundle}" />
+
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

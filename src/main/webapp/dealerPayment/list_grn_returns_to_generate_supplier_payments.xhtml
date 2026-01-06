@@ -1,0 +1,189 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/dealerPayment/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header" > 
+                            <h:outputText styleClass="fas fa-file-invoice"/>
+                            <h:outputLabel class="mx-4" value="Generate Supplier Return Payments"/>
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-2">
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar id="fromDate" value="#{supplierPaymentController.fromDate}" navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                            class="w-100" inputStyleClass="w-100">
+
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate" value="#{supplierPaymentController.toDate}" navigator="false" 
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            class="w-100" inputStyleClass="w-100">
+
+                                </p:calendar>
+
+                                <p:separator></p:separator>
+
+                                <p:commandButton
+                                    value="Pharmacy GRN Returns to Generate Payments"
+                                    action="#{supplierPaymentController.fillUnsettledCreditPharmacyReturnBills}"
+                                    ajax="false"
+                                    icon="fas fa-undo"
+                                    class="my-1 w-100 ui-button-warning" />
+
+
+                                <p:separator></p:separator>
+
+                                <p:commandButton 
+                                    value="Generate for All Selected Bills" 
+                                    action="#{supplierPaymentController.navigateToPrepareSupplierPaymentForAllSelectedBills()}" 
+                                    ajax="false" 
+                                    icon="fas fa-hand-point-right" 
+                                    class="my-1 w-100  ui-button-success" />
+
+                                <p:separator rendered="#{webUserController.hasPrivilege('Developers') and false}"></p:separator>
+
+                                <p:commandButton 
+                                    rendered="#{webUserController.hasPrivilege('Developers') and false}"
+                                    value="List GRNs to Settle Payment (Old Method for Developers to Cross Check)" 
+                                    action="#{supplierPaymentController.fillPharmacyDue}" 
+                                    ajax="false"  
+                                    icon="fas fa-history" 
+                                    class="my-1 w-100 ui-button-dark" />
+
+                                <p:separator ></p:separator>
+                            </div>
+                            <div class="col-10">
+                                <p:dataTable 
+                                    id="tbl"
+                                    value="#{supplierPaymentController.bills}"
+                                    var="b"
+                                    rowKey="#{b.id}" 
+                                    paginator="true"
+                                    selectionMode="multiple"
+                                    rows="10"
+                                    selection="#{supplierPaymentController.selectedBills}"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15">
+
+                                    <p:ajax event="toggleSelect" process="@this"/>
+                                    <p:ajax event="rowSelectCheckbox" process="@this"/>
+                                    <p:ajax event="rowUnselectCheckbox" process="@this"/>
+                                    <p:ajax event="rowSelect" process="@this"/>
+                                    <p:ajax event="rowUnselect" process="@this"/>
+                                    <p:ajax event="filter" process="@this"/>
+
+                                    <p:column selectionBox="true" width="20"/>
+
+                                    <p:column headerText="GRN No" sortBy="#{b.deptId}" filterBy="#{b.deptId}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.deptId}" />
+                                    </p:column>
+
+                                    <p:column headerText="Date" sortBy="#{b.billDate}" filterBy="#{b.billDate}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.billDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Supplier" sortBy="#{b.fromInstitution.name}" filterBy="#{b.fromInstitution.name}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.fromInstitution.name}" />
+                                    </p:column>
+
+                                    <p:column headerText="Bill Type" sortBy="#{b.billTypeAtomic.label}" filterBy="#{b.billTypeAtomic.label}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.billTypeAtomic.label}" />
+                                    </p:column>
+
+                                    <p:column headerText="Invoice No" filterMatchMode="contains" sortBy="#{b.invoiceNumber}" filterBy="#{b.invoiceNumber}">
+                                        <h:outputText value="#{b.invoiceNumber}" />
+                                    </p:column>
+
+                                    <p:column class="text-end" headerText="Total" sortBy="#{b.netTotal}" filterBy="#{b.netTotal}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{supplierPaymentController.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column class="text-end" headerText="Returned" sortBy="#{b.refundAmount}" filterBy="#{b.refundAmount}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.refundAmount}">
+                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{supplierPaymentController.refundAmount}">
+                                                <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column class="text-end" headerText="Paid Total" sortBy="#{b.paidAmount}" filterBy="#{b.paidAmount}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.paidAmount}">
+                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{supplierPaymentController.paidAmount}">
+                                                <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column class="text-end" headerText="Balance" sortBy="#{b.balance}" filterBy="#{b.balance}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.balance}">
+                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{supplierPaymentController.balance}">
+                                                <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column styleClass="text-center" headerText="Actions" width="20em">
+                                        <p:commandButton 
+                                            value="View" 
+                                            icon="pi pi-eye"
+                                            class="ui-button-primary mx-1"
+                                            style="width:6em;"
+                                            action="#{supplierPaymentController.navigateToViewProcurementBill(b)}" 
+                                            ajax="false" >
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Approval is necessary for Procument Payments', false)}"
+                                            value="Prepare Payment" 
+                                            action="#{supplierPaymentController.navigateToPrepareSupplierPayment(b)}" 
+                                            ajax="false" 
+                                            icon="pi pi-check"
+                                            style="width:12em;"
+                                            class="ui-button-success mx-1"
+                                            disabled="#{b.balance lt 0.01}" >
+                                        </p:commandButton>
+                                    </p:column>
+
+                                </p:dataTable>
+
+
+                            </div>
+
+                        </div>
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

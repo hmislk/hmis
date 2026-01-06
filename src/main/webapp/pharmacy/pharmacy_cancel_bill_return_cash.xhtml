@@ -40,7 +40,7 @@
                             <p:panel header="Bill Detail">
                                 <p:panelGrid columns="2">
                                     <h:outputLabel value="Bill No " ></h:outputLabel>
-                                    <h:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="#{pharmacyBillSearch.bill.deptId}" ></h:outputLabel>
                                     <h:outputLabel value="Total " ></h:outputLabel>
                                     <h:outputLabel value="#{pharmacyBillSearch.bill.total}" ></h:outputLabel>
                                     <h:outputLabel value="Discount " ></h:outputLabel>
@@ -76,8 +76,12 @@
 
 
                     <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" >
-                        <pharmacy:returnBill  bill="#{pharmacyBillSearch.bill.cancelledBill}" />
-
+                        <h:panelGroup id="gpBillPreviewPos" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}">
+                            <pharmacy:returnBill  bill="#{pharmacyBillSearch.bill.cancelledBill}" />
+                        </h:panelGroup>
+                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
+                            <pharmacy:saleBill_Header_Cancel bill="#{pharmacyBillSearch.bill.cancelledBill}"></pharmacy:saleBill_Header_Cancel>
+                        </h:panelGroup>
                     </h:panelGroup>
 
 

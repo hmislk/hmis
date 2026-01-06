@@ -34,9 +34,7 @@
                                             value="#{billController.department}"  >
                             </p:autoComplete>
                             
-                            <p:watermark for="acIns" value="Institution" />
-                            <p:watermark for="acDept" value="Department" />
-                        </h:panelGrid>
+                                                                                </h:panelGrid>
 
                         <h:panelGrid columns="3" class="my-2">
                             <p:commandButton 
@@ -84,7 +82,7 @@
                                 </f:facet>
 
                                 <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType ne 'PosPaper'}">                                
-                                    <h:outputLabel   value="#{bill.insId}"/>
+                                    <h:outputLabel   value="#{bill.deptId}"/>
                                 </p:column>    
                                 <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}" >                                
                                     <h:outputLabel   value="#{bill.deptId}"/>

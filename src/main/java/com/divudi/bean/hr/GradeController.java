@@ -9,9 +9,9 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.hr.Grade;
-import com.divudi.facade.GradeFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.hr.Grade;
+import com.divudi.core.facade.GradeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,10 +44,7 @@ public class GradeController implements Serializable {
     private List<Grade> items = null;
     String selectText = "";
 
-    public List<Grade> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Grade c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
-        return selectedItems;
-    }
+
 
     public List<Grade> completeGrade(String qry) {
         List<Grade> a = null;

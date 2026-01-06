@@ -1,0 +1,200 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html 
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:p="http://primefaces.org/ui"                
+    xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+    xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+
+    <h:body>
+        <ui:composition template="/dealerPayment/index.xhtml">
+            <ui:define name="subcontent">
+
+
+                <h:form  >
+                    <p:panel rendered="#{!supplierPaymentController.printPreview}" class="m-1">
+                        <f:facet name="header" >
+                            <div class="d-flex justify-content-between align-item-center">
+                                <div>
+                                    <h:outputLabel value="Check Supplier Payment" ></h:outputLabel>
+                                </div>
+                                <div class="gap-2">
+                                    <p:commandButton value="Save Bill"
+                                                     action="#{supplierPaymentController.saveSupplierPayment(supplierPaymentController.current)}"
+                                                     id="saveSupplierPayment"
+                                                     ajax="false"
+                                                     class="ui-button-warning mx-1"
+                                                     icon="fa fa-save"
+                                                     style="width: 150px; padding: 1px; margin: auto;"
+                                    >
+                                    </p:commandButton>
+                                    <p:commandButton
+                                            id="btnSettle"
+                                            value="Mark as Checked"
+                                            icon="pi pi-check"
+                                            action="#{supplierPaymentController.settleCheckingSupplierPayment}"
+                                            disabled="#{supplierPaymentController.changed}"
+                                            ajax="false"
+                                            class="me-5 ui-button-success">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+
+                        <p:panelGrid layout="tabular" columns="2" >
+                            <h:outputLabel value="Supplier" />
+                            <h:outputLabel value="#{supplierPaymentController.current.toInstitution.name}" />
+
+                            <h:outputLabel value="Payment No" />
+                            <h:outputLabel value="#{supplierPaymentController.current.deptId}" />
+
+                            <h:outputLabel value="Payment Method" />
+                            <p:outputLabel 
+                                id="cmbPs" 
+                                value="#{supplierPaymentController.current.paymentMethod.label}">                                                                     
+                            </p:outputLabel>
+
+                            <p:outputLabel value="Total" />
+                            <p:outputLabel
+                                class="text-end w-100"
+                                id="lblTotal"
+                                value="#{supplierPaymentController.current.total}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>
+
+                            <p:outputLabel value="Discount" />
+                            <p:inputText
+                                id="txtDiscount"  
+                                class="text-end w-100"
+                                value="#{supplierPaymentController.current.discount}">
+                                <f:convertNumber pattern="#,##0.00" />
+                                <p:ajax process="@this" update="@all" event="change" listener="#{supplierPaymentController.calTotal(supplierPaymentController.current)}"/>
+                            </p:inputText>
+
+                            <p:outputLabel value="Net Total" />
+                            <p:outputLabel 
+                                id="lblNetTotal"
+                                class="text-end w-100"
+                                value="#{supplierPaymentController.current.netTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>
+
+                            <p:outputLabel value="Payment Creation Comments"/>
+                            <p:outputLabel
+                                class="w-100"
+                                value="#{supplierPaymentController.current.paymentGenerationComments}"/>       
+
+                            <p:outputLabel value="Checking Comments"/>
+                            <p:inputTextarea
+                                class="w-100"
+                                style="min-width: 20em;"
+                                rows="5"
+                                value="#{supplierPaymentController.current.comments}"/>                                                         
+
+
+
+                        </p:panelGrid>
+
+                        <p:dataTable  
+                            value="#{supplierPaymentController.current.billItems}"
+                            var="b" 
+                            id="itms" 
+                            class="m-1"
+                            rowKey="#{b.searialNo}" 
+                            rowIndexVar="n">
+                            <p:column  class="text-end" width="2em">  
+                                <f:facet name="header">
+                                    <h:outputLabel value="No"/>                                  
+                                </f:facet>                
+                                <p:outputLabel value="#{n+1}" ></p:outputLabel>
+                            </p:column> 
+                            <p:column >  
+                                <f:facet name="header">
+                                    <h:outputLabel value="GRN No"/>                                  
+                                </f:facet> 
+                                <p:outputLabel value=" #{b.referenceBill.deptId}" ></p:outputLabel>
+                            </p:column> 
+                            <p:column >  
+                                <f:facet name="header">
+                                    <h:outputLabel value="Invoice No"/>                                  
+                                </f:facet> 
+                                <p:outputLabel value=" #{b.referenceBill.invoiceNumber}" ></p:outputLabel>
+                            </p:column> 
+                            <p:column class="text-end" headerText="GRN Amount">
+                                <p:outputLabel value="#{b.referenceBill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column class="text-end" headerText="GRN Return Amount">
+                                <p:outputLabel value="#{b.referenceBill.refundAmount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column class="text-end" headerText="Paid Amount">
+                                <p:outputLabel value="#{b.referenceBill.paidAmount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column class="text-end" headerText="Recievable Amount">
+                                <p:outputLabel value="#{(b.referenceBill.balance)}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column class="text-end" headerText="Paying Amount">
+                                <p:inputText
+                                    class="w-100 text-end"
+                                    value="#{b.netValue}">    
+                                    <f:convertNumber pattern="#,##0.00" />
+                                    <p:ajax process="@this" update="@all" event="change" listener="#{supplierPaymentController.calTotal(supplierPaymentController.current)}"/>
+                                </p:inputText>
+                            </p:column>
+                            <p:column width="8em" class="text-center" headerText="Actions">
+                                <p:commandButton 
+                                    value="View" 
+                                    icon="pi pi-eye"
+                                    style="width: 6em;"
+                                    class="ui-button-primary mx-1 my-2"
+                                    action="#{supplierPaymentController.navigateToViewProcurementBill(b.referenceBill)}" 
+                                    ajax="false" >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    class="ui-button-danger mx-1"
+                                    icon="pi pi-trash"
+                                    style="width: 7em;"
+                                    action="#{supplierPaymentController.removeFromCurrent(b)}" 
+                                    value="Remove">
+                                </p:commandButton>
+                            </p:column>
+
+
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+                    <p:panel rendered="#{supplierPaymentController.printPreview}">                                
+                        <p:commandButton 
+                            value="Print" 
+                            ajax="false" 
+                            action="#"  
+                            class="ui-button-info m-1"
+                            icon="pi pi-print">
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <p:panel   id="gpBillPreview">
+                            <bi:supplier_payment_checked bill="#{supplierPaymentController.current}" billController="#{supplierPaymentController}" dup="false"/>
+                        </p:panel>
+                    </p:panel>
+                </h:form>
+
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

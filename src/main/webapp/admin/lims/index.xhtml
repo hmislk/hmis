@@ -13,61 +13,34 @@
         <div class="row" >
             <div class="col-md-3" >
                 <h:form>
-                    <p:panel header="Manage Metadata" rendered="true">
+                    <p:panel header="Manage Lab Services" rendered="true">
                         <p:accordionPanel 
                             activeIndex="#{investigationCategoryController.manageItemIndex}" >
                             <p:ajax process="@this" ></p:ajax>
-                             
                             <p:tab title="Manage Metadata">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton   class="w-100"  ajax="false" 
-                                                       value="Manage Categories" 
-                                                       action="#{investigationCategoryController.navigateToManageInvestigationCategoris()}" />
-                                    
-<!--                                    <p:commandButton   class="w-100"  ajax="false" 
-                                                       value="Add category" 
-                                                       action="#{investigationCategoryController.navigateToAddInvestigationCategory}" />
+                                    <p:commandButton   
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="Manage Categories" 
+                                        action="#{investigationCategoryController.navigateToManageInvestigationCategoris()}" />
 
-                                    <p:commandButton   class="w-100"  ajax="false" 
-                                                       value="List categories" 
-                                                       action="#{investigationCategoryController.navigateToListInvestigationCategories}" />-->
-
-                                    <p:commandButton   class="w-100"  ajax="false" 
-                                                       value="Manage Containers" 
-                                                       action="#{investigationTubeController.navigateToManageContainers()}" />   
-                                    
-<!--                                    <p:commandButton   class="w-100"  ajax="false" 
-                                                       value="Add Container" 
-                                                       action="#{investigationTubeController.navigateToAddTube()}" />
-
-                                    <p:commandButton   class="w-100"  ajax="false" 
-                                                       value="List Containers" 
-                                                       action="#{investigationTubeController.navigateToListTubes()}" />-->
+                                    <p:commandButton   
+                                        class="w-100"  ajax="false" 
+                                        value="Manage Containers" 
+                                        action="#{investigationTubeController.navigateToManageContainers()}" />   
 
                                     <p:commandButton   
                                         class="w-100" 
                                         ajax="false" 
                                         value="Manage Specimens" 
                                         action="#{sampleController.navigateToManageSpecimens()}" />   
-                                    
-<!--                                    <p:commandButton   
-                                        class="w-100" 
-                                        ajax="false" 
-                                        value="Add Speciman" 
-                                        action="#{sampleController.navigateToAddItem()}" />
-
-                                    <p:commandButton   
-                                        class="w-100" 
-                                        ajax="false" 
-                                        value="List Specimans" 
-                                        action="#{sampleController.navigateToListItems()}" />-->
 
                                     <p:commandButton 
                                         class="w-100" 
                                         ajax="false" 
                                         value="Manage Antibiotics" 
                                         action="#{antibioticController.navigateToManageAntibiotics()}" />
-
 
                                 </div>
                             </p:tab>
@@ -83,6 +56,16 @@
                                         ajax="false" 
                                         value="List Investigation" 
                                         action="#{investigationController.navigateToListInvestigation()}" />
+                                    <p:commandButton   
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="List Report Formats" 
+                                        action="#{investigationController.navigateToListReportFormats()}" />
+                                    <p:commandButton   
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="Multiple Investigation Update" 
+                                        action="#{investigationController.navigateToMultipleInvestigationUpdate()}" />
                                     <p:commandButton  
                                         class="w-100" 
                                         ajax="false" 
@@ -94,22 +77,31 @@
                                         value="Manage Investigations" 
                                         action="#{investigationCategoryController.navigateToInvestigations()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="Upload Investigations" action="#{investigationCategoryController.navigateToInvestigationFormat()}" />
-
-                                    <p:commandButton
-                                        class="w-100"
-                                        ajax="false" 
-                                        value="Analyzers"
-                                        action="/admin/lims/machine" />
-                                    <p:commandButton 
-                                        class="w-100" 
-                                        ajax="false" 
-                                        value="Analyzer Tests" 
-                                        action="/admin/lims/analyzer_test" />
                                     <p:commandButton 
                                         class="w-100" 
                                         ajax="false" 
                                         value="Sample Components" 
-                                        action="/admin/lims/sample_component" />
+                                        action="/admin/lims/sample_component?faces-redirect=true" />
+
+                                </div>
+                            </p:tab>
+                            <p:tab title="Manage Analyzers">
+                                <div class="d-grid gap-2">
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false" 
+                                        value="Analyzers"
+                                        action="/admin/lims/machine?faces-redirect=true" />
+                                    <p:commandButton 
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="Analyzer Tests" 
+                                        action="/admin/lims/analyzer_test?faces-redirect=true" />
+                                    <p:commandButton 
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="Department Analyzers" 
+                                        action="/admin/lims/department_machine?faces-redirect=true" />
 
                                 </div>
                             </p:tab>
@@ -120,13 +112,13 @@
                                             class="w-100" 
                                             ajax="false" 
                                             value="Report Template Names" 
-                                            action="/admin/lims/report_template_names"
+                                            action="/admin/lims/report_template_names?faces-redirect=true"
                                             rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}"/>
                                         <p:commandButton 
                                             class="w-100" 
                                             ajax="false" 
                                             value="Report Format Templates" 
-                                            action="/admin/lims/report_template" />
+                                            action="/admin/lims/report_template?faces-redirect=true" />
                                         <p:commandButton 
                                             class="w-100" 
                                             ajax="false" 
@@ -136,59 +128,22 @@
                                             class="w-100" 
                                             ajax="false" 
                                             value="Report Template Availability" 
-                                            action="/admin/lims/report_template_availability" />
+                                            action="/admin/lims/report_template_availability?faces-redirect=true" />
                                         <p:commandButton 
                                             class="w-100" 
                                             ajax="false" 
                                             value="Report Template Image Upload" 
-                                            action="/admin/lims/report_template_image_upload"
+                                            action="#{reportFormatController.navigateToReportTemplateImageUpload}"
                                             rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}"/>
 
                                     </div>
                                 </h:panelGroup>
 
                             </p:tab>
-                            <p:tab title="Manage Services">
-                                <div class="d-grid gap-2">
-
-
-                                    <p:commandButton   class="w-100"  ajax="false" value="Investigations" action="#{investigationCategoryController.navigateToInvestigations()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Investigation Fees" action="#{investigationCategoryController.navigateToInvestigationFees()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Service Categories" action="#{investigationCategoryController.navigateToOpdServiceCategory}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Service Subcategories" action="#{investigationCategoryController.navigateToOpdServiceSubCategory}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Service" action="#{investigationCategoryController.navigateToOpdService()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Inward Service" action="#{investigationCategoryController.navigateToInwardService()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Theatre Service" action="#{investigationCategoryController.navigateToTheatreService()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bill Expenses" action="#{investigationCategoryController.navigateToBillExpenses()}" />
-
-
-                                    <p:commandButton   class="w-100"  ajax="false" value="Relationships" action="#{investigationCategoryController.navigateToRelationships()}" ></p:commandButton>
-                                    <p:commandButton   class="w-100"  ajax="false" value="Religions" action="#{investigationCategoryController.navigateToReligion()}" ></p:commandButton>
-                                    <p:commandButton   class="w-100"  ajax="false" value="Nationalities" action="#{investigationCategoryController.navigateToReligion()}" ></p:commandButton>
-
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Services" action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
-
-
-                                </div>
-                            </p:tab>
                             <p:tab title="Reports">
                                 <div class="d-grid gap-2">
                                     <p:commandButton   class="w-100"  ajax="false" value="Item List"
                                                        action="#{itemController.navigateToListAllItems()}" ></p:commandButton>
-                                </div>
-                            </p:tab>
-                            <p:tab title="Manage Metadata">
-                                <div class="d-grid gap-2">
-                                    <p:commandButton   class="w-100"  ajax="false" value="Relationships" action="#{investigationCategoryController.navigateToRelationships()}" ></p:commandButton>
-                                    <p:commandButton   class="w-100"  ajax="false" value="Forms" action="#{investigationCategoryController.navigateToFormFormatCategory()}" ></p:commandButton>
-                                    <p:commandButton   class="w-100"  ajax="false" value="Form Format" action="#{investigationCategoryController.navigateToFormFormat()}" ></p:commandButton>
-                                    <p:commandButton   class="w-100"  ajax="false" value="Categories" action="#{investigationCategoryController.navigateToMetaDataSuperCategory()}" ></p:commandButton>
-                                </div>
-                            </p:tab>
-                            <p:tab title="Bulk Transactions">
-                                <div class="d-grid gap-2">
-                                    
                                 </div>
                             </p:tab>
                             <p:tab title="Setup">
@@ -213,67 +168,249 @@
 
                                 </div>
                             </p:tab>
-                            <p:tab title="Manage Investigations">
-
+                            <p:tab title="SMS Messaging">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton 
-                                        class="w-100" 
-                                        ajax="false"
-                                        value="Add New Investigation" 
-                                        action="#{investigationController.navigateToAddInvestigationForLab}" 
-                                        >
-                                    </p:commandButton>
                                     <p:commandButton 
                                         class="w-100" 
                                         ajax="false" 
-                                        value="Investigation List" 
-                                        action="#{investigationController.navigateToListInvestigation()}" />
-                                    <p:commandButton class="w-100" ajax="false" value="Investigation Categories" action="/lab/investigation_category" />
-                                    <p:commandButton class="w-100" ajax="false" value="Specimen Management" action="/lab/investigation_speciman" />
-                                    <p:commandButton class="w-100" ajax="false" value="Tubes Management" action="/lab/investigation_tube" />
-                                </div>
-
-                            </p:tab>
-                            <p:tab title="SMS Messaging">
-                                <div class="d-grid gap-2">
-                                    <p:commandButton class="w-100 m-2 p-2" 
-                                                     ajax="false" 
-                                                     value="Check SMS" 
-                                                     action="/admin/lims/check_sms" />
+                                        value="Check SMS" 
+                                        action="/admin/lims/check_sms" >
+                                    </p:commandButton>
                                 </div>
                             </p:tab>
                             <p:tab title="Lab Setup">
-
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSetUp')}">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton class="w-100 m-2 p-2" 
-                                                         ajax="false" 
-                                                         value="Report Samples" 
-                                                         actionListener="#{investigationController.listAllIxs}" 
-                                                         action="/lab/report_samples" />
+                                        <p:commandButton 
+                                            class="w-100 ui-button-warning" 
+                                            ajax="false" 
+                                            icon="fa fa-download"
+                                            value="Lab Report Format Upload" 
+                                            actionListener="#{labReportExportImportController.makeNull()}" 
+                                            action="/admin/lims/import_report_format?faces-redirect=true" >
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            class="w-100" 
+                                            ajax="false" 
+                                            value="Report Samples" 
+                                            actionListener="#{investigationController.listAllIxs}" 
+                                            action="/lab/report_samples" >
+                                        </p:commandButton>
                                         <p:commandButton 
                                             class="w-100" 
                                             ajax="false"
                                             value="To Export" 
-                                            action="#{investigationController.navigateToAddInvestigationForLabForExport}" 
-                                            >
+                                            action="#{investigationController.navigateToAddInvestigationForLabForExport}"  >
                                         </p:commandButton>
-                                        <p:commandButton class="w-100 m-2 p-2" 
-                                                         ajax="false" 
-                                                         value="Upload Investigations" 
-                                                         action="#{investigationItemController.toUploadJsonToCreateAnInvestigation()}" />
-                                        <p:commandButton class="w-100 m-2 p-2" ajax="false" value="Developer" action="/lab/setup" />
+                                        <p:commandButton 
+                                            class="w-100" 
+                                            ajax="false" 
+                                            value="Upload Investigations" 
+                                            action="#{investigationItemController.toUploadJsonToCreateAnInvestigation()}" >
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            class="w-100" 
+                                            ajax="false" 
+                                            value="Developer" 
+                                            action="/lab/setup" >
+                                        </p:commandButton>
                                     </div>
                                 </h:panelGroup>
 
                             </p:tab>
+                            <p:tab title="Manage Stocks">
+                                <div class="d-grid gap-2">
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Manage Lab Items"
+                                        action="/admin/lims/lab_item_master.xhtml?faces-redirect=true" />
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Upload Lab Items"
+                                        action="/admin/lims/upload_lab_items.xhtml?faces-redirect=true" />
+                                </div>
+                            </p:tab>
+                            <p:tab title="Developers">
+                                <div class="d-grid gap-2">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Investigation List" 
+                                        action="#{investigationController.navigateToManageInvestigationsForDevelopers}"  />
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Reload Items from Database" 
+                                        action="#{itemController.reloadItemsFromDatabase()}"  />
+                                </div>
+                            </p:tab>
                         </p:accordionPanel>
+
+
+                        <h:panelGroup id="oldMenu" rendered="false" >
+                            <p:accordionPanel 
+                                id="panel"
+                                activeIndex="#{investigationController.adminTabIndex}">
+                                <p:ajax process="panel"
+                                        event="tabChange" ></p:ajax>
+                                <p:tab title="Manage Investigations">
+
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton 
+                                            class="w-100" 
+                                            ajax="false"
+                                            value="Add New Investigation" 
+                                            action="#{investigationController.navigateToAddInvestigationForLab}" 
+                                            >
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            class="w-100" 
+                                            ajax="false" 
+                                            value="Investigation List" 
+                                            action="#{investigationController.navigateToListInvestigation()}" />
+                                        <p:commandButton class="w-100" ajax="false" value="Investigation Categories" action="/lab/investigation_category" />
+                                        <p:commandButton class="w-100" ajax="false" value="Specimen Management" action="/lab/investigation_speciman" />
+                                        <p:commandButton class="w-100" ajax="false" value="Tubes Management" action="/lab/investigation_tube" />
+                                        <p:commandButton class="w-100" ajax="false" value="Analyzers" action="/lab/machine" />
+                                        <p:commandButton class="w-100" ajax="false" value="Analyzer Tests" action="/lab/analyzer_test" />
+                                        <p:commandButton class="w-100" ajax="false" value="Sample Components" action="/lab/sample_component" />
+                                    </div>
+
+                                </p:tab>
+
+                                <p:tab title="Manageme Reports">
+
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('LabReports')}">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="Report Format Names" 
+                                                action="#{investigationController.navigateToListInvestigation()}"
+                                                rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}"/>
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="Report Format Templates" 
+                                                action="/lab/report_format_category" />
+                                        </div>
+                                    </h:panelGroup>
+
+                                </p:tab>
+
+
+                                <p:tab title="Bulk Transactions">
+                                    <div class="d-grid gap-2">
+
+                                    </div>
+                                </p:tab>
+                                <p:tab title="Manage Investigations">
+
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton 
+                                            class="w-100" 
+                                            ajax="false"
+                                            value="Add New Investigation" 
+                                            action="#{investigationController.navigateToAddInvestigationForLab}" 
+                                            >
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            class="w-100" 
+                                            ajax="false" 
+                                            value="Investigation List" 
+                                            action="#{investigationController.navigateToListInvestigation()}" />
+                                        <p:commandButton class="w-100" ajax="false" value="Investigation Categories" action="/lab/investigation_category" />
+                                        <p:commandButton class="w-100" ajax="false" value="Specimen Management" action="/lab/investigation_speciman" />
+                                        <p:commandButton class="w-100" ajax="false" value="Tubes Management" action="/lab/investigation_tube" />
+                                    </div>
+
+                                </p:tab>
+
+                                <p:tab title="SMS Messaging">
+                                    <p:panelGrid columns="2" styleClass="alignTop" rendered="#{webUserController.hasPrivilege('LabSetUp')}">
+                                        <p:outputLabel value="Number" ></p:outputLabel>
+                                        <p:inputText value="#{patientReportController.smsNumber}" ></p:inputText>
+
+                                        <p:outputLabel value="Message" ></p:outputLabel>
+                                        <p:inputText value="#{patientReportController.smsMessage}" ></p:inputText>
+
+                                        <p:commandButton class="w-100 m-2 p-2" ajax="false" value="Send Message" action="#{patientReportController.sendSms()}" />
+                                    </p:panelGrid>
+                                </p:tab>
+
+                                <p:tab title="Lab Setup">
+
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSetUp')}">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100 m-2 p-2" 
+                                                             ajax="false" 
+                                                             value="Report Samples" 
+                                                             actionListener="#{investigationController.listAllIxs}" 
+                                                             action="/lab/report_samples" />
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false"
+                                                value="To Export" 
+                                                action="#{investigationController.navigateToAddInvestigationForLabForExport}" 
+                                                >
+                                            </p:commandButton>
+                                            <p:commandButton class="w-100 m-2 p-2" 
+                                                             ajax="false" 
+                                                             value="Upload Investigations" 
+                                                             action="#{investigationItemController.toUploadJsonToCreateAnInvestigation()}" />
+                                            <p:commandButton class="w-100 m-2 p-2" ajax="false" value="Developer" action="/lab/setup" />
+                                        </div>
+                                    </h:panelGroup>
+
+                                </p:tab>
+
+                                <p:tab title="Manage Services">
+                                    <div class="d-grid gap-2">
+
+                                        <p:commandButton   class="w-100"  ajax="false" value="Investigations" action="#{investigationCategoryController.navigateToInvestigations()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Investigation Fees" action="#{investigationCategoryController.navigateToInvestigationFees()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Service Categories" action="#{investigationCategoryController.navigateToOpdServiceCategory}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Service Subcategories" action="#{investigationCategoryController.navigateToOpdServiceSubCategory}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Service" action="#{investigationCategoryController.navigateToOpdService()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Inward Service" action="#{investigationCategoryController.navigateToInwardService()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Theatre Service" action="#{investigationCategoryController.navigateToTheatreService()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Bill Expenses" action="#{investigationCategoryController.navigateToBillExpenses()}" />
+
+
+                                        <p:commandButton   class="w-100"  ajax="false" value="Relationships" action="#{investigationCategoryController.navigateToRelationships()}" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Religions" action="#{investigationCategoryController.navigateToReligion()}" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Nationalities" action="#{investigationCategoryController.navigateToReligion()}" ></p:commandButton>
+
+                                        <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Services" action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
+
+
+                                    </div>
+                                </p:tab>
+
+                                <p:tab title="Manage Metadata">
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton   class="w-100"  ajax="false" value="Relationships" action="#{investigationCategoryController.navigateToRelationships()}" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Forms" action="#{investigationCategoryController.navigateToFormFormatCategory()}" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Form Format" action="#{investigationCategoryController.navigateToFormFormat()}" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Categories" action="#{investigationCategoryController.navigateToMetaDataSuperCategory()}" ></p:commandButton>
+                                    </div>
+                                </p:tab>
+
+
+
+                            </p:accordionPanel>
+
+
+
+                        </h:panelGroup>
+
+
                     </p:panel>
                 </h:form>
             </div>
             <div class="col-md-9" >
                 <ui:insert name="subcontent" >
-
                 </ui:insert>
             </div>
 

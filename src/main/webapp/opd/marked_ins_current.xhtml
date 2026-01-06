@@ -4,11 +4,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
-      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+      xmlns="http://www.w3.org/1999/xhtml">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -17,24 +13,32 @@
                 </h:panelGroup>
                 <h:panelGroup rendered="#{(webUserController.hasPrivilege('OpdBilling'))}" >
 
-                    <h:form class="container-fluid" >
-                        <p:panel >
+                    <h:form >
+                        <p:panel class="p-1 m-1" >
                             <f:facet name="header" >
                                 <h:outputText value="Currently Working" >
                                 </h:outputText>
                             </f:facet>
 
-                            
-                            <p:dataTable value="#{workingTimeController.items}" var="w" paginator="true" paginatorPosition="bottom" rows="10"
-                                         rowKey="#{w.id}" >
+
+                            <p:dataTable 
+                                value="#{workingTimeController.items}" 
+                                var="w" 
+                                paginator="true"
+                                paginatorAlwaysVisible="false"
+                                paginatorPosition="bottom"
+                                rows="10"
+                                rowKey="#{w.id}" >
                                 <p:column headerText="Name">
                                     <h:outputLabel value="#{w.staffShift.staff.person.nameWithTitle}" ></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Speciality">
                                     <h:outputLabel value="#{w.staffShift.staff.speciality.name}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="In">
-                                    <h:outputLabel value="#{w.startRecord.recordTimeStamp}" ></h:outputLabel>
+                                <p:column headerText="In at">
+                                    <h:outputLabel value="#{w.startRecord.recordTimeStamp}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Actions" >
                                     <p:commandButton ajax="false" 
@@ -44,12 +48,12 @@
                                                      action="#{workingTimeController.markOut()}" >
                                         <f:setPropertyActionListener value="#{w}" target="#{workingTimeController.current}" ></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton  ajax="false"
-                                                      value="View" 
-                                                      class="ui-button-success mx-2"
-                                                      icon="fas fa-eye"
-                                                      action="#{workingTimeController.navigateToViewWorkTime}" >
-                                        <f:setPropertyActionListener value="#{w}" target="#{workingTimeController.current}" ></f:setPropertyActionListener>
+                                    <p:commandButton  
+                                        ajax="false"
+                                        value="View" 
+                                        class="ui-button-success mx-2"
+                                        icon="fas fa-eye"
+                                        action="#{workingTimeController.navigateToViewWorkTimeForSelectedStaff(w.staffShift.staff)}" >
                                     </p:commandButton>
                                 </p:column>
                             </p:dataTable>

@@ -1,0 +1,143 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+        <div class="row" >
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('CollectingCentreReports')}">
+                <na:not_authorize />
+            </h:panelGroup>
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('CollectingCentreReports')}">
+                <div class="col-md-2" >
+                    <h:form class="w-100">
+                        <p:panel header="Collection Center Reports" class="mx-2 mt-2" rendered="#{webUserController.hasPrivilege('CollectingCentreReports')}">
+                            <div class="d-grid gap-2">
+                                <p:commandButton 
+                                    class="w-100"  
+                                    ajax="false" 
+                                    value="Courier Lab Reports Print" 
+                                    action="#{courierController.navigateToCourierLabReportsPrint()}">
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    class="w-100"  
+                                    ajax="false" 
+                                    value="1. Collection Center Reports Print" 
+                                    action="#{courierController.navigateToCCReportsPrint()}"> 
+                                </p:commandButton>
+
+                                <p:commandButton   
+                                    class="w-100"  
+                                    ajax="false" 
+                                    value="2. Collection Center Current Balance" 
+                                    action="#{courierController.navigateToCCCurrentBalanceReport()}">
+                                </p:commandButton>
+
+                                <p:commandButton   
+                                    class="w-100"  
+                                    ajax="false" 
+                                    value="2. Collection Center Balance" 
+                                    action="#{courierController.navigateToCCBalanceReport()}">
+                                </p:commandButton>
+
+                                <p:commandButton   
+                                    class="w-100"  
+                                    ajax="false" 
+                                    value="3. Collection Center Receipt" 
+                                    action="#{courierController.navigateToCCReceiptReport()}">
+                                </p:commandButton>
+
+                                <p:commandButton   
+                                    class="w-100"  
+                                    ajax="false" 
+                                    value="4. Collection Center Bill Wise Detail" 
+                                    action="#{courierController.navigateToCCBillWiseDetailReport()}">
+                                </p:commandButton>
+
+                                <p:commandButton   
+                                    class="w-100"  
+                                    ajax="false" 
+                                    value="5. Collection Center Wise Invoice List" 
+                                    action="#{courierController.navigateToCCWiseInvoiceListReport()}">
+                                </p:commandButton>
+
+                                <p:commandButton   
+                                    class="w-100"  
+                                    ajax="false" 
+                                    value="6. Collection Center Statement" 
+                                    action="#{courierController.navigateToCCStatementReport()}">
+                                </p:commandButton>
+
+                                <p:commandButton   
+                                    class="w-100"  
+                                    ajax="false" 
+                                    value="7. Collection Center Wise Summary" 
+                                    action="#{courierController.navigateToCCWiseSummaryReport()}">
+                                </p:commandButton>
+
+                                <p:commandButton   
+                                    class="w-100"  
+                                    ajax="false" 
+                                    value="8. Collection Center Test Wise Count" 
+                                    action="#{courierController.navigateToTestWiseCountReport()}"
+                                    actionListener="#{reportController.makeNull()}">
+                                </p:commandButton>
+
+                                <p:commandButton   
+                                    class="w-100"  
+                                    ajax="false" 
+                                    value="9. Route Analysis"
+                                    action="#{courierController.navigateToCCRouteAnalysisReport()}">
+                                </p:commandButton>
+
+                                <p:commandButton   
+                                    class="w-100"  
+                                    ajax="false" 
+                                    value="10. Collction Centre Book"
+                                    action="#{courierController.navigateToCCBookReport()}">
+                                </p:commandButton>
+
+                                <p:commandButton   
+                                    class="w-100"  
+                                    ajax="false" 
+                                    value="11. Collction Centre Book Wise Detail"
+                                    action="#{courierController.navigateToCCBookWiseDetail}">
+                                </p:commandButton>
+
+                                <p:commandButton   
+                                    class="w-100" 
+                                    rendered="false" 
+                                    ajax="false" 
+                                    action="#{courierController.navigateToCCInvestigationListReport()}"
+                                    value="12. Collction Centre Investigation List">
+                                </p:commandButton>
+
+                                <p:commandButton   
+                                    class="w-100"  
+                                    ajax="false" 
+                                    value="12. Collction Centre Bill Item List"  
+                                    action="#{courierController.navigateToCCBillItemListReport()}">
+                                </p:commandButton>
+                            </div>
+                        </p:panel>
+                    </h:form>
+                </div>
+                <div class="col-md-10" >
+                    <ui:insert name="subcontent" class="w-100">
+
+                    </ui:insert>
+                </div>
+            </h:panelGroup>
+        </div>
+
+
+    </ui:define>
+
+</ui:composition>

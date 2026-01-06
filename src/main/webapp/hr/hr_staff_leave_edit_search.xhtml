@@ -17,14 +17,14 @@
                             <p:panelGrid columns="2" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar value="#{staffLeaveApplicationFormController.fromDate}"
-                                            pattern="#{sessionController.applicationPreference.shortDateFormat}">     
-                                </p:calendar>   
+                                            pattern="#{sessionController.applicationPreference.shortDateFormat}">
+                                </p:calendar>
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar value="#{staffLeaveApplicationFormController.toDate}"
                                             pattern="#{sessionController.applicationPreference.shortDateFormat}">
-                                </p:calendar> 
+                                </p:calendar>
                                 <h:outputLabel value="Staff : "/>
-                                <au:completeStaff value="#{staffLeaveApplicationFormController.staff}"/>                               
+                                <au:completeStaff value="#{staffLeaveApplicationFormController.staff}"/>
                                 <h:outputLabel value="Leave Type"/>
                                 <p:selectOneMenu  value="#{staffLeaveApplicationFormController.leaveType}">
                                     <f:selectItem itemLabel="Select Day Type"/>
@@ -57,12 +57,12 @@
                             </p:commandButton>
                         </p:panel>
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
-                            <p:dataTable value="#{staffLeaveApplicationFormController.staffLeaves}" var="l" 
+                            <p:dataTable value="#{staffLeaveApplicationFormController.staffLeaves}" var="l"
                                          rowStyleClass="#{l.retired eq true ? 'redText':''}"
                                          scrollable="true"
                                          scrollHeight="300" id="tb1">
                                 <f:facet name="header">
-                                    
+
                                     <h:outputLabel value="Leave Application Form"/><br/>
                                     <h:outputLabel value="  From : "  />
                                     <h:outputLabel  value="#{staffLeaveApplicationFormController.fromDate}" >
@@ -70,7 +70,7 @@
                                     </h:outputLabel>
                                     <h:outputLabel/>
                                     <h:outputLabel/>
-                                    <h:outputLabel value="  To : "/> 
+                                    <h:outputLabel value="  To : "/>
                                     <h:outputLabel  value="#{staffLeaveApplicationFormController.toDate}">
                                         <f:convertDateTime pattern="dd MM yy "/>
                                     </h:outputLabel><br/>
@@ -122,16 +122,16 @@
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>
                             </p:dataTable>
                         </p:panel>
                     </p:panel>
-                </h:panelGrid>              
+                </h:panelGrid>
             </p:panel>
         </h:form>
-    </ui:define> 
+    </ui:define>
 
 </ui:composition>

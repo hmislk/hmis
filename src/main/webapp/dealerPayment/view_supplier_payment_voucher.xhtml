@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html 
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:p="http://primefaces.org/ui"                
+    xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+    xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/dealerPayment/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:commandButton value="Print" ajax="false" action="#" icon="pi pi-print"  styleClass="ui-button-secondary m-1" >
+                        <p:printer target="gpBillPreview" />
+                    </p:commandButton>
+                    <h:panelGroup rendered="#{supplierPaymentController.current.paymentMethod eq 'Cheque'}">
+                        <p:selectBooleanCheckbox value="#{supplierPaymentController.acPayeeOnly}"
+                                                 label="A/C Payee Only" itemLabel="A/C Payee Only"
+                                                 class="mx-2">
+                            <p:ajax process="@this" update="@all"/>
+                        </p:selectBooleanCheckbox>
+                        <p:commandButton value="Print Cheque" class="mx-2" ajax="false" action="#" icon="pi pi-print" >
+                            <p:printer target="gpBillPreview1"/>
+                        </p:commandButton>
+                    </h:panelGroup>
+                    <p:panel   id="gpBillPreview">
+                        <bi:grn_payment_with_pre_bill billItems="#{supplierPaymentController.current.billItems}" bill="#{supplierPaymentController.current.referenceBill}"/>
+                    </p:panel>
+
+                    <h:panelGroup   id="gpBillPreview1" class="my-5">
+                        <bi:supplier_payment_cheque billItems="#{supplierPaymentController.current.billItems}" bill="#{supplierPaymentController.current}" acPayeeOnly="#{supplierPaymentController.acPayeeOnly}" />
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -4,8 +4,8 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.data.BillType;
-import com.divudi.entity.Bill;
+import com.divudi.core.data.BillType;
+import com.divudi.core.entity.Bill;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -18,9 +18,9 @@ import javax.ejb.Stateless;
 public class EjbApplication {
 
     List<Bill> billsToCancel;
-   
-    
-    
+
+
+
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
 
@@ -28,34 +28,34 @@ public class EjbApplication {
         if(billsToCancel==null){
             billsToCancel=new ArrayList<>();
         }
-        
+
         return billsToCancel;
     }
-    
+
     public List<Bill> getOpdBillsToCancel(){
         List<Bill> tmp=new ArrayList<>();
-        
+
         for(Bill cb:getBillsToCancel()){
             if(cb.getBillType()== BillType.OpdBill){
                 tmp.add(cb);
             }
         }
-        
+
         return tmp;
-    
+
     }
-    
+
      public List<Bill> getLabBillsToCancel(){
         List<Bill> tmp=new ArrayList<>();
-        
+
         for(Bill cb:getBillsToCancel()){
             if(cb.getBillType()== BillType.LabBill){
                 tmp.add(cb);
             }
         }
-        
+
         return tmp;
-    
+
     }
 
     public void setBillsToCancel(List<Bill> billsToCancel) {

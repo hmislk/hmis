@@ -1,0 +1,286 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/collecting_centre/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+
+                    <h:panelGroup rendered="#{!webUserController.hasPrivilege('SearchCCPaymentReceive') and !webUserController.hasPrivilege('CollectingCentreManageMenu')}">
+                        <na:not_authorize />
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('SearchCCPaymentReceive') and webUserController.hasPrivilege('CollectingCentreManageMenu')}">
+                        <p:panel >
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <div class="mt-2">
+                                        <h:outputText styleClass="fas fa-search" />
+                                        <h:outputLabel value="Pay to Collecting Center" class="mx-2"/>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton 
+                                            value="Print" 
+                                            class="ui-button-info" 
+                                            icon="fas fa-print"
+                                            rendered="#{collectingCentrePaymentController.printPriview}"
+                                            ajax="false">
+                                            <p:printer target="gpBillPreview" ></p:printer>
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            value="New Bill" 
+                                            class="ui-button-warning" 
+                                            icon="fas fa-plus"
+                                            ajax="false" 
+                                            action="#{collectingCentrePaymentController.makeNull()}">
+                                        </p:commandButton>
+
+                                    </div>
+                                </div>
+                            </f:facet>
+
+                            <h:panelGroup 
+                                class="row"
+                                layout="block"
+                                rendered="#{collectingCentrePaymentController.currentCollectingCentre eq null}" >
+
+                                <h:panelGrid columns="12" >
+                                    <p:spacer width="5em"/>
+                                    <h:outputLabel value="From Date"/>
+                                    <p:calendar 
+                                        value="#{collectingCentrePaymentController.fromDate}" 
+                                        navigator="true" 
+                                        pattern="dd MMM yyyy HH:mm:ss"  >
+                                    </p:calendar>
+
+                                    <p:spacer width="6em"/>
+
+                                    <h:outputLabel value="To Date"/>
+                                    <p:calendar 
+                                        value="#{collectingCentrePaymentController.toDate}" 
+                                        navigator="true" 
+                                        pattern="dd MMM yyyy HH:mm:ss" >
+                                    </p:calendar>
+
+                                    <p:spacer width="6em"/>
+
+                                    <p:outputLabel class="mt-1" value="Select Collecting Centre"></p:outputLabel>
+                                    <p:autoComplete 
+                                        converter="deal" 
+                                        value="#{collectingCentrePaymentController.currentCollectingCentre}" 
+                                        forceSelection="true" 
+                                        id="acColl"
+                                        completeMethod="#{institutionController.completeCollectingCenter}" 
+                                        var="vt" 
+                                        itemLabel="#{vt.name}" 
+                                        itemValue="#{vt}" 
+                                        maxResults="15"
+                                        class="w-100 mb-1"
+                                        style="width: 15em;"
+                                        inputStyleClass="form-control">
+                                        <p:column style="padding: 6px;">#{vt.code}</p:column>
+                                        <p:column style="padding: 6px;">#{vt.name}</p:column>
+                                    </p:autoComplete>
+
+                                    <p:spacer width="6em"/>
+
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        icon="fa fa-arrow-right"
+                                        action="#{collectingCentrePaymentController.processCollectingCentrePayment()}"
+                                        value="Select">
+                                    </p:commandButton>
+
+                                    <p:spacer width="5em"/>
+
+                                </h:panelGrid>
+
+                            </h:panelGroup>
+
+                            <h:panelGroup 
+                                class="row"
+                                layout="block"
+                                rendered="#{collectingCentrePaymentController.currentCollectingCentre ne null}" >
+                                <h:panelGroup rendered="#{collectingCentrePaymentController.printPriview eq false}">
+
+                                    <div class="d-flex justify-content-center">
+                                        <div>
+                                            <div class="d-flex justify-content-center" style="font-weight: 700; font-size: 28px;">
+                                                #{collectingCentrePaymentController.currentCollectingCentre.code} - #{collectingCentrePaymentController.currentCollectingCentre.name}
+                                            </div>
+                                            <div  class="d-flex justify-content-center gap-2" style="font-weight: 600; font-size: 18px;">
+                                                <h:outputLabel value="#{collectingCentrePaymentController.fromDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputLabel>
+                                                <h:outputLabel value="to"></h:outputLabel>
+                                                <h:outputLabel value="#{collectingCentrePaymentController.toDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputLabel>
+
+                                            </div>
+                                            <div  class="d-flex justify-content-center" style="font-weight: 600; font-size: 22px;">
+                                                Pay to Collecting Center
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="my-2">
+                                        <p:commandButton
+                                            id="btnExcel"
+                                            icon="fa-solid fa-file-excel"
+                                            ajax="false"
+                                            style="float:right;"
+                                            action="#{collectingCentrePaymentController.exportSelectedBillsToExcel()}"
+                                            value="Download"
+                                            class="my-1 ui-button-success ">
+                                        </p:commandButton>
+                                    </div>
+
+                                    <p:dataTable   
+                                        id="tblFee"
+                                        value="#{collectingCentrePaymentController.selectedCCpaymentBills}"
+                                        class="w-100 m-1"
+                                        paginator="true"
+                                        rows="10"
+                                        paginatorPosition="bottom"
+                                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                        rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
+                                        var="b" 
+                                        rowIndexVar="i"
+                                        rowKey="#{b.id}" >
+
+                                        <p:column width="15" headerText="#" style="padding:8px;">
+                                            <h:outputLabel value="#{i+1}"></h:outputLabel>
+                                        </p:column>
+
+                                        <p:column headerText="Bill No" width="16em;" style="padding:8px;">
+                                            <h:outputLabel value="#{b.billNo}"></h:outputLabel>
+                                        </p:column>
+
+                                        <p:column headerText="Reference Number" width="14em;" style="padding:8px;">
+                                            <h:outputLabel value="#{b.referenceNumber}"></h:outputLabel>
+                                        </p:column>
+
+                                        <p:column headerText="Bill At" width="16em" style="padding:8px;">   
+                                            <h:outputLabel value="#{b.billDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column headerText="Patient" style="padding:8px;">                                  
+                                            <h:outputLabel value="#{b.patientName}"/>                                    
+                                        </p:column>
+
+                                        <p:column headerText="Hos. Fee" width="12em;" class="text-end" style="padding:8px;">
+                                            <h:outputLabel value="#{b.hospitalTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{collectingCentrePaymentController.totalHospitalAmount}" style="font-weight: 700;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column headerText="CC Fee" width="12em;" class="text-end" style="padding:8px;">
+                                            <h:outputLabel value="#{b.ccTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{collectingCentrePaymentController.totalCCAmount}" style="font-weight: 700;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        
+                                    </p:dataTable>
+
+                                    <p:panel id="pTotals" class="mt-2" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Payment Details" class="mt-2" />
+                                            <p:commandButton 
+                                                id="btnPay"
+                                                ajax="false"
+                                                value="Settle Payment" 
+                                                style="float: right;"
+                                                icon="fas fa-plus"
+                                                action="#{collectingCentrePaymentController.settlePaymentBill()}"
+                                                class="ui-button-success" >
+                                            </p:commandButton>
+                                        </f:facet>
+
+                                        <div class="row" >
+                                            <div class="col" >
+
+                                                <p:panelGrid columns="2" layout="tabular" class="w-100" columnClasses="text-left, text-end">
+
+                                                    <h:outputLabel value="Before Transaction Balance in Collcting Centre" ></h:outputLabel>
+                                                    <h:outputLabel value="#{collectingCentrePaymentController.startingBalanseInCC}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="After Transaction Balance in Collcting Centre" ></h:outputLabel>
+                                                    <h:outputLabel value="#{collectingCentrePaymentController.finalEndingBalanseInCC}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="Total Paying Amount ( Acoding to CC Balabce )" ></h:outputLabel>
+                                                    <h:outputLabel value="#{collectingCentrePaymentController.payingBalanceAcodingToCCBalabce}" style="font-weight: 700; font-size: 22px;">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+
+                                                </p:panelGrid>
+
+                                                <hr/>
+
+                                            </div>
+                                            <div class="col " >
+                                                <p:panelGrid columns="2" layout="tabular" class="w-100" columnClasses="text-left, text-end">
+                                                    <h:outputLabel value="Total Receive from Collcting Centre" ></h:outputLabel>
+                                                    <h:outputLabel id="lblReciv" value="#{collectingCentrePaymentController.totalCCReceiveAmount}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="Transaction Amount" ></h:outputLabel>
+                                                    <h:outputLabel id="lblTrans" value="#{collectingCentrePaymentController.totalHospitalAmount}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="Total Due to Collcting Centre" ></h:outputLabel>
+                                                    <h:outputLabel id="lblDue" value="#{collectingCentrePaymentController.totalCCAmount}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="Payment Method" ></h:outputLabel>
+                                                    <p:selectOneMenu   value="#{collectingCentrePaymentController.paymentMethod}" class="mx-2 w-100">     
+                                                        <f:selectItem itemLabel="Select Payment method"/>
+                                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
+                                                    </p:selectOneMenu>
+                                                    <h:outputLabel value="Total Payment Completed for this month" ></h:outputLabel>
+                                                    <h:outputLabel   value="#{collectingCentrePaymentController.payingBalanceAcodingToCCBalabce}" style="font-weight: 700; font-size: 22px;">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </p:panelGrid>
+                                            </div>
+                                        </div>
+                                    </p:panel>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{collectingCentrePaymentController.printPriview eq true}">
+                                    <h:panelGroup id="gpBillPreview" class=" mt-3">
+                                        <bi:A4PaperCCRepayment controller="#{collectingCentrePaymentController}" bill="#{collectingCentrePaymentController.currentPaymentBill}" dup="false"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </h:panelGroup>
+
+                        </p:panel>
+
+                    </h:panelGroup>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

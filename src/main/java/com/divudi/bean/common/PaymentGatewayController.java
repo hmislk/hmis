@@ -1,11 +1,10 @@
 package com.divudi.bean.common;
 
-import com.divudi.entity.Patient;
-import com.divudi.entity.channel.SessionInstance;
-import com.divudi.bean.common.CommonController;
-import com.divudi.data.channel.PatientPortalController;
-import com.divudi.entity.PaymentGatewayTransaction;
-import com.divudi.facade.PaymentGatewayTransactionFacade;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.bean.channel.PatientPortalController;
+import com.divudi.core.entity.PaymentGatewayTransaction;
+import com.divudi.core.facade.PaymentGatewayTransactionFacade;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URLDecoder;
@@ -20,6 +19,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.inject.Inject;
+
+import com.divudi.core.util.CommonFunctions;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
@@ -35,15 +36,16 @@ public class PaymentGatewayController implements Serializable {
     PaymentGatewayTransactionFacade paymentGatewayTransactionFacade;
 
     @Inject
-    CommonController commonController;
-    @Inject
     SessionController sessionController;
     @Inject
     PatientPortalController patientPortalController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
-    private String merchantId = "TESTSETHMAHOSLKR"; // Actual Merchant ID
-    private String apiUsername = "merchant.TESTSETHMAHOSLKR"; // Actual API Username
-    private String apiPassword = "49de22fcd8ade9ecb3d81790f3ad152c"; // Actual API Password
+
+    private String merchantId ; // Actual Merchant ID
+    private String apiUsername; // Actual API Username
+    private String apiPassword; // Actual API Password
     private String paymentStatus;
     private String sessionId;
     private String paymentUrl;
@@ -83,6 +85,9 @@ public class PaymentGatewayController implements Serializable {
     }
 
     public String createCheckoutSession() {
+        merchantId = configOptionApplicationController.getLongTextValueByKey("Payment Gateway Merchant ID","TESTSETHMAHOSLKR"); // Actual Merchant ID
+        apiUsername = configOptionApplicationController.getLongTextValueByKey("Payment Gateway Username", "merchant.TESTSETHMAHOSLKR"); // Actual API Username
+        apiPassword = configOptionApplicationController.getLongTextValueByKey("Payment Gateway API Password", "49de22fcd8ade9ecb3d81790f3ad152c"); // Actual API Password
         generateTemplateForOrderDescription();
         HttpClient client = HttpClients.createDefault();
         HttpPost post = new HttpPost(gatewayUrl);
@@ -101,7 +106,7 @@ public class PaymentGatewayController implements Serializable {
                     + "&interaction.returnUrl=%s&interaction.merchant.name=%s",
                     apiUsername, apiPassword, merchantId,
                     newPaymentGatewayTransaction.getIdStr(), orderAmount, "LKR", templateForOrderDescription.toString(), "PURCHASE",
-                    commonController.getBaseUrl() + "faces/patient_portal_channelling_payment_status.xhtml", "Sethma");
+                    CommonFunctions.getBaseUrl() + "faces/patient_portal_channelling_payment_status.xhtml", "Sethma");
             post.setEntity(new StringEntity(requestBody));
             HttpResponse response = client.execute(post);
             String responseString = EntityUtils.toString(response.getEntity());
@@ -166,12 +171,12 @@ public class PaymentGatewayController implements Serializable {
                     patientPortalController.completeBooking();
                     try {
                         patientPortalController.setCurrentPaymentGatewayTransaction(newPaymentGatewayTransaction);
-                        FacesContext.getCurrentInstance().getExternalContext().redirect(commonController.getBaseUrl() + "faces/patient_portal_channelling_payment_successful.xhtml");
+                        FacesContext.getCurrentInstance().getExternalContext().redirect(CommonFunctions.getBaseUrl() + "faces/patient_portal_channelling_payment_successful.xhtml");
                     } catch (IOException e) {
                     }
                 }else{
                     try {
-                        FacesContext.getCurrentInstance().getExternalContext().redirect(commonController.getBaseUrl() + "faces/patient_portal_channelling_payment_unsuccessful.xhtml");
+                        FacesContext.getCurrentInstance().getExternalContext().redirect(CommonFunctions.getBaseUrl() + "faces/patient_portal_channelling_payment_unsuccessful.xhtml");
                     } catch (IOException e) {
                     }
                 }
@@ -195,27 +200,27 @@ public class PaymentGatewayController implements Serializable {
         Map<String, String> responseMap = parseUrlEncodedResponse(response);
         return responseMap.get("session.id");
     }
-    
+
     private String extractTransactionId(String response) {
         Map<String, String> responseMap = parseUrlEncodedResponse(response);
         return responseMap.get("transaction%5B1%5D.transaction.receipt");
     }
-    
+
     private String extractPaidAmount(String response) {
         Map<String, String> responseMap = parseUrlEncodedResponse(response);
         return responseMap.get("totalCapturedAmount");
     }
-    
+
     private String extractPaidDate(String response) {
         Map<String, String> responseMap = parseUrlEncodedResponse(response);
         return responseMap.get("lastUpdatedTime");
     }
-    
+
     private String extractCardNo(String response) {
         Map<String, String> responseMap = parseUrlEncodedResponse(response);
         return responseMap.get("sourceOfFunds.provided.card.number");
     }
-    
+
     private String extractCardType(String response) {
         Map<String, String> responseMap = parseUrlEncodedResponse(response);
         return responseMap.get("sourceOfFunds.provided.card.brand");

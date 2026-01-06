@@ -1,0 +1,355 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
+      xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}">
+                    You are NOT authorized
+                </h:panelGroup>
+                <h:form>
+                    <p:panel
+                        rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}">
+                        <f:facet name="header" >
+                            <h:outputText value="OPD Batch Bill" class="my-3"></h:outputText>
+                        </f:facet>
+
+
+
+
+                        <p:tabView>
+                            <p:tab title="Patient Details" >
+                                <div class="col-3" >
+                                    <div class="d-flex justify-content-center">
+                                        <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                        <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
+                                            <f:selectItem itemLabel="Please Select Paper Type" />
+                                            <f:selectItems value="#{enumController.paperTypes}" />
+                                        </p:selectOneMenu>
+                                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                                        <p:commandButton value="Print" 
+                                                         class="ui-button-info m-1"
+                                                         icon="fa fa-print"
+                                                         ajax="false">
+                                            <p:printer target="groupPrint" />
+                                        </p:commandButton> 
+                                    </div> 
+                                    <h:panelGroup id="groupPrint" >
+                                        <ui:repeat value="#{sessionController.departmentPreference.OPDBillCopiesList}" var="copy">
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                                <ui:repeat value="#{billSearch.viewingIndividualBillsOfBatchBill}" var="ffb" >
+                                                    <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.payments}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+                                                <ui:repeat value="#{billSearch.viewingIndividualBillsOfBatchBill}" var="ffb" >
+                                                    <prints:five_five_paper_coustom_1 bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.payments}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
+                                                <ui:repeat value="#{billSearch.viewingIndividualBillsOfBatchBill}" var="ffpp">
+                                                    <prints:five_five_paper_without_headings 
+                                                        bill="#{ffpp}" 
+                                                        duplicate="#{opdBillController.duplicatePrint}"
+                                                        payments="#{opdBillController.payments}"/>
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}" >
+                                                <ui:repeat value="#{billSearch.viewingIndividualBillsOfBatchBill}" var="pp">
+                                                    <prints:posOpdBillWithoutLogo bill="#{pp}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+                                                <ui:repeat value="#{billSearch.viewingIndividualBillsOfBatchBill}" var="pp">
+                                                    <prints:posOpdBill bill="#{pp}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4Paper'}" >
+                                                <ui:repeat value="#{billSearch.viewingIndividualBillsOfBatchBill}" var="pp">
+                                                    <prints:A4_paper_with_headings bill="#{pp}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'A4PrintedPaper'}" >
+                                                <ui:repeat value="#{billSearch.viewingIndividualBillsOfBatchBill}" var="pp">
+                                                    <prints:A4_paper_without_headings bill="#{pp}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosBatchPaper'}" >
+                                                <prints:pos_opd_bill_batch_with_bill_items billController="#{opdBillController}" payments="#{opdBillController.payments}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperBatchBill'}" >
+                                                <prints:five_five_paper_with_headings_badge_bill_with_bill_items billController="#{opdBillController}" payments="#{opdBillController.payments}" duplicate="#{opdBillController.duplicatePrint}"/>                        
+                                            </h:panelGroup>
+                                        </ui:repeat>
+                                    </h:panelGroup>
+                                </div>
+
+                                <div class="col-3" >
+                                    <p:commandButton 
+                                        value="Print" 
+                                        class="ui-button-info m-1"
+                                        icon="fa fa-print"
+                                        ajax="false">
+                                        <p:printer target="groupBatchBillPrint" />
+                                    </p:commandButton> 
+
+
+                                    <h:panelGroup id="groupBatchBillPrint" rendered="#{configOptionApplicationController.getBooleanValueByKey('Showing OPD Batch Bill to Print')}">
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                            <prints:five_five_paper_with_headings_badge_bill billController="#{opdBillController}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}">
+                                            <prints:five_five_paper_without_headings_badge_bill billController="#{opdBillController}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}">
+                                            <prints:pos_opd_bill_batch billController="#{opdBillController}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPrintedPaper'}">
+                                            <prints:pos_opd_bill_without_logo_batch billController="#{opdBillController}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </div>
+                            </p:tab>
+
+                            <p:tab title="Patient Details" >
+                                <p:panel header="">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
+                                        <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                                    <common:patient patient="#{billSearch.viewingBill.patient}" class="w-100"/>
+                                </p:panel>
+                            </p:tab>
+                            <p:tab title="Batch Bill Details" >
+                                <table class="ui-datatable ui-widget w-100 m-1">
+                                    <thead>
+                                        <tr  class="ui-widget-header">
+                                            <th colspan="2" class="w-100 d-flex justify-content-between align-items-center">
+                                                <span>Batch Bill Details</span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="ui-widget-content #{billSearch.viewingBill.refunded ? 'row-warning' : billSearch.viewingBill.cancelled ? 'row-danger' : ''}">
+                                            <td>Batch Bill ID</td>
+                                            <td>#{billSearch.viewingBill.id}</td>
+                                        </tr>
+                                        <tr class="ui-widget-content #{billSearch.viewingBill.refunded ? 'row-warning' : billSearch.viewingBill.cancelled ? 'row-danger' : ''}">
+                                            <td>Bill Type</td>
+                                            <td>#{billSearch.viewingBill.billType.label}</td>
+                                        </tr>
+                                        <tr class="ui-widget-content #{billSearch.viewingBill.refunded ? 'row-warning' : billSearch.viewingBill.cancelled ? 'row-danger' : ''}">
+                                            <td>Bill Type Atomic</td>
+                                            <td>#{billSearch.viewingBill.billTypeAtomic.label}</td>
+                                        </tr>
+                                        <tr class="ui-widget-content #{billSearch.viewingBill.refunded ? 'row-warning' : billSearch.viewingBill.cancelled ? 'row-danger' : ''}">
+                                            <td>Batch Bill Ins ID</td>
+                                            <td>#{billSearch.viewingBill.deptId}</td>
+                                        </tr>
+                                        <tr class="ui-widget-content #{billSearch.viewingBill.refunded ? 'row-warning' : billSearch.viewingBill.cancelled ? 'row-danger' : ''}">
+                                            <td>Batch Bill Dept ID</td>
+                                            <td>#{billSearch.viewingBill.deptId}</td>
+                                        </tr>
+                                        <tr class="ui-widget-content #{billSearch.viewingBill.refunded ? 'row-warning' : billSearch.viewingBill.cancelled ? 'row-danger' : ''}">
+                                            <td>Payment Method</td>
+                                            <td>#{billSearch.viewingBill.paymentMethod.label}</td>
+                                        </tr>
+                                        <tr class="ui-widget-content #{billSearch.viewingBill.refunded ? 'row-warning' : billSearch.viewingBill.cancelled ? 'row-danger' : ''}">
+                                            <td>Net Total</td>
+                                            <td>#{billSearch.viewingBill.netTotal}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </p:tab>
+                            <p:tab title="Individual Bills" >
+                                <p:dataTable 
+                                    value="#{billSearch.viewingIndividualBillsOfBatchBill}" 
+                                    var="b" 
+                                    resizeMode="expand"
+                                    reflow="true"
+                                    class="w-100 m-1" 
+                                    rowStyleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Individual Bills" ></h:outputText>
+                                    </f:facet>
+                                    <p:column headerText="ID" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                        <p:inputText value="#{b.id}" ></p:inputText>
+                                    </p:column>
+                                    <p:column headerText="Ins No" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                        <p:inputText readonly="true" value="#{b.deptId}" ></p:inputText>
+                                    </p:column>
+                                    <p:column headerText="Dep No" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                        <p:inputText value="#{b.deptId}" ></p:inputText>
+                                    </p:column>
+                                    <p:column headerText="Bill Type" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                        <h:outputText value="#{b.billType.label}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Bill Type Atomic" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                        <h:outputText value="#{b.billTypeAtomic.label}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Net Total" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                        <h:outputText value="#{b.netTotal}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Actions" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                        <!-- To Bill Details Button -->
+                                        <p:commandButton ajax="false"
+                                                         title="View Bill Details"
+                                                         class="ui-button-warning m-1"
+                                                         icon="fa fa-file-invoice"
+                                                         action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                            <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            id="viewBill"
+                                            icon="fa fa-fw fa-file-invoice-dollar"
+                                            action="/bill_summery" 
+                                            rendered="true"
+                                            ajax="false">
+                                            <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}" />
+                                        </p:commandButton>
+
+
+                                    </p:column>
+                                </p:dataTable>
+                            </p:tab>
+
+
+                            <p:tab title="Bill Items" >
+                                <p:dataTable value="#{billSearch.viewingBillItems}" var="bi" rowKey="#{bi.id}" >
+                                    <p:column >
+                                        <h:outputText value="#{bi.id}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{bi.item.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{bi.qty}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{bi.hospitalFee}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{bi.staffFee}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{bi.collectingCentreFee}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{bi.otherFee}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{bi.grossValue}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{bi.discount}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{bi.netValue}" ></h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:tab>
+                            <p:tab title="Bill Components" >
+
+                            </p:tab>
+                            <p:tab title="Bill Fees" >
+                                <p:dataTable 
+                                    value="#{billSearch.viewingBillFees}" 
+                                    var="bf"
+                                    rowKey="#{bi.id}" >
+                                    <p:column >
+                                        <h:outputText value="#{bf.id}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{bf.billItem.id}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{bf.fee.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{bf.fee.fee}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{bf.fee.ffee}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{bf.billItem.item.name}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{bf.billItem.item.code}" ></h:outputText>
+                                    </p:column>
+                                    <p:column >
+                                        <h:outputText value="#{bi.feeValue}" ></h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:tab>
+                            <p:tab title="Bill Payments" >
+                                <p:dataTable 
+                                    value="#{billSearch.viewingBillPayments}" 
+                                    var="p"
+                                    rowKey="#{p.id}" >
+                                    <p:column headerText="ID">
+                                        <h:outputText value="#{p.id}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Payment Methods">
+                                        <h:outputText value="#{p.paymentMethod}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Value" >
+                                        <h:outputText value="#{p.paidValue}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Actions">
+                                        <p:commandButton 
+                                            value="View" 
+                                            class="m-2 ui-button-success"
+                                            ajax="false"
+                                            icon="fa fa-eye"
+                                            action="#{billSearch.navigateToViewPayment()}">
+                                            <f:setPropertyActionListener 
+                                                value="#{p}" 
+                                                target="#{billSearch.payment}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                        <p:commandButton 
+                                            value="Edit" 
+                                            ajax="false"
+                                            class="m-2 ui-button-warning"
+                                            icon="fa fa-pencil"
+                                            action="#{billSearch.navigateToEditPayment()}">
+                                            <f:setPropertyActionListener 
+                                                value="#{p}" 
+                                                target="#{billSearch.payment}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                    </p:column>
+
+                                </p:dataTable>
+                            </p:tab>
+                            <p:tab title="Cancellations &amp; Refunds" >
+
+                            </p:tab>
+                        </p:tabView>
+
+
+
+
+
+
+
+
+
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

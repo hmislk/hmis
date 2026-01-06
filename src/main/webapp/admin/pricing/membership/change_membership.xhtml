@@ -42,10 +42,11 @@
                                                  selection="#{patientController.selectedItems}" rowKey="#{p.id}"
                                                  rows="10"
                                                  paginator="true"
+                                                 selectionMode="multiple"
                                                  paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                                  rowsPerPageTemplate="5,10,15"
                                                  >
-                                        <p:column selectionMode="multiple" width="10" ></p:column>
+                                        <p:column selectionBox="true" width="10" ></p:column>
                                         <p:column headerText="Name" sortBy="#{p.person.nameWithTitle}" filterBy="#{p.person.nameWithTitle}">
                                             <p:outputLabel value="#{p.person.nameWithTitle}" ></p:outputLabel>
                                         </p:column>

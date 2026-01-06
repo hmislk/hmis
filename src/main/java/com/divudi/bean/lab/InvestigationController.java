@@ -9,40 +9,43 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.InvestigationItemType;
-import com.divudi.data.ItemType;
-import com.divudi.data.SymanticType;
-import com.divudi.data.inward.InwardChargeType;
-import com.divudi.data.lab.InvestigationWithCount;
-import com.divudi.data.lab.JsonInvestigation;
-import com.divudi.data.lab.JsonInvestigationList;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.clinical.ClinicalEntity;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationCategory;
-import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.InvestigationItemValueFlag;
-import com.divudi.entity.lab.PatientReport;
-import com.divudi.entity.lab.ReportItem;
-import com.divudi.entity.lab.WorksheetItem;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InvestigationFacade;
-import com.divudi.facade.InvestigationItemFacade;
-import com.divudi.facade.InvestigationItemValueFlagFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.SpecialityFacade;
-import com.divudi.facade.WorksheetItemFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.InvestigationItemType;
+import com.divudi.core.data.ItemType;
+import com.divudi.core.data.SymanticType;
+import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.data.lab.InvestigationWithCount;
+import com.divudi.core.data.lab.JsonInvestigation;
+import com.divudi.core.data.lab.JsonInvestigationList;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.InvestigationCategory;
+import com.divudi.core.entity.lab.InvestigationItem;
+import com.divudi.core.entity.lab.InvestigationItemValueFlag;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.entity.lab.ReportItem;
+import com.divudi.core.entity.lab.WorksheetItem;
+import com.divudi.core.data.dto.InvestigationDTO;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.InvestigationItemFacade;
+import com.divudi.core.facade.InvestigationItemValueFlagFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.SpecialityFacade;
+import com.divudi.core.facade.WorksheetItemFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.lab.InvestigationTube;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.entity.lab.Sample;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
@@ -63,7 +66,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
-import javax.enterprise.context.Dependent;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -72,6 +74,7 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -95,8 +98,6 @@ public class InvestigationController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
-    CommonController commonController;
-    @Inject
     private BillBeanController billBean;
     @Inject
     InvestigationItemController investigationItemController;
@@ -108,6 +109,8 @@ public class InvestigationController implements Serializable {
     PatientReportController patientReportController;
     @Inject
     ItemForItemController itemForItemController;
+    @Inject
+    ItemApplicationController itemApplicationController;
     /**
      * EJBs
      */
@@ -134,6 +137,10 @@ public class InvestigationController implements Serializable {
     boolean reportedAs;
     Boolean listMasterItemsOnly = false;//if boolean is true list only institution null
     InvestigationCategory category;
+    private Sample sample;
+    private Machine machine;
+    private InvestigationTube investigationTube;
+    private Item itemForReported;
     List<Investigation> catIxs;
     List<Investigation> allIxs;
     List<Investigation> itemsToRemove;
@@ -145,6 +152,10 @@ public class InvestigationController implements Serializable {
     List<Investigation> ixWithoutSamples;
     List<InvestigationWithInvestigationItems> investigationWithInvestigationItemses;
     List<ItemWithFee> itemWithFees;
+
+    List<InvestigationDTO> investigationDtos;
+    List<InvestigationDTO> selectedInvestigationDtos;
+
     private List<Investigation> investigationWithSelectedFormat;
     private Category categoryForFormat;
     private UploadedFile file;
@@ -188,6 +199,34 @@ public class InvestigationController implements Serializable {
             return "";
         }
         return "/lab/manage_investigation?faces-redirect=true";
+    }
+
+    public void updateSelectedInvestigations() {
+        if (selectedInvestigations.isEmpty()) {
+            JsfUtil.addErrorMessage("Pleace select Investigations !");
+            return;
+        }
+
+        for (Investigation selectedInvestigation : selectedInvestigations) {
+            if (category != null) {
+                selectedInvestigation.setCategory(category);
+            }
+            if (sample != null) {
+                selectedInvestigation.setSample(sample);
+            }
+            if (machine != null) {
+                selectedInvestigation.setMachine(machine);
+            }
+            if (investigationTube != null) {
+                selectedInvestigation.setInvestigationTube(investigationTube);
+            }
+            if (itemForReported != null) {
+                selectedInvestigation.setReportedAs(itemForReported);
+            }
+
+            getFacade().edit(selectedInvestigation);
+
+        }
     }
 
     // Method to generate the Excel file and initiate the download
@@ -448,6 +487,39 @@ public class InvestigationController implements Serializable {
         return investigationItemController.toEditInvestigationFormat();
     }
 
+    public String navigateExportReoirtFormat() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Please select investigation");
+            return "";
+        }
+        if (current.getId() == null) {
+            JsfUtil.addErrorMessage("Please save investigation first.");
+            return "";
+        }
+        if (current.getReportedAs() == null) {
+            current.setReportedAs(current);
+        }
+        investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
+        investigationItemController.listInvestigationItem();
+        return "/admin/lims/export?faces-redirect=true";
+    }
+
+    public String navigateToEditFormatSinglePastData() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Please select investigation");
+            return "";
+        }
+        if (current.getId() == null) {
+            JsfUtil.addErrorMessage("Please save investigation first.");
+            return "";
+        }
+        if (current.getReportedAs() == null) {
+            current.setReportedAs(current);
+        }
+        investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
+        return investigationItemController.toEditInvestigationFormatPastData();
+    }
+
     public String navigateToManageReportComponents() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
@@ -498,11 +570,11 @@ public class InvestigationController implements Serializable {
     }
 
     public String navigateToEditPathologyFormat() {
-        if (current == null) {
-            JsfUtil.addErrorMessage("Please select investigation");
-            return "";
-        }
         return "/admin/lims/pathology_format?faces-redirect=true";
+    }
+
+    public String navigateToManageInvestigationsForDevelopers() {
+        return "/admin/lims/developers/lab_investigation_list_for_developers?faces-redirect=true";
     }
 
     public String navigateToManageCalculations() {
@@ -614,9 +686,28 @@ public class InvestigationController implements Serializable {
 
     public void listAllIxs() {
         String sql;
-        sql = "Select i from Investigation i where i.retired=false ";
+        sql = "Select i "
+                + " from Investigation i "
+                + " where i.retired=:ret "
+                + " and i.hasReportFormat<>:rf";
         sql += " order by i.name";
-        allIxs = getFacade().findByJpql(sql);
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("rf", true);
+        allIxs = getFacade().findByJpql(sql, m);
+    }
+
+    public void listAllReports() {
+        String sql;
+        sql = "Select i "
+                + " from Investigation i "
+                + " where i.retired=:ret "
+                + " and i.hasReportFormat=:rf";
+        sql += " order by i.name";
+        Map m = new HashMap<>();
+        m.put("ret", false);
+        m.put("rf", true);
+        allIxs = getFacade().findByJpql(sql, m);
     }
 
     public String listFilteredIxs() {
@@ -662,7 +753,6 @@ public class InvestigationController implements Serializable {
             }
         }
 
-        
     }
 
     public List<PatientReport> getSelectedPatientReports() {
@@ -859,30 +949,40 @@ public class InvestigationController implements Serializable {
         List<Investigation> suggestions;
         String sql;
         Map m = new HashMap();
-
-        //m.put(m, m);
         sql = "select c from Investigation c "
                 + " where c.retired=false "
                 + " and ((c.name) like :n or "
                 + " (c.fullName) like :n or "
                 + " (c.code) like :n or (c.printName) like :n ) ";
-        //////// // System.out.println(sql);
-
         m.put("n", "%" + query.toUpperCase() + "%");
-
         if (listMasterItemsOnly == true) {
             sql += " and c.institution is null ";
         }
-
-//        if (sessionController.getApplicationPreference().isInstitutionSpecificItems()) {
-//            sql += " and (c.institution is null "
-//                    + " or c.institution=:ins) ";
-//            m.put("ins", sessionController.getInstitution());
-//        }
         sql += " order by c.name";
-
         suggestions = getFacade().findByJpql(sql, m);
+        return suggestions;
+    }
 
+    public List<Investigation> completeInvestigationsWIthoutReportFormats(String query) {
+        if (query == null || query.trim().equals("")) {
+            return new ArrayList<>();
+        }
+        List<Investigation> suggestions;
+        String sql;
+        Map m = new HashMap();
+        sql = "select c from Investigation c "
+                + " where c.retired=false "
+                + " and c.hasReportFormat<>:rf"
+                + " and ((c.name) like :n or "
+                + " (c.fullName) like :n or "
+                + " (c.code) like :n or (c.printName) like :n ) ";
+        m.put("n", "%" + query.toUpperCase() + "%");
+        m.put("rf", true);
+        if (listMasterItemsOnly == true) {
+            sql += " and c.institution is null ";
+        }
+        sql += " order by c.name";
+        suggestions = getFacade().findByJpql(sql, m);
         return suggestions;
     }
 
@@ -1063,90 +1163,125 @@ public class InvestigationController implements Serializable {
     }
 
     public void deleteSelectedItems() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
-        if (selectedInvestigations.isEmpty()) {
+        if (selectedInvestigationDtos == null || selectedInvestigationDtos.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to Delete");
             return;
         }
 
-        for (Investigation i : selectedInvestigations) {
-            i.setRetired(true);
-            i.setRetiredAt(new Date());
-            i.setRetirer(getSessionController().getLoggedUser());
-            getFacade().edit(i);
+        for (InvestigationDTO dto : selectedInvestigationDtos) {
+            Investigation i = getFacade().find(dto.getId());
+            if (i != null) {
+                i.setRetired(true);
+                i.setRetiredAt(new Date());
+                i.setRetirer(getSessionController().getLoggedUser());
+                getFacade().edit(i);
+            }
         }
         JsfUtil.addSuccessMessage("Successfully Deleted");
-        selectedInvestigations = null;
+        selectedInvestigationDtos = null;
+        fillInvestigationDtos();
 
-        
     }
 
     public void unDeleteSelectedItems() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
-        if (selectedInvestigations.isEmpty()) {
+        if (selectedInvestigationDtos == null || selectedInvestigationDtos.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to Un-Delete");
             return;
         }
 
-        for (Investigation i : selectedInvestigations) {
-            i.setRetired(false);
-            i.setRetiredAt(new Date());
-            i.setRetirer(getSessionController().getLoggedUser());
-            getFacade().edit(i);
+        for (InvestigationDTO dto : selectedInvestigationDtos) {
+            Investigation i = getFacade().find(dto.getId());
+            if (i != null) {
+                i.setRetired(false);
+                i.setRetiredAt(new Date());
+                i.setRetirer(getSessionController().getLoggedUser());
+                getFacade().edit(i);
+            }
         }
         JsfUtil.addSuccessMessage("Successfully Deleted");
-        selectedInvestigations = null;
+        selectedInvestigationDtos = null;
+        fillInvestigationDtos();
 
-        
     }
 
     public void markSelectedActive() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
-        if (selectedInvestigations.isEmpty()) {
+        if (selectedInvestigationDtos == null || selectedInvestigationDtos.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to Active");
             return;
         }
 
-        for (Investigation i : selectedInvestigations) {
-            i.setInactive(false);
-            getFacade().edit(i);
+        for (InvestigationDTO dto : selectedInvestigationDtos) {
+            Investigation i = getFacade().find(dto.getId());
+            if (i != null) {
+                i.setInactive(false);
+                getFacade().edit(i);
+            }
         }
 
         JsfUtil.addSuccessMessage("Successfully Actived");
-        selectedInvestigations = null;
-
-        
+        selectedInvestigationDtos = null;
+        fillInvestigationDtos();
 
     }
 
     public void markSelectedInactive() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
-        if (selectedInvestigations.isEmpty()) {
+        if (selectedInvestigationDtos == null || selectedInvestigationDtos.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to Inactive");
             return;
         }
 
-        for (Investigation i : selectedInvestigations) {
-            i.setInactive(true);
-            getFacade().edit(i);
+        for (InvestigationDTO dto : selectedInvestigationDtos) {
+            Investigation i = getFacade().find(dto.getId());
+            if (i != null) {
+                i.setInactive(true);
+                getFacade().edit(i);
+            }
         }
 
         JsfUtil.addSuccessMessage("Successfully Inactived");
-        selectedInvestigations = null;
+        selectedInvestigationDtos = null;
+        fillInvestigationDtos();
 
-        
+    }
+
+    @Transactional
+    public void convertSelectedInvestigationsToServices() {
+        if (selectedInvestigationDtos == null || selectedInvestigationDtos.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to Convert");
+            return;
+        }
+
+        int successCount = 0;
+        int failureCount = 0;
+
+        for (InvestigationDTO dto : selectedInvestigationDtos) {
+            try {
+                Investigation ix = getFacade().find(dto.getId());
+                if (ix == null) {
+                    continue;
+                }
+                String sql = "UPDATE Item SET DTYPE = ? WHERE id = ?";
+                List<Object> params = Arrays.asList("Service", ix.getId());
+                itemFacade.executeNativeSql(sql, params);
+                successCount++;
+            } catch (Exception e) {
+                Logger.getLogger(InvestigationController.class.getName()).log(Level.SEVERE, null, e);
+                failureCount++;
+            }
+        }
+
+        if (failureCount == 0) {
+            itemFacade.flush();
+            fillItemsFromDatabaseWithoutCache();
+            itemApplicationController.fillAllItemsBypassingCache();
+            JsfUtil.addSuccessMessage("Successfully converted " + successCount + " investigations to services");
+        } else {
+            JsfUtil.addErrorMessage("Conversion completed with " + successCount + " successes and " + failureCount + " failures. Check logs for details.");
+        }
+
+        selectedInvestigationDtos = null;
+        fillInvestigationDtos();
+
     }
 
     public Institution getInstitution() {
@@ -1167,7 +1302,36 @@ public class InvestigationController implements Serializable {
     }
 
     public List<Investigation> completeItem(String qry) {
-        List<Investigation> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+
+        // Construct the JPQL query with named parameters
+        String jpql = "SELECT c FROM Item c WHERE (TYPE(c) = Investigation OR TYPE(c) = Packege) AND c.retired = :ret "
+                + "AND (UPPER(c.name) LIKE :nameQuery OR c.code LIKE :codeQuery) "
+                + "ORDER BY c.name";
+
+        // Create a map to hold query parameters
+        Map parameters = new HashMap<>();
+        parameters.put("nameQuery", "%" + qry.toUpperCase() + "%");
+        parameters.put("codeQuery", "%" + qry + "%");
+        parameters.put("ret", false);
+
+        List<Investigation> completeItems = getFacade().findByJpql(jpql, parameters);
+
+//        List<Investigation> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' or (c.code) like '%" + qry + "%' and  order by c.name");
+        return completeItems;
+    }
+
+    public List<Investigation> completeReports(String qry) {
+        String jpql = "select c "
+                + " from Investigation c "
+                + " where c.retired=:ret"
+                + " and c.name like :qry"
+                + "  and c.hasReportFormat=:rf "
+                + " order by c.name";
+        Map params = new HashMap<>();
+        params.put("ret", false);
+        params.put("rf", true);
+        params.put("qry", "%" + qry.toUpperCase() + "%");
+        List<Investigation> completeItems = getFacade().findByJpql(jpql, params);
         return completeItems;
     }
 
@@ -1221,6 +1385,17 @@ public class InvestigationController implements Serializable {
     public String navigateToListInvestigation() {
         listAllIxs();
         return "/admin/lims/investigation_list?faces-redirect=true";
+    }
+
+    public String navigateToListReportFormats() {
+        listAllReports();
+        return "/admin/lims/report_list?faces-redirect=true";
+    }
+
+    public String navigateToMultipleInvestigationUpdate() {
+        selectedInvestigations = new ArrayList<>();
+        listAllIxs();
+        return "/admin/lims/multiple_investigation_update?faces-redirect=true";
     }
 
     public String navigateToManageReportTemplateNames() {
@@ -1337,7 +1512,6 @@ public class InvestigationController implements Serializable {
         if (getCurrent() == null) {
             return;
         }
-        
 
         getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);
         if (getCurrent().getInwardChargeType() == null) {
@@ -1438,7 +1612,6 @@ public class InvestigationController implements Serializable {
             investigationWithInvestigationItemses.add(items);
         }
 
-        
     }
 
     public List<InvestigationItemWithInvestigationItemValueFlags> fetchFlags(Investigation i) {
@@ -1549,6 +1722,38 @@ public class InvestigationController implements Serializable {
 
     public void setAdminTabIndex(int adminTabIndex) {
         this.adminTabIndex = adminTabIndex;
+    }
+
+    public Sample getSample() {
+        return sample;
+    }
+
+    public void setSample(Sample sample) {
+        this.sample = sample;
+    }
+
+    public Machine getMachine() {
+        return machine;
+    }
+
+    public void setMachine(Machine machine) {
+        this.machine = machine;
+    }
+
+    public InvestigationTube getInvestigationTube() {
+        return investigationTube;
+    }
+
+    public void setInvestigationTube(InvestigationTube investigationTube) {
+        this.investigationTube = investigationTube;
+    }
+
+    public Item getItemForReported() {
+        return itemForReported;
+    }
+
+    public void setItemForReported(Item itemForReported) {
+        this.itemForReported = itemForReported;
     }
 
     public class InvestigationWithInvestigationItems {
@@ -1692,10 +1897,41 @@ public class InvestigationController implements Serializable {
         String sql = "select i from Investigation i where i.retired=false order by i.name";
         items = getFacade().findByJpql(sql);
     }
+    
+    public void fillItemsFromDatabaseWithoutCache() {
+        String sql = "select i from Investigation i where i.retired=false order by i.name";
+        items = getFacade().findByJpql(sql, true);
+    }
 
     public List<Investigation> fillAllItems() {
         String sql = "select i from Investigation i where i.retired=false order by i.name";
         return getFacade().findByJpql(sql);
+    }
+
+    public void fillInvestigationDtos() {
+        String jpql = "SELECT new com.divudi.core.data.dto.InvestigationDTO("
+                + "i.id, "
+                + "i.name, "
+                + "i.investigationCategory.name, "
+                + "i.institution.name, "
+                + "i.machine.name, "
+                + "i.retired, "
+                + "i.department.name) "
+                + "FROM Investigation i "
+                + "ORDER BY i.name";
+
+        investigationDtos = (List<InvestigationDTO>) getFacade().findLightsByJpql(jpql);
+    }
+    
+    public List<InvestigationDTO> fillInvestigationNamesDtos() {
+        String jpql = "SELECT new com.divudi.core.data.dto.InvestigationDTO("
+                + "i.id, "
+                + "i.name) "
+                + "FROM Investigation i "
+                + "ORDER BY i.name";
+
+        investigationDtos = (List<InvestigationDTO>) getFacade().findLightsByJpql(jpql);
+        return investigationDtos;
     }
 
     public void createInvestigationWithFees() {
@@ -1719,7 +1955,6 @@ public class InvestigationController implements Serializable {
             itemWithFees.add(iwf);
         }
 
-        
     }
 
     public class ItemWithFee {
@@ -1830,7 +2065,7 @@ public class InvestigationController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             InvestigationController controller = (InvestigationController) facesContext.getApplication().getELResolver().
@@ -1845,9 +2080,7 @@ public class InvestigationController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -1863,14 +2096,6 @@ public class InvestigationController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + InvestigationController.class.getName());
             }
         }
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public Department getDepartment() {
@@ -1899,6 +2124,25 @@ public class InvestigationController implements Serializable {
 
     public ItemForItemController getItemForItemController() {
         return itemForItemController;
+    }
+
+    public List<InvestigationDTO> getInvestigationDtos() {
+        if (investigationDtos == null) {
+            fillInvestigationDtos();
+        }
+        return investigationDtos;
+    }
+
+    public void setInvestigationDtos(List<InvestigationDTO> investigationDtos) {
+        this.investigationDtos = investigationDtos;
+    }
+
+    public List<InvestigationDTO> getSelectedInvestigationDtos() {
+        return selectedInvestigationDtos;
+    }
+
+    public void setSelectedInvestigationDtos(List<InvestigationDTO> selectedInvestigationDtos) {
+        this.selectedInvestigationDtos = selectedInvestigationDtos;
     }
 
 }

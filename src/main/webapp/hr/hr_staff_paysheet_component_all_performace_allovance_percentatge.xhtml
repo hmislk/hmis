@@ -59,10 +59,11 @@
                                       filteredValue="#{staffController.filteredStaff}" 
                                       scrollHeight="300"                               
                                       rowKey="#{s.id}" 
+                                      selectionMode="multiple"
                                       selection="#{staffController.selectedList}"
                                       rowIndexVar="i">
 
-                            <p:column  selectionMode="multiple" >                            
+                            <p:column  >                            
                             </p:column>
 
                             <p:column >
@@ -139,12 +140,13 @@
                                       var="i"  editable="true"
                                       rowStyleClass="#{i.exist eq true ? 'exist':null}"
                                       selection="#{staffPaySheetComponentAllPerformancePercentageController.selectedStaffComponent}" 
-                                      rowKey="#{i.id}" rowIndexVar="a"  >
+                                      rowKey="#{i.id}" rowIndexVar="a" 
+                                      selectionMode="multiple">
                             <p:ajax event="rowEdit" listener="#{staffPaySheetComponentAllPerformancePercentageController.onEdit}" />
                             <f:facet name="header">
                                 <h:outputLabel value="Performance Allowance Percentage"/>
                             </f:facet>
-                            <p:column  selectionMode="multiple" styleClass="noPrintButton" >                            
+                            <p:column   styleClass="noPrintButton" >                            
                             </p:column>
                             
                             <p:column headerText="No">

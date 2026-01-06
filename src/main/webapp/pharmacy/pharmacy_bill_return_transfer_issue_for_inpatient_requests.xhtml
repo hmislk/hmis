@@ -1,0 +1,219 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy/inward"
+                xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <ui:define name="content">
+        <h:form>
+            <h:panelGroup rendered="#{!bhtIssueReturnController.printPreview}" styleClass="alignTop" >
+                <p:panel>
+                    <f:facet name="header" >      
+                        <div class="d-flex justify-content-between">
+                            <div class="d-flex gap-3 mt-2">
+                                <h:outputLabel value="Return Transfer Issue for Inpatient Requests" class="h4"/>
+                            </div>
+                            <div>
+                                <p:commandButton  
+                                    value="Return" 
+                                    icon="fa fa-undo"
+                                    action="#{bhtIssueReturnController.settleTransferIssueInpatientReturn}" 
+                                    ajax="false" 
+                                    class="ui-button-danger">
+                                </p:commandButton>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <!-- Bill Details Panel -->
+                    <p:panel header="Original Bill Details" class="my-3" id="originalBillDetailsPanel">
+                        <h:panelGrid columns="3" class="w-100">
+                            <p:outputLabel value="Bill No" ></p:outputLabel>
+                            <p:outputLabel value=":" ></p:outputLabel>
+                            <p:outputLabel value="#{bhtIssueReturnController.bill.deptId}" ></p:outputLabel>
+                            
+                            <p:outputLabel value="From Department" ></p:outputLabel>
+                            <p:outputLabel value=":" ></p:outputLabel>
+                            <p:outputLabel value="#{bhtIssueReturnController.bill.fromDepartment.name}" ></p:outputLabel>
+                            
+                            <p:outputLabel value="To Department" ></p:outputLabel>
+                            <p:outputLabel value=":" ></p:outputLabel>
+                            <p:outputLabel value="#{bhtIssueReturnController.bill.toDepartment.name}" ></p:outputLabel>
+                            
+                            <p:outputLabel value="BHT No" rendered="#{bhtIssueReturnController.bill.patientEncounter ne null}" ></p:outputLabel>
+                            <p:outputLabel value=":" rendered="#{bhtIssueReturnController.bill.patientEncounter ne null}" ></p:outputLabel>
+                            <p:outputLabel value="#{bhtIssueReturnController.bill.patientEncounter.bhtNo}" rendered="#{bhtIssueReturnController.bill.patientEncounter ne null}" ></p:outputLabel>
+                            
+                            <p:outputLabel value="Patient Name" rendered="#{bhtIssueReturnController.bill.patientEncounter ne null and bhtIssueReturnController.bill.patientEncounter.patient ne null}" ></p:outputLabel>
+                            <p:outputLabel value=":" rendered="#{bhtIssueReturnController.bill.patientEncounter ne null and bhtIssueReturnController.bill.patientEncounter.patient ne null}" ></p:outputLabel>
+                            <p:outputLabel value="#{bhtIssueReturnController.bill.patientEncounter.patient.person.nameWithTitle}" rendered="#{bhtIssueReturnController.bill.patientEncounter ne null and bhtIssueReturnController.bill.patientEncounter.patient ne null}" ></p:outputLabel>
+                            
+                            <p:outputLabel value="Date" ></p:outputLabel>
+                            <p:outputLabel value=":" ></p:outputLabel>
+                            <p:outputLabel value="#{bhtIssueReturnController.bill.createdAt}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                            </p:outputLabel>
+                            
+                            <p:outputLabel value="Net Total" ></p:outputLabel>
+                            <p:outputLabel value=":" ></p:outputLabel>
+                            <p:outputLabel value="#{bhtIssueReturnController.bill.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>
+                        </h:panelGrid>
+                    </p:panel>
+
+                    <h:panelGrid columns="3" id="total" class="my-3">
+                        <p:outputLabel  
+                            value="Returnable Gross Amount" 
+                            rendered="#{webUserController.hasPrivilege('ShowInwardFee')}" /> 
+                        <p:outputLabel  
+                            value=":" style="text-align: center; width: 20px;"/>
+                        <p:outputLabel 
+                            value="#{bhtIssueReturnController.returnBill.total}" 
+                            rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel> 
+
+                        <p:outputLabel  
+                            value="Returnable Margin Amount" 
+                            rendered="#{webUserController.hasPrivilege('ShowInwardFee')}" /> 
+                        <p:outputLabel  
+                            value=":" style="text-align: center; width: 20px;"/>
+                        <p:outputLabel 
+                            id="marginTotal"  
+                            value="#{bhtIssueReturnController.returnBill.margin}" 
+                            rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel> 
+
+                        <p:outputLabel  
+                            value="Returnable Net Amount" 
+                            rendered="#{webUserController.hasPrivilege('ShowInwardFee')}" /> 
+                        <p:outputLabel  
+                            value=":" style="text-align: center; width: 20px;"/>
+                        <p:outputLabel 
+                            id="netTotal"  
+                            value="#{bhtIssueReturnController.returnBill.netTotal}" 
+                            rendered="#{webUserController.hasPrivilege('ShowInwardFee')}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel> 
+                    </h:panelGrid>
+
+                    <p:dataTable var="ph" 
+                                 value="#{bhtIssueReturnController.billItems}"
+                                 scrollable="true" 
+                                 id="itemList" 
+                                 editable="true">  
+
+                        <f:facet name="header">  
+                            Returning Items
+                        </f:facet>  
+
+                        <p:column headerText="Item Name" style="width:50px!important;">  
+                            <h:outputText value="#{ph.item.name}"  />                     
+                        </p:column>  
+
+                        <p:column headerText="Batch No" style="width:25px!important;">  
+                            <h:outputText value="#{ph.pharmaceuticalBillItem.stock.itemBatch.batchNo}"  />                     
+                        </p:column>  
+
+                        <p:column headerText="Available Qty" style="width:25px!important;"> 
+                            <h:outputText value="#{ph.pharmaceuticalBillItem.qty}">  
+                                <f:convertNumber pattern="#0" />
+                            </h:outputText>
+                        </p:column>  
+
+                        <p:column headerText="Return Qty" style="width:25px!important;"> 
+                            <p:cellEditor>
+                                <f:facet name="output">
+                                    <h:outputText value="#{ph.qty}">
+                                        <f:convertNumber pattern="#0" />
+                                    </h:outputText>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:inputText value="#{ph.qty}" style="width:96%">
+                                        <p:ajax event="blur" listener="#{bhtIssueReturnController.calTot()}" update="total,netTotal,marginTotal"/>
+                                    </p:inputText>
+                                </f:facet>
+                            </p:cellEditor>
+                        </p:column>  
+
+                        <p:column headerText="Unit Rate" style="width:25px!important;"> 
+                            <h:outputText value="#{ph.rate}"  >
+                                <f:convertNumber pattern="#,##0.00" />                                
+                            </h:outputText>                      
+                        </p:column>   
+
+                        <p:column headerText="Margin Rate" style="width:25px!important;" rendered="#{webUserController.hasPrivilege('ShowInwardFee')}"> 
+                            <h:outputText value="#{ph.marginRate}"  >
+                                <f:convertNumber pattern="#,##0.00" />                                
+                            </h:outputText>                      
+                        </p:column>   
+
+                        <p:column headerText="Net Rate" style="width:25px!important;" rendered="#{webUserController.hasPrivilege('ShowInwardFee')}"> 
+                            <h:outputText value="#{ph.netRate}"  >
+                                <f:convertNumber pattern="#,##0.00" />                                
+                            </h:outputText>                      
+                        </p:column>   
+
+                        <p:column headerText="Return Value" style="width:25px!important;" rendered="#{webUserController.hasPrivilege('ShowInwardFee')}"> 
+                            <h:outputText value="#{ph.netValue}"  >
+                                <f:convertNumber pattern="#,##0.00" />                                
+                            </h:outputText>                      
+                        </p:column>   
+
+                        <p:column style="width:32px">
+                            <p:rowEditor />
+                        </p:column>
+
+                    </p:dataTable>
+
+                </p:panel>
+
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{bhtIssueReturnController.printPreview}" >
+                <p:panel>
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <div><h:outputLabel value="Return Bill Preview" class="mt-2"/> </div>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    class="ui-button-info mx-2"
+                                    icon="fas fa-print"
+                                    value="Print"
+                                    ajax="false"
+                                    action="#" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+                                <p:commandButton
+                                    class="ui-button-secondary"
+                                    icon="fas fa-arrow-left"
+                                    ajax="false"
+                                    action="pharmacy_reprint_transfer_issue_for_inpatient_requests?faces-redirect=true"
+                                    value="Back to Reprint"/>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <h:panelGroup id="gpBillPreview">
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
+                            <phi:transferIssue bill="#{bhtIssueReturnController.returnBill}"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
+                            <phi:transferIssue_detailed bill="#{bhtIssueReturnController.returnBill}"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                </p:panel>
+            </h:panelGroup>
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

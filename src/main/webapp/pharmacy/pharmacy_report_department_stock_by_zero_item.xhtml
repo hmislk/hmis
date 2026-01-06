@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      >
+
+    <h:body>
+
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form id="frm">
+                    <p:panel header="Zero Stock Item Report" >
+
+                        <common:institution_site_department_filter controller="#{reportsStock}"/>
+                        <p:fieldset styleClass="my-2" legend="About this report">
+                            <p>
+                                This report lists all pharmacy items that currently have zero stock. Items appear here only if they previously had stock within the selected institution, site, or department.
+                            </p>
+                        </p:fieldset>
+                        <h:panelGrid columns="6" styleClass="my-2">
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Generate Report"
+                                             actionListener="#{reportsStock.fillDepartmentZeroItemStocks()}" />
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" value="Download Excel" ajax="false">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="zero_stock_items" />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-info" icon="fas fa-print" value="Print" actionListener="#{reportsStock.prepareForPrint()}"
+                                             oncomplete="$('#frm\\:print').click()" update=":frm:tbl"/>
+                            <p:commandButton id="print" value="Actual print" style="display: none">
+                                <p:ajax event="click" listener="#{reportsStock.prepareForView()}" update=":frm:tbl"/>
+                                <p:printer target=":frm:tbl" />
+                            </p:commandButton>
+                        </h:panelGrid>
+
+                        <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" class="w-100">
+
+                            <p:dataTable 
+                                id="tbl" 
+                                rowIndexVar="ii" 
+                                value="#{reportsStock.pharmacyStockRows}" var="i"  
+                                rendered="#{reportsStock.pharmacyStockRows.size() ne 0 }"
+                                rows="#{reportsStock.paginator?'20':reportsStock.pharmacyStockRows.size()}"
+                                paginator="#{reportsStock.paginator}"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="20, 50, 100">
+                                <f:facet name="header">
+                                <h:outputLabel value="Zero Stock Item Report - #{reportsStock.department.name}"/>
+                                </f:facet>
+
+                                <p:column width="20px;" headerText="No" sortBy="#{ii}"
+                                          style="width: 20px;">
+                                    <h:outputLabel value="#{ii+1}" />
+                                </p:column>
+
+                                <p:column headerText="Code" 
+                                          sortBy="#{i.code}" filterBy="#{i.code}"
+                                          styleClass="averageNumericColumn"
+                                          filterMatchMode="startsWith">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Code"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.code}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Item" 
+                                          sortBy="#{i.name}" filterBy="#{i.name}"
+                                          filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.name}" ></h:outputLabel>
+                                </p:column>
+
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

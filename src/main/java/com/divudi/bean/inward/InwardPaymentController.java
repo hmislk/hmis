@@ -9,31 +9,41 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ControllerWithMultiplePayments;
+import com.divudi.bean.common.ControllerWithPatient;
+import com.divudi.bean.common.PatientDepositController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Person;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BilledBillFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientDeposit;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BilledBillFacade;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -46,30 +56,50 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class InwardPaymentController implements Serializable {
+public class InwardPaymentController implements Serializable, ControllerWithMultiplePayments {
 
     private static final long serialVersionUID = 1L;
+
     @EJB
     private BillNumberGenerator billNumberBean;
-    private BilledBill current;
     @EJB
     private BilledBillFacade billedBillFacade;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
+    @EJB
+    PaymentService paymentService;
+    @EJB
+    CashTransactionBean cashTransactionBean;
+
+    @Inject
+    private InwardBeanController inwardBean;
+    @Inject
+    private BillBeanController billBean;
     @Inject
     private SessionController sessionController;
+    @Inject
+    PatientDepositController patientDepositController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private PaymentSchemeController paymentSchemeController;
+
+    private BilledBill current;
     private boolean printPreview;
     private double due;
     String comment;
+
+    private PaymentMethod paymentMethod;
+    private double remainAmount;
+    private double total;
+    private Patient patient;
 
     public PaymentMethod[] getPaymentMethods() {
         return PaymentMethod.values();
     }
 
-    @Inject
-    private PaymentSchemeController paymentSchemeController;
     private PaymentMethodData paymentMethodData;
 
     public void bhtListener() {
@@ -78,11 +108,17 @@ public class InwardPaymentController implements Serializable {
             return;
         }
         due = getFinalBillDue();
+        paymentMethodData = new PaymentMethodData();
 
     }
 
     public String navigateToInpationDashbord() {
         return "/inward/admission_profile?faces-redirect=true";
+    }
+
+    public String navigateToPatientRefund() {
+        paymentMethodData = new PaymentMethodData();
+        return "inward_cancel_bill_refund?faces-redirect=true";
     }
 
     private double getFinalBillDue() {
@@ -113,25 +149,22 @@ public class InwardPaymentController implements Serializable {
 //        return billValue - (paidByPatient + netCredit);
     }
 
-    @Inject
-    private InwardBeanController inwardBean;
-
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("Select BHT");
             return true;
         }
 
-        if (getCurrent().getPaymentMethod() == null) {
+        if (getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Payment Method");
             return true;
         }
 
-        if (getCurrent().getTotal() == 0.0) {
+        if (getPaymentMethod() == PaymentMethod.Cash && getTotal() == 0.0) {
             JsfUtil.addErrorMessage("Please enter paying amount");
             return true;
         }
-        if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), paymentMethodData)) {
+        if (getPaymentSchemeController().checkPaymentMethodError(getPaymentMethod(), paymentMethodData)) {
             return true;
         }
 
@@ -149,9 +182,6 @@ public class InwardPaymentController implements Serializable {
         return false;
 
     }
-
-    @EJB
-    CashTransactionBean cashTransactionBean;
 
     public CashTransactionBean getCashTransactionBean() {
         return cashTransactionBean;
@@ -173,13 +203,13 @@ public class InwardPaymentController implements Serializable {
         Person person = patient.getPerson();
 
         DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
-        
-        String finalBillInsId ="";
+
+        String finalBillInsId = "";
         String finalBillDeptId = "";
-        
-        if(pe.getFinalBill()!=null){
-            finalBillInsId=pe.getFinalBill().getInsId();
-            finalBillDeptId=pe.getFinalBill().getDeptId();
+
+        if (pe.getFinalBill() != null) {
+            finalBillInsId = pe.getFinalBill().getInsId();
+            finalBillDeptId = pe.getFinalBill().getDeptId();
         }
 
         String output;
@@ -254,8 +284,20 @@ public class InwardPaymentController implements Serializable {
             return;
         }
 
+        if (configOptionApplicationController.getBooleanValueByKey("Inward Deposit Payment Bill Payment Type Required", false)
+                && configOptionApplicationController.getBooleanValueByKey("Get Payment Type Instead of Comment", false)) {
+
+            if (comment == null || comment.trim().isEmpty()) { // Trim to handle whitespace-only cases
+                JsfUtil.addErrorMessage("Please Select a Payment Type");
+                return;
+            }
+        }
+
         saveBill();
         saveBillItem();
+
+        List<Payment> payments = paymentService.createPayment(current, paymentMethodData);
+        paymentService.updateBalances(payments);
 
         getBillBean().updateInwardDipositList(getCurrent().getPatientEncounter(), getCurrent());
 
@@ -294,6 +336,63 @@ public class InwardPaymentController implements Serializable {
         return curr;
     }
 
+    public void changePaymentMethodChange() {
+        if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().clear();
+
+            getPaymentMethodData().getPatient_deposit().setPatient(getCurrent().getPatientEncounter().getPatient());
+
+            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(getCurrent().getPatientEncounter().getPatient(), sessionController.getDepartment());
+
+            if (pd != null && pd.getId() != null) {
+                boolean hasPatientDeposit = false;
+                for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                        hasPatientDeposit = true;
+                        cd.getPaymentMethodData().getPatient_deposit().setPatient(getCurrent().getPatientEncounter().getPatient());
+                        cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+
+                    }
+                }
+            }
+        } else {
+            listnerForPaymentMethodChange();
+        }
+    }
+
+    public void listnerForPaymentMethodChange() {
+
+        if (getPaymentMethod() == PaymentMethod.PatientDeposit) {
+            getPaymentMethodData().getPatient_deposit().setPatient(getCurrent().getPatientEncounter().getPatient());
+            getPaymentMethodData().getPatient_deposit().setTotalValue(getCurrent().getTotal());
+            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(getCurrent().getPatientEncounter().getPatient(), sessionController.getDepartment());
+            if (pd != null && pd.getId() != null) {
+                getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+            }
+        } else if (getPaymentMethod() == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(getCurrent().getTotal());
+        } else if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+
+            getPaymentMethodData().getPatient_deposit().setPatient(getCurrent().getPatientEncounter().getPatient());
+
+            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(getCurrent().getPatientEncounter().getPatient(), sessionController.getDepartment());
+
+            if (pd != null && pd.getId() != null) {
+                boolean hasPatientDeposit = false;
+                for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                        hasPatientDeposit = true;
+                        cd.getPaymentMethodData().getPatient_deposit().setPatient(getCurrent().getPatientEncounter().getPatient());
+                        cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+
+                    }
+                }
+            }
+
+        }
+    }
+
     public String getComment() {
         return comment;
     }
@@ -306,17 +405,18 @@ public class InwardPaymentController implements Serializable {
         current = null;
         printPreview = false;
         comment = null;
+        paymentMethod = null;
+        total = 0.0;
     }
 
-    @Inject
-    private BillBeanController billBean;
-
     private void saveBill() {
-        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+        getBillBean().setPaymentMethodData(getCurrent(), getPaymentMethod(), getPaymentMethodData());
 
         getCurrent().setInstitution(getSessionController().getInstitution());
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setBillType(BillType.InwardPaymentBill);
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT);
+        getCurrent().setPaymentMethod(paymentMethod);
         getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
         getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
 
@@ -324,7 +424,7 @@ public class InwardPaymentController implements Serializable {
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());
 
-        double dbl = Math.abs(getCurrent().getTotal());
+        double dbl = Math.abs(getTotal());
         getCurrent().setTotal(dbl);
         getCurrent().setNetTotal(dbl);
         getCurrent().setCreatedAt(new Date());
@@ -349,6 +449,155 @@ public class InwardPaymentController implements Serializable {
             getBillItemFacade().create(temBi);
         }
 
+    }
+
+    @Override
+    public double calculatRemainForMultiplePaymentTotal() {
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            double multiplePaymentMethodTotalValue = 0.0;
+
+            if (paymentMethodData != null && paymentMethodData.getPaymentMethodMultiple() != null && paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null) {
+                for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    if (cd == null || cd.getPaymentMethodData() == null) {
+                        continue;
+                    }
+
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                }
+            }
+            total = multiplePaymentMethodTotalValue;
+            return total;
+        }
+        return total;
+    }
+
+    @Override
+    public void recieveRemainAmountAutomatically() {
+        calculatRemainForMultiplePaymentTotal();
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            // Guard against empty component list
+            if (paymentMethodData == null
+                    || paymentMethodData.getPaymentMethodMultiple() == null
+                    || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null
+                    || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+                return;
+            }
+
+            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            switch (pm.getPaymentMethod()) {
+                case Cash:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getCash().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getCash().setTotalValue(0.0);
+                    }
+                    break;
+                case Card:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getCreditCard().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getCreditCard().setTotalValue(0.0);
+                    }
+                    break;
+                case Cheque:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getCheque().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getCheque().setTotalValue(0.0);
+                    }
+                    break;
+                case Slip:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getSlip().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getSlip().setTotalValue(0.0);
+                    }
+                    break;
+                case ewallet:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getEwallet().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getEwallet().setTotalValue(0.0);
+                    }
+                    break;
+                case PatientDeposit:
+                    Patient p = (getCurrent() != null && getCurrent().getPatientEncounter() != null) ? getCurrent().getPatientEncounter().getPatient() : null;
+
+                    if (p == null) {
+                        break;
+                    } else {
+                        pm.getPaymentMethodData().getPatient_deposit().setPatient(p);
+                        PatientDeposit pd = patientDepositController.checkDepositOfThePatient(p, sessionController.getDepartment());
+
+                        if (pd != null) {
+                            pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+
+                            // Only set if user hasn't already entered a value
+                            if (pm.getPaymentMethodData().getPatient_deposit().getTotalValue() == 0.0) {
+                                if (remainAmount >= pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance()) {
+                                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance());
+                                } else {
+                                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
+                                }
+                            }
+                        }
+
+                    }
+
+                    break;
+                case Credit:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getCredit().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+                    }
+                    break;
+                case Staff:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+                    }
+                    break;
+                case Staff_Welfare:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getStaffWelfare().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getStaffWelfare().setTotalValue(remainAmount);
+                    }
+                    break;
+                case OnlineSettlement:
+                    // Only set if user hasn't already entered a value
+                    if (pm.getPaymentMethodData().getOnlineSettlement().getTotalValue() == 0.0) {
+                        pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());
+            }
+
+        }
+
+        listnerForPaymentMethodChange();
+
+    }
+
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (cd == null
+                || paymentMethodData == null
+                || paymentMethodData.getPaymentMethodMultiple() == null
+                || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null
+                || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        int lastIndex = details.size() - 1;
+        int currentIndex = details.indexOf(cd);
+        return currentIndex != -1 && currentIndex == lastIndex;
     }
 
     public BilledBillFacade getBilledBillFacade() {
@@ -453,6 +702,38 @@ public class InwardPaymentController implements Serializable {
 
     public void setInwardBean(InwardBeanController inwardBean) {
         this.inwardBean = inwardBean;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public double getRemainAmount() {
+        return remainAmount;
+    }
+
+    public void setRemainAmount(double remainAmount) {
+        this.remainAmount = remainAmount;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
 }

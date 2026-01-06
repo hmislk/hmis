@@ -14,7 +14,7 @@
                     <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Cancellation">
                             <p:selectOneMenu   id="cmbPs" value="#{pharmacyBillSearch.bill.paymentMethod}" required="true"  >
-                                <f:selectItems value="#{enumController.paymentMethods}"/>
+                                <f:selectItems value="#{enumController.allPaymentMethods}"/>
                             </p:selectOneMenu>
                             <h:commandButton value="Cancel" action="#{pharmacyBillSearch.pharmacyPurchaseCancel()}" >
                             </h:commandButton>                            
@@ -29,7 +29,7 @@
                             <p:panel header="Bill Detail">
                                 <p:panelGrid columns="2">
                                     <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                    <h:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></h:outputLabel>
+                                    <h:outputLabel value="#{pharmacyBillSearch.bill.deptId}" ></h:outputLabel>
                                     <h:outputLabel value="Total :" ></h:outputLabel>
                                     <h:outputLabel value="#{pharmacyBillSearch.bill.total}" ></h:outputLabel>
                                     <h:outputLabel value="Discount :" ></h:outputLabel>
@@ -48,6 +48,14 @@
                                 <p:column>
                                     <f:facet name="header">Item</f:facet>
                                         #{bip.item.name}
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">Quantity in Units</f:facet>
+                                        #{bip.pharmaceuticalBillItem.qty}
+                                </p:column>
+                                 <p:column>
+                                    <f:facet name="header">Free Quantity in Units</f:facet>
+                                        #{bip.pharmaceuticalBillItem.freeQty}
                                 </p:column>
                                 <p:column>
                                     <f:facet name="header">Value</f:facet>

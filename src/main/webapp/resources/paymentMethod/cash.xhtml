@@ -8,20 +8,22 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <div class="col" >
-            <p:inputText 
-                autocomplete="off"   
-                value="#{cc.attrs.paymentMethodData.cash.totalValue}" 
-                id="txtVal">
+            <p:inputText
+                autocomplete="off"
+                value="#{cc.attrs.paymentMethodData.cash.totalValue}"
+                id="txtVal"
+                required="true"
+                requiredMessage="Cash value is required">
                 <p:ajax process="@this" ></p:ajax>
+                <f:convertNumber pattern="#,##0.00" />
             </p:inputText>
-            <p:watermark value="Value" for="txtVal" />
-        </div>
+                    </div>
     </cc:implementation>
 </html>

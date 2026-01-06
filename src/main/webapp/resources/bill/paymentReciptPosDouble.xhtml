@@ -43,9 +43,9 @@
                     <div style="font-weight: bold; text-align: center;">
                         <h:outputLabel value="PAYMENT VOUCHER"   style="text-align: center;"/>
                         <br/>
-                        <h:outputLabel  value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.bill.cancelledBill.insId eq null}" style="text-align: center;"/>
-                        <h:outputLabel value="  **Duplicate" rendered="#{cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true }" style="text-align: center;"/> 
-                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled" rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" style="text-align: center;"/> 
+                        <h:outputLabel  value="#{cc.attrs.bill.deptId}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}" style="text-align: center;"/>
+                        <h:outputLabel value="  **Duplicate" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null and cc.attrs.dup eq true }" style="text-align: center;"/> 
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId} **Cancelled" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" style="text-align: center;"/> 
                         <br></br>
                         <h:outputLabel value="(Customer Copy)"   style="text-align: center;"/> 
                     </div>
@@ -72,11 +72,11 @@
                                 </td>
                                 <td>                                    
                                     <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
-                                                   rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"  >
+                                                   rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"  >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>                      
                                     <h:outputLabel value="#{cc.attrs.bill.billDate}"
-                                                   rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
+                                                   rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>
 
@@ -96,9 +96,9 @@
                                 </td>
                                 <td>
                                     <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" 
-                                                   rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" />                        
+                                                   rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />                        
                                     <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" 
-                                                   rendered="#{cc.attrs.bill.cancelledBill.insId eq null }"/>
+                                                   rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }"/>
                                 </td>
                             </tr>
 
@@ -240,9 +240,9 @@
                     <div style="font-weight: bold; text-align: center;">
                         <h:outputLabel value="PAYMENT VOUCHER"   style="text-align: center;"/>
                         <br/>
-                        <h:outputLabel  value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.bill.cancelledBill.insId eq null}" style="text-align: center;"/>
-                        <h:outputLabel value="  **Duplicate" rendered="#{cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true }" style="text-align: center;"/> 
-                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled" rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" style="text-align: center;"/> 
+                        <h:outputLabel  value="#{cc.attrs.bill.deptId}" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}" style="text-align: center;"/>
+                        <h:outputLabel value="  **Duplicate" rendered="#{cc.attrs.bill.cancelledBill.deptId eq null and cc.attrs.dup eq true }" style="text-align: center;"/> 
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId} **Cancelled" rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" style="text-align: center;"/> 
                         <br></br>
                         <h:outputLabel value="(Customer Copy)"   style="text-align: center;"/> 
                     </div>
@@ -269,11 +269,11 @@
                                 </td>
                                 <td>                                    
                                     <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
-                                                   rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"  >
+                                                   rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"  >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>                      
                                     <h:outputLabel value="#{cc.attrs.bill.billDate}"
-                                                   rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
+                                                   rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>
 
@@ -293,9 +293,9 @@
                                 </td>
                                 <td>
                                     <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" 
-                                                   rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" />                        
+                                                   rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />                        
                                     <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" 
-                                                   rendered="#{cc.attrs.bill.cancelledBill.insId eq null }"/>
+                                                   rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }"/>
                                 </td>
                             </tr>
 

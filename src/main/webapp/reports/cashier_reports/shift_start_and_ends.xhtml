@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+
+        <ui:composition template="./../index.xhtml">
+
+            <ui:define name="subcontent">
+
+                <h:form >
+
+                    <p:panel   header="Shift End Summary" class="m-1">
+
+                        <h:panelGrid columns="8" class="w-100">
+                            <h:outputLabel value="From"/>
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:outputLabel value="To"/>                                
+                            <p:calendar 
+                                class="w-100 " 
+                                inputStyleClass="w-100" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:outputLabel value="Department"/>       
+                            <p:autoComplete 
+                                forceSelection="true"
+                                value="#{searchController.webUser}"
+                                placeholder="Select User"
+                                completeMethod="#{webUserController.completeUser}" 
+                                id="user"
+                                var="u" 
+                                itemLabel="#{u.webUserPerson.name}" 
+                                itemValue="#{u}"
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                >
+                            </p:autoComplete>
+
+                            <h:outputLabel value="Institution"/>                                
+                            <p:selectOneMenu class="w-100 " value="#{searchController.institution}" filter="true" >
+                                <f:selectItem itemLabel="All Institution" ></f:selectItem>
+                                <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:outputLabel value="Department"/>                                
+                            <p:selectOneMenu class="w-100 "  value="#{searchController.department}" filter="true">
+                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                            <h:outputLabel value="Site"/>   
+                            <p:selectOneMenu class="w-100 "  value="#{searchController.site}" filter="true">
+                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" ></f:selectItems>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="3" class="my-2" >
+
+                            <p:commandButton  
+                                value="Process" 
+                                ajax="false"
+                                action="#{searchController.generateShiftStartEndSummary()}" 
+                                class="ui-button-warning" icon="fas fa-cogs">
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                value="Download Excel" 
+                                ajax="false" 
+                                class="mx-2 ui-button-success" 
+                                icon="fa fa-file-excel">
+                                <p:dataExporter target="tblCashier" fileName="All_Cashier_Summary" type="xlsx" ></p:dataExporter>
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+                        <p:dataTable 
+                            value="#{searchController.bills}" 
+                            var="bill"
+                            paginator="true" 
+                            rows="10" 
+                            id="tblCashier"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                            currentPageReportTemplate="(Page {currentPage} of {totalPages})"
+                            paginatorPosition="top">
+
+                            
+                            <p:column headerText="ID" sortBy="#{summary.department.institution.name}">
+                                #{bill.id}
+                            </p:column>
+                            
+                            <p:column headerText="Institution" sortBy="#{summary.department.institution.name}">
+                                <h:outputText value="#{bill.institution.name}" />
+                            </p:column>
+
+                            <p:column headerText="Site" sortBy="#{summary.department.site.name}">
+                                <h:outputText value="#{bill.department.site.name}" />
+                            </p:column>
+
+                            <p:column headerText="Department" sortBy="#{summary.department.name}">
+                                <h:outputText value="#{bill.department.name}" />
+                            </p:column>
+
+                            <p:column headerText="Date" sortBy="#{summary.date}">
+                                <h:outputText value="#{bill.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Staff" sortBy="#{summary.department.name}">
+                                <h:outputText value="#{bill.staff.person.name}" />
+                            </p:column>
+
+                            <p:column headerText="Starting Bill" >
+                                <h:outputText value="#{bill.referenceBill.billTypeAtomic}" />
+                            </p:column>
+
+                            <p:column headerText="Ending Bill" >
+                                <h:outputText value="#{bill.referenceBill.insId}" />
+                            </p:column>
+                            
+                            <p:column headerText="Short or Excess" >
+                                
+                            </p:column>
+                            
+                            <p:column headerText="Action" >
+                                
+                            </p:column>
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

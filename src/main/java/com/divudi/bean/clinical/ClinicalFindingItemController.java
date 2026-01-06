@@ -9,11 +9,10 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.clinical.ClinicalEntity;
-import com.divudi.facade.ClinicalEntityFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.clinical.ClinicalEntity;
+import com.divudi.core.facade.ClinicalEntityFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -109,7 +108,7 @@ public class ClinicalFindingItemController implements Serializable {
         this.sessionController = sessionController;
     }
 
-   
+
 
     public ClinicalEntity getCurrent() {
         if (current == null) {
@@ -191,5 +190,5 @@ public class ClinicalFindingItemController implements Serializable {
         }
     }
 
-   
+
 }

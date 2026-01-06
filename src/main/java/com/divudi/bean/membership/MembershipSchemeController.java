@@ -10,14 +10,12 @@ package com.divudi.bean.membership;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.Institution;
-import com.divudi.entity.Patient;
-import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.facade.MembershipSchemeFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.facade.MembershipSchemeFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -204,6 +202,27 @@ public class MembershipSchemeController implements Serializable {
             fillItems();
         }
         return items;
+    }
+
+    public MembershipScheme fetchMembershipByName(String membershipName) {
+        String j;
+        j = "select s "
+                + " from MembershipScheme s "
+                + " where s.retired=:ret "
+                + " and s.name=:mn ";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("mn", membershipName);
+        MembershipScheme ms = getFacade().findFirstByJpql(j, m);
+        if (ms == null) {
+            ms = new MembershipScheme();
+            ms.setName(membershipName);
+            ms.setCreatedAt(new Date());
+            ms.setCreater(sessionController.getLoggedUser());
+            ms.setInstitution(sessionController.getInstitution());
+            getFacade().create(ms);
+        }
+        return ms;
     }
 
     public void fillItems() {

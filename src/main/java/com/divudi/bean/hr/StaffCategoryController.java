@@ -9,9 +9,9 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.hr.StaffCategory;
-import com.divudi.facade.StaffCategoryFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.hr.StaffCategory;
+import com.divudi.core.facade.StaffCategoryFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -202,5 +202,5 @@ public class StaffCategoryController implements Serializable {
         }
     }
 
-   
+
 }

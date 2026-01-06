@@ -5,9 +5,9 @@
  */
 package com.divudi.bean.common;
 
-import com.itextpdf.text.BadElementException;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.pdf.Barcode39;
+//import com.itextpdf.text.BadElementException;
+//import com.itextpdf.text.Image;
+//import com.itextpdf.text.pdf.Barcode39;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
@@ -132,20 +132,20 @@ public class BarcodeController {
         return barcode;
     }
 
-    public byte[] getBarcodeBytes(String code) {
-        Barcode39 code39 = new Barcode39();
-        code39.setCode(code);
-        code39.setFont(null);
-        code39.setExtended(true);
-        Image image = null;
-        try {
-            image = Image.getInstance(code39.createAwtImage(Color.BLACK, Color.WHITE), null);
-        } catch (BadElementException ex) {
-            Logger.getLogger(BarcodeController.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(BarcodeController.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return image.getRawData();
-    }
+//    public byte[] getBarcodeBytes(String code) {
+//        Barcode39 code39 = new Barcode39();
+//        code39.setCode(code);
+//        code39.setFont(null);
+//        code39.setExtended(true);
+//        Image image = null;
+//        try {
+//            image = Image.getInstance(code39.createAwtImage(Color.BLACK, Color.WHITE), null);
+//        } catch (BadElementException ex) {
+//            Logger.getLogger(BarcodeController.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (IOException ex) {
+//            Logger.getLogger(BarcodeController.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return image.getRawData();
+//    }
 
 }

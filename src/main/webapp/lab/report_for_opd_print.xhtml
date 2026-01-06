@@ -92,16 +92,16 @@
                                     <p:column  headerText="No" styleClass="alignTop" width="50px;">
                                         <p:outputLabel value="#{i+1}" />
                                     </p:column>
-                                    <p:column headerText="Bill" width="150px;" styleClass="alignTop" filterBy="#{pi.billItem.bill.insId}" filterMatchMode="contains">
+                                    <p:column headerText="Bill" width="150px;" styleClass="alignTop" filterBy="#{pi.billItem.bill.deptId}" filterMatchMode="contains">
                                         <h:commandLink  
                                             id="lblBillNo" 
-                                            value="#{pi.billItem.bill.insId}" 
+                                            value="#{pi.billItem.bill.deptId}" 
                                             styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"
                                             action="#{billSearch.navigateToViewOpdBill()}">
                                             <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}"/>
                                         </h:commandLink>
                                         <p:tooltip for="lblBillNo"  >
-                                            <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
+                                            <h:outputLabel value="Bill No : #{pi.billItem.bill.deptId}" ></h:outputLabel>
                                             <br/>
                                             <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
                                             <br/>

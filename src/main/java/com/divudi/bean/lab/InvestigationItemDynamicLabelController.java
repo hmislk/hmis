@@ -10,15 +10,15 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.InvestigationItemType;
-import com.divudi.data.Sex;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.InvestigationItemValueFlag;
-import com.divudi.facade.InvestigationFacade;
-import com.divudi.facade.InvestigationItemFacade;
-import com.divudi.facade.InvestigationItemValueFlagFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.InvestigationItemType;
+import com.divudi.core.data.Sex;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.InvestigationItem;
+import com.divudi.core.entity.lab.InvestigationItemValueFlag;
+import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.InvestigationItemFacade;
+import com.divudi.core.facade.InvestigationItemValueFlagFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -139,7 +139,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
 
     public List<InvestigationItem> getInvestigationItemsOfDynamicLabelType() {
         if (investigation != null) {
-            investigationItemsOfDynamicLabelType = getInvestigationItemFacade().findByJpql("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType = com.divudi.data.InvestigationItemType.DynamicLabel");
+            investigationItemsOfDynamicLabelType = getInvestigationItemFacade().findByJpql("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType = com.divudi.core.data.InvestigationItemType.DynamicLabel");
         }
         if (investigationItemsOfDynamicLabelType == null) {
             investigationItemsOfDynamicLabelType = new ArrayList<InvestigationItem>();

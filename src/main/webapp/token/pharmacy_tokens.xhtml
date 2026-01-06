@@ -126,6 +126,7 @@
                                     rendered="#{token.bill eq null}"
                                     title="Pharmacy Bill for Cashier" 
                                     action="#{tokenController.navigateToNewPharmacyBillForCashier()}">
+                                    <f:setPropertyActionListener target="#{pharmacySaleController.currentToken}" value="#{token}" />
                                     <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
                                 </p:commandButton>
                                 <p:tooltip value="Bill For Cashier" />

@@ -1,0 +1,204 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Staff Salary Payment To Bank (SLIP)" >
+                        <p:panelGrid columns="4" class="w-100">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0d6;" styleClass="fa mr-2" /> <!-- FontAwesome dollar-sign icon for Salary Cycle -->
+                                <h:outputLabel value="Salary Cycle" for="cmbSalaryCycle" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="d"
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                id="cmdFromInstitution"
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="d"
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                id="cmdFromDepartment"
+                                value="" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="d"
+                                               itemLabel=""
+                                               itemValue="" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> <!-- FontAwesome user icon for Employee -->
+                                <h:outputLabel value="Employee" for="cmbEmployee" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true" class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0c0;" styleClass="fa mr-2" /> <!-- FontAwesome users icon for Staff Category -->
+                                <h:outputLabel value="Staff Category" for="cmbStaffCategory" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0b1;" styleClass="fa mr-2" /> <!-- FontAwesome id-badge icon for Staff Designation -->
+                                <h:outputLabel value="Staff Designation" for="cmbStaffDesignation" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon for Staff Roster -->
+                                <h:outputLabel value="Staff Roster" for="cmbStaffRoster" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon for Branch (Bank) -->
+                                <h:outputLabel value="Branch (Bank)" for="cmbBranch" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf09d;" styleClass="fa mr-2" /> <!-- FontAwesome university icon for Bank -->
+                                <h:outputLabel value="Bank" for="cmbBank" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf4fc;" styleClass="fa mr-2" /> <!-- FontAwesome user-check icon for Employee Status -->
+                                <h:outputLabel value="Employee Status" for="cmbEmployeeStatus" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" /> <!-- FontAwesome calendar-alt icon for Date -->
+                                <h:outputLabel value="Date" for="cmbDate" class="mx-3"/>
+                            </h:panelGroup>
+
+                            <p:calendar 
+                                value="" 
+                                pattern="MM/dd/yyyy" 
+                                showButtonPanel="true" 
+                                placeholder="Select Date" 
+                                class="w-100">
+                            </p:calendar>
+
+
+
+
+
+
+                        </p:panelGrid>
+
+                        <div class="d-flex align-items-center">
+                            <p:commandButton class="ui-button-warning mx-1" ajax="false" value="Process" icon="fas fa-cogs" >
+                            </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                            </p:commandButton>
+                        </div>
+
+
+
+
+
+
+                        
+
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

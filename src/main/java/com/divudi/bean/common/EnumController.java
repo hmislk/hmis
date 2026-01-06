@@ -5,51 +5,30 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.ApplicationInstitution;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillItemStatus;
-import com.divudi.data.BillType;
-import com.divudi.data.CalculationType;
-import com.divudi.data.CreditDuration;
-import com.divudi.data.CssVerticalAlign;
-import com.divudi.data.Dashboard;
-import com.divudi.data.DepartmentListMethod;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.DiscountType;
-import com.divudi.data.FeeType;
-import com.divudi.data.InvestigationItemType;
-import com.divudi.data.InvestigationItemValueType;
-import com.divudi.data.ItemListingStrategy;
-import com.divudi.data.ItemType;
-import com.divudi.data.LoginPage;
-import com.divudi.data.PaperType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.ReportItemType;
-import com.divudi.data.SessionNumberType;
-import com.divudi.data.Sex;
-import com.divudi.data.MessageType;
-import com.divudi.data.PaymentContext;
-import com.divudi.data.RestAuthenticationType;
-import com.divudi.data.SymanticType;
-import com.divudi.data.Title;
-import com.divudi.data.hr.DayType;
-import com.divudi.data.hr.LeaveType;
-import com.divudi.data.hr.PaysheetComponentType;
-import com.divudi.data.hr.Times;
-import com.divudi.data.inward.AdmissionStatus;
-import com.divudi.data.inward.AdmissionTypeEnum;
-import com.divudi.data.inward.InwardChargeType;
-import com.divudi.data.inward.PatientEncounterComponentType;
-import com.divudi.data.lab.Priority;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Person;
+import com.divudi.core.data.*;
+import com.divudi.core.data.ScheduledProcess;
+import com.divudi.core.data.ScheduledFrequency;
+import com.divudi.core.data.analytics.ReportTemplateColumn;
+import com.divudi.core.data.analytics.ReportTemplateFilter;
+import com.divudi.core.data.hr.*;
+import com.divudi.core.data.inward.AdmissionStatus;
+import com.divudi.core.data.inward.AdmissionTypeEnum;
+import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.data.inward.PatientEncounterComponentType;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.data.lab.Priority;
+import com.divudi.core.data.lab.SearchDateType;
+import com.divudi.core.data.lab.TestHistoryType;
+import com.divudi.core.entity.Person;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
-import javax.enterprise.context.SessionScoped;
+import javax.ejb.EJB;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -58,17 +37,40 @@ import javax.inject.Named;
  * @author safrin
  */
 @Named
-@SessionScoped
+@ApplicationScoped
 public class EnumController implements Serializable {
 
-    private PaymentScheme paymentScheme;
-    private List<Class<? extends Enum<?>>> enumList;
+    @EJB
+    BillService billService;
+
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+
+    // PaymentScheme removed from instance field to avoid cross-user state in ApplicationScoped bean
+    // Use local variables or session-scoped beans for user-specific state
+    private List<Class<? extends Enum<?>>> enumList;
     List<PaymentMethod> paymentMethodsForOpdBilling;
+    private List<PaymentMethod> paymentMethodsForGrn;
+    private List<PaymentMethod> paymentMethodsForDirectPurchase;
     List<PaymentMethod> paymentMethodsForChanneling;
+    List<PaymentMethod> paymentMethodsForChannelSettling;
     List<PaymentMethod> paymentMethodsForPharmacyBilling;
+    private List<PaymentMethod> paymentMethodsForPettyCashBilling;
+    private List<PaymentMethod> paymentMethodsUnderMultipleForPharmacyBilling;
+    private List<PaymentMethod> paymentMethodsForMultiplePaymentMethod;
+    private List<PaymentMethod> paymentMethodsForPatientDepositRefund;
+    private List<PaymentMethod> paymentMethodsForPatientDepositCancel;
+    private List<PaymentMethod> paymentMethodsForStaffCreditSettle;
+    private List<PaymentMethod> paymentMethodsForPatientDeposit;
+    private List<PaymentMethod> paymentMethodsForOpdBillCanceling;
     SessionNumberType[] sessionNumberTypes;
+    private List<PatientInvestigationStatus> patientInvestigationStatuses;
+    private List<PaymentMethod> paymentTypeOfPaymentMethods;
+
+    private List<PatientInvestigationStatus> availableStatusforCancel;
+
+    private List<BillTypeAtomic> allUtilizedBillTypeAtomics;
+    private List<BillTypeAtomic> allUtilizedBillTypeAtomicsForPharmacy;
 
     @PostConstruct
     public void init() {
@@ -77,6 +79,10 @@ public class EnumController implements Serializable {
         enumList.add(PaperType.class);
         enumList.add(ItemType.class);
         enumList.add(DiscountType.class);
+    }
+
+    public Sex[] getSex() {
+        return Sex.values();
     }
 
     public List<PaymentMethod> getPaymentMethodsForOpdBilling() {
@@ -93,9 +99,31 @@ public class EnumController implements Serializable {
         return paymentMethodsForOpdBilling;
     }
 
+    public List<PaymentMethod> getPaymentMethodsForPackageBillingWIthoutMultiple() {
+        if (paymentMethodsForOpdBilling == null) {
+            fillPaymentMethodsForPackageBilling();
+        }
+        try {
+            paymentMethodsForOpdBilling.remove(PaymentMethod.MultiplePaymentMethods);
+        } catch (Exception e) {
+
+        }
+        return paymentMethodsForOpdBilling;
+    }
+
     public void resetPaymentMethods() {
         paymentMethodsForOpdBilling = null;
         paymentMethodsForChanneling = null;
+    }
+
+    public void fillPaymentMethodsForPatientDeposit() {
+        paymentMethodsForPatientDeposit = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit", true);
+            if (include) {
+                paymentMethodsForPatientDeposit.add(pm);
+            }
+        }
     }
 
     public void fillPaymentMethodsForOpdBilling() {
@@ -104,6 +132,38 @@ public class EnumController implements Serializable {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Billing", true);
             if (include) {
                 paymentMethodsForOpdBilling.add(pm);
+            }
+        }
+    }
+
+    public void fillPaymentMethodsForGrn() {
+        paymentMethodsForGrn = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include;
+            if (pm == PaymentMethod.Cash || pm == PaymentMethod.Credit) {
+                include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for GRN", true);
+            } else {
+                include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for GRN", false);
+            }
+            if (include) {
+                paymentMethodsForGrn.add(pm);
+            }
+        }
+    }
+
+    public void fillPaymentMethodsForDirectPurchase() {
+        paymentMethodsForDirectPurchase = new ArrayList<>();
+        // Include other methods based on configuration (default false)
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include;
+            if (pm == PaymentMethod.Cash || pm == PaymentMethod.Credit) {
+                include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Direct Purchase", true);
+            } else {
+                include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Direct Purchase", false);
+            }
+
+            if (include) {
+                paymentMethodsForDirectPurchase.add(pm);
             }
         }
     }
@@ -125,12 +185,35 @@ public class EnumController implements Serializable {
         return paymentMethodsForChanneling;
     }
 
+    public List<InvestigationReportType> getInvestigationReportTypes() {
+        return Arrays.asList(InvestigationReportType.values());
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForChannelSettling() {
+        if (paymentMethodsForChannelSettling == null) {
+            fillPaymentMethodsForChannelSettling();
+        }
+        return paymentMethodsForChannelSettling;
+    }
+
     public void fillPaymentMethodsForChanneling() {
         paymentMethodsForChanneling = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Channeling", true);
             if (include) {
                 paymentMethodsForChanneling.add(pm);
+            }
+        }
+    }
+
+    public void fillPaymentMethodsForChannelSettling() {
+        paymentMethodsForChannelSettling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            if (!pm.equals(PaymentMethod.OnCall)) {
+                boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Channeling", true);
+                if (include) {
+                    paymentMethodsForChannelSettling.add(pm);
+                }
             }
         }
     }
@@ -142,6 +225,33 @@ public class EnumController implements Serializable {
         return paymentMethodsForPharmacyBilling;
     }
 
+    public List<PaymentMethod> getPaymentMethodsForPettyCashBilling() {
+        if (paymentMethodsForPettyCashBilling == null) {
+            fillPaymentMethodsForPettyCashBilling();
+        }
+        return paymentMethodsForPettyCashBilling;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForPharmacyBillCancellations() {
+        List<PaymentMethod> paymentMethodsForPharmacyBillCancellations = new ArrayList<>();
+        if (paymentMethodsForPharmacyBilling == null) {
+            fillPaymentMethodsForPharmacyBilling();
+        }
+        if (paymentMethodsForPharmacyBilling == null) {
+            paymentMethodsForPharmacyBilling = new ArrayList<>();
+        }
+        if (paymentMethodsForPharmacyBilling.isEmpty()) {
+            paymentMethodsForPharmacyBilling.add(PaymentMethod.Cash);
+            paymentMethodsForPharmacyBilling.add(PaymentMethod.Card);
+        }
+        paymentMethodsForPharmacyBillCancellations.addAll(paymentMethodsForPharmacyBilling);
+        try {
+            paymentMethodsForPharmacyBillCancellations.remove(PaymentMethod.MultiplePaymentMethods);
+        } catch (Exception e) {
+        }
+        return paymentMethodsForPharmacyBillCancellations;
+    }
+
     public void fillPaymentMethodsForPharmacyBilling() {
         paymentMethodsForPharmacyBilling = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
@@ -150,6 +260,60 @@ public class EnumController implements Serializable {
                 paymentMethodsForPharmacyBilling.add(pm);
             }
         }
+    }
+
+    public void fillPaymentMethodsForPettyCashBilling() {
+        paymentMethodsForPettyCashBilling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = false;
+            if (pm == PaymentMethod.Cash) {
+                include = configOptionApplicationController.getBooleanValueByKey(
+                    pm.getLabel() + " is available for Petty Cash Billing", true); // DEFAULT TRUE
+            } else {
+                include = configOptionApplicationController.getBooleanValueByKey(
+                    pm.getLabel() + " is available for Petty Cash Billing", false); // DEFAULT FALSE
+            }
+            if (include) {
+                paymentMethodsForPettyCashBilling.add(pm);
+            }
+        }
+    }
+
+    public void fillPaymentMethodsUnderMultipleForPharmacyBilling() {
+        paymentMethodsUnderMultipleForPharmacyBilling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            if (pm == PaymentMethod.MultiplePaymentMethods) {
+                continue;
+            }
+            if (pm == PaymentMethod.Credit) {
+                continue;
+            }
+            if (pm == PaymentMethod.Staff) {
+                continue;
+            }
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Pharmacy Billing", true);
+            if (include) {
+                paymentMethodsUnderMultipleForPharmacyBilling.add(pm);
+            }
+        }
+    }
+
+    public List<PaymentMethod> getPaymentTypeOfPaymentMethods(PaymentType paymentType) {
+        paymentTypeOfPaymentMethods = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.asList()) {
+            if (pm.getPaymentType() == paymentType) {
+                paymentTypeOfPaymentMethods.add(pm);
+            }
+        }
+        return paymentTypeOfPaymentMethods;
+    }
+
+    public void setPaymentTypeOfPaymentMethods(List<PaymentMethod> paymentTypeOfPaymentMethods) {
+        this.paymentTypeOfPaymentMethods = paymentTypeOfPaymentMethods;
+    }
+
+    public List<SearchDateType> getSearchDateTypes() {
+        return Arrays.asList(SearchDateType.values());
     }
 
     public List<String> getEnumValues(String enumClassName) {
@@ -176,8 +340,34 @@ public class EnumController implements Serializable {
         return null; // Return null if no match is found
     }
 
-    public Priority[] getPriorities() {
-        return Priority.values();
+    public List<Priority> getPriorities() {
+        List<Priority> list = new ArrayList<>();
+        list.add(Priority.NORMAL);
+        list.add(Priority.HIGH);
+        list.add(Priority.URGENT);
+        list.add(Priority.CRITICAL);
+        
+        return list;
+    }
+
+    public List<CategoryType> getCategoryTypes() {
+        return Arrays.asList(CategoryType.values());
+    }
+
+    public List<HistoryType> getHistoryTypes() {
+        return Arrays.asList(HistoryType.values());
+    }
+
+    public List<ScheduledProcess> getScheduledProcesses() {
+        return Arrays.asList(ScheduledProcess.values());
+    }
+
+    public List<EmployeeStatus> getEmploymentStatuses() {
+        return Arrays.asList(EmployeeStatus.values());
+    }
+
+    public List<ScheduledFrequency> getScheduledFrequencies() {
+        return Arrays.asList(ScheduledFrequency.values());
     }
 
     public Dashboard[] getDashboardTypes() {
@@ -189,8 +379,42 @@ public class EnumController implements Serializable {
         return sessionNumberTypes;
     }
 
+    public List<PatientInvestigationStatus> getPatientInvestigationStatuses() {
+        patientInvestigationStatuses = Arrays.asList(PatientInvestigationStatus.values());
+        return patientInvestigationStatuses;
+    }
+
     public List<LoginPage> getLoginPages() {
         return Arrays.asList(LoginPage.values());
+    }
+
+    public List<ReportViewType> getReportViewTypes() {
+        return Arrays.asList(ReportViewType.values());
+    }
+
+    public List<ReportViewType> getPharmacyIncomeReportViewTypes() {
+        return Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_TYPE,
+                ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
+                ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE
+        //                ReportViewType.BY_ITEM
+        );
+    }
+
+    public List<ReportViewType> getPharmacyProcurementByBillItemViewTypes() {
+        return Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_ITEM
+        );
+    }
+
+    public List<ReportViewType> getPharmacyIncomeCostReportViewTypes() {
+        return Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_ITEM,
+                ReportViewType.BY_BILL_TYPE
+        );
     }
 
     public ItemListingStrategy[] getItemListingStrategys() {
@@ -204,6 +428,7 @@ public class EnumController implements Serializable {
     public ItemListingStrategy[] getOpdItemListingStrategys() {
         ItemListingStrategy[] sts
                 = {ItemListingStrategy.ALL_ITEMS,
+                    ItemListingStrategy.SITE_FEE_ITEMS,
                     ItemListingStrategy.ITEMS_OF_LOGGED_DEPARTMENT,
                     ItemListingStrategy.ITEMS_OF_LOGGED_INSTITUTION,
                     ItemListingStrategy.ITEMS_MAPPED_TO_LOGGED_DEPARTMENT,
@@ -334,6 +559,92 @@ public class EnumController implements Serializable {
         return BillType.values();
     }
 
+    public BillTypeAtomic[] getBillTypesAtomic() {
+        return BillTypeAtomic.values();
+    }
+
+    public List<BillTypeAtomic> getBillTypesAtomicForLabTests() {
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.CC_BILL);
+        btas.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.CC_BILL_REFUND);
+        btas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_REFUND);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+        return btas;
+    }
+    
+    public List<RequestType> getRequestTypes() {
+        List<RequestType> rt = new ArrayList<>();
+        rt.add(RequestType.BILL_CANCELLATION);
+        rt.add(RequestType.ITEM_REFUND);
+        rt.add(RequestType.FULL_REFUND);
+        rt.add(RequestType.PARTIAL_REFUND);
+        rt.add(RequestType.SERVICE_REFUND);
+        //rt.add(RequestType.EDIT_REQUEST);
+        //rt.add(RequestType.INFORMATION_UPDATE);
+        //rt.add(RequestType.QUANTITY_CHANGE);
+        //rt.add(RequestType.DATE_MODIFICATION);
+        return rt;
+    }
+    
+    public List<RequestStatus> getRequestStatus() {
+        List<RequestStatus> rs = new ArrayList<>();
+        rs.add(RequestStatus.PENDING);
+        rs.add(RequestStatus.UNDER_REVIEW);
+        rs.add(RequestStatus.APPROVED);
+        rs.add(RequestStatus.REJECTED);
+        rs.add(RequestStatus.COMPLETED);
+        rs.add(RequestStatus.CANCELLED);
+        rs.add(RequestStatus.EXPIRED);
+        return rs;
+    }
+    
+    public List<AppointmentType> getAppointmentTypes() {
+        List<AppointmentType> apt = new ArrayList<>();
+        apt.add(AppointmentType.IP_APPOINTMENT);
+        return apt;
+    }
+    
+    public List<AppointmentStatus> getAppointmentStatus() {
+        List<AppointmentStatus> aps = new ArrayList<>();
+        aps.add(AppointmentStatus.PENDING);
+        aps.add(AppointmentStatus.COMPLETE);
+        aps.add(AppointmentStatus.CANCEL);
+        return aps;
+    }
+
+    public List<BillTypeAtomic> getBillTypesAtomic(String query) {
+        return Arrays.stream(BillTypeAtomic.values())
+                .filter(bt -> bt.getLabel().toLowerCase().contains(query.toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
+    public List<String> completeBillTypeAtomics(String query) {
+        return Arrays.stream(BillTypeAtomic.values())
+                .map(Enum::toString) // Using toString() to get the string representation of the enum
+                .filter(name -> name.toLowerCase().contains(query.toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
+    public List<String> completeReportTemplateColumns(String query) {
+        return Arrays.stream(ReportTemplateColumn.values())
+                .map(ReportTemplateColumn::getLabel) // Using getLabel() to get the user-friendly string
+                .filter(label -> label.toLowerCase().contains(query.toLowerCase())) // Filtering based on query
+                .collect(Collectors.toList()); // Collecting results into a List
+    }
+
+    public List<String> completeReportTemplateFilters(String query) {
+        return Arrays.stream(ReportTemplateFilter.values())
+                .map(ReportTemplateFilter::getLabel) // Using getLabel() to get the user-friendly string
+                .filter(label -> label.toLowerCase().contains(query.toLowerCase())) // Filtering based on query
+                .collect(Collectors.toList()); // Collecting results into a List
+    }
+
     public StaffWelfarePeriod[] getStaffWelfarePeriods() {
         return StaffWelfarePeriod.values();
     }
@@ -393,10 +704,6 @@ public class EnumController implements Serializable {
         return tem;
     }
 
-    public Sex[] getSex() {
-        return Sex.values();
-    }
-
     public Sex[] getGender() {
         Sex[] sexes = {Sex.Male, Sex.Female};
         return sexes;
@@ -412,80 +719,7 @@ public class EnumController implements Serializable {
     }
 
     public InwardChargeType[] getInwardChargeTypesForSetting() {
-        InwardChargeType[] b = {
-            InwardChargeType.AdmissionFee,
-            InwardChargeType.Medicine,
-            InwardChargeType.BloodTransfusioncharges,
-            InwardChargeType.Immunization,
-            InwardChargeType.Equipment,
-            InwardChargeType.MealCharges,
-            InwardChargeType.OperationTheatreCharges,
-            InwardChargeType.OperationTheatreNursingCharges,
-            InwardChargeType.OperationTheatreMachineryCharges,
-            InwardChargeType.LarbourRoomCharges,
-            InwardChargeType.ETUCharges,
-            InwardChargeType.TreatmentCharges,
-            InwardChargeType.IntensiveCareManagement,
-            InwardChargeType.AmbulanceCharges,
-            InwardChargeType.HomeVisiting,
-            InwardChargeType.GeneralIssuing,
-            InwardChargeType.WardProcedures,
-            InwardChargeType.ReimbursementCharges,
-            InwardChargeType.DressingCharges,
-            InwardChargeType.OxygenCharges,
-            InwardChargeType.physiotherapy,
-            InwardChargeType.Laboratory,
-            InwardChargeType.X_Ray,
-            InwardChargeType.CT,
-            InwardChargeType.Scanning,
-            InwardChargeType.ECG_EEG,
-            InwardChargeType.MedicalServices,
-            InwardChargeType.AdministrationCharge,
-            InwardChargeType.LinenCharges,
-            InwardChargeType.MaintainCharges,
-            InwardChargeType.MedicalCareICU,
-            InwardChargeType.MOCharges,
-            InwardChargeType.NursingCharges,
-            InwardChargeType.RoomCharges,
-            InwardChargeType.CardiacMonitoring,
-            InwardChargeType.Nebulisation,
-            InwardChargeType.Echo,
-            InwardChargeType.SyringePump,
-            InwardChargeType.TheaterConsumbale,
-            InwardChargeType.ExerciseECG,
-            InwardChargeType.TheaterConsumbale,
-            InwardChargeType.VAT,
-            InwardChargeType.EyeLence,
-            InwardChargeType.AccessoryCharges,
-            InwardChargeType.HospitalSupportService,
-            InwardChargeType.ExtraMedicine,
-            InwardChargeType.DialysisTreatment,
-            InwardChargeType.OtherCharges,
-            InwardChargeType.Eye,
-            InwardChargeType.Dental,
-            InwardChargeType.Andrology,
-            InwardChargeType.AudiogramTest,
-            InwardChargeType.CathLabEOMachine,
-            InwardChargeType.Channel,
-            InwardChargeType.CSSDCharges,
-            InwardChargeType.Dialysis,
-            InwardChargeType.ECG,
-            InwardChargeType.EEG,
-            InwardChargeType.ExerciseECG,
-            InwardChargeType.Fertility,
-            InwardChargeType.HolterMoniteringCharges,
-            InwardChargeType.LaboratoryInvestigation,
-            InwardChargeType.MedicalService,
-            InwardChargeType.MedicalServiceOPD,
-            InwardChargeType.MRIUnit,
-            InwardChargeType.OPD,
-            InwardChargeType.Others,
-            InwardChargeType.Procedure,
-            InwardChargeType.Radiology,
-            InwardChargeType.ReportingCharges,
-            InwardChargeType.WardProcedure};
-
-        return b;
+        return InwardChargeType.values();
     }
 
     public PatientEncounterComponentType[] getPatientEncounterComponentTypes() {
@@ -591,9 +825,7 @@ public class EnumController implements Serializable {
     public BillType[] getPharmacyBillTypesForMovementReports() {
         BillType[] b = {
             BillType.PharmacySale,
-            BillType.PharmacyAdjustment,
-            BillType.PharmacyTransferIssue,
-            BillType.PharmacyIssue,
+            BillType.PharmacyDisposalIssue,
             BillType.PharmacyBhtPre};
         return b;
     }
@@ -606,6 +838,19 @@ public class EnumController implements Serializable {
             BillType.PharmacyTransferIssue,
             BillType.PharmacyIssue,
             BillType.PharmacyBhtPre};
+
+        return b;
+    }
+
+    public BillType[] getPharmacyBillTypes4() {
+        BillType[] b = {
+            BillType.PharmacyPre,
+            BillType.PharmacyWholesalePre,
+            BillType.PharmacyAdjustment,
+            BillType.PharmacyTransferIssue,
+            BillType.PharmacyIssue,
+            BillType.PharmacyBhtPre,
+            BillType.PharmacyDisposalIssue};
 
         return b;
     }
@@ -625,8 +870,19 @@ public class EnumController implements Serializable {
             PaymentMethod.Slip,
             PaymentMethod.Credit,
             PaymentMethod.ewallet,
+            PaymentMethod.Staff_Welfare,
             PaymentMethod.PatientDeposit,
             PaymentMethod.MultiplePaymentMethods};
+
+        return p;
+    }
+
+    public PaymentMethod[] getPaymentMethodsForIncome() {
+        PaymentMethod[] p = {
+            PaymentMethod.Cash,
+            PaymentMethod.Card,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip};
 
         return p;
     }
@@ -666,7 +922,7 @@ public class EnumController implements Serializable {
 
     public List<PaymentMethod> getPaymentMethodsNonCreditExceptMultiple(List<PaymentMethod> pm) {
         List<PaymentMethod> paymentMethod = new ArrayList<>();
-        if (pm == null){
+        if (pm == null) {
             paymentMethod.add(PaymentMethod.Cash);
             paymentMethod.add(PaymentMethod.Card);
             paymentMethod.add(PaymentMethod.Cheque);
@@ -674,11 +930,22 @@ public class EnumController implements Serializable {
             paymentMethod.add(PaymentMethod.ewallet);
             paymentMethod.add(PaymentMethod.Staff);
             paymentMethod.add(PaymentMethod.PatientDeposit);
-        }else{
+        } else {
             paymentMethod.addAll(pm);
             paymentMethod.remove(PaymentMethod.MultiplePaymentMethods);
         }
         return paymentMethod;
+    }
+
+    public PaymentMethod[] getPaymentMethodsforAgencyManagement() {
+        PaymentMethod[] pm = {
+            PaymentMethod.Card,
+            PaymentMethod.Cash,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip
+        };
+
+        return pm;
     }
 
     public PaymentMethod[] getCollectingCentrePaymentMethods() {
@@ -692,10 +959,48 @@ public class EnumController implements Serializable {
             PaymentMethod.Card,
             PaymentMethod.Cheque,
             PaymentMethod.Slip,
-            PaymentMethod.MultiplePaymentMethods};
+            PaymentMethod.ewallet};
         return p;
     }
 
+    public PaymentMethod[] getPaymentMethodsForSupplierPayments() {
+        PaymentMethod[] p = {PaymentMethod.Cash,
+            PaymentMethod.Card,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip,
+            PaymentMethod.IOU};
+        return p;
+    }
+
+    public PaymentMethod[] getPaymentMethodsForIwardDeposit() {
+        PaymentMethod[] p = {PaymentMethod.Cash,
+            PaymentMethod.Card,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip,
+            PaymentMethod.ewallet,
+            PaymentMethod.PatientDeposit,
+            PaymentMethod.MultiplePaymentMethods,
+            PaymentMethod.OnlineSettlement};
+        return p;
+    }
+
+    public PaymentMethod[] getPaymentMethodsForIou() {
+        PaymentMethod[] p = {PaymentMethod.Cash,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip};
+        return p;
+    }
+
+    public PaymentMethod[] getPaymentMethodsForIouSettle() {
+        PaymentMethod[] p = {PaymentMethod.Cash,
+            PaymentMethod.Cheque,
+            PaymentMethod.IOU,
+            PaymentMethod.Voucher,
+            PaymentMethod.Slip};
+        return p;
+    }
+
+    @Deprecated // Use getPaymentMethodsForPharmacyBilling
     public PaymentMethod[] PaymentMethodsForPharmacyRetailSale() {
         PaymentMethod[] p = {
             PaymentMethod.Cash,
@@ -708,8 +1013,7 @@ public class EnumController implements Serializable {
     }
 
     public PaymentMethod[] getPaymentMethodsForPo() {
-        PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Credit};
-
+        PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Credit, PaymentMethod.Cheque, PaymentMethod.Slip};
         return p;
     }
 
@@ -743,8 +1047,16 @@ public class EnumController implements Serializable {
         return p;
     }
 
+    public List<ItemBarcodeGenerationStrategy> getItemBarcodeGenerationStrategies() {
+        return Arrays.asList(ItemBarcodeGenerationStrategy.values());
+    }
+
     public PaymentMethod[] getAllPaymentMethods() {
         return PaymentMethod.values();
+    }
+
+    public List<BankAccountType> getBankAccountTypes() {
+        return BankAccountType.getAllValues();
     }
 
     public List<PaymentMethod> getActivePaymentMethods() {
@@ -786,20 +1098,20 @@ public class EnumController implements Serializable {
 //        return false;
 //
 //    }
-    public boolean checkPaymentMethod(PaymentMethod paymentMethod, String paymentMathodStr) {
-        if (paymentMethod != null) {
-            //System.err.println("Payment method : " + paymentMethod);
-            //System.err.println("Payment Method String : " + PaymentMethod.valueOf(paymentMathodStr));
-            if (paymentMethod.equals(PaymentMethod.valueOf(paymentMathodStr))) {
-                //System.err.println("Returning True");
-                return true;
-            } else {
+    public boolean checkPaymentMethod(PaymentMethod paymentMethod, String paymentMethodStr) {
+        if (paymentMethod != null && paymentMethodStr != null && !paymentMethodStr.trim().isEmpty()) {
+            try {
+                PaymentMethod parsedMethod = PaymentMethod.valueOf(paymentMethodStr);
+                return paymentMethod.equals(parsedMethod);
+            } catch (IllegalArgumentException e) {
+                // Log the error and return false for invalid enum values
+                java.util.logging.Logger.getLogger(getClass().getName()).log(
+                        java.util.logging.Level.WARNING,
+                        "Invalid PaymentMethod string: " + paymentMethodStr, e);
                 return false;
             }
         }
-
         return false;
-
     }
 
     public AdmissionTypeEnum[] getAdmissionTypeEnum() {
@@ -816,12 +1128,249 @@ public class EnumController implements Serializable {
     public EnumController() {
     }
 
-    public PaymentScheme getPaymentScheme() {
-        return paymentScheme;
+    // PaymentScheme getters/setters removed - use local variables or session-scoped beans for user-specific state
+    public List<PaymentMethod> getPaymentMethodsForPatientDeposit() {
+        paymentMethodsForPatientDeposit = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit", true);
+            if (include) {
+                paymentMethodsForPatientDeposit.add(pm);
+            }
+        }
+        return paymentMethodsForPatientDeposit;
     }
 
-    public void setPaymentScheme(PaymentScheme paymentScheme) {
-        this.paymentScheme = paymentScheme;
+    public void setPaymentMethodsForPatientDeposit(List<PaymentMethod> paymentMethodsForPatientDeposit) {
+        this.paymentMethodsForPatientDeposit = paymentMethodsForPatientDeposit;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForStaffCreditSettle() {
+        paymentMethodsForStaffCreditSettle = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Staff Credit Settle", true);
+            if (include) {
+                paymentMethodsForStaffCreditSettle.add(pm);
+            }
+        }
+        return paymentMethodsForStaffCreditSettle;
+    }
+
+    public void setPaymentMethodsForStaffCreditSettle(List<PaymentMethod> paymentMethodsForStaffCreditSettle) {
+        this.paymentMethodsForStaffCreditSettle = paymentMethodsForStaffCreditSettle;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForPatientDepositRefund() {
+        paymentMethodsForPatientDepositRefund = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit Return", true);
+            if (include) {
+                paymentMethodsForPatientDepositRefund.add(pm);
+            }
+        }
+        return paymentMethodsForPatientDepositRefund;
+    }
+
+    public void setPaymentMethodsForPatientDepositRefund(List<PaymentMethod> paymentMethodsForPatientDepositRefund) {
+        this.paymentMethodsForPatientDepositRefund = paymentMethodsForPatientDepositRefund;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForOpdBillCanceling() {
+        paymentMethodsForOpdBillCanceling = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Bill Cancel", true);
+            if (include) {
+                if (pm != PaymentMethod.MultiplePaymentMethods) {
+                    paymentMethodsForOpdBillCanceling.add(pm);
+                }
+            }
+        }
+        return paymentMethodsForOpdBillCanceling;
+    }
+
+    public void setPaymentMethodsForOpdBillCanceling(List<PaymentMethod> paymentMethodsForOpdBillCanceling) {
+        this.paymentMethodsForOpdBillCanceling = paymentMethodsForOpdBillCanceling;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForPatientDepositCancel() {
+        paymentMethodsForPatientDepositCancel = new ArrayList<>();
+        for (PaymentMethod pm : PaymentMethod.values()) {
+            boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit Cancel", true);
+            if (include) {
+                paymentMethodsForPatientDepositCancel.add(pm);
+            }
+        }
+        return paymentMethodsForPatientDepositCancel;
+    }
+
+    public void setPaymentMethodsForPatientDepositCancel(List<PaymentMethod> paymentMethodsForPatientDepositCancel) {
+        this.paymentMethodsForPatientDepositCancel = paymentMethodsForPatientDepositCancel;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForMultiplePaymentMethod() {
+        List<PaymentMethod> p = new ArrayList<>();
+        p.add(PaymentMethod.Cash);
+        p.add(PaymentMethod.Card);
+        p.add(PaymentMethod.Cheque);
+        p.add(PaymentMethod.Slip);
+        p.add(PaymentMethod.OnlineSettlement);
+        p.add(PaymentMethod.Staff_Welfare);
+        p.add(PaymentMethod.ewallet);
+        p.add(PaymentMethod.PatientDeposit);
+        paymentMethodsForMultiplePaymentMethod = p;
+        return paymentMethodsForMultiplePaymentMethod;
+    }
+
+    public void setPaymentMethodsForMultiplePaymentMethod(List<PaymentMethod> paymentMethodsForMultiplePaymentMethod) {
+        this.paymentMethodsForMultiplePaymentMethod = paymentMethodsForMultiplePaymentMethod;
+    }
+
+    public List<PatientInvestigationStatus> getAvailableStatusforCancel() {
+        availableStatusforCancel = new ArrayList<>();
+        availableStatusforCancel.add(PatientInvestigationStatus.ORDERED);
+        availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_GENERATED);
+        availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_COLLECTED);
+        availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_SENT);
+        availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_REJECTED);
+        return availableStatusforCancel;
+    }
+
+    public void setAvailableStatusforCancel(List<PatientInvestigationStatus> availableStatusforCancel) {
+        this.availableStatusforCancel = availableStatusforCancel;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForGrn() {
+        if (paymentMethodsForGrn == null) {
+            fillPaymentMethodsForGrn();
+        }
+        return paymentMethodsForGrn;
+    }
+
+    public InvestigationItemType getInvestigationItemType(String name) {
+        for (InvestigationItemType type : InvestigationItemType.values()) {
+            if (type.toString().equalsIgnoreCase(name.trim())) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    public InvestigationItemValueType getInvestigationItemValueType(String name) {
+        for (InvestigationItemValueType type : InvestigationItemValueType.values()) {
+            if (type.toString().equalsIgnoreCase(name)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    public CssVerticalAlign getCssVerticalAlign(String name) {
+        for (CssVerticalAlign verAlign : CssVerticalAlign.values()) {
+            if (verAlign.toString().equalsIgnoreCase(name)) {
+                return verAlign;
+            }
+        }
+        return null;
+    }
+
+    public CssTextDecoration getCssTextDecoration(String name) {
+        for (CssTextDecoration txDeco : CssTextDecoration.values()) {
+            if (txDeco.toString().equalsIgnoreCase(name)) {
+                return txDeco;
+            }
+        }
+        return null;
+    }
+
+    public CssFontStyle getCssFontStyle(String name) {
+        for (CssFontStyle fontstyle : CssFontStyle.values()) {
+            if (fontstyle.toString().equalsIgnoreCase(name)) {
+                return fontstyle;
+            }
+        }
+        return null;
+    }
+
+    public CssTextAlign getCssTextAlign(String name) {
+        for (CssTextAlign txetAlign : CssTextAlign.values()) {
+            if (txetAlign.toString().equalsIgnoreCase(name)) {
+                return txetAlign;
+            }
+        }
+        return null;
+    }
+
+    public synchronized List<BillTypeAtomic> getAllUtilizedBillTypeAtomics() {
+        if (allUtilizedBillTypeAtomics == null) {
+            try {
+                allUtilizedBillTypeAtomics = billService.fetchAllUtilizedBillTypeAtomics();
+            } catch (Exception e) {
+                java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE, "Error fetching BillTypeAtomics", e);
+                allUtilizedBillTypeAtomics = new ArrayList<>();
+            }
+        }
+        return allUtilizedBillTypeAtomics;
+    }
+
+    public void setAllUtilizedBillTypeAtomics(List<BillTypeAtomic> allUtilizedBillTypeAtomics) {
+        this.allUtilizedBillTypeAtomics = allUtilizedBillTypeAtomics;
+    }
+
+    public synchronized List<BillTypeAtomic> getAllUtilizedBillTypeAtomicsForPharmacy() {
+        if (allUtilizedBillTypeAtomicsForPharmacy == null) {
+            allUtilizedBillTypeAtomicsForPharmacy = filterBillTypeAtomics(getAllUtilizedBillTypeAtomics(), ServiceType.PHARMACY);
+        }
+        return allUtilizedBillTypeAtomicsForPharmacy;
+    }
+
+    public List<BillTypeAtomic> filterBillTypeAtomics(List<BillTypeAtomic> btas, ServiceType serviceType) {
+        List<BillTypeAtomic> filteredList = new ArrayList<>();
+
+        if (btas == null || serviceType == null) {
+            return filteredList;
+        }
+
+        for (BillTypeAtomic bta : btas) {
+            if (bta != null && serviceType.equals(bta.getServiceType())) {
+                filteredList.add(bta);
+            }
+        }
+
+        return filteredList;
+    }
+
+    public void setAllUtilizedBillTypeAtomicsForPharmacy(List<BillTypeAtomic> allUtilizedBillTypeAtomicsForPharmacy) {
+        this.allUtilizedBillTypeAtomicsForPharmacy = allUtilizedBillTypeAtomicsForPharmacy;
+    }
+
+    public TestHistoryType[] getLabTestHistoryList() {
+        return TestHistoryType.values();
+    }
+
+    public TestHistoryType getLabTestHistory(String name) {
+        for (TestHistoryType type : TestHistoryType.values()) {
+            if (type.toString().equalsIgnoreCase(name)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsForDirectPurchase() {
+        if (paymentMethodsForDirectPurchase == null) {
+            fillPaymentMethodsForDirectPurchase();
+        }
+        return paymentMethodsForDirectPurchase;
+    }
+
+    public List<PaymentMethod> getPaymentMethodsUnderMultipleForPharmacyBilling() {
+        if (paymentMethodsUnderMultipleForPharmacyBilling == null) {
+            fillPaymentMethodsUnderMultipleForPharmacyBilling();
+        }
+        return paymentMethodsUnderMultipleForPharmacyBilling;
+    }
+
+    public void setPaymentMethodsUnderMultipleForPharmacyBilling(List<PaymentMethod> paymentMethodsUnderMultipleForPharmacyBilling) {
+        this.paymentMethodsUnderMultipleForPharmacyBilling = paymentMethodsUnderMultipleForPharmacyBilling;
     }
 
 }

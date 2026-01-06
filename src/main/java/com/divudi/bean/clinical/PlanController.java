@@ -9,10 +9,10 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.SymanticType;
-import com.divudi.entity.clinical.ClinicalEntity;
-import com.divudi.facade.ClinicalEntityFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.SymanticType;
+import com.divudi.core.entity.clinical.ClinicalEntity;
+import com.divudi.core.facade.ClinicalEntityFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -52,16 +52,16 @@ public class PlanController implements Serializable {
     private List<ClinicalEntity> items = null;
     String selectText = "";
 
-    
+
     public String navigateToManagePlans(){
         return "/emr/admin/plans";
     }
-    
+
     public String navigateToManageClinicaEntities(){
         return "/emr/admin/clinical_entities";
     }
-    
-    
+
+
     public void downloadAsExcel() {
         getItems();
         try {
@@ -98,7 +98,7 @@ public class PlanController implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
 //    public List<ClinicalEntity> completeDiagnosis(String qry) {
 //        List<ClinicalEntity> c;
 //        Map m = new HashMap();
@@ -222,7 +222,7 @@ public class PlanController implements Serializable {
         return items;
 
     }
-    
+
     public List<ClinicalEntity> completePlanOfActions(String qry) {
         List<ClinicalEntity> c;
         Map m = new HashMap();

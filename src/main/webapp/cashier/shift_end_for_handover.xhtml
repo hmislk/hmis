@@ -1,0 +1,556 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <h:body>
+
+        <ui:composition template="/cashier/index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel  class="m-1 p-1 container-flex">
+                        <f:facet name="header">
+
+                            <i class="fa-solid fa-cash-register">&nbsp;&nbsp;</i>
+                            <p:outputLabel value="End Shift" />
+
+                            <h:panelGroup style="float: right;" class="mx-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Comment for Shift End', true)}" >
+                                <p:outputLabel value="Comment" class="mx-2"></p:outputLabel>
+                                <p:inputText value="#{financialTransactionController.currentBill.comments}" ></p:inputText>
+                            </h:panelGroup>
+                        </f:facet>
+
+                        <h:panelGroup id="gpPrint" >
+                            <div class="row mx-2" >
+                                <div class="col-6">
+                                    <p:panelGrid layout="tabular" columns="2" class="w-100" >
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Shift Start" class="font-weight-bold" ></p:outputLabel>
+                                        </f:facet>
+                                        <!-- User with Icon -->
+                                        <h:panelGroup>
+                                            <i class="pi pi-user" style="margin-right:5px; color: #007bff;"></i>
+                                            <p:outputLabel value="User" />
+                                        </h:panelGroup>
+                                        <p:outputLabel value="#{financialTransactionController.bundle.user.webUserPerson.nameWithTitle}" styleClass="ui-badge-primary"></p:outputLabel>
+
+                                        <!-- Shift Start with Icon -->
+                                        <h:panelGroup>
+                                            <i class="pi pi-clock" style="margin-right:5px; color: #28a745;"></i>
+                                            <p:outputLabel value="Shift Started at" />
+                                        </h:panelGroup>
+                                        <p:outputLabel value="#{financialTransactionController.bundle.startBill.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </p:outputLabel>
+
+                                        <h:panelGroup>
+                                            <i class="pi pi-list" style="margin-right:5px; color: #17a2b8;"></i>
+                                            <p:outputLabel value="Shift Start Bill ID" />
+                                        </h:panelGroup>
+                                        <h:panelGroup>
+                                            <p:outputLabel value="#{financialTransactionController.bundle.startBill.id}" rendered="#{financialTransactionController.bundle.startBill.deptId eq null}"/>
+                                            <p:outputLabel value="#{financialTransactionController.bundle.startBill.deptId}"  rendered="#{financialTransactionController.bundle.startBill.deptId ne null}"/>
+                                        </h:panelGroup>
+                                    </p:panelGrid>
+                                </div>
+
+
+                                <div class="col-6" >
+                                    <p:panelGrid columns="2" layout="tabular" class="w-100 m-1" columnClasses="text-center text-end">
+                                        <f:facet name="header">
+                                            <div class="row" >
+                                                <div class="col" >
+                                                    <p:outputLabel value="Collected Payment Summary" class="font-weight-bold text-center" />
+                                                </div>
+                                                <div class="col" >
+                                                    <p:commandButton 
+                                                        class="ui-button-danger mx-2" 
+                                                        ajax="false" 
+                                                        value="End the Current Shift" 
+                                                        action="#{financialTransactionController.settleShiftEnd()}"
+                                                        icon="pi pi-power-off" 
+                                                        onclick="return confirm('Are you sure you want to end the current shift?');">
+                                                    </p:commandButton>
+                                                </div>
+                                            </div>
+                                        </f:facet>
+
+                                        <!-- Cash -->
+                                        <p:outputLabel value="Cash"
+                                                       style="text-align: left;"
+                                                       rendered="#{financialTransactionController.bundle.hasCashTransaction}" />
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.hasCashTransaction}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.cashValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Card -->
+                                        <p:outputLabel value="Card"
+                                                       style="text-align: left;"
+                                                       rendered="#{financialTransactionController.bundle.hasCardTransaction}" />
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.hasCardTransaction}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.cardValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Multiple Payment Methods -->
+                                        <p:outputLabel value="Multiple Payment Methods"
+                                                       style="text-align: left;"
+                                                       rendered="#{financialTransactionController.bundle.hasMultiplePaymentMethodsTransaction}" />
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.hasMultiplePaymentMethodsTransaction}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.multiplePaymentMethodsValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Credit -->
+                                        <p:outputLabel value="Credit"
+                                                       style="text-align: left;"
+                                                       rendered="#{financialTransactionController.bundle.hasCreditTransaction}" />
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.hasCreditTransaction}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.creditValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Staff Welfare -->
+                                        <p:outputLabel value="Staff Welfare"
+                                                       style="text-align: left;"
+                                                       rendered="#{financialTransactionController.bundle.hasStaffWelfareTransaction}" />
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.hasStaffWelfareTransaction}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.staffWelfareValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Staff -->
+                                        <p:outputLabel value="Staff"
+                                                       style="text-align: left;"
+                                                       rendered="#{financialTransactionController.bundle.hasStaffTransaction}" />
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.hasStaffTransaction}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.staffValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Voucher -->
+                                        <p:outputLabel value="Voucher"
+                                                       style="text-align: left;"
+                                                       rendered="#{financialTransactionController.bundle.hasVoucherTransaction}" />
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.hasVoucherTransaction}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.voucherValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- IOU -->
+                                        <p:outputLabel value="IOU"
+                                                       style="text-align: left;"
+                                                       rendered="#{financialTransactionController.bundle.hasIouTransaction}" />
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.hasIouTransaction}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.iouValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Agent -->
+                                        <!--                                        <p:outputLabel value="Agent"
+                                                                                               style="text-align: left;"
+                                                                                               rendered="#{financialTransactionController.bundle.hasAgentTransaction}" />
+                                                                                <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.hasAgentTransaction}">
+                                                                                    <p:outputLabel value="#{financialTransactionController.bundle.agentValue}">
+                                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                                    </p:outputLabel>
+                                                                                </h:panelGroup>-->
+
+                                        <!-- Cheque -->
+                                        <p:outputLabel value="Cheque"
+                                                       style="text-align: left;"
+                                                       rendered="#{financialTransactionController.bundle.hasChequeTransaction}" />
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.hasChequeTransaction}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.chequeValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Slip -->
+                                        <p:outputLabel value="Slip"
+                                                       style="text-align: left;"
+                                                       rendered="#{financialTransactionController.bundle.hasSlipTransaction}" />
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.hasSlipTransaction}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.slipValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- eWallet -->
+                                        <p:outputLabel value="eWallet"
+                                                       style="text-align: left;"
+                                                       rendered="#{financialTransactionController.bundle.hasEWalletTransaction}" />
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.hasEWalletTransaction}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.ewalletValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Patient Deposit -->
+                                        <p:outputLabel value="Patient Deposit"
+                                                       style="text-align: left;"
+                                                       rendered="#{financialTransactionController.bundle.hasPatientDepositTransaction}" />
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.hasPatientDepositTransaction}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.patientDepositValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Patient Points -->
+                                        <p:outputLabel value="Patient Points"
+                                                       style="text-align: left;"
+                                                       rendered="#{financialTransactionController.bundle.hasPatientPointsTransaction}" />
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.hasPatientPointsTransaction}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.patientPointsValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Online Settlement -->
+                                        <p:outputLabel value="Online Settlement"
+                                                       style="text-align: left;"
+                                                       rendered="#{financialTransactionController.bundle.hasOnCallTransaction}" />
+                                        <h:panelGroup layout="block" class="text-end" rendered="#{financialTransactionController.bundle.hasOnCallTransaction}">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.onlineSettlementValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <!-- Grand Total -->
+                                        <p:outputLabel value="Grand Total"
+                                                       style="text-align: left; font-weight: bold;" />
+                                        <h:panelGroup layout="block" class="text-end">
+                                            <p:outputLabel value="#{financialTransactionController.bundle.cashValue + financialTransactionController.bundle.cardValue + 
+                                                                    financialTransactionController.bundle.multiplePaymentMethodsValue + financialTransactionController.bundle.creditValue + 
+                                                                    financialTransactionController.bundle.staffWelfareValue + financialTransactionController.bundle.staffValue + 
+                                                                    financialTransactionController.bundle.voucherValue + financialTransactionController.bundle.iouValue + 
+                                                                    financialTransactionController.bundle.chequeValue + 
+                                                                    financialTransactionController.bundle.slipValue + financialTransactionController.bundle.ewalletValue + 
+                                                                    financialTransactionController.bundle.patientDepositValue + financialTransactionController.bundle.patientPointsValue + 
+                                                                    financialTransactionController.bundle.onlineSettlementValue+financialTransactionController.bundle.startBill.total}"
+                                                           style="text-align: right; font-weight: bold;">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </h:panelGroup>
+                                    </p:panelGrid>
+                                </div>
+                            </div>
+                            <div class="row mx-2" >
+                                <p:dataTable 
+                                    class="w-100 m-1"
+                                    emptyMessage="No Financial Transactions to Handover"
+                                    paginatorAlwaysVisible="false"
+                                    value="#{financialTransactionController.bundle.bundles}" 
+                                    var="summary"
+                                    paginator="true" 
+                                    rows="10" 
+
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                    currentPageReportTemplate="(Page {currentPage} of {totalPages})"
+                                    paginatorPosition="top">
+
+                                    <p:column headerText="Type" >
+                                        <h:outputText value="#{summary.bundleType}" />
+                                    </p:column>
+
+
+                                    <p:column headerText="Institution" >
+                                        <h:outputText value="#{summary.department.institution.name}" />
+                                    </p:column>
+
+                                    <p:column headerText="Site" >
+                                        <h:outputText value="#{summary.department.site.name}" />
+                                    </p:column>
+
+                                    <p:column headerText="Department" >
+                                        <h:outputText value="#{summary.department.name}" />
+                                    </p:column>
+
+                                    <p:column headerText="User" >
+                                        <h:outputText value="#{summary.user.name}" />
+                                    </p:column>
+
+                                    <p:column headerText="Date" >
+                                        <h:outputText value="#{summary.date}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+
+
+
+                                    <p:column 
+                                        class="text-end"
+                                        headerText="Cash Collected" 
+                                        rendered="#{financialTransactionController.bundle.hasCashTransaction}">
+                                        <h:outputText value="#{summary.cashValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{financialTransactionController.bundle.cashValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+
+                                    <p:column 
+                                        headerText="Card Value" 
+                                        class="text-end"
+                                        rendered="#{financialTransactionController.bundle.hasCardTransaction}">
+                                        <h:outputText value="#{summary.cardValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{financialTransactionController.bundle.cardValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <!-- Credit Value Column -->
+                                    <p:column 
+                                        headerText="Credit Value" 
+                                        class="text-end"
+                                        rendered="#{financialTransactionController.bundle.hasCreditTransaction}">
+                                        <h:outputText value="#{summary.creditValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{financialTransactionController.bundle.creditValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+
+                                    <!-- Staff Value Column -->
+                                    <p:column 
+                                        headerText="Staff Value" 
+                                        class="text-end"
+                                        rendered="#{financialTransactionController.bundle.hasStaffTransaction}">
+                                        <h:outputText value="#{summary.staffValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{financialTransactionController.bundle.staffValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+
+                                    <!-- Voucher Value Column -->
+                                    <p:column 
+                                        headerText="Voucher Value" 
+                                        class="text-end"
+                                        rendered="#{financialTransactionController.bundle.hasVoucherTransaction}">
+                                        <h:outputText value="#{summary.voucherValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{financialTransactionController.bundle.voucherValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <!-- IOU Value Column -->
+                                    <p:column 
+                                        headerText="IOU Value" 
+                                        class="text-end"
+                                        rendered="#{financialTransactionController.bundle.hasIouTransaction}">
+                                        <h:outputText value="#{summary.iouValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{financialTransactionController.bundle.iouValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <!-- Agent Value Column -->
+                                    <p:column 
+                                        headerText="Agent Value" 
+                                        class="text-end"
+                                        rendered="#{financialTransactionController.bundle.hasAgentTransaction}">
+                                        <h:outputText value="#{summary.agentValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{financialTransactionController.bundle.agentValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <!-- Cheque Value Column -->
+                                    <p:column 
+                                        headerText="Cheque Value" 
+                                        class="text-end"
+                                        rendered="#{financialTransactionController.bundle.hasChequeTransaction}">
+                                        <h:outputText value="#{summary.chequeValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{financialTransactionController.bundle.chequeValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <!-- Slip Value Column -->
+                                    <p:column 
+                                        headerText="Slip Value" 
+                                        class="text-end"
+                                        rendered="#{financialTransactionController.bundle.hasSlipTransaction}">
+                                        <h:outputText value="#{summary.slipValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{financialTransactionController.bundle.slipValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <!-- eWallet Value Column -->
+                                    <p:column 
+                                        headerText="eWallet Value" 
+                                        class="text-end"
+                                        rendered="#{financialTransactionController.bundle.hasEWalletTransaction}">
+                                        <h:outputText value="#{summary.ewalletValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{financialTransactionController.bundle.ewalletValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+
+                                    <!-- Patient Points Value Column -->
+                                    <p:column 
+                                        headerText="Patient Points Value" 
+                                        class="text-end"
+                                        rendered="#{financialTransactionController.bundle.hasPatientPointsTransaction}">
+                                        <h:outputText value="#{summary.patientPointsValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{financialTransactionController.bundle.patientPointsValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <!-- Online Settlement Value Column -->
+                                    <p:column 
+                                        headerText="Online Settlement Value" 
+                                        class="text-end"
+                                        rendered="#{financialTransactionController.bundle.hasOnlineSettlementTransaction}">
+                                        <h:outputText value="#{summary.onlineSettlementValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{financialTransactionController.bundle.onlineSettlementValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <!-- On Call Value Column -->
+                                    <p:column 
+                                        headerText="On Call Value" 
+                                        class="text-end"
+                                        rendered="#{financialTransactionController.bundle.hasOnCallTransaction}">
+                                        <h:outputText value="#{summary.onCallValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{financialTransactionController.bundle.onCallValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+
+                                </p:dataTable>
+                            </div>
+                        </h:panelGroup>
+                        <h:panelGroup class="m-4" rendered="#{financialTransactionController.bundle.hasCashTransaction}">
+                            <div class="col-md-7">
+                                <p:dataTable   
+                                    value="#{financialTransactionController.denominationTransactions}" 
+                                    var="deno" 
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow to Denomination for shift Ending Process')}" >
+                                    <p:column title="Denomination" style="padding: 4px; width: 8em;">
+                                        <p:outputLabel value="#{deno.denomination.displayName}" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column  title="Denomination"  style="padding: 4px; width: 6em;">
+                                        <p:inputText 
+                                            class="text-end w-50" 
+                                            id="txtDenoQty"
+                                            value="#{deno.denominationQty}" 
+                                            style="width: 100%; padding: 3px;"
+                                            onfocus="this.select()">
+                                            <f:convertNumber integerOnly="true" />
+                                            <p:ajax 
+                                                event="blur"
+                                                process="txtDenoQty" 
+                                                listener="#{financialTransactionController.calculateTotalCashDenomination()}"
+                                                update="txtDenoVal" ></p:ajax>
+                                        </p:inputText>  
+                                    </p:column>
+                                    <p:column  style="padding: 4px; width: 8em;">
+                                        <p:outputLabel
+                                            class="d-flex justify-content-end mx-2"
+
+                                            id="txtDenoVal" value="#{deno.denominationValue eq null ? 0.00 : deno.denominationValue}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </p:column>
+                                </p:dataTable>
+
+                                <p:commandButton 
+                                    value="Update" 
+                                    class="mt-2 ui-button-info" 
+                                    icon="pi pi-refresh" 
+                                    style="float: left;"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow to Denomination for shift Ending Process')}"
+                                    process="@this"
+                                    update="#{p:resolveFirstComponentWithId('txtCashValue',view).clientId}"
+                                    >                                                                    
+                                    <f:setPropertyActionListener target="#{financialTransactionController.currentPayment.paidValue}" value="#{financialTransactionController.totalCashFund}"></f:setPropertyActionListener>
+                                </p:commandButton>
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+
+
+
+
+
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

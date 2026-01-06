@@ -20,7 +20,7 @@
                                              rendered="#{agentPaymentReceiveSearchController.bill.billType eq 'AgentPaymentReceiveBill'}" onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                          return false;"/>
                             
-                            <p:commandButton ajax="false" value="Cancel" action="#{agentPaymentReceiveSearchController.collectingCentreCancelBill}" style="float: right;"  
+                            <p:commandButton ajax="false" value="Cancel" action="#{agentPaymentReceiveSearchController.collectingCentreDepositCancelBill}" style="float: right;"  
                                              rendered="#{agentPaymentReceiveSearchController.bill.billType eq 'CollectingCentrePaymentReceiveBill'}" onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                          return false;"/>
                             
@@ -28,14 +28,10 @@
                         <p:panelGrid columns="2" style="width: 100%;">
                             <p:panel header="Person Detail">
                                 <p:panelGrid columns="2">
-                                    <h:outputLabel value="Person Name:" ></h:outputLabel>
+                                    <h:outputLabel value="Collelcting Centre:" ></h:outputLabel>
                                     <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.fromInstitution.name }" ></h:outputLabel>                                        
-                                </p:panelGrid>
-                            </p:panel>
-                            <p:panel header="Bill Detail">
-                                <p:panelGrid columns="2">
                                     <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                    <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.insId}" ></h:outputLabel>                                  
+                                    <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.deptId}" ></h:outputLabel>                                  
                                     <h:outputLabel value="Net Total :" ></h:outputLabel>
                                     <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.netTotal}" ></h:outputLabel>
                                 </p:panelGrid>

@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/dealerPayment/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header" > 
+                            <h:outputText styleClass="fas fa-file-invoice"/>
+                            <h:outputLabel class="mx-4" value="Settle Supplier Payments"/>  
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-2">
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar id="fromDate" value="#{supplierPaymentController.fromDate}" navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                            class="w-100" inputStyleClass="w-100">
+
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate" value="#{supplierPaymentController.toDate}" navigator="false" 
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            class="w-100" inputStyleClass="w-100">
+
+                                </p:calendar>
+
+                                <p:commandButton 
+                                    value="List Approved Supplier Payments" 
+                                    action="#{supplierPaymentController.fillSupplierPaymentsToSettle}" 
+                                    ajax="false"  
+                                    icon="fas fa-prescription-bottle-alt" 
+                                    class="my-1 w-100 ui-button-warning" />
+
+                            </div>
+                            <div class="col-10">
+                                <p:dataTable 
+                                    value="#{supplierPaymentController.bills}"
+                                    var="b"
+                                    rowKey="#{b.id}"
+                                    paginator="true" 
+                                    selectionRowMode="add"
+                                    selectionPageOnly="false"
+                                    rows="10"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="5,10,15">
+
+                                    <p:column headerText="Payment No" sortBy="#{b.deptId}" filterBy="#{b.deptId}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.deptId}" />
+                                    </p:column>
+
+                                    <p:column headerText="Date" sortBy="#{b.billDate}" filterBy="#{b.billDate}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.billDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Supplier" sortBy="#{b.fromInstitution.name}" filterBy="#{b.fromInstitution.name}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.fromInstitution.name}" />
+                                    </p:column>
+
+                                    <p:column headerText="Bill Type" sortBy="#{b.billTypeAtomic.label}" filterBy="#{b.billTypeAtomic.label}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.billTypeAtomic.label}" />
+                                    </p:column>
+
+                                    <p:column  class="text-end" headerText="Total" sortBy="#{b.netTotal}" filterBy="#{b.netTotal}" filterMatchMode="contains">
+                                        <h:outputText value="#{b.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{supplierPaymentController.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00;(#,##0.00)" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column  headerText="Actions" >
+                                        <p:commandButton
+                                            value="To Settle the Approved Payment" 
+                                            action="#{supplierPaymentController.navigateToSettleSupplierPayment(b)}" 
+                                            ajax="false"
+                                            icon="pi pi-check"
+                                            styleClass="ui-button-success">
+                                            <i class="fa fa-money"></i>
+                                        </p:commandButton>
+
+                                    </p:column>
+                                </p:dataTable>
+
+                            </div>
+
+                        </div>
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

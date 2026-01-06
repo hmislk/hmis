@@ -9,10 +9,10 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.InstitutionType;
-import com.divudi.entity.Institution;
-import com.divudi.facade.InstitutionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.InstitutionFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -43,6 +43,7 @@ public class StoreDealorController implements Serializable {
     private InstitutionFacade ejbFacade;
     private Institution current;
     private List<Institution> items = null;
+    private int managaeInstitutionIndex = -1;
 
     public List<Institution> completeDealor(String query) {
         List<Institution> suggestions;
@@ -81,6 +82,7 @@ public class StoreDealorController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
+        current = null;
         //     getItems();
     }
 
@@ -145,6 +147,14 @@ public class StoreDealorController implements Serializable {
             items = getEjbFacade().findByJpql(sql, hm);
         }
         return items;
+    }
+
+    public int getManagaeInstitutionIndex() {
+        return managaeInstitutionIndex;
+    }
+
+    public void setManagaeInstitutionIndex(int managaeInstitutionIndex) {
+        this.managaeInstitutionIndex = managaeInstitutionIndex;
     }
 
     /**

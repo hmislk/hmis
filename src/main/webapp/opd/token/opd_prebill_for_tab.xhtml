@@ -58,8 +58,7 @@
                                 <p:focus  context="acIx"/>
 
                                 <div class="col-7">
-                                    <p:watermark for="acIx" value="Enter first few letters of the service or item to add" />
-                                    <h:panelGroup  rendered="#{opdTabPreBillController.opdItemDepartments ne null}" id="departments">
+                                                                        <h:panelGroup  rendered="#{opdTabPreBillController.opdItemDepartments ne null}" id="departments">
                                         <div class="row" >
                                             <div class="col-md-12" >
                                                 <ui:repeat  value="#{opdTabPreBillController.opdItemDepartments}" var="dept">
@@ -135,7 +134,7 @@
                                     <div>
                                         <p:panel id="pBillDetails" class=" m-1"  >
                                             <f:facet name="header" >
-                                                <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                                <h:outputText styleClass="fa fa-money-bill-wave" /> 
                                                 <h:outputText value="Bill Details" class="mx-4"></h:outputText>
                                             </f:facet>
                                             <h:panelGrid
@@ -161,7 +160,7 @@
                                     <div>
                                         <p:panel class="m-1">
                                             <f:facet name="header" >
-                                                <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                                <h:outputText styleClass="fa fa-money-bill-wave" /> 
                                                 <h:outputText value="Doctor Details" class="mx-4"></h:outputText>
                                             </f:facet>
                                             <p:selectOneListbox id="sldoctor" style="font-size: 10pt" value="#{opdTabPreBillController.selectedCurrentlyWorkingStaff}">
@@ -315,7 +314,7 @@
 
                                 <p:panel id="panelBillReferrals" class="m-1" rendered="false">
                                     <f:facet name="header" >
-                                        <h:outputText styleClass="fa fa-stethoscope" /> <!-- FontAwesome Icon -->
+                                        <h:outputText styleClass="fa fa-stethoscope" /> 
                                         <h:outputText value="Referral Details" class="mx-4"></h:outputText>
                                     </f:facet>
                                     <h:panelGrid 

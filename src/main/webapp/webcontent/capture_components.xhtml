@@ -7,10 +7,10 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="./index.xhtml">
+        <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
 
 
-            <ui:define name="contents">
+            <ui:define name="subcontent">
                 <h:form>
                     <h1>List of Capture Components</h1>
                     <p:dataTable value="#{captureComponentController.items}" 

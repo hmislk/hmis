@@ -8,10 +8,10 @@
  */
 package com.divudi.bean.hr;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.hr.HrmVariables;
-import com.divudi.entity.hr.PayeeTaxRange;
-import com.divudi.facade.HrmVariablesFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.hr.HrmVariables;
+import com.divudi.core.entity.hr.PayeeTaxRange;
+import com.divudi.core.facade.HrmVariablesFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -44,7 +44,7 @@ public class HrmVariablesController implements Serializable {
 
     ;
 
-   
+
     public void prepareAdd() {
         current = new HrmVariables();
     }
@@ -121,7 +121,7 @@ public class HrmVariablesController implements Serializable {
         } else {
             JsfUtil.addSuccessMessage("Nothing to Delete");
         }
-        
+
         current = null;
         getCurrent();
     }

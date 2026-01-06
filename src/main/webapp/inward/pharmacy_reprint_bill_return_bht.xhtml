@@ -36,31 +36,31 @@
                                         action="pharmacy_cancel_bill_return_bht" 
                                         disabled="#{pharmacyBillSearch.bill.cancelled}"  >                           
                                     </p:commandButton>
-                                     <p:commandButton
-                                id="check"
-                                ajax="false" 
-                                icon="fa fa-check-square"
-                                class="ui-button-success"
-                                value="Mark As Checked"
-                                action="#{pharmacyBillSearch.markAsChecked()}"
-                                process="uncheck"
-                                update="list "
-                                rendered="#{webUserController.hasPrivilege('InwardCheck')}"  />
-                            <p:commandButton 
-                                id="uncheck"
-                                ajax="false" 
-                                value="Mark As Uncheck"
-                                icon="fa fa-square"
-                                process="uncheck"
-                                update="list"
-                                class="ui-button-warning"
-                                action="#{pharmacyBillSearch.markAsUnChecked()}"
-                                rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
-                            <p:commandButton 
-                                ajax="false"
-                                icon="fa fa-backward"
-                                value="Back To Interim"
-                                action="/inward/inward_bill_intrim"  />
+                                    <p:commandButton
+                                        id="check"
+                                        ajax="false" 
+                                        icon="fa fa-check-square"
+                                        class="ui-button-success"
+                                        value="Mark As Checked"
+                                        action="#{pharmacyBillSearch.markAsChecked()}"
+                                        process="uncheck"
+                                        update="list "
+                                        rendered="#{webUserController.hasPrivilege('InwardCheck')}"  />
+                                    <p:commandButton 
+                                        id="uncheck"
+                                        ajax="false" 
+                                        value="Mark As Uncheck"
+                                        icon="fa fa-square"
+                                        process="uncheck"
+                                        update="list"
+                                        class="ui-button-warning"
+                                        action="#{pharmacyBillSearch.markAsUnChecked()}"
+                                        rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
+                                    <p:commandButton 
+                                        ajax="false"
+                                        icon="fa fa-backward"
+                                        value="Back To Interim"
+                                        action="/inward/inward_bill_intrim"  />
                                 </div>
                             </div>
                         </f:facet>
@@ -161,7 +161,13 @@
                                         </div> 
                                     </f:facet>
                                     <h:panelGroup id="gpBillPreview">
-                                        <ph:returnBill_1 bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}"> 
+                                            <ph:saleBill_Header_Return bill="#{pharmacyBillSearch.bill}" duplicate="true" ></ph:saleBill_Header_Return>
+                                        </h:panelGroup>
+                                        <h:panelGroup id="gpBillPreviewOther" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}"> 
+                                            <ph:returnBill_1 bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                        </h:panelGroup>
+
                                     </h:panelGroup>
                                 </p:panel>
                             </div>

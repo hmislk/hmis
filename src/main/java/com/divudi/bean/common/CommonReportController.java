@@ -5,10 +5,10 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.BillType;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.WebUser;
+import com.divudi.core.data.BillType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.WebUser;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,8 +39,8 @@ public class CommonReportController {
     public List<Class<?>> getAvailableClasses() {
         if(availableClasses==null){
             availableClasses= new ArrayList<>();
-            
-            
+
+
         }
         return availableClasses;
     }

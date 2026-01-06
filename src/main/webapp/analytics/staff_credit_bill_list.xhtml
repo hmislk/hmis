@@ -1,0 +1,151 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/analytics/index.xhtml">
+
+            <ui:define name="report">
+
+                <p:panel>
+                    <f:facet name="header" >
+                        <h:outputLabel value="Staff Credit Bill List "/>                          
+                    </f:facet>
+
+                    <h:form>
+                        <h:panelGrid columns="2" class="my-2" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}"  navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                            </p:calendar>
+
+
+
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                            </p:calendar>
+
+                            <h:outputLabel value="Staff"/>
+                            <p:autoComplete  
+                                minQueryLength="2"
+                                forceSelection="true" 
+                                value="#{searchController.staff}" 
+                                id="creditStaff"
+                                completeMethod="#{staffController.completeStaff}" 
+                                var="mys" 
+                                class="w-100"
+                                placeholder="Staff (Type at least 4 letters to search)"
+                                inputStyleClass="form-control"
+                                itemLabel="#{mys.person.name}" 
+                                itemValue="#{mys}"
+                                size="10">
+                                <p:column headerText="Name" style="padding: 2px;">
+                                    <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="EPF" style="padding: 2px;">
+                                    <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Credit Entitlement" style="padding: 2px;">
+                                    <h:outputText value="#{mys.creditLimitQualified}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column  headerText="Credit Utilized" style="padding: 2px;">
+                                    <h:outputText value="#{mys.currentCreditValue}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+                            </p:autoComplete>
+
+                        </h:panelGrid>
+                        <h:panelGrid columns="2" class="my-2" >
+                            <p:commandButton class="ui-button-warning" icon="fas fa-magnifying-glass" id="btnSearch" ajax="false" value="Search" 
+                                             action="#{searchController.createStaffCreditBillList()}"/>
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
+                                <p:dataExporter fileName="Staff Credit Bill List" type="xlsx" target="tblBills" ></p:dataExporter>
+                            </p:commandButton>
+                        </h:panelGrid>
+
+
+                        <p:dataTable 
+                            rowIndexVar="i" 
+                            id="tblBills" 
+                            value="#{searchController.bills}" 
+                            var="b" 
+                            class="w-100"
+                            rows="20"
+                            paginator="true" 
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                            rowsPerPageTemplate="20,50,{ShowAll|'All'}"
+                            scrollable="true"
+                            scrollWidth="100%">
+
+                            <p:column headerText="Staff Name" width="8em" style="text-align: left;" >
+                                <p:outputLabel value="#{b.toStaff.person.nameWithTitle}" />
+                            </p:column>
+
+                            <p:column headerText="Patient Name" width="8em" style="text-align: left;" >
+                                <p:outputLabel value="#{b.patient.person.nameWithTitle}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Date" width="4em" style="text-align: left;" >
+                                <p:outputLabel value="#{b.billDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Bill Time" width="4em" style="text-align: left;" >
+                                <p:outputLabel value="#{b.billTime}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Bill ID" width="4em" style="text-align: left;" >
+                                <p:outputLabel value="#{b.id}" />
+                            </p:column>
+
+                            <p:column headerText="Bill Type" width="10em" style="text-align: left;" >
+                                <p:outputLabel value="#{b.billTypeAtomic.label}" />
+                            </p:column>
+
+
+                            <p:column headerText="Total" width="6em" style="text-align: left;" >
+                                <p:outputLabel value="#{b.total}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Discount" width="6em" style="text-align: left;" >
+                                <p:outputLabel value="#{b.discount}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Net" width="6em" style="text-align: left;" >
+                                <p:outputLabel value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </p:outputLabel>
+                            </p:column>
+
+
+                        </p:dataTable>
+
+                    </h:form>
+
+
+
+                </p:panel>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -18,7 +18,7 @@
                                         forceSelection="true" value="#{dataAdministrationController.itemCategory}" >
                         </p:autoComplete>
                         <p:commandButton ajax="false" value="Excel">
-                            <p:dataExporter  type="xls" target="tblItem" fileName="item_list"  />
+                            <p:dataExporter  type="xlsx" target="tblItem" fileName="item_list"  />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Update Code"
                                          action="#{dataAdministrationController.createCodeSelectedCategory()}"/>

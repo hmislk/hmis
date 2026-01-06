@@ -90,7 +90,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Inward Charge Type"/> 
                                 </f:facet>
-                                <h:outputLabel   value="#{bip.inwardChargeType.label}"/>
+                                <h:outputLabel   value="#{bip.inwardChargeType.name}"/>
                             </p:column>
                             <p:column headerText="Total Value" style="text-align: right;">
                                 <f:facet name="header">
@@ -140,7 +140,7 @@
                                 <h:outputLabel value="Payement Detail"/>
                             </f:facet>
                             <p:column headerText="Bill No">
-                                <h:outputLabel  value="#{pay.insId}"></h:outputLabel>                                
+                                <h:outputLabel  value="#{pay.deptId}"></h:outputLabel>                                
                             </p:column>
                             <p:column headerText="Amount" style="text-align: right;" >
                                 <h:outputLabel  value="#{pay.netTotal}">
@@ -162,7 +162,7 @@
                                 <h:outputLabel value="Credit Company Payment Detail"/>
                             </f:facet>
                             <p:column headerText="Bill No">
-                                <h:outputLabel value="#{cre.insId}"></h:outputLabel>                                
+                                <h:outputLabel value="#{cre.deptId}"></h:outputLabel>                                
                             </p:column>
                             <p:column headerText="Amount" style="text-align: right;" >
                                 <h:outputLabel value="#{cre.netValue}">

@@ -4,8 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
         <ui:composition template="/admin/institutions/admin_institutions_index.xhtml">
             <ui:define name="admin">
@@ -13,38 +12,146 @@
                     <p:panel styleClass="panel-header-right">
                         <f:facet name="header">
                             <h:outputText value="Application Options" style="float: left;"/>
+                            <!-- Import button -->
+                            <p:commandButton value="Import" icon="pi pi-upload" 
+                                             styleClass="ui-button-info"
+                                             onclick="PF('importDialog').show();"
+                                             style="float: right; margin-right: 0.5em;" />
+                            <!-- Export Selected button -->
+                            <p:commandButton value="Export Selected" icon="pi pi-download" 
+                                             ajax="false"
+                                             styleClass="ui-button-success"
+                                             style="float: right; margin-right: 0.5em;">
+                                <p:fileDownload value="#{configOptionController.exportSelectedOptions()}" />
+                            </p:commandButton>
+                            <!-- Bulk delete button -->
+                            <p:commandButton value="Delete Selected" 
+                                             icon="pi pi-trash" 
+                                             styleClass="ui-button-danger"
+                                             ajax="false"
+                                             action="#{configOptionController.bulkDeleteSelectedOptions}"
+                                             style="float: right; margin-right: 0.5em;"
+                                             onclick="if (!confirm('Are you sure you want to delete the selected options?'))
+                                                         return false;" />
+                            <!-- Reload Config button -->
+                            <p:commandButton value="Reload Config"
+                                             icon="pi pi-refresh"
+                                             styleClass="ui-button-warning"
+                                             action="#{configOptionApplicationController.loadApplicationOptions}"
+                                             update="optionsTable"
+                                             style="float: right; margin-right: 0.5em;"
+                                             title="Reload configuration options to reflect changes" />
                             <!-- Button to List Application Options, with an icon and aligned to the right -->
                             <p:commandButton value="List Application Options" icon="pi pi-list" action="#{configOptionController.listApplicationOptions}"
-                                             update="optionsTable" style="float: right;" />
+                                             update="optionsTable" style="float: right; margin-right: 0.5em;" />
+                            <!-- Excel export button -->
+                            <p:commandButton ajax="false" icon="pi pi-file-excel" title="Export to Excel" style="float: right; margin-right: 0.5em;">
+                                <p:dataExporter type="xlsx" target="optionsTable" fileName="application_options" />
+                            </p:commandButton>
+                            <p:commandButton
+                                ajax="false"
+                                action="#{configOptionController.navigateToDuplicateOptions()}"
+                                icon="pi pi-copy"
+                                title="Navigate to Duplicates"
+                                style="float: right; margin-right: 0.5em;">
+                            </p:commandButton>
                         </f:facet>
                         <!-- Data Table for Options -->
-                        <p:dataTable var="option" 
-                                     value="#{configOptionController.options}" id="optionsTable"
-                                     paginator="true" rows="10" 
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15"
-                                     selection="#{configOptionController.option}">
-                            <p:column headerText="Key" 
-                                      sortBy="#{option.optionKey}" 
-                                      filterBy="#{option.optionKey}"
-                                      filterMatchMode="contains">
-                                #{option.optionKey}
+                        <p:dataTable 
+                            var="option" 
+                            rowKey="#{option.id}"
+                            value="#{configOptionController.options}" 
+                            id="optionsTable"
+                            paginator="true"
+                            selectionMode="multiple"
+                            rows="15" 
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="15,50,100"
+                            selection="#{configOptionController.selectedOptions}"
+                            filteredValue="#{configOptionController.filteredOptions}">
+
+                            <p:column selectionBox="true" style="width:16px;text-align:center"/>
+
+                            <p:column
+                                style="padding: 7px;"
+                                headerText="Key"
+                                sortBy="#{option.optionKey}"
+                                filterBy="#{option.optionKey}"
+                                filterFunction="#{configOptionController.filterByCustom}">
+                                <h:outputText value="#{option.optionKey}"/>
+                                <f:facet name="exportable">
+                                    <h:outputText value="#{option.optionKey}"/>
+                                </f:facet>
                             </p:column>
-                            <p:column headerText="Type" width="10em" sortBy="#{option.valueType}">
-                                #{option.valueType}
+
+                            <p:column
+                                rendered="#{webUserController.hasPrivilege('Developers')}"
+                                headerText="Type"
+                                width="10em"
+                                sortBy="#{option.valueType}"
+                                filterBy="#{option.valueType}"
+                                filterFunction="#{configOptionController.filterByCustom}"
+                                style="padding: 7px;">
+                                <h:outputText value="#{option.valueType}"/>
+                                <f:facet name="exportable">
+                                    <h:outputText value="#{option.valueType}"/>
+                                </f:facet>
                             </p:column>
-                            <p:column headerText="Value">
-                                <h:outputText value="#{option.optionValue}" />
+
+                            <p:column
+                                headerText="Value" 
+                                class="text-center"
+                                sortBy="#{option.optionValue}" 
+                                filterBy="#{option.optionValue}"
+                                style="padding: 7px;"
+                                >
+
+                                <h:panelGroup>
+                                    <h:panelGroup rendered="#{option.optionValue eq 'true'}" >
+                                        <i class="fa fa-check text-success m-1" ></i>
+                                        <h:outputText value="Yes" class="text-success"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{option.optionValue eq 'false'}">
+                                        <i class="fa fa-times text-danger m-1" ></i>
+                                        <h:outputText value="No" class="text-danger"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{option.optionValue ne 'true' and option.optionValue ne 'false'}">
+                                        <h:outputText value="#{option.optionValue}" />
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <f:facet name="exportable">
+                                    <h:outputText value="#{option.optionValue eq 'true' ? 'Yes' : (option.optionValue eq 'false' ? 'No' : option.optionValue)}" />
+                                </f:facet>
+
                             </p:column>
-                            <p:column headerText="Actions" width="5em">
-                                <p:commandButton 
-                                    icon="pi pi-pencil" 
-                                    oncomplete="PF('optionEditDialog').show()" 
-                                    update=":editForm"
-                                    >
-                                    <f:setPropertyActionListener value="#{option}" target="#{configOptionController.option}" ></f:setPropertyActionListener>
-                                </p:commandButton>
+
+                            <p:column width="14em" style="padding: 7px;" >
+                                <div class="text-center w-100">
+                                    <p:commandButton
+                                        icon="pi pi-pencil"
+                                        styleClass="ui-button-success mx-1"
+                                        oncomplete="PF('optionEditDialog').show()"
+                                        update=":editForm"
+                                        title="Edit Option">
+                                        <f:setPropertyActionListener value="#{option}" target="#{configOptionController.option}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        icon="pi pi-trash"
+                                        styleClass="ui-button-danger mx-1"
+                                        ajax="false"
+                                        onclick="if (!confirm('Are you Sure you want to Delete this Option?'))
+                                                    return false;"
+                                        action="#{configOptionController.deleteOption(option)}"
+                                        title="Delete Option">
+                                    </p:commandButton>
+                                </div>
+                                <f:facet name="exportable">
+                                    <h:outputText value="" />
+                                </f:facet>
+
                             </p:column>
+
                         </p:dataTable>
 
                     </p:panel>
@@ -55,63 +162,170 @@
                 </h:form>
                 <p:dialog 
                     header="Edit Option" widgetVar="optionEditDialog" modal="true" 
-                    style="min-width: 80%; min-height: 400px;">
+                    style="min-width: 60%; min-height: 400px;">
                     <h:form id="editForm" class="w-100" >
-                        <p:panelGrid 
-                            columns="2"
+                        <p:panel
                             class="w-100">
                             <f:facet name="header">
                                 <p:outputPanel styleClass="header-style">Option Details</p:outputPanel>
                             </f:facet>
 
-                            <p:outputLabel for="keyInput" value="Key:"  class="w-100" />
-                            <p:inputText class="w-100" id="keyInput" value="#{configOptionController.option.optionKey}" disabled="true" />
+                            <div class="d-flex">
+                                <div class="col-3">
+                                    <p:outputLabel for="keyInput" value="Option Key"  class="w-100" />
+                                </div>
+                                <div class="col-9">
+                                    <h:outputText class="w-100" id="keyInput" value="#{configOptionController.option.optionKey}"/>
+                                </div>
+                            </div>
 
-                            <p:outputLabel value="Value:" />
+                            <hr/>
 
-                            <!-- Rendered based on the valueType of the option -->
-                            <!-- For SHORT_TEXT -->
-                            <p:inputText 
-                                class="w-100" 
-                                id="valueInputShortText" value="#{configOptionController.option.optionValue}"
-                                rendered="#{configOptionController.option.valueType eq 'SHORT_TEXT'}" />
-                            
-                             <!-- For Long -->
-                            <p:inputText 
-                                class="w-100" 
-                                id="valueInputLong" 
-                                value="#{configOptionController.option.optionValue}"
-                                rendered="#{configOptionController.option.valueType eq 'LONG'}" />
+                            <div class="d-flex mt-3">
+                                <div class="col-3">
+                                    <p:outputLabel value="Key Value" />
+                                </div>
+                                <div class="col-9">
+                                    <!-- For SHORT_TEXT -->
+                                    <p:inputText 
+                                        class="w-100" 
+                                        id="valueInputShortText" value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'SHORT_TEXT'}" />
 
-                            <!-- For LONG_TEXT -->
-                            <p:inputTextarea 
-                                class="w-100" 
-                                id="valueInputLongText" value="#{configOptionController.option.optionValue}"
-                                rendered="#{configOptionController.option.valueType eq 'LONG_TEXT'}" autoResize="true"/>
+                                    <!-- For Long -->
+                                    <p:inputText 
+                                        class="w-100" 
+                                        id="valueInputLong" 
+                                        value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'LONG'}" />
 
-                            <p:selectOneMenu 
-                                id="enumValueSelector"
-                                filter="true"
-                                filterMatchMode="contains"
-                                value="#{configOptionController.option.optionValue}" 
-                                rendered="#{configOptionController.option.valueType eq 'ENUM'}">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value="#{enumController.getEnumValues(configOptionController.option.enumType)}"
-                                               var="enumVal"
-                                               itemLabel="#{enumVal}"
-                                               itemValue="#{enumVal}" />
-                            </p:selectOneMenu>
+                                    <!-- For LONG_TEXT -->
+                                    <p:inputTextarea 
+                                        class="w-100" 
+                                        rows="5"
+                                        id="valueInputLongText" value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'LONG_TEXT'}" 
+                                        autoResize="false"/>
 
-                            <p:selectBooleanCheckbox id="valueInputBoolean" value="#{configOptionController.option.optionValue}"
-                                                     rendered="#{configOptionController.option.valueType eq 'BOOLEAN'}" />
+                                    <!-- For DOUBLE -->
+                                    <p:inputText 
+                                        class="w-100" 
+                                        id="valueInputDouble" value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'DOUBLE'}" />
 
-                            <p:spacer ></p:spacer>
-                            <p:commandButton icon="pi pi-save"
-                                             value="Save" 
-                                             action="#{configOptionController.saveOption(configOptionController.option)}" 
-                                             process="@this @form"
-                                             oncomplete="PF('optionEditDialog').hide();" update=":optionsForm:optionsTable" />
-                        </p:panelGrid>
+                                    <!-- For COLOR -->
+                                    <p:colorPicker 
+                                        id="color" 
+                                        mode="inline" 
+                                        rendered="#{configOptionController.option.valueType eq 'COLOR'}"
+                                        value="#{configOptionController.option.optionValue}"
+                                        formatToggle="true" 
+                                        theme="large">
+                                    </p:colorPicker>
+
+                                    <p:selectOneMenu 
+                                        id="enumValueSelector"
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        value="#{configOptionController.option.optionValue}" 
+                                        rendered="#{configOptionController.option.valueType eq 'ENUM'}">
+                                        <f:selectItem itemLabel="Select" ></f:selectItem>
+                                        <f:selectItems 
+                                            value="#{enumController.getEnumValues(configOptionController.option.enumType)}"
+                                            var="enumVal"
+                                            itemLabel="#{enumVal}"
+                                            itemValue="#{enumVal}" />
+                                    </p:selectOneMenu>
+
+                                    <p:toggleSwitch 
+                                        value="#{configOptionController.option.optionValue}" 
+                                        onIcon="pi pi-check" 
+                                        offIcon="pi pi-times" 
+                                        rendered="#{configOptionController.option.valueType eq 'BOOLEAN'}">
+                                    </p:toggleSwitch>
+
+                                </div>
+                            </div>
+
+                            <hr/>
+
+                            <div class="d-flex mt-4">
+                                <div class="col-3"></div>
+                                <div class="col-9">
+                                    <p:commandButton 
+                                        icon="pi pi-save"
+                                        value="Save" 
+                                        style="width: 250px; background-color: #da8545; float: right;"
+                                        action="#{configOptionController.saveOption(configOptionController.option)}" 
+                                        process="@this @form"
+                                        oncomplete="PF('optionEditDialog').hide();" update=":optionsForm:optionsTable" >
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </p:panel>
+
+                    </h:form>
+                </p:dialog>
+
+                <!-- Import Dialog -->
+                <p:dialog header="Import Configuration Options" widgetVar="importDialog" modal="true" 
+                          style="min-width: 50%; min-height: 300px;">
+                    <h:form id="importForm" enctype="multipart/form-data">
+                        <p:panel class="w-100">
+                            <f:facet name="header">
+                                <p:outputPanel styleClass="header-style">Import Options from CSV</p:outputPanel>
+                            </f:facet>
+
+                            <div class="mb-3">
+                                <p>Upload a CSV file with the following format:</p>
+                                <p><strong>Option Key, Option Value, Value Type, Enum Type</strong></p>
+                                <div class="text-info">
+                                    <p><strong>Import Modes:</strong></p>
+                                    <ul>
+                                        <li><strong>Import and Replace:</strong> Updates existing options and creates new ones</li>
+                                        <li><strong>Import Missing Only:</strong> Only creates new options, skips existing ones</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <p:fileUpload 
+                                    value="#{configOptionController.uploadedFile}"
+                                    mode="simple" 
+                                    allowTypes="/(\.|\/)(csv)$/"
+                                    sizeLimit="1000000"
+                                    label="Choose CSV File" />
+                            </div>
+
+                            <div class="mb-3">
+                                <p:commandButton
+                                    value="Import and Replace"
+                                    icon="pi pi-upload"
+                                    ajax="false"
+                                    action="#{configOptionController.importAndReplaceOptionsFromCsv}"
+                                    styleClass="ui-button-success mr-2"
+                                    title="Updates existing options and creates new ones" />
+                                <p:commandButton
+                                    value="Import Missing Only"
+                                    icon="pi pi-plus"
+                                    ajax="false"
+                                    action="#{configOptionController.importMissingOnlyOptionsFromCsv}"
+                                    styleClass="ui-button-warning mr-2"
+                                    title="Only creates new options, skips existing ones" />
+                                <p:commandButton
+                                    value="Cancel"
+                                    icon="pi pi-times"
+                                    onclick="PF('importDialog').hide();"
+                                    styleClass="ui-button-secondary" />
+                            </div>
+
+                            <div class="mt-3">
+                                <p class="text-info">
+                                    <i class="pi pi-info-circle"></i>
+                                    Supported Value Types: SHORT_TEXT, LONG_TEXT, BOOLEAN, LONG, DOUBLE, ENUM, COLOR
+                                </p>
+                            </div>
+                        </p:panel>
                     </h:form>
                 </p:dialog>
 

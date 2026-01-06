@@ -57,9 +57,11 @@
                                 </p:column>  
 
                                 <p:column headerText="Qty" width="70px;">                   
-                                    <p:inputText autocomplete="off" id="qty" value="#{bItm.pharmaceuticalBillItem.qty}" class="w-100">
-                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{storeTransferIssueController.onFocus(bItm)}"/>
-                                    </p:inputText>
+                                <p:inputText autocomplete="off" id="qty" value="#{bItm.pharmaceuticalBillItem.qty}" class="w-100">
+                                    <f:convertNumber integerOnly="#{!bItm.item.allowFractions}" />
+                                    <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{storeTransferIssueController.onFocus(bItm)}"/>
+                                </p:inputText>
+                                <p:keyFilter for="qty" mask="#{bItm.item.allowFractions ? 'num' : 'int'}" />
                                 </p:column> 
 
                                 <p:column width="35px;">
@@ -162,8 +164,10 @@
                             </f:facet>                        
                             <f:facet name="input">  
                                 <p:inputText autocomplete="off" id="qty" value="#{bItm.tmpQty}" >
+                                    <f:convertNumber integerOnly="#{!bItm.item.allowFractions}" />
                                     <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{storeTransferIssueController.onFocus(bItm)}"/>
                                 </p:inputText>
+                                <p:keyFilter for="qty" mask="#{bItm.item.allowFractions ? 'num' : 'int'}" />
                             </f:facet>
                         </p:cellEditor>
                     </p:column>              
