@@ -1125,7 +1125,8 @@ public class PharmacyAdjustmentController implements Serializable {
             throw new RuntimeException("ItemBatch not found with ID: " + dto.getItemBatchId());
         }
 
-        ph.setPurchaseRate(ib.getCostRate() != null ? ib.getCostRate() : 0.0);
+        Double purRate = ib.getPurcahseRate();
+        ph.setPurchaseRate(purRate != null ? purRate : 0.0);
         ph.setBeforeAdjustmentValue(oldCostRate);
         ph.setAfterAdjustmentValue(newCostRate);
         ph.setStock(stockEntity);
@@ -1341,7 +1342,7 @@ public class PharmacyAdjustmentController implements Serializable {
             // Save entities
             getBillItemFacade().create(tbi);
             getDeptAdjustmentPreBill().getBillItems().add(tbi);
-            
+
             BillFinanceDetails bfd = getDeptAdjustmentPreBill().getBillFinanceDetails();
             if (bfd == null) {
                 bfd = new BillFinanceDetails(getDeptAdjustmentPreBill());
@@ -2604,7 +2605,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     // ==================== New Batch Creation Methods ====================
-
     public void prepareForNewBatchCreation() {
         newBatchItem = null;
         newBatchNo = null;
@@ -2749,7 +2749,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     // Getters and Setters for new batch creation properties
-
     public Item getNewBatchItem() {
         return newBatchItem;
     }
