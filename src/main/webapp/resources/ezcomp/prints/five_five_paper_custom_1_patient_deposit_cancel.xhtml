@@ -42,9 +42,12 @@
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="Deposit Cancel "   />
-                <h:outputLabel value="&nbsp;**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
-                <h:outputLabel value=" &nbsp;Receipt"   />
+                <div>
+                    <h:outputLabel value="Deposit Cancel Receipt"/>
+                </div>
+                <div>
+                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" style="font-size: small"/>
+                </div>
             </div>
 
             <div class="billline">
@@ -130,7 +133,7 @@
                         </td>
                     </tr>
 
-                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="billItem"   >
+                    <ui:repeat value="#{cc.attrs.bill.cancelledBill.billItems}" var="billItem"   >
                         <tr class="billDetailsFiveFive">
                             <td  style="width:80%!important;">
                                 <h:outputLabel value="#{billItem.item.printName}"></h:outputLabel>

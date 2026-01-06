@@ -42,10 +42,15 @@
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="Deposit Receive "   />
-                <h:outputLabel value="&nbsp;**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
-                <h:outputLabel value="&nbsp;**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
-                <h:outputLabel value=" &nbsp;Receipt"   />
+                <div>
+                    <h:outputLabel value="Deposit Receive Receipt"/>
+                </div>
+                <div>
+                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" style="font-size: small"/>
+                </div>
+                <div>
+                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" style="font-size: small"/>
+                </div>
             </div>
 
             <div class="billline">
@@ -66,8 +71,7 @@
                 <div class="d-flex">
                     <div class="col-3"><h:outputLabel value="Invoice No" ></h:outputLabel></div>
                     <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>
-                    <div class="col-7"><h:outputLabel value="#{cc.attrs.bill.deptId}" rendered="#{!cc.attrs.bill.cancelled}"/>
-                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId}" rendered="#{cc.attrs.bill.cancelled}"/></div>
+                    <div class="col-7"><h:outputLabel value="#{cc.attrs.bill.deptId}"/></div>
                 </div>
                 <div class="d-flex">
                     <div class="col-3"><h:outputLabel value="Invoice Date" ></h:outputLabel></div>
@@ -249,7 +253,7 @@
             <div class="d-flex justify-content-end align-items-center" style="margin-right: 5%;font-size: 9pt">
                 <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
                     <div>
-                        <h:outputLabel value="Original Bill No :  #{cc.attrs.bill.deptId}" />
+                        <h:outputLabel value="Cancelled Bill No :  #{cc.attrs.bill.cancelledBill.deptId}" />
                     </div>
                 </h:panelGroup>
             </div>
