@@ -204,6 +204,15 @@
                             <h:outputText value="#{cc.attrs.patientInvestigation.billItem.item.name}"/>
                         </td>
                     </tr>
+                    
+                    <h:panelGroup rendered="#{cc.attrs.patientInvestigation.billItem.priority ne null and cc.attrs.patientInvestigation.billItem.priority ne 'NORMAL'}">
+                        <tr>
+                            <td style="padding: 2px; font-size: 13px; font-weight: 700;">Priority</td>
+                            <td style="padding: 2px; font-size: 13px; font-weight: 700;">
+                                <h:outputLabel value="#{cc.attrs.patientInvestigation.billItem.priority}"/>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
 
                     <tr> 
                         <td style="padding: 2px; font-size: 13px; font-weight: 700;">Sample ID</td>

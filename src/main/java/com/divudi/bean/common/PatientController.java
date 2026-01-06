@@ -1569,6 +1569,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     private void saveBillItem() {
+        if (getBill().isCancelled() && getBill().getCancelledBill() != null) {
+            for (BillItem tmp : getBillItems()) {
+                tmp.setCreatedAt(new Date());
+                tmp.setCreater(getSessionController().getLoggedUser());
+                tmp.setBill(getBill().getCancelledBill());
+                tmp.setNetValue(tmp.getNetValue());
+                billItemFacade.create(tmp);
+            }
+            return;
+        }
         for (BillItem tmp : getBillItems()) {
             tmp.setCreatedAt(new Date());
             tmp.setCreater(getSessionController().getLoggedUser());

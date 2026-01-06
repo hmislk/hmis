@@ -50,15 +50,13 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.lab.PatientInvestigationController;
-import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillFeeBundleEntry;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BooleanMessage;
 import com.divudi.core.data.OptionScope;
-import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.data.lab.Priority;
 import com.divudi.core.entity.membership.MembershipScheme;
 import com.divudi.core.facade.FamilyFacade;
-import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.TokenFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
@@ -310,6 +308,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private double remainAmount;
     private Double currentBillItemQty;
     private PatientEncounter patientEncounter;
+    private Priority currentBillItemPriority;
 
     @PostConstruct
     public void init() {
@@ -933,6 +932,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else {
             departmentOpdItems = filterItemLightesByDepartment(getOpdItems(), getSelectedOpdItemDepartment());
         }
+        setItemLight(null);
     }
 
     public void fillOpdItemDepartments(List<ItemLight> itemLightsToAddDepartments) {
@@ -2551,17 +2551,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
             }
         }
-        
-        if(currentPatientMembershipScheme != null){
+
+        if (currentPatientMembershipScheme != null) {
             newBatchBill.setMembershipScheme(currentPatientMembershipScheme);
         }
-        if(chiefHouseHolder != null){
+        if (chiefHouseHolder != null) {
             newBatchBill.setChiefHouseHolder(chiefHouseHolder);
         }
-        if(currentPatientFamily != null){
+        if (currentPatientFamily != null) {
             newBatchBill.setMemberFamily(currentPatientFamily);
         }
-        
+
         newBatchBill.setInsId(batchBillId);
         newBatchBill.setDeptId(batchBillId);
 
@@ -2676,14 +2676,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setBillDate(new Date());
         newBill.setBillTime(new Date());
         newBill.setPatient(patient);
-        
-        if(currentPatientMembershipScheme != null){
+
+        if (currentPatientMembershipScheme != null) {
             newBill.setMembershipScheme(currentPatientMembershipScheme);
         }
-        if(chiefHouseHolder != null){
+        if (chiefHouseHolder != null) {
             newBill.setChiefHouseHolder(chiefHouseHolder);
         }
-        if(currentPatientFamily != null){
+        if (currentPatientFamily != null) {
             newBill.setMemberFamily(currentPatientFamily);
         }
 
@@ -2835,14 +2835,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBill.setDeptId(deptId);
 
         newBill.setSessionId(getBillNumberGenerator().generateDailyBillNumberForOpd(newBill.getDepartment()));
-        
-        if(currentPatientMembershipScheme != null){
+
+        if (currentPatientMembershipScheme != null) {
             newBill.setMembershipScheme(currentPatientMembershipScheme);
         }
-        if(chiefHouseHolder != null){
+        if (chiefHouseHolder != null) {
             newBill.setChiefHouseHolder(chiefHouseHolder);
         }
-        if(currentPatientFamily != null){
+        if (currentPatientFamily != null) {
             newBill.setMemberFamily(currentPatientFamily);
         }
 
@@ -3428,11 +3428,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("Please set Category to Item");
             return;
         }
-
-        if (getCurrentBillItem().getItem().getPriority() != null) {
-            getCurrentBillItem().setPriority(getCurrentBillItem().getItem().getPriority());
+        
+        if (getCurrentBillItem().getItem().isAllowedForBillingPriority()) {
+            if (currentBillItemPriority == null) {
+                currentBillItemPriority = Priority.NORMAL;
+            }
+        }else{
+            currentBillItemPriority = null;
         }
-
+        
         if (getCurrentBillItem().getItem().isRequestForQuentity()) {
             if (getCurrentBillItemQty() == null || getCurrentBillItemQty() == 0.0) {
                 setCurrentBillItemQty(null);
@@ -3455,6 +3459,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         BillItem bi = new BillItem();
         bi.copy(getCurrentBillItem());
         bi.setTmpQty(getCurrentBillItemQty());
+        if (getCurrentBillItem().getItem().isAllowedForBillingPriority()) {
+            bi.setPriority(currentBillItemPriority);
+        }else{
+            bi.setPriority(null);
+        }
         bi.setSessionDate(sessionDate);
         lastBillItem = bi;
         BillEntry addingEntry = new BillEntry();
@@ -3512,7 +3521,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         } else {
             setItemLight(itemLight);
         }
+        
         setCurrentBillItemQty(null);
+        currentBillItemPriority = null;
         JsfUtil.addSuccessMessage("Added");
     }
 
@@ -4085,12 +4096,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             return "/opd/opd_bill?faces-redirect=true";
         }
     }
-    
+
     private Patient chiefHouseHolder;
     private MembershipScheme currentPatientMembershipScheme;
     private Family currentPatientFamily;
-    
-    @EJB 
+
+    @EJB
     FamilyFacade familyFacade;
 
     public String navigateToNewOpdBillWithPaymentScheme(Patient pt, PaymentScheme ps, Family family) {
@@ -4098,14 +4109,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         Patient currentPatient = patientFacade.findWithoutCache(pt.getId());
         Family currentFamily = familyFacade.findWithoutCache(family.getId());
-        
+
         if (currentPatient == null) {
             JsfUtil.addErrorMessage("Error in Patiemt");
             return "";
-        }else if(currentFamily == null){
+        } else if (currentFamily == null) {
             JsfUtil.addErrorMessage("Error in Family");
             return "";
-        }else {
+        } else {
             patient = currentPatient;
             chiefHouseHolder = currentFamily.getChiefHouseHolder();
             currentPatientFamily = currentFamily;
@@ -5406,6 +5417,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void setCurrentPatientFamily(Family currentPatientFamily) {
         this.currentPatientFamily = currentPatientFamily;
+    }
+
+    public Priority getCurrentBillItemPriority() {
+        if(currentBillItemPriority == null){
+            currentBillItemPriority = Priority.NORMAL;
+        }
+        return currentBillItemPriority;
+    }
+
+    public void setCurrentBillItemPriority(Priority currentBillItemPriority) {
+        this.currentBillItemPriority = currentBillItemPriority;
     }
 
 }

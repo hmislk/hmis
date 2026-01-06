@@ -779,7 +779,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 // Try simple version first without COALESCE
                                 sql = "select c from BilledBill c "
                         + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
-                        + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount)) > :val) "
+                        + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount) - COALESCE(abs(c.refundAmount), 0)) > :val) "
                         + " and c.billTypeAtomic in :btas "
                         + " and c.paymentMethod= :pm "
                         + " and c.cancelledBill is null "
@@ -810,14 +810,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     for (Bill bill : a) {
                         Double balance = bill.getBalance();
                         double dueAmount = (balance != null) ? balance.doubleValue() :
-                                          (bill.getNetTotal() + bill.getVat() - bill.getPaidAmount());
+                                          (bill.getNetTotal() + bill.getVat() - bill.getPaidAmount() - bill.getRefundAmount());
                     }
                 } else {
                     System.out.println("No results found - trying fallback query...");
                     // Try even simpler query but with balance condition
                     String simpleSql = "select c from BilledBill c "
                             + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
-                            + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount)) > :val) "
+                            + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount) - COALESCE(abs(c.refundAmount), 0)) > :val) "
                             + " and c.billTypeAtomic in :btas "
                             + " and c.paymentMethod= :pm "
                             + " and c.retired=false "
@@ -855,7 +855,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (qry != null) {
             jpql = "select c from BilledBill c "
                     + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
-                    + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount)) > :val) "
+                    + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount) - COALESCE(abs(c.refundAmount), 0)) > :val) "
                     + " and c.billTypeAtomic in :btas "
                     + " and c.paymentMethod= :pm "
                     + " and c.cancelledBill is null "
@@ -929,7 +929,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 // Try simple version first without COALESCE
                                 sql = "select b from BilledBill b "
                         + " where ((b.balance IS NOT NULL AND abs(b.balance) > :val) "
-                        + " OR (abs(b.netTotal) + abs(b.vat) - abs(b.paidAmount)) > :val) "
+                        + " OR (abs(b.netTotal) + abs(b.vat) - abs(b.paidAmount) - COALESCE(abs(b.refundAmount), 0)) > :val) "
                         + " and b.billType in :btps "
                         + " and b.paymentMethod= :pm "
                         + " and b.retired=false "
@@ -957,14 +957,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     for (Bill bill : a) {
                         Double balance = bill.getBalance();
                         double dueAmount = (balance != null) ? balance.doubleValue() :
-                                          (bill.getNetTotal() + bill.getVat() - bill.getPaidAmount());
+                                          (bill.getNetTotal() + bill.getVat() - bill.getPaidAmount() - bill.getRefundAmount());
                     }
                 } else {
                     System.out.println("No results found - trying fallback query...");
                     // Try even simpler query but with balance condition
                     String simpleSql = "select b from BilledBill b "
                             + " where ((b.balance IS NOT NULL AND abs(b.balance) > :val) "
-                            + " OR (abs(b.netTotal) + abs(b.vat) - abs(b.paidAmount)) > :val) "
+                            + " OR (abs(b.netTotal) + abs(b.vat) - abs(b.paidAmount) - COALESCE(abs(b.refundAmount), 0)) > :val) "
                             + " and b.billType in :btps "
                             + " and b.paymentMethod= :pm "
                             + " and b.retired=false "
