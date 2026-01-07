@@ -10,6 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.clinical.*;
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 
@@ -143,6 +144,9 @@ public class InpatientClinicalDataController implements Serializable {
     @Inject
     private FavouriteController favouriteController;
 
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
+
     private Patient patient;
 
     private List<DocumentTemplate> userDocumentTemplates;
@@ -227,6 +231,11 @@ public class InpatientClinicalDataController implements Serializable {
 
     private Upload selectedDiagnosisCardTemplate;
     private Upload selectedDiagnosisCard;
+    
+    // Diagnosis card types - Ward Admission and Local Surgery
+    private String wardAdmissionDiagnosisCardHtml;
+    private String localSurgeryDiagnosisCardHtml;
+    private String selectedDiagnosisCardTypeHtml;
 
     @Deprecated
     public void calculateBmi() {
@@ -479,6 +488,55 @@ public class InpatientClinicalDataController implements Serializable {
         upload.setComments(updatedComments);
 
         return upload;
+    }
+
+    /**
+     * Load and display Ward Admission Diagnosis Card with variable replacement
+     */
+    public void loadWardAdmissionDiagnosisCard() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient encounter selected");
+            return;
+        }
+        String templateHtml = configOptionApplicationController.getLongTextValueByKey("Ward Admission Diagnosis Card Template", "");
+        if (templateHtml == null || templateHtml.isEmpty()) {
+            JsfUtil.addErrorMessage("Ward Admission Diagnosis Card template not configured");
+            return;
+        }
+        Map<String, String> replacements = createReplacementsMap(current);
+        wardAdmissionDiagnosisCardHtml = replaceVariablesInHtml(templateHtml, replacements);
+        selectedDiagnosisCardTypeHtml = wardAdmissionDiagnosisCardHtml;
+    }
+
+    /**
+     * Load and display Local Surgery Diagnosis Card with variable replacement
+     */
+    public void loadLocalSurgeryDiagnosisCard() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient encounter selected");
+            return;
+        }
+        String templateHtml = configOptionApplicationController.getLongTextValueByKey("Local Surgery Diagnosis Card Template", "");
+        if (templateHtml == null || templateHtml.isEmpty()) {
+            JsfUtil.addErrorMessage("Local Surgery Diagnosis Card template not configured");
+            return;
+        }
+        Map<String, String> replacements = createReplacementsMap(current);
+        localSurgeryDiagnosisCardHtml = replaceVariablesInHtml(templateHtml, replacements);
+        selectedDiagnosisCardTypeHtml = localSurgeryDiagnosisCardHtml;
+    }
+
+    /**
+     * Replace variables in HTML with actual values using the replacements map
+     */
+    public String replaceVariablesInHtml(String htmlTemplate, Map<String, String> replacements) {
+        String result = htmlTemplate;
+        for (Map.Entry<String, String> replacement : replacements.entrySet()) {
+            if (replacement.getValue() != null) {
+                result = result.replace("{{" + replacement.getKey().substring(1, replacement.getKey().length() - 1) + "}}", replacement.getValue());
+            }
+        }
+        return result;
     }
 
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
@@ -3187,6 +3245,30 @@ public class InpatientClinicalDataController implements Serializable {
 
     public Upload getSelectedDiagnosisCard() {
         return selectedDiagnosisCard;
+    }
+
+    public String getWardAdmissionDiagnosisCardHtml() {
+        return wardAdmissionDiagnosisCardHtml;
+    }
+
+    public void setWardAdmissionDiagnosisCardHtml(String wardAdmissionDiagnosisCardHtml) {
+        this.wardAdmissionDiagnosisCardHtml = wardAdmissionDiagnosisCardHtml;
+    }
+
+    public String getLocalSurgeryDiagnosisCardHtml() {
+        return localSurgeryDiagnosisCardHtml;
+    }
+
+    public void setLocalSurgeryDiagnosisCardHtml(String localSurgeryDiagnosisCardHtml) {
+        this.localSurgeryDiagnosisCardHtml = localSurgeryDiagnosisCardHtml;
+    }
+
+    public String getSelectedDiagnosisCardTypeHtml() {
+        return selectedDiagnosisCardTypeHtml;
+    }
+
+    public void setSelectedDiagnosisCardTypeHtml(String selectedDiagnosisCardTypeHtml) {
+        this.selectedDiagnosisCardTypeHtml = selectedDiagnosisCardTypeHtml;
     }
 
     public void setSelectedDiagnosisCard(Upload selectedDiagnosisCard) {
