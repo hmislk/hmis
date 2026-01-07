@@ -112,7 +112,7 @@
                                             filterMatchMode="contains"
                                             value="#{patientInvestigationController.priority}">
                                             <f:selectItem itemLabel="Any" />
-                                            <f:selectItems value="#{enumController.priorities}" var="p" itemLabel="#{p.label}" itemValue="#{p}"/>
+                                            <f:selectItems value="#{enumController.priorities}" var="p" itemLabel="#{p.displayName}" itemValue="#{p}"/>
                                         </p:selectOneMenu>
                                     </h:panelGrid>
                                     <h:panelGrid columns="1" class="w-100">
