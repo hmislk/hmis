@@ -46,6 +46,7 @@ public class IncomeRow implements Serializable {
     private BillType billType;
     private BillClassType billClassType;
     BillTypeAtomic billTypeAtomic;
+    private BillCategory billCategory;
 
     // Fields populated from PharmacyIncomeCostBillDTO
     private Long billId;
@@ -631,6 +632,14 @@ public class IncomeRow implements Serializable {
 
     public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
+    }
+    
+    public BillCategory getBillCategory() {
+        return billCategory;
+    }
+    
+    public void setBillCategory(BillCategory billCategory) {
+        this.billCategory = billCategory;
     }
 
     // Custom method to generate a unique key string, handling null values

@@ -772,6 +772,26 @@ public class PharmacySummaryReportController implements Serializable {
         pharmacyBundle = new PharmacyBundle(bills);
         pharmacyBundle.generateProcurementForBills();
     }
+    
+    public void processPharmacyIncomeReportByCategory() {
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyMovementOutBillTypes();
+
+        List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new IncomeBundle(incomeBills);
+        bundle.fixDiscountsAndMarginsInRows();
+        for (IncomeRow r : bundle.getRows()) {
+            if (r.getBill() == null) {
+                continue;
+            }
+            if (r.getBill().getPaymentMethod() == null) {
+                continue;
+            }
+            if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                r.setPayments(billService.fetchBillPayments(r.getBill()));
+            }
+        }
+        bundle.generatePaymentDetailsGroupedByCategory();
+    }
 
     public void generateAllItemMovementReport() {
         if (fromDate == null || toDate == null) {
