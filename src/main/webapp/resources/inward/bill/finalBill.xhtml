@@ -572,6 +572,24 @@
                                     </h:panelGroup>
                                 </ui:repeat>
 
+                                <!-- Loop through Medicines and Surgical Supplies -->
+                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Separate Medicines and Surgical Supplies Tab', false) and bip.inwardChargeType eq 'MedicinesAndSurgicalSupplies' and bip.adjustedValue != 0}" style="font-size: 12px;">
+                                        <tr style="width: 100%; font-weight: 400; line-height: 18px;">
+                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
+                                                <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                            </td>
+                                            <td style="margin-top: -10px;">
+                                            </td>
+                                            <td style="width: 30%; text-align: right; font-size: 13px!important;">
+                                                <h:outputLabel value="#{bip.adjustedValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </ui:repeat>
+
                                 <!-- Loop through Laboratory first -->
                                 <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                     <h:panelGroup rendered="#{bip.inwardChargeType eq 'Laboratory' and bip.adjustedValue != 0}" style="font-size: 12px;">

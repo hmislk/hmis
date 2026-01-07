@@ -2,15 +2,18 @@
 
 ## Overview
 
-This document provides comprehensive guidance for AI agents to interact with the Pharmacy Stock Management API system. The API consists of two main components:
+This document provides comprehensive guidance for AI agents to interact with the Pharmacy Stock Management API system. The API consists of three main components:
 
 1. **Search/Lookup APIs** - Find stocks, departments, and items using human-readable criteria
 2. **Adjustment APIs** - Modify stock quantities, retail rates, and expiry dates
+3. **Batch Creation APIs** - Create new AMPs (items) and ItemBatches with Stock entries
 
 ## Base Configuration
 
 - **Base URL**: `http://localhost:8080` (adjust for your environment)
-- **API Base Path**: `/api/pharmacy_adjustments`
+- **API Base Paths**:
+  - `/api/pharmacy_adjustments` (Stock adjustments)
+  - `/api/pharmacy_batches` (Batch creation and AMP management)
 - **Authentication**: API Key via `Finance` header
 - **Content Type**: `application/json`
 - **Date Format**: `yyyy-MM-dd` for input, `yyyy-MM-dd HH:mm:ss` for responses
@@ -208,6 +211,374 @@ GET /api/pharmacy_adjustments/search/items?query=Para&limit=20
   "comment": "Corrected supplier information",
   "departmentId": 1
 }
+```
+
+## Batch Creation APIs
+
+### 1. AMP Search or Create
+
+**Purpose**: Search for AMP (Actual Medicinal Product) by name, create if not found
+
+**Endpoint**: `POST /api/pharmacy_batches/amp/search_or_create`
+
+**Request Body**:
+```json
+{
+  "name": "Paracetamol Tablet 500mg",
+  "genericName": "Paracetamol",
+  "categoryId": null,
+  "dosageFormId": null
+}
+```
+
+**Response**:
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": {
+    "id": 1234,
+    "name": "Paracetamol Tablet 500mg",
+    "code": "paracetamol_tablet_500mg",
+    "genericName": "Paracetamol",
+    "categoryName": "Pain Relief",
+    "created": true
+  }
+}
+```
+
+**Key Features**:
+- Auto-generates code from name (removes spaces, converts to lowercase with underscores)
+- Uses any available VMP if genericName not specified
+- Returns `created: true` if newly created, `false` if found existing
+
+### 2. Batch Creation with Stock
+
+**Purpose**: Create new ItemBatch and corresponding Stock entry for a department
+
+**Endpoint**: `POST /api/pharmacy_batches/create`
+
+**Request Body**:
+```json
+{
+  "itemId": 1234,
+  "batchNo": "BATCH001",
+  "expiryDate": "2025-12-31 00:00:00",
+  "retailRate": 100.0,
+  "purchaseRate": 85.0,
+  "costRate": null,
+  "wholesaleRate": 90.0,
+  "departmentId": 456,
+  "comment": "Initial stock creation"
+}
+```
+
+**Response**:
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": {
+    "batchId": 5678,
+    "stockId": 9012,
+    "batchNo": "BATCH001",
+    "item": {
+      "id": 1234,
+      "name": "Paracetamol Tablet 500mg",
+      "code": "paracetamol_tablet_500mg",
+      "genericName": "Paracetamol",
+      "categoryName": "Pain Relief",
+      "created": false
+    },
+    "departmentName": "Main Pharmacy",
+    "retailRate": 100.0,
+    "purchaseRate": 85.0,
+    "costRate": 85.0,
+    "expiryDate": "2025-12-31 00:00:00",
+    "message": "Created new batch"
+  }
+}
+```
+
+**Rate Calculation Defaults**:
+- **Purchase Rate**: If null, defaults to 85% of retail rate
+- **Cost Rate**: If null, defaults to purchase rate
+- **Wholesale Rate**: Optional, no default
+
+**Batch Number Generation**:
+- If `batchNo` not provided, auto-generates using "B" + timestamp
+
+**Duplicate Handling**:
+- If ItemBatch exists (same Item + BatchNo + ExpiryDate), uses existing batch
+- Always creates new Stock entry for the specified department
+- Message indicates whether batch was "Created new batch" or "Used existing batch"
+
+### 3. AMP Search Only
+
+**Purpose**: Search existing AMPs by name without creating new ones
+
+**Endpoint**: `GET /api/pharmacy_batches/amp/search`
+
+**Parameters**:
+- `name` (required): AMP name search term
+- `limit` (optional): Result limit (default: 30, max: 50)
+
+**Example Request**:
+```bash
+GET /api/pharmacy_batches/amp/search?name=Paracetamol&limit=10
+```
+
+**Example Response**:
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": [
+    {
+      "id": 1234,
+      "name": "Paracetamol Tablet 500mg",
+      "code": "paracetamol_tablet_500mg",
+      "genericName": "Paracetamol",
+      "categoryName": "Pain Relief",
+      "created": false
+    },
+    {
+      "id": 1235,
+      "name": "Paracetamol Syrup 120mg/5ml",
+      "code": "paracetamol_syrup_120mg_5ml",
+      "genericName": "Paracetamol",
+      "categoryName": "Pain Relief",
+      "created": false
+    }
+  ]
+}
+```
+
+## Batch Creation Workflow Examples
+
+### Example 1: Complete New Item and Batch Creation
+
+**Scenario**: Create "Amoxicillin 250mg Capsule" with initial batch
+
+```bash
+# Step 1: Create AMP (will auto-create if not found)
+curl -X POST "http://localhost:8080/api/pharmacy_batches/amp/search_or_create" \
+  -H "Content-Type: application/json" \
+  -H "Finance: YOUR_API_KEY" \
+  -d '{
+    "name": "Amoxicillin 250mg Capsule",
+    "genericName": "Amoxicillin"
+  }'
+
+# Response: { "id": 2001, "created": true, ... }
+
+# Step 2: Create batch using the returned AMP ID
+curl -X POST "http://localhost:8080/api/pharmacy_batches/create" \
+  -H "Content-Type: application/json" \
+  -H "Finance: YOUR_API_KEY" \
+  -d '{
+    "itemId": 2001,
+    "batchNo": "AMX2025001",
+    "expiryDate": "2026-06-30 00:00:00",
+    "retailRate": 50.0,
+    "departmentId": 1,
+    "comment": "New medication stock creation"
+  }'
+
+# Auto-calculated: purchaseRate = 42.5 (85% of 50.0), costRate = 42.5
+```
+
+### Example 2: Batch Creation with Rate Defaults
+
+**Scenario**: Minimal input, rely on defaults
+
+```bash
+# Minimum required fields
+curl -X POST "http://localhost:8080/api/pharmacy_batches/create" \
+  -H "Content-Type: application/json" \
+  -H "Finance: YOUR_API_KEY" \
+  -d '{
+    "itemId": 1234,
+    "expiryDate": "2025-12-31 00:00:00",
+    "retailRate": 100.0,
+    "departmentId": 456
+  }'
+
+# System will:
+# - Auto-generate batchNo (e.g., "B1704723456789")
+# - Calculate purchaseRate = 85.0 (85% of 100.0)
+# - Set costRate = 85.0 (equals purchaseRate)
+# - Create Stock with 0 quantity
+```
+
+### Example 3: Duplicate Batch Handling
+
+**Scenario**: Creating batch that already exists
+
+```bash
+# Create initial batch
+curl -X POST "http://localhost:8080/api/pharmacy_batches/create" \
+  -H "Content-Type: application/json" \
+  -H "Finance: YOUR_API_KEY" \
+  -d '{
+    "itemId": 1234,
+    "batchNo": "EXISTING001",
+    "expiryDate": "2025-12-31 00:00:00",
+    "retailRate": 100.0,
+    "departmentId": 1
+  }'
+
+# Later, create same batch for different department
+curl -X POST "http://localhost:8080/api/pharmacy_batches/create" \
+  -H "Content-Type: application/json" \
+  -H "Finance: YOUR_API_KEY" \
+  -d '{
+    "itemId": 1234,
+    "batchNo": "EXISTING001",
+    "expiryDate": "2025-12-31 00:00:00",
+    "retailRate": 100.0,
+    "departmentId": 2
+  }'
+
+# Response: message: "Used existing batch"
+# Creates new Stock entry for department 2
+```
+
+### Example 4: AI Agent Batch Creation Pattern
+
+```python
+class PharmacyBatchAI:
+    def create_new_item_with_batch(self, item_name, expiry_date, retail_rate,
+                                   department_query="Pharmacy", **options):
+        """Complete workflow: Create AMP and batch in one operation"""
+
+        # Step 1: Create or find AMP
+        amp_result = self.search_or_create_amp({
+            "name": item_name,
+            "genericName": options.get("generic_name")
+        })
+
+        if not amp_result["success"]:
+            return {"error": f"Failed to create AMP: {amp_result['error']}"}
+
+        amp = amp_result["data"]
+        print(f"✅ AMP {'created' if amp['created'] else 'found'}: {amp['name']}")
+
+        # Step 2: Find department
+        dept_result = self.search_departments(department_query)
+        if not dept_result["success"] or not dept_result["data"]:
+            return {"error": "Department not found"}
+
+        department = dept_result["data"][0]
+
+        # Step 3: Create batch with defaults
+        batch_data = {
+            "itemId": amp["id"],
+            "expiryDate": expiry_date,
+            "retailRate": retail_rate,
+            "departmentId": department["id"],
+            "comment": options.get("comment", f"AI batch creation - {item_name}")
+        }
+
+        # Add optional fields
+        if options.get("batch_no"):
+            batch_data["batchNo"] = options["batch_no"]
+        if options.get("purchase_rate"):
+            batch_data["purchaseRate"] = options["purchase_rate"]
+        if options.get("cost_rate"):
+            batch_data["costRate"] = options["cost_rate"]
+        if options.get("wholesale_rate"):
+            batch_data["wholesaleRate"] = options["wholesale_rate"]
+
+        batch_result = self.create_batch(batch_data)
+
+        if batch_result["success"]:
+            batch = batch_result["data"]
+            return {
+                "success": True,
+                "amp": {
+                    "id": amp["id"],
+                    "name": amp["name"],
+                    "code": amp["code"],
+                    "created": amp["created"]
+                },
+                "batch": {
+                    "id": batch["batchId"],
+                    "number": batch["batchNo"],
+                    "expiry": batch["expiryDate"],
+                    "rates": {
+                        "retail": batch["retailRate"],
+                        "purchase": batch["purchaseRate"],
+                        "cost": batch["costRate"]
+                    }
+                },
+                "stock": {
+                    "id": batch["stockId"],
+                    "department": batch["departmentName"],
+                    "quantity": 0.0
+                },
+                "message": batch["message"]
+            }
+        else:
+            return batch_result
+
+    def bulk_create_batches(self, items_list):
+        """Create multiple batches efficiently"""
+        results = []
+
+        for item_spec in items_list:
+            print(f"\n🔄 Processing: {item_spec['name']}")
+
+            result = self.create_new_item_with_batch(
+                item_name=item_spec["name"],
+                expiry_date=item_spec["expiry_date"],
+                retail_rate=item_spec["retail_rate"],
+                **item_spec.get("options", {})
+            )
+
+            results.append({
+                "item": item_spec["name"],
+                "result": result
+            })
+
+            if result.get("success"):
+                print(f"  ✅ Success: Batch {result['batch']['number']}")
+            else:
+                print(f"  ❌ Failed: {result.get('error')}")
+
+        return results
+
+# Example usage
+if __name__ == "__main__":
+    ai = PharmacyBatchAI("http://localhost:8080", "YOUR_API_KEY")
+
+    # Single item creation
+    result = ai.create_new_item_with_batch(
+        item_name="Metformin 500mg Tablet",
+        expiry_date="2026-03-31 00:00:00",
+        retail_rate=25.0,
+        generic_name="Metformin",
+        batch_no="MET2025001",
+        comment="Initial diabetes medication stock"
+    )
+
+    # Bulk creation
+    bulk_items = [
+        {
+            "name": "Aspirin 300mg Tablet",
+            "expiry_date": "2026-01-31 00:00:00",
+            "retail_rate": 15.0,
+            "options": {"batch_no": "ASP2025001"}
+        },
+        {
+            "name": "Ibuprofen 400mg Tablet",
+            "expiry_date": "2026-02-28 00:00:00",
+            "retail_rate": 20.0,
+            "options": {"generic_name": "Ibuprofen"}
+        }
+    ]
+
+    bulk_results = ai.bulk_create_batches(bulk_items)
 ```
 
 ## Complete Workflow for AI Agents

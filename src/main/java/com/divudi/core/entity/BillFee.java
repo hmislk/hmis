@@ -107,6 +107,9 @@ public class BillFee implements Serializable, RetirableEntity {
 
     // Indicates if the payment has been completed to the professional or institution
     private Boolean completedPayment;
+    
+    // Indicates if the fee has been collected directly by the surgeon/doctor
+    private boolean feeCollectedByDoctor;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private BillItem referenceBillItem;
@@ -783,6 +786,14 @@ public class BillFee implements Serializable, RetirableEntity {
 
     public void setUserChangedTheGrossValueTransient(boolean userChangedTheGrossValueTransient) {
         this.userChangedTheGrossValueTransient = userChangedTheGrossValueTransient;
+    }
+
+    public boolean isFeeCollectedByDoctor() {
+        return feeCollectedByDoctor;
+    }
+
+    public void setFeeCollectedByDoctor(boolean feeCollectedByDoctor) {
+        this.feeCollectedByDoctor = feeCollectedByDoctor;
     }
 
 }
