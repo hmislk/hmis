@@ -1957,6 +1957,9 @@ public class PharmacyAdjustmentController implements Serializable {
             if (s == null) {
                 continue;
             }
+            if (s.getItemBatch() == null) {
+                continue;
+            }
             stock = s;
 
             double oldCostRate = s.getItemBatch().getCostRate() != null ? s.getItemBatch().getCostRate() : 0.0;
