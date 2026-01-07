@@ -46,10 +46,7 @@
                     <h:outputLabel value="Deposit Receive Receipt"/>
                 </div>
                 <div>
-                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" style="font-size: small"/>
-                </div>
-                <div>
-                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" style="font-size: small"/>
+                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" style="font-size: medium"/>
                 </div>
             </div>
 
@@ -250,13 +247,6 @@
                     <h:outputLabel value="#{cc.attrs.bill.cancelledBill.comments}"/>
                 </div>
             </h:panelGroup>
-            <div class="d-flex justify-content-end align-items-center" style="margin-right: 5%;font-size: 9pt">
-                <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
-                    <div>
-                        <h:outputLabel value="Cancelled Bill No :  #{cc.attrs.bill.cancelledBill.deptId}" />
-                    </div>
-                </h:panelGroup>
-            </div>
 
             <div class="footer" style="text-align: center;">
                 <br/>
