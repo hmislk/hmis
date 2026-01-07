@@ -3577,9 +3577,27 @@ public class BhtSummeryController implements Serializable {
                 }
             }
         }
-        
         return allBillItems;
     }
 
+    public double getBedChargesTotal(List<BillItem> billItems) {
+        if (billItems == null) {
+            return 0.0;
+        }
+        
+        double total = 0.0;
+        for (BillItem item : billItems) {
+            if (item.getAdjustedValue() != 0 && 
+                (item.getInwardChargeType() == InwardChargeType.LinenCharges ||
+                 item.getInwardChargeType() == InwardChargeType.MOCharges ||
+                 item.getInwardChargeType() == InwardChargeType.NursingCharges ||
+                 item.getInwardChargeType() == InwardChargeType.MaintainCharges ||
+                 item.getInwardChargeType() == InwardChargeType.MedicalCareICU ||
+                 item.getInwardChargeType() == InwardChargeType.AdministrationCharge)) {
+                total += item.getAdjustedValue();
+            }
+        }
+        return total;
+    }
 }
 
