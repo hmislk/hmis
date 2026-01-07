@@ -84,7 +84,7 @@ ALTER TABLE PAYMENT MODIFY COLUMN PAYMENTMETHOD VARCHAR(255) NULL;
 -- FIX 3: BILLITEM.FROMTIME 
 -- ============================================
 -- Issue: Column 'FROMTIME' cannot be null 
--- Cause: MySQL 8 strict mode rejects NULL for NOT NULL columns
+-- Cause: MySQL 8 strict mode rejects NULL for NOT NULL column
 -- Solution: Change columns to allow NULL values
 -- ============================================
 
@@ -97,7 +97,7 @@ UPDATE BILLITEM SET FROMTIME_BACKUP = FROMTIME;
 -- Step 3: Drop the problematic columns
 ALTER TABLE BILLITEM DROP COLUMN FROMTIME;
 
--- Step 4: Recreate columns allowing NULL values
+-- Step 4: Recreate column allowing NULL values
 ALTER TABLE BILLITEM ADD COLUMN FROMTIME DATETIME NULL;
 
 
@@ -121,8 +121,6 @@ SELECT
     END) AS total_mismatches
 FROM BILLITEM;
 
-
-
 -- 6c: Sample mismatched rows for FROMTIME (if any exist)
 SELECT ID, FROMTIME, FROMTIME_BACKUP,
     CASE
@@ -137,7 +135,7 @@ WHERE (FROMTIME IS NULL AND FROMTIME_BACKUP IS NOT NULL)
 LIMIT 10;
 
 -- Step 7: Drop backup columns ONLY if total_mismatches = 0 from Steps 6a and 6b
--- WARNING: Do NOT run this until you have verified mismatches = 0 for BOTH columns
+-- WARNING: Do NOT run this until you have verified mismatches = 0 for BOTH column
 ALTER TABLE BILLITEM DROP COLUMN FROMTIME_BACKUP;
 
 -- ============================================
