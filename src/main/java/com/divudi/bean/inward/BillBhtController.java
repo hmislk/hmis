@@ -799,8 +799,6 @@ public class BillBhtController implements Serializable {
     }
 
     public void addToBill() {
-        System.out.println("addToBill");
-        System.out.println("BillItem Priority = " + currentBillItemPriority);
         if (errorCheckForAdding()) {
             return;
         }
@@ -857,14 +855,6 @@ public class BillBhtController implements Serializable {
                 JsfUtil.addErrorMessage("Please enter the rate");
                 return;
             }
-            System.out.println("bItem = " + bItem);
-            System.out.println("bItem.getItem() = " + bItem.getItem());
-            System.out.println("bItem.getItem().getName() = " + bItem.getItem().getName());
-            if(bItem.getPriority() != null){
-                System.out.println("bItem.getPriority().getDisplayName() = " + bItem.getPriority().getDisplayName());
-            }
-            
-            
         }
 
         clearBillItemValues();
