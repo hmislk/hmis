@@ -778,15 +778,21 @@ public class IncomeBundle implements Serializable {
     }
     
     private Map.Entry<String, BillType> getGroupKey(BillTypeAtomic bta, Bill b) {
+        // map some BillTypes to combine values
+        
         String compKey;
+        
+        // Combine values for Theatre Issue
         if (bta == BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE || bta == BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION || bta == BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN || bta == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE || bta == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION) {
             compKey = "StoreBhtPre"+"_"+bta.getBillCategory();
             return Map.entry(compKey, BillType.StoreBhtPre);
         }
+        // Combine values for Inward Issue
         if (bta == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD || bta == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN || bta == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION) {
             compKey = BillType.PharmacyBhtPre+"_"+bta.getBillCategory();
             return Map.entry(compKey, BillType.PharmacyBhtPre);
         }
+        // Separate pharmacyIssue values for Opd Issue
         if (bta.getBillType() == BillType.PharmacyIssue && b.getToDepartment() != null) {
             if (b.getToDepartment().getDepartmentType() == DepartmentType.Opd) {
                 compKey = "OpdIssue"+"_"+bta.getBillCategory();
@@ -960,6 +966,7 @@ public class IncomeBundle implements Serializable {
         // Replace with grouped rows
         getRows().clear();
         
+        // Separate to bundles by Bill Type
         grouped.values().stream()
             .forEachOrdered(incomeRow -> {
                 BillType type = incomeRow.getBillType();
@@ -991,6 +998,7 @@ public class IncomeBundle implements Serializable {
                         System.out.println(type);
                 }
 
+                // Separate to rows by BillCategory
                 if (bd != null) {
                     if (cat == BillCategory.BILL) {
                         bd.getRows().set(0, incomeRow);
@@ -1002,20 +1010,20 @@ public class IncomeBundle implements Serializable {
                 }
             });
         
-        grouped.forEach((key, value) -> {
-                System.out.println("key = " + key);
-                System.out.println("->value = " + value.getNetTotal());
-                System.out.println("->value.getCashValue = " + value.getCashValue());
-                System.out.println("->value.getCardValue = " + value.getCardValue());
-                System.out.println("->value.getCreditValue() = " + value.getCreditValue());
-                System.out.println("->value.getOnlineSettlementValue() = " + value.getOnlineSettlementValue());
-                System.out.println("->value.getDiscount() = " + value.getDiscount());
-                System.out.println("-------------------------------------------------------");
-            });
+//        grouped.forEach((key, value) -> {
+//                System.out.println("key = " + key);
+//                System.out.println("->value = " + value.getNetTotal());
+//                System.out.println("->value.getCashValue = " + value.getCashValue());
+//                System.out.println("->value.getCardValue = " + value.getCardValue());
+//                System.out.println("->value.getCreditValue() = " + value.getCreditValue());
+//                System.out.println("->value.getOnlineSettlementValue() = " + value.getOnlineSettlementValue());
+//                System.out.println("->value.getDiscount() = " + value.getDiscount());
+//                System.out.println("-------------------------------------------------------");
+//            });
         
+        // calculate the discount (bill+refunnd+cancellation)
         bundles.forEach(bd -> {
             bd.populateSummaryRow();
-            
             double r1 = bd.getRows().get(0).getDiscount();
             double r2 = bd.getRows().get(1).getDiscount();
             double r3 = bd.getRows().get(2).getDiscount();
