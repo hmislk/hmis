@@ -9,7 +9,19 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Add to Stock Bills" >
+                    <p:panel >
+                        <f:facet name="header">
+                            <h:outputLabel value="Add to Stock Bills" class="mx-1" />
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                value="Config"
+                                icon="fa fa-cog"
+                                title="Page Configuration Management"
+                                action="#{pageAdminController.navigateToPageAdmin('reports/inventoryReports/add_to_stock_bills')}"
+                                ajax="false"
+                                styleClass="ui-button-secondary ms-5">
+                            </p:commandButton>
+                        </f:facet>
 
                         <h:panelGrid columns="8" class="w-100">
 
