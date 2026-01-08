@@ -3351,4 +3351,29 @@ public class BhtSummeryController implements Serializable {
         this.childPatientEncouters = childPatientEncouters;
     }
 
+    /**
+     * Calculate total of bed charges (Linen, MO, Nursing, Maintain, Medical Care, Administration)
+     * @param billItems List of bill items to calculate from
+     * @return Total of all bed charges
+     */
+    public double getBedChargesTotal(List<BillItem> billItems) {
+        if (billItems == null) {
+            return 0.0;
+        }
+        
+        double total = 0.0;
+        for (BillItem item : billItems) {
+            if (item.getAdjustedValue() != 0 && 
+                (item.getInwardChargeType() == InwardChargeType.LinenCharges ||
+                 item.getInwardChargeType() == InwardChargeType.MOCharges ||
+                 item.getInwardChargeType() == InwardChargeType.NursingCharges ||
+                 item.getInwardChargeType() == InwardChargeType.MaintainCharges ||
+                 item.getInwardChargeType() == InwardChargeType.MedicalCareICU ||
+                 item.getInwardChargeType() == InwardChargeType.AdministrationCharge)) {
+                total += item.getAdjustedValue();
+            }
+        }
+        return total;
+    }
+
 }
