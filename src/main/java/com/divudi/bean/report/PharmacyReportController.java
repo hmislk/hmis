@@ -30,6 +30,8 @@ import com.divudi.core.data.dataStructure.PharmacyStockRow;
 import com.divudi.core.data.dataStructure.StockReportRecord;
 import com.divudi.core.data.dto.BillItemDTO;
 import com.divudi.core.data.dto.CostOfGoodSoldBillDTO;
+import com.divudi.core.data.dto.ExpiryItemListDto;
+import com.divudi.core.data.dto.ExpiryItemStockListDto;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.entity.AgentHistory;
@@ -337,6 +339,13 @@ public class PharmacyReportController implements Serializable {
     private Double quantity;
 
     private Double stockQty;
+
+    // New fields for Expiry Item Report types
+    private String expiryReportType = "stockList"; // Default: Stock List
+    private List<ExpiryItemStockListDto> expiryStockListDtos;
+    private List<ExpiryItemListDto> expiryItemListDtos;
+    private Double totalValueAtCostRate = 0.0;
+    private Double totalValueAtRetailRate = 0.0;
 
     private Institution fromSite;
     private Institution toSite;
@@ -1302,7 +1311,7 @@ public class PharmacyReportController implements Serializable {
 
     @Deprecated
     public ReportTemplateRowBundle generatePaymentMethodColumnsByBills(List<BillTypeAtomic> bts) {
-        Map<String, Object> parameters = new HashMap<>();
+        Map parameters = new HashMap();
 
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill.department, FUNCTION('date', p.createdAt), "
@@ -3882,7 +3891,7 @@ public class PharmacyReportController implements Serializable {
                 billItems = findAcceptedGoodInTransitItems();
             } else {
                 // Use original Bill-level logic for other report types
-                Map<String, Object> parameters = new HashMap<>();
+                Map parameters = new HashMap();
                 StringBuilder sql = new StringBuilder();
                 sql.append("select bi from BillItem bi"
                         + " where bi.bill.billType = :bt"
@@ -7428,7 +7437,22 @@ public class PharmacyReportController implements Serializable {
             quantity = quantity + ts.getStock();
         }
 
-        groupExpiryItems(stocks);
+        // Process different report types
+        switch (expiryReportType) {
+            case "stockList":
+                processExpiryStockListReport();
+                break;
+            case "itemList":
+                processExpiryItemListReport();
+                break;
+            case "detailed":
+                groupExpiryItems(stocks);
+                break;
+            default:
+                // Default to Stock List if invalid type
+                processExpiryStockListReport();
+                break;
+        }
     }
 
     private void groupExpiryItems(final List<Stock> stocks) {
@@ -7452,6 +7476,136 @@ public class PharmacyReportController implements Serializable {
         }
 
         setItemStockMap(itemStockMap);
+    }
+
+    /**
+     * Process Stock List report - detailed stock information with cost and retail rates
+     */
+    private void processExpiryStockListReport() {
+        expiryStockListDtos = new ArrayList<>();
+        totalValueAtCostRate = 0.0;
+        totalValueAtRetailRate = 0.0;
+
+        String jpql = "select new com.divudi.core.data.dto.ExpiryItemStockListDto("
+                + "s.id, "                                                   // stockId
+                + "(case when s.department is not null then s.department.name else 'Staff' end), " // departmentName
+                + "s.itemBatch.item.category.code, "                        // categoryCode
+                + "s.itemBatch.item.category.name, "                        // categoryName
+                + "s.itemBatch.item.code, "                                 // itemCode
+                + "s.itemBatch.item.name, "                                 // itemName
+                + "(case when s.itemBatch.item.measurementUnit is not null then s.itemBatch.item.measurementUnit.name else '' end), " // uom
+                + "s.itemBatch.item.category.name, "                        // itemType (using category name)
+                + "cast(s.itemBatch.id as string), "                        // batchNumber
+                + "s.itemBatch.dateOfExpire, "                              // expiryDate
+                + "s.itemBatch.purcahseRate, "                              // costRate
+                + "s.itemBatch.retailsaleRate, "                            // retailRate
+                + "s.stock) "                                               // stockQuantity
+                + "from Stock s "
+                + "where s.itemBatch.dateOfExpire between :fd and :td ";
+
+        Map parameters = new HashMap();
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        // Apply filters
+        if (institution != null) {
+            jpql += " and s.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += " and s.department = :dep ";
+            parameters.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and s.department.site = :sit ";
+            parameters.put("sit", site);
+        }
+
+        if (amp != null) {
+            jpql += " and s.itemBatch.item = :itm ";
+            parameters.put("itm", amp);
+        }
+
+        if (category != null) {
+            jpql += " and s.itemBatch.item.category = :cat ";
+            parameters.put("cat", category);
+        }
+
+        jpql += " order by s.itemBatch.item.name, s.itemBatch.dateOfExpire ";
+
+        expiryStockListDtos = (List<ExpiryItemStockListDto>) stockFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        // Calculate totals
+        for (ExpiryItemStockListDto dto : expiryStockListDtos) {
+            if (dto.getValueAtCostRate() != null) {
+                totalValueAtCostRate += dto.getValueAtCostRate();
+            }
+            if (dto.getValueAtRetailRate() != null) {
+                totalValueAtRetailRate += dto.getValueAtRetailRate();
+            }
+        }
+    }
+
+    /**
+     * Process Item List report - aggregated item information without cost/retail rates
+     */
+    private void processExpiryItemListReport() {
+        expiryItemListDtos = new ArrayList<>();
+
+        String jpql = "select new com.divudi.core.data.dto.ExpiryItemListDto("
+                + "s.itemBatch.item.id, "                                   // itemId
+                + "(case when s.department is not null then s.department.name else 'Staff' end), " // departmentName
+                + "s.itemBatch.item.category.code, "                        // categoryCode
+                + "s.itemBatch.item.category.name, "                        // categoryName
+                + "s.itemBatch.item.code, "                                 // itemCode
+                + "s.itemBatch.item.name, "                                 // itemName
+                + "(case when s.itemBatch.item.measurementUnit is not null then s.itemBatch.item.measurementUnit.name else '' end), " // uom
+                + "s.itemBatch.item.category.name, "                        // itemType (using category name)
+                + "cast(s.itemBatch.id as string), "                        // batchNumber
+                + "min(s.itemBatch.dateOfExpire), "                         // expiryDate (earliest)
+                + "sum(s.stock)) "                                          // totalStockQuantity
+                + "from Stock s "
+                + "where s.itemBatch.dateOfExpire between :fd and :td ";
+
+        Map parameters = new HashMap();
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        // Apply filters
+        if (institution != null) {
+            jpql += " and s.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += " and s.department = :dep ";
+            parameters.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and s.department.site = :sit ";
+            parameters.put("sit", site);
+        }
+
+        if (amp != null) {
+            jpql += " and s.itemBatch.item = :itm ";
+            parameters.put("itm", amp);
+        }
+
+        if (category != null) {
+            jpql += " and s.itemBatch.item.category = :cat ";
+            parameters.put("cat", category);
+        }
+
+        jpql += " group by s.itemBatch.item.id, s.itemBatch.item.category.code, "
+                + "s.itemBatch.item.category.name, s.itemBatch.item.code, s.itemBatch.item.name, "
+                + "s.itemBatch.item.measurementUnit.name, s.itemBatch.id, "
+                + "(case when s.department is not null then s.department.name else 'Staff' end) "
+                + "order by s.itemBatch.item.name ";
+
+        expiryItemListDtos = (List<ExpiryItemListDto>) stockFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
     }
 
     public void exportExpiryItemReportToExcel() {
@@ -7751,7 +7905,7 @@ public class PharmacyReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
         );
 
-        Map<String, Object> parameters = new HashMap<>();
+        Map parameters = new HashMap();
         parameters.put("bta", btaList);
         parameters.put("item", item);
 
@@ -8838,6 +8992,47 @@ public class PharmacyReportController implements Serializable {
 
     public void setItemStockMap(Map<Item, Map<Long, List<Stock>>> itemStockMap) {
         this.itemStockMap = itemStockMap;
+    }
+
+    // Getters and setters for new Expiry Report fields
+    public String getExpiryReportType() {
+        return expiryReportType;
+    }
+
+    public void setExpiryReportType(String expiryReportType) {
+        this.expiryReportType = expiryReportType;
+    }
+
+    public List<ExpiryItemStockListDto> getExpiryStockListDtos() {
+        return expiryStockListDtos;
+    }
+
+    public void setExpiryStockListDtos(List<ExpiryItemStockListDto> expiryStockListDtos) {
+        this.expiryStockListDtos = expiryStockListDtos;
+    }
+
+    public List<ExpiryItemListDto> getExpiryItemListDtos() {
+        return expiryItemListDtos;
+    }
+
+    public void setExpiryItemListDtos(List<ExpiryItemListDto> expiryItemListDtos) {
+        this.expiryItemListDtos = expiryItemListDtos;
+    }
+
+    public Double getTotalValueAtCostRate() {
+        return totalValueAtCostRate;
+    }
+
+    public void setTotalValueAtCostRate(Double totalValueAtCostRate) {
+        this.totalValueAtCostRate = totalValueAtCostRate;
+    }
+
+    public Double getTotalValueAtRetailRate() {
+        return totalValueAtRetailRate;
+    }
+
+    public void setTotalValueAtRetailRate(Double totalValueAtRetailRate) {
+        this.totalValueAtRetailRate = totalValueAtRetailRate;
     }
 
     public Double getQuantity() {
