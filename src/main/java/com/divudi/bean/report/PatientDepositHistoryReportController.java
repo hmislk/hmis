@@ -88,6 +88,7 @@ public class PatientDepositHistoryReportController implements Serializable, Cont
 
     /**
      * Fetch patient deposit histories as DTOs with filters applied.
+     * Includes aggregate balance fields for contextual display.
      */
     private List<PatientDepositHistoryDto> fetchPatientDepositHistoryDtos() {
         StringBuilder jpql = new StringBuilder();
@@ -110,6 +111,16 @@ public class PatientDepositHistoryReportController implements Serializable, Cont
         jpql.append("pdh.site.name, ");
         jpql.append("pdh.institution.id, ");
         jpql.append("pdh.institution.name, ");
+        // Aggregate balances for this patient
+        jpql.append("pdh.patientDepositBalanceForSite, ");
+        jpql.append("pdh.patientDepositBalanceForInstitution, ");
+        jpql.append("pdh.patientDepositBalanceForAllInstitutions, ");
+        // Aggregate balances for all patients
+        jpql.append("pdh.allPatientsDepositBalanceForDepartment, ");
+        jpql.append("pdh.allPatientsDepositBalanceForSite, ");
+        jpql.append("pdh.allPatientsDepositBalanceForInstitution, ");
+        jpql.append("pdh.allPatientsDepositBalanceForAllInstitutions, ");
+        // Bill status and creator
         jpql.append("pdh.bill.cancelled, ");
         jpql.append("pdh.bill.refunded, ");
         jpql.append("pdh.creater.name");
@@ -148,6 +159,65 @@ public class PatientDepositHistoryReportController implements Serializable, Cont
             }
         }
         return dtos;
+    }
+
+    /**
+     * Get contextual patient balance based on filter selection.
+     * Department → balanceAfterTransaction (department level)
+     * Site (no dept) → patientDepositBalanceForSite
+     * Institution (no site/dept) → patientDepositBalanceForInstitution
+     * Nothing → patientDepositBalanceForAllInstitutions
+     */
+    public Double getContextualPatientBalance(PatientDepositHistoryDto dto) {
+        if (dto == null) {
+            return 0.0;
+        }
+        if (department != null) {
+            return dto.getBalanceAfterTransaction();
+        } else if (site != null) {
+            return dto.getPatientDepositBalanceForSite();
+        } else if (institution != null) {
+            return dto.getPatientDepositBalanceForInstitution();
+        } else {
+            return dto.getPatientDepositBalanceForAllInstitutions();
+        }
+    }
+
+    /**
+     * Get contextual all-patients balance based on filter selection.
+     * Department → allPatientsDepositBalanceForDepartment
+     * Site (no dept) → allPatientsDepositBalanceForSite
+     * Institution (no site/dept) → allPatientsDepositBalanceForInstitution
+     * Nothing → allPatientsDepositBalanceForAllInstitutions
+     */
+    public Double getContextualAllPatientsBalance(PatientDepositHistoryDto dto) {
+        if (dto == null) {
+            return 0.0;
+        }
+        if (department != null) {
+            return dto.getAllPatientsDepositBalanceForDepartment();
+        } else if (site != null) {
+            return dto.getAllPatientsDepositBalanceForSite();
+        } else if (institution != null) {
+            return dto.getAllPatientsDepositBalanceForInstitution();
+        } else {
+            return dto.getAllPatientsDepositBalanceForAllInstitutions();
+        }
+    }
+
+    /**
+     * Get the label for the contextual balance column header.
+     */
+    public String getContextualBalanceLabel() {
+        if (department != null) {
+            return "Department Balance";
+        } else if (site != null) {
+            return "Site Balance";
+        } else if (institution != null) {
+            return "Institution Balance";
+        } else {
+            return "Global Balance";
+        }
     }
 
     /**

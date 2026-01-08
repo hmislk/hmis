@@ -72,6 +72,7 @@ import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
+import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
 import com.divudi.service.RequestService;
@@ -143,6 +144,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     StaffService staffService;
     @EJB
     PaymentService paymentService;
+    @EJB
+    PatientDepositService patientDepositService;
     @EJB
     ProfessionalPaymentService professionalPaymentService;
     /**
@@ -2577,8 +2580,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
 
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-            PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
-            patientDepositController.updateBalance(cancellationBatchBill, pd);
+            PatientDeposit pd = patientDepositService.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
+            patientDepositService.updateBalance(cancellationBatchBill, pd);
         } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit) {
             if (cancellationBatchBill.getToStaff() != null) {
                 staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
@@ -2721,8 +2724,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
 
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-            PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
-            patientDepositController.updateBalance(cancellationBatchBill, pd);
+            PatientDeposit pd = patientDepositService.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
+            patientDepositService.updateBalance(cancellationBatchBill, pd);
         } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit) {
             if (cancellationBatchBill.getToStaff() != null) {
                 staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
