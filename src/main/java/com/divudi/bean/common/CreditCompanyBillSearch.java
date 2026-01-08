@@ -730,25 +730,21 @@ public class CreditCompanyBillSearch implements Serializable {
     private void updateReferenceBill(BillItem cancellationBillItem) {
         Bill referenceBill = cancellationBillItem.getReferenceBill();
 
+        // CRITICAL FIX: Remove manual paidAmount adjustment that corrupts balance calculation
         // The cancellation bill item has negative netValue (inverted from original)
-        // The amount that was originally added during settlement is the absolute value
-        double originalSettlementAmount = Math.abs(cancellationBillItem.getNetValue());
+        // Let the getCreditBean methods recalculate everything fresh from database
 
-        // Reverse the settlement by subtracting the original amount from paidAmount
-        double currentPaidAmount = referenceBill.getPaidAmount();
-        referenceBill.setPaidAmount(currentPaidAmount - originalSettlementAmount);
-
-        // Recalculate settled amounts (will exclude the cancelled settlement)
+        // Recalculate settled amounts from database (will exclude the cancelled settlement)
         double settledCreditValueByCompanies = getCreditBean().getSettledAmountByCompany(referenceBill);
         double settledCreditValueByPatient = getCreditBean().getSettledAmountByPatient(referenceBill);
+        double totalSettlement = settledCreditValueByCompanies + settledCreditValueByPatient;
 
-        // Update the settled amount fields
+        // Update all financial fields with fresh recalculated values
+        referenceBill.setPaidAmount(totalSettlement); // Use fresh total, not manual adjustment
         referenceBill.setSettledAmountByPatient(settledCreditValueByPatient);
         referenceBill.setSettledAmountBySponsor(settledCreditValueByCompanies);
 
-        // CRITICAL FIX: Update balance field to stay synchronized with paid amount changes
         // Calculate the accurate current balance using the same formula used in settlement process
-        double totalSettlement = settledCreditValueByCompanies + settledCreditValueByPatient;
         double netTotal = Math.abs(referenceBill.getNetTotal() + referenceBill.getVat());
         double refundAmount = Math.abs(getCreditBean().getRefundAmount(referenceBill));
         double currentBalance = netTotal - (totalSettlement + refundAmount);

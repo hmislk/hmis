@@ -190,9 +190,9 @@
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
                                 <td>
                                     <h:outputLabel value="#{item.item.name}"/>
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show the Priority short name in Bill Preview.',false)}" >
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show the Priority in Bill Preview.',false)}" >
                                         <h:outputLabel 
-                                            value="(#{item.priority.shortName})" 
+                                            value="(#{item.priority.displayName})" 
                                             class="mx-1" 
                                             rendered="#{!item.priority.shortName.blank and item.item.allowedForBillingPriority}"/>
                                     </h:panelGroup>
