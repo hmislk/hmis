@@ -239,6 +239,8 @@ public class BillSearch implements Serializable {
     GoodsReturnController goodsReturnController;
     @Inject
     private ReportTimerController reportTimerController;
+    @Inject
+    BillReturnController billReturnController;
     /**
      * Class Variables
      */
@@ -4237,8 +4239,8 @@ public class BillSearch implements Serializable {
     }
 
     public String navigateToViewCcBillRefund(Bill bill) {
-        loadBillDetails(bill);
-        return "/collecting_centre/view/cc_bill_refund_view?faces-redirect=true;";
+        billReturnController.setNewlyReturnedBill(bill);
+        return "/collecting_centre/cc_bill_return_print?faces-redirect=true;";
     }
 
     public String navigateToViewCcCreditNote(Bill bill) {
