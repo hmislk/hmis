@@ -1823,6 +1823,53 @@ public class BhtSummeryController implements Serializable {
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
 
+        // Calculate and save VAT (selective, based on charge type)
+        // Collect all bill items from the patient encounter
+        List<BillItem> allBillItems = new ArrayList<>();
+        
+        // Collect all service bill items from all departments
+        for (InwardChargeType chargeType : InwardChargeType.values()) {
+            try {
+                List<BillItem> items = getInwardBean().getServiceBillItemByInwardChargeType(chargeType, getPatientEncounter());
+                if (items != null && !items.isEmpty()) {
+                    allBillItems.addAll(items);
+                }
+            } catch (Exception e) {
+                // Skip if error retrieving items for this charge type
+            }
+        }
+        
+        // Add pharmacy issue bill items
+        if (pharmacyIssues != null && !pharmacyIssues.isEmpty()) {
+            for (Bill bill : pharmacyIssues) {
+                if (bill.getBillItems() != null && !bill.getBillItems().isEmpty()) {
+                    for (BillItem item : bill.getBillItems()) {
+                        if (!allBillItems.contains(item)) {
+                            allBillItems.add(item);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Add store issue bill items
+        if (storeIssues != null && !storeIssues.isEmpty()) {
+            for (Bill bill : storeIssues) {
+                if (bill.getBillItems() != null && !bill.getBillItems().isEmpty()) {
+                    for (BillItem item : bill.getBillItems()) {
+                        if (!allBillItems.contains(item)) {
+                            allBillItems.add(item);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Calculate selective VAT and save to bill
+        double vatAmount = calculateSelectiveVatAmount(allBillItems);
+        getCurrent().setVat(vatAmount);
+        getCurrent().setVatPlusNetTotal(getCurrent().getNetTotal() + vatAmount);
+
         if (getCurrent().getId() == null) {
             getBillFacade().create(getCurrent());
         } else {
@@ -3351,4 +3398,188 @@ public class BhtSummeryController implements Serializable {
         this.childPatientEncouters = childPatientEncouters;
     }
 
+    /**
+     * Check if VAT is enabled via application option
+     * Default: false (VAT disabled)
+     */
+    public boolean isVatEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey("Enable VAT in Bills", false);
+    }
+
+    /**
+     * Get VAT percentage from application option
+     * Default: 18
+     */
+    public double getVatPercentage() {
+        try {
+            Double vatPercent = configOptionApplicationController.getDoubleValueByKey("VAT Percentage", 18.0);
+            return vatPercent != null ? vatPercent : 18.0;
+        } catch (Exception e) {
+            return 18.0;
+        }
+    }
+
+    /**
+     * Calculate VAT amount based on vatable charge types in bill items
+     * Only includes charges marked as vatable
+     */
+    public double calculateVatAmount(List<BillItem> billItems) {
+        return calculateSelectiveVatAmount(billItems);
+    }
+
+    /**
+     * Calculate total with VAT (Net Total + Selective VAT)
+     * VAT is only applied to vatable charge types
+     */
+    public double calculateVatPlusNetTotal(double netTotal, List<BillItem> billItems) {
+        if (!isVatEnabled()) {
+            return netTotal;
+        }
+        return netTotal + calculateSelectiveVatAmount(billItems);
+    }
+
+    /**
+     * Get VAT label from application option
+     * Default: "VAT"
+     */
+    public String getVatLabel() {
+        String label = configOptionApplicationController.getLongTextValueByKey("VAT Label", "VAT");
+        return label != null ? label : "VAT";
+    }
+
+    /**
+     * Check if a specific InwardChargeType should have VAT applied
+     * Application option format: "VAT Enabled For [ChargeTypeName]"
+     * Default: false (VAT disabled for specific charge type)
+     */
+    public boolean isChargeTypeVatable(InwardChargeType chargeType) {
+        if (chargeType == null || !isVatEnabled()) {
+            return false;
+        }
+        String optionKey = "VAT Enabled For " + chargeType.name();
+        return configOptionApplicationController.getBooleanValueByKey(optionKey, false);
+    }
+
+    /**
+     * Calculate VAT amount for a specific charge type
+     * Only applies VAT if that charge type is marked as vatable
+     */
+    public double calculateVatAmountForChargeType(double amount, InwardChargeType chargeType) {
+        if (!isChargeTypeVatable(chargeType) || amount <= 0) {
+            return 0.0;
+        }
+        return amount * (getVatPercentage() / 100.0);
+    }
+
+    /**
+     * Calculate VAT amount only for specified charge types from bill items
+     * Sums VAT for items whose charge type is marked as vatable
+     */
+    public double calculateSelectiveVatAmount(List<BillItem> billItems) {
+        if (!isVatEnabled() || billItems == null || billItems.isEmpty()) {
+            return 0.0;
+        }
+        double totalVat = 0.0;
+        for (BillItem item : billItems) {
+            if (item.getAdjustedValue() != 0 && item.getInwardChargeType() != null) {
+                if (isChargeTypeVatable(item.getInwardChargeType())) {
+                    totalVat += calculateVatAmountForChargeType(item.getAdjustedValue(), item.getInwardChargeType());
+                }
+            }
+        }
+        return totalVat;
+    }
+
+    /**
+     * Get the name/label for a specific charge type (supports customization via application option)
+     * Format: "Inward Charge Type - Name For [ChargeTypeName]"
+     * Default: charge type's label
+     */
+    public String getChargeTypeLabel(InwardChargeType chargeType) {
+        if (chargeType == null) {
+            return "";
+        }
+        try {
+            String label = configOptionApplicationController.getLongTextValueByKey(
+                    "Inward Charge Type - Name For " + chargeType.name(),
+                    chargeType.getLabel()
+            );
+            return label != null ? label : chargeType.getLabel();
+        } catch (Exception e) {
+            return chargeType.getLabel();
+        }
+    }
+
+    /**
+     * Calculate VAT amount - public method that can be called from templates
+     * Returns 0 if VAT is not enabled or no items to calculate
+     */
+    public double getVatAmount() {
+        try {
+            if (!isVatEnabled()) {
+                return 0.0;
+            }
+            List<BillItem> billItems = getAllBillItemsForEncounter();
+            if (billItems == null || billItems.isEmpty()) {
+                return 0.0;
+            }
+            return calculateSelectiveVatAmount(billItems);
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+
+    /**
+     * Get all bill items for the current patient encounter
+     * Used for VAT calculation in interim and final bills
+     */
+    public List<BillItem> getAllBillItemsForEncounter() {
+        if (patientEncounter == null) {
+            return new ArrayList<>();
+        }
+        
+        List<BillItem> allBillItems = new ArrayList<>();
+        
+        // Collect all service bill items from all departments
+        for (InwardChargeType chargeType : InwardChargeType.values()) {
+            try {
+                List<BillItem> items = getInwardBean().getServiceBillItemByInwardChargeType(chargeType, patientEncounter);
+                if (items != null && !items.isEmpty()) {
+                    allBillItems.addAll(items);
+                }
+            } catch (Exception e) {
+                // Skip if error retrieving items for this charge type
+            }
+        }
+        
+        // Add pharmacy issue bill items
+        if (pharmacyIssues != null && !pharmacyIssues.isEmpty()) {
+            for (Bill bill : pharmacyIssues) {
+                if (bill.getBillItems() != null && !bill.getBillItems().isEmpty()) {
+                    for (BillItem item : bill.getBillItems()) {
+                        if (!allBillItems.contains(item)) {
+                            allBillItems.add(item);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Add store issue bill items
+        if (storeIssues != null && !storeIssues.isEmpty()) {
+            for (Bill bill : storeIssues) {
+                if (bill.getBillItems() != null && !bill.getBillItems().isEmpty()) {
+                    for (BillItem item : bill.getBillItems()) {
+                        if (!allBillItems.contains(item)) {
+                            allBillItems.add(item);
+                        }
+                    }
+                }
+            }
+        }
+        
+        return allBillItems;
+    }
+
 }
+

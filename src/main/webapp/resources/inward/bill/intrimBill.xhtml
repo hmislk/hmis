@@ -200,6 +200,34 @@
 
                                     </td>
                                 </tr>
+                               
+                                <!-- VAT Row (Selective - only for vatable charges) -->
+                                <h:panelGroup rendered="#{bhtSummeryController.getVatAmount() > 0}">
+                                    <tr>
+                                        <td style="text-align: left; font-size: 12px!important;">
+                                            <h:outputLabel value="#{bhtSummeryController.getVatLabel()} (#{bhtSummeryController.getVatPercentage()}%)" />
+                                        </td>                               
+                                        <td style="text-align: right; font-size: 12px!important;">
+                                            <h:outputLabel value="#{bhtSummeryController.getVatAmount()}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </h:panelGroup>
+
+                                <!-- VAT Plus Total Row (Selective) -->
+                                <h:panelGroup rendered="#{bhtSummeryController.getVatAmount() > 0}">
+                                    <tr style="width: 100%;">
+                                        <td style="text-align: left; font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="#{bhtSummeryController.getVatLabel()} + Total"/>
+                                        </td>                               
+                                        <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="#{bhtSummeryController.calculateVatPlusNetTotal(cc.attrs.bill.total, bhtSummeryController.getAllBillItemsForEncounter())}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </h:panelGroup>
 
                             </h:panelGroup>
 

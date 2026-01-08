@@ -266,6 +266,8 @@ public class SessionController implements Serializable, HttpSessionListener {
                                 i.getLabel()
                         );
                 i.setName(name != null ? name : i.getLabel());
+                String optionKey = "VAT Enabled For " + i.name();
+                configOptionApplicationController.getBooleanValueByKey(optionKey, false);
             } catch (Exception e) {
                 i.setName(i.getLabel());
                 // Consider logging the exception
