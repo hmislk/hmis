@@ -1395,8 +1395,10 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         }
 
         try {
-            // Save the updated bill
-            billFacade.edit(batchBill);
+            // Save the updated bill with immediate flush to prevent stale entity issues
+            // Using editAndCommit to ensure changes are persisted before any other entity
+            // merges that might have a reference to the old batch bill values
+            billFacade.editAndCommit(batchBill);
 
             System.out.println("=== OPD Return - Batch Bill Balance Updated ===");
             System.out.println("Batch Bill ID: " + batchBill.getInsId());
@@ -1467,7 +1469,8 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         }
 
         try {
-            billFacade.edit(originalBill);
+            // Use editAndCommit to ensure immediate persistence and avoid stale entity issues
+            billFacade.editAndCommit(originalBill);
 
             System.out.println("=== OPD Return - Direct Credit Bill Balance Updated ===");
             System.out.println("Original Bill ID: " + originalBill.getInsId());
