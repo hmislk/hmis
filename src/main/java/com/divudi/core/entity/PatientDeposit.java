@@ -30,6 +30,8 @@ public class PatientDeposit implements Serializable, RetirableEntity {
     private Department department;
     @ManyToOne
     private Institution institution;
+    @ManyToOne
+    private Institution site;
     private Double balance;
 
     //Created Properties
@@ -160,6 +162,14 @@ public class PatientDeposit implements Serializable, RetirableEntity {
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
     }
 
 }
