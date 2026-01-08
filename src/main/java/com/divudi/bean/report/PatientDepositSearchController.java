@@ -109,21 +109,27 @@ public class PatientDepositSearchController implements Serializable {
         jpql.append("b.createdAt, ");
         jpql.append("b.netTotal, ");
         jpql.append("b.comments, ");
-        jpql.append("b.patient.id, ");
-        jpql.append("b.patient.person.name, ");
-        jpql.append("b.patient.phn, ");
-        jpql.append("b.creater.id, ");
-        jpql.append("b.creater.name, ");
-        jpql.append("b.department.id, ");
-        jpql.append("b.department.name, ");
-        jpql.append("b.site.id, ");
-        jpql.append("b.site.name, ");
-        jpql.append("b.institution.id, ");
-        jpql.append("b.institution.name, ");
+        jpql.append("p.id, ");
+        jpql.append("per.name, ");
+        jpql.append("p.phn, ");
+        jpql.append("c.id, ");
+        jpql.append("c.name, ");
+        jpql.append("d.id, ");
+        jpql.append("d.name, ");
+        jpql.append("s.id, ");
+        jpql.append("s.name, ");
+        jpql.append("i.id, ");
+        jpql.append("i.name, ");
         jpql.append("b.cancelled, ");
         jpql.append("b.refunded");
         jpql.append(") ");
         jpql.append("FROM Bill b ");
+        jpql.append("LEFT JOIN b.patient p ");
+        jpql.append("LEFT JOIN p.person per ");
+        jpql.append("LEFT JOIN b.creater c ");
+        jpql.append("LEFT JOIN b.department d ");
+        jpql.append("LEFT JOIN b.site s ");
+        jpql.append("LEFT JOIN b.institution i ");
         jpql.append("WHERE b.billType = :billType ");
         jpql.append("AND b.retired = :ret ");
         jpql.append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
@@ -151,7 +157,7 @@ public class PatientDepositSearchController implements Serializable {
         }
 
         if (patientName != null && !patientName.trim().isEmpty()) {
-            jpql.append("AND UPPER(b.patient.person.name) LIKE :patientName ");
+            jpql.append("AND UPPER(per.name) LIKE :patientName ");
             m.put("patientName", "%" + patientName.trim().toUpperCase() + "%");
         }
 
