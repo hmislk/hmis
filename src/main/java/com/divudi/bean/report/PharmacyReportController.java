@@ -7368,20 +7368,24 @@ public class PharmacyReportController implements Serializable {
 
         switch (dateRange) {
             case "within3months":
-                fromDate = convertToDate(today.minusMonths(3));
-                toDate = convertToDate(today);
+                // Items expiring within the next 3 months (from today forward)
+                fromDate = convertToDate(today);
+                toDate = convertToDate(today.plusMonths(3).minusDays(1));
                 break;
             case "within6months":
-                fromDate = convertToDate(today.minusMonths(6));
-                toDate = convertToDate(today);
+                // Items expiring within the next 6 months (from today forward)
+                fromDate = convertToDate(today);
+                toDate = convertToDate(today.plusMonths(6).minusDays(1));
                 break;
             case "within12months":
-                fromDate = convertToDate(today.minusMonths(12));
-                toDate = convertToDate(today);
+                // Items expiring within the next 12 months (from today forward)
+                fromDate = convertToDate(today);
+                toDate = convertToDate(today.plusMonths(12).minusDays(1));
                 break;
             case "shortexpiry":
-                fromDate = convertToDate(today);
-                toDate = convertToDate(today.plusMonths(3));
+                // Items that have already expired or expired recently (looking backward)
+                fromDate = convertToDate(today.minusMonths(6));
+                toDate = convertToDate(today);
                 break;
         }
         // System.out.println("Updated From Date: " + fromDate);
