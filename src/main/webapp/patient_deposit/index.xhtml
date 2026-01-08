@@ -82,16 +82,33 @@
                                                 action="#{collectingCentreController.navigateToPayToCollectingCentre()}"
                                                 class="w-100 m-1"/>
 
-                                            <p:commandButton  
-                                                class="w-100 ui-button-secondary" 
-                                                ajax="false" 
-                                                action="#{patientController.navigateToPatientDepositRefund()}" 
+                                            <p:commandButton
+                                                class="w-100 ui-button-secondary"
+                                                ajax="false"
+                                                action="#{patientController.navigateToPatientDepositRefund()}"
                                                 value="Return Patient Deposit">
                                             </p:commandButton>
 
                                         </h:panelGrid>
                                     </p:tab>
 
+                                    <!-- Reports Section -->
+                                    <p:tab title="Reports" rendered="#{webUserController.hasPrivilege('Payment')}">
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <p:commandButton
+                                                icon="fa fa-balance-scale"
+                                                ajax="false"
+                                                value="Patient Deposit Balances"
+                                                action="#{patientDepositBalanceReportController.navigateToPatientDepositBalanceReport()}"
+                                                class="w-100 m-1"/>
+                                            <p:commandButton
+                                                icon="fa fa-list"
+                                                ajax="false"
+                                                value="Patient Deposit Histories"
+                                                action="#{patientDepositHistoryReportController.navigateToPatientDepositHistoriesReport()}"
+                                                class="w-100 m-1"/>
+                                        </h:panelGrid>
+                                    </p:tab>
 
                                 </p:accordionPanel>
                             </h:form>

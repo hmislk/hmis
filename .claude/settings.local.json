@@ -23,7 +23,8 @@
       "Bash(dir \"C:\\\\Users\\\\buddhika\\\\Payara_Server\\\\glassfish\\\\domains\\\\domain1\\\\generated\")",
       "Bash(dir \"C:\\\\Users\\\\buddhika\\\\Payara_Server\\\\glassfish\\\\domains\\\\domain1\\\\autodeploy\")",
       "Bash(dir \"C:\\\\Users\\\\buddhika\\\\Payara_Server\\\\glassfish\\\\domains\\\\domain1\\\\eclipseApps\")",
-      "Bash(gh issue view:*)"
+      "Bash(gh issue view:*)",
+      "Bash(find:*)"
     ]
   }
 }

@@ -88,6 +88,7 @@ import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
+import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
 import com.divudi.service.StaffService;
@@ -200,6 +201,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     ProfessionalPaymentService professionalPaymentService;
     @EJB
     PaymentService paymentService;
+    @EJB
+    PatientDepositService patientDepositService;
     /**
      * Controllers
      */
@@ -2121,8 +2124,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             staffFacade.edit(getBill().getToStaff());
 
         } else if (paymentMethod == PaymentMethod.PatientDeposit) {
-            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getRefundingBill().getPatient(), sessionController.getDepartment());
-            patientDepositController.updateBalance(getRefundingBill(), pd);
+            PatientDeposit pd = patientDepositService.getDepositOfThePatient(getRefundingBill().getPatient(), sessionController.getDepartment());
+            patientDepositService.updateBalance(getRefundingBill(), pd);
         } else if (paymentMethod == PaymentMethod.Staff_Welfare) {
             staffBean.updateStaffWelfare(getBill().getToStaff(), -Math.abs(getRefundingBill().getNetTotal()));
         }
@@ -2885,8 +2888,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         }
 
         if (cancellationBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-            PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
-            patientDepositController.updateBalance(cancellationBill, pd);
+            PatientDeposit pd = patientDepositService.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
+            patientDepositService.updateBalance(cancellationBill, pd);
         }
 
         notificationController.createNotification(cancellationBill);
