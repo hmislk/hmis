@@ -1,16 +1,16 @@
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.CommonController;
+
 import com.divudi.bean.common.ControllerWithReportFilters;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.ReportViewType;
 import com.divudi.core.data.dto.PatientDepositHistoryDto;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
-import com.divudi.core.entity.PatientDepositHistory;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.PatientDepositHistoryFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 
 import javax.inject.Named;
@@ -40,8 +40,6 @@ public class PatientDepositHistoryReportController implements Serializable, Cont
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    private CommonController commonController;
 
     // Filter fields
     private Date fromDate;
@@ -69,10 +67,10 @@ public class PatientDepositHistoryReportController implements Serializable, Cont
      */
     private void initializeDates() {
         if (fromDate == null) {
-            fromDate = commonController.getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         if (toDate == null) {
-            toDate = commonController.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
     }
 
@@ -177,8 +175,8 @@ public class PatientDepositHistoryReportController implements Serializable, Cont
      * Clear all filters and results.
      */
     public void clearReport() {
-        fromDate = commonController.getStartOfDay(new Date());
-        toDate = commonController.getEndOfDay(new Date());
+        fromDate = CommonFunctions.getStartOfDay(new Date());
+        toDate = CommonFunctions.getEndOfDay(new Date());
         institution = null;
         site = null;
         department = null;
@@ -201,7 +199,7 @@ public class PatientDepositHistoryReportController implements Serializable, Cont
     @Override
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonController.getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -214,7 +212,7 @@ public class PatientDepositHistoryReportController implements Serializable, Cont
     @Override
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonController.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
