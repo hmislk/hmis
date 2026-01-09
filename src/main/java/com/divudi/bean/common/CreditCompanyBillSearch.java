@@ -730,6 +730,7 @@ public class CreditCompanyBillSearch implements Serializable {
     private void updateReferenceBill(BillItem cancellationBillItem) {
         Bill referenceBill = cancellationBillItem.getReferenceBill();
 
+
         // CRITICAL FIX: Remove manual paidAmount adjustment that corrupts balance calculation
         // The cancellation bill item has negative netValue (inverted from original)
         // Let the getCreditBean methods recalculate everything fresh from database
@@ -738,6 +739,7 @@ public class CreditCompanyBillSearch implements Serializable {
         double settledCreditValueByCompanies = getCreditBean().getSettledAmountByCompany(referenceBill);
         double settledCreditValueByPatient = getCreditBean().getSettledAmountByPatient(referenceBill);
         double totalSettlement = settledCreditValueByCompanies + settledCreditValueByPatient;
+
 
         // Update all financial fields with fresh recalculated values
         referenceBill.setPaidAmount(totalSettlement); // Use fresh total, not manual adjustment
@@ -748,6 +750,8 @@ public class CreditCompanyBillSearch implements Serializable {
         double netTotal = Math.abs(referenceBill.getNetTotal() + referenceBill.getVat());
         double refundAmount = Math.abs(getCreditBean().getRefundAmount(referenceBill));
         double currentBalance = netTotal - (totalSettlement + refundAmount);
+
+
         referenceBill.setBalance(Math.max(0, currentBalance)); // Ensure balance doesn't go negative
 
         getBillFacade().edit(referenceBill);
