@@ -399,6 +399,28 @@ public class PharmacyReportController implements Serializable {
 
         // Register the metadata
         pageMetadataRegistry.registerPage(metadata);
+
+        // Add to Stock Bills metadata
+        PageMetadata atsMetadata = new PageMetadata();
+        atsMetadata.setPagePath("reports/inventoryReports/add_to_stock_bills");
+        atsMetadata.setPageName("Add to Stock Bills Report");
+        atsMetadata.setDescription("Report showing bills added to stock including cost rates, purchase values, and financial totals");
+        atsMetadata.setControllerClass("PharmacyReportController");
+
+        atsMetadata.addConfigOption(new ConfigOptionInfo(
+            "Short Date Format",
+            "Date formatting pattern used in report generation and PDF exports",
+            "Line 5280: SimpleDateFormat creation for report date formatting",
+            OptionScope.APPLICATION
+        ));
+
+        atsMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to system configuration and page management",
+            "Config button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(atsMetadata);
     }
 
     //Constructor
@@ -7346,20 +7368,24 @@ public class PharmacyReportController implements Serializable {
 
         switch (dateRange) {
             case "within3months":
-                fromDate = convertToDate(today.minusMonths(3));
-                toDate = convertToDate(today);
+                // Items expiring within the next 3 months (from today forward)
+                fromDate = convertToDate(today);
+                toDate = convertToDate(today.plusMonths(3).minusDays(1));
                 break;
             case "within6months":
-                fromDate = convertToDate(today.minusMonths(6));
-                toDate = convertToDate(today);
+                // Items expiring within the next 6 months (from today forward)
+                fromDate = convertToDate(today);
+                toDate = convertToDate(today.plusMonths(6).minusDays(1));
                 break;
             case "within12months":
-                fromDate = convertToDate(today.minusMonths(12));
-                toDate = convertToDate(today);
+                // Items expiring within the next 12 months (from today forward)
+                fromDate = convertToDate(today);
+                toDate = convertToDate(today.plusMonths(12).minusDays(1));
                 break;
             case "shortexpiry":
-                fromDate = convertToDate(today);
-                toDate = convertToDate(today.plusMonths(3));
+                // Items that have already expired or expired recently (looking backward)
+                fromDate = convertToDate(today.minusMonths(6));
+                toDate = convertToDate(today);
                 break;
         }
         // System.out.println("Updated From Date: " + fromDate);

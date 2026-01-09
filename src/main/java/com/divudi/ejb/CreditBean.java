@@ -758,14 +758,35 @@ public class CreditBean {
     }
 
     public double getRefundAmount(Bill b) {
-        String jpql = "Select sum(b.netTotal+b.vat) "
-                + " From Bill b "
-                + " where b.retired=false "
-                + " and (b.billedBill=:b or b.billedBill.referenceBill=:b) ";
+        // Query to find refunds for a bill, handling different bill structures:
+        // 1. Direct refunds: b.billedBill = :b (refund directly linked to the bill)
+        // 2. Via referenceBill: b.billedBill.referenceBill = :b (pharmacy/other bills)
+        // 3. OPD batch bills: b.referenceBill.backwardReferenceBill = :b
+        //    (OPD refunds link via referenceBill to individual bill, which has backwardReferenceBill to batch)
+
+        double totalRefund = 0.0;
         HashMap params = new HashMap();
         params.put("b", b);
-        double returnedAmount = getBillItemFacade().findDoubleByJpql(jpql, params);
-        return returnedAmount;
+
+        // Query 1: Direct refunds (b.billedBill = :b)
+        String jpql1 = "Select sum(b.netTotal+b.vat) From Bill b "
+                + " where b.retired=false and b.billedBill=:b ";
+        double refund1 = getBillItemFacade().findDoubleByJpql(jpql1, params);
+
+        // Query 2: Via billedBill.referenceBill (b.billedBill.referenceBill = :b)
+        String jpql2 = "Select sum(b.netTotal+b.vat) From Bill b "
+                + " where b.retired=false and b.billedBill.referenceBill=:b ";
+        double refund2 = getBillItemFacade().findDoubleByJpql(jpql2, params);
+
+        // Query 3: OPD batch bills (b.referenceBill.backwardReferenceBill = :b)
+        String jpql3 = "Select sum(b.netTotal+b.vat) From Bill b "
+                + " where b.retired=false and b.referenceBill.backwardReferenceBill=:b ";
+        double refund3 = getBillItemFacade().findDoubleByJpql(jpql3, params);
+
+        totalRefund = refund1 + refund2 + refund3;
+
+
+        return totalRefund;
     }
 
     public Object[] getRefundAmounts(Bill b) {

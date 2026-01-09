@@ -1339,10 +1339,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
         // Not all individual bills have batch bills (e.g., direct OPD bills)
         if (batchBill == null) {
-            // For direct credit bills (without batch bill), update the original bill directly
-            if (originalBillToReturn.getPaymentMethod() == PaymentMethod.Credit) {
-                updateDirectCreditBillForReturn(originalBillToReturn, newlyReturnedBill);
-            }
             return;
         }
 
@@ -1395,10 +1391,8 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         }
 
         try {
-            // Save the updated bill with immediate flush to prevent stale entity issues
-            // Using editAndCommit to ensure changes are persisted before any other entity
-            // merges that might have a reference to the old batch bill values
-            billFacade.editAndCommit(batchBill);
+            // Save the updated bill
+            billFacade.edit(batchBill);
 
             System.out.println("=== OPD Return - Batch Bill Balance Updated ===");
             System.out.println("Batch Bill ID: " + batchBill.getInsId());
@@ -1415,74 +1409,6 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             e.printStackTrace();
             // Don't re-throw to prevent return process from failing completely
             // The individual bill return should still succeed
-        }
-    }
-
-    /**
-     * Updates the original bill's financial fields when a direct OPD credit bill
-     * (without a batch bill) is returned.
-     *
-     * <p>For direct credit bills, the original bill itself holds the financial tracking
-     * fields (balance, refundAmount, paidAmount) that need to be updated when items
-     * are returned.</p>
-     *
-     * <p>This method follows the same three-field update pattern as
-     * {@link #updateBatchBillFinancialFieldsForIndividualReturn} but applies it
-     * directly to the original bill instead of a batch bill.</p>
-     *
-     * @param originalBill The direct credit bill being returned
-     * @param returnBill The return bill with negative amounts
-     * @see #updateBatchBillFinancialFieldsForIndividualReturn(Bill, Bill)
-     */
-    private void updateDirectCreditBillForReturn(Bill originalBill, Bill returnBill) {
-        // Refresh from database to ensure latest data
-        originalBill = billFacade.find(originalBill.getId());
-
-        if (originalBill == null) {
-            throw new IllegalStateException("Original bill not found in database");
-        }
-
-        // Calculate refund amount (always positive - return bills have negative values)
-        double refundAmount = Math.abs(returnBill.getNetTotal());
-
-        // Validate refund doesn't exceed remaining balance
-        double originalAmount = Math.abs(originalBill.getNetTotal() + originalBill.getVat());
-        double totalRefundedAfterThis = originalBill.getRefundAmount() + refundAmount;
-
-        if (totalRefundedAfterThis > originalAmount + 0.01) { // 0.01 tolerance for floating point
-            throw new IllegalStateException(
-                String.format("CRITICAL: Total refund amount (%.2f) would exceed original bill total (%.2f). Bill: %s",
-                              totalRefundedAfterThis, originalAmount, originalBill.getInsId())
-            );
-        }
-
-        // Store old values for logging
-        double oldBalance = originalBill.getBalance();
-        double oldRefundAmount = originalBill.getRefundAmount();
-
-        // Update refundAmount - add the return amount
-        originalBill.setRefundAmount(originalBill.getRefundAmount() + refundAmount);
-
-        // Update balance (due amount) - deduct the return amount
-        if (originalBill.getBalance() > 0) {
-            originalBill.setBalance(Math.max(0d, originalBill.getBalance() - refundAmount));
-        }
-
-        try {
-            // Use editAndCommit to ensure immediate persistence and avoid stale entity issues
-            billFacade.editAndCommit(originalBill);
-
-            System.out.println("=== OPD Return - Direct Credit Bill Balance Updated ===");
-            System.out.println("Original Bill ID: " + originalBill.getInsId());
-            System.out.println("Return Bill: " + returnBill.getInsId());
-            System.out.println("Refund Amount: " + refundAmount);
-            System.out.println("Old Balance: " + oldBalance + " -> New Balance: " + originalBill.getBalance());
-            System.out.println("Old Refund: " + oldRefundAmount + " -> New Refund: " + originalBill.getRefundAmount());
-
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage("Error updating direct credit bill balance: " + e.getMessage());
-            System.err.println("Failed to update direct credit bill balance: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
