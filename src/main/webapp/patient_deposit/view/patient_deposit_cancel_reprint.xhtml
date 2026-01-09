@@ -34,7 +34,7 @@
                                 icon="fa fa-user"
                                 class="ui-button-warning  w-100"
                                 action="#{patientController.navigateToOpdPatientProfile()}" >
-                                <f:setPropertyActionListener value="#{patientController.bill.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                                <f:setPropertyActionListener value="#{patientDepositSearchController.selectedBill.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
                             </p:commandButton>
                             
                             <p:commandButton 
@@ -62,7 +62,7 @@
                                 <div class="align-items-center my-2" style="max-width: 80%" >
                                     <div>
                                         <h:panelGroup id="billPanel" class="bill" layout="block">
-                                            <prints:five_five_paper_custom_1_patient_deposit_cancel bill="#{patientController.bill}" duplicate="true" />
+                                            <prints:five_five_paper_custom_1_patient_deposit_cancel bill="#{patientDepositSearchController.selectedBill}" duplicate="true" />
                                         </h:panelGroup>
                                     </div>
                                 </div>
