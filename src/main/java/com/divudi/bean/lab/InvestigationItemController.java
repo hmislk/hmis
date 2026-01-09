@@ -2171,17 +2171,12 @@ public class InvestigationItemController implements Serializable {
         l.add(InvestigationItemType.BarcodeVertical);
         l.add(InvestigationItemType.Image);
         l.add(InvestigationItemType.ReportImage);
-//            Label,
-//    Value,
-//    Calculation,
-//    Flag,
-//    DynamicLabel,
-//    Css,
-//    Barcode,
-//    BarcodeVertical,
-//    Investigation,
-//    Template,
-//    AntibioticList,
+        l.add(InvestigationItemType.ExternalImage);
+        l.add(InvestigationItemType.WorningFlag);
+        l.add(InvestigationItemType.QrCode);
+        l.add(InvestigationItemType.Antibiotic);
+        l.add(InvestigationItemType.MeasurementUnit);
+
         userChangableItems = listInvestigationItemsFilteredByItemTypes(currentInvestigation, l);
         return userChangableItems;
     }
