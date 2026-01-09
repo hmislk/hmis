@@ -93,7 +93,9 @@
                                             filename: '#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patient.person.nameWithTitle} - #{patientReportController.currentPatientReport.patientInvestigation.investigation.name}.pdf',
                                             image: {type: 'jpeg', quality: 1.00},
                                             html2canvas: {
-                                                scale: 2
+                                                scale: 2,
+                                                useCORS: true,
+                                                allowTaint: false
                                             },
                                             jsPDF: {unit: 'mm', format: [210, 280], orientation: 'portrait'}
                                         };
