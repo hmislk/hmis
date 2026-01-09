@@ -57,55 +57,80 @@
                                         <f:facet name="header" >
                                             <h:outputLabel value="Reservation Details" />
                                         </f:facet>
-                                        <h:panelGroup class="my-2 w-100" >
-                                            <h:panelGrid columns="3" class="w-50 my-2">
+                                        <h:panelGroup class="my-2 w-100">
+                                            <h:panelGrid
+                                                columns="3"
+                                                class="w-50 my-2"
+                                                cellpadding="10"
+                                                columnClasses="labelCol,colonCol,inputCol">
 
-                                                <h:outputLabel value="Room No"/>
-                                                <h:outputLabel value=":" class="mx-4"/>
+                                                <!-- Room No -->
+                                                <h:outputLabel
+                                                    for="cmbRspRoom"
+                                                    value="Room No"
+                                                    style="width:140px; display:inline-block;" />
+
+                                                <h:outputLabel
+                                                    value=":"
+                                                    style="width:10px; display:inline-block;" />
+
                                                 <p:autoComplete
-                                                    forceSelection="true"  
-                                                    id="cmbRspRoom" 
-                                                    class="my-2"
-                                                    value="#{appointmentController.reservedRoom}" 
+                                                    forceSelection="true"
+                                                    id="cmbRspRoom"
+                                                    class="my-1"
+                                                    value="#{appointmentController.reservedRoom}"
                                                     completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
-                                                    var="rf" 
+                                                    var="rf"
                                                     placeholder="Select Room"
                                                     inputStyleClass="w-100"
-                                                    itemLabel="#{rf.name}" 
-                                                    itemValue="#{rf}" 
+                                                    itemLabel="#{rf.name}"
+                                                    itemValue="#{rf}"
                                                     size="30"
-                                                    maxResults="25">
-                                                </p:autoComplete>
+                                                    maxResults="25"
+                                                    style="width:100%; height:38px;" />
 
-                                                <h:outputLabel value="Reserve From" class="mt-2"/>
-                                                <h:outputLabel value=":" class="mx-4 mt-2"/>
+                                                <!-- Reserve From -->
+                                                <h:outputLabel
+                                                    for="reserveFromTimeStamp"
+                                                    value="Reserve From"
+                                                    style="width:140px; display:inline-block;" />
 
-                                                <p:calendar 
+                                                <h:outputLabel
+                                                    value=":"
+                                                    style="width:10px; display:inline-block;" />
+
+                                                <p:calendar
                                                     id="reserveFromTimeStamp"
-                                                    value="#{appointmentController.reservedFromDate}" 
+                                                    value="#{appointmentController.reservedFromDate}"
                                                     navigator="false"
                                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                                    class="w-100 mt-2"
                                                     placeholder="Reservation Start"
-                                                    inputStyleClass="form-control">
-                                                </p:calendar>
+                                                    inputStyleClass="form-control w-100 mt-1"
+                                                    style="width:100%; height:38px;" />
 
-                                                <h:outputLabel value="Reserve To" class="mt-2"/>
-                                                <h:outputLabel value=":" class="mx-4 mt-2"/>
+                                                <!-- Reserve To -->
+                                                <h:outputLabel
+                                                    for="reserveToTimeStamp"
+                                                    value="Reserve To"
+                                                    style="width:140px; display:inline-block;" />
 
-                                                <p:calendar 
-                                                    value="#{appointmentController.reservedToDate}" 
+                                                <h:outputLabel
+                                                    value=":"
+                                                    style="width:10px; display:inline-block;" />
+
+                                                <p:calendar
                                                     id="reserveToTimeStamp"
+                                                    value="#{appointmentController.reservedToDate}"
                                                     navigator="false"
                                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                                    styleClass="dateTimePicker"
                                                     placeholder="Reservation End"
-                                                    class="w-100 mt-2"
-                                                    inputStyleClass="form-control">
-                                                </p:calendar>
+                                                    inputStyleClass="form-control w-100 mt-2"
+                                                    style="width:100%; height:38px;" />
 
                                             </h:panelGrid>
+
                                         </h:panelGroup>
+
                                     </p:panel>
                                 </div>
 
