@@ -54,238 +54,238 @@
 
                                     <p:panel header="Add New ...">
                                         <div class="d-flex gap-2">
-                                            <p:commandButton 
-                                                id="btnToNewTestFirst" 
-                                                value="Test-1" 
-                                                oncomplete="PF('dlgTest').show();" 
-                                                process="@this" 
-                                                update="dlgTest" 
-                                                actionListener="#{investigationItemController.toAddNewTestFirst()}"/>
-                                            <p:commandButton 
-                                                id="btnToNewTestOther" 
-                                                value="Tests-*" 
-                                                oncomplete="PF('dlgTest').show();" 
-                                                process="@this" 
-                                                update="dlgTest"
-                                                actionListener="#{investigationItemController.toAddNewTestOthers()}"/>
+<!--                                            <p:commandButton 
+                                                                                            id="btnToNewTestFirst" 
+                                                                                            value="Test-1" 
+                                                                                            oncomplete="PF('dlgTest').show();" 
+                                                                                            process="@this" 
+                                                                                            update="dlgTest" 
+                                                                                            actionListener="#{investigationItemController.toAddNewTestFirst()}"/>
+                                                                                        <p:commandButton 
+                                                                                            id="btnToNewTestOther" 
+                                                                                            value="Tests-*" 
+                                                                                            oncomplete="PF('dlgTest').show();" 
+                                                                                            process="@this" 
+                                                                                            update="dlgTest"
+                                                                                            actionListener="#{investigationItemController.toAddNewTestOthers()}"/>-->
 
-                                            <p:commandButton ajax="false" value="Label" action="#{investigationItemController.addNewLabel()}"/>
-                                            <p:commandButton ajax="false"  value="Value" action="#{investigationItemController.addNewValue()}"/>
-                                            <p:commandButton ajax="false"  value="Calculation" action="#{investigationItemController.addNewCalculation()}"/>
-                                            <p:commandButton ajax="false"  value="Flag" action="#{investigationItemController.addNewFlag() }"/>
-                                            <p:commandButton ajax="false"  value="Image" action="#{investigationItemController.addNewImage() }"/>
+                                            <p:commandButton ajax="false" icon="fa fa-plus" value="Label" action="#{investigationItemController.addNewLabel()}"/>
+                                            <p:commandButton ajax="false" icon="fa fa-plus" value="Value" action="#{investigationItemController.addNewValue()}"/>
+                                            <p:commandButton ajax="false" icon="fa fa-plus" value="Calculation" action="#{investigationItemController.addNewCalculation()}"/>
+                                            <p:commandButton ajax="false" icon="fa fa-plus" value="Flag" action="#{investigationItemController.addNewFlag() }"/>
+                                            <p:commandButton ajax="false" icon="fa fa-plus" value="Image" action="#{investigationItemController.addNewImage() }"/>
                                         </div>
 
                                     </p:panel>
 
 
-                                    <p:dialog id="dlgTest" header="Modal Dialog" widgetVar="dlgTest" modal="true" >
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            class="ui-button-success mb-2"
-                                            icon="fa fa-save"
-                                            style="float: right"
-                                            value="Save" 
-                                            action="#{investigationItemController.addNewTest()}" 
-                                            >
-                                        </p:commandButton>
-
-                                        <p:tabView >
-
-                                            <p:tab title="Basic Details" >
-
-                                                <h:panelGrid columns="2" >
-
-                                                    <p:outputLabel value="Test Name" ></p:outputLabel>
-                                                    <p:inputText value="#{investigationItemController.testName}"  ></p:inputText>
-
-                                                    <p:outputLabel value="Test Unit" ></p:outputLabel>
-                                                    <p:inputText value="#{investigationItemController.testUnit}" ></p:inputText>
-
-                                                    <p:outputLabel value="Reference" ></p:outputLabel>
-                                                    <p:textEditor  secure='false'  value="#{investigationItemController.testReferenceRange}" height="100" ></p:textEditor>
-
-                                                    <p:outputLabel value="Comments" ></p:outputLabel>
-                                                    <p:inputTextarea value="#{investigationItemController.testComments}" ></p:inputTextarea>
-
-                                                    <p:outputLabel value="Test Component" ></p:outputLabel>
-                                                    <p:selectOneMenu id="cmbTestComponent"  value="#{investigationItemController.investigationComponent}" >
-                                                        <f:selectItems value="#{investigationItemController.currentReportComponants}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                                    </p:selectOneMenu>
-
-                                                    <p:outputLabel value="Analyzer" ></p:outputLabel>
-                                                    <p:selectOneMenu value="#{investigationItemController.machine}" >
-                                                        <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                        <f:selectItems value="#{machineController.items}" ></f:selectItems>
-                                                    </p:selectOneMenu>
-
-                                                    <p:outputLabel value="Test" ></p:outputLabel>
-                                                    <p:autoComplete value="#{investigationItemController.test}"
-                                                                    completeMethod="#{itemController.completeMachineTests}"
-                                                                    var="t" inputStyle="width:200px;"
-                                                                    itemValue="#{t}"
-                                                                    itemLabel="#{t.code}"
-                                                                    >
-                                                        <p:column >
-                                                            <p:outputLabel value="#{t.code}" ></p:outputLabel>
-                                                        </p:column>
-                                                        <p:column >
-                                                            <p:outputLabel value="#{t.name}" ></p:outputLabel>
-                                                        </p:column>
-                                                    </p:autoComplete>
-
-                                                    <p:outputLabel value="Sample" ></p:outputLabel>
-                                                    <p:selectOneMenu id="cmbSample"  value="#{investigationItemController.sample}" >
-                                                        <f:selectItem itemLabel="Please select a sample"/>
-                                                        <f:selectItems value="#{sampleController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                                    </p:selectOneMenu>
-
-                                                    <h:outputText value="Container / Tube" ></h:outputText>
-                                                    <p:selectOneMenu id="cmbTube"  value="#{investigationItemController.tube}" >
-                                                        <f:selectItem itemLabel="Please select a Tube"/>
-                                                        <f:selectItems value="#{investigationTubeController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                                    </p:selectOneMenu>
-
-                                                </h:panelGrid>
-                                                <h:panelGrid columns="10" >
-
-                                                    <p:selectBooleanCheckbox value="#{investigationItemController.automated}" itemLabel="Automated" ></p:selectBooleanCheckbox>
-                                                    <p:selectBooleanCheckbox value="#{investigationItemController.withoutHeadings}" itemLabel="Without Headings" ></p:selectBooleanCheckbox>
-                                                    <p:selectBooleanCheckbox value="#{investigationItemController.withoutComments}" itemLabel="Without Comments" ></p:selectBooleanCheckbox>
-                                                    <p:selectBooleanCheckbox value="#{investigationItemController.withoutReportHeader}" itemLabel="Without Report Header" ></p:selectBooleanCheckbox>
-                                                    <p:selectBooleanCheckbox value="#{investigationItemController.withoutReportEnd}" itemLabel="Without Report End" ></p:selectBooleanCheckbox>
-
-                                                </h:panelGrid>
-
-                                            </p:tab>
-
-                                            <p:tab title="Report Details" >
-                                                <h:panelGrid columns="2" >
-                                                    <p:outputLabel value="Test Header Name" ></p:outputLabel>
-                                                    <p:inputText value="#{investigationItemController.testHeaderName}" ></p:inputText>
-
-                                                    <p:outputLabel value="Value Header Name" ></p:outputLabel>
-                                                    <p:inputText value="#{investigationItemController.valueHeaderName}" ></p:inputText>
-
-                                                    <p:outputLabel value="Unit Header Name" ></p:outputLabel>
-                                                    <p:inputText value="#{investigationItemController.unitHeaderName}" ></p:inputText>
-
-                                                    <p:outputLabel value="Referance Header Name" ></p:outputLabel>
-                                                    <p:inputText value="#{investigationItemController.refHeaderName}" ></p:inputText>
-
-                                                </h:panelGrid>
-
-                                            </p:tab>
-
-                                            <p:tab title="Positioning Details" >
-                                                <h:panelGrid columns="2" class="w-100" >
-
-                                                    <p:outputLabel value="Block Top" ></p:outputLabel>
-                                                    <p:inputText value="#{investigationItemController.riBlockTop}" ></p:inputText>
-
-                                                    <p:outputLabel value="Block Left" ></p:outputLabel>
-                                                    <p:inputText value="#{investigationItemController.riBlockLeft}" ></p:inputText>
-
-                                                    <p:outputLabel value="Value Left" ></p:outputLabel>
-                                                    <p:inputText value="#{investigationItemController.riValueLeft}" ></p:inputText>
-
-                                                    <p:outputLabel value="Unit Left" ></p:outputLabel>
-                                                    <p:inputText value="#{investigationItemController.riUnitLeft}" ></p:inputText>
-
-                                                    <p:outputLabel value="Reference Left" ></p:outputLabel>
-                                                    <p:inputText value="#{investigationItemController.riRefLeft}" ></p:inputText>
-
-                                                    <p:outputLabel value="Column Gap" ></p:outputLabel>
-                                                    <p:inputText value="#{investigationItemController.riColGap}" ></p:inputText>
-
-                                                    <p:outputLabel value="Row Gap" ></p:outputLabel>
-                                                    <p:inputText value="#{investigationItemController.riRowGap}" ></p:inputText>
-
-
-                                                    <p:outputLabel value="Height" ></p:outputLabel>
-                                                    <p:inputText value="#{investigationItemController.riHeight}" ></p:inputText>
-
-                                                </h:panelGrid>
-
-                                            </p:tab>
-
-                                            <p:tab title="Font Details" >
-                                                <h:panelGrid columns="2" class="w-100" >
-
-                                                    <p:outputLabel value="Font Family" ></p:outputLabel>
-                                                    <p:inputText value="#{investigationItemController.cssFontFamily}" ></p:inputText>
-
-                                                    <p:outputLabel value="Font Size" ></p:outputLabel>
-                                                    <p:inputText value="#{investigationItemController.riFontSize}" ></p:inputText>
-
-
-
-                                                    <h:outputText value="Font Style"/>
-                                                    <p:selectOneMenu   value="#{investigationItemController.cssFontStyle}" >
-                                                        <f:selectItem itemLabel="Normal" itemValue="Normal"/>
-                                                        <f:selectItem itemLabel="Italic" itemValue="Italic"/>
-                                                        <f:selectItem itemLabel="Oblique" itemValue="Oblique"/>               
-                                                    </p:selectOneMenu>
-
-
-                                                    <h:outputText value="Header Font Weight"/>
-                                                    <p:selectOneMenu  value="#{investigationItemController.cssHeaderFontWeight}">
-                                                        <f:selectItem itemValue="normal" itemLabel="Normal" ></f:selectItem>
-                                                        <f:selectItem itemValue="bold"  itemLabel="bold" ></f:selectItem>
-                                                        <f:selectItem itemValue="bolder"  itemLabel="bolder" ></f:selectItem>
-                                                        <f:selectItem itemValue="initial"  itemLabel="initial" ></f:selectItem>
-                                                        <f:selectItem itemValue="lighter"  itemLabel="lighter" ></f:selectItem>
-                                                        <f:selectItem itemValue="100"  itemLabel="100" ></f:selectItem>
-                                                        <f:selectItem itemValue="200"  itemLabel="200" ></f:selectItem>
-                                                        <f:selectItem itemValue="300"  itemLabel="300" ></f:selectItem>
-                                                        <f:selectItem itemValue="400"  itemLabel="400" ></f:selectItem>
-                                                        <f:selectItem itemValue="500"  itemLabel="500" ></f:selectItem>
-                                                        <f:selectItem itemValue="600"  itemLabel="600" ></f:selectItem>
-                                                        <f:selectItem itemValue="700"  itemLabel="700" ></f:selectItem>
-                                                        <f:selectItem itemValue="800"  itemLabel="800" ></f:selectItem>
-                                                        <f:selectItem itemValue="900"  itemLabel="900" ></f:selectItem>
-                                                    </p:selectOneMenu>
-
-                                                    <h:outputText value="Header Font Weight"/>
-                                                    <p:selectOneMenu  value="#{investigationItemController.cssValueFontWeight}">
-                                                        <f:selectItem itemValue="normal" itemLabel="Normal" ></f:selectItem>
-                                                        <f:selectItem itemValue="bold"  itemLabel="bold" ></f:selectItem>
-                                                        <f:selectItem itemValue="bolder"  itemLabel="bolder" ></f:selectItem>
-                                                        <f:selectItem itemValue="initial"  itemLabel="initial" ></f:selectItem>
-                                                        <f:selectItem itemValue="lighter"  itemLabel="lighter" ></f:selectItem>
-                                                        <f:selectItem itemValue="100"  itemLabel="100" ></f:selectItem>
-                                                        <f:selectItem itemValue="200"  itemLabel="200" ></f:selectItem>
-                                                        <f:selectItem itemValue="300"  itemLabel="300" ></f:selectItem>
-                                                        <f:selectItem itemValue="400"  itemLabel="400" ></f:selectItem>
-                                                        <f:selectItem itemValue="500"  itemLabel="500" ></f:selectItem>
-                                                        <f:selectItem itemValue="600"  itemLabel="600" ></f:selectItem>
-                                                        <f:selectItem itemValue="700"  itemLabel="700" ></f:selectItem>
-                                                        <f:selectItem itemValue="800"  itemLabel="800" ></f:selectItem>
-                                                        <f:selectItem itemValue="900"  itemLabel="900" ></f:selectItem>
-                                                    </p:selectOneMenu>
-
-
-                                                    <h:outputText value="Header Text Decoration"/>
-                                                    <p:selectOneMenu value="#{investigationItemController.cssHeaderDecoration}">
-                                                        <f:selectItem itemValue="none" itemLabel="none" ></f:selectItem>
-                                                        <f:selectItem itemValue="underline"  itemLabel="underline" ></f:selectItem>
-                                                        <f:selectItem itemValue="overline"  itemLabel="overline" ></f:selectItem>
-                                                    </p:selectOneMenu>
-
-                                                    <h:outputText value="Value Text Decoration"/>
-                                                    <p:selectOneMenu value="#{investigationItemController.cssValueDecoration}">
-                                                        <f:selectItem itemValue="none" itemLabel="none" ></f:selectItem>
-                                                        <f:selectItem itemValue="underline"  itemLabel="underline" ></f:selectItem>
-                                                        <f:selectItem itemValue="overline"  itemLabel="overline" ></f:selectItem>
-                                                    </p:selectOneMenu>
-
-                                                </h:panelGrid>
-
-                                            </p:tab>
-
-
-                                        </p:tabView>
-                                    </p:dialog>  
+                                    <!--                                    <p:dialog id="dlgTest" header="Modal Dialog" widgetVar="dlgTest" modal="true" >
+                                                                            <p:commandButton 
+                                                                                ajax="false" 
+                                                                                class="ui-button-success mb-2"
+                                                                                icon="fa fa-save"
+                                                                                style="float: right"
+                                                                                value="Save" 
+                                                                                action="#{investigationItemController.addNewTest()}" 
+                                                                                >
+                                                                            </p:commandButton>
+                                    
+                                                                            <p:tabView >
+                                    
+                                                                                <p:tab title="Basic Details" >
+                                    
+                                                                                    <h:panelGrid columns="2" >
+                                    
+                                                                                        <p:outputLabel value="Test Name" ></p:outputLabel>
+                                                                                        <p:inputText value="#{investigationItemController.testName}"  ></p:inputText>
+                                    
+                                                                                        <p:outputLabel value="Test Unit" ></p:outputLabel>
+                                                                                        <p:inputText value="#{investigationItemController.testUnit}" ></p:inputText>
+                                    
+                                                                                        <p:outputLabel value="Reference" ></p:outputLabel>
+                                                                                        <p:textEditor  secure='false'  value="#{investigationItemController.testReferenceRange}" height="100" ></p:textEditor>
+                                    
+                                                                                        <p:outputLabel value="Comments" ></p:outputLabel>
+                                                                                        <p:inputTextarea value="#{investigationItemController.testComments}" ></p:inputTextarea>
+                                    
+                                                                                        <p:outputLabel value="Test Component" ></p:outputLabel>
+                                                                                        <p:selectOneMenu id="cmbTestComponent"  value="#{investigationItemController.investigationComponent}" >
+                                                                                            <f:selectItems value="#{investigationItemController.currentReportComponants}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                                                        </p:selectOneMenu>
+                                    
+                                                                                        <p:outputLabel value="Analyzer" ></p:outputLabel>
+                                                                                        <p:selectOneMenu value="#{investigationItemController.machine}" >
+                                                                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                                                                            <f:selectItems value="#{machineController.items}" ></f:selectItems>
+                                                                                        </p:selectOneMenu>
+                                    
+                                                                                        <p:outputLabel value="Test" ></p:outputLabel>
+                                                                                        <p:autoComplete value="#{investigationItemController.test}"
+                                                                                                        completeMethod="#{itemController.completeMachineTests}"
+                                                                                                        var="t" inputStyle="width:200px;"
+                                                                                                        itemValue="#{t}"
+                                                                                                        itemLabel="#{t.code}"
+                                                                                                        >
+                                                                                            <p:column >
+                                                                                                <p:outputLabel value="#{t.code}" ></p:outputLabel>
+                                                                                            </p:column>
+                                                                                            <p:column >
+                                                                                                <p:outputLabel value="#{t.name}" ></p:outputLabel>
+                                                                                            </p:column>
+                                                                                        </p:autoComplete>
+                                    
+                                                                                        <p:outputLabel value="Sample" ></p:outputLabel>
+                                                                                        <p:selectOneMenu id="cmbSample"  value="#{investigationItemController.sample}" >
+                                                                                            <f:selectItem itemLabel="Please select a sample"/>
+                                                                                            <f:selectItems value="#{sampleController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                                                        </p:selectOneMenu>
+                                    
+                                                                                        <h:outputText value="Container / Tube" ></h:outputText>
+                                                                                        <p:selectOneMenu id="cmbTube"  value="#{investigationItemController.tube}" >
+                                                                                            <f:selectItem itemLabel="Please select a Tube"/>
+                                                                                            <f:selectItems value="#{investigationTubeController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                                                        </p:selectOneMenu>
+                                    
+                                                                                    </h:panelGrid>
+                                                                                    <h:panelGrid columns="10" >
+                                    
+                                                                                        <p:selectBooleanCheckbox value="#{investigationItemController.automated}" itemLabel="Automated" ></p:selectBooleanCheckbox>
+                                                                                        <p:selectBooleanCheckbox value="#{investigationItemController.withoutHeadings}" itemLabel="Without Headings" ></p:selectBooleanCheckbox>
+                                                                                        <p:selectBooleanCheckbox value="#{investigationItemController.withoutComments}" itemLabel="Without Comments" ></p:selectBooleanCheckbox>
+                                                                                        <p:selectBooleanCheckbox value="#{investigationItemController.withoutReportHeader}" itemLabel="Without Report Header" ></p:selectBooleanCheckbox>
+                                                                                        <p:selectBooleanCheckbox value="#{investigationItemController.withoutReportEnd}" itemLabel="Without Report End" ></p:selectBooleanCheckbox>
+                                    
+                                                                                    </h:panelGrid>
+                                    
+                                                                                </p:tab>
+                                    
+                                                                                <p:tab title="Report Details" >
+                                                                                    <h:panelGrid columns="2" >
+                                                                                        <p:outputLabel value="Test Header Name" ></p:outputLabel>
+                                                                                        <p:inputText value="#{investigationItemController.testHeaderName}" ></p:inputText>
+                                    
+                                                                                        <p:outputLabel value="Value Header Name" ></p:outputLabel>
+                                                                                        <p:inputText value="#{investigationItemController.valueHeaderName}" ></p:inputText>
+                                    
+                                                                                        <p:outputLabel value="Unit Header Name" ></p:outputLabel>
+                                                                                        <p:inputText value="#{investigationItemController.unitHeaderName}" ></p:inputText>
+                                    
+                                                                                        <p:outputLabel value="Referance Header Name" ></p:outputLabel>
+                                                                                        <p:inputText value="#{investigationItemController.refHeaderName}" ></p:inputText>
+                                    
+                                                                                    </h:panelGrid>
+                                    
+                                                                                </p:tab>
+                                    
+                                                                                <p:tab title="Positioning Details" >
+                                                                                    <h:panelGrid columns="2" class="w-100" >
+                                    
+                                                                                        <p:outputLabel value="Block Top" ></p:outputLabel>
+                                                                                        <p:inputText value="#{investigationItemController.riBlockTop}" ></p:inputText>
+                                    
+                                                                                        <p:outputLabel value="Block Left" ></p:outputLabel>
+                                                                                        <p:inputText value="#{investigationItemController.riBlockLeft}" ></p:inputText>
+                                    
+                                                                                        <p:outputLabel value="Value Left" ></p:outputLabel>
+                                                                                        <p:inputText value="#{investigationItemController.riValueLeft}" ></p:inputText>
+                                    
+                                                                                        <p:outputLabel value="Unit Left" ></p:outputLabel>
+                                                                                        <p:inputText value="#{investigationItemController.riUnitLeft}" ></p:inputText>
+                                    
+                                                                                        <p:outputLabel value="Reference Left" ></p:outputLabel>
+                                                                                        <p:inputText value="#{investigationItemController.riRefLeft}" ></p:inputText>
+                                    
+                                                                                        <p:outputLabel value="Column Gap" ></p:outputLabel>
+                                                                                        <p:inputText value="#{investigationItemController.riColGap}" ></p:inputText>
+                                    
+                                                                                        <p:outputLabel value="Row Gap" ></p:outputLabel>
+                                                                                        <p:inputText value="#{investigationItemController.riRowGap}" ></p:inputText>
+                                    
+                                    
+                                                                                        <p:outputLabel value="Height" ></p:outputLabel>
+                                                                                        <p:inputText value="#{investigationItemController.riHeight}" ></p:inputText>
+                                    
+                                                                                    </h:panelGrid>
+                                    
+                                                                                </p:tab>
+                                    
+                                                                                <p:tab title="Font Details" >
+                                                                                    <h:panelGrid columns="2" class="w-100" >
+                                    
+                                                                                        <p:outputLabel value="Font Family" ></p:outputLabel>
+                                                                                        <p:inputText value="#{investigationItemController.cssFontFamily}" ></p:inputText>
+                                    
+                                                                                        <p:outputLabel value="Font Size" ></p:outputLabel>
+                                                                                        <p:inputText value="#{investigationItemController.riFontSize}" ></p:inputText>
+                                    
+                                    
+                                    
+                                                                                        <h:outputText value="Font Style"/>
+                                                                                        <p:selectOneMenu   value="#{investigationItemController.cssFontStyle}" >
+                                                                                            <f:selectItem itemLabel="Normal" itemValue="Normal"/>
+                                                                                            <f:selectItem itemLabel="Italic" itemValue="Italic"/>
+                                                                                            <f:selectItem itemLabel="Oblique" itemValue="Oblique"/>               
+                                                                                        </p:selectOneMenu>
+                                    
+                                    
+                                                                                        <h:outputText value="Header Font Weight"/>
+                                                                                        <p:selectOneMenu  value="#{investigationItemController.cssHeaderFontWeight}">
+                                                                                            <f:selectItem itemValue="normal" itemLabel="Normal" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="bold"  itemLabel="bold" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="bolder"  itemLabel="bolder" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="initial"  itemLabel="initial" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="lighter"  itemLabel="lighter" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="100"  itemLabel="100" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="200"  itemLabel="200" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="300"  itemLabel="300" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="400"  itemLabel="400" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="500"  itemLabel="500" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="600"  itemLabel="600" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="700"  itemLabel="700" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="800"  itemLabel="800" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="900"  itemLabel="900" ></f:selectItem>
+                                                                                        </p:selectOneMenu>
+                                    
+                                                                                        <h:outputText value="Header Font Weight"/>
+                                                                                        <p:selectOneMenu  value="#{investigationItemController.cssValueFontWeight}">
+                                                                                            <f:selectItem itemValue="normal" itemLabel="Normal" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="bold"  itemLabel="bold" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="bolder"  itemLabel="bolder" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="initial"  itemLabel="initial" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="lighter"  itemLabel="lighter" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="100"  itemLabel="100" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="200"  itemLabel="200" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="300"  itemLabel="300" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="400"  itemLabel="400" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="500"  itemLabel="500" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="600"  itemLabel="600" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="700"  itemLabel="700" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="800"  itemLabel="800" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="900"  itemLabel="900" ></f:selectItem>
+                                                                                        </p:selectOneMenu>
+                                    
+                                    
+                                                                                        <h:outputText value="Header Text Decoration"/>
+                                                                                        <p:selectOneMenu value="#{investigationItemController.cssHeaderDecoration}">
+                                                                                            <f:selectItem itemValue="none" itemLabel="none" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="underline"  itemLabel="underline" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="overline"  itemLabel="overline" ></f:selectItem>
+                                                                                        </p:selectOneMenu>
+                                    
+                                                                                        <h:outputText value="Value Text Decoration"/>
+                                                                                        <p:selectOneMenu value="#{investigationItemController.cssValueDecoration}">
+                                                                                            <f:selectItem itemValue="none" itemLabel="none" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="underline"  itemLabel="underline" ></f:selectItem>
+                                                                                            <f:selectItem itemValue="overline"  itemLabel="overline" ></f:selectItem>
+                                                                                        </p:selectOneMenu>
+                                    
+                                                                                    </h:panelGrid>
+                                    
+                                                                                </p:tab>
+                                    
+                                    
+                                                                            </p:tabView>
+                                                                        </p:dialog>  -->
 
                                 </p:panel>
 
