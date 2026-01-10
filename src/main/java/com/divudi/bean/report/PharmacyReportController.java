@@ -371,6 +371,16 @@ public class PharmacyReportController implements Serializable {
     }
 
     /**
+     * Initialize default values for expiry item report
+     * Sets default date range to 3 months from today
+     */
+    public void initExpiryReportDefaults() {
+        LocalDate today = LocalDate.now();
+        fromDate = convertToDate(today);
+        toDate = convertToDate(today.plusMonths(3).minusDays(1));
+    }
+
+    /**
      * Register page metadata for the admin configuration interface
      */
     private void registerPageMetadata() {
@@ -1171,6 +1181,11 @@ public class PharmacyReportController implements Serializable {
 
     public String navigateToPrescriptionList() {
         return "/pharmacy/prescription_list?faces-redirect=true";
+    }
+
+    public String navigateToExpiryItemReport() {
+        initExpiryReportDefaults();
+        return "/reports/inventoryReports/expiry_item?faces-redirect=true";
     }
 
     public String navigateToPrescriptionListFromPrescriptionSummery(Long personId) {
