@@ -227,7 +227,7 @@
                                                             rendered="#{pvv.investigationItem.ixItemValueType eq 'Varchar' and empty pvv.investigationItem.investigationItemValues}" >
                                                             <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:inputText>
-                                                        
+
                                                         <p:selectOneMenu 
                                                             class="mx-2" 
                                                             value="#{pvv.strValue}" 
@@ -238,7 +238,7 @@
                                                             <f:selectItems value="#{pvv.investigationItem.investigationItemValues}" var="iiv" itemLabel="#{iiv.name}" itemValue="#{iiv.name}" ></f:selectItems>
                                                             <p:ajax process="@this" event="change" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:selectOneMenu>
-                                                        
+
                                                         <p:inputText 
                                                             class="mx-2" 
                                                             id="txtValDbl" 
@@ -250,7 +250,7 @@
                                                             disabled="#{patientReportController.currentPatientReport.approved}">
                                                             <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:inputText>
-                                                        
+
                                                         <p:inputTextarea 
                                                             class="mx-2" 
                                                             value="#{pvv.lobValue}" 
@@ -265,23 +265,25 @@
                                         </ui:repeat>
                                     </table>
                                 </p:panel>
-
-                                <h:panelGroup rendered="#{webUserController.hasPrivilege('LabAutherizing')}">
-                                    <div class="card my-5 sample-card shadow">
-                                        <div class="d-flex justify-content-between m-2 p-2">
-                                            <h:outputLabel value="Requires Immediate Doctor Review" class="text-danger" style="font-weight: 700; font-size: 18px;"></h:outputLabel>
-                                            <p:toggleSwitch 
-                                                id="reqDoctorReview"
-                                                disabled ="#{!patientReportController.currentPatientReport.dataEntered or patientReportController.currentPatientReport.approved}"   
-                                                value="#{patientReportController.currentPatientReport.requiresImmediateDoctorReview}" 
-                                                onIcon="pi pi-check" 
-                                                offIcon="pi pi-times">
-                                            </p:toggleSwitch>
+                                
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('MLT allows marking on the report that immediate review by a physician is required.',false)}">
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('LabAutherizing') and patientReportController.hasWarningFlagInPatientReport()}">
+                                        <div class="card my-5 sample-card shadow">
+                                            <div class="d-flex justify-content-between m-2 p-2">
+                                                <h:outputLabel value="Requires Immediate Doctor Review" class="text-danger" style="font-weight: 700; font-size: 18px;"></h:outputLabel>
+                                                <p:toggleSwitch 
+                                                    id="reqDoctorReview"
+                                                    disabled ="#{!patientReportController.currentPatientReport.dataEntered or patientReportController.currentPatientReport.approved}"   
+                                                    value="#{patientReportController.currentPatientReport.requiresImmediateDoctorReview}" 
+                                                    onIcon="pi pi-check" 
+                                                    offIcon="pi pi-times">
+                                                </p:toggleSwitch>
+                                            </div>
                                         </div>
-                                    </div>
+                                    </h:panelGroup>
                                 </h:panelGroup>
 
-<!--                            Calculations                        -->
+                                <!--                            Calculations                        -->
                                 <h:panelGroup rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containCalculations eq true }">
                                     <p:panel class="my-2" header="Calculations " id="tblCals">
                                         <table >               
@@ -303,7 +305,7 @@
                                                                 rendered="#{pvcal.investigationItem.ixItemValueType eq 'Varchar'}" >
                                                                 <f:ajax execute="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></f:ajax>
                                                             </p:inputText>
-                                                            
+
                                                             <p:inputText 
                                                                 autocomplete="off" 
                                                                 value="#{pvcal.doubleValue}" 
@@ -320,13 +322,13 @@
 
                                 </h:panelGroup>
 
-<!--                            Flags                               -->
+                                <!--                            Flags                               -->
                                 <p:panel 
                                     class="my-2" 
                                     header="Flags" 
                                     id="tblFlags"
                                     rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containFlags eq true}" >
-                                    
+
                                     <h:panelGroup rendered="true" >
                                         <table >
                                             <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="pvf" >
@@ -359,8 +361,8 @@
                                     <table >
                                         <ui:repeat 
                                             id="tblDls" 
-                                                   value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
-                                                   var="pvd"  >
+                                            value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
+                                            var="pvd"  >
                                             <h:panelGroup rendered="#{pvd.investigationItem.ixItemType eq 'DynamicLabel'}" >
                                                 <tr>
                                                     <td >
