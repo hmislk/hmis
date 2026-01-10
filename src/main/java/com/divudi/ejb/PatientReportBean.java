@@ -232,7 +232,7 @@ public class PatientReportBean {
                     val.setPatientReport(ptReport);
                     
                 } else {
-                    jpql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.core.data.InvestigationItemType.Value";
+                    jpql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.core.data.InvestigationItemType.DynamicLabel";
 
                     val = getPtRivFacade().findFirstByJpql(jpql);
 
