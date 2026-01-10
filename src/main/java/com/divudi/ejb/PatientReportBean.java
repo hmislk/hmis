@@ -249,8 +249,10 @@ public class PatientReportBean {
             }
 
             if (val != null) {
-                getPtRivFacade().create(val);
-                ptReport.getPatientReportItemValues().add(val);
+                if(val.getId() == null){
+                    getPtRivFacade().create(val);
+                    ptReport.getPatientReportItemValues().add(val);
+                }
             }
         }
     }
