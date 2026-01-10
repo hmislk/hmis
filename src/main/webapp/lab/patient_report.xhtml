@@ -166,7 +166,7 @@
 
                         <p:growl id="messages" showDetail="false" /> 
 
-                        <h:panelGroup>
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display the priority Alert Note in Patient Report View',false)}">
 
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.patientInvestigation.billItem.priority eq 'HIGH'}">
                                 <div class="alert alert-link" role="alert" style="filter: brightness(0.8); background-color: #{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.priorityColor}">
@@ -219,22 +219,44 @@
                                                         <h:outputLabel value="#{pvv.investigationItem.name}"></h:outputLabel>
                                                     </td>
                                                     <td >
-                                                        <p:inputText class="mx-2" autocomplete="off" value="#{pvv.strValue}" disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                     rendered="#{pvv.investigationItem.ixItemValueType eq 'Varchar' and empty pvv.investigationItem.investigationItemValues}" >
+                                                        <p:inputText 
+                                                            class="mx-2" 
+                                                            autocomplete="off" 
+                                                            value="#{pvv.strValue}" 
+                                                            disabled="#{patientReportController.currentPatientReport.approved}"
+                                                            rendered="#{pvv.investigationItem.ixItemValueType eq 'Varchar' and empty pvv.investigationItem.investigationItemValues}" >
                                                             <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:inputText>
-                                                        <p:selectOneMenu class="mx-2" value="#{pvv.strValue}" disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                         rendered="#{pvv.investigationItem.ixItemValueType eq 'Varchar' and !empty pvv.investigationItem.investigationItemValues}" 
-                                                                         editable="true"  style="min-width: 300px!important;" >
+                                                        
+                                                        <p:selectOneMenu 
+                                                            class="mx-2" 
+                                                            value="#{pvv.strValue}" 
+                                                            disabled="#{patientReportController.currentPatientReport.approved}"
+                                                            rendered="#{pvv.investigationItem.ixItemValueType eq 'Varchar' and !empty pvv.investigationItem.investigationItemValues}" 
+                                                            editable="true"  
+                                                            style="min-width: 300px!important;" >
                                                             <f:selectItems value="#{pvv.investigationItem.investigationItemValues}" var="iiv" itemLabel="#{iiv.name}" itemValue="#{iiv.name}" ></f:selectItems>
                                                             <p:ajax process="@this" event="change" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:selectOneMenu>
-                                                        <p:inputText class="mx-2" id="txtValDbl" autocomplete="off" value="#{pvv.doubleValue}" validatorMessage="Entered value not valid. Please recheck." converterMessage="Entered value not valid. Please recheck."
-                                                                     rendered="#{pvv.investigationItem.ixItemValueType eq 'Double'}" disabled="#{patientReportController.currentPatientReport.approved}">
+                                                        
+                                                        <p:inputText 
+                                                            class="mx-2" 
+                                                            id="txtValDbl" 
+                                                            autocomplete="off" 
+                                                            value="#{pvv.doubleValue}" 
+                                                            validatorMessage="Entered value not valid. Please recheck." 
+                                                            converterMessage="Entered value not valid. Please recheck."
+                                                            rendered="#{pvv.investigationItem.ixItemValueType eq 'Double'}" 
+                                                            disabled="#{patientReportController.currentPatientReport.approved}">
                                                             <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:inputText>
-                                                        <p:inputTextarea class="mx-2" value="#{pvv.lobValue}" queryDelay="0" disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                         rendered="#{pvv.investigationItem.ixItemValueType eq 'Memo'}" >
+                                                        
+                                                        <p:inputTextarea 
+                                                            class="mx-2" 
+                                                            value="#{pvv.lobValue}" 
+                                                            queryDelay="0" 
+                                                            disabled="#{patientReportController.currentPatientReport.approved}"
+                                                            rendered="#{pvv.investigationItem.ixItemValueType eq 'Memo'}" >
                                                             <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:inputTextarea>
                                                     </td>
@@ -244,7 +266,22 @@
                                     </table>
                                 </p:panel>
 
-                                <!--                            Calculations                        -->
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('LabAutherizing')}">
+                                    <div class="card my-5 sample-card shadow">
+                                        <div class="d-flex justify-content-between m-2 p-2">
+                                            <h:outputLabel value="Requires Immediate Doctor Review" class="text-danger" style="font-weight: 700; font-size: 18px;"></h:outputLabel>
+                                            <p:toggleSwitch 
+                                                id="reqDoctorReview"
+                                                disabled ="#{!patientReportController.currentPatientReport.dataEntered or patientReportController.currentPatientReport.approved}"   
+                                                value="#{patientReportController.currentPatientReport.requiresImmediateDoctorReview}" 
+                                                onIcon="pi pi-check" 
+                                                offIcon="pi pi-times">
+                                            </p:toggleSwitch>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+<!--                            Calculations                        -->
                                 <h:panelGroup rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containCalculations eq true }">
                                     <p:panel class="my-2" header="Calculations " id="tblCals">
                                         <table >               
@@ -259,12 +296,19 @@
                                                             <h:outputLabel value="#{pvcal.investigationItem.name}" ></h:outputLabel>
                                                         </td>
                                                         <td >
-                                                            <p:inputText autocomplete="off" value="#{pvcal.strValue}" disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                         rendered="#{pvcal.investigationItem.ixItemValueType eq 'Varchar'}" >
+                                                            <p:inputText 
+                                                                autocomplete="off" 
+                                                                value="#{pvcal.strValue}" 
+                                                                disabled="#{patientReportController.currentPatientReport.approved}"
+                                                                rendered="#{pvcal.investigationItem.ixItemValueType eq 'Varchar'}" >
                                                                 <f:ajax execute="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></f:ajax>
                                                             </p:inputText>
-                                                            <p:inputText autocomplete="off" value="#{pvcal.doubleValue}" disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                         rendered="#{pvcal.investigationItem.ixItemValueType eq 'Double'}" >
+                                                            
+                                                            <p:inputText 
+                                                                autocomplete="off" 
+                                                                value="#{pvcal.doubleValue}" 
+                                                                disabled="#{patientReportController.currentPatientReport.approved}"
+                                                                rendered="#{pvcal.investigationItem.ixItemValueType eq 'Double'}" >
                                                                 <f:ajax execute="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></f:ajax>
                                                             </p:inputText>
                                                         </td>
@@ -276,25 +320,29 @@
 
                                 </h:panelGroup>
 
-                                <!--                            Flags                               -->
-                                <p:panel class="my-2" header="Flags" id="tblFlags"
-                                         rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containFlags eq true}" 
-                                         >
-
+<!--                            Flags                               -->
+                                <p:panel 
+                                    class="my-2" 
+                                    header="Flags" 
+                                    id="tblFlags"
+                                    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containFlags eq true}" >
+                                    
                                     <h:panelGroup rendered="true" >
-
                                         <table >
-                                            <ui:repeat  
-                                                value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
-                                                var="pvf" 
-                                                >
+                                            <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="pvf" >
                                                 <h:panelGroup rendered="#{pvf.investigationItem.ixItemType eq 'Flag'}" >
                                                     <tr>
                                                         <td  style="min-width: 200px!important;">
                                                             <h:outputLabel value="#{pvf.investigationItem.name}" ></h:outputLabel>
                                                         </td>
                                                         <td>
-                                                            <p:selectOneMenu class="mx-2 w-100" id="cmbStrFlag" value="#{pvf.strValue}" editable="true" style="min-width: 200px;" disabled="#{patientReportController.currentPatientReport.approved}">
+                                                            <p:selectOneMenu 
+                                                                class="mx-2 w-100" 
+                                                                id="cmbStrFlag" 
+                                                                value="#{pvf.strValue}" 
+                                                                editable="true" 
+                                                                style="min-width: 200px;" 
+                                                                disabled="#{patientReportController.currentPatientReport.approved}">
                                                                 <f:selectItems value="#{testFlagController.getIxItemFlagsString(pvf.investigationItem)}" var="iivfh" itemLabel="#{iivfh}" itemValue="#{iivfh}" ></f:selectItems>
                                                             </p:selectOneMenu>
                                                         </td>
@@ -302,8 +350,6 @@
                                                 </h:panelGroup>
                                             </ui:repeat>
                                         </table>
-
-
                                     </h:panelGroup>
 
                                 </p:panel>
@@ -311,7 +357,8 @@
                                 <!--                            Dynamic Labels                      -->
                                 <p:panel header="Dynamic Labels" rendered="#{patientReportController.currentPatientReport.containDynamicLabels eq true }"  >
                                     <table >
-                                        <ui:repeat id="tblDls" 
+                                        <ui:repeat 
+                                            id="tblDls" 
                                                    value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
                                                    var="pvd"  >
                                             <h:panelGroup rendered="#{pvd.investigationItem.ixItemType eq 'DynamicLabel'}" >
@@ -330,8 +377,8 @@
                                                                 value="#{investigationItemDynamicLabelController.getDynamicLabelsByIxItId(pvd.investigationItem)}" 
                                                                 var="iivd" 
                                                                 itemLabel="#{iivd.flagMessage}" 
-                                                                itemValue="#{iivd.flagMessage}" ></f:selectItems>
-
+                                                                itemValue="#{iivd.flagMessage}" >
+                                                            </f:selectItems>
                                                             <p:ajax process="@this" event="change" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:selectOneMenu>
                                                     </td>
@@ -453,7 +500,6 @@
                                                                 value="#{group.groupName}" >
                                                             </h:outputText>
                                                         </td>
-
                                                     </tr>
 
                                                     <ui:repeat id="tblMicValsGrouped" 
@@ -885,7 +931,9 @@
                                                             filename: '#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patient.person.nameWithTitle} - #{patientReportController.currentPatientReport.patientInvestigation.investigation.name}.pdf',
                                                             image: {type: 'jpeg', quality: 1.00},
                                                             html2canvas: {
-                                                                scale: 2
+                                                                scale: 2,
+                                                                useCORS: true,
+                                                                allowTaint: false
                                                             },
                                                             jsPDF: {unit: 'mm', format: [210, 280], orientation: 'portrait'}
                                                         };
