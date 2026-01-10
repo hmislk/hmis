@@ -2344,8 +2344,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     /**
      * Called when user changes payment method in cancellation form.
-     * Only resets paymentMethodData when user changes to a DIFFERENT payment method.
-     * If user keeps the same payment method as the original, the loaded data is preserved.
+     * If user selects the original payment method, restores original payment details.
+     * Otherwise, creates new payment data for the selected method.
      */
     public void onPaymentMethodChange() {
         // If payment method is null (shouldn't happen but handle gracefully)
@@ -2355,9 +2355,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             return;
         }
 
-        // If payment method matches the original, don't reset - preserve the loaded data
-        if (paymentMethod == originalCancellationPaymentMethod) {
-            // User is keeping the same payment method - keep the original data
+        // If payment method matches the original, restore original payment details
+        if (paymentMethod == originalCancellationPaymentMethod && batchBill != null) {
+            // User switched back to original payment method - restore original details
+            paymentMethodData = new PaymentMethodData();
+            List<Payment> batchBillPayments = billBean.fetchBillPayments(batchBill);
+            if (batchBillPayments != null && !batchBillPayments.isEmpty()) {
+                initializePaymentDataFromOriginalPayments(batchBillPayments);
+            }
             return;
         }
 
