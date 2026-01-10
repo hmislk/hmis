@@ -408,6 +408,28 @@ public class PharmacyReportController implements Serializable {
 
         // Register the metadata
         pageMetadataRegistry.registerPage(metadata);
+
+        // Add to Stock Bills metadata
+        PageMetadata atsMetadata = new PageMetadata();
+        atsMetadata.setPagePath("reports/inventoryReports/add_to_stock_bills");
+        atsMetadata.setPageName("Add to Stock Bills Report");
+        atsMetadata.setDescription("Report showing bills added to stock including cost rates, purchase values, and financial totals");
+        atsMetadata.setControllerClass("PharmacyReportController");
+
+        atsMetadata.addConfigOption(new ConfigOptionInfo(
+            "Short Date Format",
+            "Date formatting pattern used in report generation and PDF exports",
+            "Line 5280: SimpleDateFormat creation for report date formatting",
+            OptionScope.APPLICATION
+        ));
+
+        atsMetadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to system configuration and page management",
+            "Config button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(atsMetadata);
     }
 
     //Constructor
