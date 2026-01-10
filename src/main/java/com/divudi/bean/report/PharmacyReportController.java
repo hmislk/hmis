@@ -340,8 +340,13 @@ public class PharmacyReportController implements Serializable {
 
     private Double stockQty;
 
+    // Constants for valid expiry report types
+    private static final String EXPIRY_REPORT_TYPE_STOCK_LIST = "stockList";
+    private static final String EXPIRY_REPORT_TYPE_ITEM_LIST = "itemList";
+    private static final String EXPIRY_REPORT_TYPE_DETAILED = "detailed";
+
     // New fields for Expiry Item Report types
-    private String expiryReportType = "stockList"; // Default: Stock List
+    private String expiryReportType = EXPIRY_REPORT_TYPE_STOCK_LIST; // Default: Stock List
     private List<ExpiryItemStockListDto> expiryStockListDtos;
     private List<ExpiryItemListDto> expiryItemListDtos;
     private Double totalValueAtCostRate = 0.0;
@@ -368,6 +373,19 @@ public class PharmacyReportController implements Serializable {
     @PostConstruct
     public void init() {
         registerPageMetadata();
+        initializeExpiryReportFields();
+    }
+
+    /**
+     * Initialize expiry report fields to safe default values
+     * Prevents NPEs in JSF/EL rendering for session-scoped bean
+     */
+    private void initializeExpiryReportFields() {
+        expiryStockListDtos = new ArrayList<>();
+        expiryItemListDtos = new ArrayList<>();
+        totalValueAtCostRate = 0.0;
+        totalValueAtRetailRate = 0.0;
+        // expiryReportType already has default value "stockList" from field declaration
     }
 
     /**
@@ -7477,13 +7495,13 @@ public class PharmacyReportController implements Serializable {
         // Process different report types
         System.out.println("Expiry Report Type: " + expiryReportType);
         switch (expiryReportType) {
-            case "stockList":
+            case EXPIRY_REPORT_TYPE_STOCK_LIST:
                 processExpiryStockListReport();
                 break;
-            case "itemList":
+            case EXPIRY_REPORT_TYPE_ITEM_LIST:
                 processExpiryItemListReport();
                 break;
-            case "detailed":
+            case EXPIRY_REPORT_TYPE_DETAILED:
                 groupExpiryItems(stocks);
                 break;
             default:
@@ -9060,11 +9078,41 @@ public class PharmacyReportController implements Serializable {
         return expiryReportType;
     }
 
+    /**
+     * Sets the expiry report type with validation
+     * Falls back to "stockList" if invalid value is provided
+     * @param expiryReportType the report type to set
+     */
     public void setExpiryReportType(String expiryReportType) {
-        this.expiryReportType = expiryReportType;
+        if (isValidExpiryReportType(expiryReportType)) {
+            this.expiryReportType = expiryReportType;
+        } else {
+            System.out.println("Warning: Invalid expiry report type '" + expiryReportType +
+                             "', falling back to stockList");
+            this.expiryReportType = EXPIRY_REPORT_TYPE_STOCK_LIST;
+        }
     }
 
+    /**
+     * Validates if the provided report type is allowed
+     * @param reportType the report type to validate
+     * @return true if valid, false otherwise
+     */
+    private boolean isValidExpiryReportType(String reportType) {
+        return reportType != null &&
+               (EXPIRY_REPORT_TYPE_STOCK_LIST.equals(reportType) ||
+                EXPIRY_REPORT_TYPE_ITEM_LIST.equals(reportType) ||
+                EXPIRY_REPORT_TYPE_DETAILED.equals(reportType));
+    }
+
+    /**
+     * Gets the stock list DTOs, never returns null
+     * @return the stock list DTOs or empty list if not initialized
+     */
     public List<ExpiryItemStockListDto> getExpiryStockListDtos() {
+        if (expiryStockListDtos == null) {
+            expiryStockListDtos = new ArrayList<>();
+        }
         return expiryStockListDtos;
     }
 
@@ -9072,7 +9120,14 @@ public class PharmacyReportController implements Serializable {
         this.expiryStockListDtos = expiryStockListDtos;
     }
 
+    /**
+     * Gets the item list DTOs, never returns null
+     * @return the item list DTOs or empty list if not initialized
+     */
     public List<ExpiryItemListDto> getExpiryItemListDtos() {
+        if (expiryItemListDtos == null) {
+            expiryItemListDtos = new ArrayList<>();
+        }
         return expiryItemListDtos;
     }
 
@@ -9080,20 +9135,34 @@ public class PharmacyReportController implements Serializable {
         this.expiryItemListDtos = expiryItemListDtos;
     }
 
+    /**
+     * Gets the total value at cost rate, never returns null
+     * @return the total value at cost rate or 0.0 if not initialized
+     */
     public Double getTotalValueAtCostRate() {
+        if (totalValueAtCostRate == null) {
+            totalValueAtCostRate = 0.0;
+        }
         return totalValueAtCostRate;
     }
 
     public void setTotalValueAtCostRate(Double totalValueAtCostRate) {
-        this.totalValueAtCostRate = totalValueAtCostRate;
+        this.totalValueAtCostRate = totalValueAtCostRate != null ? totalValueAtCostRate : 0.0;
     }
 
+    /**
+     * Gets the total value at retail rate, never returns null
+     * @return the total value at retail rate or 0.0 if not initialized
+     */
     public Double getTotalValueAtRetailRate() {
+        if (totalValueAtRetailRate == null) {
+            totalValueAtRetailRate = 0.0;
+        }
         return totalValueAtRetailRate;
     }
 
     public void setTotalValueAtRetailRate(Double totalValueAtRetailRate) {
-        this.totalValueAtRetailRate = totalValueAtRetailRate;
+        this.totalValueAtRetailRate = totalValueAtRetailRate != null ? totalValueAtRetailRate : 0.0;
     }
 
     public Double getQuantity() {
