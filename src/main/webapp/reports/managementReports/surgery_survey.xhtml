@@ -184,7 +184,8 @@
                             
                          <!--Detail Report  --> 
                          <p:panel header="Surgery Survey Detail Report">
-                             <table class="table w-100 ui-datatable ui-datatable-borderless compact-datatable table-no-vertical"
+                             
+                             <table class="w-100 ui-datatable ui-datatable-borderless compact-datatable table-no-vertical"
                                     style="font-size: larger">
                                  <thead class="ui-datatable-thead">
                                      <tr>
@@ -217,7 +218,7 @@
                                             </td>
                                         </ui:repeat>
                                         <td style="border-left: none; border-right: none;">
-                                            <h:outputLabel value="#{v != null ? v : 0}">
+                                            <h:outputLabel value="#{0}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </td>
@@ -235,7 +236,7 @@
                                             </td>
                                         </ui:repeat>
                                         <td style="border-left: none; border-right: none;">
-                                            <h:outputLabel value="#{v != null ? v : 0}">
+                                            <h:outputLabel value="#{0}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </td>
@@ -253,7 +254,7 @@
                                             </td>
                                         </ui:repeat>
                                         <td style="border-left: none; border-right: none;">
-                                            <h:outputLabel value="#{v != null ? v : 0}">
+                                            <h:outputLabel value="#{0}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </td>
@@ -271,7 +272,7 @@
                                             </td>
                                         </ui:repeat>
                                         <td style="border-left: none; border-right: none;">
-                                            <h:outputLabel value="#{v != null ? v : 0}">
+                                            <h:outputLabel value="#{0}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </td>
@@ -289,7 +290,7 @@
                                             </td>
                                         </ui:repeat>
                                         <td style="border-left: none; border-right: none;">
-                                            <h:outputLabel value="#{v != null ? v : 0}">
+                                            <h:outputLabel value="#{0}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </td>
@@ -307,7 +308,7 @@
                                             </td>
                                         </ui:repeat>
                                         <td style="border-left: none; border-right: none;">
-                                            <h:outputLabel value="#{v != null ? v : 0}">
+                                            <h:outputLabel value="#{0}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </td>
@@ -325,7 +326,7 @@
                                             </td>
                                         </ui:repeat>
                                         <td style="border-left: none; border-right: none;">
-                                            <h:outputLabel value="#{v != null ? v : 0}">
+                                            <h:outputLabel value="#{0}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </td>
@@ -343,7 +344,7 @@
                                             </td>
                                         </ui:repeat>
                                         <td style="border-left: none; border-right: none;">
-                                            <h:outputLabel value="#{v != null ? v : 0}">
+                                            <h:outputLabel value="#{0}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </td>
@@ -361,7 +362,7 @@
                                             </td>
                                         </ui:repeat>
                                         <td style="border-left: none; border-right: none;">
-                                            <h:outputLabel value="#{v != null ? v : 0}">
+                                            <h:outputLabel value="#{0}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </td>
@@ -379,7 +380,7 @@
                                             </td>
                                         </ui:repeat>
                                         <td style="border-left: none; border-right: none;">
-                                            <h:outputLabel value="#{v != null ? v : 0}">
+                                            <h:outputLabel value="#{0}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </td>
@@ -397,7 +398,7 @@
                                             </td>
                                         </ui:repeat>
                                         <td style="border-left: none; border-right: none;">
-                                            <h:outputLabel value="#{v != null ? v : 0}">
+                                            <h:outputLabel value="#{0}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </td>
@@ -415,33 +416,33 @@
                                             </td>
                                         </ui:repeat>
                                         <td style="border-left: none; border-right: none;">
-                                            <h:outputLabel value="#{v != null ? v : 0}">
+                                            <h:outputLabel value="#{0}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </td>
                                     </tr>
                                   </tbody>
                                  
-                                 <thead class="ui-datatable-thead">
+                                 <tfoot class="ui-datatable-tfoot">
                                     <tr>
-                                       <th>
+                                       <td>
                                            <h:outputLabel value="Total"/>
-                                       </th>
+                                       </td>
                                        <ui:repeat value="#{['', '', '', '', '']}" 
                                                    var="v">
-                                           <th>
+                                           <td>
                                                <h:outputLabel value="#{v != null ? v : 0}">
                                                    <f:convertNumber pattern="#,##0.00"/>
                                                </h:outputLabel>
-                                           </th>
+                                           </td>
                                        </ui:repeat>
-                                       <th>
-                                           <h:outputLabel value="#{v != null ? v : 0}">
+                                       <td>
+                                           <h:outputLabel value="#{0}">
                                                <f:convertNumber pattern="#,##0.00"/>
                                            </h:outputLabel>
-                                       </th>
+                                       </td>
                                    </tr>
-                                 </thead>
+                                 </tfoot>
                              </table>
                          </p:panel>
                          
