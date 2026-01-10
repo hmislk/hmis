@@ -345,11 +345,31 @@
                                     class="w-100">
                                 </p:commandButton>
                                 <p:commandButton 
-                                    value="Diagnosis Card" 
+                                    value="Diagnosis Card (Legacy)" 
                                     ajax="false"
                                     action="#{admissionController.navigateToInpatientDiagnosisCard()}" 
                                     icon="fa fa-diagnoses" 
                                     class="w-100">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Ward Admission Card" 
+                                    ajax="true"
+                                    icon="pi pi-document"
+                                    styleClass="ui-button-success w-100"
+                                    action="#{inpatientClinicalDataController.loadWardAdmissionDiagnosisCard}"
+                                    oncomplete="PF('wardDiagnosisDialogDashboard').show()"
+                                    process="@this"
+                                    update="wardDiagnosisPanelDashboard">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Local Surgery Card" 
+                                    ajax="true"
+                                    icon="pi pi-document"
+                                    styleClass="ui-button-info w-100"
+                                    action="#{inpatientClinicalDataController.loadLocalSurgeryDiagnosisCard}"
+                                    oncomplete="PF('surgeryDiagnosisDialogDashboard').show()"
+                                    process="@this"
+                                    update="surgeryDiagnosisPanelDashboard">
                                 </p:commandButton>
                             </div>
                         </p:panel>
@@ -524,6 +544,64 @@
                     </div>
                 </div>
             </p:panel>
+
+            <!-- Ward Admission Diagnosis Card Dialog - Dashboard -->
+            <p:dialog id="wardDiagnosisDlgDashboard" widgetVar="wardDiagnosisDialogDashboard" modal="true" width="90%" height="90%" header="Ward Admission Diagnosis Card">
+                <h:panelGroup id="wardDiagnosisPanelDashboard">
+                    <div class="card">
+                        <div class="card-body">
+                            <h:outputText value="#{inpatientClinicalDataController.wardAdmissionDiagnosisCardHtml}" escape="false" rendered="#{inpatientClinicalDataController.wardAdmissionDiagnosisCardHtml ne null}"/>
+                        </div>
+                        <div class="card-footer">
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="true" 
+                                icon="pi pi-print"
+                                styleClass="ui-button-success">
+                                <p:printer target="wardDiagnosisPanelDashboard" />
+                            </p:commandButton>
+                            <p:commandButton 
+                                value="Close" 
+                                ajax="true" 
+                                icon="pi pi-times"
+                                oncomplete="PF('wardDiagnosisDialogDashboard').hide()"
+                                styleClass="ui-button-secondary">
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </h:panelGroup>
+            </p:dialog>
+
+            <!-- Local Surgery Diagnosis Card Dialog - Dashboard -->
+            <p:dialog id="surgeryDiagnosisDlgDashboard" widgetVar="surgeryDiagnosisDialogDashboard" modal="true" width="90%" height="90%" header="Local Surgery Diagnosis Card">
+                <h:panelGroup id="surgeryDiagnosisPanelDashboard">
+                    <div class="card">
+                        <div class="card-body">
+                            <h:outputText value="#{inpatientClinicalDataController.localSurgeryDiagnosisCardHtml}" escape="false" rendered="#{inpatientClinicalDataController.localSurgeryDiagnosisCardHtml ne null}"/>
+                        </div>
+                        <div class="card-footer">
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="true" 
+                                icon="pi pi-print"
+                                styleClass="ui-button-success">
+                                <p:printer target="surgeryDiagnosisPanelDashboard" />
+                            </p:commandButton>
+                            <p:commandButton 
+                                value="Close" 
+                                ajax="true" 
+                                icon="pi pi-times"
+                                oncomplete="PF('surgeryDiagnosisDialogDashboard').hide()"
+                                styleClass="ui-button-secondary">
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </h:panelGroup>
+            </p:dialog>
+
+        </h:form>
+    </ui:define>
+</ui:composition>
 
 
 

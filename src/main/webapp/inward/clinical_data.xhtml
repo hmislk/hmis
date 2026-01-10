@@ -56,6 +56,29 @@
                                 <f:setPropertyActionListener value="#{bhtEditController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
                             </p:commandButton>
 
+                            <!-- Diagnosis Card Type Buttons -->
+                            <p:commandButton 
+                                ajax="true" 
+                                icon="pi pi-document"
+                                value="Ward Admission Card" 
+                                class="m-1 p-0 ui-button-success"
+                                action="#{inpatientClinicalDataController.loadWardAdmissionDiagnosisCard}"
+                                oncomplete="PF('wardDiagnosisDialog').show()"
+                                process="@this"
+                                update="wardDiagnosisPanel">
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                ajax="true" 
+                                icon="pi pi-document"
+                                value="Surgery Card" 
+                                class="m-1 p-0 ui-button-info"
+                                action="#{inpatientClinicalDataController.loadLocalSurgeryDiagnosisCard}"
+                                oncomplete="PF('surgeryDiagnosisDialog').show()"
+                                process="@this"
+                                update="surgeryDiagnosisPanel">
+                            </p:commandButton>
+
                         </div>
                     </div>
                     <div class="row" >
@@ -600,21 +623,96 @@
                                         value="#{inpatientClinicalDataController.selectedDiagnosisCard.comments}">
                                     </p:textEditor>
                                     
-
-
-
+                                    <!-- Diagnosis Card Types Section -->
+                                    <div class="card m-2 p-2">
+                                        <div class="card-header">
+                                            <h:outputLabel value="System-Based Diagnosis Cards" />
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <p:commandButton 
+                                                        value="Ward Admission Diagnosis Card" 
+                                                        ajax="true" 
+                                                        icon="pi pi-document"
+                                                        styleClass="ui-button-success w-100"
+                                                        action="#{inpatientClinicalDataController.loadWardAdmissionDiagnosisCard}"
+                                                        oncomplete="PF('wardDiagnosisDialog').show()"
+                                                        process="@this"
+                                                        update="wardDiagnosisPanel">
+                                                    </p:commandButton>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <p:commandButton 
+                                                        value="Local Surgery Diagnosis Card" 
+                                                        ajax="true" 
+                                                        icon="pi pi-document"
+                                                        styleClass="ui-button-info w-100"
+                                                        action="#{inpatientClinicalDataController.loadLocalSurgeryDiagnosisCard}"
+                                                        oncomplete="PF('surgeryDiagnosisDialog').show()"
+                                                        process="@this"
+                                                        update="surgeryDiagnosisPanel">
+                                                    </p:commandButton>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                 </p:tab>
                             </p:tabView>
                         </div>
                     </div>
 
+                    <!-- Ward Admission Diagnosis Card Dialog -->
+                    <p:dialog id="wardDiagnosisDlg" widgetVar="wardDiagnosisDialog" modal="true" width="90%" height="90%" header="Ward Admission Diagnosis Card">
+                        <h:panelGroup id="wardDiagnosisPanel">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h:outputText value="#{inpatientClinicalDataController.wardAdmissionDiagnosisCardHtml}" escape="false" rendered="#{inpatientClinicalDataController.wardAdmissionDiagnosisCardHtml ne null}"/>
+                                </div>
+                                <div class="card-footer">
+                                    <p:commandButton 
+                                        value="Print" 
+                                        ajax="true" 
+                                        icon="pi pi-print"
+                                        styleClass="ui-button-success">
+                                        <p:printer target="wardDiagnosisPanel" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="Close" 
+                                        ajax="true" 
+                                        icon="pi pi-times"
+                                        oncomplete="PF('wardDiagnosisDialog').hide()"
+                                        styleClass="ui-button-secondary">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </p:dialog>
 
-
-                </h:form>
-
-            </ui:define>
-        </ui:composition>
-
-    </h:body>
-</html>
+                    <!-- Local Surgery Diagnosis Card Dialog -->
+                    <p:dialog id="surgeryDiagnosisDlg" widgetVar="surgeryDiagnosisDialog" modal="true" width="90%" height="90%" header="Local Surgery Diagnosis Card">
+                        <h:panelGroup id="surgeryDiagnosisPanel">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h:outputText value="#{inpatientClinicalDataController.localSurgeryDiagnosisCardHtml}" escape="false" rendered="#{inpatientClinicalDataController.localSurgeryDiagnosisCardHtml ne null}"/>
+                                </div>
+                                <div class="card-footer">
+                                    <p:commandButton 
+                                        value="Print" 
+                                        ajax="true" 
+                                        icon="pi pi-print"
+                                        styleClass="ui-button-success">
+                                        <p:printer target="surgeryDiagnosisPanel" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="Close" 
+                                        ajax="true" 
+                                        icon="pi pi-times"
+                                        oncomplete="PF('surgeryDiagnosisDialog').hide()"
+                                        styleClass="ui-button-secondary">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </p:dialog>

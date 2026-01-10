@@ -140,6 +140,8 @@ public class BhtSummeryController implements Serializable {
     List<BillItem> pharmacyItems;
     private List<Bill> paymentBill;
     private List<Bill> pharmacyIssues;
+    private List<Bill> medicineOnlyIssues;
+    private List<Bill> medicinesAndSurgicalSupplies;
     List<Bill> storeIssues;
     private List<Bill> surgeryBills;
     private Bill surgeryBill;
@@ -621,6 +623,14 @@ public class BhtSummeryController implements Serializable {
                     break;
                 case Medicine:
                     discountValue = updateIssueBillFees(cit.getInwardChargeType(), BillType.PharmacyBhtPre);
+                    break;
+                case MedicinesAndSurgicalSupplies:
+                    // Only apply discount if the feature is enabled
+                    if (isMedicinesAndSurgicalSuppliesSeparatelyDisplayed()) {
+                        discountValue = updateIssueBillFees(cit.getInwardChargeType(), BillType.PharmacyBhtPre);
+                    } else {
+                        discountValue = 0;
+                    }
                     break;
                 case GeneralIssuing:
                     discountValue = updateIssueBillFees(cit.getInwardChargeType(), BillType.StoreBhtPre);
@@ -1813,6 +1823,53 @@ public class BhtSummeryController implements Serializable {
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
 
+        // Calculate and save VAT (selective, based on charge type)
+        // Collect all bill items from the patient encounter
+        List<BillItem> allBillItems = new ArrayList<>();
+        
+        // Collect all service bill items from all departments
+        for (InwardChargeType chargeType : InwardChargeType.values()) {
+            try {
+                List<BillItem> items = getInwardBean().getServiceBillItemByInwardChargeType(chargeType, getPatientEncounter());
+                if (items != null && !items.isEmpty()) {
+                    allBillItems.addAll(items);
+                }
+            } catch (Exception e) {
+                // Skip if error retrieving items for this charge type
+            }
+        }
+        
+        // Add pharmacy issue bill items
+        if (pharmacyIssues != null && !pharmacyIssues.isEmpty()) {
+            for (Bill bill : pharmacyIssues) {
+                if (bill.getBillItems() != null && !bill.getBillItems().isEmpty()) {
+                    for (BillItem item : bill.getBillItems()) {
+                        if (!allBillItems.contains(item)) {
+                            allBillItems.add(item);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Add store issue bill items
+        if (storeIssues != null && !storeIssues.isEmpty()) {
+            for (Bill bill : storeIssues) {
+                if (bill.getBillItems() != null && !bill.getBillItems().isEmpty()) {
+                    for (BillItem item : bill.getBillItems()) {
+                        if (!allBillItems.contains(item)) {
+                            allBillItems.add(item);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Calculate selective VAT and save to bill
+        double vatAmount = calculateSelectiveVatAmount(allBillItems);
+        getCurrent().setVat(vatAmount);
+        getCurrent().setVatPlusNetTotal(getCurrent().getNetTotal() + vatAmount);
+
         if (getCurrent().getId() == null) {
             getBillFacade().create(getCurrent());
         } else {
@@ -2159,6 +2216,8 @@ public class BhtSummeryController implements Serializable {
         createPatientRooms();
         createPatientItems();
         pharmacyIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters);
+        medicineOnlyIssues = filterMedicineOnlyIssues(pharmacyIssues);
+        medicinesAndSurgicalSupplies = filterMedicinesAndSurgicalSupplies(pharmacyIssues);
         storeIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.StoreBhtPre, childPatientEncouters);
         departmentBillItems = getInwardBean().createDepartmentBillItems(patientEncounter, null, childPatientEncouters);
         additionalChargeBill = getInwardBean().fetchOutSideBill(getPatientEncounter(), childPatientEncouters);
@@ -2199,6 +2258,8 @@ public class BhtSummeryController implements Serializable {
         createPatientRooms();
         createPatientItems();
         pharmacyIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters);
+        medicineOnlyIssues = filterMedicineOnlyIssues(pharmacyIssues);
+        medicinesAndSurgicalSupplies = filterMedicinesAndSurgicalSupplies(pharmacyIssues);
         storeIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.StoreBhtPre, childPatientEncouters);
         departmentBillItems = getInwardBean().createDepartmentBillItems(patientEncounter, null, childPatientEncouters);
         additionalChargeBill = getInwardBean().fetchOutSideBill(getPatientEncounter(), childPatientEncouters);
@@ -2724,6 +2785,91 @@ public class BhtSummeryController implements Serializable {
         this.timedItemFeeFacade = timedItemFeeFacade;
     }
 
+    private List<Bill> filterMedicineOnlyIssues(List<Bill> pharmacyIssues) {
+        if (pharmacyIssues == null || pharmacyIssues.isEmpty()) {
+            return pharmacyIssues;
+        }
+        
+        // Check if the feature is enabled via application option
+        if (!isMedicinesAndSurgicalSuppliesSeparatelyDisplayed()) {
+            return pharmacyIssues; // Return all bills if feature disabled
+        }
+        
+        List<Bill> filtered = new ArrayList<>();
+        
+        for (Bill bill : pharmacyIssues) {
+            // Check if bill's bill type atomic is an inward/regular medicine type
+            if (isInwardMedicineType(bill.getBillTypeAtomic())) {
+                filtered.add(bill);
+            }
+        }
+        
+        return filtered;
+    }
+
+    private List<Bill> filterMedicinesAndSurgicalSupplies(List<Bill> pharmacyIssues) {
+        // Check if the feature is enabled via application option
+        if (!isMedicinesAndSurgicalSuppliesSeparatelyDisplayed()) {
+            return new ArrayList<>();
+        }
+        
+        List<Bill> filtered = new ArrayList<>();
+        
+        if (pharmacyIssues == null || pharmacyIssues.isEmpty()) {
+            return filtered;
+        }
+        
+        for (Bill bill : pharmacyIssues) {
+            // Check if bill's bill type atomic is a theatre/surgical supplies medicine type
+            if (isTheatreMedicineType(bill.getBillTypeAtomic())) {
+                filtered.add(bill);
+            }
+        }
+        
+        return filtered;
+    }
+
+    private boolean isInwardMedicineType(BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return false;
+        }
+        
+        // Inward medicine bill type atomics
+        return billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE
+                || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION
+                || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                || billTypeAtomic == BillTypeAtomic.REQUEST_MEDICINE_INWARD
+                || billTypeAtomic == BillTypeAtomic.REQUEST_MEDICINE_INWARD_CANCELLATION
+                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD
+                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION
+                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
+                || billTypeAtomic == BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD
+                || billTypeAtomic == BillTypeAtomic.RETURN_MEDICINE_INWARD
+                || billTypeAtomic == BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD;
+    }
+
+    private boolean isTheatreMedicineType(BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return false;
+        }
+        
+        // Theatre/surgical supplies medicine bill type atomics
+        return billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE
+                || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
+                || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN
+                || billTypeAtomic == BillTypeAtomic.REQUEST_MEDICINE_THEATRE
+                || billTypeAtomic == BillTypeAtomic.REQUEST_MEDICINE_THEATRE_CANCELLATION
+                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE
+                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION
+                || billTypeAtomic == BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_THEATRE
+                || billTypeAtomic == BillTypeAtomic.RETURN_MEDICINE_THEATRE
+                || billTypeAtomic == BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE;
+    }
+
+    private boolean isMedicinesAndSurgicalSuppliesSeparatelyDisplayed() {
+        return configOptionApplicationController.getBooleanValueByKey("Separate Medicines and Surgical Supplies Tab", false);
+    }
+
     private void createChargeItemTotals(boolean isEstimatedBill) {
         chargeItemTotals = new ArrayList<>();
 
@@ -2864,6 +3010,23 @@ public class BhtSummeryController implements Serializable {
                     btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
                     btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
                     i.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters));
+                    break;
+                case MedicinesAndSurgicalSupplies:
+                    // Theatre/surgical supplies medicines - Only calculate if the feature is enabled
+                    if (isMedicinesAndSurgicalSuppliesSeparatelyDisplayed()) {
+                        List<BillTypeAtomic> theatreMedicineBtas = new ArrayList<>();
+                        theatreMedicineBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
+                        theatreMedicineBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
+                        theatreMedicineBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
+                        theatreMedicineBtas.add(BillTypeAtomic.REQUEST_MEDICINE_THEATRE);
+                        theatreMedicineBtas.add(BillTypeAtomic.REQUEST_MEDICINE_THEATRE_CANCELLATION);
+                        theatreMedicineBtas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE);
+                        theatreMedicineBtas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION);
+                        theatreMedicineBtas.add(BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_THEATRE);
+                        theatreMedicineBtas.add(BillTypeAtomic.RETURN_MEDICINE_THEATRE);
+                        theatreMedicineBtas.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE);
+                        i.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), theatreMedicineBtas, childPatientEncouters));
+                    }
                     break;
                 case GeneralIssuing:
                     i.setTotal(getInwardBean().calCostOfIssue(getPatientEncounter(), BillType.StoreBhtPre, childPatientEncouters));
@@ -3073,6 +3236,22 @@ public class BhtSummeryController implements Serializable {
         this.pharmacyIssues = pharmacyIssues;
     }
 
+    public List<Bill> getMedicineOnlyIssues() {
+        return medicineOnlyIssues;
+    }
+
+    public void setMedicineOnlyIssues(List<Bill> medicineOnlyIssues) {
+        this.medicineOnlyIssues = medicineOnlyIssues;
+    }
+
+    public List<Bill> getMedicinesAndSurgicalSupplies() {
+        return medicinesAndSurgicalSupplies;
+    }
+
+    public void setMedicinesAndSurgicalSupplies(List<Bill> medicinesAndSurgicalSupplies) {
+        this.medicinesAndSurgicalSupplies = medicinesAndSurgicalSupplies;
+    }
+
     public List<Bill> getStoreIssues() {
         return storeIssues;
     }
@@ -3219,4 +3398,206 @@ public class BhtSummeryController implements Serializable {
         this.childPatientEncouters = childPatientEncouters;
     }
 
+    /**
+     * Check if VAT is enabled via application option
+     * Default: false (VAT disabled)
+     */
+    public boolean isVatEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey("Enable VAT in Bills", false);
+    }
+
+    /**
+     * Get VAT percentage from application option
+     * Default: 18
+     */
+    public double getVatPercentage() {
+        try {
+            Double vatPercent = configOptionApplicationController.getDoubleValueByKey("VAT Percentage", 18.0);
+            return vatPercent != null ? vatPercent : 18.0;
+        } catch (Exception e) {
+            return 18.0;
+        }
+    }
+
+    /**
+     * Calculate VAT amount based on vatable charge types in bill items
+     * Only includes charges marked as vatable
+     */
+    public double calculateVatAmount(List<BillItem> billItems) {
+        return calculateSelectiveVatAmount(billItems);
+    }
+
+    /**
+     * Calculate total with VAT (Net Total + Selective VAT)
+     * VAT is only applied to vatable charge types
+     */
+    public double calculateVatPlusNetTotal(double netTotal, List<BillItem> billItems) {
+        if (!isVatEnabled()) {
+            return netTotal;
+        }
+        return netTotal + calculateSelectiveVatAmount(billItems);
+    }
+
+    /**
+     * Get VAT label from application option
+     * Default: "VAT"
+     */
+    public String getVatLabel() {
+        String label = configOptionApplicationController.getLongTextValueByKey("VAT Label", "VAT");
+        return label != null ? label : "VAT";
+    }
+
+    /**
+     * Check if a specific InwardChargeType should have VAT applied
+     * Application option format: "VAT Enabled For [ChargeTypeName]"
+     * Default: false (VAT disabled for specific charge type)
+     */
+    public boolean isChargeTypeVatable(InwardChargeType chargeType) {
+        if (chargeType == null || !isVatEnabled()) {
+            return false;
+        }
+        String optionKey = "VAT Enabled For " + chargeType.name();
+        return configOptionApplicationController.getBooleanValueByKey(optionKey, false);
+    }
+
+    /**
+     * Calculate VAT amount for a specific charge type
+     * Only applies VAT if that charge type is marked as vatable
+     */
+    public double calculateVatAmountForChargeType(double amount, InwardChargeType chargeType) {
+        if (!isChargeTypeVatable(chargeType) || amount <= 0) {
+            return 0.0;
+        }
+        return amount * (getVatPercentage() / 100.0);
+    }
+
+    /**
+     * Calculate VAT amount only for specified charge types from bill items
+     * Sums VAT for items whose charge type is marked as vatable
+     */
+    public double calculateSelectiveVatAmount(List<BillItem> billItems) {
+        if (!isVatEnabled() || billItems == null || billItems.isEmpty()) {
+            return 0.0;
+        }
+        double totalVat = 0.0;
+        for (BillItem item : billItems) {
+            if (item.getAdjustedValue() != 0 && item.getInwardChargeType() != null) {
+                if (isChargeTypeVatable(item.getInwardChargeType())) {
+                    totalVat += calculateVatAmountForChargeType(item.getAdjustedValue(), item.getInwardChargeType());
+                }
+            }
+        }
+        return totalVat;
+    }
+
+    /**
+     * Get the name/label for a specific charge type (supports customization via application option)
+     * Format: "Inward Charge Type - Name For [ChargeTypeName]"
+     * Default: charge type's label
+     */
+    public String getChargeTypeLabel(InwardChargeType chargeType) {
+        if (chargeType == null) {
+            return "";
+        }
+        try {
+            String label = configOptionApplicationController.getLongTextValueByKey(
+                    "Inward Charge Type - Name For " + chargeType.name(),
+                    chargeType.getLabel()
+            );
+            return label != null ? label : chargeType.getLabel();
+        } catch (Exception e) {
+            return chargeType.getLabel();
+        }
+    }
+
+    /**
+     * Calculate VAT amount - public method that can be called from templates
+     * Returns 0 if VAT is not enabled or no items to calculate
+     */
+    public double getVatAmount() {
+        try {
+            if (!isVatEnabled()) {
+                return 0.0;
+            }
+            List<BillItem> billItems = getAllBillItemsForEncounter();
+            if (billItems == null || billItems.isEmpty()) {
+                return 0.0;
+            }
+            return calculateSelectiveVatAmount(billItems);
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+
+    /**
+     * Get all bill items for the current patient encounter
+     * Used for VAT calculation in interim and final bills
+     */
+    public List<BillItem> getAllBillItemsForEncounter() {
+        if (patientEncounter == null) {
+            return new ArrayList<>();
+        }
+        
+        List<BillItem> allBillItems = new ArrayList<>();
+        
+        // Collect all service bill items from all departments
+        for (InwardChargeType chargeType : InwardChargeType.values()) {
+            try {
+                List<BillItem> items = getInwardBean().getServiceBillItemByInwardChargeType(chargeType, patientEncounter);
+                if (items != null && !items.isEmpty()) {
+                    allBillItems.addAll(items);
+                }
+            } catch (Exception e) {
+                // Skip if error retrieving items for this charge type
+            }
+        }
+        
+        // Add pharmacy issue bill items
+        if (pharmacyIssues != null && !pharmacyIssues.isEmpty()) {
+            for (Bill bill : pharmacyIssues) {
+                if (bill.getBillItems() != null && !bill.getBillItems().isEmpty()) {
+                    for (BillItem item : bill.getBillItems()) {
+                        if (!allBillItems.contains(item)) {
+                            allBillItems.add(item);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Add store issue bill items
+        if (storeIssues != null && !storeIssues.isEmpty()) {
+            for (Bill bill : storeIssues) {
+                if (bill.getBillItems() != null && !bill.getBillItems().isEmpty()) {
+                    for (BillItem item : bill.getBillItems()) {
+                        if (!allBillItems.contains(item)) {
+                            allBillItems.add(item);
+                        }
+                    }
+                }
+            }
+        }
+        return allBillItems;
+    }
+
+    public double getBedChargesTotal(List<BillItem> billItems) {
+        if (billItems == null) {
+            return 0.0;
+        }
+        
+        double total = 0.0;
+        for (BillItem item : billItems) {
+            if (item.getAdjustedValue() != 0 && 
+                (item.getInwardChargeType() == InwardChargeType.LinenCharges ||
+                 item.getInwardChargeType() == InwardChargeType.MOCharges ||
+                 item.getInwardChargeType() == InwardChargeType.NursingCharges ||
+                 item.getInwardChargeType() == InwardChargeType.MaintainCharges ||
+                 item.getInwardChargeType() == InwardChargeType.MedicalCareICU ||
+                 item.getInwardChargeType() == InwardChargeType.AdministrationCharge)) {
+                total += item.getAdjustedValue();
+            }
+        }
+        return total;
+    }
 }
+

@@ -184,6 +184,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     //Interface Data
     private PaymentScheme paymentScheme;
     private PaymentMethod paymentMethod;
+    private PaymentMethod originalCancellationPaymentMethod;
     private List<PaymentMethod> paymentMethods;
     private Patient newPatient;
     private Patient searchedPatient;
@@ -778,7 +779,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 // Try simple version first without COALESCE
                                 sql = "select c from BilledBill c "
                         + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
-                        + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount)) > :val) "
+                        + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount) - COALESCE(abs(c.refundAmount), 0)) > :val) "
                         + " and c.billTypeAtomic in :btas "
                         + " and c.paymentMethod= :pm "
                         + " and c.cancelledBill is null "
@@ -809,14 +810,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     for (Bill bill : a) {
                         Double balance = bill.getBalance();
                         double dueAmount = (balance != null) ? balance.doubleValue() :
-                                          (bill.getNetTotal() + bill.getVat() - bill.getPaidAmount());
+                                          (bill.getNetTotal() + bill.getVat() - bill.getPaidAmount() - bill.getRefundAmount());
                     }
                 } else {
                     System.out.println("No results found - trying fallback query...");
                     // Try even simpler query but with balance condition
                     String simpleSql = "select c from BilledBill c "
                             + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
-                            + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount)) > :val) "
+                            + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount) - COALESCE(abs(c.refundAmount), 0)) > :val) "
                             + " and c.billTypeAtomic in :btas "
                             + " and c.paymentMethod= :pm "
                             + " and c.retired=false "
@@ -854,7 +855,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (qry != null) {
             jpql = "select c from BilledBill c "
                     + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
-                    + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount)) > :val) "
+                    + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount) - COALESCE(abs(c.refundAmount), 0)) > :val) "
                     + " and c.billTypeAtomic in :btas "
                     + " and c.paymentMethod= :pm "
                     + " and c.cancelledBill is null "
@@ -928,7 +929,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 // Try simple version first without COALESCE
                                 sql = "select b from BilledBill b "
                         + " where ((b.balance IS NOT NULL AND abs(b.balance) > :val) "
-                        + " OR (abs(b.netTotal) + abs(b.vat) - abs(b.paidAmount)) > :val) "
+                        + " OR (abs(b.netTotal) + abs(b.vat) - abs(b.paidAmount) - COALESCE(abs(b.refundAmount), 0)) > :val) "
                         + " and b.billType in :btps "
                         + " and b.paymentMethod= :pm "
                         + " and b.retired=false "
@@ -956,14 +957,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     for (Bill bill : a) {
                         Double balance = bill.getBalance();
                         double dueAmount = (balance != null) ? balance.doubleValue() :
-                                          (bill.getNetTotal() + bill.getVat() - bill.getPaidAmount());
+                                          (bill.getNetTotal() + bill.getVat() - bill.getPaidAmount() - bill.getRefundAmount());
                     }
                 } else {
                     System.out.println("No results found - trying fallback query...");
                     // Try even simpler query but with balance condition
                     String simpleSql = "select b from BilledBill b "
                             + " where ((b.balance IS NOT NULL AND abs(b.balance) > :val) "
-                            + " OR (abs(b.netTotal) + abs(b.vat) - abs(b.paidAmount)) > :val) "
+                            + " OR (abs(b.netTotal) + abs(b.vat) - abs(b.paidAmount) - COALESCE(abs(b.refundAmount), 0)) > :val) "
                             + " and b.billType in :btps "
                             + " and b.paymentMethod= :pm "
                             + " and b.retired=false "
@@ -2024,6 +2025,9 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                             initializePaymentDataFromOriginalPayments(batchBillPayments);
                         }
 
+                        // Store original payment method to detect changes
+                        originalCancellationPaymentMethod = paymentMethod;
+
                         printPreview = false;
                         batchBillCancellationStarted = false;
 
@@ -2048,6 +2052,9 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             if (batchBillPayments != null && !batchBillPayments.isEmpty()) {
                 initializePaymentDataFromOriginalPayments(batchBillPayments);
             }
+
+            // Store original payment method to detect changes
+            originalCancellationPaymentMethod = paymentMethod;
 
             printPreview = false;
             batchBillCancellationStarted = false;
@@ -2373,14 +2380,28 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     /**
      * Called when user changes payment method in cancellation form.
-     * Resets paymentMethodData to prevent using old payment method data.
+     * Only resets paymentMethodData when user changes to a DIFFERENT payment method.
+     * If user keeps the same payment method as the original, the loaded data is preserved.
      */
     public void onPaymentMethodChange() {
-        // Reset payment method data to prevent using old payment method data
+        // If payment method is null (shouldn't happen but handle gracefully)
+        if (paymentMethod == null) {
+            // Restore original payment method
+            paymentMethod = originalCancellationPaymentMethod;
+            return;
+        }
+
+        // If payment method matches the original, don't reset - preserve the loaded data
+        if (paymentMethod == originalCancellationPaymentMethod) {
+            // User is keeping the same payment method - keep the original data
+            return;
+        }
+
+        // User changed to a DIFFERENT payment method - reset data
         paymentMethodData = new PaymentMethodData();
 
         // Initialize basic payment data based on newly selected payment method
-        if (paymentMethod != null && batchBill != null) {
+        if (batchBill != null) {
             double netTotal = Math.abs(batchBill.getNetTotal());
 
             switch (paymentMethod) {

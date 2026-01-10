@@ -63,10 +63,26 @@
                         <div class="col-md-10">
                             <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
                                 <p:column headerText="Bill No" >
-                                    <h:commandLink action="/patient_deposit/view/patient_deposit_bill_reprint?faces-redirect=true" value="#{bill.deptId}">
-                                        <h:outputLabel  ></h:outputLabel>
-                                        <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
-                                    </h:commandLink>
+                                    <div>
+                                        <p:commandLink 
+                                            action="/patient_deposit/view/patient_deposit_bill_reprint?faces-redirect=true" 
+                                            value="#{bill.deptId}"
+                                            ajax="false">
+                                            <h:outputLabel  ></h:outputLabel>
+                                            <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
+                                        </p:commandLink>
+                                    </div>
+                                    <div>
+                                        <p:commandLink 
+                                            action="/patient_deposit/view/patient_deposit_cancel_reprint?faces-redirect=true" 
+                                            value="#{bill.cancelledBill.deptId}"
+                                            rendered="#{bill.cancelled}"
+                                            ajax="false"
+                                            style="color: red">
+                                            <h:outputLabel  ></h:outputLabel>
+                                            <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
+                                        </p:commandLink>
+                                    </div>
                                 </p:column>
                                 <p:column headerText="Billed At"  >
                                     <h:commandLink action="/patient_deposit/view/patient_deposit_bill_reprint?faces-redirect=true" >
@@ -92,7 +108,7 @@
                                     </h:commandLink>
                                     <br/>
                                     <h:panelGroup rendered="#{bill.cancelled}" >
-                                        <h:outputLabel style="color: red;" value="Cancelled At " />
+                                        <h:outputLabel style="color: red;" value="Cancelled By - " />
                                         <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >
                                         </h:outputLabel>
                                     </h:panelGroup>

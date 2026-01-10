@@ -513,6 +513,8 @@ public class ReportTemplateController implements Serializable {
                 + " p) "
                 + " from Payment p "
                 + " join p.bill bill "
+                + " left join fetch bill.patient patient "
+                + " left join fetch patient.person "
                 + " where bill.retired=false "
                 + " and p.retired=false ";
 
@@ -546,7 +548,7 @@ public class ReportTemplateController implements Serializable {
             parameters.put("site", paramSite);
         }
 
-        jpql += " group by p";
+        // Note: Removed "group by p" as it's incompatible with fetch join clauses in JPQL
 
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
@@ -601,6 +603,8 @@ public class ReportTemplateController implements Serializable {
                 + " p) "
                 + " from Payment p "
                 + " join p.bill bill "
+                + " left join fetch bill.patient patient "
+                + " left join fetch patient.person "
                 + " where bill.retired=false "
                 + " and p.retired=false ";
 
@@ -639,7 +643,7 @@ public class ReportTemplateController implements Serializable {
             parameters.put("site", paramSite);
         }
 
-        jpql += " group by p";
+        // Note: Removed "group by p" as it's incompatible with fetch join clauses in JPQL
 
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);

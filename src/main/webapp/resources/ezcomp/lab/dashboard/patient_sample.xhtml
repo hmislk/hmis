@@ -170,6 +170,7 @@
                 <h:panelGrid columns="1" class="w-100"/>
                 <h:panelGrid columns="1" class="w-100"/>
                 <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100"/>
                     <p:commandButton 
                         ajax="false" 
                         action="#{laboratoryManagementController.searchPatientSampleDTOs}"  
@@ -214,8 +215,17 @@
                         <p:column headerText="Investigation List" width="8em" style="vertical-align: top;">
                             <ui:repeat value="#{laboratoryCommonController.getPatientInvestigationsFromSample(ps.sampleId)}" var="psc">
                                 <div class="ui-g-12 d-flex gap-3" style="line-height: 1.0">
-                                    <i class="fa fa-flask text-success "></i>
-                                    <h:outputText value="#{psc.investigationComponant.name}" />
+                                    <i class="fa fa-flask text-success mt-1"></i>
+                                    <h:outputText value="#{psc.investigationComponant.name}" class="mt-1"/>
+                                    <h:panelGroup id="priority" rendered="#{!psc.patientInvestigation.billItem.priority.shortName.blank and psc.patientInvestigation.billItem.item.allowedForBillingPriority}">
+                                        <div 
+                                            class="card p-1 "
+                                            style="font-weight: 700; background-color: #{psc.patientInvestigation.billItem.priority.priorityColor}; width: 150px; text-align: center;" >
+                                            #{psc.patientInvestigation.billItem.priority.displayName}
+                                        </div>
+                                    </h:panelGroup>
+                                    
+                                    <p:tooltip for="priority" value="#{psc.patientInvestigation.billItem.priority.description}" position="bottom"/>
                                 </div>
                             </ui:repeat>
                         </p:column>
