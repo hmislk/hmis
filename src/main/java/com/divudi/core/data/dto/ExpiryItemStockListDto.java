@@ -18,7 +18,7 @@ public class ExpiryItemStockListDto implements Serializable {
     private String itemName;
     private String uom;                   // Unit of Measure
     private String itemType;
-    private String batchNumber;
+    private Long batchNumber;
     private Date expiryDate;
     private Double costRate;
     private Double retailRate;
@@ -34,7 +34,7 @@ public class ExpiryItemStockListDto implements Serializable {
     // Constructor for JPQL query - direct DTO mapping
     public ExpiryItemStockListDto(Long stockId, String departmentName, String categoryCode,
                                 String categoryName, String itemCode, String itemName,
-                                String uom, String itemType, String batchNumber,
+                                String uom, String itemType, Long batchNumber,
                                 Date expiryDate, Double costRate, Double retailRate,
                                 Double stockQuantity) {
         this.stockId = stockId;
@@ -121,11 +121,11 @@ public class ExpiryItemStockListDto implements Serializable {
         this.itemType = itemType;
     }
 
-    public String getBatchNumber() {
+    public Long getBatchNumber() {
         return batchNumber;
     }
 
-    public void setBatchNumber(String batchNumber) {
+    public void setBatchNumber(Long batchNumber) {
         this.batchNumber = batchNumber;
     }
 

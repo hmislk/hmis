@@ -19,9 +19,11 @@ public class ExpiryItemListDto implements Serializable {
     private String itemName;
     private String uom;                   // Unit of Measure
     private String itemType;
-    private String batchNumber;
+    private Long batchNumber;
     private Date expiryDate;              // Earliest expiry date for this item
     private Double totalStockQuantity;    // Aggregated quantity across all batches
+    private Double totalCostValue;        // Sum of (quantity * cost_rate) across all batches
+    private Double totalRetailValue;      // Sum of (quantity * retail_rate) across all batches
 
     public ExpiryItemListDto() {
     }
@@ -29,7 +31,7 @@ public class ExpiryItemListDto implements Serializable {
     // Constructor for JPQL query - direct DTO mapping for aggregated data
     public ExpiryItemListDto(Long itemId, String departmentName, String categoryCode,
                            String categoryName, String itemCode, String itemName,
-                           String uom, String itemType, String batchNumber,
+                           String uom, String itemType, Long batchNumber,
                            Date expiryDate, Double totalStockQuantity) {
         this.itemId = itemId;
         this.departmentName = departmentName;
@@ -42,6 +44,27 @@ public class ExpiryItemListDto implements Serializable {
         this.batchNumber = batchNumber;
         this.expiryDate = expiryDate;
         this.totalStockQuantity = totalStockQuantity;
+    }
+
+    // Constructor for JPQL query with value calculations - enhanced version
+    public ExpiryItemListDto(Long itemId, String departmentName, String categoryCode,
+                           String categoryName, String itemCode, String itemName,
+                           String uom, String itemType, Long batchNumber,
+                           Date expiryDate, Double totalStockQuantity,
+                           Double totalCostValue, Double totalRetailValue) {
+        this.itemId = itemId;
+        this.departmentName = departmentName;
+        this.categoryCode = categoryCode;
+        this.categoryName = categoryName;
+        this.itemCode = itemCode;
+        this.itemName = itemName;
+        this.uom = uom;
+        this.itemType = itemType;
+        this.batchNumber = batchNumber;
+        this.expiryDate = expiryDate;
+        this.totalStockQuantity = totalStockQuantity;
+        this.totalCostValue = totalCostValue;
+        this.totalRetailValue = totalRetailValue;
     }
 
     // Getters and Setters
@@ -109,11 +132,11 @@ public class ExpiryItemListDto implements Serializable {
         this.itemType = itemType;
     }
 
-    public String getBatchNumber() {
+    public Long getBatchNumber() {
         return batchNumber;
     }
 
-    public void setBatchNumber(String batchNumber) {
+    public void setBatchNumber(Long batchNumber) {
         this.batchNumber = batchNumber;
     }
 
@@ -131,5 +154,21 @@ public class ExpiryItemListDto implements Serializable {
 
     public void setTotalStockQuantity(Double totalStockQuantity) {
         this.totalStockQuantity = totalStockQuantity;
+    }
+
+    public Double getTotalCostValue() {
+        return totalCostValue;
+    }
+
+    public void setTotalCostValue(Double totalCostValue) {
+        this.totalCostValue = totalCostValue;
+    }
+
+    public Double getTotalRetailValue() {
+        return totalRetailValue;
+    }
+
+    public void setTotalRetailValue(Double totalRetailValue) {
+        this.totalRetailValue = totalRetailValue;
     }
 }

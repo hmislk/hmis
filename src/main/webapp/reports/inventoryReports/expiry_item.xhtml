@@ -395,6 +395,37 @@
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
+                                        <p:column headerText="Total Cost Value" width="10rem" style="text-align: right;">
+                                            <h:outputText value="#{item.totalCostValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Total Retail Value" width="10rem" style="text-align: right;">
+                                            <h:outputText value="#{item.totalRetailValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <!-- Footer with totals -->
+                                        <p:columnGroup type="footer">
+                                            <p:row>
+                                                <p:column footerText="Total" colspan="10" style="text-align: center; font-weight: bold;"/>
+                                                <p:column style="text-align: right; font-weight: bold;">
+                                                    <f:facet name="footer">
+                                                        <h:outputText value="#{pharmacyReportController.totalValueAtCostRate}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right; font-weight: bold;">
+                                                    <f:facet name="footer">
+                                                        <h:outputText value="#{pharmacyReportController.totalValueAtRetailRate}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </f:facet>
+                                                </p:column>
+                                            </p:row>
+                                        </p:columnGroup>
                                     </p:dataTable>
                                 </h:panelGroup>
 

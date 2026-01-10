@@ -7438,6 +7438,7 @@ public class PharmacyReportController implements Serializable {
         }
 
         // Process different report types
+        System.out.println("Expiry Report Type: " + expiryReportType);
         switch (expiryReportType) {
             case "stockList":
                 processExpiryStockListReport();
@@ -7450,6 +7451,7 @@ public class PharmacyReportController implements Serializable {
                 break;
             default:
                 // Default to Stock List if invalid type
+                System.out.println("Using default Stock List");
                 processExpiryStockListReport();
                 break;
         }
@@ -7495,7 +7497,7 @@ public class PharmacyReportController implements Serializable {
                 + "s.itemBatch.item.name, "                                 // itemName
                 + "(case when s.itemBatch.item.measurementUnit is not null then s.itemBatch.item.measurementUnit.name else '' end), " // uom
                 + "s.itemBatch.item.category.name, "                        // itemType (using category name)
-                + "cast(s.itemBatch.id as string), "                        // batchNumber
+                + "s.itemBatch.id, "                                        // batchNumber
                 + "s.itemBatch.dateOfExpire, "                              // expiryDate
                 + "s.itemBatch.purcahseRate, "                              // costRate
                 + "s.itemBatch.retailsaleRate, "                            // retailRate
@@ -7537,13 +7539,17 @@ public class PharmacyReportController implements Serializable {
 
         expiryStockListDtos = (List<ExpiryItemStockListDto>) stockFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
+        System.out.println("Stock List Report: Found " + (expiryStockListDtos != null ? expiryStockListDtos.size() : "null") + " records");
+
         // Calculate totals
-        for (ExpiryItemStockListDto dto : expiryStockListDtos) {
-            if (dto.getValueAtCostRate() != null) {
-                totalValueAtCostRate += dto.getValueAtCostRate();
-            }
-            if (dto.getValueAtRetailRate() != null) {
-                totalValueAtRetailRate += dto.getValueAtRetailRate();
+        if (expiryStockListDtos != null) {
+            for (ExpiryItemStockListDto dto : expiryStockListDtos) {
+                if (dto.getValueAtCostRate() != null) {
+                    totalValueAtCostRate += dto.getValueAtCostRate();
+                }
+                if (dto.getValueAtRetailRate() != null) {
+                    totalValueAtRetailRate += dto.getValueAtRetailRate();
+                }
             }
         }
     }
@@ -7553,6 +7559,8 @@ public class PharmacyReportController implements Serializable {
      */
     private void processExpiryItemListReport() {
         expiryItemListDtos = new ArrayList<>();
+        totalValueAtCostRate = 0.0;
+        totalValueAtRetailRate = 0.0;
 
         String jpql = "select new com.divudi.core.data.dto.ExpiryItemListDto("
                 + "s.itemBatch.item.id, "                                   // itemId
@@ -7563,9 +7571,11 @@ public class PharmacyReportController implements Serializable {
                 + "s.itemBatch.item.name, "                                 // itemName
                 + "(case when s.itemBatch.item.measurementUnit is not null then s.itemBatch.item.measurementUnit.name else '' end), " // uom
                 + "s.itemBatch.item.category.name, "                        // itemType (using category name)
-                + "cast(s.itemBatch.id as string), "                        // batchNumber
+                + "s.itemBatch.id, "                                        // batchNumber
                 + "min(s.itemBatch.dateOfExpire), "                         // expiryDate (earliest)
-                + "sum(s.stock)) "                                          // totalStockQuantity
+                + "sum(s.stock), "                                          // totalStockQuantity
+                + "sum(s.stock * s.itemBatch.purcahseRate), "               // totalCostValue
+                + "sum(s.stock * s.itemBatch.retailsaleRate)) "             // totalRetailValue
                 + "from Stock s "
                 + "where s.itemBatch.dateOfExpire between :fd and :td ";
 
@@ -7606,6 +7616,20 @@ public class PharmacyReportController implements Serializable {
                 + "order by s.itemBatch.item.name ";
 
         expiryItemListDtos = (List<ExpiryItemListDto>) stockFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        System.out.println("Item List Report: Found " + (expiryItemListDtos != null ? expiryItemListDtos.size() : "null") + " records");
+
+        // Calculate totals
+        if (expiryItemListDtos != null) {
+            for (ExpiryItemListDto dto : expiryItemListDtos) {
+                if (dto.getTotalCostValue() != null) {
+                    totalValueAtCostRate += dto.getTotalCostValue();
+                }
+                if (dto.getTotalRetailValue() != null) {
+                    totalValueAtRetailRate += dto.getTotalRetailValue();
+                }
+            }
+        }
     }
 
     public void exportExpiryItemReportToExcel() {
