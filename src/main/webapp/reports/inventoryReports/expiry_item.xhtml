@@ -238,7 +238,7 @@
                                 action="#{pharmacyReportController.processExpiryItemReport()}">
                             </p:commandButton>
                             <p:commandButton
-                                class="ui-button- mx-1"
+                                class="ui-button-secondary mx-1"
                                 icon="fas fa-print"
                                 ajax="false"
                                 value="Print All">
@@ -385,9 +385,6 @@
                                         <p:column headerText="Item Type" width="8rem">
                                             <h:outputText value="#{item.itemType}"/>
                                         </p:column>
-                                        <p:column headerText="Batch Number" width="8rem">
-                                            <h:outputText value="#{item.batchNumber}"/>
-                                        </p:column>
                                         <p:column headerText="Earliest Expiry Date" width="8rem">
                                             <h:outputText value="#{item.expiryDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
@@ -412,7 +409,7 @@
                                         <!-- Footer with totals -->
                                         <p:columnGroup type="footer">
                                             <p:row>
-                                                <p:column footerText="Total" colspan="10" style="text-align: center; font-weight: bold;"/>
+                                                <p:column footerText="Total" colspan="9" style="text-align: center; font-weight: bold;"/>
                                                 <p:column style="text-align: right; font-weight: bold;">
                                                     <f:facet name="footer">
                                                         <h:outputText value="#{pharmacyReportController.totalValueAtCostRate}">

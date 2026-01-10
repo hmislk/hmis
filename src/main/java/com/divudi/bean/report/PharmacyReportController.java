@@ -7592,7 +7592,8 @@ public class PharmacyReportController implements Serializable {
     }
 
     /**
-     * Process Item List report - aggregated item information without cost/retail rates
+     * Process Item List report - item-level aggregation across all batches
+     * Shows one row per item with totals for quantity, cost value, and retail value
      */
     private void processExpiryItemListReport() {
         expiryItemListDtos = new ArrayList<>();
@@ -7608,11 +7609,10 @@ public class PharmacyReportController implements Serializable {
                 + "s.itemBatch.item.name, "                                 // itemName
                 + "(case when s.itemBatch.item.measurementUnit is not null then s.itemBatch.item.measurementUnit.name else '' end), " // uom
                 + "s.itemBatch.item.category.name, "                        // itemType (using category name)
-                + "s.itemBatch.id, "                                        // batchNumber
-                + "min(s.itemBatch.dateOfExpire), "                         // expiryDate (earliest)
-                + "sum(s.stock), "                                          // totalStockQuantity
-                + "sum(s.stock * s.itemBatch.purcahseRate), "               // totalCostValue
-                + "sum(s.stock * s.itemBatch.retailsaleRate)) "             // totalRetailValue
+                + "min(s.itemBatch.dateOfExpire), "                         // earliestExpiryDate (across all batches)
+                + "sum(s.stock), "                                          // totalStockQuantity (across all batches)
+                + "sum(s.stock * s.itemBatch.purcahseRate), "               // totalCostValue (across all batches)
+                + "sum(s.stock * s.itemBatch.retailsaleRate)) "             // totalRetailValue (across all batches)
                 + "from Stock s "
                 + "where s.itemBatch.dateOfExpire between :fd and :td ";
 
@@ -7648,7 +7648,7 @@ public class PharmacyReportController implements Serializable {
 
         jpql += " group by s.itemBatch.item.id, s.itemBatch.item.category.code, "
                 + "s.itemBatch.item.category.name, s.itemBatch.item.code, s.itemBatch.item.name, "
-                + "s.itemBatch.item.measurementUnit.name, s.itemBatch.id, "
+                + "s.itemBatch.item.measurementUnit.name, "
                 + "(case when s.department is not null then s.department.name else 'Staff' end) "
                 + "order by s.itemBatch.item.name ";
 

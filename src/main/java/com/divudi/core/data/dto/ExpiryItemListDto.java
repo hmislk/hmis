@@ -5,8 +5,8 @@ import java.util.Date;
 
 /**
  * DTO for Expiry Item List Report
- * Displays aggregated item information without cost/retail rates
- * Aggregated at the item level across all batches and stocks
+ * Displays item-level aggregated information across all batches
+ * Shows totals for quantities and values aggregated per item
  */
 public class ExpiryItemListDto implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -19,11 +19,11 @@ public class ExpiryItemListDto implements Serializable {
     private String itemName;
     private String uom;                   // Unit of Measure
     private String itemType;
-    private Long batchNumber;
-    private Date expiryDate;              // Earliest expiry date for this item
-    private Double totalStockQuantity;    // Aggregated quantity across all batches
-    private Double totalCostValue;        // Sum of (quantity * cost_rate) across all batches
-    private Double totalRetailValue;      // Sum of (quantity * retail_rate) across all batches
+    private Long batchNumber;             // NULL for item-level aggregation (no single batch per item)
+    private Date expiryDate;              // Earliest expiry date across all batches of this item
+    private Double totalStockQuantity;    // Sum of stock quantities across all batches of this item
+    private Double totalCostValue;        // Sum of (batch_quantity * cost_rate) across all batches of this item
+    private Double totalRetailValue;      // Sum of (batch_quantity * retail_rate) across all batches of this item
 
     public ExpiryItemListDto() {
     }
@@ -62,6 +62,27 @@ public class ExpiryItemListDto implements Serializable {
         this.itemType = itemType;
         this.batchNumber = batchNumber;
         this.expiryDate = expiryDate;
+        this.totalStockQuantity = totalStockQuantity;
+        this.totalCostValue = totalCostValue;
+        this.totalRetailValue = totalRetailValue;
+    }
+
+    // Constructor for item-level aggregation (no batch number since aggregated across batches)
+    public ExpiryItemListDto(Long itemId, String departmentName, String categoryCode,
+                           String categoryName, String itemCode, String itemName,
+                           String uom, String itemType, Date earliestExpiryDate,
+                           Double totalStockQuantity, Double totalCostValue,
+                           Double totalRetailValue) {
+        this.itemId = itemId;
+        this.departmentName = departmentName;
+        this.categoryCode = categoryCode;
+        this.categoryName = categoryName;
+        this.itemCode = itemCode;
+        this.itemName = itemName;
+        this.uom = uom;
+        this.itemType = itemType;
+        this.batchNumber = null; // No single batch for item-level aggregation
+        this.expiryDate = earliestExpiryDate;
         this.totalStockQuantity = totalStockQuantity;
         this.totalCostValue = totalCostValue;
         this.totalRetailValue = totalRetailValue;
