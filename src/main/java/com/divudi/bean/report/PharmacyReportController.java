@@ -7478,24 +7478,7 @@ public class PharmacyReportController implements Serializable {
             m.put("cat", category);
         }
 
-        jpql += " order by s.id ";
-        stocks = stockFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        stockPurchaseValue = 0.0;
-        stockSaleValue = 0.0;
-        quantity = 0.0;
-
-        for (Stock ts : stocks) {
-            if (ts.getItemBatch() == null || ts.getStock() == null) {
-                continue;
-            }
-
-            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
-            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
-            quantity = quantity + ts.getStock();
-        }
-
         // Process different report types
-        System.out.println("Expiry Report Type: " + expiryReportType);
         switch (expiryReportType) {
             case EXPIRY_REPORT_TYPE_STOCK_LIST:
                 processExpiryStockListReport();
@@ -7504,11 +7487,28 @@ public class PharmacyReportController implements Serializable {
                 processExpiryItemListReport();
                 break;
             case EXPIRY_REPORT_TYPE_DETAILED:
+                // Only load Stock entities for detailed report (avoids unnecessary DB queries)
+                jpql += " order by s.id ";
+                stocks = stockFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+                // Calculate totals from loaded stocks
+                stockPurchaseValue = 0.0;
+                stockSaleValue = 0.0;
+                quantity = 0.0;
+
+                for (Stock ts : stocks) {
+                    if (ts.getItemBatch() == null || ts.getStock() == null) {
+                        continue;
+                    }
+                    stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+                    stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+                    quantity = quantity + ts.getStock();
+                }
+
                 groupExpiryItems(stocks);
                 break;
             default:
                 // Default to Stock List if invalid type
-                System.out.println("Using default Stock List");
                 processExpiryStockListReport();
                 break;
         }
@@ -7596,8 +7596,6 @@ public class PharmacyReportController implements Serializable {
 
         expiryStockListDtos = (List<ExpiryItemStockListDto>) stockFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
-        System.out.println("Stock List Report: Found " + (expiryStockListDtos != null ? expiryStockListDtos.size() : "null") + " records");
-
         // Calculate totals
         if (expiryStockListDtos != null) {
             for (ExpiryItemStockListDto dto : expiryStockListDtos) {
@@ -7673,8 +7671,6 @@ public class PharmacyReportController implements Serializable {
                 + "order by s.itemBatch.item.name ";
 
         expiryItemListDtos = (List<ExpiryItemListDto>) stockFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
-
-        System.out.println("Item List Report: Found " + (expiryItemListDtos != null ? expiryItemListDtos.size() : "null") + " records");
 
         // Calculate totals
         if (expiryItemListDtos != null) {
