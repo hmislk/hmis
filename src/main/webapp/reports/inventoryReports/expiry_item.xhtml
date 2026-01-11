@@ -10,7 +10,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <f:metadata>
-                    <f:viewAction action="#{pharmacyReportController.initExpiryReportDefaults()}"/>
+                    <f:viewAction action="#{pharmacyReportController.initExpiryReportDefaults()}" onPostback="false"/>
                 </f:metadata>
                 <h:form>
                     <p:panel header="Expiry Item Report">

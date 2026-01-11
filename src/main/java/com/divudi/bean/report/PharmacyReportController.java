@@ -7547,52 +7547,57 @@ public class PharmacyReportController implements Serializable {
 
         String jpql = "select new com.divudi.core.data.dto.ExpiryItemStockListDto("
                 + "s.id, "                                                   // stockId
-                + "(case when s.department is not null then s.department.name else 'Staff' end), " // departmentName
-                + "s.itemBatch.item.category.code, "                        // categoryCode
-                + "s.itemBatch.item.category.name, "                        // categoryName
-                + "s.itemBatch.item.code, "                                 // itemCode
-                + "s.itemBatch.item.name, "                                 // itemName
-                + "(case when s.itemBatch.item.measurementUnit is not null then s.itemBatch.item.measurementUnit.name else '' end), " // uom
-                + "s.itemBatch.item.category.name, "                        // itemType (using category name)
-                + "s.itemBatch.id, "                                        // batchNumber
-                + "s.itemBatch.dateOfExpire, "                              // expiryDate
-                + "s.itemBatch.purcahseRate, "                              // costRate
-                + "s.itemBatch.retailsaleRate, "                            // retailRate
+                + "coalesce(d.name, 'Staff'), "                             // departmentName - null-safe
+                + "coalesce(c.code, ''), "                                  // categoryCode - null-safe
+                + "coalesce(c.name, ''), "                                  // categoryName - null-safe
+                + "coalesce(i.code, ''), "                                  // itemCode - null-safe
+                + "coalesce(i.name, ''), "                                  // itemName - null-safe
+                + "coalesce(mu.name, ''), "                                 // uom - null-safe
+                + "coalesce(c.name, ''), "                                  // itemType (using category name) - null-safe
+                + "ib.id, "                                                 // batchNumber
+                + "ib.dateOfExpire, "                                       // expiryDate
+                + "ib.purcahseRate, "                                       // costRate
+                + "ib.retailsaleRate, "                                     // retailRate
                 + "s.stock) "                                               // stockQuantity
                 + "from Stock s "
+                + "join s.itemBatch ib "
+                + "join ib.item i "
+                + "left join s.department d "
+                + "left join i.category c "
+                + "left join i.measurementUnit mu "
                 + "where s.itemBatch.dateOfExpire between :fd and :td ";
 
         Map parameters = new HashMap();
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
 
-        // Apply filters
+        // Apply filters using explicit join aliases
         if (institution != null) {
-            jpql += " and s.department.institution = :ins ";
+            jpql += " and d.institution = :ins ";
             parameters.put("ins", institution);
         }
 
         if (department != null) {
-            jpql += " and s.department = :dep ";
+            jpql += " and d = :dep ";
             parameters.put("dep", department);
         }
 
         if (site != null) {
-            jpql += " and s.department.site = :sit ";
+            jpql += " and d.site = :sit ";
             parameters.put("sit", site);
         }
 
         if (amp != null) {
-            jpql += " and s.itemBatch.item = :itm ";
+            jpql += " and i = :itm ";
             parameters.put("itm", amp);
         }
 
         if (category != null) {
-            jpql += " and s.itemBatch.item.category = :cat ";
+            jpql += " and c = :cat ";
             parameters.put("cat", category);
         }
 
-        jpql += " order by s.itemBatch.item.name, s.itemBatch.dateOfExpire ";
+        jpql += " order by i.name, ib.dateOfExpire ";
 
         expiryStockListDtos = (List<ExpiryItemStockListDto>) stockFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
@@ -7619,56 +7624,61 @@ public class PharmacyReportController implements Serializable {
         totalValueAtRetailRate = 0.0;
 
         String jpql = "select new com.divudi.core.data.dto.ExpiryItemListDto("
-                + "s.itemBatch.item.id, "                                   // itemId
-                + "(case when s.department is not null then s.department.name else 'Staff' end), " // departmentName
-                + "s.itemBatch.item.category.code, "                        // categoryCode
-                + "s.itemBatch.item.category.name, "                        // categoryName
-                + "s.itemBatch.item.code, "                                 // itemCode
-                + "s.itemBatch.item.name, "                                 // itemName
-                + "(case when s.itemBatch.item.measurementUnit is not null then s.itemBatch.item.measurementUnit.name else '' end), " // uom
-                + "s.itemBatch.item.category.name, "                        // itemType (using category name)
-                + "min(s.itemBatch.dateOfExpire), "                         // earliestExpiryDate (across all batches)
+                + "i.id, "                                                  // itemId
+                + "coalesce(d.name, 'Staff'), "                             // departmentName - null-safe
+                + "coalesce(c.code, ''), "                                  // categoryCode - null-safe
+                + "coalesce(c.name, ''), "                                  // categoryName - null-safe
+                + "coalesce(i.code, ''), "                                  // itemCode - null-safe
+                + "coalesce(i.name, ''), "                                  // itemName - null-safe
+                + "coalesce(mu.name, ''), "                                 // uom - null-safe
+                + "coalesce(c.name, ''), "                                  // itemType (using category name) - null-safe
+                + "min(ib.dateOfExpire), "                                  // earliestExpiryDate (across all batches)
                 + "sum(s.stock), "                                          // totalStockQuantity (across all batches)
-                + "sum(s.stock * s.itemBatch.purcahseRate), "               // totalCostValue (across all batches)
-                + "sum(s.stock * s.itemBatch.retailsaleRate)) "             // totalRetailValue (across all batches)
+                + "sum(s.stock * ib.purcahseRate), "                        // totalCostValue (across all batches)
+                + "sum(s.stock * ib.retailsaleRate)) "                      // totalRetailValue (across all batches)
                 + "from Stock s "
-                + "where s.itemBatch.dateOfExpire between :fd and :td ";
+                + "join s.itemBatch ib "
+                + "join ib.item i "
+                + "left join s.department d "
+                + "left join i.category c "
+                + "left join i.measurementUnit mu "
+                + "where ib.dateOfExpire between :fd and :td ";
 
         Map parameters = new HashMap();
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
 
-        // Apply filters
+        // Apply filters using explicit join aliases
         if (institution != null) {
-            jpql += " and s.department.institution = :ins ";
+            jpql += " and d.institution = :ins ";
             parameters.put("ins", institution);
         }
 
         if (department != null) {
-            jpql += " and s.department = :dep ";
+            jpql += " and d = :dep ";
             parameters.put("dep", department);
         }
 
         if (site != null) {
-            jpql += " and s.department.site = :sit ";
+            jpql += " and d.site = :sit ";
             parameters.put("sit", site);
         }
 
         if (amp != null) {
-            jpql += " and s.itemBatch.item = :itm ";
+            jpql += " and i = :itm ";
             parameters.put("itm", amp);
         }
 
         if (category != null) {
-            jpql += " and s.itemBatch.item.category = :cat ";
+            jpql += " and c = :cat ";
             parameters.put("cat", category);
         }
 
-        jpql += " group by s.itemBatch.item.id, s.itemBatch.item.category.code, "
-                + "s.itemBatch.item.category.name, s.itemBatch.item.code, s.itemBatch.item.name, "
-                + "s.itemBatch.item.measurementUnit.name, "
-                + "(case when s.department is not null then s.department.name else 'Staff' end) "
-                + "order by s.itemBatch.item.name ";
+        jpql += " group by i.id, c.code, "
+                + "c.name, i.code, i.name, "
+                + "mu.name, "
+                + "coalesce(d.name, 'Staff') "
+                + "order by i.name ";
 
         expiryItemListDtos = (List<ExpiryItemListDto>) stockFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
