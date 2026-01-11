@@ -30,6 +30,8 @@ import com.divudi.core.data.dataStructure.PharmacyStockRow;
 import com.divudi.core.data.dataStructure.StockReportRecord;
 import com.divudi.core.data.dto.BillItemDTO;
 import com.divudi.core.data.dto.CostOfGoodSoldBillDTO;
+import com.divudi.core.data.dto.ExpiryItemListDto;
+import com.divudi.core.data.dto.ExpiryItemStockListDto;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.entity.AgentHistory;
@@ -338,6 +340,18 @@ public class PharmacyReportController implements Serializable {
 
     private Double stockQty;
 
+    // Constants for valid expiry report types
+    private static final String EXPIRY_REPORT_TYPE_STOCK_LIST = "stockList";
+    private static final String EXPIRY_REPORT_TYPE_ITEM_LIST = "itemList";
+    private static final String EXPIRY_REPORT_TYPE_DETAILED = "detailed";
+
+    // New fields for Expiry Item Report types
+    private String expiryReportType = EXPIRY_REPORT_TYPE_STOCK_LIST; // Default: Stock List
+    private List<ExpiryItemStockListDto> expiryStockListDtos;
+    private List<ExpiryItemListDto> expiryItemListDtos;
+    private Double totalValueAtCostRate = 0.0;
+    private Double totalValueAtRetailRate = 0.0;
+
     private Institution fromSite;
     private Institution toSite;
 
@@ -359,6 +373,31 @@ public class PharmacyReportController implements Serializable {
     @PostConstruct
     public void init() {
         registerPageMetadata();
+        initializeExpiryReportFields();
+    }
+
+    /**
+     * Initialize expiry report fields to safe default values
+     * Prevents NPEs in JSF/EL rendering for session-scoped bean
+     */
+    private void initializeExpiryReportFields() {
+        expiryStockListDtos = new ArrayList<>();
+        expiryItemListDtos = new ArrayList<>();
+        totalValueAtCostRate = 0.0;
+        totalValueAtRetailRate = 0.0;
+        // expiryReportType already has default value "stockList" from field declaration
+    }
+
+    /**
+     * Initialize default values for expiry item report
+     * Sets default date range to 3 months from today with proper day boundaries
+     */
+    public void initExpiryReportDefaults() {
+        LocalDate today = LocalDate.now();
+        LocalDate endDate = today.plusMonths(3);
+
+        fromDate = CommonFunctions.getStartOfDay(convertToDate(today));
+        toDate = CommonFunctions.getEndOfDay(convertToDate(endDate));
     }
 
     /**
@@ -1164,6 +1203,11 @@ public class PharmacyReportController implements Serializable {
         return "/pharmacy/prescription_list?faces-redirect=true";
     }
 
+    public String navigateToExpiryItemReport() {
+        initExpiryReportDefaults();
+        return "/reports/inventoryReports/expiry_item?faces-redirect=true";
+    }
+
     public String navigateToPrescriptionListFromPrescriptionSummery(Long personId) {
         if (personId == null || personId == 0) {
             JsfUtil.addErrorMessage("Error 1");
@@ -1324,7 +1368,7 @@ public class PharmacyReportController implements Serializable {
 
     @Deprecated
     public ReportTemplateRowBundle generatePaymentMethodColumnsByBills(List<BillTypeAtomic> bts) {
-        Map<String, Object> parameters = new HashMap<>();
+        Map parameters = new HashMap();
 
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill.department, FUNCTION('date', p.createdAt), "
@@ -3904,7 +3948,7 @@ public class PharmacyReportController implements Serializable {
                 billItems = findAcceptedGoodInTransitItems();
             } else {
                 // Use original Bill-level logic for other report types
-                Map<String, Object> parameters = new HashMap<>();
+                Map parameters = new HashMap();
                 StringBuilder sql = new StringBuilder();
                 sql.append("select bi from BillItem bi"
                         + " where bi.bill.billType = :bt"
@@ -3938,7 +3982,6 @@ public class PharmacyReportController implements Serializable {
 
                 sql.append(" order by bi.bill.id ");
 
-                System.out.println("sql = " + sql);
 
                 billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
             }
@@ -4099,8 +4142,6 @@ public class PharmacyReportController implements Serializable {
 
             receiveSql.append("ORDER BY receiveBi.bill.id");
 
-            System.out.println("findAcceptedGoodInTransitItems SQL = " + receiveSql);
-            System.out.println("findAcceptedGoodInTransitItems parameters = " + receiveParameters);
 
             List<BillItem> receivedItems = billItemFacade.findByJpql(
                     receiveSql.toString(), receiveParameters, TemporalType.TIMESTAMP);
@@ -4956,10 +4997,8 @@ public class PharmacyReportController implements Serializable {
         // Order by item name
         jpql.append("ORDER BY i.name");
         // Debug logging
-
         // Debug logging
-        System.out.println("jpql = " + jpql.toString());
-        System.out.println("params = " + params);
+        // Debug logging
 
         // Execute DTO projection query - returns PharmacyRow objects directly with all values pre-populated
         @SuppressWarnings("unchecked")
@@ -5171,10 +5210,8 @@ public class PharmacyReportController implements Serializable {
         // Order by item name
         jpql.append("ORDER BY i.name");
         // Debug logging
-
         // Debug logging
-        System.out.println("jpql = " + jpql.toString());
-        System.out.println("params = " + params);
+        // Debug logging
 
         // Execute DTO projection query - returns PharmacyRow objects directly with all values pre-populated
         @SuppressWarnings("unchecked")
@@ -6012,12 +6049,6 @@ public class PharmacyReportController implements Serializable {
                 result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
                 result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
                 result.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
-                System.out.println("=== DEBUG retrievePurchaseAndCostValues (List<BillTypeAtomic>, List<PaymentMethod>) ===");
-                System.out.println("Bill Types: " + billTypeValue);
-                System.out.println("Payment Methods: " + paymentMethods);
-                System.out.println("totals[0] = " + totals[0]);
-                System.out.println("totals[1] = " + totals[1]);
-                System.out.println("totals[2] = " + totals[2]);
             } else {
                 result.put("purchaseValue", 0.0);
                 result.put("costValue", 0.0);
@@ -6069,11 +6100,6 @@ public class PharmacyReportController implements Serializable {
                 preAddResult.put("purchaseValue", preAddTotals[0] != null ? ((Number) preAddTotals[0]).doubleValue() : 0.0);
                 preAddResult.put("costValue", preAddTotals[1] != null ? ((Number) preAddTotals[1]).doubleValue() : 0.0);
                 preAddResult.put("retailValue", preAddTotals[2] != null ? ((Number) preAddTotals[2]).doubleValue() : 0.0);
-                System.out.println("=== DEBUG retrievePreAddToStockBillsForValues ===");
-                System.out.println("Bill Type: PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK");
-                System.out.println("preAdd totals[0] = " + preAddTotals[0] + " (positive: " + preAddResult.get("purchaseValue") + ")");
-                System.out.println("preAdd totals[1] = " + preAddTotals[1] + " (positive: " + preAddResult.get("costValue") + ")");
-                System.out.println("preAdd totals[2] = " + preAddTotals[2] + " (positive: " + preAddResult.get("retailValue") + ")");
             } else {
                 preAddResult.put("purchaseValue", 0.0);
                 preAddResult.put("costValue", 0.0);
@@ -6129,11 +6155,6 @@ public class PharmacyReportController implements Serializable {
                 result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
                 result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
                 result.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
-                System.out.println("=== DEBUG retrievePurchaseAndCostValuesWithoutReference ===");
-                System.out.println("Bill Types: " + billTypeValue);
-                System.out.println("totals[0] = " + totals[0]);
-                System.out.println("totals[1] = " + totals[1]);
-                System.out.println("totals[2] = " + totals[2]);
             } else {
                 result.put("purchaseValue", 0.0);
                 result.put("costValue", 0.0);
@@ -6200,11 +6221,6 @@ public class PharmacyReportController implements Serializable {
                 negativeResult.put("purchaseValue", negativeTotals[0] != null ? -((Number) negativeTotals[0]).doubleValue() : 0.0);
                 negativeResult.put("costValue", negativeTotals[1] != null ? -((Number) negativeTotals[1]).doubleValue() : 0.0);
                 negativeResult.put("retailValue", negativeTotals[2] != null ? -((Number) negativeTotals[2]).doubleValue() : 0.0);
-                System.out.println("=== DEBUG retrieveNegativeReferenceBillsForValues ===");
-                System.out.println("Bill Types: " + billTypeValue);
-                System.out.println("negative totals[0] = " + negativeTotals[0] + " (negated: " + negativeResult.get("purchaseValue") + ")");
-                System.out.println("negative totals[1] = " + negativeTotals[1] + " (negated: " + negativeResult.get("costValue") + ")");
-                System.out.println("negative totals[2] = " + negativeTotals[2] + " (negated: " + negativeResult.get("retailValue") + ")");
             } else {
                 negativeResult.put("purchaseValue", 0.0);
                 negativeResult.put("costValue", 0.0);
@@ -6258,11 +6274,6 @@ public class PharmacyReportController implements Serializable {
                 result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
                 result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
                 result.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
-                System.out.println("=== DEBUG retrievePurchaseAndCostValues (List<BillTypeAtomic>, List<PaymentMethod>) ===");
-                System.out.println("Bill Types: " + billTypeValue);
-                System.out.println("totals[0] = " + totals[0]);
-                System.out.println("totals[1] = " + totals[1]);
-                System.out.println("totals[2] = " + totals[2]);
             } else {
                 result.put("purchaseValue", 0.0);
                 result.put("costValue", 0.0);
@@ -7277,7 +7288,6 @@ public class PharmacyReportController implements Serializable {
             params.put("cat", category);
         }
 
-        System.out.println("amp = " + amp);
         if (amp != null) {
             item = amp;
             jpql.append("and sh.itemBatch.item=:itm ");
@@ -7290,7 +7300,6 @@ public class PharmacyReportController implements Serializable {
         jpql.append("group by sh.itemBatch ");
         jpql.append("order by sh.itemBatch.item.name");
 
-        System.out.println("jpql.toString() = " + jpql.toString());
 
         ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
@@ -7369,23 +7378,23 @@ public class PharmacyReportController implements Serializable {
         switch (dateRange) {
             case "within3months":
                 // Items expiring within the next 3 months (from today forward)
-                fromDate = convertToDate(today);
-                toDate = convertToDate(today.plusMonths(3).minusDays(1));
+                fromDate = CommonFunctions.getStartOfDay(convertToDate(today));
+                toDate = CommonFunctions.getEndOfDay(convertToDate(today.plusMonths(3)));
                 break;
             case "within6months":
                 // Items expiring within the next 6 months (from today forward)
-                fromDate = convertToDate(today);
-                toDate = convertToDate(today.plusMonths(6).minusDays(1));
+                fromDate = CommonFunctions.getStartOfDay(convertToDate(today));
+                toDate = CommonFunctions.getEndOfDay(convertToDate(today.plusMonths(6)));
                 break;
             case "within12months":
                 // Items expiring within the next 12 months (from today forward)
-                fromDate = convertToDate(today);
-                toDate = convertToDate(today.plusMonths(12).minusDays(1));
+                fromDate = CommonFunctions.getStartOfDay(convertToDate(today));
+                toDate = CommonFunctions.getEndOfDay(convertToDate(today.plusMonths(12)));
                 break;
             case "shortexpiry":
                 // Items that have already expired or expired recently (looking backward)
-                fromDate = convertToDate(today.minusMonths(6));
-                toDate = convertToDate(today);
+                fromDate = CommonFunctions.getStartOfDay(convertToDate(today.minusMonths(6)));
+                toDate = CommonFunctions.getEndOfDay(convertToDate(today));
                 break;
         }
         // System.out.println("Updated From Date: " + fromDate);
@@ -7434,23 +7443,40 @@ public class PharmacyReportController implements Serializable {
             m.put("cat", category);
         }
 
-        jpql += " order by s.id ";
-        stocks = stockFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        stockPurchaseValue = 0.0;
-        stockSaleValue = 0.0;
-        quantity = 0.0;
+        // Process different report types
+        switch (expiryReportType) {
+            case EXPIRY_REPORT_TYPE_STOCK_LIST:
+                processExpiryStockListReport();
+                break;
+            case EXPIRY_REPORT_TYPE_ITEM_LIST:
+                processExpiryItemListReport();
+                break;
+            case EXPIRY_REPORT_TYPE_DETAILED:
+                // Only load Stock entities for detailed report (avoids unnecessary DB queries)
+                jpql += " order by s.id ";
+                stocks = stockFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
 
-        for (Stock ts : stocks) {
-            if (ts.getItemBatch() == null || ts.getStock() == null) {
-                continue;
-            }
+                // Calculate totals from loaded stocks
+                stockPurchaseValue = 0.0;
+                stockSaleValue = 0.0;
+                quantity = 0.0;
 
-            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
-            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
-            quantity = quantity + ts.getStock();
+                for (Stock ts : stocks) {
+                    if (ts.getItemBatch() == null || ts.getStock() == null) {
+                        continue;
+                    }
+                    stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+                    stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+                    quantity = quantity + ts.getStock();
+                }
+
+                groupExpiryItems(stocks);
+                break;
+            default:
+                // Default to Stock List if invalid type
+                processExpiryStockListReport();
+                break;
         }
-
-        groupExpiryItems(stocks);
     }
 
     private void groupExpiryItems(final List<Stock> stocks) {
@@ -7474,6 +7500,167 @@ public class PharmacyReportController implements Serializable {
         }
 
         setItemStockMap(itemStockMap);
+    }
+
+    /**
+     * Process Stock List report - detailed stock information with cost and retail rates
+     */
+    private void processExpiryStockListReport() {
+        expiryStockListDtos = new ArrayList<>();
+        totalValueAtCostRate = 0.0;
+        totalValueAtRetailRate = 0.0;
+
+        String jpql = "select new com.divudi.core.data.dto.ExpiryItemStockListDto("
+                + "s.id, "                                                   // stockId
+                + "coalesce(d.name, 'Staff'), "                             // departmentName - null-safe
+                + "coalesce(c.code, ''), "                                  // categoryCode - null-safe
+                + "coalesce(c.name, ''), "                                  // categoryName - null-safe
+                + "coalesce(i.code, ''), "                                  // itemCode - null-safe
+                + "coalesce(i.name, ''), "                                  // itemName - null-safe
+                + "coalesce(mu.name, ''), "                                 // uom - null-safe
+                + "coalesce(c.name, ''), "                                  // itemType (using category name) - null-safe
+                + "ib.id, "                                                 // batchNumber
+                + "ib.dateOfExpire, "                                       // expiryDate
+                + "ib.costRate, "                                           // costRate - using actual cost rate instead of purchase rate
+                + "ib.retailsaleRate, "                                     // retailRate
+                + "s.stock) "                                               // stockQuantity
+                + "from Stock s "
+                + "join s.itemBatch ib "
+                + "join ib.item i "
+                + "left join s.department d "
+                + "left join i.category c "
+                + "left join i.measurementUnit mu "
+                + "where ib.dateOfExpire between :fd and :td ";
+
+        Map parameters = new HashMap();
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        // Apply filters using explicit join aliases
+        if (institution != null) {
+            jpql += " and d.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += " and d = :dep ";
+            parameters.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and d.site = :sit ";
+            parameters.put("sit", site);
+        }
+
+        if (amp != null) {
+            jpql += " and i = :itm ";
+            parameters.put("itm", amp);
+        }
+
+        if (category != null) {
+            jpql += " and c = :cat ";
+            parameters.put("cat", category);
+        }
+
+        jpql += " order by coalesce(i.name, ''), ib.dateOfExpire ";
+
+        expiryStockListDtos = (List<ExpiryItemStockListDto>) stockFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        // Calculate totals
+        if (expiryStockListDtos != null) {
+            for (ExpiryItemStockListDto dto : expiryStockListDtos) {
+                if (dto.getValueAtCostRate() != null) {
+                    totalValueAtCostRate += dto.getValueAtCostRate();
+                }
+                if (dto.getValueAtRetailRate() != null) {
+                    totalValueAtRetailRate += dto.getValueAtRetailRate();
+                }
+            }
+        }
+    }
+
+    /**
+     * Process Item List report - item-level aggregation across all batches
+     * Shows one row per item with totals for quantity, cost value, and retail value
+     */
+    private void processExpiryItemListReport() {
+        expiryItemListDtos = new ArrayList<>();
+        totalValueAtCostRate = 0.0;
+        totalValueAtRetailRate = 0.0;
+
+        String jpql = "select new com.divudi.core.data.dto.ExpiryItemListDto("
+                + "i.id, "                                                  // itemId
+                + "coalesce(d.name, 'Staff'), "                             // departmentName - null-safe
+                + "coalesce(c.code, ''), "                                  // categoryCode - null-safe
+                + "coalesce(c.name, ''), "                                  // categoryName - null-safe
+                + "coalesce(i.code, ''), "                                  // itemCode - null-safe
+                + "coalesce(i.name, ''), "                                  // itemName - null-safe
+                + "coalesce(mu.name, ''), "                                 // uom - null-safe
+                + "coalesce(c.name, ''), "                                  // itemType (using category name) - null-safe
+                + "min(ib.dateOfExpire), "                                  // earliestExpiryDate (across all batches)
+                + "sum(s.stock), "                                          // totalStockQuantity (across all batches)
+                + "sum(s.stock * ib.costRate), "                            // totalCostValue (across all batches) - using actual cost rate instead of purchase rate
+                + "sum(s.stock * ib.retailsaleRate)) "                      // totalRetailValue (across all batches)
+                + "from Stock s "
+                + "join s.itemBatch ib "
+                + "join ib.item i "
+                + "left join s.department d "
+                + "left join i.category c "
+                + "left join i.measurementUnit mu "
+                + "where ib.dateOfExpire between :fd and :td ";
+
+        Map parameters = new HashMap();
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        // Apply filters using explicit join aliases
+        if (institution != null) {
+            jpql += " and d.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql += " and d = :dep ";
+            parameters.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and d.site = :sit ";
+            parameters.put("sit", site);
+        }
+
+        if (amp != null) {
+            jpql += " and i = :itm ";
+            parameters.put("itm", amp);
+        }
+
+        if (category != null) {
+            jpql += " and c = :cat ";
+            parameters.put("cat", category);
+        }
+
+        jpql += " group by i.id, "
+                + "coalesce(d.name, 'Staff'), "
+                + "coalesce(c.code, ''), "
+                + "coalesce(c.name, ''), "
+                + "coalesce(i.code, ''), "
+                + "coalesce(i.name, ''), "
+                + "coalesce(mu.name, '') "
+                + "order by coalesce(i.name, '') ";
+
+        expiryItemListDtos = (List<ExpiryItemListDto>) stockFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        // Calculate totals
+        if (expiryItemListDtos != null) {
+            for (ExpiryItemListDto dto : expiryItemListDtos) {
+                if (dto.getTotalCostValue() != null) {
+                    totalValueAtCostRate += dto.getTotalCostValue();
+                }
+                if (dto.getTotalRetailValue() != null) {
+                    totalValueAtRetailRate += dto.getTotalRetailValue();
+                }
+            }
+        }
     }
 
     public void exportExpiryItemReportToExcel() {
@@ -7773,7 +7960,7 @@ public class PharmacyReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
         );
 
-        Map<String, Object> parameters = new HashMap<>();
+        Map parameters = new HashMap();
         parameters.put("bta", btaList);
         parameters.put("item", item);
 
@@ -8860,6 +9047,96 @@ public class PharmacyReportController implements Serializable {
 
     public void setItemStockMap(Map<Item, Map<Long, List<Stock>>> itemStockMap) {
         this.itemStockMap = itemStockMap;
+    }
+
+    // Getters and setters for new Expiry Report fields
+    public String getExpiryReportType() {
+        return expiryReportType;
+    }
+
+    /**
+     * Sets the expiry report type with validation
+     * Falls back to "stockList" if invalid value is provided
+     * @param expiryReportType the report type to set
+     */
+    public void setExpiryReportType(String expiryReportType) {
+        if (isValidExpiryReportType(expiryReportType)) {
+            this.expiryReportType = expiryReportType;
+        } else {
+            this.expiryReportType = EXPIRY_REPORT_TYPE_STOCK_LIST;
+        }
+    }
+
+    /**
+     * Validates if the provided report type is allowed
+     * @param reportType the report type to validate
+     * @return true if valid, false otherwise
+     */
+    private boolean isValidExpiryReportType(String reportType) {
+        return reportType != null &&
+               (EXPIRY_REPORT_TYPE_STOCK_LIST.equals(reportType) ||
+                EXPIRY_REPORT_TYPE_ITEM_LIST.equals(reportType) ||
+                EXPIRY_REPORT_TYPE_DETAILED.equals(reportType));
+    }
+
+    /**
+     * Gets the stock list DTOs, never returns null
+     * @return the stock list DTOs or empty list if not initialized
+     */
+    public List<ExpiryItemStockListDto> getExpiryStockListDtos() {
+        if (expiryStockListDtos == null) {
+            expiryStockListDtos = new ArrayList<>();
+        }
+        return expiryStockListDtos;
+    }
+
+    public void setExpiryStockListDtos(List<ExpiryItemStockListDto> expiryStockListDtos) {
+        this.expiryStockListDtos = expiryStockListDtos;
+    }
+
+    /**
+     * Gets the item list DTOs, never returns null
+     * @return the item list DTOs or empty list if not initialized
+     */
+    public List<ExpiryItemListDto> getExpiryItemListDtos() {
+        if (expiryItemListDtos == null) {
+            expiryItemListDtos = new ArrayList<>();
+        }
+        return expiryItemListDtos;
+    }
+
+    public void setExpiryItemListDtos(List<ExpiryItemListDto> expiryItemListDtos) {
+        this.expiryItemListDtos = expiryItemListDtos;
+    }
+
+    /**
+     * Gets the total value at cost rate, never returns null
+     * @return the total value at cost rate or 0.0 if not initialized
+     */
+    public Double getTotalValueAtCostRate() {
+        if (totalValueAtCostRate == null) {
+            totalValueAtCostRate = 0.0;
+        }
+        return totalValueAtCostRate;
+    }
+
+    public void setTotalValueAtCostRate(Double totalValueAtCostRate) {
+        this.totalValueAtCostRate = totalValueAtCostRate != null ? totalValueAtCostRate : 0.0;
+    }
+
+    /**
+     * Gets the total value at retail rate, never returns null
+     * @return the total value at retail rate or 0.0 if not initialized
+     */
+    public Double getTotalValueAtRetailRate() {
+        if (totalValueAtRetailRate == null) {
+            totalValueAtRetailRate = 0.0;
+        }
+        return totalValueAtRetailRate;
+    }
+
+    public void setTotalValueAtRetailRate(Double totalValueAtRetailRate) {
+        this.totalValueAtRetailRate = totalValueAtRetailRate != null ? totalValueAtRetailRate : 0.0;
     }
 
     public Double getQuantity() {
