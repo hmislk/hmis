@@ -3982,7 +3982,6 @@ public class PharmacyReportController implements Serializable {
 
                 sql.append(" order by bi.bill.id ");
 
-                System.out.println("sql = " + sql);
 
                 billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
             }
@@ -4143,8 +4142,6 @@ public class PharmacyReportController implements Serializable {
 
             receiveSql.append("ORDER BY receiveBi.bill.id");
 
-            System.out.println("findAcceptedGoodInTransitItems SQL = " + receiveSql);
-            System.out.println("findAcceptedGoodInTransitItems parameters = " + receiveParameters);
 
             List<BillItem> receivedItems = billItemFacade.findByJpql(
                     receiveSql.toString(), receiveParameters, TemporalType.TIMESTAMP);
@@ -5000,10 +4997,8 @@ public class PharmacyReportController implements Serializable {
         // Order by item name
         jpql.append("ORDER BY i.name");
         // Debug logging
-
         // Debug logging
-        System.out.println("jpql = " + jpql.toString());
-        System.out.println("params = " + params);
+        // Debug logging
 
         // Execute DTO projection query - returns PharmacyRow objects directly with all values pre-populated
         @SuppressWarnings("unchecked")
@@ -5215,10 +5210,8 @@ public class PharmacyReportController implements Serializable {
         // Order by item name
         jpql.append("ORDER BY i.name");
         // Debug logging
-
         // Debug logging
-        System.out.println("jpql = " + jpql.toString());
-        System.out.println("params = " + params);
+        // Debug logging
 
         // Execute DTO projection query - returns PharmacyRow objects directly with all values pre-populated
         @SuppressWarnings("unchecked")
@@ -6056,12 +6049,6 @@ public class PharmacyReportController implements Serializable {
                 result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
                 result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
                 result.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
-                System.out.println("=== DEBUG retrievePurchaseAndCostValues (List<BillTypeAtomic>, List<PaymentMethod>) ===");
-                System.out.println("Bill Types: " + billTypeValue);
-                System.out.println("Payment Methods: " + paymentMethods);
-                System.out.println("totals[0] = " + totals[0]);
-                System.out.println("totals[1] = " + totals[1]);
-                System.out.println("totals[2] = " + totals[2]);
             } else {
                 result.put("purchaseValue", 0.0);
                 result.put("costValue", 0.0);
@@ -6113,11 +6100,6 @@ public class PharmacyReportController implements Serializable {
                 preAddResult.put("purchaseValue", preAddTotals[0] != null ? ((Number) preAddTotals[0]).doubleValue() : 0.0);
                 preAddResult.put("costValue", preAddTotals[1] != null ? ((Number) preAddTotals[1]).doubleValue() : 0.0);
                 preAddResult.put("retailValue", preAddTotals[2] != null ? ((Number) preAddTotals[2]).doubleValue() : 0.0);
-                System.out.println("=== DEBUG retrievePreAddToStockBillsForValues ===");
-                System.out.println("Bill Type: PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK");
-                System.out.println("preAdd totals[0] = " + preAddTotals[0] + " (positive: " + preAddResult.get("purchaseValue") + ")");
-                System.out.println("preAdd totals[1] = " + preAddTotals[1] + " (positive: " + preAddResult.get("costValue") + ")");
-                System.out.println("preAdd totals[2] = " + preAddTotals[2] + " (positive: " + preAddResult.get("retailValue") + ")");
             } else {
                 preAddResult.put("purchaseValue", 0.0);
                 preAddResult.put("costValue", 0.0);
@@ -6173,11 +6155,6 @@ public class PharmacyReportController implements Serializable {
                 result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
                 result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
                 result.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
-                System.out.println("=== DEBUG retrievePurchaseAndCostValuesWithoutReference ===");
-                System.out.println("Bill Types: " + billTypeValue);
-                System.out.println("totals[0] = " + totals[0]);
-                System.out.println("totals[1] = " + totals[1]);
-                System.out.println("totals[2] = " + totals[2]);
             } else {
                 result.put("purchaseValue", 0.0);
                 result.put("costValue", 0.0);
@@ -6244,11 +6221,6 @@ public class PharmacyReportController implements Serializable {
                 negativeResult.put("purchaseValue", negativeTotals[0] != null ? -((Number) negativeTotals[0]).doubleValue() : 0.0);
                 negativeResult.put("costValue", negativeTotals[1] != null ? -((Number) negativeTotals[1]).doubleValue() : 0.0);
                 negativeResult.put("retailValue", negativeTotals[2] != null ? -((Number) negativeTotals[2]).doubleValue() : 0.0);
-                System.out.println("=== DEBUG retrieveNegativeReferenceBillsForValues ===");
-                System.out.println("Bill Types: " + billTypeValue);
-                System.out.println("negative totals[0] = " + negativeTotals[0] + " (negated: " + negativeResult.get("purchaseValue") + ")");
-                System.out.println("negative totals[1] = " + negativeTotals[1] + " (negated: " + negativeResult.get("costValue") + ")");
-                System.out.println("negative totals[2] = " + negativeTotals[2] + " (negated: " + negativeResult.get("retailValue") + ")");
             } else {
                 negativeResult.put("purchaseValue", 0.0);
                 negativeResult.put("costValue", 0.0);
@@ -6302,11 +6274,6 @@ public class PharmacyReportController implements Serializable {
                 result.put("purchaseValue", totals[0] != null ? ((Number) totals[0]).doubleValue() : 0.0);
                 result.put("costValue", totals[1] != null ? ((Number) totals[1]).doubleValue() : 0.0);
                 result.put("retailValue", totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0);
-                System.out.println("=== DEBUG retrievePurchaseAndCostValues (List<BillTypeAtomic>, List<PaymentMethod>) ===");
-                System.out.println("Bill Types: " + billTypeValue);
-                System.out.println("totals[0] = " + totals[0]);
-                System.out.println("totals[1] = " + totals[1]);
-                System.out.println("totals[2] = " + totals[2]);
             } else {
                 result.put("purchaseValue", 0.0);
                 result.put("costValue", 0.0);
@@ -7321,7 +7288,6 @@ public class PharmacyReportController implements Serializable {
             params.put("cat", category);
         }
 
-        System.out.println("amp = " + amp);
         if (amp != null) {
             item = amp;
             jpql.append("and sh.itemBatch.item=:itm ");
@@ -7334,7 +7300,6 @@ public class PharmacyReportController implements Serializable {
         jpql.append("group by sh.itemBatch ");
         jpql.append("order by sh.itemBatch.item.name");
 
-        System.out.println("jpql.toString() = " + jpql.toString());
 
         ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
@@ -9095,8 +9060,6 @@ public class PharmacyReportController implements Serializable {
         if (isValidExpiryReportType(expiryReportType)) {
             this.expiryReportType = expiryReportType;
         } else {
-            System.out.println("Warning: Invalid expiry report type '" + expiryReportType +
-                             "', falling back to stockList");
             this.expiryReportType = EXPIRY_REPORT_TYPE_STOCK_LIST;
         }
     }
