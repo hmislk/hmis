@@ -390,12 +390,14 @@ public class PharmacyReportController implements Serializable {
 
     /**
      * Initialize default values for expiry item report
-     * Sets default date range to 3 months from today
+     * Sets default date range to 3 months from today with proper day boundaries
      */
     public void initExpiryReportDefaults() {
         LocalDate today = LocalDate.now();
-        fromDate = convertToDate(today);
-        toDate = convertToDate(today.plusMonths(3).minusDays(1));
+        LocalDate endDate = today.plusMonths(3);
+
+        fromDate = CommonFunctions.getStartOfDay(convertToDate(today));
+        toDate = CommonFunctions.getEndOfDay(convertToDate(endDate));
     }
 
     /**
@@ -7411,23 +7413,23 @@ public class PharmacyReportController implements Serializable {
         switch (dateRange) {
             case "within3months":
                 // Items expiring within the next 3 months (from today forward)
-                fromDate = convertToDate(today);
-                toDate = convertToDate(today.plusMonths(3).minusDays(1));
+                fromDate = CommonFunctions.getStartOfDay(convertToDate(today));
+                toDate = CommonFunctions.getEndOfDay(convertToDate(today.plusMonths(3)));
                 break;
             case "within6months":
                 // Items expiring within the next 6 months (from today forward)
-                fromDate = convertToDate(today);
-                toDate = convertToDate(today.plusMonths(6).minusDays(1));
+                fromDate = CommonFunctions.getStartOfDay(convertToDate(today));
+                toDate = CommonFunctions.getEndOfDay(convertToDate(today.plusMonths(6)));
                 break;
             case "within12months":
                 // Items expiring within the next 12 months (from today forward)
-                fromDate = convertToDate(today);
-                toDate = convertToDate(today.plusMonths(12).minusDays(1));
+                fromDate = CommonFunctions.getStartOfDay(convertToDate(today));
+                toDate = CommonFunctions.getEndOfDay(convertToDate(today.plusMonths(12)));
                 break;
             case "shortexpiry":
                 // Items that have already expired or expired recently (looking backward)
-                fromDate = convertToDate(today.minusMonths(6));
-                toDate = convertToDate(today);
+                fromDate = CommonFunctions.getStartOfDay(convertToDate(today.minusMonths(6)));
+                toDate = CommonFunctions.getEndOfDay(convertToDate(today));
                 break;
         }
         // System.out.println("Updated From Date: " + fromDate);
