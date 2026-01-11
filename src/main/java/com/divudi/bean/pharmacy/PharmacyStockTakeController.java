@@ -1621,12 +1621,42 @@ public class PharmacyStockTakeController implements Serializable {
                 headerColumnMap = null; // Clear header cache
 
                 XSSFSheet sheet = wb.getSheetAt(0);
-                System.out.println("PERF: Excel sheet loaded, rows: " + sheet.getLastRowNum());
+                System.out.println("DEBUG-UPLOAD: Excel sheet loaded, total rows: " + sheet.getLastRowNum());
+
+                // Debug: Print header row to verify column structure
+                Row headerRow = sheet.getRow(0);
+                if (headerRow != null) {
+                    System.out.println("DEBUG-UPLOAD: === HEADER ROW (Row 0) ===");
+                    for (int c = 0; c <= Math.min(12, headerRow.getLastCellNum()); c++) {
+                        Cell cell = headerRow.getCell(c);
+                        String cellValue = (cell != null) ? cell.toString() : "NULL";
+                        System.out.println("DEBUG-UPLOAD:   Column " + c + " (" + (char)('A' + c) + "): " + cellValue);
+                    }
+                } else {
+                    System.out.println("DEBUG-UPLOAD: WARNING - Header row (row 0) is NULL!");
+                }
+
+                // Debug: Print first 3 data rows to see actual values
+                System.out.println("DEBUG-UPLOAD: === FIRST 3 DATA ROWS ===");
+                for (int debugRow = 1; debugRow <= Math.min(3, sheet.getLastRowNum()); debugRow++) {
+                    Row row = sheet.getRow(debugRow);
+                    if (row != null) {
+                        Cell cellA = row.getCell(0);  // Column A - BillItem ID
+                        Cell cellK = row.getCell(10); // Column K - Real Stock Qty
+                        String valA = (cellA != null) ? cellA.toString() + " (type:" + cellA.getCellType() + ")" : "NULL";
+                        String valK = (cellK != null) ? cellK.toString() + " (type:" + cellK.getCellType() + ")" : "NULL";
+                        System.out.println("DEBUG-UPLOAD:   Row " + debugRow + ": ColA=" + valA + ", ColK=" + valK);
+                    } else {
+                        System.out.println("DEBUG-UPLOAD:   Row " + debugRow + ": NULL ROW");
+                    }
+                }
 
                 // Pre-load snapshot references in bulk to eliminate N+1 queries
                 java.util.Set<Long> snapBillItemIds = new java.util.HashSet<>();
 
                 // First pass: collect all billItemIds for bulk loading
+                int nullIdCount = 0;
+                int validIdCount = 0;
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                     Row row = sheet.getRow(i);
                     if (row == null) continue;
@@ -1634,15 +1664,34 @@ public class PharmacyStockTakeController implements Serializable {
                     Long snapShotBillItemId = getLongNullableOptimized(row, 0); // Column 0 = BillItemId
                     if (snapShotBillItemId != null) {
                         snapBillItemIds.add(snapShotBillItemId);
+                        validIdCount++;
+                    } else {
+                        nullIdCount++;
                     }
                 }
 
-                System.out.println("PERF: Found " + snapBillItemIds.size() + " unique snapshot bill item IDs");
+                System.out.println("DEBUG-UPLOAD: First pass - Valid IDs found: " + validIdCount + ", Null IDs: " + nullIdCount);
+                System.out.println("DEBUG-UPLOAD: Unique snapshot bill item IDs to pre-load: " + snapBillItemIds.size());
+
+                // Debug: Print first 5 IDs being looked up
+                int idPrintCount = 0;
+                System.out.println("DEBUG-UPLOAD: First 5 IDs from Excel: ");
+                for (Long id : snapBillItemIds) {
+                    if (idPrintCount++ >= 5) break;
+                    System.out.println("DEBUG-UPLOAD:   ID: " + id);
+                }
 
                 // Bulk pre-load snapshot entities with JOIN FETCH (eliminates N+1 queries)
                 long preloadStartTime = System.currentTimeMillis();
                 java.util.Map<Long, BillItem> snapBillItemMap = preLoadSnapshotReferences(snapBillItemIds);
-                System.out.println("PERF: Snapshot references pre-loaded in " + (System.currentTimeMillis() - preloadStartTime) + "ms");
+                System.out.println("DEBUG-UPLOAD: Snapshot references pre-loaded in " + (System.currentTimeMillis() - preloadStartTime) + "ms");
+                System.out.println("DEBUG-UPLOAD: Snapshot map size (items actually found in DB): " + snapBillItemMap.size());
+
+                // Debug: Check if any IDs were found
+                if (snapBillItemMap.isEmpty() && !snapBillItemIds.isEmpty()) {
+                    System.out.println("DEBUG-UPLOAD: WARNING - No snapshot items found in DB for the provided IDs!");
+                    System.out.println("DEBUG-UPLOAD: This could mean the IDs in Excel don't belong to the selected snapshot bill.");
+                }
 
                 // Excel column definitions (consistent with optimized method)
                 int colBillItemId = 0;  // Column 0 = BillItemId
@@ -1653,20 +1702,36 @@ public class PharmacyStockTakeController implements Serializable {
                 int matched = 0;
                 int skippedNoQty = 0;
                 int skippedNoMatch = 0;
+                int skippedNullRow = 0;
+
+                System.out.println("DEBUG-UPLOAD: === STARTING MAIN PROCESSING LOOP ===");
 
                 // Process Excel rows and collect data for bulk SQL operations
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                     Row row = sheet.getRow(i);
-                    if (row == null) continue;
+                    if (row == null) {
+                        skippedNullRow++;
+                        continue;
+                    }
 
                     Double physicalObj = colRealStock >= 0 ? getDoubleNullableOptimized(row, colRealStock) : null;
                     if (physicalObj == null) {
+                        if (skippedNoQty < 5) {
+                            Cell cellK = row.getCell(colRealStock);
+                            System.out.println("DEBUG-UPLOAD: Row " + i + " skipped - No qty in ColK. Raw value: " +
+                                (cellK != null ? cellK.toString() + " (type:" + cellK.getCellType() + ")" : "NULL"));
+                        }
                         skippedNoQty++;
                         continue;
                     }
 
                     Long snapShotBillItemId = getLongNullableOptimized(row, colBillItemId);
                     if (snapShotBillItemId == null) {
+                        if (skippedNoQty < 5) {
+                            Cell cellA = row.getCell(colBillItemId);
+                            System.out.println("DEBUG-UPLOAD: Row " + i + " skipped - No ID in ColA. Raw value: " +
+                                (cellA != null ? cellA.toString() + " (type:" + cellA.getCellType() + ")" : "NULL"));
+                        }
                         skippedNoQty++;
                         continue;
                     }
@@ -1674,6 +1739,9 @@ public class PharmacyStockTakeController implements Serializable {
                     // Use pre-loaded entities (no DB query)
                     BillItem snapBillItem = snapBillItemMap.get(snapShotBillItemId);
                     if (snapBillItem == null) {
+                        if (skippedNoMatch < 5) {
+                            System.out.println("DEBUG-UPLOAD: Row " + i + " skipped - ID " + snapShotBillItemId + " not found in snapshot map");
+                        }
                         skippedNoMatch++;
                         continue;
                     }
@@ -1702,10 +1770,13 @@ public class PharmacyStockTakeController implements Serializable {
                     stockCountData.add(rowData);
                 }
 
-                System.out.println("PERF: Excel processing completed in " + (System.currentTimeMillis() - excelStartTime) + "ms");
-                System.out.println("PERF: Processing results - Processed: " + processed +
-                                 ", Matched: " + matched + ", Skipped (no qty): " + skippedNoQty +
+                System.out.println("DEBUG-UPLOAD: === PROCESSING COMPLETE ===");
+                System.out.println("DEBUG-UPLOAD: Excel processing completed in " + (System.currentTimeMillis() - excelStartTime) + "ms");
+                System.out.println("DEBUG-UPLOAD: Results - Processed: " + processed +
+                                 ", Matched: " + matched + ", Skipped (null row): " + skippedNullRow +
+                                 ", Skipped (no qty/id): " + skippedNoQty +
                                  ", Skipped (no match): " + skippedNoMatch);
+                System.out.println("DEBUG-UPLOAD: stockCountData size: " + stockCountData.size());
 
             } catch (IOException e) {
                 JsfUtil.addErrorMessage(e, "Error processing Excel file");
@@ -2357,7 +2428,11 @@ public class PharmacyStockTakeController implements Serializable {
      * @return Map of BillItem ID to fully loaded BillItem entity with associations
      */
     private java.util.Map<Long, BillItem> preLoadSnapshotReferences(java.util.Set<Long> snapBillItemIds) {
+        System.out.println("DEBUG-UPLOAD: preLoadSnapshotReferences called with " +
+            (snapBillItemIds != null ? snapBillItemIds.size() : 0) + " IDs");
+
         if (snapBillItemIds == null || snapBillItemIds.isEmpty()) {
+            System.out.println("DEBUG-UPLOAD: No IDs provided, returning empty map");
             return new java.util.HashMap<>();
         }
 
@@ -2374,9 +2449,14 @@ public class PharmacyStockTakeController implements Serializable {
         params.put("ids", snapBillItemIds);
 
         try {
+            System.out.println("DEBUG-UPLOAD: Executing JPQL query to pre-load BillItems...");
+
             // Execute single query to load all entities with associations
             @SuppressWarnings("unchecked")
             List<BillItem> preLoadedItems = (List<BillItem>) billItemFacade.findByJpql(jpql, params);
+
+            System.out.println("DEBUG-UPLOAD: Query returned " +
+                (preLoadedItems != null ? preLoadedItems.size() : 0) + " items");
 
             // Build lookup map for O(1) access during processing
             java.util.Map<Long, BillItem> snapBillItemMap = new java.util.HashMap<>();
@@ -2386,13 +2466,29 @@ public class PharmacyStockTakeController implements Serializable {
                 }
             }
 
-            System.out.println("DEBUG: Bulk pre-loaded " + snapBillItemMap.size() +
+            System.out.println("DEBUG-UPLOAD: Bulk pre-loaded " + snapBillItemMap.size() +
                              " snapshot entities out of " + snapBillItemIds.size() + " requested");
+
+            // If we got fewer items than requested, some IDs don't exist or don't have pharma items
+            if (snapBillItemMap.size() < snapBillItemIds.size()) {
+                System.out.println("DEBUG-UPLOAD: WARNING - " + (snapBillItemIds.size() - snapBillItemMap.size()) +
+                    " IDs were not found. They may not exist or may not have PharmaceuticalBillItem.");
+
+                // Debug: Try a count query to see if IDs exist at all
+                String countJpql = "select count(bi) from BillItem bi where bi.id in :ids";
+                Long existingCount = billItemFacade.countByJpql(countJpql, params);
+                System.out.println("DEBUG-UPLOAD: Count query found " + existingCount + " BillItem IDs exist in DB");
+
+                if (existingCount != null && existingCount > snapBillItemMap.size()) {
+                    System.out.println("DEBUG-UPLOAD: " + (existingCount - snapBillItemMap.size()) +
+                        " BillItems exist but don't have PharmaceuticalBillItem or ItemBatch!");
+                }
+            }
 
             return snapBillItemMap;
 
         } catch (Exception e) {
-            System.err.println("ERROR: Failed to bulk pre-load snapshot references: " + e.getMessage());
+            System.err.println("DEBUG-UPLOAD: ERROR - Failed to bulk pre-load snapshot references: " + e.getMessage());
             e.printStackTrace();
 
             // Fallback: return empty map to prevent NPE (individual loads will occur)
