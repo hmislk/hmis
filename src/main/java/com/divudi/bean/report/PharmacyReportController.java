@@ -7521,7 +7521,7 @@ public class PharmacyReportController implements Serializable {
                 + "coalesce(c.name, ''), "                                  // itemType (using category name) - null-safe
                 + "ib.id, "                                                 // batchNumber
                 + "ib.dateOfExpire, "                                       // expiryDate
-                + "ib.purcahseRate, "                                       // costRate
+                + "ib.costRate, "                                           // costRate - using actual cost rate instead of purchase rate
                 + "ib.retailsaleRate, "                                     // retailRate
                 + "s.stock) "                                               // stockQuantity
                 + "from Stock s "
@@ -7530,7 +7530,7 @@ public class PharmacyReportController implements Serializable {
                 + "left join s.department d "
                 + "left join i.category c "
                 + "left join i.measurementUnit mu "
-                + "where s.itemBatch.dateOfExpire between :fd and :td ";
+                + "where ib.dateOfExpire between :fd and :td ";
 
         Map parameters = new HashMap();
         parameters.put("fd", fromDate);
@@ -7562,7 +7562,7 @@ public class PharmacyReportController implements Serializable {
             parameters.put("cat", category);
         }
 
-        jpql += " order by i.name, ib.dateOfExpire ";
+        jpql += " order by coalesce(i.name, ''), ib.dateOfExpire ";
 
         expiryStockListDtos = (List<ExpiryItemStockListDto>) stockFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
@@ -7599,7 +7599,7 @@ public class PharmacyReportController implements Serializable {
                 + "coalesce(c.name, ''), "                                  // itemType (using category name) - null-safe
                 + "min(ib.dateOfExpire), "                                  // earliestExpiryDate (across all batches)
                 + "sum(s.stock), "                                          // totalStockQuantity (across all batches)
-                + "sum(s.stock * ib.purcahseRate), "                        // totalCostValue (across all batches)
+                + "sum(s.stock * ib.costRate), "                            // totalCostValue (across all batches) - using actual cost rate instead of purchase rate
                 + "sum(s.stock * ib.retailsaleRate)) "                      // totalRetailValue (across all batches)
                 + "from Stock s "
                 + "join s.itemBatch ib "
@@ -7639,11 +7639,14 @@ public class PharmacyReportController implements Serializable {
             parameters.put("cat", category);
         }
 
-        jpql += " group by i.id, c.code, "
-                + "c.name, i.code, i.name, "
-                + "mu.name, "
-                + "coalesce(d.name, 'Staff') "
-                + "order by i.name ";
+        jpql += " group by i.id, "
+                + "coalesce(d.name, 'Staff'), "
+                + "coalesce(c.code, ''), "
+                + "coalesce(c.name, ''), "
+                + "coalesce(i.code, ''), "
+                + "coalesce(i.name, ''), "
+                + "coalesce(mu.name, '') "
+                + "order by coalesce(i.name, '') ";
 
         expiryItemListDtos = (List<ExpiryItemListDto>) stockFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
