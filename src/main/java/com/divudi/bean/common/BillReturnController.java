@@ -1414,10 +1414,22 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
     /**
      * Called when user changes payment method in bill return form.
-     * Resets paymentMethodData to prevent using old payment method data.
+     * If user selects the original payment method, restores original payment details.
+     * Otherwise, creates new payment data for the selected method.
      */
     public void onPaymentMethodChange() {
-        // Reset payment method data to prevent using old payment method data
+        // Check if user selected the original payment method - if so, restore original details
+        if (originalBillPayments != null && !originalBillPayments.isEmpty()) {
+            Payment originalPayment = originalBillPayments.get(0);
+            if (paymentMethod == originalPayment.getPaymentMethod()) {
+                // User switched back to original payment method - restore original details
+                paymentMethodData = new PaymentMethodData();
+                initializePaymentDataFromOriginalPayments(originalBillPayments);
+                return;
+            }
+        }
+
+        // User selected a different payment method - create new payment data
         paymentMethodData = new PaymentMethodData();
 
         // Clear controller properties that should only be set for specific payment methods

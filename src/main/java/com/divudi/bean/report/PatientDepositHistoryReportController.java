@@ -107,8 +107,9 @@ public class PatientDepositHistoryReportController implements Serializable, Cont
         jpql.append("pdh.transactionValue, ");
         jpql.append("pdh.department.id, ");
         jpql.append("pdh.department.name, ");
-        jpql.append("pdh.site.id, ");
-        jpql.append("pdh.site.name, ");
+        // Site can be null - use LEFT JOIN alias
+        jpql.append("s.id, ");
+        jpql.append("s.name, ");
         jpql.append("pdh.institution.id, ");
         jpql.append("pdh.institution.name, ");
         // Aggregate balances for this patient
@@ -126,6 +127,7 @@ public class PatientDepositHistoryReportController implements Serializable, Cont
         jpql.append("pdh.creater.name");
         jpql.append(") ");
         jpql.append("FROM PatientDepositHistory pdh ");
+        jpql.append("LEFT JOIN pdh.site s ");
         jpql.append("WHERE pdh.retired = :ret ");
         jpql.append("AND pdh.createdAt BETWEEN :fromDate AND :toDate ");
 
@@ -140,7 +142,7 @@ public class PatientDepositHistoryReportController implements Serializable, Cont
         }
 
         if (site != null) {
-            jpql.append("AND pdh.site = :site ");
+            jpql.append("AND s = :site ");
             m.put("site", site);
         }
 
