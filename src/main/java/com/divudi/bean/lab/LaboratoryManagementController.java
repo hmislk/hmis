@@ -2470,11 +2470,68 @@ public class LaboratoryManagementController implements Serializable {
                     uploadFacade.edit(currentReportUpload);
                 }
             }
+
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                labTestHistoryController.addReportRemoveHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport, comment);
+            }
+
             patientReportFacade.edit(currentPatientReport);
             comment = null;
             JsfUtil.addSuccessMessage("Successfully Removed");
             searchPatientReports();
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.removePatientReport", sessionController.getLoggedUser());
+    }
+
+    public void addViewReportHistory(Long reportID) {
+        if (reportID == null) {
+            JsfUtil.addErrorMessage("Error in Report ID");
+            return;
+        }
+        PatientReport currenrReport = patientReportFacade.findWithoutCache(reportID);
+
+        if (currenrReport.getApproved()) {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                labTestHistoryController.addReportViewHistory(currenrReport.getPatientInvestigation(), currenrReport);
+                System.out.println("Successfully Add View Report History");
+            }
+        }
+    }
+
+    public void addReportPrintHistory(Long reportID) {
+        if (reportID == null) {
+            JsfUtil.addErrorMessage("Error in Report ID");
+            return;
+        }
+        PatientReport currenrReport = patientReportFacade.findWithoutCache(reportID);
+
+        if (currenrReport.getApproved()) {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                labTestHistoryController.addReportPrintHistory(currenrReport.getPatientInvestigation(), currenrReport);
+                System.out.println("Successfully Add Report Print History");
+            }
+            
+        }
+    }
+
+    public void addReportIssueHistory(Long reportID, Staff issueToStaff) {
+        if (reportID == null) {
+            JsfUtil.addErrorMessage("Error in Report ID");
+            return;
+        }
+        PatientReport currenrReport = patientReportFacade.findWithoutCache(reportID);
+        Bill reportBill = currenrReport.getPatientInvestigation().getBillItem().getBill();
+
+        if (currenrReport.getApproved()) {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+
+                if (reportBill.getPatientEncounter() != null) {
+                    labTestHistoryController.addReportPrintHistory(currenrReport.getPatientInvestigation(), currenrReport);
+                } else {
+                    labTestHistoryController.addReportPrintHistory(currenrReport.getPatientInvestigation(), currenrReport);
+                }
+                System.out.println("Successfully Add Report Issue History");
+            }
+        }
     }
 
     @Deprecated
