@@ -993,12 +993,8 @@ public class QuickBookReportController implements Serializable {
             Date memoDate = b.getInvoiceDate() != null ? b.getInvoiceDate() :
                            (b.getApproveAt() != null ? b.getApproveAt() : b.getCreatedAt());
 
-            String memoText;
-            if (b.getPaymentMethod() == PaymentMethod.Cash && b.getFromInstitution() != null) {
-                memoText = b.getPaymentMethod().toString() + " / " + sdf.format(memoDate) + " / " + b.getFromInstitution().getChequePrintingName();
-            } else {
-                memoText = b.getPaymentMethod().toString() + " / " + sdf.format(memoDate);
-            }
+            String supplierName = b.getFromInstitution() != null ? b.getFromInstitution().getChequePrintingName() : "";
+            String memoText = b.getPaymentMethod().toString() + " / " + sdf.format(memoDate) + " / " + supplierName;
 
             // Determine TRNSTYPE based on transaction type
             String trnsType = isReturnTransaction ? "Bill Refund" : "Bill";
