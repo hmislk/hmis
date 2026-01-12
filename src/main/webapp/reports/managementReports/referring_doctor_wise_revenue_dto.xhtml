@@ -368,7 +368,7 @@
                                 style="width: 150px"
                                 icon="fas fa-file-excel"
                                 class="ui-button-success mx-2">
-                                <p:dataExporter fileName="referring_doctor_wise_revenue_dto"
+                                <p:dataExporter fileName="#{reportController.referringDoctorRevenueExportFileName}"
                                                 target="#{reportController.reportType eq 'Summary' ? 'tblSummary' : 'tblDetail'}"
                                                 type="xlsx"/>
                             </p:commandButton>
@@ -381,7 +381,7 @@
                                 value="PDF">
                                 <p:dataExporter type="pdf"
                                                 target="#{reportController.reportType eq 'Summary' ? 'tblSummary' : 'tblDetail'}"
-                                                fileName="referring_doctor_wise_revenue_dto"/>
+                                                fileName="#{reportController.referringDoctorRevenueExportFileName}"/>
                             </p:commandButton>
                         </div>
                     </p:panel>

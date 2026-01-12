@@ -4724,4 +4724,47 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         this.referringDoctorRevenueSummaryDtos = referringDoctorRevenueSummaryDtos;
     }
 
+    public String getReferringDoctorRevenueExportFileName() {
+        StringBuilder fileName = new StringBuilder("Referring_Doctor_Revenue");
+
+        // Add report type
+        if (reportType != null && !reportType.isEmpty()) {
+            fileName.append("_").append(reportType);
+        }
+
+        // Add date range
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+        if (fromDate != null) {
+            fileName.append("_").append(sdf.format(fromDate));
+        }
+        if (toDate != null) {
+            fileName.append("_to_").append(sdf.format(toDate));
+        }
+
+        // Add institution
+        if (institution != null && institution.getName() != null) {
+            fileName.append("_").append(sanitizeFileName(institution.getName()));
+        }
+
+        // Add site
+        if (site != null && site.getName() != null) {
+            fileName.append("_").append(sanitizeFileName(site.getName()));
+        }
+
+        // Add department
+        if (department != null && department.getName() != null) {
+            fileName.append("_").append(sanitizeFileName(department.getName()));
+        }
+
+        return fileName.toString();
+    }
+
+    private String sanitizeFileName(String name) {
+        if (name == null) {
+            return "";
+        }
+        // Remove or replace characters that are invalid in filenames
+        return name.replaceAll("[^a-zA-Z0-9\\-_]", "_").replaceAll("_+", "_");
+    }
+
 }
