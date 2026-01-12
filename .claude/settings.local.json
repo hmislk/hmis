@@ -28,7 +28,11 @@
       "Bash(cat:*)",
       "Bash(dir \"C:\\\\Users\\\\buddhika\\\\Payara_Server\\\\glassfish\\\\domains\\\\domain1\\\\logs\")",
       "Bash(git checkout:*)",
-      "Bash(dir \"C:\\\\Users\\\\buddhika\\\\AppData\\\\Local\\\\Temp\\\\*.png\")"
+      "Bash(dir \"C:\\\\Users\\\\buddhika\\\\AppData\\\\Local\\\\Temp\\\\*.png\")",
+      "Bash(python3:*)",
+      "Bash(pip install:*)",
+      "Bash(python -m pip install:*)",
+      "Bash(python:*)"
     ]
   }
 }
