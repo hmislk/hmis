@@ -32,7 +32,8 @@
       "Bash(python3:*)",
       "Bash(pip install:*)",
       "Bash(python -m pip install:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(cd:*)"
     ]
   }
 }
