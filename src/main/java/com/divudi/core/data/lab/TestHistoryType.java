@@ -42,6 +42,9 @@ public enum TestHistoryType {
     REPORT_APPROVED_CANCEL,
     REPORT_VIEWED,
     REPORT_PRINTED,
+    REPORT_REMOVE,
+    REPORT_ISSUE_PATIENT,
+    REPORT_ISSUE_STAFF,
     SENT_SMS_MANUAL,
     SENT_SMS_AUTO,
     SENT_EMAIL;
@@ -106,10 +109,16 @@ public enum TestHistoryType {
                 return "Report Approved";
             case REPORT_APPROVED_CANCEL:
                 return "Report Approval Canceled";
+            case REPORT_REMOVE:
+                return "Delete Report";
             case REPORT_VIEWED:
                 return "Report Viewed";
             case REPORT_PRINTED:
                 return "Report Printed";
+            case REPORT_ISSUE_PATIENT:
+                return "Report Issue to Patient";
+            case REPORT_ISSUE_STAFF:
+                return "Report Issue to Staff";    
             case SENT_SMS_MANUAL:
                 return "SMS Sent (Manual)";
             case SENT_SMS_AUTO:
