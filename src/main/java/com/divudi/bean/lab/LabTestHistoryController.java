@@ -180,12 +180,12 @@ public class LabTestHistoryController implements Serializable {
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Report View & Print">
-    public void addReportViewHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, AppEmail email) {
-        addNewHistory(TestHistoryType.REPORT_VIEWED, null, null, patientInvestigation, patientReport, null, null, null, email, null, null, null, null);
+    public void addReportViewHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
+        addNewHistory(TestHistoryType.REPORT_VIEWED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
     }
     
-    public void addReportPrintHistory(PatientInvestigation patientInvestigation, PatientReport patientReport, AppEmail email) {
-        addNewHistory(TestHistoryType.REPORT_PRINTED, null, null, patientInvestigation, patientReport, null, null, null, email, null, null, null, null);
+    public void addReportPrintHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
+        addNewHistory(TestHistoryType.REPORT_PRINTED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
     }
     // </editor-fold>
     
