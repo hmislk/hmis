@@ -1268,7 +1268,11 @@ public class PatientReportController implements Serializable {
                 currentReportUpload.setRetirer(sessionController.getLoggedUser());
                 uploadFacade.create(currentReportUpload);
             }
-            System.out.println("Upload Report Removed");
+            System.out.println("Report Removed");
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addReportRemoveHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport,comment);
         }
 
         getFacade().edit(currentPatientReport);
