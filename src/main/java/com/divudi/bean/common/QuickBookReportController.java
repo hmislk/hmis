@@ -994,7 +994,7 @@ public class QuickBookReportController implements Serializable {
                            (b.getApproveAt() != null ? b.getApproveAt() : b.getCreatedAt());
 
             String memoText;
-            if (b.getPaymentMethod() == PaymentMethod.Cash) {
+            if (b.getPaymentMethod() == PaymentMethod.Cash && b.getFromInstitution() != null) {
                 memoText = b.getPaymentMethod().toString() + " / " + sdf.format(memoDate) + " / " + b.getFromInstitution().getChequePrintingName();
             } else {
                 memoText = b.getPaymentMethod().toString() + " / " + sdf.format(memoDate);
@@ -1049,7 +1049,7 @@ public class QuickBookReportController implements Serializable {
             // For Returns: TRNS should be positive (reduces payable)
             double transAmount;
             if (isReturnTransaction) {
-                transAmount = inventoryValue; // Positive for returns
+                transAmount = inventoryValue + expensesConsideredTotal; // Positive for returns (includes expenses to balance)
             } else {
                 transAmount = 0 - (inventoryValue + expensesConsideredTotal); // Negative for GRN
             }
