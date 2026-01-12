@@ -927,8 +927,18 @@ public class QuickBookReportController implements Serializable {
             BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING // Return without tracing receipts
         );
 
-        // Get departments with approved bills filtered by approval date
-        for (Department d : getApprovedDepartments(approvedBillTypes, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate))) {
+        // Determine which departments to process based on filter selections
+        List<Department> departmentsToProcess;
+        if (department != null) {
+            // User selected a specific department - use only that one
+            departmentsToProcess = Arrays.asList(department);
+        } else {
+            // Get all approved departments, optionally filtered by site
+            departmentsToProcess = getApprovedDepartments(approvedBillTypes, getInstitution(), site, CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate));
+        }
+
+        // Get bills for each department
+        for (Department d : departmentsToProcess) {
 
             // Get approved GRNs (not pending/pre-approval)
             billsBilled.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_GRN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
@@ -3599,19 +3609,27 @@ public class QuickBookReportController implements Serializable {
      *
      * @param billTypeAtomics - List of BillTypeAtomic values
      * @param ins - Institution filter
+     * @param siteFilter - Site filter (filters by bill.department.site), can be null
      * @param fd - From approval date
      * @param td - To approval date
      * @return List of departments with approved bills
      */
-    public List<Department> getApprovedDepartments(List<BillTypeAtomic> billTypeAtomics, Institution ins, Date fd, Date td) {
+    public List<Department> getApprovedDepartments(List<BillTypeAtomic> billTypeAtomics, Institution ins, Institution siteFilter, Date fd, Date td) {
         String sql;
         Map<String, Object> temMap = new HashMap<>();
 
         sql = "SELECT distinct(b.department) FROM Bill b WHERE b.retired=false "
                 + " and b.billTypeAtomic in :btas "
                 + " and b.institution=:ins "
-                + " and b.completed = true "  // Only approved/completed bills
-                + " and b.approveAt between :fromDate and :toDate "  // Filter by approval date
+                + " and b.completed = true ";  // Only approved/completed bills
+
+        // Add site filter if provided
+        if (siteFilter != null) {
+            sql += " and b.department.site = :site ";
+            temMap.put("site", siteFilter);
+        }
+
+        sql += " and b.approveAt between :fromDate and :toDate "  // Filter by approval date
                 + " order by b.department.name ";
 
         temMap.put("fromDate", fd);
