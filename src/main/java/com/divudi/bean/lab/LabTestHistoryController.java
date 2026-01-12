@@ -197,6 +197,10 @@ public class LabTestHistoryController implements Serializable {
     public void addReportIssuetoStaffHistory(PatientInvestigation patientInvestigation, PatientReport patientReport,Staff issueToStaff) {
         addNewHistory(TestHistoryType.REPORT_ISSUE_STAFF, null, null, patientInvestigation, patientReport, null, issueToStaff, null, null, null, null, null, null);
     }
+    
+    public void addExportPDFReportHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
+        addNewHistory(TestHistoryType.REPORT_EXPORT_AS_PDF, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
+    }
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Data Recive from Analyzer">

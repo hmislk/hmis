@@ -42,6 +42,7 @@ public enum TestHistoryType {
     REPORT_APPROVED_CANCEL,
     REPORT_VIEWED,
     REPORT_PRINTED,
+    REPORT_EXPORT_AS_PDF,
     REPORT_REMOVE,
     REPORT_ISSUE_PATIENT,
     REPORT_ISSUE_STAFF,
@@ -115,6 +116,8 @@ public enum TestHistoryType {
                 return "Report Viewed";
             case REPORT_PRINTED:
                 return "Report Printed";
+            case REPORT_EXPORT_AS_PDF:
+                return "Report Export as PDF";
             case REPORT_ISSUE_PATIENT:
                 return "Report Issue to Patient";
             case REPORT_ISSUE_STAFF:
