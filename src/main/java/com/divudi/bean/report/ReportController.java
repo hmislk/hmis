@@ -4486,8 +4486,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         jpql.append("bi.bill.deptId, ");
         jpql.append("bi.bill.cancelled, ");
         jpql.append("bi.refunded, ");
-        jpql.append("bi.bill.referredBy.person.nameWithTitle, ");
-        jpql.append("bi.item.name, ");
+        jpql.append("bi.bill.referredBy.person.name, ");
+        jpql.append("COALESCE(item.name, ''), ");
         jpql.append("bi.bill.createdAt, ");
         jpql.append("bi.collectingCentreFee, ");
         jpql.append("bi.hospitalFee, ");
@@ -4495,6 +4495,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         jpql.append("bi.discount, ");
         jpql.append("bi.netValue) ");
         jpql.append("FROM BillItem bi ");
+        jpql.append("LEFT JOIN bi.item item ");
         jpql.append("WHERE bi.retired = :ret ");
         jpql.append("AND bi.bill.referredBy IS NOT NULL ");
 
@@ -4527,12 +4528,12 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
 
         if (category != null) {
-            jpql.append("AND bi.item.category = :cat ");
+            jpql.append("AND item.category = :cat ");
             params.put("cat", category);
         }
 
         if (item != null) {
-            jpql.append("AND bi.item = :item ");
+            jpql.append("AND item = :item ");
             params.put("item", item);
         }
 
@@ -4566,7 +4567,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
 
         jpql.append("AND bi.createdAt BETWEEN :fromDate AND :toDate ");
-        jpql.append("ORDER BY bi.bill.referredBy.person.nameWithTitle, bi.bill.createdAt ");
+        jpql.append("ORDER BY bi.bill.referredBy.person.name, bi.bill.createdAt ");
         params.put("fromDate", getFromDate());
         params.put("toDate", getToDate());
 
@@ -4597,8 +4598,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT NEW com.divudi.core.data.dto.ReferringDoctorRevenueSummaryDTO(");
         jpql.append("bi.bill.referredBy.id, ");
-        jpql.append("bi.bill.referredBy.person.nameWithTitle, ");
-        jpql.append("bi.bill.collectingCentre.name, ");
+        jpql.append("bi.bill.referredBy.person.name, ");
+        jpql.append("COALESCE(cc.name, ''), ");
         jpql.append("COUNT(bi), ");
         jpql.append("SUM(bi.hospitalFee), ");
         jpql.append("SUM(bi.collectingCentreFee), ");
@@ -4606,6 +4607,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         jpql.append("SUM(bi.discount), ");
         jpql.append("SUM(bi.netValue)) ");
         jpql.append("FROM BillItem bi ");
+        jpql.append("LEFT JOIN bi.bill.collectingCentre cc ");
         jpql.append("WHERE bi.retired = :ret ");
         jpql.append("AND bi.bill.referredBy IS NOT NULL ");
 
@@ -4659,7 +4661,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         if (type != null && type.equalsIgnoreCase("cc")) {
             if (collectingCentre != null) {
-                jpql.append("AND bi.bill.collectingCentre = :cc ");
+                jpql.append("AND cc = :cc ");
                 params.put("cc", collectingCentre);
             }
         } else {
@@ -4677,8 +4679,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
 
         jpql.append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
-        jpql.append("GROUP BY bi.bill.referredBy.id, bi.bill.referredBy.person.nameWithTitle, bi.bill.collectingCentre.name ");
-        jpql.append("ORDER BY bi.bill.referredBy.person.nameWithTitle ");
+        jpql.append("GROUP BY bi.bill.referredBy.id, bi.bill.referredBy.person.name, cc.name ");
+        jpql.append("ORDER BY bi.bill.referredBy.person.name ");
 
         params.put("fd", fromDate);
         params.put("td", toDate);
