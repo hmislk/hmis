@@ -76,6 +76,7 @@ public class LaboratoryManagementController implements Serializable {
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
+    
     @Inject
     PatientReportController patientReportController;
     @Inject
@@ -90,8 +91,13 @@ public class LaboratoryManagementController implements Serializable {
     ReportTimerController reportTimerController;
     @Inject
     LaboratoryDoctorDashboardController laboratoryDoctorDashboardController;
-
+    @Inject
+    LaboratoryCommonController laboratoryCommonController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
+    
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Variables">
     private ListingEntity listingEntity;
 
@@ -137,6 +143,7 @@ public class LaboratoryManagementController implements Serializable {
     private Priority priority;
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToLaboratoryManagementDashboard() {
         activeIndex = 1;
@@ -257,6 +264,7 @@ public class LaboratoryManagementController implements Serializable {
 
         if (null == currentPatientReport.getReportType()) {
             patientReportController.setCurrentPatientReport(currentPatientReport);
+            addViewReportHistory(currentPatientReport.getId());
             if (currentPatientReport.getPatientInvestigation().getInvestigation().isBypassSampleWorkflow()) {
                 return "/lab/patient_report_without_sample_sending_process?faces-redirect=true";
             } else {
@@ -267,6 +275,7 @@ public class LaboratoryManagementController implements Serializable {
                 case GENARATE:
                     patientReportController.setCurrentPatientReport(currentPatientReport);
                     patientReportController.fillReportFormats(currentPatientReport);
+                    addViewReportHistory(currentPatientReport.getId());
                     if (currentPatientReport.getPatientInvestigation().getInvestigation().isBypassSampleWorkflow()) {
                         return "/lab/patient_report_without_sample_sending_process?faces-redirect=true";
                     } else {
@@ -300,11 +309,13 @@ public class LaboratoryManagementController implements Serializable {
 
         if (currentPatientReport.getReportType() == null) {
             patientReportController.setCurrentPatientReport(currentPatientReport);
+            addViewReportHistory(currentPatientReport.getId());
             return "/lab/patient_report_print?faces-redirect=true";
         } else {
             switch (currentPatientReport.getReportType()) {
                 case GENARATE:
                     patientReportController.setCurrentPatientReport(currentPatientReport);
+                    addViewReportHistory(currentPatientReport.getId());
                     return "/lab/patient_report_print?faces-redirect=true";
                 case UPLOAD:
                     Upload currentReportUpload = patientReportController.loadUpload(currentPatientReport);
@@ -326,10 +337,12 @@ public class LaboratoryManagementController implements Serializable {
 
         if (currentPatientReport.getReportType() == null) {
             patientReportController.setCurrentPatientReport(currentPatientReport);
+            addViewReportHistory(currentPatientReport.getId());
             return "/lab/report_print?faces-redirect=true";
         } else {
             switch (currentPatientReport.getReportType()) {
                 case GENARATE:
+                    addViewReportHistory(currentPatientReport.getId());
                     patientReportController.setCurrentPatientReport(currentPatientReport);
                     return "/lab/report_print?faces-redirect=true";
                 case UPLOAD:
@@ -609,6 +622,7 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Function">
     public void makeNull() {
         this.bills = null;
@@ -1559,9 +1573,6 @@ public class LaboratoryManagementController implements Serializable {
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.collectDTOSamples", sessionController.getLoggedUser());
     }
 
-    @Inject
-    LabTestHistoryController labTestHistoryController;
-
     @Deprecated
     public void sendSamplesToLab() {
         reportTimerController.trackReportExecution(() -> {
@@ -2481,6 +2492,8 @@ public class LaboratoryManagementController implements Serializable {
             searchPatientReports();
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.removePatientReport", sessionController.getLoggedUser());
     }
+    
+    private Staff labReportReceivingStaff;
 
     public void addViewReportHistory(Long reportID) {
         if (reportID == null) {
@@ -2491,8 +2504,10 @@ public class LaboratoryManagementController implements Serializable {
 
         if (currenrReport.getApproved()) {
             if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                labTestHistoryController.addReportViewHistory(currenrReport.getPatientInvestigation(), currenrReport);
-                System.out.println("Successfully Add View Report History");
+                if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of viewing lab reports.", false)) {
+                    labTestHistoryController.addReportViewHistory(currenrReport.getPatientInvestigation(), currenrReport);
+                    System.out.println("Successfully Add View Report History");
+                }
             }
         }
     }
@@ -2502,14 +2517,16 @@ public class LaboratoryManagementController implements Serializable {
             JsfUtil.addErrorMessage("Error in Report ID");
             return;
         }
+        
         PatientReport currenrReport = patientReportFacade.findWithoutCache(reportID);
 
         if (currenrReport.getApproved()) {
             if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                labTestHistoryController.addReportPrintHistory(currenrReport.getPatientInvestigation(), currenrReport);
-                System.out.println("Successfully Add Report Print History");
+                if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of printing lab reports.", false)) {
+                    labTestHistoryController.addReportPrintHistory(currenrReport.getPatientInvestigation(), currenrReport);
+                    System.out.println("Successfully Add Report Print History");
+                }
             }
-            
         }
     }
 
@@ -2518,18 +2535,38 @@ public class LaboratoryManagementController implements Serializable {
             JsfUtil.addErrorMessage("Error in Report ID");
             return;
         }
+        
         PatientReport currenrReport = patientReportFacade.findWithoutCache(reportID);
         Bill reportBill = currenrReport.getPatientInvestigation().getBillItem().getBill();
 
         if (currenrReport.getApproved()) {
             if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-
-                if (reportBill.getPatientEncounter() != null) {
-                    labTestHistoryController.addReportPrintHistory(currenrReport.getPatientInvestigation(), currenrReport);
-                } else {
-                    labTestHistoryController.addReportPrintHistory(currenrReport.getPatientInvestigation(), currenrReport);
+                if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of issuing lab reports.", false)) {
+                    if (reportBill.getPatientEncounter() != null) {
+                        labTestHistoryController.addReportPrintHistory(currenrReport.getPatientInvestigation(), currenrReport);
+                    } else {
+                        labTestHistoryController.addReportPrintHistory(currenrReport.getPatientInvestigation(), currenrReport);
+                    }
+                    System.out.println("Successfully Add Report Issue History");
                 }
-                System.out.println("Successfully Add Report Issue History");
+            }
+        }
+    }
+
+    public void addReportExportHistory(Long reportID) {
+        if (reportID == null) {
+            JsfUtil.addErrorMessage("Error in Report ID");
+            return;
+        }
+        
+        PatientReport currenrReport = patientReportFacade.findWithoutCache(reportID);
+
+        if (currenrReport.getApproved()) {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of issuing lab reports.", false)) {
+                    labTestHistoryController.addExportPDFReportHistory(currenrReport.getPatientInvestigation(), currenrReport);
+                    System.out.println("Successfully Add Report Export History");
+                }
             }
         }
     }
@@ -2871,10 +2908,8 @@ public class LaboratoryManagementController implements Serializable {
         }
     }
 
-    @Inject
-    LaboratoryCommonController laboratoryCommonController;
-
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public ListingEntity getListingEntity() {
         return listingEntity;
@@ -3216,6 +3251,14 @@ public class LaboratoryManagementController implements Serializable {
 
     public void setPriority(Priority priority) {
         this.priority = priority;
+    }
+    
+    public Staff getLabReportReceivingStaff() {
+        return labReportReceivingStaff;
+    }
+
+    public void setLabReportReceivingStaff(Staff labReportReceivingStaff) {
+        this.labReportReceivingStaff = labReportReceivingStaff;
     }
 
 // </editor-fold>
