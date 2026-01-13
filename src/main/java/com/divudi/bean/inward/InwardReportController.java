@@ -817,7 +817,13 @@ public class InwardReportController implements Serializable {
                 .append(") ")
                 .append(" FROM PatientEncounter e ")
                 .append(" WHERE e.retired = false ")
+                .append(" AND e.paymentMethod IN :methods ")
                 .append(" AND e.dateOfAdmission BETWEEN :fromDate AND :toDate ");
+
+        params.put("methods", Arrays.asList(
+                PaymentMethod.Cash,
+                PaymentMethod.Credit
+        ));
 
         params.put("fromDate", fromYearStartDate);
         params.put("toDate", toYearEndDate);
@@ -842,7 +848,7 @@ public class InwardReportController implements Serializable {
                 aggregated.setMonth(month);
                 monthMap.put(month, aggregated);
             }
-            
+
             aggregated.add(dto);
 
         }
@@ -888,7 +894,7 @@ public class InwardReportController implements Serializable {
         long[] credit = new long[12];
 
         for (PaymentTypeAdmissionDTO dto : paymentTypeAdmissionCountList) {
-            
+
             if (dto.isIsGrandTotal()) {
                 continue;
             }
