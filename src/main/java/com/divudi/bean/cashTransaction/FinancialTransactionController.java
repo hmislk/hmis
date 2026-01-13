@@ -2649,6 +2649,57 @@ public class FinancialTransactionController implements Serializable {
             return null; // Early exit if no shift to end
         }
 
+        // Validate pending transactions before allowing shift end
+        fillFundTransferBillsForMeToReceive();
+
+        // Check for pending fund transfers that must be collected first
+        if (fundTransferBillsToReceive != null && !fundTransferBillsToReceive.isEmpty()) {
+            JsfUtil.addErrorMessage("Please collect funds transferred to you before closing.");
+            return null;
+        }
+
+        // Configuration-based validations
+        boolean mustReceiveAllFundTransfersBeforeClosingShift = configOptionApplicationController
+                .getBooleanValueByKey("Must Receive All Fund Transfers Before Closing Shift", false);
+        boolean mustWaitUntilOtherUserAcceptsAllFundTransfersBeforeClosingShift = configOptionApplicationController
+                .getBooleanValueByKey("Must Wait Until Other User Accepts All Fund Transfers Before Closing Shift", false);
+        boolean mustReceiveAllHandoversBeforeClosingShift = configOptionApplicationController
+                .getBooleanValueByKey("Must Receive All Handovers Before Closing Shift", false);
+        boolean mustWaitUntilOtherUserAcceptsAllHandoversBeforeClosingShift = configOptionApplicationController
+                .getBooleanValueByKey("Must Wait Until Other User Accepts All Handovers Before Closing Shift", false);
+
+        if (mustReceiveAllFundTransfersBeforeClosingShift) {
+            boolean haveFundTransfersForMeToReceive = hasAtLeastOneFundTransferBillToReceive(null, null, sessionController.getLoggedUser(), null);
+            if (haveFundTransfersForMeToReceive) {
+                JsfUtil.addErrorMessage("There are Fund Transfers for you to receive. Please accept them before closing the shift.");
+                return null;
+            }
+        }
+
+        if (mustWaitUntilOtherUserAcceptsAllFundTransfersBeforeClosingShift) {
+            boolean haveFundTransfersToBeReceived = hasAtLeastOneFundTransferBillToReceive(sessionController.getLoggedUser(), null, null, null);
+            if (haveFundTransfersToBeReceived) {
+                JsfUtil.addErrorMessage("There are Fund Transfers you have created yet to be received by another user. Please ask the other user to accept them. Until they accept your fund transfers, you can not close your shift.");
+                return null;
+            }
+        }
+
+        if (mustReceiveAllHandoversBeforeClosingShift) {
+            boolean haveHandoversForMeToReceive = hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null);
+            if (haveHandoversForMeToReceive) {
+                JsfUtil.addErrorMessage("There are Handovers for you to receive. Please accept them before closing the shift.");
+                return null;
+            }
+        }
+
+        if (mustWaitUntilOtherUserAcceptsAllHandoversBeforeClosingShift) {
+            boolean haveHandoversToBeReceived = hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null);
+            if (haveHandoversToBeReceived) {
+                JsfUtil.addErrorMessage("There are Handovers you have created yet to be received by another user. Please ask the other user to accept them. Until they accept your handovers, you can not close your shift.");
+                return null;
+            }
+        }
+
         // Initializing the current bill with relevant details
         currentBill = new Bill();
         currentBill.setBillType(BillType.ShiftEndFundBill);
@@ -4513,18 +4564,34 @@ public class FinancialTransactionController implements Serializable {
             return "";
         }
 
-        if (mustReceiveAllHandoversBeforeClosingShift) {
-            boolean haveHandoversForMeToReceive = hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null);
-            if (haveHandoversForMeToReceive) {
-                JsfUtil.addErrorMessage("There are Handovers FOr You to Receive, Please accept them before closing the shift.");
+        if (mustReceiveAllFundTransfersBeforeClosingShift) {
+            boolean haveFundTransfersForMeToReceive = hasAtLeastOneFundTransferBillToReceive(null, null, sessionController.getLoggedUser(), null);
+            if (haveFundTransfersForMeToReceive) {
+                JsfUtil.addErrorMessage("There are Fund Transfers for you to receive. Please accept them before closing the shift.");
                 return null;
             }
         }
 
         if (mustWaitUntilOtherUserAcceptsAllFundTransfersBeforeClosingShift) {
+            boolean haveFundTransfersToBeReceived = hasAtLeastOneFundTransferBillToReceive(sessionController.getLoggedUser(), null, null, null);
+            if (haveFundTransfersToBeReceived) {
+                JsfUtil.addErrorMessage("There are Fund Transfers you have created yet to be received by another user. Please ask the other user to accept them. Until they accept your fund transfers, you can not close your shift.");
+                return null;
+            }
+        }
+
+        if (mustReceiveAllHandoversBeforeClosingShift) {
+            boolean haveHandoversForMeToReceive = hasAtLeastOneHandoverBillToReceive(null, null, sessionController.getLoggedUser(), null);
+            if (haveHandoversForMeToReceive) {
+                JsfUtil.addErrorMessage("There are Handovers for you to receive. Please accept them before closing the shift.");
+                return null;
+            }
+        }
+
+        if (mustWaitUntilOtherUserAcceptsAllHandoversBeforeClosingShift) {
             boolean haveHandoversToBeReceived = hasAtLeastOneHandoverBillToReceive(sessionController.getLoggedUser(), null, null, null);
             if (haveHandoversToBeReceived) {
-                JsfUtil.addErrorMessage("There are Handovers you have created yet to be Received by another user, Please ask the other user to accept them. Until they accept your handovers, you can not close your shift.");
+                JsfUtil.addErrorMessage("There are Handovers you have created yet to be received by another user. Please ask the other user to accept them. Until they accept your handovers, you can not close your shift.");
                 return null;
             }
         }
