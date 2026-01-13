@@ -5702,6 +5702,19 @@ public class FinancialTransactionController implements Serializable {
             return "";
         }
 
+        // Validate required comments
+        if (currentBill.getComments() == null || currentBill.getComments().trim().isEmpty()) {
+            floatTransferStarted = false;
+            JsfUtil.addErrorMessage("Comments are required for receiving float transfer");
+            return "";
+        }
+
+        if (currentBill.getComments().trim().length() < 10) {
+            floatTransferStarted = false;
+            JsfUtil.addErrorMessage("Comments must be at least 10 characters long");
+            return "";
+        }
+
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());
