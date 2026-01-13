@@ -5465,6 +5465,7 @@ public class FinancialTransactionController implements Serializable {
         switch (billTypeAtomic) {
             case FUND_SHIFT_HANDOVER_CREATE:
                 jpql.append("and (s.completed = false or s.completed is null) ");
+                jpql.append("and (s.cancelled = false or s.cancelled is null) ");
                 break;
             case FUND_TRANSFER_BILL:
                 jpql.append("and s.referenceBill is null ");
