@@ -237,6 +237,7 @@ facade.findLightsByJpql(jpql, params)     // Missing TemporalType when using Dat
 5. **Missing explicit cast** → Type safety issues with DTO constructor queries
 6. **Accessing properties through null relationships** → Silent query failures (most common issue!)
 7. **Including cancellation details in list DTOs** → Unnecessary complexity and performance issues
+8. **Using derived/calculated properties in JPQL** → JPQL only supports persisted fields, not getter methods (see below)
 
 ## 🚨 CRITICAL: Type Handling in DTO Constructor Queries
 
@@ -366,6 +367,61 @@ public class PurchaseOrderListDTO {
 7. **Match parameter types exactly** - don't rely on implicit conversions with `Object`
 8. **Avoid cancellation details in list DTOs** - use boolean flags, let users navigate to details for full info
 9. **Test with minimal constructor first** - if a 4-param constructor works but 11-param fails, the issue is with the additional fields
+10. **Only use persisted fields in JPQL** - derived properties like `nameWithTitle` are not valid (see below)
+
+## 🚨 CRITICAL: Derived/Calculated Properties Cannot Be Used in JPQL
+
+JPQL can only access **persisted database fields**, not derived properties (getter methods that compute values).
+
+**❌ WRONG - Using derived property:**
+```java
+// Person entity has getNameWithTitle() method that combines title + name
+// But 'nameWithTitle' is NOT a persisted column in the database!
+
+String jpql = "SELECT new DTO("
+    + "p.nameWithTitle) "  // ❌ ERROR: 'nameWithTitle' cannot be resolved to a valid type
+    + "FROM Person p";
+```
+
+**✅ CORRECT - Use only persisted fields:**
+```java
+String jpql = "SELECT new DTO("
+    + "p.name) "  // ✅ 'name' is a persisted field
+    + "FROM Person p";
+
+// If you need the title, select it separately:
+String jpql = "SELECT new DTO("
+    + "p.title, "  // ✅ Persisted field
+    + "p.name) "   // ✅ Persisted field
+    + "FROM Person p";
+```
+
+### Common Non-Persisted Properties in HMIS
+
+| Entity | Non-Persisted Property | Use Instead |
+|--------|----------------------|-------------|
+| `Person` | `nameWithTitle` | `name` (or `title`, `name` separately) |
+| `Person` | `age` | `dob` (calculate age in Java) |
+| `Bill` | `netTotal` (if calculated) | Sum the actual persisted fee fields |
+| `Item` | `displayName` | `name` |
+
+### How to Identify Non-Persisted Properties
+
+1. Check if the property has `@Column` or `@JoinColumn` annotation → **Persisted**
+2. Check if the property is only a getter method with no backing field → **NOT Persisted**
+3. Check if the getter computes/derives a value from other fields → **NOT Persisted**
+
+**Example from Person entity:**
+```java
+// This is a derived property - NO @Column annotation, just a getter
+public String getNameWithTitle() {
+    return (title != null ? title + " " : "") + name;
+}
+
+// This IS a persisted field - has @Column annotation
+@Column(name = "name")
+private String name;
+```
 
 ## Navigation-Level DTO/Entity Selection
 When implementing dual DTO/Entity approach:
