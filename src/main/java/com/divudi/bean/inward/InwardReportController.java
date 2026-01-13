@@ -982,17 +982,23 @@ public class InwardReportController implements Serializable {
         data.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun",
                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
 
-        BarDataset cashDs = new BarDataset().setLabel("Cash");
+        BarDataset cashDs = new BarDataset().setLabel("Cash").setBackgroundColor(new RGBAColor(54, 162, 235, 0.7f))
+                .setBorderColor(new RGBAColor(54, 162, 235, 1f))
+                .setBorderWidth(1);
         for (long v : cash) {
             cashDs.addData(v);
         }
 
-        BarDataset tbcDs = new BarDataset().setLabel("Cash (To Be Claim)");
+        BarDataset tbcDs = new BarDataset().setLabel("Cash (To Be Claim)").setBackgroundColor(new RGBAColor(255, 159, 64, 0.7f))
+                .setBorderColor(new RGBAColor(255, 159, 64, 1f))
+                .setBorderWidth(1);
         for (long v : cashTbc) {
             tbcDs.addData(v);
         }
 
-        BarDataset creditDs = new BarDataset().setLabel("Credit");
+        BarDataset creditDs = new BarDataset().setLabel("Credit").setBackgroundColor(new RGBAColor(255, 99, 132, 0.7f))
+                .setBorderColor(new RGBAColor(255, 99, 132, 1f))
+                .setBorderWidth(1);
         for (long v : credit) {
             creditDs.addData(v);
         }
