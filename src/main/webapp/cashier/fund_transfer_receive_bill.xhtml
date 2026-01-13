@@ -99,33 +99,11 @@
                                     ajax="false"
                                     icon="fas fa-check"
                                     class="ui-button-success"
-                                    onclick="return validateReceiveComment();"
                                     action="#{financialTransactionController.settleFundTransferReceiveBill()}">
                                 </p:commandButton>
                             </div>
                         </div>
                     </p:panel>
-
-                    <script type="text/javascript">
-                        function validateReceiveComment() {
-                            var commentField = document.getElementById('txtReceiveComments');
-                            var comment = commentField.value.trim();
-
-                            if (comment === '') {
-                                alert('Please provide comments before receiving the float transfer.');
-                                commentField.focus();
-                                return false;
-                            }
-
-                            if (comment.length &lt; 10) {
-                                alert('Comments must be at least 10 characters long.');
-                                commentField.focus();
-                                return false;
-                            }
-
-                            return confirm('Are you sure you want to receive this float transfer?');
-                        }
-                    </script>
                 </h:form>
             </ui:define>
         </ui:composition>
