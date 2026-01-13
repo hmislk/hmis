@@ -15,7 +15,7 @@ import javax.persistence.PersistenceContext;
  */
 @Stateless
 public class AuditEventFacade extends AbstractFacade<AuditEvent> {
-    @PersistenceContext(unitName = "hmisAuditPU")
+    @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
     @Override

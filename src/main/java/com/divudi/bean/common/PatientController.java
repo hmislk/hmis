@@ -47,6 +47,7 @@ import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientSample;
 import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.FamilyFacade;
@@ -55,6 +56,7 @@ import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.facade.AuditEventFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.SpecificPatientStatus;
@@ -64,6 +66,7 @@ import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.MembershipService;
+import com.google.gson.Gson;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -145,8 +148,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private WebUserFacade webUserFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
-    @EJB
+    @EJB 
     MembershipService membershipService;
+    @EJB
+    private AuditEventFacade auditEventFacade;
     /**
      *
      * Controllers
@@ -280,6 +285,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private boolean reGenerateePhn;
     private PaymentMethod paymentMethod;
     private String blacklistComment;
+    private static final String PATIENT_CREATED_EVENT = "Patient Created";
     
     public boolean isBlackListStatus() {
         return blackListStatus;
@@ -3348,7 +3354,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 return false;
             }
         }
-
+        boolean isNewPatient = (p.getId() == null);
         //applyPatientNameCapitalization(p);
 
         // Generate PHN upfront if needed
@@ -3366,18 +3372,163 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
 
         // Save Patient with immediate flush (flushes both Person and Patient)
-        if (p.getId() == null) {
+        if (isNewPatient) {
             p.setCreatedAt(new Date());
             p.setCreater(getSessionController().getLoggedUser());
             p.setCreatedInstitution(getSessionController().getInstitution());
             getFacade().createAndFlush(p);  // Immediate flush to database
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
+            // Create audit event for new patient creation
+            createPatientCreatedAuditEvent(p);
         } else {
             getFacade().editAndFlush(p);    // Immediate flush to database
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
         }
         return true;
     }
+    /**
+ * Creates an audit event for patient creation
+ */
+private void createPatientCreatedAuditEvent(Patient patient) {
+    try {
+        // Create AFTERJSON with patient details
+        String afterJson = buildPatientJson(patient);
+        
+        // Create audit event
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventDataTime(new Date());
+        auditEvent.setEventEndTime(new Date());
+        
+        // Set web user ID if available
+        if (sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        
+        // Generate UUID if needed
+        auditEvent.setUuid(java.util.UUID.randomUUID().toString());
+        
+        // Set event details
+        auditEvent.setEventTrigger("savePatient");
+        auditEvent.setEntityType("Patient");
+        auditEvent.setObjectId(patient.getId());
+        
+        // Set BEFOREJSON as null (for creation)
+        auditEvent.setBeforeJson(null);
+        
+        // Set AFTERJSON with patient details
+        auditEvent.setAfterJson(afterJson);
+        
+        // Set institution and department if available
+        if (sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+        
+        // Set status and other details
+        auditEvent.setEventStatus("SUCCESS");
+        
+        
+        // Set IP address if available (you might need to get this from request)
+        auditEvent.setIpAddress(getClientIpAddress());
+        
+        // Calculate event duration (minimal for creation)
+        auditEvent.setEventDuration(0L);
+        
+        // Save audit event
+        auditEventFacade.create(auditEvent);
+        
+    } catch (Exception e) {
+        // Log error but don't fail patient creation
+        System.err.println("Failed to create audit event for patient ID " + 
+                         patient.getId() + ": " + e.getMessage());
+        e.printStackTrace();
+    }
+}
+
+/**
+ * Builds JSON string with patient details
+ */
+private String buildPatientJson(Patient patient) {
+    try {
+        // Using Gson (as seen in AuditEvent.java)
+        Gson gson = new Gson();
+        Map<String, Object> jsonMap = new HashMap<>();
+        
+        // Add patient details
+        jsonMap.put("patientId", patient.getId());
+        jsonMap.put("phn", patient.getPhn());
+        jsonMap.put("code", patient.getCode());
+        
+        // Add person details
+        if (patient.getPerson() != null) {
+            Map<String, Object> personMap = new HashMap<>();
+            personMap.put("id", patient.getPerson().getId());
+            personMap.put("name", patient.getPerson().getName());
+            
+            if (patient.getPerson().getDob() != null) {
+                // Format date as ISO string
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                personMap.put("dob", sdf.format(patient.getPerson().getDob()));
+            } else {
+                personMap.put("dob", null);
+            }
+            
+            personMap.put("sex", patient.getPerson().getSex() != null ? 
+                patient.getPerson().getSex().toString() : null);
+            personMap.put("nic", patient.getPerson().getNic());
+            personMap.put("phone", patient.getPerson().getPhone());
+            personMap.put("mobile", patient.getPerson().getMobile());
+            personMap.put("address", patient.getPerson().getAddress());
+            personMap.put("email", patient.getPerson().getEmail());
+            
+            jsonMap.put("person", personMap);
+        }
+        
+        // Add creation details
+        if (patient.getCreatedAt() != null) {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            jsonMap.put("createdAt", sdf.format(patient.getCreatedAt()));
+        } else {
+            jsonMap.put("createdAt", new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(new Date()));
+        }
+        
+        jsonMap.put("createdBy", patient.getCreater() != null ? 
+            patient.getCreater().getWebUserPerson().getName() : 
+            (sessionController.getLoggedUser() != null ? 
+                sessionController.getLoggedUser().getWebUserPerson().getName() : "system"));
+        
+        // Convert map to JSON string
+        return gson.toJson(jsonMap);
+        
+    } catch (Exception e) {
+        // Fallback to simple JSON if Gson fails
+        return String.format(
+            "{\"patientId\": %d, \"phn\": \"%s\", \"error\": \"Failed to create detailed JSON: %s\"}",
+            patient.getId(),
+            patient.getPhn() != null ? patient.getPhn() : "",
+            e.getMessage()
+        );
+    }
+}
+
+/**
+ * Helper method to get client IP address
+ */
+private String getClientIpAddress() {
+    try {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext != null) {
+            javax.servlet.http.HttpServletRequest request = 
+                (javax.servlet.http.HttpServletRequest) facesContext.getExternalContext().getRequest();
+            return request.getRemoteAddr();
+        }
+    } catch (Exception e) {
+        // Ignore if we can't get IP
+    }
+    return "Unknown";
+}
 
     public List<Patient> findPatientUsingPhnNumber(String phn) {
         Map m = new HashMap();
@@ -3450,6 +3601,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("Please enter a name");
             return;
         }
+        boolean isNewPatient = (p.getId() == null);
 
         //applyPatientNameCapitalization(p);
         if (p.getPerson().getId() == null) {
@@ -3461,12 +3613,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
 
         // Save Patient with immediate flush (flushes both Person and Patient)
-        if (p.getId() == null) {
+        if (isNewPatient) {
             p.setCreatedAt(new Date());
             p.setCreater(getSessionController().getLoggedUser());
             p.setCreatedInstitution(getSessionController().getInstitution());
             getFacade().createAndFlush(p);  // Immediate flush to database
             JsfUtil.addSuccessMessage("Saved Successfully");
+            
+            // Create audit event for new patient
+            createPatientCreatedAuditEvent(p);
         } else {
             getFacade().editAndFlush(p);    // Immediate flush to database
         }
@@ -3518,6 +3673,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void saveSelectedPatient() {
         //applyPatientNameCapitalization(getCurrent());
+        
+        boolean isNewPatient = (getCurrent().getId() == null);
 
         if (getCurrent().getPerson().getId() == null) {
             getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());
@@ -3526,11 +3683,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
         } else {
             getPersonFacade().edit(getCurrent().getPerson());
         }
-        if (getCurrent().getId() == null) {
+        if (isNewPatient) {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Saved as a new patient successfully.");
+            
+            // Create audit event for new patient
+            createPatientCreatedAuditEvent(getCurrent());
         } else {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Updated the patient details successfully.");
