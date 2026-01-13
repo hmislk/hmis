@@ -16473,27 +16473,16 @@ public class SearchController implements Serializable {
             ReportTemplateRowBundle pharmacyCollection = generatePharmacyCollectionWithPaymentBreakdown(pharmacyBillTypes, pharmacyPaymentMethods);
             pharmacyCollection.setBundleType("pharmacyCollection");
             pharmacyCollection.setName("Pharmacy Sale");
-            System.out.println("pharmacyCollection = " + pharmacyCollection);
-            System.out.println("pharmacyCollection.getName() = " + pharmacyCollection.getName());
-            System.out.println("pharmacyCollection.getBundleType() = " + pharmacyCollection.getBundleType());
-            System.out.println("pharmacyCollection.getTotal() = " + pharmacyCollection.getTotal());
-            System.out.println("pharmacyCollection.getCashierCollectionTotal() = " + pharmacyCollection.getCashierCollectionTotal());
-            System.out.println("pharmacyCollection.getCashierExcludedTotal() = " + pharmacyCollection.getCashierExcludedTotal());
-            System.out.println("pharmacyCollection.getReportTemplateRows().size() = " + pharmacyCollection.getReportTemplateRows().size());
             bundle.getBundles().add(pharmacyCollection);
-            System.out.println("Added pharmacy collection to main bundle. Total bundles: " + bundle.getBundles().size());
 
             // Clear cached collection totals to force recalculation with updated configuration
             pharmacyCollection.setCashierCollectionTotalComputed(false);
             pharmacyCollection.setCashierExcludedTotalComputed(false);
-            System.out.println("DEBUG: Cleared pharmacy collection cached totals");
 
             // Use Grand Total instead of Collection Total to include ALL payment methods (including patient deposits)
             double pharmacyGrandTotal = bundleCashierGrandTotal(pharmacyCollection);
             collectionForTheDay += pharmacyGrandTotal;
-            System.out.println("DEBUG: Using Grand Total for pharmacy - pharmacyCollection.getCashierGrandTotal() = " + pharmacyGrandTotal);
-            System.out.println("DEBUG: After recalculation - pharmacyCollection.getCashierCollectionTotal() = " + pharmacyCollection.getCashierCollectionTotal());
-            System.out.println("DEBUG: After recalculation - pharmacyCollection.getCashierExcludedTotal() = " + pharmacyCollection.getCashierExcludedTotal());
+            
 
             // Generate collecting centre collection and add to the main bundle
             ReportTemplateRowBundle ccCollection = generateCcCollection();
@@ -16528,18 +16517,11 @@ public class SearchController implements Serializable {
             collectionForTheDay += getSafeTotal(channellingCreditCompanyCollection);
 
             ReportTemplateRowBundle patientDepositPayments = generatePatientDepositCollection();
-            System.out.println("DEBUG generateDailyReturn: Patient Deposit Bundle Created");
-            System.out.println("  - Name: " + patientDepositPayments.getName());
-            System.out.println("  - BundleType: " + patientDepositPayments.getBundleType());
-            System.out.println("  - Rows: " + (patientDepositPayments.getReportTemplateRows() != null ? patientDepositPayments.getReportTemplateRows().size() : "null"));
-            System.out.println("  - Total: " + patientDepositPayments.getTotal());
             bundle.getBundles().add(patientDepositPayments);
             // Use bundle total directly (not bundleCashierCollectionTotal) as this bundle contains bills, not payments
             double patientDepositCollectionTotal = patientDepositPayments.getTotal();
-            System.out.println("DEBUG generateDailyReturn: Patient Deposit RECEIPTS = " + patientDepositCollectionTotal);
             collectionForTheDay += patientDepositCollectionTotal;
-            System.out.println("DEBUG generateDailyReturn: Patient Deposit Receipts ADDED to collectionForTheDay");
-            System.out.println("DEBUG generateDailyReturn: Collection for the day after patient deposits = " + collectionForTheDay);
+            
 
             // OPD Patient Deposit Payments - bills paid using deposits (deducted from collection for the day)
             ReportTemplateRowBundle opdPatientDepositPayments = generateOpdPatientDepositPayments();
@@ -16549,28 +16531,19 @@ public class SearchController implements Serializable {
             opdPatientDepositPayments.setTotal(-opdDepositTotal);
             bundle.getBundles().add(opdPatientDepositPayments);
             collectionForTheDay -= Math.abs(getSafeTotal(opdPatientDepositPayments));
-            System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization for OPD Bills = " + getSafeTotal(opdPatientDepositPayments));
-            System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization for OPD Bills deducted from collection for the day");
-            System.out.println("DEBUG generateDailyReturn: Collection for the day after OPD patient deposit deduction = " + collectionForTheDay);
+            
 
             // Pharmacy Patient Deposit Payments - bills paid using deposits (deducted from collection for the day)
             ReportTemplateRowBundle pharmacyPatientDepositPayments = generatePharmacyPatientDepositPayments();
             pharmacyPatientDepositPayments.calculateTotalByPayments();
             // Fix sign for display - invert the sign to show utilization as positive
             double pharmacyDepositTotal = pharmacyPatientDepositPayments.getTotal();
-            System.out.println("DEBUG: Pharmacy deposit total BEFORE sign inversion = " + pharmacyDepositTotal);
             pharmacyPatientDepositPayments.setTotal(-pharmacyDepositTotal);
-            System.out.println("DEBUG: Pharmacy deposit total AFTER sign inversion = " + pharmacyPatientDepositPayments.getTotal());
             bundle.getBundles().add(pharmacyPatientDepositPayments);
             double collectionBeforeDeduction = collectionForTheDay;
             double deductionAmount = Math.abs(getSafeTotal(pharmacyPatientDepositPayments));
             collectionForTheDay -= deductionAmount;
-            System.out.println("DEBUG: Collection BEFORE pharmacy deduction = " + collectionBeforeDeduction);
-            System.out.println("DEBUG: Pharmacy deduction amount = " + deductionAmount);
-            System.out.println("DEBUG: Collection AFTER pharmacy deduction = " + collectionForTheDay);
-            System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization for Pharmacy Bills = " + getSafeTotal(pharmacyPatientDepositPayments));
-            System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization for Pharmacy Bills deducted from collection for the day");
-
+            
             // Final collection for the day
             ReportTemplateRowBundle collectionForTheDayBundle = new ReportTemplateRowBundle();
             collectionForTheDayBundle.setName("Collection for the day");
@@ -16579,7 +16552,7 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(collectionForTheDayBundle);
 
             netCashCollection = collectionForTheDay;
-            System.out.println("DEBUG generateDailyReturn: Initial netCashCollection = " + netCashCollection);
+            
 
             // Deduct various payments from net cash collection
             ReportTemplateRowBundle pettyCashPayments = generatePettyCashPayments();
@@ -16647,8 +16620,7 @@ public class SearchController implements Serializable {
             netCashForTheDayBundle.setBundleType("netCash");
             netCashForTheDayBundle.setTotal(netCashCollection);
             bundle.getBundles().add(netCashForTheDayBundle);
-            System.out.println("DEBUG generateDailyReturn: FINAL Net Cash = " + netCashCollection);
-
+            
             ReportTemplateRowBundle opdServiceCollectionCredit;
             opdServiceCollectionCredit = generateCreditOpdServiceCollection();
             bundle.getBundles().add(opdServiceCollectionCredit);
@@ -16681,7 +16653,7 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(netCashForTheDayBundlePlusCredits);
 
             // Patient Deposit Reconciliation Section (Display Only - No Impact on Calculations)
-            System.out.println("DEBUG generateDailyReturn: Starting Patient Deposit Reconciliation Section");
+            
 
             // 1. Patient Deposit Receipts Summary (display total again)
             ReportTemplateRowBundle patientDepositReceiptsSummary = generatePatientDepositCollection();
@@ -16690,14 +16662,14 @@ public class SearchController implements Serializable {
             patientDepositReceiptsSummaryDisplay.setBundleType("patientDepositReceiptsSummary");
             patientDepositReceiptsSummaryDisplay.setTotal(patientDepositReceiptsSummary.getTotal());
             bundle.getBundles().add(patientDepositReceiptsSummaryDisplay);
-            System.out.println("DEBUG generateDailyReturn: Patient Deposit Receipts Summary = " + patientDepositReceiptsSummary.getTotal());
+            
 
             // 2. Patient Deposit Utilization (moved from deductions area)
             ReportTemplateRowBundle patientDepositUtilization = generatePatientDepositUtilization();
             patientDepositUtilization.calculateTotalByPayments();
             patientDepositUtilization.setBundleType("patientDepositUtilizationSummary");
             bundle.getBundles().add(patientDepositUtilization);
-            System.out.println("DEBUG generateDailyReturn: Patient Deposit Utilization Summary = " + getSafeTotal(patientDepositUtilization));
+            
 
             // 3. Carried out Patient Deposit Value (Receipts - Utilization)
             double carriedOutDepositValue = patientDepositReceiptsSummary.getTotal() - Math.abs(getSafeTotal(patientDepositUtilization));
@@ -16706,9 +16678,7 @@ public class SearchController implements Serializable {
             carriedOutPatientDeposit.setBundleType("carriedOutPatientDeposit");
             carriedOutPatientDeposit.setTotal(carriedOutDepositValue);
             bundle.getBundles().add(carriedOutPatientDeposit);
-            System.out.println("DEBUG generateDailyReturn: Carried out Patient Deposit Value = " + carriedOutDepositValue + " (Receipts: " + patientDepositReceiptsSummary.getTotal() + " - Utilization: " + Math.abs(getSafeTotal(patientDepositUtilization)) + ")");
-
-            System.out.println("DEBUG generateDailyReturn: Patient Deposit Reconciliation Section Complete");
+            
 
         }, FinancialReport.DAILY_RETURN, sessionController.getLoggedUser());
     }
