@@ -8,6 +8,11 @@
 /faces-config.NavData
 
 .idea
+
+# Wiki temp folders - these are GitHub wiki submodules cloned locally for editing
+# Do not track as they are separate repositories
+/wiki/
+/hmis.wiki/
 .vscode
 nb-configuration.xml
 *.stackdump
@@ -36,3 +41,8 @@ nul
 *.log
 logs/
 hs_err_pid*.log
+
+# AI session transcripts/logs
+*-caveat-the-messages-below-*.txt
+claude-*.jsonl
+.claude-session*

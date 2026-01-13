@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mysql:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh pr checks:*)",
+      "WebSearch",
+      "Bash(grep:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh pr list:*)",
+      "Bash(xargs git branch -D)",
+      "Bash(git worktree:*)",
+      "Bash(git branch:*)",
+      "WebFetch(domain:mvnrepository.com)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(gh pr close:*)",
+      "Bash(git push)",
+      "Bash(git fetch:*)",
+      "Bash(git cat-file:*)",
+      "Bash(dir \"C:\\\\Users\\\\buddhika\\\\Payara_Server\\\\glassfish\\\\domains\\\\domain1\\\\applications\")",
+      "Bash(dir \"C:\\\\Users\\\\buddhika\\\\Payara_Server\\\\glassfish\\\\domains\\\\domain1\\\\generated\")",
+      "Bash(dir \"C:\\\\Users\\\\buddhika\\\\Payara_Server\\\\glassfish\\\\domains\\\\domain1\\\\autodeploy\")",
+      "Bash(dir \"C:\\\\Users\\\\buddhika\\\\Payara_Server\\\\glassfish\\\\domains\\\\domain1\\\\eclipseApps\")",
+      "Bash(gh issue view:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(dir \"C:\\\\Users\\\\buddhika\\\\Payara_Server\\\\glassfish\\\\domains\\\\domain1\\\\logs\")",
+      "Bash(git checkout:*)",
+      "Bash(dir \"C:\\\\Users\\\\buddhika\\\\AppData\\\\Local\\\\Temp\\\\*.png\")",
+      "Bash(python3:*)",
+      "Bash(pip install:*)",
+      "Bash(python -m pip install:*)",
+      "Bash(python:*)",
+      "Bash(cd:*)"
+    ]
+  }
+}

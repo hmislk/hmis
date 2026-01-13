@@ -5,138 +5,295 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:p="http://primefaces.org/ui"
-                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
-                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
-                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-                xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
+                xmlns:p="http://primefaces.org/ui">
 
     <ui:define name="subcontent">
+        <h:form id="frmSearch">
+            <p:panel header="Search Patient Deposits" styleClass="w-100">
 
-
-        <h:panelGroup rendered="#{!patientController.printPreview}" >
-            <h:form  >
-                <p:panel>
-                    <f:facet name="header">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div>
-                                <h:outputText value="Receive Deposits List"/>
-                            </div>
-                        </div>
-                    </f:facet>
-                    <div class="row">
-                        <div class="col-md-2">
-                            <h:panelGroup class="d-flex flex-column">
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker"
-                                            id="fromDate"
-                                            value="#{searchController.fromDate}"
-                                            class="w-100"
-                                            inputStyleClass="form-control"
-                                            navigator="false"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                </p:calendar>
-
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate"
-                                            value="#{searchController.toDate}"
-                                            navigator="false"
-                                            class="w-100"
-                                            inputStyleClass="form-control"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                </p:calendar>
-
-                                <p:commandButton id="btnSearch"
-                                                 ajax="false"
-                                                 value="Search"
-                                                 icon="fa fa-search"
-                                                 class="ui-button-success mt-2"
-                                                 action="#{searchController.createPatientDepositTable}" />
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
-
-<!--                                <p:inputText autocomplete="off" placeholder="Bill No" value="#{searchController.searchKeyword.billNo}" class="my-1"/>-->
-                                <p:inputText autocomplete="off" placeholder="Patient Name" value="#{searchController.searchKeyword.patientName}" class="my-1"/>
-<!--                                <p:inputText autocomplete="off" placeholder="Value" value="#{searchController.searchKeyword.netTotal}" class="my-1"/>-->
-                                <h:outputLabel/>
+                <!-- Filter Section -->
+                <h:panelGroup layout="block" styleClass="container-fluid mb-3">
+                    <h:panelGroup layout="block" styleClass="row">
+                        <!-- Date Filters -->
+                        <h:panelGroup layout="block" styleClass="col-lg-3 col-md-6 col-sm-12 mb-2">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputLabel value="From Date" styleClass="mb-1 d-block"/>
+                                <p:datePicker id="fromDate"
+                                              value="#{patientDepositSearchController.fromDate}"
+                                              showTime="true"
+                                              pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                              styleClass="w-100"/>
                             </h:panelGroup>
-                        </div>
-                        <div class="col-md-10">
-                            <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
-                                <p:column headerText="Bill No" >
-                                    <h:commandLink action="/patient_deposit/view/patient_deposit_bill_reprint?faces-redirect=true" value="#{bill.deptId}">
-                                        <h:outputLabel  ></h:outputLabel>
-                                        <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
-                                    </h:commandLink>
-                                </p:column>
-                                <p:column headerText="Billed At"  >
-                                    <h:commandLink action="/patient_deposit/view/patient_deposit_bill_reprint?faces-redirect=true" >
-                                        <h:outputLabel value="#{bill.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
-                                        <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
-                                    </h:commandLink>
-                                    <br/>
-                                    <h:panelGroup rendered="#{bill.cancelled}" >
-                                        <h:outputLabel style="color: red;" value="Cancelled At " />
-                                        <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
-                                    </h:panelGroup>
+                        </h:panelGroup>
 
-                                </p:column>
-                                <p:column headerText="Billed By" >
-                                    <h:commandLink action="/patient_deposit/view/patient_deposit_bill_reprint?faces-redirect=true" >
-                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >
-                                        </h:outputLabel>
-                                        <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
-                                    </h:commandLink>
-                                    <br/>
-                                    <h:panelGroup rendered="#{bill.cancelled}" >
-                                        <h:outputLabel style="color: red;" value="Cancelled At " />
-                                        <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >
-                                        </h:outputLabel>
-                                    </h:panelGroup>
-                                </p:column>
-                                <p:column headerText="Patient Name" >
-                                    <h:commandLink action="/patient_deposit/view/patient_deposit_bill_reprint?faces-redirect=true" >
-                                        <h:outputLabel value="#{bill.patient.person.name}" ></h:outputLabel>
-                                        <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
-                                    </h:commandLink>
-                                </p:column>
+                        <h:panelGroup layout="block" styleClass="col-lg-3 col-md-6 col-sm-12 mb-2">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputLabel value="To Date" styleClass="mb-1 d-block"/>
+                                <p:datePicker id="toDate"
+                                              value="#{patientDepositSearchController.toDate}"
+                                              showTime="true"
+                                              pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                              styleClass="w-100"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
 
-                                <p:column headerText="Net Value" styleClass="averageNumericColumn">
-                                    <h:commandLink action="/patient_deposit/view/patient_deposit_bill_reprint?faces-redirect=true" >
-                                        <h:outputLabel value="#{bill.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                        <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
-                                    </h:commandLink>
-                                </p:column>
-                                <p:column headerText="Comments" >
-                                    <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
-                                    </h:outputLabel>
-                                    <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Action" style="width: 50px;">
-                                    <p:commandButton 
-                                        icon="fas fa-eye" 
-                                        ajax="false"
-                                        class="ui-button-info" 
-                                        action="/patient_deposit/view/patient_deposit_bill_reprint?faces-redirect=true" 
-                                        title="View Bill">
-                                         <f:setPropertyActionListener value="#{bill}" target="#{patientController.bill}"/>
-                                    </p:commandButton>
-                                </p:column>
-                            </p:dataTable>
-                        </div>
-                    </div>
-                </p:panel>
-            </h:form>
-        </h:panelGroup>
+                        <!-- Patient Name Filter -->
+                        <h:panelGroup layout="block" styleClass="col-lg-3 col-md-6 col-sm-12 mb-2">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputLabel value="Patient Name" styleClass="mb-1 d-block"/>
+                                <p:inputText id="patientName"
+                                             value="#{patientDepositSearchController.patientName}"
+                                             placeholder="Search by patient name"
+                                             styleClass="w-100"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
 
+                        <!-- Bill No Filter -->
+                        <h:panelGroup layout="block" styleClass="col-lg-3 col-md-6 col-sm-12 mb-2">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputLabel value="Bill No" styleClass="mb-1 d-block"/>
+                                <p:inputText id="billNo"
+                                             value="#{patientDepositSearchController.billNo}"
+                                             placeholder="Search by bill number"
+                                             styleClass="w-100"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </h:panelGroup>
 
+                    <h:panelGroup layout="block" styleClass="row">
+                        <!-- Institution Filter -->
+                        <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-2">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputLabel value="Institution" styleClass="mb-1 d-block"/>
+                                <p:selectOneMenu id="cmbIns"
+                                                 value="#{patientDepositSearchController.institution}"
+                                                 filter="true"
+                                                 filterMatchMode="contains"
+                                                 styleClass="w-100">
+                                    <f:selectItem itemLabel="All Institutions" itemValue="#{null}"/>
+                                    <f:selectItems value="#{institutionController.companies}"
+                                                   var="ins"
+                                                   itemLabel="#{ins.name}"
+                                                   itemValue="#{ins}"/>
+                                    <p:ajax process="cmbIns" update="cmbDept"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+                        </h:panelGroup>
 
+                        <!-- Site Filter -->
+                        <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-2">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputLabel value="Site" styleClass="mb-1 d-block"/>
+                                <p:selectOneMenu id="siteMenu"
+                                                 value="#{patientDepositSearchController.site}"
+                                                 filter="true"
+                                                 filterMatchMode="contains"
+                                                 styleClass="w-100">
+                                    <f:selectItem itemLabel="All Sites" itemValue="#{null}"/>
+                                    <f:selectItems value="#{institutionController.sites}"
+                                                   var="s"
+                                                   itemLabel="#{s.name}"
+                                                   itemValue="#{s}"/>
+                                    <p:ajax process="siteMenu" update="cmbDept"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <!-- Department Filter -->
+                        <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-2">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputLabel value="Department" styleClass="mb-1 d-block"/>
+                                <h:panelGroup id="cmbDept">
+                                    <p:selectOneMenu rendered="#{patientDepositSearchController.institution eq null and patientDepositSearchController.site eq null}"
+                                                     styleClass="w-100"
+                                                     value="#{patientDepositSearchController.department}"
+                                                     filter="true"
+                                                     filterMatchMode="contains">
+                                        <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                       var="d"
+                                                       itemLabel="#{d.name}"
+                                                       itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+                                    <p:selectOneMenu rendered="#{patientDepositSearchController.institution eq null and patientDepositSearchController.site ne null}"
+                                                     styleClass="w-100"
+                                                     value="#{patientDepositSearchController.department}"
+                                                     filter="true"
+                                                     filterMatchMode="contains">
+                                        <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(patientDepositSearchController.site)}"
+                                                       var="d"
+                                                       itemLabel="#{d.name}"
+                                                       itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+                                    <p:selectOneMenu rendered="#{patientDepositSearchController.institution ne null and patientDepositSearchController.site eq null}"
+                                                     styleClass="w-100"
+                                                     value="#{patientDepositSearchController.department}"
+                                                     filter="true"
+                                                     filterMatchMode="contains">
+                                        <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(patientDepositSearchController.institution)}"
+                                                       var="d"
+                                                       itemLabel="#{d.name}"
+                                                       itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+                                    <p:selectOneMenu rendered="#{patientDepositSearchController.institution ne null and patientDepositSearchController.site ne null}"
+                                                     styleClass="w-100"
+                                                     value="#{patientDepositSearchController.department}"
+                                                     filter="true"
+                                                     filterMatchMode="contains">
+                                        <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(patientDepositSearchController.institution, patientDepositSearchController.site)}"
+                                                       var="d"
+                                                       itemLabel="#{d.name}"
+                                                       itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <!-- Action Buttons -->
+                    <h:panelGroup layout="block" styleClass="row mt-3">
+                        <h:panelGroup layout="block" styleClass="col-12">
+                            <p:commandButton value="Search"
+                                             icon="fas fa-search"
+                                             action="#{patientDepositSearchController.searchPatientDeposits()}"
+                                             update="tblResults"
+                                             styleClass="ui-button-success mr-2"/>
+                            <p:commandButton value="Clear"
+                                             icon="fas fa-eraser"
+                                             action="#{patientDepositSearchController.clearSearch()}"
+                                             update="@form"
+                                             styleClass="ui-button-secondary mr-2"/>
+                            <p:commandButton value="Print"
+                                             icon="fas fa-print"
+                                             styleClass="ui-button-info mr-2">
+                                <p:printer target="tblResults"/>
+                            </p:commandButton>
+                            <p:commandButton value="Excel"
+                                             icon="fas fa-file-excel"
+                                             ajax="false"
+                                             styleClass="ui-button-success">
+                                <p:dataExporter type="xlsx"
+                                                target="tblResults"
+                                                fileName="Patient_Deposits_#{sessionController.institution.name}"/>
+                            </p:commandButton>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </p:panel>
+
+            <!-- Results DataTable -->
+            <p:dataTable id="tblResults"
+                         value="#{patientDepositSearchController.patientDepositBillDtos}"
+                         var="dto"
+                         paginator="true"
+                         rows="20"
+                         paginatorPosition="bottom"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="10,20,50,100"
+                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} entries"
+                         sortMode="multiple"
+                         reflow="true"
+                         emptyMessage="No records found. Please adjust filters and click Search."
+                         styleClass="mt-3">
+
+                <f:facet name="header">
+                    <h:panelGroup layout="block">
+                        <h:outputText value="Patient Deposit Receive List"/>
+                        <br/>
+                        <h:outputText value="From: "/>
+                        <h:outputText value="#{patientDepositSearchController.fromDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputText>
+                        <h:outputText value=" To: "/>
+                        <h:outputText value="#{patientDepositSearchController.toDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputText>
+                    </h:panelGroup>
+                </f:facet>
+
+                <p:column headerText="Bill No" sortBy="#{dto.deptId}" filterBy="#{dto.deptId}" filterMatchMode="contains">
+                    <h:panelGroup>
+                        <p:commandLink action="#{patientDepositSearchController.navigateToReprintBill(dto.id)}"
+                                       value="#{dto.deptId}"
+                                       ajax="false"/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{dto.cancelled}">
+                        <br/>
+                        <p:commandLink action="#{patientDepositSearchController.navigateToCancelReprintBill(dto.id)}"
+                                       value="#{dto.cancelledBillDeptId}"
+                                       ajax="false"
+                                       style="color: red"/>
+                    </h:panelGroup>
+                </p:column>
+
+                <p:column headerText="Billed At" sortBy="#{dto.createdAt}">
+                    <h:outputText value="#{dto.createdAt}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                    </h:outputText>
+                    <h:panelGroup rendered="#{dto.cancelled}">
+                        <br/>
+                        <h:outputText value="Cancelled At: " style="color: red;"/>
+                        <h:outputText value="#{dto.cancelledBillCreatedAt}" style="color: red;">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputText>
+                    </h:panelGroup>
+                </p:column>
+
+                <p:column headerText="Billed By" sortBy="#{dto.createrName}" filterBy="#{dto.createrName}" filterMatchMode="contains">
+                    <h:outputText value="#{dto.createrName}"/>
+                    <h:panelGroup rendered="#{dto.cancelled}">
+                        <br/>
+                        <h:outputText value="Cancelled By: " style="color: red;"/>
+                        <h:outputText value="#{dto.cancelledBillCreaterName}" style="color: red;"/>
+                    </h:panelGroup>
+                </p:column>
+
+                <p:column headerText="Patient Name" sortBy="#{dto.patientName}" filterBy="#{dto.patientName}" filterMatchMode="contains">
+                    <h:outputText value="#{dto.patientName}"/>
+                </p:column>
+
+                <p:column headerText="MRN" sortBy="#{dto.patientPhn}" filterBy="#{dto.patientPhn}" filterMatchMode="contains">
+                    <h:outputText value="#{dto.patientPhn}"/>
+                </p:column>
+
+                <p:column headerText="Department" sortBy="#{dto.departmentName}" filterBy="#{dto.departmentName}" filterMatchMode="contains">
+                    <h:outputText value="#{dto.departmentName}"/>
+                </p:column>
+
+                <p:column headerText="Net Value" sortBy="#{dto.netTotal}" styleClass="averageNumericColumn">
+                    <h:outputText value="#{dto.netTotal}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText>
+                    <f:facet name="footer">
+                        <h:outputText value="#{patientDepositSearchController.totalNetValue}" style="font-weight: bold;">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </f:facet>
+                </p:column>
+
+                <p:column headerText="Status">
+                    <p:badge value="Cancelled" severity="danger" rendered="#{dto.cancelled}"/>
+                    <p:badge value="Refunded" severity="warning" rendered="#{dto.refunded and not dto.cancelled}"/>
+                </p:column>
+
+                <p:column headerText="Comments">
+                    <h:outputText value="#{dto.refundedBillComments}" rendered="#{dto.refunded}"/>
+                    <h:outputText value="#{dto.cancelledBillComments}" rendered="#{dto.cancelled}"/>
+                </p:column>
+
+                <p:column headerText="Action" style="width: 50px;">
+                    <p:commandButton icon="fas fa-eye"
+                                     ajax="false"
+                                     styleClass="ui-button-info"
+                                     action="#{patientDepositSearchController.navigateToReprintBill(dto.id)}"
+                                     title="View Bill"/>
+                </p:column>
+
+            </p:dataTable>
+        </h:form>
     </ui:define>
 
 </ui:composition>

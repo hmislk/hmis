@@ -46,6 +46,7 @@
 - **Guidelines**: [Complete Reference](developer_docs/dto/implementation-guidelines.md)
 - **CRITICAL**: Try not to modify existing constructors - only add new ones
 - **Use direct DTO queries** - avoid entity-to-DTO conversion loops
+- **🚨 JPQL PERSISTED FIELDS ONLY**: NEVER use derived/calculated properties like `nameWithTitle`, `age`, `displayName` in JPQL - only persisted database fields work (e.g., use `person.name` not `person.nameWithTitle`)
 
 ### UI Development Guidelines
 - **🚨 UI-ONLY CHANGES**: When UI improvements are requested, make ONLY frontend/XHTML changes
