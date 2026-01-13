@@ -63,6 +63,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 import kotlin.collections.ArrayDeque;
@@ -1288,6 +1289,8 @@ public class FinancialTransactionController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Restrict Float Transfer Until Shift Start", false)) {
             findNonClosedShiftStartFundBillIsAvailable();
             if (getNonClosedShiftStartFundBill() == null) {
+                // Use Flash scope to preserve error message across redirect
+                FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
                 JsfUtil.addErrorMessage("Start Your Shift First!");
                 return "/cashier/index?faces-redirect=true";
             }
@@ -8152,6 +8155,228 @@ public class FinancialTransactionController implements Serializable {
         ));
 
         pageMetadataRegistry.registerPage(shiftEndMetadata);
+
+        // Register Shift End Print page metadata
+        PageMetadata shiftEndPrintMetadata = new PageMetadata();
+        shiftEndPrintMetadata.setPagePath("cashier/shift_end_print");
+        shiftEndPrintMetadata.setPageName("Shift End Print");
+        shiftEndPrintMetadata.setDescription("Print page for shift end summary showing cashier information, shift times, total values, and payment collection details");
+        shiftEndPrintMetadata.setControllerClass("FinancialTransactionController");
+
+        // Configuration Options - All the configurations used by the FinancialTransactionController that may affect this page
+
+        // Cash Handling Configurations
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Select All Cash During Handover",
+                "When enabled, all cash payments are automatically selected for handover. This affects how cash values are calculated and displayed in the shift end summary.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Enable Drawer Manegment",
+                "When enabled, drawer management features are active for cash handling and shift management. Affects cash calculation logic shown in shift summaries.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Maximum Allowed Cash Difference for Handover",
+                "Maximum allowed difference between collected cash and handed over cash (in currency units). Default: 1.0. Affects validation logic that determines shift completion status.",
+                OptionScope.APPLICATION
+        ));
+
+        // Payment Method Configurations
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Patient Deposits are considered in handingover",
+                "When enabled, patient deposit transactions are included in the shift handover process and reflected in payment collection summaries.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Select All Payments for Handovers",
+                "When enabled, all payments are automatically selected for handover. Affects which payment values are included in shift end calculations.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Select all payments by default for Handing over of the shift.",
+                "When enabled, all payments are selected by default during shift handover. Affects the comprehensive payment collection display.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Should Select All Collections for Handover",
+                "When enabled, all collected payments are automatically selected for handover. Affects total value calculations displayed in shift summaries.",
+                OptionScope.APPLICATION
+        ));
+
+        // Shift Management and Validation Configurations
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Restrict Float Transfer Until Shift Start",
+                "When enabled, users cannot create fund transfers until they have started their shift. Affects the validation logic for shift operations displayed.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Restrict Handover Until Shift Start",
+                "When enabled, users cannot perform handovers until they have started their shift. Affects shift completion validation shown in summaries.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Allow to Denomination for shift Starting Process",
+                "When enabled, cashiers can enter denomination details when starting their shift. Affects the detail level available for shift summaries.",
+                OptionScope.APPLICATION
+        ));
+
+        // Closure Validation Configurations
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Must Receive All Fund Transfers Before Closing Shift",
+                "When enabled, users must receive all pending fund transfers before they can close their shift. Affects shift completion status validation.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Must Wait Until Other User Accepts All Fund Transfers Before Closing Shift",
+                "When enabled, users must wait for recipients to accept all fund transfers before closing their shift. Affects final shift closure validation.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Must Receive All Handovers Before Closing Shift",
+                "When enabled, users must receive all pending handovers before they can close their shift. Affects shift completion validation and summary status.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Must Wait Until Other User Accepts All Handovers Before Closing Shift",
+                "When enabled, users must wait for recipients to accept all handovers before closing their shift. Affects final closure validation shown in summaries.",
+                OptionScope.APPLICATION
+        ));
+
+        // Restriction Configurations
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Restrict Fund Transfer When Incoming Fund Transfers Exist",
+                "When enabled, users cannot create new fund transfers when they have pending incoming transfers. Affects operational status displayed in shift summaries.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Restrict Fund Transfer When Incoming Handovers Exist",
+                "When enabled, users cannot create fund transfers when they have pending incoming handovers. Affects workflow validation shown in summaries.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Restrict Fund Transfer When Outgoing Fund Transfers Exist",
+                "When enabled, users cannot create additional fund transfers when they have pending outgoing transfers. Affects operational restrictions displayed.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Restrict Fund Transfer When Outgoing Handovers Exist",
+                "When enabled, users cannot create fund transfers when they have pending outgoing handovers. Affects validation logic shown in shift summaries.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Restrict Handover When Incoming Fund Transfers Exist",
+                "When enabled, users cannot perform handovers when they have pending incoming fund transfers. Affects handover completion status displayed.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Restrict Handover When Incoming Handovers Exist",
+                "When enabled, users cannot perform handovers when they have pending incoming handovers. Affects handover validation shown in summaries.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Restrict Handover When Outgoing Fund Transfers Exist",
+                "When enabled, users cannot perform handovers when they have pending outgoing fund transfers. Affects operational status validation displayed.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Restrict Handover When Outgoing Handovers Exist",
+                "When enabled, users cannot perform handovers when they have pending outgoing handovers. Affects final handover completion status shown.",
+                OptionScope.APPLICATION
+        ));
+
+        // Bill Number Suffix Configurations - Based on BillTypeAtomic values found in the controller
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Suffix for FUND_SHIFT_START_BILL",
+                "Custom suffix to append to fund shift start bill numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearly)",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Suffix for FUND_SHIFT_END_BILL",
+                "Custom suffix to append to fund shift end bill numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearly)",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Suffix for FUND_SHIFT_HANDOVER_CREATE",
+                "Custom suffix to append to fund shift handover creation bill numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearly)",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Suffix for FUND_SHIFT_HANDOVER_ACCEPT",
+                "Custom suffix to append to fund shift handover acceptance bill numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearly)",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Suffix for FUND_SHIFT_END_CASH_RECORD",
+                "Custom suffix to append to fund shift end cash record bill numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearly)",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Suffix for FUND_TRANSFER_BILL",
+                "Custom suffix to append to fund transfer bill numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearly)",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Suffix for FUND_TRANSFER_RECEIVED_BILL",
+                "Custom suffix to append to fund transfer received bill numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearly)",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Suffix for FUND_DEPOSIT_BILL",
+                "Custom suffix to append to fund deposit bill numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearly)",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Suffix for SUPPLEMENTARY_INCOME",
+                "Custom suffix to append to supplementary income bill numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearly)",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Suffix for OPERATIONAL_EXPENSES",
+                "Custom suffix to append to operational expense bill numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearly)",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Suffix for FUND_SHIFT_COMPONANT_HANDOVER_CREATE",
+                "Custom suffix to append to fund shift component handover creation bill numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearly)",
+                OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        shiftEndPrintMetadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access required to view the Config button and manage page configurations",
+                "Header facet: Config button visibility for shift end print page"
+        ));
+
+        pageMetadataRegistry.registerPage(shiftEndPrintMetadata);
     }
     // </editor-fold>
 

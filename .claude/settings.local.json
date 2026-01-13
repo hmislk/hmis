@@ -33,7 +33,8 @@
       "Bash(pip install:*)",
       "Bash(python -m pip install:*)",
       "Bash(python:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(git log:*)"
     ]
   }
 }
