@@ -141,6 +141,8 @@ import java.util.Collections;
 
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // </editor-fold>
 /**
@@ -149,7 +151,7 @@ import java.util.stream.Collectors;
 @Named
 @SessionScoped
 public class SearchController implements Serializable {
-
+    private static final Logger logger = LoggerFactory.getLogger(SearchController.class);
     private static final long serialVersionUID = 1L;
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -20906,7 +20908,7 @@ public class SearchController implements Serializable {
 
     private Map<PaymentMethod, Boolean> buildCashierCollectionConfiguration() {
         Map<PaymentMethod, Boolean> configuration = new LinkedHashMap<>();
-        System.out.println("DEBUG buildCashierCollectionConfiguration: START");
+        logger.debug("DEBUG buildCashierCollectionConfiguration: START");
         for (PaymentMethod paymentMethod : PaymentMethod.values()) {
             boolean defaultValue = defaultIncludePaymentMethodInCollection(paymentMethod);
             boolean configuredValue = defaultValue;
@@ -20914,13 +20916,13 @@ public class SearchController implements Serializable {
                 configuredValue = configOptionApplicationController.getBooleanValueByKey(
                         buildCollectionConfigurationKey(paymentMethod), defaultValue);
                 if (configuredValue != defaultValue) {
-                    System.out.println("DEBUG buildCashierCollectionConfiguration: " + paymentMethod + " overridden from " + defaultValue + " to " + configuredValue + " by database config");
+                    logger.debug("DEBUG buildCashierCollectionConfiguration: " + paymentMethod + " overridden from " + defaultValue + " to " + configuredValue + " by database config");
                 }
             }
             configuration.put(paymentMethod, configuredValue);
-            System.out.println("DEBUG buildCashierCollectionConfiguration: " + paymentMethod + " = " + configuredValue);
+            logger.debug("DEBUG buildCashierCollectionConfiguration: " + paymentMethod + " = " + configuredValue);
         }
-        System.out.println("DEBUG buildCashierCollectionConfiguration: COMPLETE");
+        logger.debug("DEBUG buildCashierCollectionConfiguration: COMPLETE");
         return configuration;
     }
 
@@ -20933,7 +20935,7 @@ public class SearchController implements Serializable {
         }
         // PatientDeposit should be included in collection totals, then deducted separately
         boolean result = !isDeprecatedPaymentMethod(paymentMethod);
-        System.out.println("DEBUG defaultIncludePaymentMethodInCollection: " + paymentMethod + " = " + result);
+        logger.debug("DEBUG defaultIncludePaymentMethodInCollection: " + paymentMethod + " = " + result);
         return result;
     }
 
