@@ -1,6 +1,5 @@
 package com.divudi.core.entity.lab;
 
-import com.divudi.core.data.lab.Analyzer;
 import com.divudi.core.data.lab.TestHistoryType;
 import com.divudi.core.entity.AppEmail;
 import com.divudi.core.entity.Category;
