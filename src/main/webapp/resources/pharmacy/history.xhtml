@@ -1547,7 +1547,7 @@
                                                     Total Quantity:
                                                 </th>
                                                 <th style="text-align: right; font-weight: bold;">
-                                                    <h:outputText value="#{pharmacyController.batchDetailsDtos.stream().mapToDouble(dto -> dto.quantity != null ? dto.quantity : 0.0).sum()}">
+                                                    <h:outputText value="#{pharmacyController.totalBatchQuantity}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </th>
