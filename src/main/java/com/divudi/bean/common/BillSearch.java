@@ -88,6 +88,7 @@ import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
+import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
 import com.divudi.service.StaffService;
@@ -200,6 +201,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     ProfessionalPaymentService professionalPaymentService;
     @EJB
     PaymentService paymentService;
+    @EJB
+    PatientDepositService patientDepositService;
     /**
      * Controllers
      */
@@ -1887,10 +1890,22 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
     /**
      * Called when user changes payment method in individual bill cancellation
-     * form. Resets paymentMethodData to prevent using old payment method data.
+     * form. If user selects the original payment method, restores original payment details.
+     * Otherwise, creates new payment data for the selected method.
      */
     public void onPaymentMethodChange() {
-        // Reset payment method data to prevent using old payment method data
+        // Check if user selected the original payment method - if so, restore original details
+        if (billPayments != null && !billPayments.isEmpty()) {
+            Payment originalPayment = billPayments.get(0);
+            if (paymentMethod == originalPayment.getPaymentMethod()) {
+                // User switched back to original payment method - restore original details
+                paymentMethodData = new PaymentMethodData();
+                initializePaymentDataFromOriginalPayments(billPayments);
+                return;
+            }
+        }
+
+        // User selected a different payment method - create new payment data
         paymentMethodData = new PaymentMethodData();
 
         // Initialize basic payment data based on newly selected payment method
@@ -2121,8 +2136,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             staffFacade.edit(getBill().getToStaff());
 
         } else if (paymentMethod == PaymentMethod.PatientDeposit) {
-            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getRefundingBill().getPatient(), sessionController.getDepartment());
-            patientDepositController.updateBalance(getRefundingBill(), pd);
+            PatientDeposit pd = patientDepositService.getDepositOfThePatient(getRefundingBill().getPatient(), sessionController.getDepartment());
+            patientDepositService.updateBalance(getRefundingBill(), pd);
         } else if (paymentMethod == PaymentMethod.Staff_Welfare) {
             staffBean.updateStaffWelfare(getBill().getToStaff(), -Math.abs(getRefundingBill().getNetTotal()));
         }
@@ -2885,8 +2900,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         }
 
         if (cancellationBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-            PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
-            patientDepositController.updateBalance(cancellationBill, pd);
+            PatientDeposit pd = patientDepositService.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
+            patientDepositService.updateBalance(cancellationBill, pd);
         }
 
         notificationController.createNotification(cancellationBill);
@@ -5843,12 +5858,26 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             return "";
         }
 
+        // Initialize payment method data
+        paymentMethodData = new PaymentMethodData();
+
         if (configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Refunded Bill")) {
             paymentMethod = getBill().getPaymentMethod();
         } else {
             paymentMethod = PaymentMethod.Cash;
         }
         paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(bill);
+
+        // Load original bill payments and initialize payment data
+        Bill billToFetchPaymentsFrom = bill;
+        if (bill.getBackwardReferenceBill() != null) {
+            billToFetchPaymentsFrom = bill.getBackwardReferenceBill();
+        }
+        billPayments = billBean.fetchBillPayments(billToFetchPaymentsFrom);
+        if (billPayments != null && !billPayments.isEmpty()) {
+            initializePaymentDataFromOriginalPayments(billPayments);
+        }
+
         createBillItemsAndBillFeesForOpdRefund();
         printPreview = false;
         return "/opd/bill_refund?faces-redirect=true";

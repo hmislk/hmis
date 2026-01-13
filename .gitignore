@@ -41,3 +41,8 @@ nul
 *.log
 logs/
 hs_err_pid*.log
+
+# AI session transcripts/logs
+*-caveat-the-messages-below-*.txt
+claude-*.jsonl
+.claude-session*

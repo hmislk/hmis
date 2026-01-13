@@ -211,7 +211,7 @@ public class StaffImageController implements Serializable {
             }
             Staff temImg = patientReportController.getCurrentPatientReport().getApproveUser().getStaff();
             if (temImg != null) {
-                temImg = staffController.findStaffById(temImg.getId());
+                temImg = staffFacade.findWithoutCache(temImg.getId());
                 byte[] imgArr = null;
                 try {
                     imgArr = temImg.getBaImage();

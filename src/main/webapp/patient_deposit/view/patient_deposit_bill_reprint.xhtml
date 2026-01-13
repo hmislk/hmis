@@ -20,7 +20,7 @@
                     <f:facet name="header">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
-                                <h:outputText value="Patient Deposit Receipt - #{patientController.bill.deptId}" />
+                                <h:outputText value="Patient Deposit Receipt - #{patientDepositSearchController.selectedBill.deptId}" />
                             </div>
                             <div>
                                 <p:commandButton
@@ -66,7 +66,7 @@
                                     class="ui-button-warning"
                                     action="#{patientController.navigateToOpdPatientProfile()}">
                                     <f:setPropertyActionListener
-                                        value="#{patientController.bill.patient}"
+                                        value="#{patientDepositSearchController.selectedBill.patient}"
                                         target="#{patientController.current}" />
                                 </p:commandButton>
                             </div>
@@ -86,20 +86,20 @@
                                         <h:panelGroup id="billPanel" class="bill" layout="block">
                                             <!-- POS/5.5 inch Format (Default) -->
                                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Patient Deposit Receipt POS Paper', true)}">
-                                                <prints:five_five_paper_patient_deposit bill="#{patientController.bill}" duplicate="true" />
+                                                <prints:five_five_paper_patient_deposit bill="#{patientDepositSearchController.selectedBill}" duplicate="true" />
                                             </h:panelGroup>
 
                                             <!-- A4 Format -->
                                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Patient Deposit Receipt A4 Paper', false)}">
                                                 <!-- For now, use the same component until A4 format is created -->
-                                                <prints:five_five_paper_patient_deposit bill="#{patientController.bill}" duplicate="true" />
+                                                <prints:five_five_paper_patient_deposit bill="#{patientDepositSearchController.selectedBill}" duplicate="true" />
                                                 <h:outputText value="Note: A4 format composite component needs to be created" style="display:none;" />
                                             </h:panelGroup>
 
                                             <!-- Custom Format -->
                                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Patient Deposit Receipt Custom Paper', false)}">
                                                 <!-- Use existing 5.5 inch format for now -->
-                                                <prints:five_five_paper_patient_deposit bill="#{patientController.bill}" duplicate="true" />
+                                                <prints:five_five_paper_patient_deposit bill="#{patientDepositSearchController.selectedBill}" duplicate="true" />
                                             </h:panelGroup>
                                         </h:panelGroup>
                                     </div>
