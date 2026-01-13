@@ -20,13 +20,26 @@
                                     </svg>
                                 </div>
                                 <div style="font-size: 2em">
-                                    No Start Fund Bill Available to Receive Funds
+                                   Please start a shift first before attempting this
                                 </div>
                             </div>
                         </h:panelGroup>
                     </div>
                     <p:panel rendered="#{financialTransactionController.nonClosedShiftStartFundBill ne null}" >
-                        <p:panel header="Floats for me to Received" >
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputLabel value="Floats for me to Received" class="mx-2" />
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                    <p:commandButton
+                                        value="Config"
+                                        icon="fa fa-cog"
+                                        title="Page Configuration Management"
+                                        action="#{pageAdminController.navigateToPageAdmin('cashier/fund_transfer_bills_for_me_to_receive')}"
+                                        ajax="false"
+                                        styleClass="ui-button-secondary ms-5">
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </f:facet>
 
 
 

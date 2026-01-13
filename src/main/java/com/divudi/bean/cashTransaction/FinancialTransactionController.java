@@ -7539,13 +7539,14 @@ public class FinancialTransactionController implements Serializable {
 
     /**
      * Register page metadata for the admin configuration interface.
-     * This registers all configuration options used by the Shift Handover page.
+     * This registers all configuration options used by the Shift Handover page and Fund Transfer Bill page.
      */
     private void registerPageMetadata() {
         if (pageMetadataRegistry == null) {
             return;
         }
 
+        // Register Shift Handover page metadata
         PageMetadata metadata = new PageMetadata();
         metadata.setPagePath("cashier/handover_start_all");
         metadata.setPageName("Shift Handover");
@@ -7639,6 +7640,451 @@ public class FinancialTransactionController implements Serializable {
         ));
 
         pageMetadataRegistry.registerPage(metadata);
+
+        // Register Fund Transfer Bill page metadata
+        PageMetadata fundTransferMetadata = new PageMetadata();
+        fundTransferMetadata.setPagePath("cashier/fund_transfer_bill");
+        fundTransferMetadata.setPageName("Fund Transfer Bill");
+        fundTransferMetadata.setDescription("Float transfer page for cashiers to transfer funds between users");
+        fundTransferMetadata.setControllerClass("FinancialTransactionController");
+
+        // Bill Number Generation Configuration
+        fundTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Suffix for FUND_TRANSFER_BILL",
+                "Custom suffix to append to fund transfer bill numbers (used by BillNumberGenerator.departmentBillNumberGeneratorYearly)",
+                OptionScope.APPLICATION
+        ));
+
+        // Float Transfer Restrictions
+        fundTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Restrict Float Transfer Until Shift Start",
+                "When enabled, users cannot create fund transfers until they have started their shift. Requires an active shift start fund bill.",
+                OptionScope.APPLICATION
+        ));
+
+        // Cash and Payment Management
+        fundTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Enable Drawer Manegment",
+                "When enabled, drawer management features are active for cash handling during fund transfers. Controls cash availability validation.",
+                OptionScope.APPLICATION
+        ));
+
+        // Handover and Closure Validations for Fund Transfers
+        fundTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Must Receive All Fund Transfers Before Closing Shift",
+                "When enabled, users must receive all pending fund transfers before they can close their shift.",
+                OptionScope.APPLICATION
+        ));
+
+        fundTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Must Wait Until Other User Accepts All Fund Transfers Before Closing Shift",
+                "When enabled, users must wait for recipients to accept all fund transfers before closing their shift.",
+                OptionScope.APPLICATION
+        ));
+
+        // Navigation Options that affect fund transfer workflow
+        fundTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Legacy Handover is enabled",
+                "When enabled, shows legacy handover options in cashier navigation menu. Affects fund transfer workflow options.",
+                OptionScope.APPLICATION
+        ));
+
+        fundTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Current Shift Handover is enabled",
+                "When enabled, shows current shift handover option in cashier navigation menu.",
+                OptionScope.APPLICATION
+        ));
+
+        fundTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Period Handover is enabled",
+                "When enabled, shows period-based handover option in cashier navigation menu.",
+                OptionScope.APPLICATION
+        ));
+
+        fundTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Completed Shift Handover is enabled",
+                "When enabled, shows completed shift handover options in cashier navigation menu.",
+                OptionScope.APPLICATION
+        ));
+
+        fundTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Recording Shift End Cash is Required Before Viewing Shift Reports",
+                "When enabled, requires recording shift end cash before viewing shift reports.",
+                OptionScope.APPLICATION
+        ));
+
+        fundTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Shift Shortage Bills are enabled",
+                "When enabled, allows recording and tracking of shift shortage bills in cashier operations.",
+                OptionScope.APPLICATION
+        ));
+
+        fundTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Shift Excess Bills are enabled",
+                "When enabled, allows recording and tracking of shift excess bills in cashier operations.",
+                OptionScope.APPLICATION
+        ));
+
+        // Privileges for Fund Transfer Bill
+        fundTransferMetadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access required to view the Config button and manage fund transfer bill configurations",
+                "Header facet: Config button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(fundTransferMetadata);
+
+        // Register Fund Transfer Bills for Me to Receive page metadata
+        PageMetadata receiveTransferMetadata = new PageMetadata();
+        receiveTransferMetadata.setPagePath("cashier/fund_transfer_bills_for_me_to_receive");
+        receiveTransferMetadata.setPageName("Fund Transfer Bills to Receive");
+        receiveTransferMetadata.setDescription("Page displaying fund transfer bills that the current user needs to receive and accept");
+        receiveTransferMetadata.setControllerClass("FinancialTransactionController");
+
+        // Core functionality configurations
+        receiveTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Must Receive All Fund Transfers Before Closing Shift",
+                "When enabled, users must receive all pending fund transfers before they can close their shift. This page shows the transfers that need to be received.",
+                OptionScope.APPLICATION
+        ));
+
+        receiveTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Must Wait Until Other User Accepts All Fund Transfers Before Closing Shift",
+                "When enabled, users must wait for recipients to accept all fund transfers before closing their shift. Affects the validation when other users view this page.",
+                OptionScope.APPLICATION
+        ));
+
+        // Shift management configurations that affect this page
+        receiveTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Restrict Float Transfer Until Shift Start",
+                "When enabled, users must have an active shift to receive fund transfers. This page checks for nonClosedShiftStartFundBill and shows a warning if none exists.",
+                OptionScope.APPLICATION
+        ));
+
+        // Navigation configurations that affect access to this page
+        receiveTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Legacy Handover is enabled",
+                "When enabled, affects the cashier navigation menu options and fund transfer workflow integration.",
+                OptionScope.APPLICATION
+        ));
+
+        receiveTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Current Shift Handover is enabled",
+                "When enabled, shows current shift handover option in cashier navigation menu, affecting fund transfer receiving workflow.",
+                OptionScope.APPLICATION
+        ));
+
+        receiveTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Period Handover is enabled",
+                "When enabled, shows period-based handover option in cashier navigation menu, affecting fund transfer workflow.",
+                OptionScope.APPLICATION
+        ));
+
+        receiveTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Completed Shift Handover is enabled",
+                "When enabled, shows completed shift handover options in cashier navigation menu.",
+                OptionScope.APPLICATION
+        ));
+
+        receiveTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Shift Shortage Bills are enabled",
+                "When enabled, allows recording and tracking of shift shortage bills, affecting overall cashier workflow including fund transfer receiving.",
+                OptionScope.APPLICATION
+        ));
+
+        receiveTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Shift Excess Bills are enabled",
+                "When enabled, allows recording and tracking of shift excess bills, affecting overall cashier workflow including fund transfer receiving.",
+                OptionScope.APPLICATION
+        ));
+
+        receiveTransferMetadata.addConfigOption(new ConfigOptionInfo(
+                "Recording Shift End Cash is Required Before Viewing Shift Reports",
+                "When enabled, requires recording shift end cash before viewing shift reports, affecting the overall shift management workflow.",
+                OptionScope.APPLICATION
+        ));
+
+        // Privileges for Fund Transfer Bills to Receive page
+        receiveTransferMetadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access required to view the Config button and manage fund transfer receiving configurations",
+                "Header facet: Config button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(receiveTransferMetadata);
+
+        // Register Cashier Index/Dashboard page metadata
+        PageMetadata cashierIndexMetadata = new PageMetadata();
+        cashierIndexMetadata.setPagePath("cashier/index");
+        cashierIndexMetadata.setPageName("Cashier Dashboard");
+        cashierIndexMetadata.setDescription("Main cashier dashboard with navigation tabs for shift management, float management, income/expense, handover management, cash book, and reports");
+        cashierIndexMetadata.setControllerClass("FinancialTransactionController");
+
+        // Shift Management Tab Configurations
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Legacy Handover is enabled",
+                "When enabled, shows legacy handover options in the Shift Management tab including 'End Shift - OLD', 'Handover (OLD)', and 'Handover Shift (OLD)' buttons.",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Recording Shift End Cash is Required Before Viewing Shift Reports",
+                "When enabled, shows 'Record Shift End Cash in Hand' button in the Shift Management tab for cash recording before report access.",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Current Shift Handover is enabled",
+                "When enabled, shows 'Handover Current Shift' button in the Shift Management tab for current shift handover functionality.",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Period Handover is enabled",
+                "When enabled, shows 'Handover By Period' button in the Shift Management tab for period-based handover functionality.",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Completed Shift Handover is enabled",
+                "When enabled, shows 'My Shifts' button in the Shift Management tab to view completed shift handovers.",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Shift Shortage Bills are enabled",
+                "When enabled, shows 'Record Shift Shortage' and 'Shift Shortage Bill Search' buttons in the Shift Management tab for tracking cash shortages.",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Shift Excess Bills are enabled",
+                "When enabled, shows 'Record Shift Excess' button in the Shift Management tab for tracking cash overages.",
+                OptionScope.APPLICATION
+        ));
+
+        // Reports Tab Configurations
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Lab Daily Summary Report - Legacy Method",
+                "When enabled, shows the daily lab summary by department report button in the Reports tab using legacy reporting method.",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Daily Lab Summmary By Department Report Menu Name",
+                "Customizes the display text for the daily lab summary report button in the Reports tab. Default: 'Daily Lab Summmary By Department'",
+                OptionScope.APPLICATION
+        ));
+
+        // Core Workflow Configurations (used across multiple tabs)
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Allow to Denomination for shift Starting Process",
+                "When enabled, allows denomination entry during shift start process, affecting workflow from Shift Management tab.",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Restrict Float Transfer Until Shift Start",
+                "When enabled, restricts fund transfer operations until shift is started, affecting Float Management tab functionality.",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Restrict Handover Until Shift Start",
+                "When enabled, restricts handover operations until shift is started, affecting Handover Management tab functionality.",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Enable Drawer Manegment",
+                "When enabled, activates drawer management features affecting cash handling across all tabs (Float, Income/Expense, Handover Management).",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Select All Cash During Handover",
+                "When enabled, automatically selects all cash payments during handover process accessible from Handover Management tab.",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Select All Payments for Handovers",
+                "When enabled, automatically selects all payments for handover when handover values have already been created, affecting Handover Management tab workflow.",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Select all payments by default for Handing over of the shift.",
+                "When enabled, selects all payments by default during shift handover process, affecting Handover Management tab operations.",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Maximum Allowed Cash Difference for Handover",
+                "Sets the maximum allowed difference between collected and handed over cash amounts, affecting Handover Management tab validation. Default: 1.0",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Should Select All Collections for Handover",
+                "When enabled, automatically selects all collected payments for handover, affecting Handover Management tab workflow.",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Patient Deposits are considered in handingover",
+                "When enabled, includes patient deposit transactions in the handover process accessible from Handover Management tab.",
+                OptionScope.APPLICATION
+        ));
+
+        // Shift Closure Validation Configurations
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Must Receive All Fund Transfers Before Closing Shift",
+                "When enabled, prevents shift closure until all pending fund transfers are received, affecting all shift management operations.",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Must Wait Until Other User Accepts All Fund Transfers Before Closing Shift",
+                "When enabled, prevents shift closure until recipients accept all outgoing fund transfers, affecting shift management workflow.",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Must Receive All Handovers Before Closing Shift",
+                "When enabled, prevents shift closure until all pending handovers are received, affecting shift management operations.",
+                OptionScope.APPLICATION
+        ));
+
+        cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
+                "Must Wait Until Other User Accepts All Handovers Before Closing Shift",
+                "When enabled, prevents shift closure until recipients accept all outgoing handovers, affecting shift management workflow.",
+                OptionScope.APPLICATION
+        ));
+
+        // Privileges for Cashier Index/Dashboard
+        cashierIndexMetadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access required to view the Config button and manage cashier dashboard configurations",
+                "Top of navigation panel: Config button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(cashierIndexMetadata);
+
+        // Register Shift End for Handover page metadata
+        PageMetadata shiftEndMetadata = new PageMetadata();
+        shiftEndMetadata.setPagePath("cashier/shift_end_for_handover");
+        shiftEndMetadata.setPageName("End Shift for Handover");
+        shiftEndMetadata.setDescription("Shift end summary page displaying collected payments, transaction breakdown, and end shift functionality with handover preparation");
+        shiftEndMetadata.setControllerClass("FinancialTransactionController");
+
+        // Comment Management Configuration
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Allow Comment for Shift End",
+                "When enabled, shows a comment input field in the shift end header allowing users to add notes to the shift end bill. Default: true",
+                OptionScope.APPLICATION
+        ));
+
+        // Denomination Management Configuration
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Allow to Denomination for shift Ending Process",
+                "When enabled, displays the denomination counting table and update functionality for cash reconciliation during shift ending.",
+                OptionScope.APPLICATION
+        ));
+
+        // Core Workflow Configurations affecting shift ending
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Enable Drawer Manegment",
+                "When enabled, drawer management features are active affecting cash handling and transaction tracking during shift ending.",
+                OptionScope.APPLICATION
+        ));
+
+        // Shift Closure Validation Configurations
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Must Receive All Fund Transfers Before Closing Shift",
+                "When enabled, users must receive all pending fund transfers before completing shift end. Affects the shift ending workflow validation.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Must Wait Until Other User Accepts All Fund Transfers Before Closing Shift",
+                "When enabled, users must wait for recipients to accept all outgoing fund transfers before ending shift. Affects shift closure timing.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Must Receive All Handovers Before Closing Shift",
+                "When enabled, users must receive all pending handovers before completing shift end. Validates handover completion before shift closure.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Must Wait Until Other User Accepts All Handovers Before Closing Shift",
+                "When enabled, users must wait for recipients to accept all outgoing handovers before ending shift. Affects shift end authorization.",
+                OptionScope.APPLICATION
+        ));
+
+        // Payment Display and Selection Configurations
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Patient Deposits are considered in handingover",
+                "When enabled, patient deposit transactions are included in the shift end payment summary and transaction breakdown tables.",
+                OptionScope.APPLICATION
+        ));
+
+        // Bill Generation Configuration
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Bill Number Suffix for FUND_SHIFT_END_SUMMARY_BILL_FOR_HANDOVER",
+                "Custom suffix to append to shift end summary bill numbers used by BillNumberGenerator during shift ending process.",
+                OptionScope.APPLICATION
+        ));
+
+        // Cash Handling Configuration
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Maximum Allowed Cash Difference for Handover",
+                "Maximum allowed difference between collected cash and counted cash during shift end reconciliation. Affects validation tolerance.",
+                OptionScope.APPLICATION
+        ));
+
+        // Navigation Integration Configurations
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Recording Shift End Cash is Required Before Viewing Shift Reports",
+                "When enabled, affects the overall shift ending workflow requiring cash recording steps before accessing reports from this page.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Shift Shortage Bills are enabled",
+                "When enabled, allows tracking of cash shortage transactions that may be identified during the shift ending process.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Shift Excess Bills are enabled",
+                "When enabled, allows tracking of cash excess transactions that may be identified during the shift ending process.",
+                OptionScope.APPLICATION
+        ));
+
+        // Handover Integration Configurations
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Select All Cash During Handover",
+                "When enabled, automatically selects all cash payments when transitioning from shift end to handover process.",
+                OptionScope.APPLICATION
+        ));
+
+        shiftEndMetadata.addConfigOption(new ConfigOptionInfo(
+                "Select All Payments for Handovers",
+                "When enabled, automatically selects all payments when creating handover from shift end summary.",
+                OptionScope.APPLICATION
+        ));
+
+        // Privileges for Shift End for Handover page
+        shiftEndMetadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access required to view the Config button and manage shift end configurations",
+                "Header facet: Config button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(shiftEndMetadata);
     }
     // </editor-fold>
 
