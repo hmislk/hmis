@@ -173,6 +173,21 @@
                                                 <i class="fas fa-hospital me-1 text-info"></i>
                                                 <h:outputText value="#{bill.departmentName}" styleClass="text-muted"/>
                                             </div>
+                                            
+                                            <!-- Payment Method -->
+                                            
+                                            <div class="mb-2" >
+                                                <i class="fa-solid fa-money-bill me-1 text-success" />
+                                                <h:outputText value="Payment Method : " styleClass="text-muted"/>
+                                                <p:badge value="#{bill.paymentMethod}" 
+                                                         severity="#{bill.paymentMethod eq 'Cash' ? 'success' 
+                                                                   : bill.paymentMethod eq 'Card' ? 'warning' 
+                                                                   : bill.paymentMethod eq 'Cheque' ? 'info' 
+                                                                   : bill.paymentMethod eq 'Slip' ? 'danger' 
+                                                                   : 'secondary'}"
+                                                        
+                                                         styleClass="mr-2" class="text-capitalize" />
+                                            </div>
 
                                             <!-- Created At and By -->
                                             <div class="mb-1">

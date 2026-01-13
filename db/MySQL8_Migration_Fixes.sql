@@ -81,32 +81,28 @@ ALTER TABLE BILL DROP COLUMN APPROVEAT_BACKUP;
 ALTER TABLE PAYMENT MODIFY COLUMN PAYMENTMETHOD VARCHAR(255) NULL;
 
 -- ============================================
--- FIX 3: BILLITEM.FROMTIME and BILLITEM.TOTIME Columns
+-- FIX 3: BILLITEM.FROMTIME 
 -- ============================================
--- Issue: Column 'FROMTIME' cannot be null / Column 'TOTIME' cannot be null (Error Code: 1048)
--- Cause: MySQL 8 strict mode rejects NULL for NOT NULL columns
+-- Issue: Column 'FROMTIME' cannot be null 
+-- Cause: MySQL 8 strict mode rejects NULL for NOT NULL column
 -- Solution: Change columns to allow NULL values
 -- ============================================
 
 -- Step 1: Create backup columns
 ALTER TABLE BILLITEM ADD COLUMN FROMTIME_BACKUP DATETIME NULL;
-ALTER TABLE BILLITEM ADD COLUMN TOTIME_BACKUP DATETIME NULL;
 
 -- Step 2: Copy existing data to backup
 UPDATE BILLITEM SET FROMTIME_BACKUP = FROMTIME;
-UPDATE BILLITEM SET TOTIME_BACKUP = TOTIME;
 
 -- Step 3: Drop the problematic columns
 ALTER TABLE BILLITEM DROP COLUMN FROMTIME;
-ALTER TABLE BILLITEM DROP COLUMN TOTIME;
 
--- Step 4: Recreate columns allowing NULL values
+-- Step 4: Recreate column allowing NULL values
 ALTER TABLE BILLITEM ADD COLUMN FROMTIME DATETIME NULL;
-ALTER TABLE BILLITEM ADD COLUMN TOTIME DATETIME NULL;
+
 
 -- Step 5: Restore data from backup
 UPDATE BILLITEM SET FROMTIME = FROMTIME_BACKUP;
-UPDATE BILLITEM SET TOTIME = TOTIME_BACKUP;
 
 -- Step 6: Verify data restored correctly
 -- 6a: Summary comparison for FROMTIME
@@ -125,22 +121,6 @@ SELECT
     END) AS total_mismatches
 FROM BILLITEM;
 
--- 6b: Summary comparison for TOTIME
-SELECT
-    COUNT(*) AS total_rows,
-    SUM(CASE WHEN TOTIME IS NOT NULL AND TOTIME_BACKUP IS NOT NULL AND TOTIME = TOTIME_BACKUP THEN 1 ELSE 0 END) AS matched_non_null,
-    SUM(CASE WHEN TOTIME IS NULL AND TOTIME_BACKUP IS NULL THEN 1 ELSE 0 END) AS matched_null,
-    SUM(CASE WHEN TOTIME IS NOT NULL AND TOTIME_BACKUP IS NOT NULL AND TOTIME <> TOTIME_BACKUP THEN 1 ELSE 0 END) AS value_mismatch,
-    SUM(CASE WHEN TOTIME IS NULL AND TOTIME_BACKUP IS NOT NULL THEN 1 ELSE 0 END) AS restored_null_but_backup_has_value,
-    SUM(CASE WHEN TOTIME IS NOT NULL AND TOTIME_BACKUP IS NULL THEN 1 ELSE 0 END) AS restored_has_value_but_backup_null,
-    SUM(CASE
-        WHEN (TOTIME IS NULL AND TOTIME_BACKUP IS NOT NULL)
-          OR (TOTIME IS NOT NULL AND TOTIME_BACKUP IS NULL)
-          OR (TOTIME IS NOT NULL AND TOTIME_BACKUP IS NOT NULL AND TOTIME <> TOTIME_BACKUP)
-        THEN 1 ELSE 0
-    END) AS total_mismatches
-FROM BILLITEM;
-
 -- 6c: Sample mismatched rows for FROMTIME (if any exist)
 SELECT ID, FROMTIME, FROMTIME_BACKUP,
     CASE
@@ -154,23 +134,9 @@ WHERE (FROMTIME IS NULL AND FROMTIME_BACKUP IS NOT NULL)
    OR (FROMTIME IS NOT NULL AND FROMTIME_BACKUP IS NOT NULL AND FROMTIME <> FROMTIME_BACKUP)
 LIMIT 10;
 
--- 6d: Sample mismatched rows for TOTIME (if any exist)
-SELECT ID, TOTIME, TOTIME_BACKUP,
-    CASE
-        WHEN TOTIME IS NOT NULL AND TOTIME_BACKUP IS NOT NULL AND TOTIME <> TOTIME_BACKUP THEN 'VALUE_DIFFERS'
-        WHEN TOTIME IS NULL AND TOTIME_BACKUP IS NOT NULL THEN 'RESTORED_IS_NULL'
-        WHEN TOTIME IS NOT NULL AND TOTIME_BACKUP IS NULL THEN 'BACKUP_IS_NULL'
-    END AS mismatch_type
-FROM BILLITEM
-WHERE (TOTIME IS NULL AND TOTIME_BACKUP IS NOT NULL)
-   OR (TOTIME IS NOT NULL AND TOTIME_BACKUP IS NULL)
-   OR (TOTIME IS NOT NULL AND TOTIME_BACKUP IS NOT NULL AND TOTIME <> TOTIME_BACKUP)
-LIMIT 10;
-
 -- Step 7: Drop backup columns ONLY if total_mismatches = 0 from Steps 6a and 6b
--- WARNING: Do NOT run this until you have verified mismatches = 0 for BOTH columns
+-- WARNING: Do NOT run this until you have verified mismatches = 0 for BOTH column
 ALTER TABLE BILLITEM DROP COLUMN FROMTIME_BACKUP;
-ALTER TABLE BILLITEM DROP COLUMN TOTIME_BACKUP;
 
 -- ============================================
 -- FIX 4: BILLFEE.FEEAT Column

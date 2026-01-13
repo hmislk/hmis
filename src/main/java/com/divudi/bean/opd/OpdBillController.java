@@ -63,6 +63,7 @@ import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
 import com.divudi.service.DepartmentResolver;
 import com.divudi.service.DiscountSchemeValidationService;
+import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -137,6 +138,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     DiscountSchemeValidationService discountSchemeValidationService;
     @EJB
     DepartmentResolver departmentResolver;
+    @EJB
+    PatientDepositService patientDepositService;
 
     /**
      * Controllers
@@ -2413,8 +2416,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 getPatient().setRunningBalance(0.0 - netTotal);
             }
             getPatientFacade().edit(getPatient());
-            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
-            patientDepositController.updateBalance(getBatchBill(), pd);
+            PatientDeposit pd = patientDepositService.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
+            patientDepositService.updateBalance(getBatchBill(), pd);
         }
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             paymentService.updateBalances(payments);

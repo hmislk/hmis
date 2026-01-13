@@ -61,6 +61,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.ItemLight;
 import static com.divudi.core.data.ItemListingStrategy.*;
 import com.divudi.core.data.lab.InvestigationTubeSticker;
+import com.divudi.core.data.lab.Priority;
 import com.divudi.core.entity.UserPreference;
 import com.divudi.ws.lims.Lims;
 import java.io.Serializable;
@@ -171,6 +172,8 @@ public class BillBhtController implements Serializable {
     private Department selectedInwardItemDepartment;
     private List<Department> inwardItemDepartments;
     private List<ItemLight> inwardItem;
+    
+    private Priority currentBillItemPriority;
 
     public String navigateToAddServiceFromMenu() {
         resetBillData();
@@ -272,6 +275,7 @@ public class BillBhtController implements Serializable {
         batchBill = null;
         bills = null;
         referredBy = null;
+        currentBillItemPriority = null;
     }
 
     public InwardBeanController getInwardBean() {
@@ -815,6 +819,14 @@ public class BillBhtController implements Serializable {
         if (getCurrentBillItem().getQty() == null) {
             getCurrentBillItem().setQty(1.0);
         }
+        
+        if (getCurrentBillItem().getItem().isAllowedForBillingPriority()) {
+            if (currentBillItemPriority == null) {
+                currentBillItemPriority = Priority.NORMAL;
+            }
+        }else{
+            currentBillItemPriority = null;
+        }
 
         for (int i = 0; i < getCurrentBillItem().getQty(); i++) {
             BillEntry addingEntry = new BillEntry();
@@ -822,6 +834,9 @@ public class BillBhtController implements Serializable {
 
             bItem.copy(currentBillItem);
             bItem.setQty(1.0);
+            if(currentBillItemPriority != null){
+                bItem.setPriority(currentBillItemPriority);
+            }
             addingEntry.setBillItem(bItem);
             addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bItem));
             if (patientEncounter.getAdmissionType().isRoomChargesAllowed() || getPatientEncounter().getCurrentPatientRoom() != null) {
@@ -917,6 +932,7 @@ public class BillBhtController implements Serializable {
 
     public void clearBillItemValues() {
         setCurrentBillItem(null);
+        setItemLight(null);
         recreateBillItems();
     }
 
@@ -925,6 +941,7 @@ public class BillBhtController implements Serializable {
         lstBillComponents = null;
         lstBillFees = null;
         lstBillItems = null;
+        currentBillItemPriority = null;
         //billTotal = 0.0;
     }
 
@@ -1548,6 +1565,17 @@ public class BillBhtController implements Serializable {
 
     public void setMarginTotal(double marginTotal) {
         this.marginTotal = marginTotal;
+    }
+
+    public Priority getCurrentBillItemPriority() {
+        if(currentBillItemPriority == null){
+            currentBillItemPriority = Priority.NORMAL;
+        }
+        return currentBillItemPriority;
+    }
+
+    public void setCurrentBillItemPriority(Priority currentBillItemPriority) {
+        this.currentBillItemPriority = currentBillItemPriority;
     }
 
 }
