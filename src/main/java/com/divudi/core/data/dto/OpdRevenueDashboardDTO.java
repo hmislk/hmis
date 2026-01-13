@@ -53,12 +53,12 @@ public class OpdRevenueDashboardDTO implements Serializable{
     }
     
     // constructor used for dashboard discount department wise
-    public OpdRevenueDashboardDTO(Long billId, String deptId, BillTypeAtomic billTypeAtomic, Double discount,Department department) {
+    public OpdRevenueDashboardDTO(Long billId, String deptId, BillTypeAtomic billTypeAtomic, Double discount,Department toDepartment) {
         this.billId = billId;
         this.deptId = deptId;
         this.billTypeAtomic = billTypeAtomic;
         this.discount = discount;
-        this.department = department;
+        this.toDepartment = toDepartment;
     }
     
     public Long getBillId() {

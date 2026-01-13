@@ -1062,12 +1062,13 @@ public class IncomeBundle implements Serializable {
 
                 DepartmentType st = b.getToDepartment().getDepartmentType();
                 String dept;
+                
                 if (st == null) {
                     dept = b.getToDepartment().getName();
                 } else {
                     dept = st.toString();
                 }
-                System.out.println("dept = " + dept);
+                
                 IncomeRow groupRow = grouped.computeIfAbsent(dept, k -> {
                     IncomeRow ir = new IncomeRow();
                     ir.setDepartment(b.getToDepartment());
@@ -1154,7 +1155,7 @@ public class IncomeBundle implements Serializable {
     }
     
     public void generateDiscountDetailsForDashboard() {
-        Map<Department, IncomeRow> grouped = new LinkedHashMap<>();
+        Map<Object, IncomeRow> grouped = new LinkedHashMap<>();
         System.out.println("discount process started = ");
         
         for (IncomeRow r : getRows()) {
@@ -1164,20 +1165,28 @@ public class IncomeBundle implements Serializable {
                 continue;
             }
             
-            if (b.getDepartment() == null) {
-                System.out.println("bill department null = ");
+            if (b.getToDepartment() == null) {
+                System.out.println("bill todepartment null = ");
                 continue;
             }
             
             r.setDiscount(b.getDiscount());
             System.out.println("b.getDiscount() = " + b.getDiscount());
             
-            Department dept = b.getDepartment();
-            
+            DepartmentType st = b.getToDepartment().getDepartmentType();
+            String dept;
+                
+            if (st == null) {
+                dept = b.getToDepartment().getName();
+            } else {
+                dept = st.toString();
+            }
+                
             IncomeRow groupRow = grouped.computeIfAbsent(dept, k -> {
                 IncomeRow ir = new IncomeRow();
-                ir.setDepartment(k);
-                ir.setRowType(k.getName());
+                ir.setDepartment(b.getToDepartment());
+                ir.setRowType(k.toString());
+                System.out.println("ir.getRowType() = " + ir.getRowType());
                 return ir;
             });
             System.out.println("groupRow.getRowType() = " + groupRow.getRowType());
@@ -1185,8 +1194,8 @@ public class IncomeBundle implements Serializable {
         }
         getRows().clear();
         grouped.values().stream()
-                .sorted(Comparator.comparing(IncomeRow::getDepartment, 
-                        Comparator.nullsLast(Comparator.comparing(Department::getName))))
+                .sorted(Comparator.comparing(IncomeRow::getRowType, 
+                        Comparator.nullsLast(Comparator.naturalOrder())))
                 .forEachOrdered(getRows()::add);
         
         populateSummaryRow();

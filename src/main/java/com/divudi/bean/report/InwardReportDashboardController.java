@@ -249,8 +249,8 @@ public class InwardReportDashboardController implements Serializable{
         List<String> labels = new ArrayList<>();
         List<String> bgColors = new ArrayList<>();
         
-        for (int i = 0; i < opdRevenueBundle.getRows().size(); i++) {
-            IncomeRow r = opdRevenueBundle.getRows().get(i);
+        for (int i = 0; i < discountBundle.getRows().size(); i++) {
+            IncomeRow r = discountBundle.getRows().get(i);
             values.add(r.getDiscount());
             labels.add(r.getRowType());
             bgColors.add(colorPalette[i % colorPalette.length]);
@@ -365,20 +365,8 @@ public class InwardReportDashboardController implements Serializable{
     
     public void generateOpdIncomeReportDto() {
         opdRevenueChart = new BarChartModel();
-        
-        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
-
-        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
-        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
-
-        opdRevenueDashboardDtos = billService.fetchOpdRevenueDashboardDTOs(fromDate, toDate, institution, site, department, loggedUser, billTypeAtomics, null, null);
+        List<BillTypeAtomic> btas = fetchBillTypeAtomicForOpdRevenue();
+        opdRevenueDashboardDtos = billService.fetchOpdRevenueDashboardDTOs(fromDate, toDate, institution, site, department, loggedUser, btas, null, null);
 
         System.out.println("Results returned: " + (opdRevenueDashboardDtos != null ? opdRevenueDashboardDtos.size() : 0));
 
@@ -398,21 +386,35 @@ public class InwardReportDashboardController implements Serializable{
     
     public void generateDiscountDashboard() {
         discountChart = new BarChartModel();
+        List<BillTypeAtomic> btas = fetchBillTypeAtomicForOpdRevenue();
         
-        discountDashboard = billService.fetchBillDiscounts(fromDate, toDate, discountDept);
+        discountDashboard = billService.fetchBillDiscounts(fromDate, toDate, discountDept, btas);
 
         System.out.println("Results returned: " + (discountDashboard != null ? discountDashboard.size() : 0));
 
         discountBundle = new IncomeBundle(discountDashboard);
         discountBundle.generateDiscountDetailsForDashboard();
         
-        for (IncomeRow i : discountBundle.getRows()) {
-            System.out.println("i.getGrossTotal() = " + i.getGrossTotal());
-            System.out.println("RowType: "+i.getRowType());
-        }
-        
         setDiscountChart();
         
         System.out.println("processing done Discount= ");
+    }
+    
+    
+    private List<BillTypeAtomic> fetchBillTypeAtomicForOpdRevenue() {
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+            
+         return billTypeAtomics;
+        
     }
 }

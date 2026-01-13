@@ -1949,7 +1949,8 @@ public class BillService {
     
     public List<OpdRevenueDashboardDTO> fetchBillDiscounts(Date fromDate,
             Date toDate,
-            Department department) {
+            Department department,
+            List<BillTypeAtomic> billTypeAtomics) {
 
         if (fromDate == null || toDate == null) {
             throw new IllegalArgumentException("fromDate and toDate cannot be null");
@@ -1959,13 +1960,15 @@ public class BillService {
         }
 
         String jpql = "Select new com.divudi.core.data.dto.OpdRevenueDashboardDTO("
-                + " b.id, b.deptId, b.billTypeAtomic, coalesce(b.discount, 0.0), b.department) "
+                + " b.id, b.deptId, b.billTypeAtomic, coalesce(b.discount, 0.0), b.toDepartment) "
                 + " from Bill b"
                 + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
                 + " and b.createdAt between :fromDate and :toDate";
 
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
         
