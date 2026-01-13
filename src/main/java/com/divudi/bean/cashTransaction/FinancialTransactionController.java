@@ -1284,6 +1284,15 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToFundTransferBill() {
+        // Check if float transfer is restricted until shift is started
+        if (configOptionApplicationController.getBooleanValueByKey("Restrict Float Transfer Until Shift Start", false)) {
+            findNonClosedShiftStartFundBillIsAvailable();
+            if (getNonClosedShiftStartFundBill() == null) {
+                JsfUtil.addErrorMessage("Start Your Shift First!");
+                return "/cashier/index?faces-redirect=true";
+            }
+        }
+
         resetClassVariables();
         prepareToAddNewFundTransferBill();
         floatTransferStarted = false;
@@ -2710,6 +2719,15 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToHandoverCreateBill() {
+        // Check if handover is restricted until shift is started
+        if (configOptionApplicationController.getBooleanValueByKey("Restrict Handover Until Shift Start", false)) {
+            findNonClosedShiftStartFundBillIsAvailable();
+            if (getNonClosedShiftStartFundBill() == null) {
+                JsfUtil.addErrorMessage("Start Your Shift First!");
+                return "/cashier/index?faces-redirect=true";
+            }
+        }
+
         resetClassVariables();
         handoverValuesCreated = false;
         findNonClosedShiftStartFundBillIsAvailable();
@@ -2817,6 +2835,15 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToHandoverCreateBillForSelectedPeriod() {
+        // Check if handover is restricted until shift is started
+        if (configOptionApplicationController.getBooleanValueByKey("Restrict Handover Until Shift Start", false)) {
+            findNonClosedShiftStartFundBillIsAvailable();
+            if (getNonClosedShiftStartFundBill() == null) {
+                JsfUtil.addErrorMessage("Start Your Shift First!");
+                return "/cashier/index?faces-redirect=true";
+            }
+        }
+
         return "/cashier/handover_start_for_period?faces-redirect=true";
     }
 
