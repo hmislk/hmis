@@ -30,6 +30,7 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 
 import javax.faces.convert.Converter;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -46,7 +47,9 @@ public class LabTestHistoryController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
-    private LabTestHistoryFacade facade;
+    private LabTestHistoryFacade labTestHistoryFacade;
+    @Inject
+    EnumController enumController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -250,14 +253,14 @@ public class LabTestHistoryController implements Serializable {
         }
         try {
             if (current.getId() != null) {
-                getFacade().edit(current);
+                getLabTestHistoryFacade().edit(current);
                 //JsfUtil.addSuccessMessage("Updated Successfully.");
             } else {
                 current.setInstitution(sessionController.getInstitution());
                 current.setDepartment(sessionController.getDepartment());
                 current.setCreatedAt(new Date());
                 current.setCreatedBy(getSessionController().getLoggedUser());
-                getFacade().create(current);
+                getLabTestHistoryFacade().create(current);
                 //JsfUtil.addSuccessMessage("Saved Successfully");
             }
             items = null;
@@ -265,8 +268,6 @@ public class LabTestHistoryController implements Serializable {
             JsfUtil.addErrorMessage("Error saving: " + e.getMessage());
         }
     }
-    @Inject
-    EnumController enumController;
 
     public List<LabTestHistoryLight> getCreatedLabTestHistoryByInvestigation(PatientInvestigation patientInvestigation) {
         if (patientInvestigation == null) {
@@ -283,7 +284,7 @@ public class LabTestHistoryController implements Serializable {
         params.put("retired", false);
         params.put("patientInvestigation", patientInvestigation);
         params.put("type", TestHistoryType.ORDERED);
-        List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getFacade().findLightsByJpql(jpql, params);
+        List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getLabTestHistoryFacade().findLightsByJpql(jpql, params);
         return labHistory;
     }
     
@@ -302,7 +303,7 @@ public class LabTestHistoryController implements Serializable {
         params.put("retired", false);
         params.put("patientInvestigation", patientInvestigation);
         params.put("type", TestHistoryType.CANCELED);
-        List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getFacade().findLightsByJpql(jpql, params);
+        List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getLabTestHistoryFacade().findLightsByJpql(jpql, params);
         return labHistory;
     }
     
@@ -321,7 +322,7 @@ public class LabTestHistoryController implements Serializable {
         params.put("retired", false);
         params.put("patientInvestigation", patientInvestigation);
         params.put("type", TestHistoryType.REFUNDED);
-        List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getFacade().findLightsByJpql(jpql, params);
+        List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getLabTestHistoryFacade().findLightsByJpql(jpql, params);
         return labHistory;
     }
     
@@ -356,9 +357,11 @@ public class LabTestHistoryController implements Serializable {
         params.put("retired", false);
         params.put("patientInvestigation", patientInvestigation);
         params.put("types", reportedTypes);
-        List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getFacade().findLightsByJpql(jpql, params);
+        List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getLabTestHistoryFacade().findLightsByJpql(jpql, params);
         return labHistory;
     }
+    
+    
 
     public List<LabTestHistoryLight> getLabTestHistoryByInvestigation(PatientInvestigation patientInvestigation, PatientSample patientSample) {
 
@@ -379,7 +382,7 @@ public class LabTestHistoryController implements Serializable {
         params.put("retired", false);
         params.put("patientInvestigation", patientInvestigation);
         params.put("ps", patientSample);
-        List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getFacade().findLightsByJpql(jpql, params);
+        List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getLabTestHistoryFacade().findLightsByJpql(jpql, params);
         return labHistory;
     }
 
@@ -401,8 +404,103 @@ public class LabTestHistoryController implements Serializable {
         params.put("retired", false);
         params.put("patientInvestigation", patientInvestigation);
 
-        return getFacade().findLongByJpql(jpql, params);
+        return getLabTestHistoryFacade().findLongByJpql(jpql, params);
     }
+
+    public List<LabTestHistoryLight> getReportLabTestHistorys(PatientReport report, List<TestHistoryType> reportedTypes) {
+        if (report == null) {
+            return null;
+        }
+        if (reportedTypes == null || reportedTypes.isEmpty()) {
+            return null;
+        }
+
+        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, his.institution.name, his.department.name, his.staff, his.createdBy, his.comment) "
+                + " FROM LabTestHistory his "
+                + " WHERE his.retired=:retired "
+                + " AND his.patientReport=:pReport"
+                + " AND his.testHistoryType In :types"
+                + " order by his.createdAt asc";
+        Map<String, Object> params = new HashMap<>();
+
+        params.put("retired", false);
+        params.put("pReport", report);
+        params.put("types", reportedTypes);
+        List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) labTestHistoryFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+        return labHistory;
+    }
+    
+    
+    
+//  1. Result recive form Analyzer
+    public List<LabTestHistoryLight> getAnalyzerResulRereciveHistorys(PatientReport report) {
+        List<TestHistoryType> types = new ArrayList<>();
+        types.add(TestHistoryType.RESULT_RECEIVED_FROM_ANALYZER);
+        return getReportLabTestHistorys(report,types);
+    }
+    
+//  2. Reports (Create / Data Enters / Calculate / Approvel / Approvel Cancel )
+    public List<LabTestHistoryLight> getReportHistorys(PatientReport report) {
+        List<TestHistoryType> types = new ArrayList<>();
+        types.add(TestHistoryType.REPORT_CREATED);
+        types.add(TestHistoryType.DATA_ENTERED);
+        types.add(TestHistoryType.REPORT_CALCULATED);
+        types.add(TestHistoryType.REPORT_APPROVED);
+        types.add(TestHistoryType.REPORT_APPROVED_CANCEL);
+        types.add(TestHistoryType.REPORT_REMOVE);
+        return getReportLabTestHistorys(report,types);
+    }
+    
+//  3. Reports View 
+    public List<LabTestHistoryLight> getReportViewHistorys(PatientReport report) {
+        List<TestHistoryType> types = new ArrayList<>();
+        types.add(TestHistoryType.REPORT_VIEWED);
+        return getReportLabTestHistorys(report,types);
+    }
+    
+//  4. Reports Send 
+    public List<LabTestHistoryLight> getReportSendHistorys(PatientReport report) {
+        List<TestHistoryType> types = new ArrayList<>();
+        types.add(TestHistoryType.SENT_SMS_AUTO);
+        types.add(TestHistoryType.SENT_SMS_MANUAL);
+        types.add(TestHistoryType.SENT_EMAIL);
+        return getReportLabTestHistorys(report,types);
+    }
+    
+//  5. Reports Print and Export
+    public List<LabTestHistoryLight> getPrintAndExportHistorys(PatientReport report) {
+        List<TestHistoryType> types = new ArrayList<>();
+        types.add(TestHistoryType.REPORT_PRINTED);
+        types.add(TestHistoryType.REPORT_EXPORT_AS_PDF);
+        return getReportLabTestHistorys(report,types);
+    }
+    
+//  6. Reports Issue
+    public List<LabTestHistoryLight> getReportIssueHistorys(PatientReport report) {
+        List<TestHistoryType> types = new ArrayList<>();
+        types.add(TestHistoryType.REPORT_ISSUE_PATIENT);
+        types.add(TestHistoryType.REPORT_ISSUE_PATIENT);
+        return getReportLabTestHistorys(report,types);
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     @FacesConverter(forClass = LabTestHistory.class)
     public static class LabTestHistoryConverter implements Converter {
@@ -414,7 +512,7 @@ public class LabTestHistoryController implements Serializable {
             }
             LabTestHistoryController controller = (LabTestHistoryController) fc.getApplication()
                     .getELResolver().getValue(fc.getELContext(), null, "labTestHistoryController");
-            return controller.getFacade().find(Long.valueOf(value));
+            return controller.getLabTestHistoryFacade().find(Long.valueOf(value));
         }
 
         @Override
@@ -446,13 +544,13 @@ public class LabTestHistoryController implements Serializable {
 
     public List<LabTestHistory> getItems() {
         if (items == null) {
-            items = getFacade().findAll();
+            items = getLabTestHistoryFacade().findAll();
         }
         return items;
     }
 
-    public LabTestHistoryFacade getFacade() {
-        return facade;
+    public LabTestHistoryFacade getLabTestHistoryFacade() {
+        return labTestHistoryFacade;
     }
 
     public SessionController getSessionController() {
