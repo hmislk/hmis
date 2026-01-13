@@ -116,12 +116,12 @@
                                                     </p:column>
 
                                                     <p:column headerText="Value">
-                                                        <h:outputText value="#{row.grossTotal}"
+                                                        <h:outputText value="#{row.discount}"
                                                                       style="padding: 0px!important; margin: 0px!important;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                         <f:facet name="footer">
-                                                            <h:outputText value="#{inwardReportDashboardController.discountBundle.summaryRow.grossTotal}"
+                                                            <h:outputText value="#{inwardReportDashboardController.discountBundle.summaryRow.discount}"
                                                                     style="padding: 0px!important; margin: 0px!important; font-weight: bold">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>

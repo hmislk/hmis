@@ -1052,7 +1052,7 @@ public class IncomeBundle implements Serializable {
             for (IncomeRow r : getRows()) {
                 Bill b = r.getBill();
 
-                if (b == null) {
+                if (b == null || b.getToDepartment() == null) {
                     continue;
                 }
 
@@ -1060,11 +1060,18 @@ public class IncomeBundle implements Serializable {
                 r.setNetTotal(b.getNetTotal());
                 r.setDiscount(b.getDiscount());
 
-                Department dept = b.getDepartment();
+                DepartmentType st = b.getToDepartment().getDepartmentType();
+                String dept;
+                if (st == null) {
+                    dept = b.getToDepartment().getName();
+                } else {
+                    dept = st.toString();
+                }
+                System.out.println("dept = " + dept);
                 IncomeRow groupRow = grouped.computeIfAbsent(dept, k -> {
                     IncomeRow ir = new IncomeRow();
-                    ir.setDepartment((Department)k);
-                    ir.setRowType(((Department)k).getName());
+                    ir.setDepartment(b.getToDepartment());
+                    ir.setRowType(k.toString());
                     System.out.println("ir.getRowType() = " + ir.getRowType());
                     return ir;
                 });
@@ -1076,8 +1083,8 @@ public class IncomeBundle implements Serializable {
             }
             getRows().clear();
             grouped.values().stream()
-                .sorted(Comparator.comparing(IncomeRow::getDepartment, 
-                        Comparator.nullsLast(Comparator.comparing(Department::getName))))
+                .sorted(Comparator.comparing(IncomeRow::getRowType, 
+                        Comparator.nullsLast(Comparator.naturalOrder())))
                 .forEachOrdered(getRows()::add);
         } else if (select.equals("Institution Wise")) {
             System.out.println("inside Insitution wise = ");

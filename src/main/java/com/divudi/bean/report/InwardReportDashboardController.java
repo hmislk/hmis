@@ -219,7 +219,7 @@ public class InwardReportDashboardController implements Serializable{
     
     private void setOpdRevenueChart() {        
         BarChartDataSet dataSet = new BarChartDataSet();
-        dataSet.setLabel("Opd Revenue");
+        dataSet.setLabel("OPD Revenue");
 
         List<Object> values = new ArrayList<>();
         List<String> labels = new ArrayList<>();
@@ -241,17 +241,17 @@ public class InwardReportDashboardController implements Serializable{
         opdRevenueChart.setData(data);
     }
     
-    private void setBarChart(IncomeBundle bd, BarChartModel m, String label) {        
+    private void setDiscountChart() {        
         BarChartDataSet dataSet = new BarChartDataSet();
-        dataSet.setLabel(label);
+        dataSet.setLabel("Discount");
 
         List<Object> values = new ArrayList<>();
         List<String> labels = new ArrayList<>();
         List<String> bgColors = new ArrayList<>();
         
-        for (int i = 0; i < bd.getRows().size(); i++) {
-            IncomeRow r = bd.getRows().get(i);
-            values.add(r.getGrossTotal());
+        for (int i = 0; i < opdRevenueBundle.getRows().size(); i++) {
+            IncomeRow r = opdRevenueBundle.getRows().get(i);
+            values.add(r.getDiscount());
             labels.add(r.getRowType());
             bgColors.add(colorPalette[i % colorPalette.length]);
         } 
@@ -262,7 +262,7 @@ public class InwardReportDashboardController implements Serializable{
         ChartData data = new ChartData();
         data.addChartDataSet(dataSet);
         data.setLabels(labels);
-        m.setData(data);
+        discountChart.setData(data);
     }
     
     public RoomFacade getRoomFacade() {
@@ -392,7 +392,6 @@ public class InwardReportDashboardController implements Serializable{
         }
         
         setOpdRevenueChart();
-        setBarChart(opdRevenueBundle, opdRevenueChart, "OPD Revenue");
         
         System.out.println("processing done = ");
     }
@@ -412,7 +411,7 @@ public class InwardReportDashboardController implements Serializable{
             System.out.println("RowType: "+i.getRowType());
         }
         
-        setBarChart(discountBundle, discountChart, "Discount Chart Department Wise");
+        setDiscountChart();
         
         System.out.println("processing done Discount= ");
     }

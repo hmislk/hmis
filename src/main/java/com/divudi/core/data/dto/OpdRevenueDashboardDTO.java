@@ -29,6 +29,7 @@ public class OpdRevenueDashboardDTO implements Serializable{
     private Double serviceCharge;
     private PaymentScheme paymentScheme;
     private Department department;
+    private Department toDepartment;
     private Institution institution;
     
     public OpdRevenueDashboardDTO() {
@@ -37,7 +38,7 @@ public class OpdRevenueDashboardDTO implements Serializable{
     
     // constructor used for dashboard opd revenue
     public OpdRevenueDashboardDTO(Long billId, String deptId, BillTypeAtomic billTypeAtomic, Date createdAt,
-                              Double netTotal, Double total, Department department, Institution institution) {
+                              Double netTotal, Double total, Department department, Institution institution, Department toDepartment) {
         this.billId = billId;
         this.deptId = deptId;
         this.billTypeAtomic = billTypeAtomic;
@@ -46,6 +47,7 @@ public class OpdRevenueDashboardDTO implements Serializable{
         this.total = total;
         this.department = department;
         this.institution = institution;
+        this.toDepartment = toDepartment;
         
         System.out.println("billID: " + billId + "total = " + total);
     }
@@ -154,4 +156,13 @@ public class OpdRevenueDashboardDTO implements Serializable{
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
+    
+    public Department getToDepartment () {
+        return toDepartment;
+    }
+    
+    public void setToDepartment(Department toDepartment) {
+        this.toDepartment= toDepartment;
+    }
+            
 }

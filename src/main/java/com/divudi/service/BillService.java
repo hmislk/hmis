@@ -1899,7 +1899,7 @@ public class BillService {
         String jpql = "select new com.divudi.core.data.dto.OpdRevenueDashboardDTO("
                 + " b.id, b.deptId, b.billTypeAtomic, b.createdAt, "
                 + " coalesce(b.netTotal,0.0), coalesce(b.total,0.0), "
-                + " b.department, b.institution) "
+                + " b.department, b.institution, b.toDepartment) "
                 + " from Bill b "
                 + " where b.retired=:ret "
                 + " and b.billTypeAtomic in :billTypesAtomics "

@@ -358,6 +358,7 @@ public class IncomeRow implements Serializable {
         bill.setTotal(dto.getTotal() != null ? dto.getTotal() : 0.0);
         bill.setDiscount(dto.getDiscount() != null ? dto.getDiscount() : 0.0);
         bill.setDepartment(dto.getDepartment());
+        bill.setToDepartment(dto.getToDepartment() != null ? dto.getToDepartment() : null);
         bill.setInstitution(dto.getInstitution() != null ? dto.getInstitution() : null);
 
         this.bill = bill;
