@@ -15,12 +15,23 @@
 <h:form class="w-100">
 
     <p:panel header="Duration Service Report" styleClass="w-100 shadow-2 border-round-lg p-3">
-        <p:panel styleClass="mb-3 p-3 border-round-lg" header="Filters">
+        <p:panel styleClass="mb-3 p-3 border-round-lg">
             <h:panelGrid columns="6" styleClass="w-100"
                          columnClasses="col-2,col-2,col-1,col-2,col-2,col-1">
                 <h:panelGroup layout="block" styleClass="form-group mb-3">
                     <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                    <p:outputLabel value="Discharge Date" class="mx-3"/>
+                    <p:outputLabel value="Discharge Date From" class="mx-3"/>
+                </h:panelGroup>
+
+                <p:datePicker showTime="true" value="" 
+                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                    styleClass="w-100" inputStyleClass="w-100 mb-3"/>
+
+                <p:spacer width="20"/>
+
+                <h:panelGroup layout="block" styleClass="form-group mb-3">
+                    <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                    <p:outputLabel value="Discharge Date To" class="mx-3"/>
                 </h:panelGroup>
 
                 <p:datePicker showTime="true" value="" 
@@ -32,7 +43,18 @@
                 
                 <h:panelGroup layout="block" styleClass="form-group mb-3">
                     <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                    <p:outputLabel value="Service Added Date" class="mx-3"/>
+                    <p:outputLabel value="Service Added Date From" class="mx-3"/>
+                </h:panelGroup>
+
+                <p:datePicker showTime="true" value="" 
+                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                    styleClass="w-100" inputStyleClass="w-100 mb-3"/>
+
+                <p:spacer width="20"/>
+
+                <h:panelGroup layout="block" styleClass="form-group mb-3">
+                    <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                    <p:outputLabel value="Service Added Date To" class="mx-3"/>
                 </h:panelGroup>
 
                 <p:datePicker showTime="true" value="" 
@@ -44,7 +66,18 @@
            
                 <h:panelGroup layout="block" styleClass="form-group mb-3">
                     <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                    <p:outputLabel value="Invoice Date" class="mx-3"/>
+                    <p:outputLabel value="Invoice Date From" class="mx-3"/>
+                </h:panelGroup>
+
+                <p:datePicker showTime="true" value="" 
+                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                    styleClass="w-100" inputStyleClass="w-100 mb-3"/>
+
+                <p:spacer width="20"/>
+
+                <h:panelGroup layout="block" styleClass="form-group mb-3">
+                    <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                    <p:outputLabel value="Invoice Date To" class="mx-3"/>
                 </h:panelGroup>
 
                 <p:datePicker showTime="true" value="" 
@@ -69,33 +102,39 @@
                 <p:spacer width="20"/>
 
                 <h:panelGroup layout="block" styleClass="form-group mb-3">
-                    <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> 
-                    <h:outputLabel value="Admission Type" class="mx-3"/>
+                    <h:outputText value="&#xf084;" styleClass="fa mr-2"/> 
+                    <h:outputLabel value="Admission Types" for="admType" class="mx-3"/>
                 </h:panelGroup>
 
-                <p:selectManyCheckbox id="admType" widgetVar="blub" layout="grid" columns="3" styleClass="w-100 form-group mb-3">
-                    <f:selectItem itemValue="A" itemLabel="Normal"/>
-                    <f:selectItem itemValue="B" itemLabel="Dialysis"/>
-                    <f:selectItem itemValue="P" itemLabel="ETU"/>
-                    <f:selectItem itemValue="W" itemLabel="Day Care"/>
-                    <f:selectItem itemValue="K" itemLabel="Cath Lab"/>
-                </p:selectManyCheckbox>
+                <p:selectCheckboxMenu id="admType"
+                                      styleClass="w-100 mb-3"
+                                      label="Select Types"
+                                      updateLabel="true">
+                    <f:selectItem itemLabel="Normal" itemValue="A"/>
+                    <f:selectItem itemLabel="Dialysis" itemValue="B"/>
+                    <f:selectItem itemLabel="ETU" itemValue="P"/>
+                    <f:selectItem itemLabel="Day Care" itemValue="W"/>
+                    <f:selectItem itemLabel="Cath Lab" itemValue="K"/>
+                </p:selectCheckboxMenu>
 
                 <p:spacer width="20"/>
 
             
                 <h:panelGroup layout="block" styleClass="form-group mb-3">
-                    <h:outputText styleClass="fa fa-hotel mr-2"/> 
-                    <h:outputLabel value="Room Category" class="mx-3"/>
+                    <h:outputText value="&#xf236;" styleClass="fa mr-2"/> 
+                    <h:outputLabel value="Room Categories" for="roomCat" class="mx-3"/>
                 </h:panelGroup>
 
-                <p:selectManyCheckbox id="roomCat" widgetVar="blub"  layout="grid" columns="3" styleClass="w-100 form-group mb-3">
-                    <f:selectItem itemValue="A" itemLabel="Superior A"/>
-                    <f:selectItem itemValue="B" itemLabel="Superior B"/>
-                    <f:selectItem itemValue="P" itemLabel="Premium Range"/>
-                    <f:selectItem itemValue="W" itemLabel="Bay Window"/>
-                    <f:selectItem itemValue="K" itemLabel="King Court"/>
-                </p:selectManyCheckbox>
+                <p:selectCheckboxMenu id="roomCat"
+                                      styleClass="w-100 mb-3"
+                                      label="Select Categories"
+                                      updateLabel="true">
+                    <f:selectItem itemLabel="Superior A" itemValue="A"/>
+                    <f:selectItem itemLabel="Superior B" itemValue="B"/>
+                    <f:selectItem itemLabel="Premium Range" itemValue="P"/>
+                    <f:selectItem itemLabel="Bay Window" itemValue="W"/>
+                    <f:selectItem itemLabel="King Court" itemValue="K"/>
+                </p:selectCheckboxMenu>
 
                 <p:spacer width="20"/>
 
@@ -105,7 +144,7 @@
                     <h:outputLabel value="Service Department" class="mx-3"/>
                 </h:panelGroup>
 
-                <p:selectOneMenu filter="true" styleClass="w-100 mb-3">
+                <p:selectOneMenu styleClass="w-100 mb-3">
                     <f:selectItem itemLabel="All Service Departments"/>
                     <f:selectItems/>
                 </p:selectOneMenu>
@@ -118,7 +157,7 @@
                     <h:outputLabel value="Billed Department" class="mx-3"/>
                 </h:panelGroup>
 
-                <p:selectOneMenu filter="true" styleClass="w-100 mb-3">
+                <p:selectOneMenu styleClass="w-100 mb-3">
                     <f:selectItem itemLabel="All Billed Departments"/>
                     <f:selectItems/>
                 </p:selectOneMenu>
@@ -188,67 +227,67 @@
         </h:panelGrid>
 
         <!-- TABLE -->
-        <p:panel header="Duration Service Report" styleClass="m-3 border-round-md shadow-1">
+        <p:panel styleClass="m-3 border-round-md shadow-1">
             <p:dataTable value="null" var="c" id="tbl"
                          styleClass="p-datatable-striped p-datatable-gridlines">
 
            
                 <p:column headerText="BHT No" style="width: 100px">
-                    <h:outputText value="null"/>
+                    <h:outputText value="BHT-RH230800297"/>
                 </p:column>
                 <p:column headerText="MRN No">
-                    <h:outputText value="null"/>
+                    <h:outputText value="0233042370-4"/>
                 </p:column>
                 <p:column headerText="Consultant Name">
-                    <h:outputText value="null"/>
+                    <h:outputText value="Dr.Thilochana Nagolla"/>
                 </p:column>
                 <p:column headerText="Surgery Name">
-                    <h:outputText value="null"/>
+                    <h:outputText value=""/>
                 </p:column>
                 <p:column headerText="Service Department">
-                    <h:outputText value="null"/>
+                    <h:outputText value=""/>
                 </p:column>
                 <p:column headerText="Service Name">
-                    <h:outputText value="null"/>
+                    <h:outputText value="Nitros Oxide"/>
                 </p:column>
                 <p:column headerText="Service Group">
-                    <h:outputText value="null"/>
+                    <h:outputText value="Medical Service"/>
                 </p:column>
                 <p:column headerText="Start Time">
-                    <h:outputText value="null"/>
+                    <h:outputText value="8/14/23 9:30 PM"/>
                 </p:column>
                 <p:column headerText="End Time">
-                    <h:outputText value="null"/>
+                    <h:outputText value="8/14/23 10:30 PM"/>
                 </p:column>
                 <p:column headerText="Duration">
-                    <h:outputText value="null"/>
+                    <h:outputText value="0D 1H 0M"/>
                 </p:column>
                 <p:column headerText="Base Price">
-                    <h:outputText value="null"/>
+                    <h:outputText value="799.8"/>
                 </p:column>
                 <p:column headerText="Discount Amount">
-                    <h:outputText value="null"/>
+                    <h:outputText value="0"/>
                 </p:column>
                 <p:column headerText="Sponser Discount">
-                    <h:outputText value="null"/>
+                    <h:outputText value="0"/>
                 </p:column>
                 <p:column headerText="Sponser Net.">
-                    <h:outputText value="null"/>
+                    <h:outputText value="0"/>
                 </p:column>
                 <p:column headerText="Patient Amt">
-                    <h:outputText value="null"/>
+                    <h:outputText value="799.8"/>
                 </p:column>
                 <p:column headerText="Adjusted Amt">
-                    <h:outputText value="null"/>
+                    <h:outputText value="0"/>
                 </p:column>
                 <p:column headerText="Creator">
-                    <h:outputText value="null"/>
+                    <h:outputText value="Welihinda Badalge Rohini Pathma"/>
                 </p:column>
                 <p:column headerText="Checked By">
-                    <h:outputText value="null"/>
+                    <h:outputText value=""/>
                 </p:column>
                 <p:column headerText="Checked At">
-                    <h:outputText value="null"/>
+                    <h:outputText value=""/>
                 </p:column>
 
             </p:dataTable>
