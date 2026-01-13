@@ -8,87 +8,135 @@
     <body>
         <ui:composition template="./dashboard.xhtml">
             <ui:define name="subcontent">
-                <h:panelGroup rendered="#{!webUserController.hasPrivilege('CourierCollectSamples')}" >
-                    You are NOT Authorized to view Discount Dashboard Page
-                </h:panelGroup>
-                <h:panelGroup rendered="#{webUserController.hasPrivilege('CourierCollectSamples')}" >
-                    <div class="container ">
-                        <h:panelGroup>
-                                <p:panel class="w-100">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Discount Dashboard" styleClass="fa-bed"   class="mx-4 text-center fs-2 text-uppercase"/>
-                                </f:facet>
-                                <p:panelGrid columns="3">
-                                <h:panelGroup>
-                                <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
-                                <h:outputLabel value="From Date" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:datePicker
-                            styleClass="w-100"
-                            inputStyleClass="w-100 form-control"
-                            id="fromDate"
-                            showTime="true"
-                            yearNavigator="true"
-                            monthNavigator="true"
-                            timeInput="true"
-                            value="#{patientInvestigationController.fromDate}"
-                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                            />
-                                <p:spacer width="40"/>
+                <h:form>
+                    <h:panelGroup rendered="#{!webUserController.hasPrivilege('CourierCollectSamples')}" >
+                        You are NOT Authorized to view Discount Dashboard Page
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('CourierCollectSamples')}" >
+                        <div class="container ">
                             <h:panelGroup>
-                                <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
-                                <h:outputLabel value="To Date" class="mx-3" />
-                            </h:panelGroup>
-                            <p:datePicker
-                            styleClass="w-100"
-                            inputStyleClass="w-100 form-control"
-                            showTime="true"
-                            yearNavigator="true"
-                            monthNavigator="true"
-                            timeInput="true"
-                            value="#{patientInvestigationController.fromDate}"
-                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                            />
-                            <p:spacer width="40"/>
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-building mr-2"/>
-                                <p:outputLabel value="Department" for="phmDept" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                id="phmDept"
-                                class="w-100"
-                                filter="true">
-                                <f:selectItem itemLabel="All"/>
-                            </p:selectOneMenu>
-                             <p:spacer width="40"/>
-                                </p:panelGrid>
-                                <p:spacer width="20"/>
-                            
-                                
-                                
-                                
-                             <!--Command Buttons-->
-                            <div class="d-flex align-items-center my-4">
+                                    <p:panel class="w-100">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discount Dashboard" styleClass="fa-bed"   class="mx-4 text-center fs-2 text-uppercase"/>
+                                    </f:facet>
+                                    <p:panelGrid columns="3">
+                                    <h:panelGroup>
+                                    <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
+                                    <h:outputLabel value="From Date" class="mx-3"/>
+                                </h:panelGroup>
+                                <p:datePicker
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="fromDate"
+                                showTime="true"
+                                yearNavigator="true"
+                                monthNavigator="true"
+                                timeInput="true"
+                                value="#{inwardReportDashboardController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                />
+                                    <p:spacer width="40"/>
+                                <h:panelGroup>
+                                    <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
+                                    <h:outputLabel value="To Date" class="mx-3" />
+                                </h:panelGroup>
+                                <p:datePicker
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                showTime="true"
+                                yearNavigator="true"
+                                monthNavigator="true"
+                                timeInput="true"
+                                value="#{inwardReportDashboardController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                />
+                                <p:spacer width="40"/>
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText styleClass="fa fa-building mr-2"/>
+                                    <p:outputLabel value="Department" for="cmbDept" class="m-3"/>
+                                </h:panelGroup>
+                                <p:selectOneMenu
+                                        id="cmbDept"
+                                        styleClass="w-100 form-control"
+                                        value="#{inwardReportDashboardController.discountDept}"
+                                        filterMatchMode="contains"
+                                        filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                                 <p:spacer width="40"/>
+                                    </p:panelGrid>
+                                    <p:spacer width="20"/>
 
-                                    <p:commandButton 
-                                        class="ui-button-warning mx-1"
-                                        icon="fas fa-cogs"
-                                        ajax="false"
-                                        value="Process" />
-                            </div>
-                            </p:panel>
-                            <p:spacer width="20"/>
-                            <p:panel class="w-100">
-                                 <f:facet name="header">
-                                    <h:outputLabel value="Department wise Discount Analysis Chart" styleClass="fa-bed"   class="mx-4 text-center fs-2 text-uppercase"/>
-                                </f:facet>
-                                <p:panel>
-                                   <!--Chart Must be Include There-->
+
+
+
+                                 <!--Command Buttons-->
+                                <div class="d-flex align-items-center my-4">
+
+                                        <p:commandButton 
+                                            class="ui-button-warning mx-1"
+                                            icon="fas fa-cogs"
+                                            ajax="false"
+                                            value="Process" 
+                                            action="#{inwardReportDashboardController.generateDiscountDashboard()}"/>
+                                </div>
                                 </p:panel>
-                            </p:panel>
-                        </h:panelGroup>
-                    </div>
-                </h:panelGroup>
+                                <p:spacer width="20"/>
+                                <p:panel class="w-100">
+                                     <f:facet name="header">
+                                        <h:outputLabel value="Department wise Discount Analysis Chart" styleClass="fa-bed"   class="mx-4 text-center fs-2 text-uppercase"/>
+                                    </f:facet>
+                                    <p:panel rendered="#{inwardReportDashboardController.discountChart ne null}">
+                                            <div style="width:100%; max-width:1000px; margin:auto;">
+                                                <p:barChart
+                                                    model="#{inwardReportDashboardController.discountChart}"
+                                                    style="width:100%; height:600px; "/>
+                                            </div>
+                                            <div class="mt-4" 
+                                                 style="overflow-x: auto; width: 50%; min-width: 400px">
+                                                <p:dataTable 
+                                                    value="#{inwardReportDashboardController.discountBundle.rows}"
+                                                    var="row"
+                                                    styleClass="ui-datatable-sm compact-datatable"
+                                                    emptyMessage="No data available">
+
+                                                    <p:column headerText="Label">
+                                                        <h:outputText value="#{row.rowType}" 
+                                                                      style="padding: 0px!important; margin: 0px!important;"/>
+                                                        <f:facet name="footer">
+                                                            <h:outputText value="Total Amounts"
+                                                                style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                            </h:outputText>
+                                                        </f:facet>
+                                                    </p:column>
+
+                                                    <p:column headerText="Value">
+                                                        <h:outputText value="#{row.grossTotal}"
+                                                                      style="padding: 0px!important; margin: 0px!important;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                        <f:facet name="footer">
+                                                            <h:outputText value="#{inwardReportDashboardController.discountBundle.summaryRow.grossTotal}"
+                                                                    style="padding: 0px!important; margin: 0px!important; font-weight: bold">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </f:facet>
+                                                    </p:column>
+
+
+                                                </p:dataTable>
+                                            </div>
+                                        </p:panel>
+                                </p:panel>
+                            </h:panelGroup>
+                        </div>
+                    </h:panelGroup>
+                </h:form>
             </ui:define>
         </ui:composition>
     </body>
