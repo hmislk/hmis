@@ -49,6 +49,17 @@ public enum TestHistoryType {
     SENT_SMS_MANUAL,
     SENT_SMS_AUTO,
     SENT_EMAIL;
+    
+    
+    // <editor-fold defaultstate="collapsed" desc="Extra Need to Add Enum">
+    
+//    1. Bill Request (Cancel/Refund)
+//    2. Request Cancel   
+//    3. Request Approvel
+//    4. Request Reject
+//    5. Request Approvel Cancel
+    
+    // </editor-fold>
 
     public String getLabel() {
         switch (this) {
@@ -105,7 +116,7 @@ public enum TestHistoryType {
             case REMOVED_UPLOADED_REPORT:
                 return "Uploaded Report Removed";
             case REPORT_CALCULATED:
-                return "Report Corrected";
+                return "Flags Generate";
             case REPORT_APPROVED:
                 return "Report Approved";
             case REPORT_APPROVED_CANCEL:
