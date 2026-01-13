@@ -34,7 +34,10 @@
       "Bash(python -m pip install:*)",
       "Bash(python:*)",
       "Bash(cd:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(xargs:*)",
+      "Bash(ls:*)",
+      "Bash(gh issue create:*)"
     ]
   }
 }
