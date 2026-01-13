@@ -17,18 +17,18 @@
                                 <h:outputLabel value="From Date" class="fw-bold" />
                                 <p:datePicker
                                     id="fromDate"
+                                    showTime="true"
                                     value="#{financialTransactionController.myFloatOutsFromDate}"
-                                    pattern="#{sessionController.applicationPreference.shortDateFormat}"
-                                    showIcon="true"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                     class="w-100" />
                             </div>
                             <div class="col-md-3">
                                 <h:outputLabel value="To Date" class="fw-bold" />
                                 <p:datePicker
                                     id="toDate"
+                                    showTime="true"
                                     value="#{financialTransactionController.myFloatOutsToDate}"
-                                    pattern="#{sessionController.applicationPreference.shortDateFormat}"
-                                    showIcon="true"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                     class="w-100" />
                             </div>
                             <div class="col-md-2 d-flex align-items-end">
