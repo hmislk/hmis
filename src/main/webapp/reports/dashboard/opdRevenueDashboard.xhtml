@@ -100,7 +100,7 @@
 
                                         <!-- Component 1: Without Institution and Site -->
                                         <p:selectOneMenu
-                                                rendered="#{pharmacySummaryReportController.institution eq null and pharmacySummaryReportController.site eq null}"
+                                            rendered="#{inwardReportDashboardController.institution eq null and inwardReportDashboardController.site eq null}"
                                                 styleClass="w-100 form-control"
                                                 value="#{inwardReportDashboardController.department}"
                                                 filterMatchMode="contains"
@@ -115,14 +115,14 @@
 
                                         <!-- Component 2: With Site Only -->
                                         <p:selectOneMenu
-                                                rendered="#{pharmacySummaryReportController.institution eq null and pharmacySummaryReportController.site ne null}"
+                                                rendered="#{inwardReportDashboardController.institution eq null and inwardReportDashboardController.site ne null}"
                                                 styleClass="w-100 form-control"
                                                 value="#{inwardReportDashboardController.department}"
                                                 filterMatchMode="contains"
                                                 filter="true">
                                             <f:selectItem itemLabel="All Departments"/>
                                             <f:selectItems
-                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacySummaryReportController.site)}"
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportDashboardController.site)}"
                                                     var="d"
                                                     itemLabel="#{d.name}"
                                                     itemValue="#{d}"/>
@@ -130,14 +130,14 @@
 
                                         <!-- Component 3: With Institution Only -->
                                         <p:selectOneMenu
-                                                rendered="#{pharmacySummaryReportController.institution ne null and pharmacySummaryReportController.site eq null}"
+                                                rendered="#{inwardReportDashboardController.institution ne null and inwardReportDashboardController.site eq null}"
                                                 styleClass="w-100 form-control"
                                                 value="#{inwardReportDashboardController.department}"
                                                 filterMatchMode="contains"
                                                 filter="true">
                                             <f:selectItem itemLabel="All Departments"/>
                                             <f:selectItems
-                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacySummaryReportController.institution)}"
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(inwardReportDashboardController.institution)}"
                                                     var="d"
                                                     itemLabel="#{d.name}"
                                                     itemValue="#{d}"/>
@@ -145,14 +145,14 @@
 
                                         <!-- Component 4: With Both Institution and Site -->
                                         <p:selectOneMenu
-                                                rendered="#{pharmacySummaryReportController.institution ne null and pharmacySummaryReportController.site ne null}"
+                                                rendered="#{inwardReportDashboardController.institution ne null and inwardReportDashboardController.site ne null}"
                                                 styleClass="w-100 form-control"
                                                 value="#{inwardReportDashboardController.department}"
                                                 filterMatchMode="contains"
                                                 filter="true">
                                             <f:selectItem itemLabel="All Departments"/>
                                             <f:selectItems
-                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacySummaryReportController.institution, pharmacySummaryReportController.site)}"
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportDashboardController.institution, inwardReportDashboardController.site)}"
                                                     var="d"
                                                     itemLabel="#{d.name}"
                                                     itemValue="#{d}"/>
