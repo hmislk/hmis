@@ -11,6 +11,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dto.InwardAdmissionDTO;
+import com.divudi.core.data.dto.PaymentTypeAdmissionDTO;
 import com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -805,6 +806,229 @@ public class InwardReportController implements Serializable {
         barOptionsObj.setScales(scales);
         barChart.setOptions(barOptionsObj);
         specialtyBarChartModel = barChart.toJson();
+    }
+
+    private String paymentTypeLineChartModel;
+    private String paymentTypeBarChartModel;
+
+    private List<PaymentTypeAdmissionDTO> paymentTypeAdmissionCountList;
+
+    public void processPaymentTypeWiseAdmissionCountReport() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append(" SELECT new com.divudi.core.data.dto.PaymentTypeAdmissionDTO(")
+                .append(" e.dateOfAdmission, ")
+                .append(" e.paymentMethod, ")
+                .append(" e.claimable ")
+                .append(") ")
+                .append(" FROM PatientEncounter e ")
+                .append(" WHERE e.retired = false ")
+                .append(" AND e.paymentMethod IN :methods ")
+                .append(" AND e.dateOfAdmission BETWEEN :fromDate AND :toDate ");
+
+        params.put("methods", Arrays.asList(
+                PaymentMethod.Cash,
+                PaymentMethod.Credit
+        ));
+
+        params.put("fromDate", fromYearStartDate);
+        params.put("toDate", toYearEndDate);
+
+        List<PaymentTypeAdmissionDTO> rawList
+                = (List<PaymentTypeAdmissionDTO>) peFacade.findLightsByJpqlWithoutCache(
+                        jpql.toString(),
+                        params,
+                        TemporalType.TIMESTAMP
+                );
+
+        // Month-wise aggregation
+        Map<Integer, PaymentTypeAdmissionDTO> monthMap = new LinkedHashMap<>();
+
+        for (PaymentTypeAdmissionDTO dto : rawList) {
+
+            int month = dto.getMonth();
+
+            PaymentTypeAdmissionDTO aggregated = monthMap.get(month);
+            if (aggregated == null) {
+                aggregated = new PaymentTypeAdmissionDTO();
+                aggregated.setMonth(month);
+                monthMap.put(month, aggregated);
+            }
+
+            aggregated.add(dto);
+
+        }
+
+        // Final list + grand total
+        paymentTypeAdmissionCountList = new ArrayList<>();
+        PaymentTypeAdmissionDTO grandTotal = new PaymentTypeAdmissionDTO();
+
+//        for (PaymentTypeAdmissionDTO row : monthMap.values()) {
+//            System.out.println(
+//                    "Month=" + row.getMonth()
+//                    + " Cash=" + row.getCash()
+//                    + " Claim=" + row.getCashToBeClaim()
+//                    + " Credit=" + row.getCredit()
+//            );
+//            paymentTypeAdmissionCountList.add(row);
+//            grandTotal.addAll(row);
+//        }
+        for (int month = 0; month < 12; month++) {
+            PaymentTypeAdmissionDTO row = monthMap.get(month);
+            if (row != null) {
+                paymentTypeAdmissionCountList.add(row);
+                grandTotal.addAll(row);
+            }
+        }
+
+        grandTotal.setIsGrandTotal(true);
+        paymentTypeAdmissionCountList.add(grandTotal);
+
+        createPaymentTypeWiseAdmissionCountCharts();
+
+    }
+
+    public void createPaymentTypeWiseAdmissionCountCharts() {
+        createPaymentTypeLineChart();
+        createPaymentTypeBarChart();
+    }
+
+    private void createPaymentTypeLineChart() {
+
+        long[] cash = new long[12];
+        long[] cashTbc = new long[12];
+        long[] credit = new long[12];
+
+        for (PaymentTypeAdmissionDTO dto : paymentTypeAdmissionCountList) {
+
+            if (dto.isIsGrandTotal()) {
+                continue;
+            }
+            int m = dto.getMonth();
+            cash[m] = dto.getCash();
+            cashTbc[m] = dto.getCashToBeClaim();
+            credit[m] = dto.getCredit();
+        }
+
+        LineChart chart = new LineChart();
+        LineData data = new LineData();
+
+        data.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+
+        // Cash
+        LineDataset cashDs = new LineDataset()
+                .setLabel("Cash")
+                .setBorderColor(new RGBAColor(54, 162, 235, 1))
+                .setFill(new Fill(false))
+                .setTension(0.4f);
+        for (long v : cash) {
+            cashDs.addData(v);
+        }
+
+        // Cash To Be Claim
+        LineDataset tbcDs = new LineDataset()
+                .setLabel("Cash (To Be Claim)")
+                .setBorderColor(new RGBAColor(255, 159, 64, 1))
+                .setFill(new Fill(false))
+                .setTension(0.4f);
+        for (long v : cashTbc) {
+            tbcDs.addData(v);
+        }
+
+        // Credit
+        LineDataset creditDs = new LineDataset()
+                .setLabel("Credit")
+                .setBorderColor(new RGBAColor(255, 99, 132, 1))
+                .setFill(new Fill(false))
+                .setTension(0.4f);
+        for (long v : credit) {
+            creditDs.addData(v);
+        }
+
+        data.addDataset(cashDs);
+        data.addDataset(tbcDs);
+        data.addDataset(creditDs);
+
+        chart.setData(data);
+
+        LineOptions options = new LineOptions();
+        options.setPlugins(new Plugins()
+                .setTitle(new Title().setDisplay(true)
+                        .setText("Payment Type Wise Admission Count"))
+                .setLegend(new Legend().setDisplay(true)));
+
+        Scales scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions().setBeginAtZero(true).setTicks(new LinearTickOptions().setStepSize(5)));
+        options.setScales(scales);
+        chart.setOptions(options);
+
+        paymentTypeLineChartModel = chart.toJson();
+    }
+
+    private void createPaymentTypeBarChart() {
+
+        long[] cash = new long[12];
+        long[] cashTbc = new long[12];
+        long[] credit = new long[12];
+
+        for (PaymentTypeAdmissionDTO dto : paymentTypeAdmissionCountList) {
+            if (dto.isIsGrandTotal()) {
+                continue;
+            }
+            int m = dto.getMonth();
+            cash[m] = dto.getCash();
+            cashTbc[m] = dto.getCashToBeClaim();
+            credit[m] = dto.getCredit();
+        }
+
+        BarChart chart = new BarChart();
+        BarData data = new BarData();
+
+        data.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+
+        BarDataset cashDs = new BarDataset().setLabel("Cash").setBackgroundColor(new RGBAColor(54, 162, 235, 0.7f))
+                .setBorderColor(new RGBAColor(54, 162, 235, 1f))
+                .setBorderWidth(1);
+        for (long v : cash) {
+            cashDs.addData(v);
+        }
+
+        BarDataset tbcDs = new BarDataset().setLabel("Cash (To Be Claim)").setBackgroundColor(new RGBAColor(255, 159, 64, 0.7f))
+                .setBorderColor(new RGBAColor(255, 159, 64, 1f))
+                .setBorderWidth(1);
+        for (long v : cashTbc) {
+            tbcDs.addData(v);
+        }
+
+        BarDataset creditDs = new BarDataset().setLabel("Credit").setBackgroundColor(new RGBAColor(255, 99, 132, 0.7f))
+                .setBorderColor(new RGBAColor(255, 99, 132, 1f))
+                .setBorderWidth(1);
+        for (long v : credit) {
+            creditDs.addData(v);
+        }
+
+        data.addDataset(cashDs);
+        data.addDataset(tbcDs);
+        data.addDataset(creditDs);
+
+        chart.setData(data);
+
+        BarOptions options = new BarOptions();
+        options.setPlugins(new Plugins()
+                .setTitle(new Title().setDisplay(true)
+                        .setText("Payment Type Wise Admission Count"))
+                .setLegend(new Legend().setDisplay(true)));
+
+        Scales scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions().setBeginAtZero(true).setTicks(new LinearTickOptions().setStepSize(5)));
+        options.setScales(scales);
+
+        chart.setOptions(options);
+
+        paymentTypeBarChartModel = chart.toJson();
     }
 
     public void fillAdmissions(Boolean discharged, Boolean finalized) {
@@ -2125,6 +2349,22 @@ public class InwardReportController implements Serializable {
 
     public void setSpecialtyBarChartModel(String specialtyBarChartModel) {
         this.specialtyBarChartModel = specialtyBarChartModel;
+    }
+
+    public List<PaymentTypeAdmissionDTO> getPaymentTypeAdmissionCountList() {
+        return paymentTypeAdmissionCountList;
+    }
+
+    public void setPaymentTypeAdmissionCountList(List<PaymentTypeAdmissionDTO> paymentTypeAdmissionCountList) {
+        this.paymentTypeAdmissionCountList = paymentTypeAdmissionCountList;
+    }
+
+    public String getPaymentTypeLineChartModel() {
+        return paymentTypeLineChartModel;
+    }
+
+    public String getPaymentTypeBarChartModel() {
+        return paymentTypeBarChartModel;
     }
 
     public List<InwardAdmissionDTO> getList() {

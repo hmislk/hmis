@@ -513,6 +513,19 @@ public class EnumController implements Serializable {
             LeaveType.No_Pay_Half};
         return ltp;
     }
+    
+    public List<InvestigationItemType> getAvailbleInvestigationItemType() {
+        List<InvestigationItemType> list = new ArrayList<>();
+        list.add(InvestigationItemType.Value);
+        list.add(InvestigationItemType.Image);
+        list.add(InvestigationItemType.ExternalImage);
+        list.add(InvestigationItemType.ReportImage);
+        list.add(InvestigationItemType.Calculation);
+        list.add(InvestigationItemType.Flag);
+        list.add(InvestigationItemType.Html);
+        list.add(InvestigationItemType.Template);
+        return list;
+    }
 
     public Times[] getTimeses() {
         return new Times[]{Times.inTime, Times.outTime};

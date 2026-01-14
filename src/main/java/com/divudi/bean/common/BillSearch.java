@@ -1890,10 +1890,22 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
     /**
      * Called when user changes payment method in individual bill cancellation
-     * form. Resets paymentMethodData to prevent using old payment method data.
+     * form. If user selects the original payment method, restores original payment details.
+     * Otherwise, creates new payment data for the selected method.
      */
     public void onPaymentMethodChange() {
-        // Reset payment method data to prevent using old payment method data
+        // Check if user selected the original payment method - if so, restore original details
+        if (billPayments != null && !billPayments.isEmpty()) {
+            Payment originalPayment = billPayments.get(0);
+            if (paymentMethod == originalPayment.getPaymentMethod()) {
+                // User switched back to original payment method - restore original details
+                paymentMethodData = new PaymentMethodData();
+                initializePaymentDataFromOriginalPayments(billPayments);
+                return;
+            }
+        }
+
+        // User selected a different payment method - create new payment data
         paymentMethodData = new PaymentMethodData();
 
         // Initialize basic payment data based on newly selected payment method
@@ -5846,12 +5858,26 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             return "";
         }
 
+        // Initialize payment method data
+        paymentMethodData = new PaymentMethodData();
+
         if (configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Refunded Bill")) {
             paymentMethod = getBill().getPaymentMethod();
         } else {
             paymentMethod = PaymentMethod.Cash;
         }
         paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(bill);
+
+        // Load original bill payments and initialize payment data
+        Bill billToFetchPaymentsFrom = bill;
+        if (bill.getBackwardReferenceBill() != null) {
+            billToFetchPaymentsFrom = bill.getBackwardReferenceBill();
+        }
+        billPayments = billBean.fetchBillPayments(billToFetchPaymentsFrom);
+        if (billPayments != null && !billPayments.isEmpty()) {
+            initializePaymentDataFromOriginalPayments(billPayments);
+        }
+
         createBillItemsAndBillFeesForOpdRefund();
         printPreview = false;
         return "/opd/bill_refund?faces-redirect=true";

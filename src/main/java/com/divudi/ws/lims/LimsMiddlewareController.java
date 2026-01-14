@@ -1510,7 +1510,7 @@ public class LimsMiddlewareController {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
-            Patient pt = patientFacade.find(pi.getPatient().getId());
+            Patient pt = patientFacade.findWithoutCache(pi.getPatient().getId());
             
             r.setPatientName(pt.getPerson().getNameWithTitle());
             r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
@@ -1545,7 +1545,7 @@ public class LimsMiddlewareController {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
-            Patient pt = patientFacade.find(pi.getPatient().getId());
+            Patient pt = patientFacade.findWithoutCache(pi.getPatient().getId());
             
             r.setPatientName(pt.getPerson().getNameWithTitle());
             r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
