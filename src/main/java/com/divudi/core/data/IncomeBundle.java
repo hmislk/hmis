@@ -1046,9 +1046,7 @@ public class IncomeBundle implements Serializable {
     public void generatePaymentDetailsForOpdRevenue(String select) {
         Map<Object, IncomeRow> grouped = new LinkedHashMap<>();
         
-        System.out.println("inside generatePayment select = " + select);
         if (select.equals("Department Wise")) {
-            System.out.println("inside Department wise = ");
             for (IncomeRow r : getRows()) {
                 Bill b = r.getBill();
 
@@ -1058,7 +1056,6 @@ public class IncomeBundle implements Serializable {
 
                 r.setGrossTotal(b.getTotal());
                 r.setNetTotal(b.getNetTotal());
-                r.setDiscount(b.getDiscount());
 
                 DepartmentType st = b.getToDepartment().getDepartmentType();
                 String dept;
@@ -1073,13 +1070,11 @@ public class IncomeBundle implements Serializable {
                     IncomeRow ir = new IncomeRow();
                     ir.setDepartment(b.getToDepartment());
                     ir.setRowType(k.toString());
-                    System.out.println("ir.getRowType() = " + ir.getRowType());
                     return ir;
                 });
 
                 groupRow.setNetTotal(groupRow.getNetTotal() + r.getNetTotal());
                 groupRow.setGrossTotal(groupRow.getGrossTotal() + r.getGrossTotal());
-                groupRow.setDiscount(groupRow.getDiscount() + r.getDiscount());
 
             }
             getRows().clear();
@@ -1088,7 +1083,6 @@ public class IncomeBundle implements Serializable {
                         Comparator.nullsLast(Comparator.naturalOrder())))
                 .forEachOrdered(getRows()::add);
         } else if (select.equals("Institution Wise")) {
-            System.out.println("inside Insitution wise = ");
             for (IncomeRow r : getRows()) {
                 Bill b = r.getBill();
 
@@ -1098,7 +1092,6 @@ public class IncomeBundle implements Serializable {
 
                 r.setGrossTotal(b.getTotal());
                 r.setNetTotal(b.getNetTotal());
-                r.setDiscount(b.getDiscount());
 
                 Institution inst = b.getInstitution();
                 IncomeRow groupRow = grouped.computeIfAbsent(inst, k -> {
@@ -1110,7 +1103,6 @@ public class IncomeBundle implements Serializable {
 
                 groupRow.setNetTotal(groupRow.getNetTotal() + r.getNetTotal());
                 groupRow.setGrossTotal(groupRow.getGrossTotal() + r.getGrossTotal());
-                groupRow.setDiscount(groupRow.getDiscount() + r.getDiscount());
 
             }
             getRows().clear();
@@ -1119,7 +1111,6 @@ public class IncomeBundle implements Serializable {
                         Comparator.nullsLast(Comparator.comparing(Institution::getName))))
                 .forEachOrdered(getRows()::add);
         } else if (select.equals("Site Wise")) {
-            System.out.println("inside Site wise = ");
             for (IncomeRow r : getRows()) {
                 Bill b = r.getBill();
 
@@ -1129,7 +1120,6 @@ public class IncomeBundle implements Serializable {
 
                 r.setGrossTotal(b.getTotal());
                 r.setNetTotal(b.getNetTotal());
-                r.setDiscount(b.getDiscount());
 
                 Institution site = b.getDepartment().getSite();
                 IncomeRow groupRow = grouped.computeIfAbsent(site, k -> {
@@ -1141,7 +1131,6 @@ public class IncomeBundle implements Serializable {
 
                 groupRow.setNetTotal(groupRow.getNetTotal() + r.getNetTotal());
                 groupRow.setGrossTotal(groupRow.getGrossTotal() + r.getGrossTotal());
-                groupRow.setDiscount(groupRow.getDiscount() + r.getDiscount());
 
             }
             getRows().clear();
@@ -1156,22 +1145,15 @@ public class IncomeBundle implements Serializable {
     
     public void generateDiscountDetailsForDashboard() {
         Map<Object, IncomeRow> grouped = new LinkedHashMap<>();
-        System.out.println("discount process started = ");
         
         for (IncomeRow r : getRows()) {
             Bill b = r.getBill();
             
-            if(b == null ) {
-                continue;
-            }
-            
-            if (b.getToDepartment() == null) {
-                System.out.println("bill todepartment null = ");
+            if(b == null || b.getToDepartment() == null) {
                 continue;
             }
             
             r.setDiscount(b.getDiscount());
-            System.out.println("b.getDiscount() = " + b.getDiscount());
             
             DepartmentType st = b.getToDepartment().getDepartmentType();
             String dept;
@@ -1186,10 +1168,8 @@ public class IncomeBundle implements Serializable {
                 IncomeRow ir = new IncomeRow();
                 ir.setDepartment(b.getToDepartment());
                 ir.setRowType(k.toString());
-                System.out.println("ir.getRowType() = " + ir.getRowType());
                 return ir;
             });
-            System.out.println("groupRow.getRowType() = " + groupRow.getRowType());
             groupRow.setDiscount(groupRow.getDiscount() + r.getDiscount());
         }
         getRows().clear();

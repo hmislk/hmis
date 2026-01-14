@@ -48,8 +48,6 @@ public class OpdRevenueDashboardDTO implements Serializable{
         this.department = department;
         this.institution = institution;
         this.toDepartment = toDepartment;
-        
-        System.out.println("billID: " + billId + "total = " + total);
     }
     
     // constructor used for dashboard discount department wise

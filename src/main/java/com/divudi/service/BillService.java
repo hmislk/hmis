@@ -1920,11 +1920,11 @@ public class BillService {
             params.put("user", webUser);
         }
         if (department != null) {
-            jpql += " and b.department=:dep";
+            jpql += " and b.toDepartment=:dep";
             params.put("dep", department);
         }
         if (site != null) {
-            jpql += " and b.department.site=:site";
+            jpql += " and b.toDepartment.site=:site";
             params.put("site", site);
         }
         if (admissionType != null) {
@@ -1973,7 +1973,7 @@ public class BillService {
         params.put("toDate", toDate);
         
         if (department != null) {
-            jpql += " and b.department=:dep";
+            jpql += " and b.toDepartment=:dep";
             params.put("dep", department);
         }
 

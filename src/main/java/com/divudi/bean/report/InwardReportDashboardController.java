@@ -30,6 +30,8 @@ import javax.ejb.EJB;
 import org.primefaces.model.charts.ChartData;
 import org.primefaces.model.charts.bar.BarChartDataSet;
 import org.primefaces.model.charts.bar.BarChartModel;
+import org.primefaces.model.charts.bar.BarChartOptions;
+import org.primefaces.model.charts.optionconfig.legend.Legend;
 import org.primefaces.model.charts.pie.PieChartDataSet;
 import org.primefaces.model.charts.pie.PieChartModel;
 import org.primefaces.model.charts.pie.PieChartOptions;
@@ -140,7 +142,6 @@ public class InwardReportDashboardController implements Serializable{
     }
     
     public void processBedOccupancy() {
-        System.out.println("process started.... = ");
         bedOccupancyChart = new PieChartModel();
         setOccupiedRooms();
         setTotalRooms();
@@ -219,7 +220,6 @@ public class InwardReportDashboardController implements Serializable{
     
     private void setOpdRevenueChart() {        
         BarChartDataSet dataSet = new BarChartDataSet();
-        dataSet.setLabel("OPD Revenue");
 
         List<Object> values = new ArrayList<>();
         List<String> labels = new ArrayList<>();
@@ -239,11 +239,17 @@ public class InwardReportDashboardController implements Serializable{
         data.addChartDataSet(dataSet);
         data.setLabels(labels);
         opdRevenueChart.setData(data);
+        
+        // disable legend
+        BarChartOptions options = new BarChartOptions();
+        Legend legend = new Legend();
+        legend.setDisplay(false);
+        options.setLegend(legend);
+        opdRevenueChart.setOptions(options);
     }
     
     private void setDiscountChart() {        
         BarChartDataSet dataSet = new BarChartDataSet();
-        dataSet.setLabel("Discount");
 
         List<Object> values = new ArrayList<>();
         List<String> labels = new ArrayList<>();
@@ -263,6 +269,13 @@ public class InwardReportDashboardController implements Serializable{
         data.addChartDataSet(dataSet);
         data.setLabels(labels);
         discountChart.setData(data);
+        
+        // disable the legend
+        BarChartOptions options = new BarChartOptions();
+        Legend legend = new Legend();
+        legend.setDisplay(false);
+        options.setLegend(legend);
+        discountChart.setOptions(options);
     }
     
     public RoomFacade getRoomFacade() {
@@ -381,7 +394,6 @@ public class InwardReportDashboardController implements Serializable{
         
         setOpdRevenueChart();
         
-        System.out.println("processing done = ");
     }
     
     public void generateDiscountDashboard() {
@@ -396,8 +408,6 @@ public class InwardReportDashboardController implements Serializable{
         discountBundle.generateDiscountDetailsForDashboard();
         
         setDiscountChart();
-        
-        System.out.println("processing done Discount= ");
     }
     
     
