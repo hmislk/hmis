@@ -28,9 +28,11 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.facade.AdmissionFacade;
 import com.divudi.core.facade.AdmissionTypeFacade;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
@@ -98,6 +100,8 @@ public class InwardReportController implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     BillFeeFacade billFeeFacade;
+    @EJB
+    AdmissionFacade admissionFacade;
 
     @Inject
     SessionController sessionController;
@@ -552,6 +556,44 @@ public class InwardReportController implements Serializable {
     }
 
     private List<InwardAdmissionDTO> list;
+
+    private List<Admission> admissions;
+    private Staff consultant;
+
+    public void processIpUnsettledInvoicesReport() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append("SELECT c FROM Admission c ")
+                .append("WHERE c.retired = :ret ")
+                .append("AND c.dateOfAdmission BETWEEN :fd AND :td ")
+                .append("AND c.discharged = TRUE ")
+                .append("AND c.paymentFinalized = FALSE ");
+
+        params.put("ret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if (dischargeFromDate != null && dischargeToDate != null) {
+            jpql.append(" AND c.dateOfDischarge BETWEEN :dfd AND :dtd ");
+            params.put("dfd", dischargeFromDate);
+            params.put("dtd", dischargeToDate);
+        }
+
+        if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
+            jpql.append(" AND c.finalBill.createdAt BETWEEN :iafd AND :iatd ");
+            params.put("iafd", invoiceApprovedFromDate);
+            params.put("iatd", invoiceApprovedToDate);
+        }
+
+        jpql.append(" ORDER BY c.dateOfAdmission ");
+
+        admissions = admissionFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        if (admissions == null) {
+            admissions = new ArrayList<>();
+        }
+    }
 
     public void processAdmissionCountConsultantWiseReport() {
         Map<String, Object> params = new HashMap<>();
@@ -2421,6 +2463,22 @@ public class InwardReportController implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public List<Admission> getAdmissions() {
+        return admissions;
+    }
+
+    public void setAdmissions(List<Admission> admissions) {
+        this.admissions = admissions;
+    }
+
+    public Staff getConsultant() {
+        return consultant;
+    }
+
+    public void setConsultant(Staff consultant) {
+        this.consultant = consultant;
     }
 
     public class IncomeByCategoryRecord {
