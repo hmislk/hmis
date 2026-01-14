@@ -1163,7 +1163,7 @@ public class PatientEncounterController implements Serializable {
     public List<PatientEncounter> getEncounters() {
         return encounters;
     }
-
+    
     public List<PatientEncounter> fillCurrentPatientEncounters(PatientEncounter pe) {
         Map m = new HashMap();
         m.put("p", pe.getPatient());
@@ -1395,7 +1395,7 @@ public class PatientEncounterController implements Serializable {
         dx.setStringValue(diagnosis.getName());
         dx.setLobValue(diagnosisComments);
         clinicalFindingValueFacade.create(dx);
-        encounterFindingValues.add(dx);
+        getEncounterFindingValues().add(dx);  // CORRECT: Use getter method
 
         // Clear the diagnosis selection
         Item selectedDiagnosis = diagnosis; // Keep reference for medicine lookup
@@ -1442,13 +1442,13 @@ public class PatientEncounterController implements Serializable {
                     null
             );
             System.out.println("DEBUG: Weight-based lookup found " + (diagnosisMedicineList != null ? diagnosisMedicineList.size() : "null") + " medicine recommendations");
-            if (!diagnosisMedicineList.isEmpty()) {
+            if (diagnosisMedicineList != null && !diagnosisMedicineList.isEmpty()) {
                 lookupMethod = "weight group (" + patientWeight + " kg)";
             }
         }
 
         // Method 2: By Patient Age Group (fallback when weight is not available or no weight-based favourites found)
-        if (diagnosisMedicineList.isEmpty() && patientAgeInDays != null && patientAgeInDays > 0) {
+        if (diagnosisMedicineList == null || diagnosisMedicineList.isEmpty() && patientAgeInDays != null && patientAgeInDays > 0) {
             System.out.println("DEBUG: Step 1 - Finding medicine list by age group: " + patientAgeInDays + " days");
             diagnosisMedicineList = favouriteController.listFavouriteItems(
                     selectedDiagnosis,
@@ -1457,7 +1457,7 @@ public class PatientEncounterController implements Serializable {
                     patientAgeInDays
             );
             System.out.println("DEBUG: Age-based lookup found " + (diagnosisMedicineList != null ? diagnosisMedicineList.size() : "null") + " medicine recommendations");
-            if (!diagnosisMedicineList.isEmpty()) {
+            if (diagnosisMedicineList!=null && !diagnosisMedicineList.isEmpty()) {
                 lookupMethod = "age group (" + (patientAgeInDays / 365) + " years)";
             }
         }
@@ -1641,7 +1641,7 @@ public class PatientEncounterController implements Serializable {
         System.out.println("DEBUG: Final result - " + message);
         JsfUtil.addSuccessMessage(message);
     }
-
+    
     public List<ClinicalFindingValue> fillCurrentPatientClinicalFindingValues(Patient patient) {
         return fillCurrentPatientClinicalFindingValues(patient, null);
     }

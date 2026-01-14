@@ -442,12 +442,14 @@ public class PatientReportController implements Serializable {
 
     public List<PatientReport> patientReports(PatientInvestigation pi) {
         String j = "select r from PatientReport r "
-                + " where r.patientInvestigation=:pi";
+                + " where r.patientInvestigation=:pi "
+                + " and r.retired =:ret ";
         Map m = new HashMap();
         m.put("pi", pi);
+        m.put("ret", false);
         return getFacade().findByJpql(j, m);
     }
-    
+
     public List<PatientReport> allPatientReportsInBill(Bill bill) {
         String j = "select r from PatientReport r "
                 + " where r.patientInvestigation.billItem.bill=:bi "
@@ -1153,7 +1155,6 @@ public class PatientReportController implements Serializable {
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e.getMessage());
         }
-
     }
 
     public ItemForItemController getItemForItemController() {
@@ -2062,7 +2063,7 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to approve");
             return;
         }
-        
+
         if (currentPatientReport.getDataEntered() == false) {
             JsfUtil.addErrorMessage("First Save report");
             return;
@@ -2402,11 +2403,11 @@ public class PatientReportController implements Serializable {
         currentPtIx.setCancelledAt(Calendar.getInstance().getTime());
         currentPtIx.setCancelledUser(getSessionController().getLoggedUser());
         currentPtIx.setCancellDepartment(getSessionController().getDepartment());
-        
+
         currentPtIx.setApproveAt(null);
         currentPtIx.setApproveDepartment(null);
         currentPtIx.setApproveUser(null);
-        
+
         getPiFacade().edit(currentPtIx);
         currentPatientReport.setApproved(Boolean.FALSE);
         currentPatientReport.setApproveUser(null);
@@ -2637,7 +2638,7 @@ public class PatientReportController implements Serializable {
             receipientEmail = person.getEmail();
         }
     }
-    
+
     @EJB
     PatientFacade patientFacade;
 
@@ -2645,8 +2646,8 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && ix != null) {
             r = new PatientReport();
-            Patient pt = patientFacade.find(pi.getPatient().getId());
-            
+            Patient pt = patientFacade.findWithoutCache(pi.getPatient().getId());
+
             r.setPatientName(pt.getPerson().getNameWithTitle());
             r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
             r.setPatientGender(pt.getPerson().getSex().getLabel());
@@ -2696,6 +2697,17 @@ public class PatientReportController implements Serializable {
         return createNewPatientReport(pi, ix, sampleIDs);
     }
 
+    public boolean hasWarningFlagInPatientReport() {
+        List<PatientReportItemValue> reportItems = getCurrentPatientReport().getPatientReportItemValues();
+
+        if (reportItems == null || reportItems.isEmpty()) {
+            return false;
+        }
+
+        return reportItems.stream().anyMatch(item -> item.getInvestigationItem() != null
+                && item.getInvestigationItem().getIxItemType() == InvestigationItemType.WorningFlag);
+    }
+
     public PatientReport createNewPatientReportForUpload(PatientInvestigation pi, Investigation ix) {
         String sampleIDs = "";
         List<PatientSampleComponant> pscs = patientInvestigationController.getPatientSampleComponentsByInvestigation(pi);
@@ -2712,14 +2724,15 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
-            Patient pt = patientFacade.find(pi.getPatient().getId());
-            
+            Patient pt = patientFacade.findWithoutCache(pi.getPatient().getId());
+
             r.setPatientName(pt.getPerson().getNameWithTitle());
             r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
             r.setPatientGender(pt.getPerson().getSex().getLabel());
             r.setReportType(ReportType.GENARATE);
             r.setSampleIDs(sampleIds);
-            r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            r.setRequiresImmediateDoctorReview(false);
+            r.setCreatedAt(new Date());
             r.setCreater(getSessionController().getLoggedUser());
             r.setItem(ix);
             r.setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
@@ -2732,8 +2745,9 @@ public class PatientReportController implements Serializable {
                     r.setReportFormat(nrf);
                 }
             }
-            getFacade().create(r);
+
             r.setPatientInvestigation(pi);
+            getFacade().create(r);
             getPrBean().addPatientReportItemValuesForReport(r);
             getFacade().edit(r);
             setCurrentPatientReport(r);
@@ -2764,8 +2778,8 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
-            Patient pt = patientFacade.find(pi.getPatient().getId());
-            
+            Patient pt = patientFacade.findWithoutCache(pi.getPatient().getId());
+
             r.setPatientName(pt.getPerson().getNameWithTitle());
             r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
             r.setPatientGender(pt.getPerson().getSex().getLabel());
@@ -2819,8 +2833,8 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
-            Patient pt = patientFacade.find(pi.getPatient().getId());
-            
+            Patient pt = patientFacade.findWithoutCache(pi.getPatient().getId());
+
             r.setPatientName(pt.getPerson().getNameWithTitle());
             r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
             r.setPatientGender(pt.getPerson().getSex().getLabel());
@@ -2854,8 +2868,8 @@ public class PatientReportController implements Serializable {
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
-            Patient pt = patientFacade.find(pi.getPatient().getId());
-            
+            Patient pt = patientFacade.findWithoutCache(pi.getPatient().getId());
+
             r.setPatientName(pt.getPerson().getNameWithTitle());
             r.setPatientAge(pt.getAgeOnBilledDate(pi.getBillItem().getBill().getCreatedAt()));
             r.setPatientGender(pt.getPerson().getSex().getLabel());
@@ -2954,19 +2968,19 @@ public class PatientReportController implements Serializable {
         }
         return link;
     }
-    
+
     public String navigateToCreatedPatientReport(Long patientInvestigationId) {
-        if(patientInvestigationId == null){
+        if (patientInvestigationId == null) {
             JsfUtil.addErrorMessage("Error in PatientInvestigation ID");
             return null;
         }
         PatientInvestigation pi = piFacade.findWithoutCache(patientInvestigationId);
-        
+
         if (pi == null) {
             JsfUtil.addErrorMessage("Error in Patient Investigation");
             return "";
         }
-        
+
         return navigateToCreatedPatientReport(pi);
     }
 

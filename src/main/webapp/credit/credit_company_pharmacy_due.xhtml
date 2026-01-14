@@ -267,8 +267,8 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column class="text-end">                              
-                                        <h:outputLabel value="#{b.netTotal+b.paidAmount}" >
+                                    <p:column class="text-end">
+                                        <h:outputLabel value="#{b.netTotal-b.paidAmount}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
@@ -294,7 +294,7 @@
                                             </p:column>
                                             <p:column class="text-end" >
                                                 <f:facet name="footer">
-                                                    <h:outputLabel value="#{i.total+i.paidTotal}">
+                                                    <h:outputLabel value="#{i.total-i.paidTotal}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </f:facet>

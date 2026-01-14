@@ -68,6 +68,14 @@ public enum Privileges {
     InwardRoom("Inward Room"),
     InwardRoomRoomOccupency("Inward Room Occupancy"),
     InwardRoomRoomChange("Inward Room Change"),
+    
+    // IP Appointment
+    InwardAppointmentMenu("IP Appointment Menu"),
+    AddInwardAppointment("Add IP Appointment"),
+    InwardAppointmentAdmission("IP Appointment to Admit"),
+    InwardAppointmentUpdate("IP Appointment Update"),
+    InwardAppointmentCancel("IP Appointment Cancel"),
+    
     WatingRoomAdmitPatient("Wating Room Admit Patient"),
     InwardRoomGurdianRoomChange("Inward Guardian Room Change"),
     InwardRoomDischarge("Inward Room Discharge"),
@@ -536,6 +544,7 @@ public enum Privileges {
     PharmacyAdjustmentExpiryDate("Pharmacy Adjustment Expiry Date"),
     PharmacyAdjustmentSearchAdjustmentBills("Pharmacy Adjustment Search Adjustment Bills"),
     PharmacyAdjustmentTransferAllStock("Pharmacy Adjustment Transfer All Stock"),
+    PharmacyAdjustmentCreateBatch("Pharmacy Adjustment Create Batch"),
     PharmacyPhysicalCountApprove("Pharmacy Physical Count Approve"),
     PharmacyStockTakeApprove("Pharmacy Stock Take Approve"),
     // Pharmacy Dealer Payments
@@ -928,6 +937,7 @@ public enum Privileges {
             case PharmacyAdjustmentExpiryDate:
             case PharmacyAdjustmentSearchAdjustmentBills:
             case PharmacyAdjustmentTransferAllStock:
+            case PharmacyAdjustmentCreateBatch:
             case PharmacyPhysicalCountApprove:
             case PharmacyStockTakeApprove:
 
@@ -983,6 +993,11 @@ public enum Privileges {
                 return "Nursing Work Bench";
                 
             case WatingRoomAdmitPatient:
+            case InwardAppointmentMenu:
+            case AddInwardAppointment:
+            case InwardAppointmentAdmission:
+            case InwardAppointmentUpdate:
+            case InwardAppointmentCancel:
                 return "Inward";
                 
             default:

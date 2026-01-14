@@ -75,7 +75,7 @@ public class BillFinanceDetails implements Serializable {
     private BigDecimal lineCostValue;
 
     // Total cost value for all BillItems (excluding discounts/taxes)
-    @Column(precision = 20, scale = 4, nullable = true)
+    @Column(precision = 38, scale = 4, nullable = true)
     private BigDecimal totalCostValue;
 
     @Column(precision = 18, scale = 4, nullable = true)

@@ -265,10 +265,7 @@ public class ReportTemplateController implements Serializable {
             Institution paramSite,
             Boolean excludeCredit,
             Boolean creditOnly) {
-        System.out.println("generateBillReport = ");
-        System.out.println("creditOnly = " + creditOnly);
-        System.out.println("excludeCredit = " + excludeCredit);
-
+        
         ReportTemplateRowBundle pb = new ReportTemplateRowBundle();
 
         Map<String, Object> parameters = new HashMap<>();
@@ -276,6 +273,8 @@ public class ReportTemplateController implements Serializable {
         String jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + " bill) "
                 + " from Bill bill "
+                + " left join fetch bill.patient patient "
+                + " left join fetch patient.person "
                 + " where bill.retired=false ";
 
         if (excludeCredit != null && excludeCredit) {
@@ -321,12 +320,31 @@ public class ReportTemplateController implements Serializable {
             parameters.put("site", paramSite);
         }
 
-        jpql += " group by bill";
+        // First, let's count how many bills match the criteria
+        // Use regex to handle variable spacing in the JPQL
+        String countJpql = jpql.replaceFirst(
+            "select\\s+new\\s+com\\.divudi\\.core\\.data\\.ReportTemplateRow\\s*\\(\\s*bill\\s*\\)\\s+from\\s+Bill\\s+bill\\s+left\\s+join\\s+fetch\\s+bill\\.patient\\s+patient\\s+left\\s+join\\s+fetch\\s+patient\\.person",
+            "select count(bill) from Bill bill"
+        );
 
-        System.out.println("jpql = " + jpql);
+        try {
+            long billCount = ejbFacade.findLongByJpql(countJpql, parameters, TemporalType.TIMESTAMP);
 
-        // Assuming you have an EJB or similar service to run the query
-        List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+            if (billCount == 0) {
+                return pb;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Now get the actual results
+        List<ReportTemplateRow> results = null;
+        try {
+            results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return pb;
+        }
 
         // Properly handle empty or null results
         if (results == null || results.isEmpty()) {
@@ -495,6 +513,8 @@ public class ReportTemplateController implements Serializable {
                 + " p) "
                 + " from Payment p "
                 + " join p.bill bill "
+                + " left join fetch bill.patient patient "
+                + " left join fetch patient.person "
                 + " where bill.retired=false "
                 + " and p.retired=false ";
 
@@ -528,7 +548,102 @@ public class ReportTemplateController implements Serializable {
             parameters.put("site", paramSite);
         }
 
-        jpql += " group by p";
+        // Note: Removed "group by p" as it's incompatible with fetch join clauses in JPQL
+
+        // Assuming you have an EJB or similar service to run the query
+        List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        // Properly handle empty or null results
+        if (results == null || results.isEmpty()) {
+            return pb; // Consider returning an empty ReportTemplateRowBundle instead
+        }
+        pb.setReportTemplateRows(results);
+
+        double bundleTotal = 0.0; // Initialize total
+
+        for (ReportTemplateRow r : pb.getReportTemplateRows()) {
+            // Check if Payment, Bill, and PaidValue are not null
+            if (r.getPayment() != null && r.getBill() != null) {
+                // Get the absolute value of the paid amount
+                double paidValue = Math.abs(r.getPayment().getPaidValue());
+
+                // Add the value for Bill or BilledBill
+                if (r.getBill().getBillClassType() == BillClassType.Bill
+                        || r.getBill().getBillClassType() == BillClassType.BilledBill) {
+                    bundleTotal += paidValue;
+                } // Subtract the value for CancelledBill or RefundBill
+                else if (r.getBill().getBillClassType() == BillClassType.CancelledBill
+                        || r.getBill().getBillClassType() == BillClassType.RefundBill) {
+                    bundleTotal -= paidValue;
+                }
+                // Do nothing for other BillClassTypes
+            }
+            // If Payment, Bill, or PaidValue is null, skip the row (this else is optional)
+        }
+
+        pb.setTotal(bundleTotal);
+
+        return pb;
+    }
+
+    public ReportTemplateRowBundle generatePaymentReportByBillTypes(
+            PaymentMethod pm,
+            List<BillTypeAtomic> billTypes,
+            Date paramFromDate,
+            Date paramToDate,
+            Institution paramInstitution,
+            Department paramDepartment,
+            Institution paramSite) {
+
+        ReportTemplateRowBundle pb = new ReportTemplateRowBundle();
+
+        Map<String, Object> parameters = new HashMap<>();
+
+        String jpql = "select new com.divudi.core.data.ReportTemplateRow("
+                + " p) "
+                + " from Payment p "
+                + " join p.bill bill "
+                + " left join fetch bill.patient patient "
+                + " left join fetch patient.person "
+                + " where bill.retired=false "
+                + " and p.retired=false ";
+
+        if (pm != null) {
+            jpql += " and p.paymentMethod=:pm ";
+            parameters.put("pm", pm);
+        }
+
+        if (billTypes != null && !billTypes.isEmpty()) {
+            jpql += " and bill.billTypeAtomic in :billTypes ";
+            parameters.put("billTypes", billTypes);
+        }
+
+        if (paramFromDate != null) {
+            jpql += " and bill.createdAt >= :fd ";
+            parameters.put("fd", paramFromDate);
+        }
+
+        if (paramToDate != null) {
+            jpql += " and bill.createdAt <= :td ";
+            parameters.put("td", paramToDate);
+        }
+
+        if (paramInstitution != null) {
+            jpql += " and bill.department.institution = :ins ";
+            parameters.put("ins", paramInstitution);
+        }
+
+        if (paramDepartment != null) {
+            jpql += " and bill.department = :dep ";
+            parameters.put("dep", paramDepartment);
+        }
+
+        if (paramSite != null) {
+            jpql += " and bill.department.site = :site ";
+            parameters.put("site", paramSite);
+        }
+
+        // Note: Removed "group by p" as it's incompatible with fetch join clauses in JPQL
 
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);

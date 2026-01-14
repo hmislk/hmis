@@ -77,6 +77,7 @@ import com.divudi.core.facade.TokenFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
+import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -145,6 +146,8 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
     private TokenFacade tokenFacade;
     @EJB
     BillService billService;
+    @EJB
+    PatientDepositService patientDepositService;
     @EJB
     PaymentService paymentService;
 
@@ -1944,8 +1947,8 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
                 getPatient().setRunningBalance(0.0 - netTotal);
             }
             getPatientFacade().edit(getPatient());
-            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
-            patientDepositController.updateBalance(getBatchBill(), pd);
+            PatientDeposit pd = patientDepositService.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
+            patientDepositService.updateBalance(getBatchBill(), pd);
         }
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             paymentService.updateBalances(payments);
@@ -2429,7 +2432,6 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
 
     @Override
     public double calculatRemainForMultiplePaymentTotal() {
-        System.out.println("calculatRemainForMultiplePaymentTotal");
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
@@ -2442,7 +2444,6 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
             }
-            System.out.println("remainAmount = " + remainAmount);
             remainAmount = total - multiplePaymentMethodTotalValue;
             return total - multiplePaymentMethodTotalValue;
 
@@ -2453,7 +2454,6 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
 
     @Override
     public void recieveRemainAmountAutomatically() {
-        System.out.println("recieveRemainAmountAutomatically");
         //double remainAmount = calculatRemainForMultiplePaymentTotal();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
@@ -2479,9 +2479,6 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
                         pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
                         PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
                         pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
-                        System.out.println("remainAmount = " + remainAmount);
-                        System.out.println("patient.getRunningBalance() = " + patient.getRunningBalance());
-                        System.out.println("remainAmount = " + remainAmount);
                         if (remainAmount >= pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance()) {
                             pm.getPaymentMethodData().getPatient_deposit().setTotalValue(pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance());
                         } else {
@@ -2662,11 +2659,10 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
 //            } else {
 //                runningBalance = 0.0;
 //            }
-            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
+            PatientDeposit pd = patientDepositService.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
             runningBalance = pd.getBalance();
             double availableForPurchase = runningBalance + creditLimitAbsolute;
 
-            System.out.println("netTotal = " + netTotal);
 
             if (netTotal > availableForPurchase) {
                 JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
@@ -2681,7 +2677,6 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
                 JsfUtil.addErrorMessage("Please select Credit Company");
                 return true;
             }
-            System.out.println("cd.getInstitution() = " + cd.getInstitution());
             creditCompany = cd.getInstitution();
         }
 
@@ -2744,9 +2739,6 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
 
                     if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
 
-                        System.out.println("cd.getPaymentMethodData().getPatient_deposit().getTotalValue() = " + cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
-
-                        System.out.println("availableForPurchase = " + availableForPurchase);
 
                         JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
                         return true;
@@ -3514,7 +3506,6 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
             }
         }
         billFeeBundleEntrys = newListOfBillFeeBundleEntries;
-        System.out.println("billFeeBundleEntrys = " + billFeeBundleEntrys.size());
         lstBillEntries = temp;
         lstBillComponents = getBillBean().billComponentsFromBillEntries(lstBillEntries);
         lstBillFees = getBillBean().billFeesFromBillEntries(lstBillEntries);

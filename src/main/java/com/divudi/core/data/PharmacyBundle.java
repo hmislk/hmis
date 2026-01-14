@@ -867,6 +867,92 @@ public class PharmacyBundle implements Serializable {
         populateSummaryRow();
     }
 
+    public void generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionTypeDto() {
+        Map<String, PharmacyRow> grouped = new LinkedHashMap<>();
+
+        for (PharmacyRow r : getRows()) {
+            BillLight b = r.getBillLight();
+            if (b == null || b.getBillTypeAtomic() == null) {
+                continue;
+            }
+
+            populateRowFromBill(r, b);
+
+            BillTypeAtomic bta = b.getBillTypeAtomic();
+            String detail;
+            if (b.getPatientEncounter() != null) {
+                r.setAdmissionType(b.getPatientEncounter().getAdmissionType());
+                if (b.getPatientEncounter().getAdmissionType() == null) {
+                    detail = "No Admission Type";
+                } else {
+                    detail = b.getPatientEncounter().getAdmissionType().getName();
+                }
+            } else {
+                r.setPaymentScheme(b.getPaymentScheme());
+                if (b.getPaymentScheme() == null) {
+                    detail = "No Discount Scheme";
+                } else {
+                    detail = b.getPaymentScheme().getName();
+                }
+            }
+
+            String groupKey = bta.name() + " - " + detail;
+            r.setRowType(groupKey);  // Optional: if needed in JSF display
+
+            PharmacyRow groupRow = grouped.computeIfAbsent(groupKey, k -> {
+                PharmacyRow ir = new PharmacyRow();
+                ir.setBillTypeAtomic(bta);
+                ir.setRowType(k);
+                return ir;
+            });
+
+            groupRow.setNetTotal(groupRow.getNetTotal() + r.getNetTotal());
+            groupRow.setGrossTotal(groupRow.getGrossTotal() + r.getGrossTotal());
+            groupRow.setDiscount(groupRow.getDiscount() + r.getDiscount());
+            groupRow.setServiceCharge(groupRow.getServiceCharge() + r.getServiceCharge());
+            groupRow.setActualTotal(groupRow.getActualTotal() + r.getActualTotal());
+
+            groupRow.setCashValue(groupRow.getCashValue() + r.getCashValue());
+            groupRow.setCardValue(groupRow.getCardValue() + r.getCardValue());
+            groupRow.setChequeValue(groupRow.getChequeValue() + r.getChequeValue());
+            groupRow.setCreditValue(groupRow.getCreditValue() + r.getCreditValue());
+            groupRow.setOpdCreditValue(groupRow.getOpdCreditValue() + r.getOpdCreditValue());
+            groupRow.setInpatientCreditValue(groupRow.getInpatientCreditValue() + r.getInpatientCreditValue());
+            groupRow.setNoneValue(groupRow.getNoneValue() + r.getNoneValue());
+
+            groupRow.setAgentValue(groupRow.getAgentValue() + r.getAgentValue());
+            groupRow.setIouValue(groupRow.getIouValue() + r.getIouValue());
+            groupRow.setOnlineSettlementValue(groupRow.getOnlineSettlementValue() + r.getOnlineSettlementValue());
+            groupRow.setPatientDepositValue(groupRow.getPatientDepositValue() + r.getPatientDepositValue());
+            groupRow.setPatientPointsValue(groupRow.getPatientPointsValue() + r.getPatientPointsValue());
+            groupRow.setSlipValue(groupRow.getSlipValue() + r.getSlipValue());
+            groupRow.setStaffValue(groupRow.getStaffValue() + r.getStaffValue());
+            groupRow.setStaffWelfareValue(groupRow.getStaffWelfareValue() + r.getStaffWelfareValue());
+            groupRow.setVoucherValue(groupRow.getVoucherValue() + r.getVoucherValue());
+            groupRow.setEwalletValue(groupRow.getEwalletValue() + r.getEwalletValue());
+            groupRow.setOnCallValue(groupRow.getOnCallValue() + r.getOnCallValue());
+
+            // Aggregate stock values
+            if (r.getValueOfStocksAtCostRate() != null) {
+                groupRow.setValueOfStocksAtCostRate(
+                    groupRow.getValueOfStocksAtCostRate().add(r.getValueOfStocksAtCostRate())
+                );
+            }
+            if (r.getValueOfStocksAtRetailSaleRate() != null) {
+                groupRow.setValueOfStocksAtRetailSaleRate(
+                    groupRow.getValueOfStocksAtRetailSaleRate().add(r.getValueOfStocksAtRetailSaleRate())
+                );
+            }
+        }
+
+        // Replace with grouped rows, sorted by combined key
+        getRows().clear();
+        grouped.values().stream()
+                .sorted(Comparator.comparing(PharmacyRow::getRowType, Comparator.nullsLast(String::compareToIgnoreCase)))
+                .forEachOrdered(getRows()::add);
+        populateSummaryRow();
+    }
+
     // Contribution by ChatGPT - combines grouping by BillTypeAtomic
     public void generatePharmacyPurchaseGroupedByBillType() {
         Map<String, PharmacyRow> grouped = new LinkedHashMap<>();
@@ -1214,7 +1300,7 @@ public class PharmacyBundle implements Serializable {
         r.setNetTotal(b.getNetTotal());
         r.setDiscount(b.getDiscount());
         r.setServiceCharge(b.getMargin());
-        r.setActualTotal(b.getTotal() - b.getServiceCharge());
+        r.setActualTotal(b.getTotal() - b.getMargin());
 
         PaymentMethod pm = b.getPaymentMethod();
 
@@ -1302,8 +1388,8 @@ public class PharmacyBundle implements Serializable {
         r.setGrossTotal(nullSafeDouble(b.getTotal()));
         r.setNetTotal(nullSafeDouble(b.getNetTotal()));
         r.setDiscount(nullSafeDouble(b.getDiscount()));
-        r.setServiceCharge(nullSafeDouble(b.getServiceCharge()));
-        r.setActualTotal(nullSafeDouble(b.getTotal()) - nullSafeDouble(b.getServiceCharge()));
+        r.setServiceCharge(nullSafeDouble(b.getMargin()));
+        r.setActualTotal(nullSafeDouble(b.getTotal()) - nullSafeDouble(b.getMargin()));
 
         r.setValueOfStocksAtCostRate(b.getTotalCostValue() == null ? BigDecimal.ZERO : b.getTotalCostValue());
         r.setValueOfStocksAtPurchaseRate(b.getTotalPurchaseValue() == null ? BigDecimal.ZERO : b.getTotalPurchaseValue());

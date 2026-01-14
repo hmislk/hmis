@@ -35,5 +35,20 @@ public class AuditService {
             e.printStackTrace();
         }
     }
-
+    
+    public void logAudit(Object before, Object after, WebUser user, String entityType, String eventTrigger, Long objectId) {
+        try {
+            AuditEvent audit = new AuditEvent();
+            audit.setEventDataTime(new Date());
+            audit.setWebUserId(user.getId());
+            audit.setEntityType(entityType);
+            audit.setEventTrigger(eventTrigger);
+            audit.setObjectId(objectId);
+            audit.setBeforeJson(before != null ? gson.toJson(before) : null);
+            audit.setAfterJson(after != null ? gson.toJson(after) : null);
+            auditEventFacade.create(audit);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -48,7 +48,9 @@
                     placeholder="1234"
                     required="true"
                     requiredMessage="Last 4 digits are required">
-                    <p:ajax process="@this" />
+                    <p:ajax
+                        event="blur"
+                        process="@this" />
                 </p:inputText>
             </div>
 
@@ -65,7 +67,9 @@
                     requiredMessage="Bank is required">
                     <f:selectItem itemLabel="Select Bank"/>
                     <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                    <p:ajax process="@this" />
+                    <p:ajax
+                        event="change"
+                        process="@this" />
                 </p:selectOneMenu>
             </div>
 
@@ -77,7 +81,12 @@
                     styleClass="form-control"
                     placeholder="Enter comments"
                     required="true"
-                    requiredMessage="Comment is required"/>
+                    requiredMessage="Comment is required">
+                    <p:ajax
+                        event="blur"
+                        process="@this"
+                        listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
+                </p:inputText>
             </div>
         </div>
     </cc:implementation>

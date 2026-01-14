@@ -25,19 +25,28 @@
 - **Directory**: Create files in `wiki-docs/` (e.g., `wiki-docs/Pharmacy/Feature-Name.md`)
 - **Publishing Workflow**: [Complete Guide](developer_docs/github/wiki-publishing.md)
 - **Writing Guidelines**: [Content Standards](developer_docs/github/wiki-writing-guidelines.md)
-- **Target Audience**: End users (pharmacy staff, nurses, doctors, administrators)
+- **Target Audience if not explicitly mentioned**: End users (pharmacy staff, nurses, doctors, administrators)
+
+### Developer Documentation Guidelines
+- **🚨 TECHNICAL FOCUS ONLY**: Developer documentation should contain only technical implementation patterns, not narrative "before/after" stories
+- **🚨 NO PROGRESS STORIES**: Avoid "we implemented this because...", "the user requested...", "this fixes the issue..." - focus on HOW to implement
+- **🚨 IMPLEMENTATION PATTERNS**: Show code examples, method signatures, component usage, configuration patterns
+- **🚨 CURRENT STATE ONLY**: Document the final implementation state, not the journey to get there
+- **Target Audience**: Developers implementing similar features
 
 ### Testing & Build
+- **🚨 COMPILE RULE**: Do NOT run `./detect-maven.sh compile` or Maven compile commands unless explicitly requested by user. Ask the user to compile and provide feedback first.
 - **Maven Commands**: [Environment Setup](developer_docs/testing/maven-commands.md)
 - **Preferred**: Use `./detect-maven.sh test` auto-detection script
 - **Fallback**: Machine-specific Maven paths
 - **JSF-Only Changes**: When modifying only XHTML/JSF files (no Java changes), compilation/testing is not required
-- **🚨 COMPILE RULE**: Do NOT run `./detect-maven.sh compile` or Maven compile commands unless explicitly requested by user
+
 
 ### DTO Implementation
 - **Guidelines**: [Complete Reference](developer_docs/dto/implementation-guidelines.md)
-- **CRITICAL**: Never modify existing constructors - only add new ones
+- **CRITICAL**: Try not to modify existing constructors - only add new ones
 - **Use direct DTO queries** - avoid entity-to-DTO conversion loops
+- **🚨 JPQL PERSISTED FIELDS ONLY**: NEVER use derived/calculated properties like `nameWithTitle`, `age`, `displayName` in JPQL - only persisted database fields work (e.g., use `person.name` not `person.nameWithTitle`)
 
 ### UI Development Guidelines
 - **🚨 UI-ONLY CHANGES**: When UI improvements are requested, make ONLY frontend/XHTML changes
@@ -83,8 +92,10 @@
 
 ### Code Integrity
 8. **Follow DTO patterns** to avoid breaking changes - [Guide](developer_docs/dto/implementation-guidelines.md)
-9. **🚨 BACKWARD COMPATIBILITY**: Never "fix" intentional typos (e.g., `purcahseRate`) - database compatibility
+9. **🚨 BACKWARD COMPATIBILITY**: Never "fix" intentional typos (e.g., `purcahseRate`) - database compatibility unless explicitly requested by the user
 10. **🚨 COMPONENT NAMING**: Never rename composite components without checking ALL usage
+11. **🚨 NO MOCK DATA**: NEVER use mock bills, fake entities, or temporary workarounds in business logic
+12. **🚨 DISCUSS UNCERTAINTIES**: ALWAYS discuss with user when uncertain about implementation approach - never assume or create workarounds
 
 ### UI Development
 11. **🚨 UI-ONLY CHANGES**: Frontend only - no backend modifications unless requested - [Guide](developer_docs/ui/comprehensive-ui-guidelines.md)
@@ -98,6 +109,7 @@
 17. **🚨 PRIMEFACES COMPONENT REFERENCES**: Use PrimeFaces `p:resolveFirstComponentWithId` function for component updates: `update=":#{p:resolveFirstComponentWithId('componentId',view).clientId}"` or `render=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pPreview',view).clientId}"` for multiple components
 18. **🚨 DATATABLE SELECTION**: Use `selectionMode="multiple"` on dataTable element, `selectionBox="true"` on column, and array property (not List) for selection binding - [Guide](developer_docs/jsf/primefaces-datatable-selection.md)
 19. **🚨 JSF RENDERED ATTRIBUTE**: Never use `rendered` attribute on plain HTML elements (div, span, etc.) - JSF ignores it; use JSF components like `h:panelGroup` with `layout="block"` instead
+20. **🚨 AJAX SELECTORS**: NEVER use PrimeFaces CSS/jQuery selectors like `@(.class)`, `@(#id)`, `@parent`, etc. in `update` or `process` attributes. Use `@this` for current component, `@form` for current form, explicit component IDs like `:growl` for absolute IDs, `componentId` for same-form components, or `:#{p:resolveFirstComponentWithId('id',view).clientId}` for dynamic resolution - [Guide](developer_docs/jsf/ajax-update-guidelines.md)
 
 ---
 This behavior should persist across all Claude Code sessions for this project.

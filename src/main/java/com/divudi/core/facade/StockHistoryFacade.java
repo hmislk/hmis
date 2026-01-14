@@ -169,4 +169,93 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
         }
     }
 
+    /**
+     * Calculates the stock value at cost rate for a given date and department.
+     * This method uses a simplified native SQL query for better performance.
+     *
+     * Cost rate calculation logic mirrors ItemBatch.getCostRate():
+     * - Use costRate if it's not null and not 0
+     * - Otherwise fallback to purcahseRate if it's not null and not 0
+     * - Otherwise use 0.0
+     *
+     * Performance improvements:
+     * 1. Uses native SQL instead of complex JPQL with nested subqueries
+     * 2. Leverages database indexing more efficiently
+     * 3. Reduces the number of subquery levels
+     *
+     * @param date The date for which to calculate stock value
+     * @param departmentId The department ID for which to calculate stock value (can be null for all departments)
+     * @return The total stock value at cost rate, or 0.0 if calculation fails
+     */
+    public double calculateStockValueAtCostRateOptimized(Date date, Long departmentId) {
+        System.out.println("=== calculateStockValueAtCostRateOptimized START ===");
+        System.out.println("Input Date: " + date);
+
+        try {
+            // Use native SQL for better performance
+            // This query finds the latest stock history record for each item batch before the given date
+            // and calculates the total cost value using the cost rate fallback logic
+            String sql =
+                "SELECT COALESCE(SUM(latest_stock.STOCKQTY * latest_stock.cost_rate), 0.0) AS total_value " +
+                "FROM ( " +
+                "    SELECT  " +
+                "        sh.STOCKQTY, " +
+                "        CASE " +
+                "            WHEN ib.COSTRATE IS NOT NULL AND ib.COSTRATE != 0 THEN ib.COSTRATE " +
+                "            WHEN ib.PURCAHSERATE IS NOT NULL AND ib.PURCAHSERATE != 0 THEN ib.PURCAHSERATE " +
+                "            ELSE 0.0 " +
+                "        END AS cost_rate " +
+                "    FROM STOCKHISTORY sh " +
+                "    INNER JOIN ( " +
+                "        SELECT  " +
+                "            DEPARTMENT_ID, " +
+                "            ITEMBATCH_ID, " +
+                "            MAX(ID) AS max_id " +
+                "        FROM STOCKHISTORY " +
+                "        WHERE RETIRED = 0 " +
+                "        AND CREATEDAT < ? " +
+                (departmentId != null ? "        AND DEPARTMENT_ID = ? " : "") +
+                "        GROUP BY DEPARTMENT_ID, ITEMBATCH_ID " +
+                "    ) AS latest ON sh.ID = latest.max_id " +
+                "    INNER JOIN ITEMBATCH ib ON sh.ITEMBATCH_ID = ib.ID " +
+                "    WHERE sh.RETIRED = 0 " +
+                "    AND sh.STOCKQTY > 0 " +
+                ") AS latest_stock";
+
+            System.out.println("SQL Query: " + sql);
+
+            // Execute the native query
+            javax.persistence.Query query = getEntityManager().createNativeQuery(sql);
+            query.setParameter(1, date, TemporalType.TIMESTAMP);
+            System.out.println("Parameter 1 (date): " + date);
+
+            if (departmentId != null) {
+                query.setParameter(2, departmentId);
+            } else {
+            }
+
+            System.out.println("Executing query...");
+            Object result = query.getSingleResult();
+            System.out.println("Raw result: " + result);
+            System.out.println("Result class: " + (result != null ? result.getClass().getName() : "null"));
+
+            if (result != null) {
+                if (result instanceof Number) {
+                    double value = ((Number) result).doubleValue();
+                    System.out.println("Returning value: " + value);
+                    return value;
+                }
+            }
+            System.out.println("Result is null or not a Number, returning 0.0");
+            return 0.0;
+
+        } catch (Exception e) {
+            System.err.println("=== EXCEPTION in calculateStockValueAtCostRateOptimized ===");
+            System.err.println("Error calculating stock value at cost rate for date: " + date + " - " + e.getMessage());
+            System.err.println("Exception class: " + e.getClass().getName());
+            e.printStackTrace();
+            return 0.0;
+        }
+    }
+
 }

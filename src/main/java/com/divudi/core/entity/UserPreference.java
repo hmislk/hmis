@@ -146,6 +146,7 @@ public class UserPreference implements Serializable {
     @Enumerated(EnumType.STRING)
     private PaperType inwardDepositPaymentBillPaper;
 
+
     private boolean partialPaymentOfPharmacyBillsAllowed;
 
     @Deprecated
@@ -1241,6 +1242,8 @@ public class UserPreference implements Serializable {
     public void setInwardDepositPaymentBillPaper(PaperType inwardDepositPaymentBillPaper) {
         this.inwardDepositPaymentBillPaper = inwardDepositPaymentBillPaper;
     }
+
+
 
     public String getLengthOfOTPIndexes() {
         return lengthOfOTPIndexes;

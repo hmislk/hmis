@@ -89,7 +89,7 @@ public class DocumentTemplateController implements Serializable {
         current = new DocumentTemplate();
         current.setWebUser(sessionController.getLoggedUser());
         current.setContents(generateDefaultTemplateContents());
-        return "/emr/settings/document_template";
+        return "/emr/settings/document_template?faces-redirect=true";
     }
 
     public String generateDefaultTemplateContents() {
@@ -136,12 +136,12 @@ public class DocumentTemplateController implements Serializable {
             JsfUtil.addErrorMessage("Nothing Selected");
             return "";
         }
-        return "/emr/settings/document_template";
+        return "/emr/settings/document_template?faces-redirect=true";
     }
 
     public String navigateToListUserDocumentTemplate() {
         items = fillAllItems(null);
-        return "/emr/settings/document_templates";
+        return "/emr/settings/document_templates?faces-redirect=true";
     }
 
     public void saveUserDocumentTemplate() {
@@ -149,12 +149,23 @@ public class DocumentTemplateController implements Serializable {
             JsfUtil.addErrorMessage("Nothing Selected");
             return;
         }
+         
+        if (current.getName() == null || current.getName().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Template name is required");
+            return;
+        }
+
+        if (current.getType() == null) {
+            JsfUtil.addErrorMessage("Template type is required");
+            return;
+        }
+        
         if (current.getWebUser() == null) {
             current.setWebUser(sessionController.getLoggedUser());
         }
         saveSelected();
         fillAllItems(null);
-        JsfUtil.addSuccessMessage("Saved");
+
     }
 
     public void removeUserDocumentTemplate() {
@@ -171,12 +182,12 @@ public class DocumentTemplateController implements Serializable {
     private void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Updated");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            JsfUtil.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Saved");
         }
         items = null;
     }

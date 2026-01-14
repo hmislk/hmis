@@ -104,7 +104,7 @@ public class InwardBeanController implements Serializable {
     private AdmissionFacade admissionFacade;
     @EJB
     private PatientEncounterFacade encounterFacade;
-    
+
     @Inject
     BillBeanController billBean;
     @Inject
@@ -417,7 +417,7 @@ public class InwardBeanController implements Serializable {
 
     }
 
-    public double calculateProfessionalCharges(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+    public double calculateProfessionalCharges(PatientEncounter patientEncounter, List<PatientEncounter> cpts, boolean isEstimatedBill) {
 
         HashMap hm = new HashMap();
         String sql = "SELECT sum(bt.feeValue)"
@@ -425,12 +425,21 @@ public class InwardBeanController implements Serializable {
                 + " WHERE bt.retired=false"
                 + " and type(bt.staff)=:class "
                 + " and bt.fee.feeType=:ftp  "
-                + " and (bt.bill.billType=:btp2) "
                 + " and bt.bill.patientEncounter IN :pe";
         hm.put("class", Consultant.class);
         hm.put("ftp", FeeType.Staff);
         //  hm.put("btp", BillType.InwardBill);
-        hm.put("btp2", BillType.InwardProfessional);
+
+        if (isEstimatedBill) {
+            sql += " and bt.bill.billType in :bt";
+            List<BillType> bts = List.of(BillType.InwardProfessional, BillType.InwardProfessionalEstimates);
+            hm.put("bt", bts);
+
+        } else if (!isEstimatedBill) {
+            sql += " and bt.bill.billType = :bt";
+            hm.put("bt", BillType.InwardProfessional);
+        }
+
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         if (cpts != null && !cpts.isEmpty()) {
@@ -1676,7 +1685,7 @@ public class InwardBeanController implements Serializable {
 
         patientEncounterFacade.edit(patientEncounter);
     }
-    
+
     public PatientRoom savePatientRoom(PatientRoom patientRoom, PatientRoom previousRoom, RoomFacilityCharge newRoomFacilityCharge, PatientEncounter patientEncounter, Date admittedAt, WebUser webUser) {
 //     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
         if (patientRoom == null) {
@@ -1724,14 +1733,13 @@ public class InwardBeanController implements Serializable {
 
         return patientRoom;
     }
-    
 
     public PatientRoom admitPatientRoom(PatientRoom patientRoom, RoomFacilityCharge newRoomFacilityCharge, Date admittedAt, WebUser webUser) {
 //     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
         if (patientRoom == null) {
             return null;
         }
-        
+
         if (newRoomFacilityCharge == null) {
             return null;
         }
@@ -1771,12 +1779,12 @@ public class InwardBeanController implements Serializable {
 
         return patientRoom;
     }
-    
+
     public PatientRoom savePatientRoom(PatientRoom patientRoom, PatientEncounter patientEncounter, WebUser webUser) {
         if (patientRoom == null) {
             return null;
         }
-        
+
         if (patientEncounter == null) {
             return null;
         }
@@ -2012,7 +2020,7 @@ public class InwardBeanController implements Serializable {
         if (billFee == null || item.isMarginNotAllowed()) {
             return;
         }
-        if (patientEncounter == null || patientEncounter.getAdmissionType() == null){
+        if (patientEncounter == null || patientEncounter.getAdmissionType() == null) {
             return;
         }
 

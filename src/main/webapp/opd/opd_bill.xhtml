@@ -354,6 +354,24 @@
                                                                     class="w-100"/>
                                                             </div>
                                                         </div>
+
+                                                        <div class="row">
+                                                            <div class="col-md-4 p-1">
+
+                                                                <div class="input-group">
+                                                                    <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{opdBillController.patient.specificStatus}">
+                                                                        <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
+                                                                    </p:selectOneMenu>
+
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-8 p-1">
+                                                                <div class="input-group">
+                                                                    <p:inputText placeholder="Comment for Patient Specific Status" value="#{opdBillController.patient.specificStatusComment}" style="width: 100%;" class="form-control" />
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Tooltip in OPD Patient Details',true)}">
                                                             <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
                                                             <p:tooltip for="txtNic" value="NIC / Passport No"  showDelay="0" hideDelay="0"></p:tooltip>
@@ -531,7 +549,7 @@
                                                 <p:ajax 
                                                     listener="#{opdBillController.fillBillSessions}" 
                                                     process="acIx" 
-                                                    update="tblSs panelQty panelSessions" ></p:ajax>
+                                                    update="tblSs panelQty panelSessions priority" ></p:ajax>
                                                 <p:column headerText="Name" style="padding: 0px; margin: 0px;">
                                                     <f:facet name="header" >
                                                         Name
@@ -566,17 +584,41 @@
                                                     <f:convertNumber pattern="#" ></f:convertNumber>
                                                 </p:inputText>
                                             </h:panelGrid>
+
+                                            <h:panelGrid id="priority" columns="1" class="w-100 mb-2">
+                                                <p:selectOneMenu  
+                                                    id="slmPriority"
+                                                    class="w-100 mb-2"
+                                                    styleClass="form-control"
+                                                    var="pt"
+                                                    style="height: auto;"
+                                                    value="#{opdBillController.currentBillItemPriority}"
+                                                    rendered="#{opdBillController.currentBillItem.item.allowedForBillingPriority}">
+                                                    <f:selectItems 
+                                                        value="#{enumController.priorities}" 
+                                                        var="pty" 
+                                                        itemValue="#{pty}" 
+                                                        itemLabel="#{pty.displayName}">
+                                                    </f:selectItems>
+                                                    <p:column style="padding: 5px; width: 33px;">
+                                                        <span style="width: 30px; height: 30px; background-color: #{pt.priorityColor}; display: inline-block; border-radius: 3px;"/>
+                                                    </p:column>
+                                                    <p:column style="padding: 8px;">
+                                                        <h:outputText value="#{pt.displayName}" style="font-weight: 700;"/>
+                                                    </p:column>
+                                                </p:selectOneMenu>
+                                            </h:panelGrid>
+
                                             <p:commandButton 
                                                 id="btnAddIx" 
                                                 value="Add" 
                                                 icon="fa fa-plus"
-                                                class="w-100 mx-1 ui-button-success"
+                                                class="w-100 ui-button-success"
                                                 action="#{opdBillController.addToBill()}"  
-                                                process="txtQty acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
-                                                update=" msg tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty focusLstIx">
+                                                process="txtQty slmPriority acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems"
+                                                update=" msg slmPriority tblBillItem :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd txtQty focusLstIx">
                                             </p:commandButton>
                                             <p:focus rendered="#{opdBillController.patient.person.name ne null}" id="focusLstIx" for="acIx" ></p:focus>
-
 
                                             <h:panelGroup id="panelSessions">
                                                 <h:panelGrid rendered="#{opdBillController.currentBillItem.item.canSechduleForOtherDays}" columns="1" >
@@ -621,8 +663,6 @@
                                                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                                     </h:outputText>
 
-
-
                                                                 </f:facet>
                                                                 <p:column headerText="No.">
                                                                     <h:outputText value="#{bs.serialNo}" />
@@ -637,13 +677,11 @@
                                                 </h:panelGrid>
                                             </h:panelGroup>
 
-
-
                                             <p:commandButton
                                                 id="btnRefreshItemLight"
                                                 value="Refresh"
                                                 icon="fas fa-refresh"
-                                                class="w-100 mx-1 mt-5 ui-button-warning"
+                                                class="w-100 mt-5 ui-button-warning"
                                                 action="#{opdBillController.fillDepartmentOpdItems()}"
                                                 rendered="#{webUserController.hasPrivilege('Admin')}"
                                                 process="btnRefreshItemLight"
@@ -812,41 +850,69 @@
 
                                                                 </p:panelGrid>
                                                             </p:tab>
-
                                                         </p:tabView>
-
-
                                                     </p:dialog>
-
-
-
                                                 </p:column>
+                                                
                                                 <p:column  width="2em" class="text-end" >
                                                     <f:facet name="header">
                                                         <h:outputText value="Qty" />
                                                     </f:facet>
                                                     <h:outputText value="#{bi.billItem.qty}" class="mx-1 text-end"  ></h:outputText>
                                                 </p:column>
-                                                <p:column  width="4em" >
+                                                
+                                                <p:column  width="10em" >
                                                     <f:facet name="header">Department</f:facet>
                                                         #{bi.billItem.item.department.name}
                                                 </p:column>
-                                                <p:column width="5em">
+                                                
+                                                <p:column width="8em" >
                                                     <f:facet name="header">Priority</f:facet>
-                                                    <p:selectOneMenu value="#{bi.billItem.priority}" class="w-100" >
-                                                        <p:ajax event="blur" process="@this" ></p:ajax>
-                                                        <f:selectItem itemLabel="Not Set" ></f:selectItem>
-                                                        <f:selectItems value="#{enumController.priorities}" ></f:selectItems>
+                                                    <p:selectOneMenu  
+                                                        class="w-100"
+                                                        id="tblpriority"
+                                                        styleClass="form-control"
+                                                        var="pt"
+                                                        style="height: auto; background-color: #{bi.billItem.priority.priorityColor}; color:black;"
+                                                        value="#{bi.billItem.priority}"
+                                                        rendered="#{bi.billItem.item.allowedForBillingPriority}">
+                                                        <f:selectItems 
+                                                            value="#{enumController.priorities}" 
+                                                            var="pty" 
+                                                            itemValue="#{pty}" 
+                                                            itemLabel="#{pty.displayName}">
+                                                        </f:selectItems>
+                                                        <p:ajax process="tblpriority" update="tblpriority" />
+                                                        <p:column style="padding: 5px; width: 33px;">
+                                                            <span style="width: 30px; height: 30px; background-color: #{pt.priorityColor}; display: inline-block; border-radius: 3px;"/>
+                                                        </p:column>
+                                                        <p:column style="padding: 8px;">
+                                                            <h:outputText value="#{pt.displayName}" style="font-weight: 700;"/>
+                                                        </p:column>
                                                     </p:selectOneMenu>
+                                                    <h:panelGroup rendered="#{not bi.billItem.item.allowedForBillingPriority}">
+                                                    <div class="card bg-secondary text-white">
+                                                        <h:outputText value="Not Allow" style="font-weight: 700;" class=" d-flex justify-content-center m-2"/>
+                                                    </div>
+                                                    </h:panelGroup>
+                                                    
                                                 </p:column>
+                                                
                                                 <p:column width="5em" class="text-end">
                                                     <f:facet name="header">Fee</f:facet>
                                                     <h:outputText value="#{bi.billItem.netValue}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </p:column>
+                                                
                                                 <p:column width="2em">
-                                                    <p:commandButton id="btnRemove" value="X" action="#{opdBillController.removeBillItem}" process="btnRemove" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('tabBillFeeBundled',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"  >
+                                                    <p:commandButton 
+                                                        id="btnRemove" 
+                                                        value="X" 
+                                                        class="ui-button-danger"
+                                                        action="#{opdBillController.removeBillItem}" 
+                                                        process="btnRemove" 
+                                                        update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('tabBillFeeBundled',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"  >
                                                         <f:setPropertyActionListener  value="#{rowIndex}" target="#{opdBillController.index}" />
                                                     </p:commandButton>
                                                 </p:column>
@@ -1262,26 +1328,26 @@
                                                 class="row my-1"
                                                 layout="block" 
                                                 id="eWallet"  rendered="#{opdBillController.paymentMethod eq 'ewallet'}" >
-                                                <pa:ewallet paymentMethodData="#{opdBillController.paymentMethodData}" />
+                                                <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{opdBillController.paymentMethodData}" />
                                             </h:panelGroup>
                                             <h:panelGroup
                                                 class="row my-1"
                                                 layout="block" 
                                                 id="cheque"  rendered="#{opdBillController.paymentMethod eq 'Cheque'}" >
-                                                <pa:cheque paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             <h:panelGroup
                                                 class="row my-1"
                                                 layout="block"
                                                 id="slip"  rendered="#{opdBillController.paymentMethod eq 'Slip'}" >
-                                                <pa:slip paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                <pa:slipDetailsAsOnlyPayment paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             <h:panelGroup
                                                 class="row my-1"
                                                 layout="block"
                                                 id="onlinePayment"  rendered="#{opdBillController.paymentMethod eq 'OnlineSettlement'}" >
 
-                                                <pa:online_settlement paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                <pa:online_settlement_AsOnlyPayment paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             <h:panelGroup
                                                 class="row my-1"

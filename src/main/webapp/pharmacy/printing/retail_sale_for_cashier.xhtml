@@ -68,11 +68,35 @@
                                     icon="fas fa-arrow-left"
                                     action="#{tokenController.navigateToManagePharmacyTokens()}" >
                                 </p:commandButton>
-                                <p:commandButton class="m-1" icon="fas fa-file-invoice" disabled="true" value="Sale 1" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleForCashierController.pharmacyRetailSale()}" />
-                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleForCashierController1.pharmacyRetailSale()}" />
-                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleForCashierController2.pharmacyRetailSale()}" />
-                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 4" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleForCashierController3.pharmacyRetailSale()}" />
-
+                                <p:commandButton 
+                                    class="m-1" 
+                                    ajax="false" 
+                                    icon="fas fa-file-invoice" 
+                                    disabled="true" 
+                                    value="Sale 1"
+                                    action="#{pharmacySaleForCashierController.toPharmacyRetailSaleForCashier()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                <p:commandButton 
+                                    class="m-1" 
+                                    ajax="false" 
+                                    icon="fas fa-file-invoice" 
+                                    value="Sale 2" 
+                                    action="#{pharmacySaleForCashierController1.toPharmacyRetailSaleForCashier()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                <p:commandButton 
+                                    class="m-1" 
+                                    ajax="false" 
+                                    icon="fas fa-file-invoice"
+                                    value="Sale 3"
+                                    action="#{pharmacySaleForCashierController2.toPharmacyRetailSaleForCashier()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                <p:commandButton 
+                                    class="m-1" 
+                                    ajax="false"   
+                                    icon="fas fa-file-invoice" 
+                                    value="Sale 4" 
+                                    action="#{pharmacySaleForCashierController3.toPharmacyRetailSaleForCashier()}" 
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
                             </div>
 
 
@@ -88,7 +112,7 @@
                                 </p:commandButton>
                             </div>
                         </div>
-                        
+
                         <h:panelGroup
                             id="billAndTokenPrint">
                             <h:panelGroup 
@@ -178,7 +202,7 @@
                                             <p:outputLabel for="posPaper" value="POS Paper" class="ms-2" />
                                             <small class="form-text text-muted d-block">Standard thermal printer paper format</small>
                                         </div>
-                                        
+
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox 
                                                 id="posPaperCustom1"
@@ -253,7 +277,7 @@
                                             <p:outputLabel for="tokenPosPaper" value="Token - POS Paper" class="ms-2" />
                                             <small class="form-text text-muted d-block">Standard POS paper format for tokens</small>
                                         </div>
-                                        
+
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox 
                                                 id="tokenPosPaperCustom1"
@@ -261,7 +285,7 @@
                                             <p:outputLabel for="tokenPosPaperCustom1" value="Token - POS Paper Custom 1" class="ms-2" />
                                             <small class="form-text text-muted d-block">Custom POS paper format for tokens</small>
                                         </div>
-                                        
+
                                     </div>
                                 </div>
                             </div>

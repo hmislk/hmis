@@ -10,6 +10,7 @@
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
                 xmlns:bill="http://xmlns.jcp.org/jsf/composite/bill"
                 xmlns:ia="http://xmlns.jcp.org/jsf/composite/inward/bht_1"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
                 xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
     <ui:define name="content">
@@ -27,6 +28,7 @@
                                 <p:inputText
                                     id="commentsMenu"
                                     value="#{appointmentController.comment}"
+                                    rendered="#{webUserController.hasPrivilege('InwardAppointmentCancel')}"
                                     placeholder="Reason of the Cancel"
                                     style="float: right; width: 500px;"
                                     >
@@ -37,11 +39,12 @@
                                     value="Cancel Appointment" 
                                     icon="fa fa-cancel"
                                     style="float: right"
+                                    rendered="#{webUserController.hasPrivilege('InwardAppointmentCancel')}"
                                     class="ui-button-danger" 
                                     disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                     action="#{appointmentController.cancelAppointment()}">
                                 </p:commandButton>
-                                
+
                                 <p:commandButton 
                                     ajax="false"
                                     value="Back" 
@@ -51,9 +54,9 @@
                                     action="#{appointmentController.navigateToSearchAppointmentsListFromViewAppointments()}">
                                 </p:commandButton>
                             </div>
-                            
+
                         </f:facet>
-                        
+
                         <div class="row">
                             <div class="d-flex justify-content-end gap-5">
                                 <p:commandButton  
@@ -61,6 +64,7 @@
                                     disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                     action="#{appointmentController.updateChangesReservation()}" 
                                     ajax="false"
+                                    rendered="#{webUserController.hasPrivilege('InwardAppointmentUpdate')}"
                                     icon="fa fa-check"
                                     class="ui-button-success mx-1 ">
                                 </p:commandButton>
@@ -69,15 +73,450 @@
 
                         <div class="row mt-3">
                             <div class="col-6">
-                                <p:panel>
-                                    <f:facet name="header" >
-                                        <h:outputText styleClass="fa fa-user-circle" />
-                                        <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+
+                                <p:panel id="ptImp">
+                                    <p:growl id="msg"/>
+                                    
+                                    <f:facet name="header">
+
+                                        <h:panelGroup layout="block" styleClass="d-flex justify-content-between align-items-center">
+                                            <!-- Left aligned content -->
+                                            <h:panelGroup id="headerFacet">
+                                                <h:outputText value="Select a Patient" rendered="#{appointmentController.patient eq null}"></h:outputText>
+                                                <h:outputText styleClass="fas fa-user" />
+                                                <h:panelGroup 
+                                                    rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
+                                                    <h:outputText
+                                                        rendered="#{appointmentController.patient.id eq null}"
+                                                        value="Patient" 
+                                                        class="mx-4"
+                                                        >
+                                                    </h:outputText>
+                                                    <h:outputText
+                                                        rendered="#{appointmentController.patient.id ne null}"
+                                                        value="Searched Patient Details" 
+                                                        class="mx-2"
+                                                        ></h:outputText>
+                                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardAppointmentUpdate')}" id="edit" >
+                                                        <p:selectBooleanButton 
+                                                            value="#{appointmentController.patientDetailsEditable}" 
+                                                            offIcon="pi pi-pencil" 
+                                                            onIcon="pi pi-eye"                                 
+                                                            class="mx-2"
+
+                                                            >
+                                                            <p:ajax 
+                                                                process="@this" 
+                                                                update="viewPatient editPatient btnDone edit" />
+
+
+                                                        </p:selectBooleanButton>
+                                                        <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(appointmentController.patient)}" rendered="#{appointmentController.patientDetailsEditable}" />
+                                                    </h:panelGroup>
+
+                                                </h:panelGroup>
+
+                                            </h:panelGroup>
+
+                                            <!-- Right aligned quick search -->
+                                            <h:panelGroup id="quickSearch" >
+                                                <h:panelGroup rendered="true" layout="block"  styleClass="form-inline">
+
+                                                    <p:inputText 
+                                                        id="txtQuickSearchPhoneNumber"
+                                                        value="#{patientController.quickSearchPhoneNumber}"
+                                                        placeholder="Phone Number"
+                                                        class="form-control-sm mx-1"
+                                                        onfocus="this.select()" 
+                                                        />
+                                                    <p:commandButton 
+                                                        id="btnSearchbyPhoneNo"
+                                                        icon="fa fa-search" 
+                                                        title="Quick Search from Phone Number"
+                                                        action="#{patientController.quickSearchPatientLongPhoneNumber(appointmentController)}" 
+                                                        process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
+                                                        update="ptImp selectPatient editPatient viewPatient"
+                                                        styleClass="btn-sm mx-1"/>
+                                                    <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
+                                                    <p:commandButton 
+                                                        id="btnAddNewPatient"
+                                                        icon="fa fa-plus-circle" 
+                                                        title="Add New Patient"
+                                                        action="#{patientController.quickSearchNewPatient(appointmentController)}" 
+                                                        process="btnAddNewPatient"
+                                                        update="ptImp selectPatient editPatient viewPatient"
+                                                        styleClass="btn-sm mx-1"/>
+
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
                                     </f:facet>
 
-                                    <common:patient_details_for_appoiment editable="true" controller="#{appointmentController}"/>
+                                    <h:panelGroup id="selectPatient" >
+                                        <h:panelGroup rendered="#{patientController.quickSearchPatientList ne null and not empty patientController.quickSearchPatientList}">
+                                            <p:dataTable id="tblPatients" value="#{patientController.quickSearchPatientList}" var="ps">
+                                                <p:column headerText="Name">
+                                                    #{ps.person.name}
+                                                </p:column>
+                                                <p:column headerText="Phone Number">
+                                                    #{ps.person.phone}
+                                                </p:column>
+                                                <p:column>
+                                                    <p:commandButton 
+                                                        action="#{patientController.selectQuickOneFromQuickSearchPatient(appointmentController)}" 
+                                                        id="btnSelectPt"
+                                                        process="btnSelectPt tblPatients"
+                                                        update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId}"
+                                                        value="select">
+                                                        <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
+                                                    </p:commandButton>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="editPatient" >
+
+                                        <h:panelGroup rendered="#{appointmentController.patientDetailsEditable}" >
+                                            <h:panelGroup rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
+                                                <h:panelGroup class="mb-1 w-100" id="panelPatient" >
+                                                    <h:panelGroup id="gpPatient" >
+                                                        <div class="row">
+                                                            <div class="col-md-3 p-1">
+                                                                <p:selectOneMenu 
+                                                                    id="cmbTitle"
+                                                                    class="form-control w-100"
+                                                                    value="#{appointmentController.patient.person.title}">
+                                                                    <f:selectItem itemLabel="Select Title" />
+                                                                    <f:selectItems value="#{opdBillController.title}" var="i"
+                                                                                   itemLabel="#{i.label}" itemValue="#{i}"/>
+                                                                    <p:ajax event="change" process="cmbTitle" update="cmbSex" ></p:ajax>
+                                                                </p:selectOneMenu>
+                                                            </div>
+                                                            <div class="col-md-9 p-1">
+                                                                <p:inputText 
+
+                                                                    autocomplete="off" 
+                                                                    id="txtNewPtName" 
+                                                                    placeholder="Enter the Name of the patient"
+                                                                    value="#{appointmentController.patient.person.name}"
+                                                                    validatorMessage="Please enter only letters and spaces."
+                                                                    class="form-control" >
+                                                                    <c:if test="#{not empty sessionController.applicationPreference.nameRegex}">
+                                                                        <f:validateRegex pattern="#{sessionController.applicationPreference.nameRegex}"/>
+                                                                    </c:if>
+
+                                                                </p:inputText>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row">
+                                                            <div class="col-md-3 p-1">
+                                                                <p:selectOneMenu 
+                                                                    id="cmbSex" 
+
+                                                                    value="#{appointmentController.patient.person.sex}"
+                                                                    class="form-control w-100">
+                                                                    <f:selectItem itemLabel="Select Gender"/>
+                                                                    <f:selectItems value="#{opdBillController.sex}"/>
+                                                                </p:selectOneMenu>
+                                                            </div>
+                                                            <div class="col-md-9 p-1">
+                                                                <div class="row">
+                                                                    <div class="col-md-2">
+                                                                        <p:inputText 
+                                                                            autocomplete="off" 
+                                                                            id="year" 
+                                                                            placeholder="Years"
+                                                                            value="#{appointmentController.patient.person.ageYearsComponent}"
+                                                                            class="form-control">
+                                                                            <f:ajax event="keyup" execute="@this" render="dpDob" />
+                                                                        </p:inputText>
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <p:inputText
+                                                                            autocomplete="off" 
+                                                                            id="month" 
+                                                                            placeholder="Months"
+                                                                            value="#{appointmentController.patient.person.ageMonthsComponent}"
+                                                                            class="form-control">
+                                                                            <f:ajax event="keyup" execute="@this"  render="dpDob" />
+                                                                        </p:inputText>
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <p:inputText 
+                                                                            autocomplete="off" 
+                                                                            id="day" 
+                                                                            placeholder="Days"
+                                                                            value="#{appointmentController.patient.person.ageDaysComponent}"
+                                                                            class="form-control">
+                                                                            <f:ajax event="keyup" execute="@this"  render="dpDob" />
+                                                                        </p:inputText>
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <p:datePicker 
+                                                                            value="#{appointmentController.patient.person.dob}"
+                                                                            id="dpDob" 
+                                                                            class="w-100"
+                                                                            inputStyleClass="form-control"
+                                                                            pattern="dd/MMM/yyyy - hh:mm:ss a"
+                                                                            showTime="true"
+                                                                            showButtonBar="true"
+                                                                            timeInput="true"
+                                                                            placeholder="Date of Birth (dd/mm/yyyy - hh:mm:ss a)"
+                                                                            >
+                                                                            <p:ajax event="dateSelect" process="@this" update="year month day" />
+                                                                        </p:datePicker>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row">
+                                                            <div class="col-md-3 p-1">
+                                                                <p:inputText 
+                                                                    id="txtMobile" 
+
+                                                                    autocomplete="off" 
+                                                                    placeholder="Mobile Number"
+                                                                    value="#{appointmentController.patient.person.mobile}"
+                                                                    class="form-control" 
+                                                                    validatorMessage="Please enter valid Number">
+                                                                    <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
+                                                                        <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
+                                                                    </c:if>
+                                                                </p:inputText>
+                                                            </div>
+                                                            <div class="col-md-3 p-1">
+                                                                <p:inputText 
+                                                                    id="txtPhone" 
+
+                                                                    autocomplete="off" 
+                                                                    placeholder="Phone Number"
+                                                                    value="#{appointmentController.patient.person.phone}"
+                                                                    class="form-control" validatorMessage="Please enter valid Number">
+                                                                    <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
+                                                                        <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
+                                                                    </c:if>
+                                                                </p:inputText>
+                                                            </div>
+                                                            <div class="col-md-3 p-1">
+                                                                <p:inputText 
+
+                                                                    autocomplete="off" id="txtEmail" placeholder="Enter Email here"
+                                                                    value="#{appointmentController.patient.person.email}"
+                                                                    class="form-control"
+                                                                    >
+                                                                    <c:if test="#{not empty sessionController.applicationPreference.emailRegex}">
+                                                                        <f:validateRegex pattern="#{sessionController.applicationPreference.emailRegex}"/>
+                                                                    </c:if>
+
+                                                                </p:inputText>
+                                                            </div>
+                                                            <div class="col-md-3 p-1">
+                                                                <p:inputText 
+                                                                    id="txtNic"
+
+                                                                    placeholder="National ID Number"
+                                                                    value="#{appointmentController.patient.person.nic}"
+                                                                    class="form-control"/>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row">
+                                                            <div class="col-md-8 p-1">
+                                                                <p:inputText
+                                                                    id="txtAddress"
+                                                                    placeholder="Address"
+                                                                    value="#{appointmentController.patient.person.address}"
+                                                                    class="form-control"/>
+                                                            </div>
+                                                            <div class="col-md-4 p-1">
+                                                                <p:autoComplete 
+                                                                    id="acNewPtArea" 
+                                                                    placeholder="Search &amp; Select Area"
+                                                                    completeMethod="#{areaController.completeArea}"
+                                                                    var="pta" 
+                                                                    itemLabel="#{pta.name}"
+                                                                    itemValue="#{pta}" 
+                                                                    forceSelection="true"
+                                                                    value="#{appointmentController.patient.person.area}"
+                                                                    inputStyleClass="form-control"
+                                                                    class="w-100"/>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+
+                                                            <div class="col-md-3 p-1">
+                                                                <p:selectOneMenu 
+                                                                    id="ptReligion"
+                                                                    class="form-control w-100"
+                                                                    value="#{appointmentController.patient.person.religion}">
+                                                                    <f:selectItem itemLabel="Select Religion" />
+                                                                    <f:selectItems value="#{clinicalEntityController.ehnicity}" var="i"
+                                                                                   itemLabel="#{i.name}" itemValue="#{i}"/>
+
+                                                                </p:selectOneMenu>
+                                                            </div>
+                                                            <div class="col-md-3 p-1">
+                                                                <p:selectOneMenu 
+                                                                    id="ptCivilStatus"
+                                                                    class="form-control w-100"
+                                                                    value="#{appointmentController.patient.person.civilStatus}">
+                                                                    <f:selectItem itemLabel="Civil Status" />
+                                                                    <f:selectItems value="#{clinicalEntityController.civilStatus}" var="i"
+                                                                                   itemLabel="#{i.name}" itemValue="#{i}"/>
+
+                                                                </p:selectOneMenu>
+                                                            </div>
+                                                            <div class="col-md-3 p-1">
+                                                                <p:selectOneMenu 
+                                                                    id="ptBloodGroop"
+                                                                    class="form-control w-100"
+                                                                    value="#{appointmentController.patient.person.bloodGroup}">
+                                                                    <f:selectItem itemLabel="Blood Group" />
+                                                                    <f:selectItems value="#{clinicalEntityController.bloodGroup}" var="i"
+                                                                                   itemLabel="#{i.name}" itemValue="#{i}"/>
+
+                                                                </p:selectOneMenu>
+                                                            </div>
+                                                            <div class="col-md-3 p-1">
+                                                                <p:selectOneMenu 
+                                                                    id="ptEmp"
+                                                                    class="form-control w-100"
+                                                                    value="#{appointmentController.patient.person.occupation}">
+                                                                    <f:selectItem itemLabel="Employment" />
+                                                                    <f:selectItems value="#{clinicalEntityController.occupation}" var="i"
+                                                                                   itemLabel="#{i.name}" itemValue="#{i}"/>
+
+                                                                </p:selectOneMenu>
+                                                            </div>
+
+                                                        </div>
+
+                                                        <div class="row">
+                                                            <div class="col-md-4 p-1">
+
+                                                                <div class="input-group">
+                                                                    <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{appointmentController.patient.specificStatus}">
+                                                                        <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
+                                                                    </p:selectOneMenu>
+
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-8 p-1">
+                                                                <div class="input-group">
+                                                                    <p:inputText placeholder="Comment for Patient Specific Status" value="#{appointmentController.patient.specificStatusComment}" style="width: 100%;" class="form-control" />
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                        <p:tooltip for="txtNic" value="NIC / Passport No"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                        <p:tooltip for="dpDob" value="Date Of Birth"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                        <p:tooltip for="txtAddress" value="Address"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                        <p:tooltip for="txtMobile" value="Mobile Number"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                        <p:tooltip for="txtPhone" value="Home Phone Number"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                        <p:tooltip for="cmbSex" value="Sex"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                        <p:tooltip for="cmbTitle" value="Title"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                        <p:tooltip for="acNewPtArea" value="Area"  showDelay="0" hideDelay="0"></p:tooltip>
+                                                        <p:tooltip for="txtEmail" value="Email"  showDelay="0" hideDelay="0"></p:tooltip>
+
+                                                        <p:tooltip for="year" value="#{appointmentController.patient.person.ageAsString}"  showDelay="0" hideDelay="0"></p:tooltip>
+
+
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                    <h:panelGroup id="viewPatient" >
+
+                                        <h:panelGroup  rendered="#{not appointmentController.patientDetailsEditable}"  >
+                                            <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
+                                                <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{appointmentController.patient ne null}" >
+
+                                                    <h:outputLabel value="Name " class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+
+                                                    <h:panelGroup class="d-flex">
+
+                                                        <p:outputLabel class="ml-4" value="#{appointmentController.patient.person.nameWithTitle}" rendered="#{not empty appointmentController.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
+
+                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty appointmentController.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{appointmentController.patient.specificStatus}" severity="danger">
+                                                            <p:outputLabel value="#{appointmentController.patient.person.nameWithTitle}" rendered="#{not empty appointmentController.patient.person.nameWithTitle}" />
+                                                        </p:badge> 
+
+                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system')}" style="transform: translate(110%, -40%);background-color: #{appointmentController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{appointmentController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+
+                                                        </p:badge>
+
+                                                    </h:panelGroup>
+
+                                                    <h:outputLabel value="Gender " class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+                                                    <h:outputText value="#{appointmentController.patient.person.sex}" />
+
+                                                    <h:outputLabel value="Date of Birth " class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+                                                    <h:outputText value="#{appointmentController.patient.person.dob}" >
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                                    </h:outputText>
+
+                                                    <h:outputLabel value="Age  " class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+                                                    <h:outputText value="#{appointmentController.patient.person.ageAsString}" />
+
+                                                    <h:outputLabel value="Mobile No. " class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+                                                    <h:outputText value="#{appointmentController.patient.person.mobile}" />
+
+                                                    <h:outputLabel value="Phone No. " class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+                                                    <h:outputText value="#{appointmentController.patient.person.phone}" />
+
+                                                    <h:outputLabel value="Email " class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+                                                    <h:outputText value="#{empty appointmentController.patient.person.email ? 'N/A' : appointmentController.patient.person.email}" />
+
+                                                    <h:outputLabel value="National ID No. " class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+                                                    <h:outputText value="#{empty appointmentController.patient.person.nic ? 'N/A' : appointmentController.patient.person.nic}" />
+
+                                                    <h:outputLabel value="Address " class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+                                                    <h:outputText value="#{empty appointmentController.patient.person.address ? 'N/A' : appointmentController.patient.person.address}" />
+
+                                                    <h:outputLabel value="Area " class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+                                                    <h:outputText value="#{appointmentController.patient.person.area.name}" />
+
+                                                    <h:outputLabel value="Religion " class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+                                                    <h:outputText value="#{empty appointmentController.patient.person.religion.name ? 'N/A' : appointmentController.patient.person.religion.name}" />
+
+                                                    <h:outputLabel value="Occupation " class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+                                                    <h:outputText value="#{empty appointmentController.patient.person.occupation.name ? 'N/A' : appointmentController.patient.person.occupation.name}" />
+
+                                                    <h:outputLabel value="Civil Status " class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+                                                    <h:outputText value="#{empty appointmentController.patient.person.civilStatus.name ? 'N/A' : appointmentController.patient.person.civilStatus.name}" />
+
+                                                    <h:outputLabel value="Blood Group" class="mx-3"/>
+                                                    <h:outputLabel value=" : " class="mx-3"/>
+                                                    <h:outputText value="#{empty appointmentController.patient.person.bloodGroup.name ? 'N/A' : appointmentController.patient.person.bloodGroup.name}" />
+
+
+                                                </h:panelGrid>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+                                    </h:panelGroup>
 
                                 </p:panel>
+
 
                                 <p:panel class="my-2">
                                     <f:facet name="header" >
@@ -91,8 +530,9 @@
                                                 forceSelection="true"  
                                                 id="cmbRspRoom" 
                                                 class="mx-4 my-2"
+                                                readonly="#{not webUserController.hasPrivilege('InwardAppointmentUpdate')}"
                                                 disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
-                                                value="#{appointmentController.reservedroom}" 
+                                                value="#{appointmentController.reservedRoom}" 
                                                 completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
                                                 var="rf" 
                                                 inputStyleClass="w-100"
@@ -110,6 +550,7 @@
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                                 styleClass="form-control w-100"
                                                 showButtonBar="true"
+                                                readonly="#{not webUserController.hasPrivilege('InwardAppointmentUpdate')}"
                                                 disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                                 timeInput="true"
                                                 showTime="true"
@@ -123,6 +564,7 @@
                                                 id="reserveToTimeStamp"
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                                 styleClass="form-control w-100"
+                                                readonly="#{not webUserController.hasPrivilege('InwardAppointmentUpdate')}"
                                                 showButtonBar="true"
                                                 disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                                 timeInput="true"
@@ -148,6 +590,7 @@
                                             class="w-100 my-1"
                                             inputStyleClass="w-100"
                                             id="cmbDoc" 
+                                            readonly="#{not webUserController.hasPrivilege('InwardAppointmentUpdate')}"
                                             value="#{appointmentController.currentBill.referredBy}"
                                             completeMethod="#{doctorController.completeDoctor}" 
                                             var="doc" 
@@ -164,6 +607,7 @@
                                             class="w-100 my-1"
                                             showTime="true"
                                             showButtonBar="true"
+                                            readonly="#{not webUserController.hasPrivilege('InwardAppointmentUpdate')}"
                                             disabled="#{appointmentController.currentAppointment.status eq 'CANCEL' or appointmentController.currentAppointment.status eq 'COMPLETE'}"
                                             timeInput="true"
                                             value="#{appointmentController.currentAppointment.appointmentDate}" 

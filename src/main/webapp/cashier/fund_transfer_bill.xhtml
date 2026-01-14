@@ -12,6 +12,9 @@
         <ui:composition template="./index.xhtml">
 
             <ui:define name="subcontent">
+                <f:metadata>
+                    <f:viewAction action="#{financialTransactionController.ensureFundTransferBillInitialized()}" />
+                </f:metadata>
                 <h:form>
 
 
@@ -19,6 +22,16 @@
                         <f:facet name="header">
                             <i class="fa fa-money-bill-wave mt-2"/>
                             <p:outputLabel value="Transfer Float" class="mx-2 mt-2"></p:outputLabel>
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                <p:commandButton
+                                    value="Config"
+                                    icon="fa fa-cog"
+                                    title="Page Configuration Management"
+                                    action="#{pageAdminController.navigateToPageAdmin('cashier/fund_transfer_bill')}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary ms-5">
+                                </p:commandButton>
+                            </h:panelGroup>
                         </f:facet>
 
                         <p:panelGrid columns="2" class="w-100" >
@@ -165,7 +178,7 @@
                                         icon="fa fa-plus"
                                         class="ui-button-success"
                                         process="btnAdd cmdPayment paymentDetails"
-                                        update="tblPayments totals cmdPayment paymentDetails"
+                                        update="tblPayments totals cmdPayment paymentDetails :growl"
                                         action="#{financialTransactionController.addPaymentToFundTransferBill()}" >
                                     </p:commandButton>
                                 </div>

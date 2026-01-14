@@ -18,9 +18,8 @@
                 activeIndex="#{dataAdministrationController.tabIndexMissingFields}">
                 <p:ajax process="@this" ></p:ajax>
 
-                <p:tab 
+                <p:tab
                     title="Add All Tables using create ddl file contents"  >
-
 
                     <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;">
                         <f:facet name="header">
@@ -31,23 +30,45 @@
                         <p:outputLabel value="Instructions" />
                         <p>To generate the DDL file, replace the contents of your persistence.xml with the configuration from persistence_for_database_generation_script.xml. Adjust the output file path accordingly. Run the application to generate the DDL file. Then copy its contents and paste into the field below. Click 'Update Database' to apply all missing tables and fields. The latest version of the DDL file is available at <a href="https://github.com/hmislk/hmis/wiki/Database-Schema-DDL-Generation-Guide" target="_blank">Database Schema DDL Generation Guide</a>. </p>
 
+                        <p:outputLabel value="Database Selection" />
+                        <h:panelGroup layout="block" class="d-flex">
+                            <p:selectBooleanCheckbox
+                                value="#{dataAdministrationController.runOnMainDatabase}"
+                                class="mr-2"/>
+                            <h:outputText value="Main Database (hmisPU)" class="mr-3"/>
+                            <p:selectBooleanCheckbox
+                                value="#{dataAdministrationController.runOnAuditDatabase}"
+                                class="mr-2"/>
+                            <h:outputText value="Audit Database (hmisAuditPU)"/>
+                        </h:panelGroup>
+
                         <p:outputLabel value="DDL Content" />
                         <p:inputTextarea
                             rows="6"
                             autoResize="false"
-                            value="#{dataAdministrationController.allCreateStetements}" 
+                            value="#{dataAdministrationController.allCreateStetements}"
                             class="w-100" />
 
                         <p:spacer />
 
-                        <p:commandButton 
-                            value="Update Database" 
-                            ajax="false" 
+                        <p:commandButton
+                            value="Update Database"
+                            ajax="false"
                             action="#{dataAdministrationController.createTablesAndFieldsForAllCreateStatements}" />
 
                         <p:outputLabel value="Execution Feedback" />
                         <h:outputText escape="false">
                             <textarea readonly="readonly" rows="6" class="form-control w-100" style="resize: none;">#{dataAdministrationController.executionFeedback}</textarea>
+                        </h:outputText>
+
+                        <p:outputLabel value="Main Database Results" rendered="#{dataAdministrationController.runOnMainDatabase and not empty dataAdministrationController.mainDatabaseExecutionFeedback}"/>
+                        <h:outputText escape="false" rendered="#{dataAdministrationController.runOnMainDatabase and not empty dataAdministrationController.mainDatabaseExecutionFeedback}">
+                            <textarea readonly="readonly" rows="6" class="form-control w-100" style="resize: none;">#{dataAdministrationController.mainDatabaseExecutionFeedback}</textarea>
+                        </h:outputText>
+
+                        <p:outputLabel value="Audit Database Results" rendered="#{dataAdministrationController.runOnAuditDatabase and not empty dataAdministrationController.auditDatabaseExecutionFeedback}"/>
+                        <h:outputText escape="false" rendered="#{dataAdministrationController.runOnAuditDatabase and not empty dataAdministrationController.auditDatabaseExecutionFeedback}">
+                            <textarea readonly="readonly" rows="6" class="form-control w-100" style="resize: none;">#{dataAdministrationController.auditDatabaseExecutionFeedback}</textarea>
                         </h:outputText>
                     </p:panelGrid>
 
@@ -59,85 +80,145 @@
                             <h:outputLabel value="Missing Data Fields" class="mx-2"/>
                             <p:spacer height="2" width="20" ></p:spacer>
                             <p:commandButton
-                                ajax="false" 
-                                action="#{dataAdministrationController.checkMissingFields()}" 
-                                value="Check Missing Fields"  
+                                ajax="false"
+                                action="#{dataAdministrationController.checkMissingFields()}"
+                                value="Check Missing Fields"
                                 class="w-25"
                                 />
                         </f:facet>
-                        <p:outputLabel value="Errors" ></p:outputLabel>
-                        <p:inputTextarea 
-                            rows="2"
-                            value="#{dataAdministrationController.errors}" 
+
+                        <p:outputLabel value="Database Selection" />
+                        <h:panelGroup layout="block" class="d-flex">
+                            <p:selectBooleanCheckbox
+                                value="#{dataAdministrationController.runOnMainDatabase}"
+                                class="mr-2"/>
+                            <h:outputText value="Main Database (hmisPU)" class="mr-3"/>
+                            <p:selectBooleanCheckbox
+                                value="#{dataAdministrationController.runOnAuditDatabase}"
+                                class="mr-2"/>
+                            <h:outputText value="Audit Database (hmisAuditPU)"/>
+                        </h:panelGroup>
+
+                        <p:outputLabel value="Combined Errors" ></p:outputLabel>
+                        <p:inputTextarea
+                            rows="4"
+                            value="#{dataAdministrationController.errors}"
+                            readonly="true"
                             class="w-100"/>
 
+                        <p:outputLabel value="Main Database Errors" rendered="#{dataAdministrationController.runOnMainDatabase and not empty dataAdministrationController.mainDatabaseErrors}"/>
+                        <p:inputTextarea
+                            rows="3"
+                            value="#{dataAdministrationController.mainDatabaseErrors}"
+                            readonly="true"
+                            class="w-100"
+                            rendered="#{dataAdministrationController.runOnMainDatabase and not empty dataAdministrationController.mainDatabaseErrors}"/>
+
+                        <p:outputLabel value="Audit Database Errors" rendered="#{dataAdministrationController.runOnAuditDatabase and not empty dataAdministrationController.auditDatabaseErrors}"/>
+                        <p:inputTextarea
+                            rows="3"
+                            value="#{dataAdministrationController.auditDatabaseErrors}"
+                            readonly="true"
+                            class="w-100"
+                            rendered="#{dataAdministrationController.runOnAuditDatabase and not empty dataAdministrationController.auditDatabaseErrors}"/>
 
                         <p:outputLabel value="Data table Create SQL statement" ></p:outputLabel>
-                        <p:inputTextarea 
+                        <p:inputTextarea
                             rows="6"
                             autoResize="false"
-                            value="#{dataAdministrationController.createdSql}" 
+                            value="#{dataAdministrationController.createdSql}"
                             class="w-100"/>
 
                         <p:spacer ></p:spacer>
-                        <p:commandButton 
-                            value="Generate Alter Statements" 
-                            ajax="false" 
+                        <p:commandButton
+                            value="Generate Alter Statements"
+                            ajax="false"
                             action="#{dataAdministrationController.generateAlterStatementFromCreateTableStatement}" ></p:commandButton>
 
                         <p:outputLabel value="SQL to Run" ></p:outputLabel>
                         <p:inputTextarea
                             rows="6"
                             autoResize="false"
-                            value="#{dataAdministrationController.suggestedSql}" 
+                            value="#{dataAdministrationController.suggestedSql}"
                             class="w-100"/>
 
                         <p:spacer ></p:spacer>
-                        <p:commandButton 
-                            value="RUN SQL" 
-                            ajax="false" 
+                        <p:commandButton
+                            value="RUN SQL"
+                            ajax="false"
                             action="#{dataAdministrationController.runSqlToCreateFields}" ></p:commandButton>
 
-                        <p:outputLabel value="Execution Feedback" ></p:outputLabel>
+                        <p:outputLabel value="Combined Execution Feedback" ></p:outputLabel>
                         <p:inputTextarea
                             rows="6"
                             autoResize="false"
-                            value="#{dataAdministrationController.executionFeedback}" 
+                            value="#{dataAdministrationController.executionFeedback}"
                             readonly="true"
                             class="w-100"/>
+
+                        <p:outputLabel value="Main Database Execution Results" rendered="#{dataAdministrationController.runOnMainDatabase and not empty dataAdministrationController.mainDatabaseExecutionFeedback}"/>
+                        <h:outputText escape="false" rendered="#{dataAdministrationController.runOnMainDatabase and not empty dataAdministrationController.mainDatabaseExecutionFeedback}">
+                            <textarea readonly="readonly" rows="4" class="form-control w-100" style="resize: none;">#{dataAdministrationController.mainDatabaseExecutionFeedback}</textarea>
+                        </h:outputText>
+
+                        <p:outputLabel value="Audit Database Execution Results" rendered="#{dataAdministrationController.runOnAuditDatabase and not empty dataAdministrationController.auditDatabaseExecutionFeedback}"/>
+                        <h:outputText escape="false" rendered="#{dataAdministrationController.runOnAuditDatabase and not empty dataAdministrationController.auditDatabaseExecutionFeedback}">
+                            <textarea readonly="readonly" rows="4" class="form-control w-100" style="resize: none;">#{dataAdministrationController.auditDatabaseExecutionFeedback}</textarea>
+                        </h:outputText>
                     </p:panelGrid>
 
                 </p:tab>
 
                 <p:tab title="Run Custom SQL Commands" >
 
-
-
                     <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;">
                         <f:facet name="header">
                             <i class="fa fa-search"/>
                             <h:outputLabel value="Run SQL Commands" class="mx-2"/>
                         </f:facet>
+
+                        <p:outputLabel value="Database Selection" />
+                        <h:panelGroup layout="block" class="d-flex">
+                            <p:selectBooleanCheckbox
+                                value="#{dataAdministrationController.runOnMainDatabase}"
+                                class="mr-2"/>
+                            <h:outputText value="Main Database (hmisPU)" class="mr-3"/>
+                            <p:selectBooleanCheckbox
+                                value="#{dataAdministrationController.runOnAuditDatabase}"
+                                class="mr-2"/>
+                            <h:outputText value="Audit Database (hmisAuditPU)"/>
+                        </h:panelGroup>
+
                         <p:outputLabel value="SQL to Run" ></p:outputLabel>
                         <p:inputTextarea
                             rows="6"
                             autoResize="false"
-                            value="#{dataAdministrationController.suggestedSql}" 
+                            value="#{dataAdministrationController.suggestedSql}"
                             class="w-100"/>
 
                         <p:spacer ></p:spacer>
-                        <p:commandButton 
-                            value="RUN SQL" 
-                            ajax="false" 
+                        <p:commandButton
+                            value="RUN SQL"
+                            ajax="false"
                             action="#{dataAdministrationController.runSqlToCreateFields}" ></p:commandButton>
 
-                        <p:outputLabel value="Execution Feedback" ></p:outputLabel>
+                        <p:outputLabel value="Combined Execution Feedback" ></p:outputLabel>
                         <p:inputTextarea
                             rows="6"
                             autoResize="false"
-                            value="#{dataAdministrationController.executionFeedback}" 
+                            value="#{dataAdministrationController.executionFeedback}"
                             readonly="true"
                             class="w-100"/>
+
+                        <p:outputLabel value="Main Database Results" rendered="#{dataAdministrationController.runOnMainDatabase and not empty dataAdministrationController.mainDatabaseExecutionFeedback}"/>
+                        <h:outputText escape="false" rendered="#{dataAdministrationController.runOnMainDatabase and not empty dataAdministrationController.mainDatabaseExecutionFeedback}">
+                            <textarea readonly="readonly" rows="4" class="form-control w-100" style="resize: none;">#{dataAdministrationController.mainDatabaseExecutionFeedback}</textarea>
+                        </h:outputText>
+
+                        <p:outputLabel value="Audit Database Results" rendered="#{dataAdministrationController.runOnAuditDatabase and not empty dataAdministrationController.auditDatabaseExecutionFeedback}"/>
+                        <h:outputText escape="false" rendered="#{dataAdministrationController.runOnAuditDatabase and not empty dataAdministrationController.auditDatabaseExecutionFeedback}">
+                            <textarea readonly="readonly" rows="4" class="form-control w-100" style="resize: none;">#{dataAdministrationController.auditDatabaseExecutionFeedback}</textarea>
+                        </h:outputText>
                     </p:panelGrid>
 
                 </p:tab>

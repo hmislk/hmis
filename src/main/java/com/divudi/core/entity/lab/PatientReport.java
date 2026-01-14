@@ -175,7 +175,9 @@ public class PatientReport implements Serializable, RetirableEntity {
     private String patientName;
     private String patientAge;
     private String patientGender;
-
+    
+    private Boolean requiresImmediateDoctorReview;
+    
     public PatientReport() {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
@@ -864,6 +866,14 @@ public class PatientReport implements Serializable, RetirableEntity {
 
     public void setPatientGender(String patientGender) {
         this.patientGender = patientGender;
+    }
+
+    public Boolean getRequiresImmediateDoctorReview() {
+        return requiresImmediateDoctorReview;
+    }
+
+    public void setRequiresImmediateDoctorReview(Boolean requiresImmediateDoctorReview) {
+        this.requiresImmediateDoctorReview = requiresImmediateDoctorReview;
     }
     
     

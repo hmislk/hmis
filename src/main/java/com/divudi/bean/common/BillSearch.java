@@ -21,6 +21,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.ejb.BillNumberGenerator;
@@ -87,9 +88,15 @@ import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
+import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
 import com.divudi.service.StaffService;
+import com.divudi.bean.common.PageMetadataRegistry;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
+import javax.annotation.PostConstruct;
 
 import java.io.Serializable;
 import java.io.ByteArrayInputStream;
@@ -116,9 +123,11 @@ import com.divudi.bean.pharmacy.DirectPurchaseReturnController;
 import com.divudi.bean.pharmacy.GrnCostingController;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
+import com.divudi.bean.pharmacy.PharmacySaleForCashierController;
 import com.divudi.bean.pharmacy.PreReturnController;
 import com.divudi.bean.pharmacy.SaleReturnController;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
+import static com.divudi.core.data.BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.PatientReport;
@@ -140,7 +149,7 @@ import com.google.gson.Gson;
  */
 @Named
 @SessionScoped
-public class BillSearch implements Serializable {
+public class BillSearch implements Serializable, ControllerWithMultiplePayments {
 
     /**
      * EJBs
@@ -192,6 +201,8 @@ public class BillSearch implements Serializable {
     ProfessionalPaymentService professionalPaymentService;
     @EJB
     PaymentService paymentService;
+    @EJB
+    PatientDepositService patientDepositService;
     /**
      * Controllers
      */
@@ -227,6 +238,10 @@ public class BillSearch implements Serializable {
     ConfigOptionController configOptionController;
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
+    @Inject
+    PharmacySaleForCashierController pharmacySaleForCashierController;
     @Inject
     PharmacyBillSearch pharmacyBillSearch;
     @Inject
@@ -326,6 +341,7 @@ public class BillSearch implements Serializable {
     private List<BillEntry> billEntrys;
     private List<BillItem> billItems;
     private List<Payment> billPayments;
+    private PaymentMethodData paymentMethodData;
     private List<BillComponent> billComponents;
     private List<BillFee> billFees;
     private List<BillItem> tempbillItems;
@@ -385,6 +401,125 @@ public class BillSearch implements Serializable {
     private Institution newFromInstitution;
     private Department newFromDepartment;
     private String changeFromInstitutionReason;
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("opd/bill_reprint");
+        metadata.setPageName("OPD Bill Reprint");
+        metadata.setDescription("Reprint OPD bills with various paper formats, cancel bills, and refund fees");
+        metadata.setControllerClass("BillSearch");
+
+        // Configuration Options - Bill Operations
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Refund Allow for OPD Bill",
+                "Enables the 'To Refund Fees' button for OPD bill refunds",
+                "Line 76: Refund Fees button visibility",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Return Allow for OPD Bill",
+                "Enables the 'To Return Items' button for OPD bill item returns",
+                "Line 85: Return Items button visibility",
+                OptionScope.APPLICATION
+        ));
+
+        // Configuration Options - Bill Paper Formats
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Sale Bill is FiveFiveCustom3",
+                "Uses FiveFiveCustom3 format for OPD sale bill printing",
+                "Line 204: Custom3 bill format rendering",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Bill Paper Size is FiveFivePaper",
+                "Uses 5x5 inch paper with headings for OPD bills",
+                "Line 210: FiveFive paper format",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Bill Paper Size is FiveFivePrintedPaper",
+                "Uses 5x5 inch pre-printed paper without headings for OPD bills",
+                "Line 216: FiveFive printed paper format",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Bill Paper Size is PosPaper",
+                "Uses POS (Point of Sale) paper format for OPD bills",
+                "Lines 222, 251: POS paper format for bills and refunds",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Bill Paper Size is FiveFivePaperCoustom1",
+                "Uses 5x5 inch custom format 1 for OPD bills",
+                "Lines 228, 259: Custom 1 format for bills and refunds",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Bill Paper Size is FiveFiveCustom3",
+                "Uses 5x5 inch custom format 3 for OPD bills",
+                "Lines 234, 275: Custom 3 format for bills and refunds",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "OPD Bill Paper Size is 5x8 inch Paper",
+                "Uses 5x8 inch paper format for OPD bills",
+                "Lines 240, 283: 5x8 paper format for bills and refunds",
+                OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access to page configuration",
+                "Config button visibility"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "OpdReprintOriginalBill",
+                "Access to reprint original OPD bills",
+                "Line 40: 'Print to Original Bill' button"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "OpdIndividualCancel",
+                "Ability to cancel individual OPD bills",
+                "Line 57: 'To Cancel' button"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "EditData",
+                "Edit bill data including referring doctor information",
+                "Line 122: Edit bill button and dialog"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "ChangeProfessionalFee",
+                "Change the staff member assigned to professional fees",
+                "Line 449: Professional fee staff assignment dropdown"
+        ));
+
+        // Register the metadata
+        pageMetadataRegistry.registerPage(metadata);
+    }
 
     public String navigateToBillPaymentOpdBill() {
         return "bill_payment_opd?faces-redirect=true";
@@ -1753,6 +1888,76 @@ public class BillSearch implements Serializable {
         this.paymentMethod = paymentMethod;
     }
 
+    /**
+     * Called when user changes payment method in individual bill cancellation
+     * form. If user selects the original payment method, restores original payment details.
+     * Otherwise, creates new payment data for the selected method.
+     */
+    public void onPaymentMethodChange() {
+        // Check if user selected the original payment method - if so, restore original details
+        if (billPayments != null && !billPayments.isEmpty()) {
+            Payment originalPayment = billPayments.get(0);
+            if (paymentMethod == originalPayment.getPaymentMethod()) {
+                // User switched back to original payment method - restore original details
+                paymentMethodData = new PaymentMethodData();
+                initializePaymentDataFromOriginalPayments(billPayments);
+                return;
+            }
+        }
+
+        // User selected a different payment method - create new payment data
+        paymentMethodData = new PaymentMethodData();
+
+        // Initialize basic payment data based on newly selected payment method
+        if (paymentMethod != null && getBill() != null) {
+            double netTotal = Math.abs(getBill().getNetTotal());
+
+            switch (paymentMethod) {
+                case Cash:
+                    paymentMethodData.getCash().setTotalValue(netTotal);
+                    break;
+                case Card:
+                    paymentMethodData.getCreditCard().setTotalValue(netTotal);
+                    break;
+                case Cheque:
+                    paymentMethodData.getCheque().setTotalValue(netTotal);
+                    break;
+                case Slip:
+                    paymentMethodData.getSlip().setTotalValue(netTotal);
+                    break;
+                case ewallet:
+                    paymentMethodData.getEwallet().setTotalValue(netTotal);
+                    break;
+                case Staff_Welfare:
+                    paymentMethodData.getStaffWelfare().setTotalValue(netTotal);
+                    // Note: toStaff property may need to be set separately in UI
+                    break;
+                case Staff:
+                case OnCall:
+                    paymentMethodData.getStaffCredit().setTotalValue(netTotal);
+                    // Note: toStaff property may need to be set separately in UI
+                    break;
+                case Credit:
+                    paymentMethodData.getCredit().setTotalValue(netTotal);
+                    // Note: creditCompany property may need to be set separately in UI
+                    break;
+                case PatientDeposit:
+                    paymentMethodData.getPatient_deposit().setTotalValue(netTotal);
+                    if (getBill().getPatient() != null) {
+                        paymentMethodData.getPatient_deposit().setPatient(getBill().getPatient());
+                    }
+                    break;
+                case MultiplePaymentMethods:
+                    // For multiple payments, clear the component details
+                    paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().clear();
+                    break;
+                default:
+                    // For other payment methods, just initialize with net total
+                    break;
+            }
+        }
+    }
+
     public String refundCollectingCenterBill() {
         if (refundingItems.isEmpty()) {
             JsfUtil.addErrorMessage("There is no item to Refund");
@@ -1931,8 +2136,8 @@ public class BillSearch implements Serializable {
             staffFacade.edit(getBill().getToStaff());
 
         } else if (paymentMethod == PaymentMethod.PatientDeposit) {
-            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getRefundingBill().getPatient(), sessionController.getDepartment());
-            patientDepositController.updateBalance(getRefundingBill(), pd);
+            PatientDeposit pd = patientDepositService.getDepositOfThePatient(getRefundingBill().getPatient(), sessionController.getDepartment());
+            patientDepositService.updateBalance(getRefundingBill(), pd);
         } else if (paymentMethod == PaymentMethod.Staff_Welfare) {
             staffBean.updateStaffWelfare(getBill().getToStaff(), -Math.abs(getRefundingBill().getNetTotal()));
         }
@@ -2490,6 +2695,64 @@ public class BillSearch implements Serializable {
         return canCancelBill;
     }
 
+    /**
+     * Validates payment method data for bill cancellation operations. Checks if
+     * mandatory fields are provided based on configuration settings.
+     *
+     * @return true if validation errors exist, false if validation passes
+     */
+    public boolean validatePaymentMethodData() {
+        boolean error = false;
+
+        if (getPaymentMethod() == PaymentMethod.Card) {
+            if (getPaymentMethodData() != null && getPaymentMethodData().getCreditCard() != null) {
+                String comment = getPaymentMethodData().getCreditCard().getComment();
+                if ((comment == null || comment.trim().isEmpty())
+                        && configOptionApplicationController.getBooleanValueByKey("OPD Billing - CreditCard Comment is Mandatory", false)) {
+                    JsfUtil.addErrorMessage("Please Enter a Credit Card Comment..");
+                    error = true;
+                }
+            }
+        } else if (getPaymentMethod() == PaymentMethod.Cheque) {
+            if (getPaymentMethodData() != null && getPaymentMethodData().getCheque() != null) {
+                String comment = getPaymentMethodData().getCheque().getComment();
+                if ((comment == null || comment.trim().isEmpty())
+                        && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Cheque Comment is Mandatory", false)) {
+                    JsfUtil.addErrorMessage("Please Enter a Cheque Comment..");
+                    error = true;
+                }
+            }
+        } else if (getPaymentMethod() == PaymentMethod.ewallet) {
+            if (getPaymentMethodData() != null && getPaymentMethodData().getEwallet() != null) {
+                String comment = getPaymentMethodData().getEwallet().getComment();
+                if ((comment == null || comment.trim().isEmpty())
+                        && configOptionApplicationController.getBooleanValueByKey("OPD Billing - E-Wallet Comment is Mandatory", false)) {
+                    JsfUtil.addErrorMessage("Please Enter a E-Wallet Comment..");
+                    error = true;
+                }
+            }
+        } else if (getPaymentMethod() == PaymentMethod.Slip) {
+            if (getPaymentMethodData() != null && getPaymentMethodData().getSlip() != null) {
+                String comment = getPaymentMethodData().getSlip().getComment();
+                if ((comment == null || comment.trim().isEmpty())
+                        && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Slip Comment is Mandatory", false)) {
+                    JsfUtil.addErrorMessage("Please Enter a Slip Comment..");
+                    error = true;
+                }
+            }
+        } else if (getPaymentMethod() == PaymentMethod.Credit) {
+            if (getPaymentMethodData() != null && getPaymentMethodData().getCredit() != null) {
+                String comment = getPaymentMethodData().getCredit().getComment();
+                if ((comment == null || comment.trim().isEmpty())
+                        && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Credit Comment is Mandatory", false)) {
+                    JsfUtil.addErrorMessage("Please Enter a Credit Comment..");
+                    error = true;
+                }
+            }
+        }
+        return error;
+    }
+
     public void cancelOpdBill() {
         if (getBill() == null) {
             JsfUtil.addErrorMessage("No Original Bill Selected To Cancel");
@@ -2503,6 +2766,15 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Batch Bill found for the Individual Bill which is selected to Cancel");
             return;
         }
+        if (paymentMethod == null) {
+            JsfUtil.addErrorMessage("Select a Payment Method");
+            return;
+        }
+
+        // Validate payment method data
+        if (validatePaymentMethodData()) {
+            return;
+        }
 
         if (getBill().getBackwardReferenceBill().getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBill().getBackwardReferenceBill());
@@ -2511,12 +2783,12 @@ public class BillSearch implements Serializable {
                 return;
             }
         }
-        
+
         List<PatientInvestigation> investigations = billService.fetchPatientInvestigations(getBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
 
         if (investigations != null && !investigations.isEmpty()) {
             JsfUtil.addErrorMessage("Some Investigations's Samples Send to Out Lab.");
-            return ;
+            return;
         }
 
         if (errorsPresentOnOpdBillCancellation()) {
@@ -2564,9 +2836,25 @@ public class BillSearch implements Serializable {
             }
         }
 
+        // CRITICAL: Check if batch bill has been settled with credit company
+        Bill batchBill = bill.getBackwardReferenceBill();
+        if (batchBill != null && batchBill.getPaymentMethod() == PaymentMethod.Credit) {
+            List<BillItem> settledItems = billService.checkCreditBillPaymentReciveFromCreditCompany(batchBill);
+
+            if (settledItems != null && !settledItems.isEmpty()) {
+                JsfUtil.addErrorMessage("Cannot cancel: Batch bill has been settled by credit company. Please process manual adjustment.");
+                return;
+            }
+        }
+
         CancelledBill cancellationBill = createOpdCancelBill(bill);
         billController.save(cancellationBill);
-        List<Payment> ps = getOpdPreSettleController().createPaymentsForCancellationsforOPDBill(cancellationBill, paymentMethod);
+
+        // Apply refund sign to payment data
+        applyRefundSignToPaymentData();
+
+        // Create payments using PaymentService
+        List<Payment> ps = paymentService.createPayment(cancellationBill, paymentMethodData);
         List<BillItem> list = cancelBillItems(getBill(), cancellationBill, ps);
 
         try {
@@ -2585,31 +2873,35 @@ public class BillSearch implements Serializable {
         getBill().setCancelledBill(cancellationBill);
 
         billController.save(getBill());
+
+        // Update batch bill balance for credit payment method
+        updateBatchBillFinancialFieldsForIndividualCancellation(bill, cancellationBill);
+
         drawerController.updateDrawerForOuts(ps);
         JsfUtil.addSuccessMessage("Cancelled");
 
-        if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
+        if (cancellationBill.getPaymentMethod() == PaymentMethod.Credit) {
             //TODO: Manage Credit Balances for Company, Staff
-            if (getBill().getToStaff() != null) {
-                staffBean.updateStaffCredit(getBill().getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
+            if (cancellationBill.getToStaff() != null) {
+                staffBean.updateStaffCredit(cancellationBill.getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
-                cancellationBill.setFromStaff(getBill().getToStaff());
+                cancellationBill.setFromStaff(cancellationBill.getToStaff());
                 getBillFacade().edit(cancellationBill);
             }
         }
 
-        if (getBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
-            if (getBill().getToStaff() != null) {
-                staffBean.updateStaffWelfare(getBill().getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
+        if (cancellationBill.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+            if (cancellationBill.getToStaff() != null) {
+                staffBean.updateStaffWelfare(cancellationBill.getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
                 JsfUtil.addSuccessMessage("Staff Welfare Updated");
-                cancellationBill.setFromStaff(getBill().getToStaff());
+                cancellationBill.setFromStaff(cancellationBill.getToStaff());
                 getBillFacade().edit(cancellationBill);
             }
         }
 
         if (cancellationBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-            PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
-            patientDepositController.updateBalance(cancellationBill, pd);
+            PatientDeposit pd = patientDepositService.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
+            patientDepositService.updateBalance(cancellationBill, pd);
         }
 
         notificationController.createNotification(cancellationBill);
@@ -2651,13 +2943,13 @@ public class BillSearch implements Serializable {
             ccBillCancellingStarted.set(false);
             return;
         }
-        
+
         List<PatientInvestigation> investigations = billService.fetchPatientInvestigations(getBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
 
         if (investigations != null && !investigations.isEmpty()) {
             ccBillCancellingStarted.set(false);
             JsfUtil.addErrorMessage("Some Investigations's Samples Send to Out Lab.");
-            return ;
+            return;
         }
 
         if (!getWebUserController().hasPrivilege("BillCancel")) {
@@ -3424,21 +3716,185 @@ public class BillSearch implements Serializable {
             return "";
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Cancelation Bill")) {
-            boolean moreThanOneIndividualBillsForTheBatchBillOfThisIndividualBill = billService.hasMultipleIndividualBillsForBatchBillOfThisIndividualBill(bill);
-            if (moreThanOneIndividualBillsForTheBatchBillOfThisIndividualBill) {
-                paymentMethod = bill.getPaymentMethod();
+        // Initialize payment method data
+        paymentMethodData = new PaymentMethodData();
+
+        // Load original bill payments from batch bill and set default payment method
+        if (bill.getBackwardReferenceBill() != null) {
+            Bill batchBill = bill.getBackwardReferenceBill();
+            billPayments = billBean.fetchBillPayments(batchBill);
+
+            // Default payment method to batch bill's payment method
+            if (batchBill.getPaymentMethod() != null) {
+                paymentMethod = batchBill.getPaymentMethod();
+            } else if (configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Cancelation Bill")) {
+                boolean moreThanOneIndividualBillsForTheBatchBillOfThisIndividualBill = billService.hasMultipleIndividualBillsForBatchBillOfThisIndividualBill(bill);
+                if (moreThanOneIndividualBillsForTheBatchBillOfThisIndividualBill) {
+                    paymentMethod = bill.getPaymentMethod();
+                } else {
+                    paymentMethod = null;
+                }
             } else {
-                paymentMethod = null;
+                paymentMethod = PaymentMethod.Cash;
+            }
+
+            // Initialize payment method data from original payments
+            if (billPayments != null && !billPayments.isEmpty()) {
+                initializePaymentDataFromOriginalPayments(billPayments);
             }
         } else {
+            // Fallback if no batch bill
             paymentMethod = PaymentMethod.Cash;
         }
+
         createBillItemsAndBillFees();
+
         boolean flag = billController.checkBillValues(bill);
         bill.setTransError(flag);
         printPreview = false;
         return "/opd/bill_cancel?faces-redirect=true";
+    }
+
+    /**
+     * Initializes payment method data from the original bill's payment records.
+     * This method populates payment method details (card numbers, reference
+     * numbers, etc.) based on how the original bill was paid.
+     *
+     * @param originalPayments List of Payment objects from the original bill
+     */
+    private void initializePaymentDataFromOriginalPayments(List<Payment> originalPayments) {
+        if (originalPayments == null || originalPayments.isEmpty()) {
+            return;
+        }
+
+        // For single payment method
+        if (originalPayments.size() == 1) {
+            Payment originalPayment = originalPayments.get(0);
+            paymentMethod = originalPayment.getPaymentMethod();
+
+            // Initialize paymentMethodData based on payment method (using absolute values for UI display)
+            switch (originalPayment.getPaymentMethod()) {
+                case Cash:
+                    getPaymentMethodData().getCash().setTotalValue(Math.abs(bill.getNetTotal()));
+                    break;
+                case Card:
+                    getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
+                    getPaymentMethodData().getCreditCard().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getCreditCard().setTotalValue(Math.abs(bill.getNetTotal()));
+                    break;
+                case Cheque:
+                    getPaymentMethodData().getCheque().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
+                    getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
+                    getPaymentMethodData().getCheque().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getCheque().setTotalValue(Math.abs(bill.getNetTotal()));
+                    break;
+                case Slip:
+                    getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate());
+                    getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getSlip().setTotalValue(Math.abs(bill.getNetTotal()));
+                    break;
+                case ewallet:
+                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                    getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
+                    getPaymentMethodData().getEwallet().setTotalValue(Math.abs(bill.getNetTotal()));
+                    getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
+                    break;
+                case PatientDeposit:
+                    getPaymentMethodData().getPatient_deposit().setTotalValue(Math.abs(bill.getNetTotal()));
+                    getPaymentMethodData().getPatient_deposit().setPatient(bill.getPatient());
+                    getPaymentMethodData().getPatient_deposit().setComment(originalPayment.getComments());
+                    break;
+                case Credit:
+                    getPaymentMethodData().getCredit().setInstitution(originalPayment.getCreditCompany());
+                    getPaymentMethodData().getCredit().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getCredit().setReferralNo(originalPayment.getPolicyNo());
+                    getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getCredit().setTotalValue(Math.abs(bill.getNetTotal()));
+                    break;
+                case Staff:
+                    com.divudi.core.entity.Staff staffForCredit = originalPayment.getToStaff();
+                    if (staffForCredit == null && bill != null) {
+                        staffForCredit = bill.getToStaff();
+                    }
+                    getPaymentMethodData().getStaffCredit().setToStaff(staffForCredit);
+                    getPaymentMethodData().getStaffCredit().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getStaffCredit().setTotalValue(Math.abs(bill.getNetTotal()));
+                    break;
+                case Staff_Welfare:
+                    com.divudi.core.entity.Staff staffForWelfare = originalPayment.getToStaff();
+                    if (staffForWelfare == null && bill != null) {
+                        staffForWelfare = bill.getToStaff();
+                    }
+                    getPaymentMethodData().getStaffWelfare().setToStaff(staffForWelfare);
+                    getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getStaffWelfare().setTotalValue(Math.abs(bill.getNetTotal()));
+                    break;
+                case OnlineSettlement:
+                    getPaymentMethodData().getOnlineSettlement().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                    getPaymentMethodData().getOnlineSettlement().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getOnlineSettlement().setDate(originalPayment.getPaymentDate());
+                    getPaymentMethodData().getOnlineSettlement().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getOnlineSettlement().setTotalValue(Math.abs(bill.getNetTotal()));
+                    break;
+                default:
+                    // For any other payment method, just set the total value
+                    break;
+            }
+        } else {
+            // Multiple payments - set to MultiplePaymentMethods
+            paymentMethod = PaymentMethod.MultiplePaymentMethods;
+            // Note: For multiple payments, the user would need to manually configure them
+            // This is a complex scenario that may require additional UI handling
+        }
+    }
+
+    /**
+     * Applies refund sign (negative values) to all payment method data. This
+     * ensures that payment records for refunds/cancellations are stored with
+     * negative amounts.
+     */
+    private void applyRefundSignToPaymentData() {
+        if (paymentMethodData == null) {
+            return;
+        }
+
+        // Apply negative sign to each payment method's total value
+        if (paymentMethodData.getCash() != null && paymentMethodData.getCash().getTotalValue() > 0) {
+            paymentMethodData.getCash().setTotalValue(-Math.abs(paymentMethodData.getCash().getTotalValue()));
+        }
+        if (paymentMethodData.getCreditCard() != null && paymentMethodData.getCreditCard().getTotalValue() > 0) {
+            paymentMethodData.getCreditCard().setTotalValue(-Math.abs(paymentMethodData.getCreditCard().getTotalValue()));
+        }
+        if (paymentMethodData.getCheque() != null && paymentMethodData.getCheque().getTotalValue() > 0) {
+            paymentMethodData.getCheque().setTotalValue(-Math.abs(paymentMethodData.getCheque().getTotalValue()));
+        }
+        if (paymentMethodData.getSlip() != null && paymentMethodData.getSlip().getTotalValue() > 0) {
+            paymentMethodData.getSlip().setTotalValue(-Math.abs(paymentMethodData.getSlip().getTotalValue()));
+        }
+        if (paymentMethodData.getEwallet() != null && paymentMethodData.getEwallet().getTotalValue() > 0) {
+            paymentMethodData.getEwallet().setTotalValue(-Math.abs(paymentMethodData.getEwallet().getTotalValue()));
+        }
+        if (paymentMethodData.getPatient_deposit() != null && paymentMethodData.getPatient_deposit().getTotalValue() > 0) {
+            paymentMethodData.getPatient_deposit().setTotalValue(-Math.abs(paymentMethodData.getPatient_deposit().getTotalValue()));
+        }
+        if (paymentMethodData.getCredit() != null && paymentMethodData.getCredit().getTotalValue() > 0) {
+            paymentMethodData.getCredit().setTotalValue(-Math.abs(paymentMethodData.getCredit().getTotalValue()));
+        }
+        if (paymentMethodData.getStaffCredit() != null && paymentMethodData.getStaffCredit().getTotalValue() > 0) {
+            paymentMethodData.getStaffCredit().setTotalValue(-Math.abs(paymentMethodData.getStaffCredit().getTotalValue()));
+        }
+        if (paymentMethodData.getStaffWelfare() != null && paymentMethodData.getStaffWelfare().getTotalValue() > 0) {
+            paymentMethodData.getStaffWelfare().setTotalValue(-Math.abs(paymentMethodData.getStaffWelfare().getTotalValue()));
+        }
+        if (paymentMethodData.getOnlineSettlement() != null && paymentMethodData.getOnlineSettlement().getTotalValue() > 0) {
+            paymentMethodData.getOnlineSettlement().setTotalValue(-Math.abs(paymentMethodData.getOnlineSettlement().getTotalValue()));
+        }
     }
 
     public boolean chackRefundORCancelBill(Bill bill) {
@@ -3880,8 +4336,9 @@ public class BillSearch implements Serializable {
     }
 
     /**
-     * Navigate to OPD credit settlement cancellation print page.
-     * This shows the comprehensive cancellation receipt with both original settlement and cancellation details.
+     * Navigate to OPD credit settlement cancellation print page. This shows the
+     * comprehensive cancellation receipt with both original settlement and
+     * cancellation details.
      */
     public String navigateToViewOpdCreditBatchBillCancellation() {
         if (bill == null) {
@@ -3909,8 +4366,9 @@ public class BillSearch implements Serializable {
     }
 
     /**
-     * Navigate to inpatient credit settlement cancellation print page.
-     * This shows the comprehensive cancellation receipt with both original settlement and cancellation details.
+     * Navigate to inpatient credit settlement cancellation print page. This
+     * shows the comprehensive cancellation receipt with both original
+     * settlement and cancellation details.
      */
     public String navigateToViewInpatientCreditBatchBillCancellation() {
         if (bill == null) {
@@ -3938,8 +4396,9 @@ public class BillSearch implements Serializable {
     }
 
     /**
-     * Navigate to pharmacy credit settlement cancellation print page.
-     * This shows the comprehensive cancellation receipt with both original settlement and cancellation details.
+     * Navigate to pharmacy credit settlement cancellation print page. This
+     * shows the comprehensive cancellation receipt with both original
+     * settlement and cancellation details.
      */
     public String navigateToViewPharmacyCreditBatchBillCancellation() {
         if (bill == null) {
@@ -4078,13 +4537,12 @@ public class BillSearch implements Serializable {
 
     public String navigateToViewBillByAtomicBillTypeByBillId(Long BillId) {
         System.out.println("navigateToViewBillByAtomicBillTypeByBillId");
-        System.out.println("BillId = " + BillId);
         if (BillId == null) {
             JsfUtil.addErrorMessage("Bill ID is required");
             return null;
         }
 
-        Bill foundBill = billFacade.find(BillId);
+        Bill foundBill = billService.reloadBill(BillId);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -4096,13 +4554,12 @@ public class BillSearch implements Serializable {
 
     public String navigateToManageBillByAtomicBillTypeByBillId(Long BillId) {
         System.out.println("navigateToManageBillByAtomicBillTypeByBillId");
-        System.out.println("BillId = " + BillId);
         if (BillId == null) {
             JsfUtil.addErrorMessage("Bill ID is required");
             return null;
         }
 
-        Bill foundBill = billFacade.find(BillId);
+        Bill foundBill = billService.reloadBill(BillId);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -4114,13 +4571,12 @@ public class BillSearch implements Serializable {
 
     public String navigateToAdminBillByAtomicBillTypeByBillId(Long BillId) {
         System.out.println("navigateToAdminBillByAtomicBillTypeByBillId");
-        System.out.println("BillId = " + BillId);
         if (BillId == null) {
             JsfUtil.addErrorMessage("Bill ID is required");
             return null;
         }
 
-        Bill foundBill = billFacade.find(BillId);
+        Bill foundBill = billService.reloadBill(BillId);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
@@ -4132,13 +4588,12 @@ public class BillSearch implements Serializable {
 
     public String navigateToViewBillByAtomicBillTypeBySelectedId() {
         System.out.println("navigateToViewBillByAtomicBillTypeBySelectedId called");
-        System.out.println("selectedBillId = " + selectedBillId);
         if (selectedBillId == null) {
             JsfUtil.addErrorMessage("No Bill ID is selected");
             return null;
         }
 
-        Bill foundBill = billFacade.find(selectedBillId);
+        Bill foundBill = billService.reloadBill(selectedBillId);
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found for ID: " + selectedBillId);
             return null;
@@ -4165,7 +4620,7 @@ public class BillSearch implements Serializable {
             return null;
         }
 
-        this.bill = foundBillItem.getBill();
+        this.bill = billService.reloadBill(foundBillItem.getBill().getId());
         return navigateToViewBillByAtomicBillType();
     }
 
@@ -4327,11 +4782,13 @@ public class BillSearch implements Serializable {
                 return navigateToViewPharmacyDirectIssueCancellationForInpatientBill();
 
             case PHARMACY_RETAIL_SALE_PRE:
-                return navigateToViewPharmacyPreBill();
+                pharmacySaleForCashierController.setBillPreview(true);
+                pharmacySaleForCashierController.setPrintBill(bill);
+                return pharmacySaleForCashierController.toPharmacyRetailSaleForCashier();
             case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
-                pharmacySaleController.setPrintBill(bill);
-                return pharmacySaleController.navigateToSaleBillForCashierPrint();
-//                return navigateToViewPharmacySettledPreBill();
+                pharmacySaleForCashierController.setBillPreview(true);
+                pharmacySaleForCashierController.setPrintBill(bill);
+                return pharmacySaleForCashierController.toPharmacyRetailSaleForCashier();
             case PHARMACY_RETAIL_SALE:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigatePharmacyReprintRetailBill();
@@ -4603,7 +5060,9 @@ public class BillSearch implements Serializable {
             case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
                 return navigateToViewPharmacyDirectIssueCancellationForInpatientBill();
             case PHARMACY_RETAIL_SALE_PRE:
-                return navigateToViewPharmacyPreBill();
+                pharmacySaleForCashierController.setBillPreview(true);
+                pharmacySaleForCashierController.setPrintBill(bill);
+                return pharmacySaleForCashierController.toPharmacyRetailSaleForCashier();
             case PHARMACY_RETAIL_SALE:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigatePharmacyReprintRetailBill();
@@ -4626,9 +5085,12 @@ public class BillSearch implements Serializable {
             case PHARMACY_DISPOSAL_ISSUE:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigateToViewPharmacyDisposalIssueBill();
+            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+                pharmacySaleForCashierController.setBillPreview(true);
+                pharmacySaleForCashierController.setPrintBill(bill);
+                return pharmacySaleForCashierController.toPharmacyRetailSaleForCashier();
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL:
-            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
             case PHARMACY_RETAIL_SALE_REFUND:
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY:
             case PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS:
@@ -4820,7 +5282,7 @@ public class BillSearch implements Serializable {
         pharmacyBillSearch.setBill(bill);
         return "/pharmacy/pharmacy_reprint_bill_sale_cashier?faces-redirect=true";
     }
-    
+
     public String navigateToViewPharmacySettledPreBill(Long billId) {
         if (billId == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
@@ -5396,12 +5858,26 @@ public class BillSearch implements Serializable {
             return "";
         }
 
+        // Initialize payment method data
+        paymentMethodData = new PaymentMethodData();
+
         if (configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Refunded Bill")) {
             paymentMethod = getBill().getPaymentMethod();
         } else {
             paymentMethod = PaymentMethod.Cash;
         }
         paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(bill);
+
+        // Load original bill payments and initialize payment data
+        Bill billToFetchPaymentsFrom = bill;
+        if (bill.getBackwardReferenceBill() != null) {
+            billToFetchPaymentsFrom = bill.getBackwardReferenceBill();
+        }
+        billPayments = billBean.fetchBillPayments(billToFetchPaymentsFrom);
+        if (billPayments != null && !billPayments.isEmpty()) {
+            initializePaymentDataFromOriginalPayments(billPayments);
+        }
+
         createBillItemsAndBillFeesForOpdRefund();
         printPreview = false;
         return "/opd/bill_refund?faces-redirect=true";
@@ -6613,6 +7089,75 @@ public class BillSearch implements Serializable {
         this.billPayments = billPayments;
     }
 
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+
+    @Override
+    public double calculatRemainForMultiplePaymentTotal() {
+        if (bill == null) {
+            return 0.0;
+        }
+
+        double total = Math.abs(bill.getNetTotal());
+        double multiplePaymentMethodTotalValue = 0;
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods && paymentMethodData != null) {
+            if (paymentMethodData.getPaymentMethodMultiple() != null
+                    && paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null) {
+                for (com.divudi.core.data.dataStructure.ComponentDetail cd
+                        : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                    multiplePaymentMethodTotalValue += Math.abs(cd.getTotalValue());
+                }
+            }
+        }
+
+        return total - multiplePaymentMethodTotalValue;
+    }
+
+    @Override
+    public void recieveRemainAmountAutomatically() {
+        double remainAmount = calculatRemainForMultiplePaymentTotal();
+
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods && paymentMethodData != null) {
+            if (paymentMethodData.getPaymentMethodMultiple() != null
+                    && paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null) {
+                int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+                if (arrSize == 0) {
+                    return;
+                }
+
+                com.divudi.core.data.dataStructure.ComponentDetail pm
+                        = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+
+                if (pm.getPaymentMethod() == PaymentMethod.Cash) {
+                    pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+                } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
+                    pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+                } else if (pm.getPaymentMethod() == PaymentMethod.Cheque) {
+                    pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+                } else if (pm.getPaymentMethod() == PaymentMethod.Slip) {
+                    pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+                } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
+                    pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+                } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
+                    pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+                } else if (pm.getPaymentMethod() == PaymentMethod.Staff) {
+                    pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+                } else if (pm.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+                    pm.getPaymentMethodData().getStaffWelfare().setTotalValue(remainAmount);
+                }
+            }
+        }
+    }
+
     public List<PaymentMethod> getPaymentMethods() {
         return paymentMethods;
     }
@@ -7010,9 +7555,9 @@ public class BillSearch implements Serializable {
             auditEventApplicationController.logAuditEvent(auditEvent);
 
             String changeMessage = "From Institution changed from '"
-                + (oldFromInstitution != null ? oldFromInstitution.getName() : "None")
-                + "' to '"
-                + newFromInstitution.getName() + "'";
+                    + (oldFromInstitution != null ? oldFromInstitution.getName() : "None")
+                    + "' to '"
+                    + newFromInstitution.getName() + "'";
 
             JsfUtil.addSuccessMessage(changeMessage);
 
@@ -7055,6 +7600,162 @@ public class BillSearch implements Serializable {
 
     public void setChangeFromInstitutionReason(String changeFromInstitutionReason) {
         this.changeFromInstitutionReason = changeFromInstitutionReason;
+    }
+
+    /**
+     * Updates the batch bill's financial tracking fields when an individual OPD
+     * bill is cancelled within a credit payment batch.
+     *
+     * <p>
+     * This method ensures accurate credit balance tracking for partial batch
+     * bill cancellations by reducing the batch bill's balance, paidAmount, and
+     * increasing refundAmount proportionally to the cancelled individual bill's
+     * net total.</p>
+     *
+     * <p>
+     * <b>Healthcare Domain Context:</b> When OPD bills are paid using Credit
+     * payment method, the net total becomes the "due amount" (stored in balance
+     * field). Credit companies settle these dues periodically. Accurate balance
+     * tracking is critical for credit company settlement reports and financial
+     * reconciliation.</p>
+     *
+     * <p>
+     * <b>Pattern:</b> Mirrors pharmacy implementation in
+     * {@link SaleReturnController#updateBillFinancialFields(Bill, double)}</p>
+     *
+     * @param individualBill The individual OPD bill being cancelled
+     * @param cancellationBill The cancellation bill created for the individual
+     * bill
+     * @throws IllegalArgumentException if bills are null
+     * @throws IllegalStateException if financial data is invalid
+     * @see <a href="https://github.com/hmislk/hmis/issues/17138">GitHub Issue
+     * #17138</a>
+     */
+    private void updateBatchBillFinancialFieldsForIndividualCancellation(Bill individualBill, Bill cancellationBill) {
+        // Validate inputs
+        if (individualBill == null) {
+            throw new IllegalArgumentException("Individual bill cannot be null");
+        }
+
+        if (cancellationBill == null) {
+            throw new IllegalArgumentException("Cancellation bill cannot be null");
+        }
+
+        Bill batchBill = individualBill.getBackwardReferenceBill();
+
+        // Not all individual bills have batch bills (e.g., direct OPD bills)
+        if (batchBill == null) {
+            return;
+        }
+
+        // Only update balance for Credit payment method bills
+        if (batchBill.getPaymentMethod() != PaymentMethod.Credit) {
+            return;
+        }
+
+        // Validate numeric fields
+        if (cancellationBill.getNetTotal() == 0.0) {
+            throw new IllegalStateException("Cancellation bill net total is invalid");
+        }
+
+        // Refresh batch bill from database to ensure latest data and trigger optimistic locking
+        batchBill = billFacade.find(batchBill.getId());
+
+        if (batchBill == null) {
+            throw new IllegalStateException("Batch bill not found in database");
+        }
+
+        // Calculate refund amount (always positive)
+        double refundAmount = Math.abs(cancellationBill.getNetTotal());
+
+        // Validate refund amount doesn't exceed original batch bill total
+        if (refundAmount > batchBill.getNetTotal()) {
+            throw new IllegalStateException(
+                    String.format("CRITICAL: Refund amount (%.2f) exceeds batch bill total (%.2f). "
+                            + "Batch Bill: %s, Individual Bill: %s",
+                            refundAmount, batchBill.getNetTotal(),
+                            batchBill.getInsId(), individualBill.getInsId())
+            );
+        }
+
+        // Store old values for audit trail
+        double oldBalance = batchBill.getBalance();
+        double oldPaidAmount = batchBill.getPaidAmount();
+        double oldRefundAmount = batchBill.getRefundAmount();
+
+        // Update refundAmount - add the return amount
+        batchBill.setRefundAmount(batchBill.getRefundAmount() + refundAmount);
+
+        // Update paidAmount - deduct the return amount (only if payment exists)
+        if (batchBill.getPaidAmount() > 0) {
+            batchBill.setPaidAmount(Math.max(0d, batchBill.getPaidAmount() - refundAmount));
+        }
+
+        // Update balance (due amount) - deduct the return amount (only if balance > 0)
+        if (batchBill.getBalance() > 0) {
+            batchBill.setBalance(Math.max(0d, batchBill.getBalance() - refundAmount));
+        }
+
+        try {
+            // Save the updated bill
+            billFacade.edit(batchBill);
+            // Create audit log entry after successful update (commented out - needs auditEventApplicationController)
+            // TODO: Add audit trail logging when auditEventApplicationController is available
+            /*
+            auditEventApplicationController.logAuditEvent(
+            "Individual Bill Cancellation - Batch Bill Balance Adjustment",
+            String.format(
+            "Batch Bill: %s | Individual Bill: %s | Cancellation Bill: %s | " +
+            "Old Balance: %.2f → New Balance: %.2f | Refund: +%.2f | " +
+            "Old Paid: %.2f → New Paid: %.2f | Old Refund: %.2f → New Refund: %.2f | " +
+            "Adjusted By: %s",
+            batchBill.getInsId(),
+            individualBill.getInsId(),
+            cancellationBill.getInsId(),
+            oldBalance, batchBill.getBalance(),
+            refundAmount,
+            oldPaidAmount, batchBill.getPaidAmount(),
+            oldRefundAmount, batchBill.getRefundAmount(),
+            sessionController.getLoggedUser().getName()
+            ),
+            batchBill
+            );
+             */
+            // Create audit log entry after successful update (commented out - needs auditEventApplicationController)
+            // TODO: Add audit trail logging when auditEventApplicationController is available
+            /*
+            auditEventApplicationController.logAuditEvent(
+                "Individual Bill Cancellation - Batch Bill Balance Adjustment",
+                String.format(
+                    "Batch Bill: %s | Individual Bill: %s | Cancellation Bill: %s | " +
+                    "Old Balance: %.2f → New Balance: %.2f | Refund: +%.2f | " +
+                    "Old Paid: %.2f → New Paid: %.2f | Old Refund: %.2f → New Refund: %.2f | " +
+                    "Adjusted By: %s",
+                    batchBill.getInsId(),
+                    individualBill.getInsId(),
+                    cancellationBill.getInsId(),
+                    oldBalance, batchBill.getBalance(),
+                    refundAmount,
+                    oldPaidAmount, batchBill.getPaidAmount(),
+                    oldRefundAmount, batchBill.getRefundAmount(),
+                    sessionController.getLoggedUser().getName()
+                ),
+                batchBill
+            );
+             */
+
+            System.out.println("=== Batch Bill Balance Updated ===");
+            System.out.println("Batch Bill ID: " + batchBill.getInsId());
+            System.out.println("Individual Bill: " + individualBill.getInsId());
+            System.out.println("Refund Amount: " + refundAmount);
+            System.out.println("Old Balance: " + oldBalance + " → New Balance: " + batchBill.getBalance());
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error updating batch bill balance: " + e.getMessage());
+            e.printStackTrace();
+            // Don't re-throw to prevent cancellation from failing completely
+            // The individual bill cancellation should still succeed
+        }
     }
 
 }

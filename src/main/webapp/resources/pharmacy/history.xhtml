@@ -49,7 +49,69 @@
                     id="gpBlocks"
                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Blocks', true)}">
                     <div class="row">
-                        <h:panelGroup 
+                        <!-- Batch Details Block - First block position -->
+                        <h:panelGroup
+                            layout="block"
+                            class="col-3"
+                            id="itemDetailsBlockBatch"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Batch Block', true)}" >
+
+                            <p:panel class="w-100" style="font-size: 15px;" >
+                                <!-- Header -->
+                                <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
+                                    Batch Details with Expiry
+                                </div>
+
+                                <!-- Empty State -->
+                                <h:panelGroup rendered="#{empty pharmacyController.batchDetailsDtos}">
+                                    <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                        <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                        No batch data available.
+                                    </div>
+                                </h:panelGroup>
+
+                                <!-- Data Table -->
+                                <h:panelGroup rendered="#{not empty pharmacyController.batchDetailsDtos}">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-bordered" style="font-size: 12px;">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th style="text-align: center;">Batch No</th>
+                                                    <th style="text-align: center;">Expiry Date</th>
+                                                    <th style="text-align: center;">Quantity</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <ui:repeat value="#{pharmacyController.batchDetailsDtos}" var="batchDto">
+                                                    <tr>
+                                                        <td style="text-align: center;">
+                                                            <h:outputText value="#{batchDto.batchNo}" />
+                                                        </td>
+                                                        <td style="text-align: center;">
+                                                            <h:outputText value="#{batchDto.dateOfExpire}">
+                                                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                                                            </h:outputText>
+                                                            <!-- Expiry Status Indicator -->
+                                                            <h:panelGroup rendered="#{commonFunctionsProxy.currentDateTime > batchDto.dateOfExpire}">
+                                                                <br/>
+                                                                <span class="badge badge-danger">Expired</span>
+                                                            </h:panelGroup>
+                                                        </td>
+                                                        <td style="text-align: right;">
+                                                            <h:outputText value="#{batchDto.quantity}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </ui:repeat>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </h:panelGroup>
+                            </p:panel>
+                        </h:panelGroup>
+
+                        <h:panelGroup
                             layout="block"
                             class="col-3"
                             id="itemDetailsBlockStocks"
@@ -1411,6 +1473,92 @@
 
                             </p:dataTable>
                         </p:tab>
+
+                        <!-- Batch Details Tab - Detailed view with all information -->
+                        <p:tab
+                            title="Batch Details"
+                            id="itemDetailsTabBatch"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Batch Tab', true)}">
+
+                            <!-- Empty State -->
+                            <h:panelGroup rendered="#{empty pharmacyController.batchDetailsDtos}">
+                                <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                    <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                    No batch data available for the selected item.
+                                </div>
+                            </h:panelGroup>
+
+                            <!-- Detailed Data Table -->
+                            <h:panelGroup rendered="#{not empty pharmacyController.batchDetailsDtos}">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th style="text-align: center;">Batch No</th>
+                                                <th style="text-align: center;">Expiry Date</th>
+                                                <th style="text-align: center;">Institution</th>
+                                                <th style="text-align: center;">Department</th>
+                                                <th style="text-align: center;">Quantity</th>
+                                                <th style="text-align: center;">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat value="#{pharmacyController.batchDetailsDtos}" var="batchDto">
+                                                <tr>
+                                                    <td style="text-align: center; font-weight: bold;">
+                                                        <h:outputText value="#{batchDto.batchNo}" />
+                                                    </td>
+                                                    <td style="text-align: center;">
+                                                        <h:outputText value="#{batchDto.dateOfExpire}">
+                                                            <f:convertDateTime pattern="dd/MM/yyyy" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align: left;">
+                                                        <h:outputText value="#{batchDto.institution.name}" />
+                                                    </td>
+                                                    <td style="text-align: left;">
+                                                        <h:outputText value="#{batchDto.department.name}" />
+                                                    </td>
+                                                    <td style="text-align: right; font-weight: bold;">
+                                                        <h:outputText value="#{batchDto.quantity}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align: center;">
+                                                        <!-- Expired Status -->
+                                                        <h:panelGroup rendered="#{commonFunctionsProxy.currentDateTime > batchDto.dateOfExpire}">
+                                                            <span class="badge badge-danger">Expired</span>
+                                                        </h:panelGroup>
+                                                        <!-- Expiring Soon (within 30 days) -->
+                                                        <h:panelGroup rendered="#{commonFunctionsProxy.currentDateTime le batchDto.dateOfExpire and commonFunctionsProxy.addDaysToDate(commonFunctionsProxy.currentDateTime, 30) ge batchDto.dateOfExpire}">
+                                                            <span class="badge badge-warning">Expiring Soon</span>
+                                                        </h:panelGroup>
+                                                        <!-- Valid -->
+                                                        <h:panelGroup rendered="#{commonFunctionsProxy.currentDateTime le batchDto.dateOfExpire and commonFunctionsProxy.addDaysToDate(commonFunctionsProxy.currentDateTime, 30) lt batchDto.dateOfExpire}">
+                                                            <span class="badge badge-success">Valid</span>
+                                                        </h:panelGroup>
+                                                    </td>
+                                                </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="table-dark">
+                                                <th colspan="4" style="text-align: right; font-weight: bold;">
+                                                    Total Quantity:
+                                                </th>
+                                                <th style="text-align: right; font-weight: bold;">
+                                                    <h:outputText value="#{pharmacyController.totalBatchQuantity}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </th>
+                                                <th></th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </h:panelGroup>
+                        </p:tab>
+
                     </p:tabView>
                 </h:panelGroup>
             </h:panelGroup>

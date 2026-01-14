@@ -39,6 +39,7 @@ import com.divudi.core.entity.FamilyMember;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Relation;
 import com.divudi.core.entity.WebUser;
@@ -266,6 +267,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private BillItem billItem;
     private List<BillItem> billItems;
     private PaymentMethodData paymentMethodData;
+    private List<Payment> originalBillPayments;
 
     private boolean printPreview = false;
 
@@ -337,6 +339,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String navigateToPatientPastChannelBiiking() {
         return "/channel/patients_pastbookings_channel?faces-redirect=true";
+    }
+    
+    public String navigateToPatientLookup(){
+       return "/opd/patient_search.xhtml";
     }
 
     public List<SpecificPatientStatus> getAllPatientSpecificLabels() {
@@ -1017,6 +1023,19 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void preparePatientDepositCancel() {
         cancelBill = new CancelledBill();
         current = getBill().getPatient();
+        
+        PaymentMethod pm = getBill().getPaymentMethod();
+        
+        originalBillPayments = billBeanController.fetchBillPayments(getBill());
+
+        if (originalBillPayments != null && !originalBillPayments.isEmpty()) {
+            initializePaymentDataFromOriginalPayments(originalBillPayments);
+        } else if (pm == PaymentMethod.MultiplePaymentMethods){
+            cancelBill.setPaymentMethod(PaymentMethod.Cash);
+        } else {
+            cancelBill.setPaymentMethod(pm);
+        }
+        
     }
 
     public void clearDataForPatientRefund() {
@@ -1550,6 +1569,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     private void saveBillItem() {
+        if (getBill().isCancelled() && getBill().getCancelledBill() != null) {
+            for (BillItem tmp : getBillItems()) {
+                tmp.setCreatedAt(new Date());
+                tmp.setCreater(getSessionController().getLoggedUser());
+                tmp.setBill(getBill().getCancelledBill());
+                tmp.setNetValue(tmp.getNetValue());
+                billItemFacade.create(tmp);
+            }
+            return;
+        }
         for (BillItem tmp : getBillItems()) {
             tmp.setCreatedAt(new Date());
             tmp.setCreater(getSessionController().getLoggedUser());
@@ -4102,7 +4131,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void setPersonFacade(PersonFacade personFacade) {
         this.personFacade = personFacade;
     }
-
+    
     public Date getDob() {
         return dob;
     }
@@ -4687,6 +4716,65 @@ public class PatientController implements Serializable, ControllerWithPatient {
         this.searchPatientAddress = searchPatientAddress;
     }
 
+    private void initializePaymentDataFromOriginalPayments(List<Payment> originalPayments) {
+        if (originalPayments == null || originalPayments.isEmpty()) {
+            return;
+        }
+
+        // For single payment method
+        if (originalPayments.size() == 1) {
+            Payment originalPayment = originalPayments.get(0);
+            cancelBill.setPaymentMethod(originalPayment.getPaymentMethod());
+            
+            // Initialize paymentMethodData based on payment method (using absolute values for UI display)
+            // Note: Total value will be updated later when user selects items to refund
+            switch (originalPayment.getPaymentMethod()) {
+                case Cash:
+                    getPaymentMethodData().getCash().setTotalValue(Math.abs(getBill().getNetTotal()));
+                    break;
+                case Card:
+                    getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
+                    getPaymentMethodData().getCreditCard().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getCreditCard().setTotalValue(Math.abs(getBill().getNetTotal()));
+                    break;
+                case Cheque:
+                    getPaymentMethodData().getCheque().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
+                    getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
+                    getPaymentMethodData().getCheque().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getCheque().setTotalValue(Math.abs(getBill().getNetTotal()));
+                    break;
+                case Slip:
+                    getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                    getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate());
+                    getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
+                    getPaymentMethodData().getSlip().setTotalValue(Math.abs(getBill().getNetTotal()));
+                    break;
+                case ewallet:
+                    Institution selectedInstitution = originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution();
+
+                    getPaymentMethodData().getEwallet().setInstitution(selectedInstitution);
+                    getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
+                    getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
+                    getPaymentMethodData().getEwallet().setTotalValue(Math.abs(getBill().getNetTotal()));
+                    getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
+                    break;
+                default:
+                    // For any other payment method, just set the total value
+                    break;
+            }
+        } else {
+            // Multiple payments - set to MultiplePaymentMethods
+            cancelBill.setPaymentMethod(PaymentMethod.Cash);
+            // Note: For multiple payments, the user would need to manually configure them
+            // This is a complex scenario that may require additional UI handling
+        }
+    }
+
+    
     /**
      *
      * Set all Patients to null

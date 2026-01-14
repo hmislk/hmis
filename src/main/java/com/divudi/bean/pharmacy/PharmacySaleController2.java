@@ -2320,7 +2320,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     }
 
     public String navigateToSaleBillForCashierPrint() {
-        return "/pharmacy/printing/retail_sale_for_cashier?faces-redirect=true";
+        return "/pharmacy/printing/retail_sale_for_cashier_1?faces-redirect=true";
     }
 
     @Deprecated // Plse use settlePreBillAndNavigateToPrint
@@ -4203,7 +4203,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
             }
             try {
                 Long id = Long.valueOf(value);
-                PharmacySaleController controller = (PharmacySaleController) facesContext.getApplication().getELResolver()
+                PharmacySaleController2 controller = (PharmacySaleController2) facesContext.getApplication().getELResolver()
                         .getValue(facesContext.getELContext(), null, "pharmacySaleController2");
                 if (controller != null && controller.getStockDto() != null && id.equals(controller.getStockDto().getId())) {
                     return controller.getStockDto();
