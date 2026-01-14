@@ -161,9 +161,10 @@ public class InwardReportDashboardController implements Serializable{
     }
     
     private void setAvailableRooms() {
-        String sql = "SELECT COUNT(rcf) FROM RoomFacilityCharge rcf"
+        String sql = "SELECT COUNT(DISTINCT rcf.room) FROM RoomFacilityCharge rcf"
                 + " Where rcf.room.filled=false "
-                + " And rcf.retired=false";
+                + " And rcf.retired=false "
+                + " And rcf.room.retired=false";
         
         availableRooms = getRoomFacilityChargeFacade().countByJpql(sql);
     }
@@ -383,7 +384,7 @@ public class InwardReportDashboardController implements Serializable{
     public void generateOpdIncomeReportDto() {
         opdRevenueChart = new BarChartModel();
         List<BillTypeAtomic> btas = fetchBillTypeAtomicForOpdRevenue();
-        opdRevenueDashboardDtos = billService.fetchOpdRevenueDashboardDTOs(fromDate, toDate, institution, site, department, loggedUser, btas, null, null);
+        opdRevenueDashboardDtos = billService.fetchOpdRevenueDashboardDTOs(getFromDate(), getToDate(), institution, site, department, loggedUser, btas, null, null);
 
         System.out.println("Results returned: " + (opdRevenueDashboardDtos != null ? opdRevenueDashboardDtos.size() : 0));
 
@@ -397,7 +398,7 @@ public class InwardReportDashboardController implements Serializable{
         discountChart = new BarChartModel();
         List<BillTypeAtomic> btas = fetchBillTypeAtomicForOpdRevenue();
         
-        discountDashboard = billService.fetchBillDiscounts(fromDate, toDate, discountDept, btas);
+        discountDashboard = billService.fetchBillDiscounts(getFromDate(), getToDate(), discountDept, btas);
 
         System.out.println("Results returned: " + (discountDashboard != null ? discountDashboard.size() : 0));
 

@@ -24,7 +24,7 @@
                                     <h:panelGroup layout="block"
                                                   styleClass="form-group">
                                         <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
-                                        <h:outputLabel value="From Date" class="mx-3"/>
+                                        <h:outputLabel value="From Date" styleClass="mx-3"/>
                                     </h:panelGroup>
                                     <p:datePicker
                                         styleClass="w-100"
@@ -43,11 +43,12 @@
                                     <h:panelGroup layout="block"
                                                   styleClass="form-group">
                                         <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
-                                        <h:outputLabel value="To Date" class="mx-3" />
+                                        <h:outputLabel value="To Date" styleClass="mx-3" />
                                     </h:panelGroup>
                                     <p:datePicker
                                         styleClass="w-100"
                                         inputStyleClass="w-100 form-control"
+                                        id="toDate"
                                         showTime="true"
                                         yearNavigator="true"
                                         monthNavigator="true"
@@ -63,7 +64,7 @@
                                     </h:panelGroup>
                                     <p:selectOneMenu
                                         id="cmbIns"
-                                        class="w-100 form-control"
+                                        styleClass="w-100 form-control"
                                         value="#{inwardReportDashboardController.institution}"
                                         filter="true">
                                         <f:selectItem itemLabel="All"/>
@@ -185,7 +186,7 @@
                                 <div class="d-flex align-items-center my-4">
 
                                         <p:commandButton 
-                                            class="ui-button-warning mx-1"
+                                            styleClass="ui-button-warning mx-1"
                                             icon="fas fa-cogs"
                                             ajax="false"
                                             value="Process" 
