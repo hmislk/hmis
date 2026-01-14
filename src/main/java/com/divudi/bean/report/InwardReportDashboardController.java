@@ -388,14 +388,7 @@ public class InwardReportDashboardController implements Serializable{
         System.out.println("Results returned: " + (opdRevenueDashboardDtos != null ? opdRevenueDashboardDtos.size() : 0));
 
         opdRevenueBundle = new IncomeBundle(opdRevenueDashboardDtos);
-        System.out.println("selectionTypeOpdRevenue = " + selectionTypeOpdRevenue);
         opdRevenueBundle.generatePaymentDetailsForOpdRevenue(selectionTypeOpdRevenue);
-        
-        for (IncomeRow i : opdRevenueBundle.getRows()) {
-            System.out.println("i.getGrossTotal() = " + i.getGrossTotal());
-            System.out.println("RowType: "+i.getRowType());
-        }
-        
         setOpdRevenueChart();
         
     }
