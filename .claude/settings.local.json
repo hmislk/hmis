@@ -37,7 +37,9 @@
       "Bash(git log:*)",
       "Bash(xargs:*)",
       "Bash(ls:*)",
-      "Bash(gh issue create:*)"
+      "Bash(gh issue create:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(git ls-tree:*)"
     ]
   }
 }
