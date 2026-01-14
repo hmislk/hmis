@@ -21,6 +21,7 @@ import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Consultant;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
@@ -107,10 +108,16 @@ public class InwardReportController implements Serializable {
     PaymentMethod paymentMethod;
     AdmissionType admissionType;
     Institution institution;
+    private Institution site;
+    private Department department;
     Date fromDate;
     Date toDate;
     private Date fromYearStartDate;
     private Date toYearEndDate;
+    private Date dischargeFromDate;
+    private Date dischargeToDate;
+    private Date invoiceApprovedFromDate;
+    private Date invoiceApprovedToDate;
 
     Admission patientEncounter;
     double grossTotals;
@@ -2126,6 +2133,54 @@ public class InwardReportController implements Serializable {
 
     public void setList(List<InwardAdmissionDTO> list) {
         this.list = list;
+    }
+
+    public Date getDischargeFromDate() {
+        return dischargeFromDate;
+    }
+
+    public void setDischargeFromDate(Date dischargeFromDate) {
+        this.dischargeFromDate = dischargeFromDate;
+    }
+
+    public Date getDischargeToDate() {
+        return dischargeToDate;
+    }
+
+    public void setDischargeToDate(Date dischargeToDate) {
+        this.dischargeToDate = dischargeToDate;
+    }
+
+    public Date getInvoiceApprovedFromDate() {
+        return invoiceApprovedFromDate;
+    }
+
+    public void setInvoiceApprovedFromDate(Date invoiceApprovedFromDate) {
+        this.invoiceApprovedFromDate = invoiceApprovedFromDate;
+    }
+
+    public Date getInvoiceApprovedToDate() {
+        return invoiceApprovedToDate;
+    }
+
+    public void setInvoiceApprovedToDate(Date invoiceApprovedToDate) {
+        this.invoiceApprovedToDate = invoiceApprovedToDate;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
     public class IncomeByCategoryRecord {
