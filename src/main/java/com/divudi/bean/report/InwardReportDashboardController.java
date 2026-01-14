@@ -96,10 +96,6 @@ public class InwardReportDashboardController implements Serializable{
                             "rgb(173, 216, 230)"
                         };
     
-    public void InwardReportDashboardController(){
-       
-    }
-    
     
     // Bed Occupency Dashboard Navigation
     public String navigateToBedOccupencyDashboard (){
@@ -187,6 +183,9 @@ public class InwardReportDashboardController implements Serializable{
         
         if (availableRooms != null && occupiedRooms != null) {
             vacantRooms = availableRooms - occupiedRooms;
+            if (vacantRooms < 0) {
+                vacantRooms = Long.valueOf(0);
+            }
         } else {
             vacantRooms = Long.valueOf(0);
         }
@@ -195,7 +194,12 @@ public class InwardReportDashboardController implements Serializable{
         rooms.add(occupiedRooms);
         rooms.add(underConstruction);
         rooms.add(vacantRooms);
-        rooms.add(totalRooms - (availableRooms+underConstruction));
+        if (totalRooms != null && availableRooms != null && underConstruction != null) {
+            rooms.add(totalRooms - (availableRooms+underConstruction));
+        } else {
+            rooms.add(0);
+        }
+        
         dataSet.setData(rooms);
         
         List<String> bgColors = new ArrayList<>();
@@ -290,7 +294,7 @@ public class InwardReportDashboardController implements Serializable{
         return roomFacilityChargeFacade;
     }
     
-    public PieChartModel getBedOccupanceChart() {
+    public PieChartModel getBedOccupancyChart() {
         return bedOccupancyChart;
     }
     

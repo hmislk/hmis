@@ -68,10 +68,10 @@
                                      <f:facet name="header">
                                         <h:outputLabel value="Bed Occupency Analysis Chart" styleClass="fa-bed"   class="mx-4 text-center fs-2 text-uppercase"/>
                                     </f:facet>
-                                    <p:panel rendered="#{inwardReportDashboardController.bedOccupanceChart ne null}">
+                                    <p:panel rendered="#{inwardReportDashboardController.bedOccupancyChart ne null}">
                                         <div class="w-100 d-flex justify-content-center align-items-center">
                                            <div style="width: 90%; max-width: 600px; height: 90%; min-height: 400px;">
-                                               <p:pieChart model="#{inwardReportDashboardController.bedOccupanceChart}"/>
+                                               <p:pieChart model="#{inwardReportDashboardController.bedOccupancyChart}"/>
                                            </div>
                                         </div>
                                     </p:panel>

@@ -1086,7 +1086,7 @@ public class IncomeBundle implements Serializable {
             for (IncomeRow r : getRows()) {
                 Bill b = r.getBill();
 
-                if (b == null) {
+                if (b == null || b.getInstitution()== null) {
                     continue;
                 }
 
@@ -1114,14 +1114,17 @@ public class IncomeBundle implements Serializable {
             for (IncomeRow r : getRows()) {
                 Bill b = r.getBill();
 
-                if (b == null) {
+                if (b == null || b.getToDepartment() == null) {
                     continue;
                 }
 
                 r.setGrossTotal(b.getTotal());
                 r.setNetTotal(b.getNetTotal());
 
-                Institution site = b.getDepartment().getSite();
+                Institution site = b.getToDepartment().getSite();
+                if (site == null) {
+                    continue;
+                }
                 IncomeRow groupRow = grouped.computeIfAbsent(site, k -> {
                     IncomeRow ir = new IncomeRow();
                     ir.setSite((Institution)k);
