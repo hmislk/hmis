@@ -339,9 +339,6 @@ A: For significant cash refunds, coordinate with your supervisor to ensure adequ
 ## Related Features
 - [OPD Bill Search](OPD-Bill-Search.md)
 - [Individual Bill Cancellation](Individual-Bill-Cancellation.md)
-- [Multiple Payment Methods Processing](../Cashier/Multiple-Payment-Methods-Processing.md)
-- [Refund Processing](../Finance/Refund-Processing.md)
-- [Cash Drawer Management](../Cashier/Cash-Drawer-Management.md)
 
 ## Support
 

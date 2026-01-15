@@ -211,8 +211,6 @@ A: Export functionality depends on your user permissions and system configuratio
 ## Related Features
 - [Individual Bill Cancellation](Individual-Bill-Cancellation.md)
 - [Batch Bill Cancellation](Batch-Bill-Cancellation.md)
-- [OPD Billing Process](OPD-Billing-Process.md)
-- [Payment Methods and Processing](../Cashier/Payment-Methods-Processing.md)
 
 ## Support
 

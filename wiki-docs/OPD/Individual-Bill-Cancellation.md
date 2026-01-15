@@ -295,8 +295,6 @@ A: Contact your supervisor immediately. Cancellations cannot be easily reversed,
 ## Related Features
 - [OPD Bill Search](OPD-Bill-Search.md)
 - [Batch Bill Cancellation](Batch-Bill-Cancellation.md)
-- [Payment Methods and Processing](../Cashier/Payment-Methods-Processing.md)
-- [Refund Processing](../Finance/Refund-Processing.md)
 
 ## Support
 
