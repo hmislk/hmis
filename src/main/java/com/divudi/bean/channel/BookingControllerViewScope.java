@@ -4065,7 +4065,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         fillBillSessions();
         billingStarted = false;
-        setSelectedSessionInstance(null);
+        //setSelectedSessionInstance(null);
 
     }
 
