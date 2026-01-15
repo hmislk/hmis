@@ -447,7 +447,7 @@ public class ChannelReportController implements Serializable {
             jpql += " and b.department =:dept";
             params.put("dept", getDepartment());
         }
-        jpql += " order by b.id ";
+        jpql += " order by b.createdAt ";
 
         shiaftStartBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
