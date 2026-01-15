@@ -9,7 +9,7 @@ import com.divudi.core.entity.Category;
  */
 public class ChannelServiceCategorywiseDetailsDTO {
     
-    private Category category;
+    private String category;
     private Double cashTotal;
     private Double cardTotal;
     private Double agentTotal;
@@ -18,7 +18,7 @@ public class ChannelServiceCategorywiseDetailsDTO {
     private Double totalHospitalPayment;
     private Double totalDoctorPayment;
 
-    public ChannelServiceCategorywiseDetailsDTO(Category category, Double cashTotal, Double cardTotal, Double agentTotal, Double cancelTotal, Double refundTotal, Double totalHospitalPayment, Double totalDoctorPayment) {
+    public ChannelServiceCategorywiseDetailsDTO(String category, Double cashTotal, Double cardTotal, Double agentTotal, Double cancelTotal, Double refundTotal, Double totalHospitalPayment, Double totalDoctorPayment) {
        
         this.category = category;
         this.cashTotal = cashTotal;
@@ -34,11 +34,11 @@ public class ChannelServiceCategorywiseDetailsDTO {
     }
     
 
-    public Category getCategory() {
+    public String getCategory() {
         return category;
     }
 
-    public void setCategory(Category category) {
+    public void setCategory(String category) {
         this.category = category;
     }
 
