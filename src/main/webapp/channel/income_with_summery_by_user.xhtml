@@ -438,7 +438,23 @@
                                 </tr>
                                 <tr>
                                     <td style="border: 2px solid #ccc; padding: 6px;"> 
-                                        <h:outputText value="Total Cancel and Refund Appointments" />
+                                        <h:outputText value="Total Cancel Appointments" />
+                                    </td>
+                                    <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
+                                        <h:outputText value="#{channelReportController.wrapperDto.allCancelAppoinments}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 2px solid #ccc; padding: 6px;"> 
+                                        <h:outputText value="Total Refund Appointments" />
+                                    </td>
+                                    <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
+                                        <h:outputText value="#{channelReportController.wrapperDto.allRefundAppoinments}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 2px solid #ccc; padding: 6px;"> 
+                                        <h:outputText value="Total Cancel And Refund Appointments" />
                                     </td>
                                     <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
                                         <h:outputText value="#{channelReportController.wrapperDto.allCancelAppoinments + channelReportController.wrapperDto.allRefundAppoinments}" />
