@@ -20,6 +20,7 @@ import com.divudi.core.data.analytics.ReportTemplateColumn;
 import com.divudi.core.data.analytics.ReportTemplateFilter;
 import com.divudi.core.data.analytics.ReportTemplateType;
 import static com.divudi.core.data.analytics.ReportTemplateType.ITEM_SUMMARY_BY_BILL;
+import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
 
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.ReportTemplate;
@@ -28,6 +29,7 @@ import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.ReportTemplateFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.ChannelService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -679,6 +681,15 @@ public class ReportTemplateController implements Serializable {
         pb.setTotal(bundleTotal);
 
         return pb;
+    }
+    
+    @EJB
+    private ChannelService channelService;
+    
+    public ChannelServiceCategorywiseDetailsWrapperDTO generateChannelCategorywiseDetailsForShitEnd(Long shiftStartBillId){
+        
+        return channelService.fetchAndGenerateChannelCategorywiseDetailsForShitEnd(shiftStartBillId);
+        
     }
 
     public ReportTemplateRowBundle generateReport(
