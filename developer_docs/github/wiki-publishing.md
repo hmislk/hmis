@@ -52,26 +52,50 @@ This project maintains user documentation in the GitHub Wiki at https://github.c
 
 **Do this IMMEDIATELY after Step 2 - don't wait for PR merge**
 
-#### Full Process
+#### Full Process with Sibling Directory Approach
 
 ```bash
-# Navigate to project root
-cd /home/buddhika/development/rh
+# Verify current location (should be in project root)
+if [ ! -d "wiki-docs" ]; then
+    echo "❌ Error: Not in project root. Please cd to /home/buddhika/development/rh"
+    exit 1
+fi
 
-# Clone wiki repository (if not exists)
-git clone https://github.com/hmislk/hmis.wiki.git hmis.wiki
+# Check if sibling wiki directory exists
+if [ ! -d "../hmis.wiki" ]; then
+    echo "📥 Cloning wiki repository as sibling directory..."
+    cd ..
+    git clone https://github.com/hmislk/hmis.wiki.git
+    cd rh
+    echo "✅ Wiki repository cloned successfully"
+else
+    echo "📂 Using existing sibling wiki directory"
+fi
 
-# Copy documentation to wiki
-cp -r wiki-docs/Pharmacy/* hmis.wiki/Pharmacy/
-# OR for specific file:
-# cp wiki-docs/Pharmacy/Your-Feature.md hmis.wiki/Pharmacy/
+# Verify wiki repository is up to date
+echo "🔄 Updating wiki repository..."
+cd ../hmis.wiki
+git pull origin master || {
+    echo "⚠️ Warning: Could not pull latest changes. Continuing with local version..."
+}
 
-# Navigate to wiki repository
-cd hmis.wiki
+# Copy documentation files to wiki
+echo "📋 Copying documentation to wiki..."
+# For entire module directories:
+cp -r ../rh/wiki-docs/Pharmacy/* Pharmacy/ 2>/dev/null || echo "ℹ️  No Pharmacy docs to copy"
+cp -r ../rh/wiki-docs/Lab/* Lab/ 2>/dev/null || echo "ℹ️  No Lab docs to copy"
+cp -r ../rh/wiki-docs/General/* . 2>/dev/null || echo "ℹ️  No General docs to copy"
 
 # Commit and push to wiki
+echo "📝 Committing changes to wiki..."
 git add .
-git commit -m "Add [Feature Name] user documentation
+
+# Check if there are any changes to commit
+if git diff --staged --quiet; then
+    echo "ℹ️  No changes to commit to wiki"
+    cd ../rh
+else
+    git commit -m "Add [Feature Name] user documentation
 
 [Brief description]
 
@@ -79,23 +103,150 @@ git commit -m "Add [Feature Name] user documentation
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
 
-git push origin master
+    echo "🚀 Pushing to wiki repository..."
+    git push origin master || {
+        echo "❌ Error: Could not push to wiki. Check your permissions and network."
+        cd ../rh
+        exit 1
+    }
 
-# Return to main repository
-cd ..
+    echo "✅ Documentation published successfully to GitHub Wiki"
+    cd ../rh
+fi
 ```
 
-#### Quick Command Template
+#### Quick Command Template for Specific Files
 
 When publishing specific file documentation:
 
 ```bash
-cd hmis.wiki
-cp ../wiki-docs/Pharmacy/[Your-File].md Pharmacy/
+# Verify location and setup
+[ ! -d "wiki-docs" ] && echo "❌ Error: Not in project root" && exit 1
+[ ! -d "../hmis.wiki" ] && echo "📥 Setting up wiki..." && cd .. && git clone https://github.com/hmislk/hmis.wiki.git && cd rh
+
+# Navigate to wiki and copy specific file
+cd ../hmis.wiki
+git pull origin master 2>/dev/null || echo "⚠️ Using local wiki version"
+
+# Copy specific documentation file
+cp ../rh/wiki-docs/Pharmacy/[Your-File].md Pharmacy/ || {
+    echo "❌ Error: Could not copy file. Check file path and permissions."
+    cd ../rh
+    exit 1
+}
+
+# Commit and push
 git add Pharmacy/[Your-File].md
-git commit -m "Add [Feature] documentation"
+git commit -m "Add [Feature] documentation
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
 git push origin master
-cd ..
+cd ../rh
+echo "✅ File published to wiki"
+```
+
+#### Smart Script Template
+
+For automated workflow, save this as `publish-wiki.sh` in project root:
+
+```bash
+#!/bin/bash
+
+# Smart wiki publishing script with path detection and error handling
+
+set -e  # Exit on any error
+
+# Function to print colored output
+print_status() {
+    case $1 in
+        "info") echo -e "\033[34mℹ️  $2\033[0m" ;;
+        "success") echo -e "\033[32m✅ $2\033[0m" ;;
+        "warning") echo -e "\033[33m⚠️  $2\033[0m" ;;
+        "error") echo -e "\033[31m❌ $2\033[0m" ;;
+    esac
+}
+
+# Verify we're in the correct project directory
+if [ ! -d "wiki-docs" ] || [ ! -f "CLAUDE.md" ]; then
+    print_status "error" "Not in HMIS project root directory"
+    echo "Please run this script from /path/to/rh/ directory"
+    exit 1
+fi
+
+# Check for pending documentation
+if [ ! "$(find wiki-docs -name "*.md" 2>/dev/null)" ]; then
+    print_status "warning" "No documentation files found in wiki-docs/"
+    exit 0
+fi
+
+# Setup wiki repository
+WIKI_PATH="../hmis.wiki"
+if [ ! -d "$WIKI_PATH" ]; then
+    print_status "info" "Cloning wiki repository as sibling directory..."
+    cd ..
+    git clone https://github.com/hmislk/hmis.wiki.git || {
+        print_status "error" "Failed to clone wiki repository"
+        exit 1
+    }
+    cd rh
+    print_status "success" "Wiki repository cloned successfully"
+fi
+
+# Navigate to wiki and update
+print_status "info" "Updating wiki repository..."
+cd "$WIKI_PATH"
+git pull origin master &>/dev/null || print_status "warning" "Could not pull latest changes"
+
+# Copy documentation with structure preservation
+print_status "info" "Copying documentation to wiki..."
+COPIED_FILES=0
+
+# Copy files maintaining directory structure
+find ../rh/wiki-docs -name "*.md" | while read -r file; do
+    # Calculate relative path from wiki-docs
+    rel_path="${file#../rh/wiki-docs/}"
+    target_dir="$(dirname "$rel_path")"
+
+    # Create target directory if it doesn't exist
+    [ "$target_dir" != "." ] && mkdir -p "$target_dir"
+
+    # Copy file
+    cp "$file" "$rel_path"
+    print_status "success" "Copied: $rel_path"
+    COPIED_FILES=$((COPIED_FILES + 1))
+done
+
+# Commit changes if any
+git add .
+if git diff --staged --quiet; then
+    print_status "info" "No changes to commit"
+else
+    # Use first line of most recent documentation as commit subject
+    RECENT_DOC=$(find ../rh/wiki-docs -name "*.md" -type f -printf '%T@ %p\n' | sort -nr | head -1 | cut -d' ' -f2-)
+    FEATURE_NAME=$(basename "$RECENT_DOC" .md | sed 's/-/ /g' | sed 's/\b\w/\U&/g')
+
+    git commit -m "Add ${FEATURE_NAME} user documentation
+
+Updated wiki documentation for recent feature additions.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+    print_status "info" "Pushing to wiki repository..."
+    git push origin master || {
+        print_status "error" "Failed to push to wiki"
+        cd ../rh
+        exit 1
+    }
+
+    print_status "success" "Documentation published to GitHub Wiki"
+fi
+
+cd ../rh
+print_status "success" "Wiki publishing completed"
 ```
 
 ## Verification

@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithMultiplePayments" />
+        <cc:attribute name="paymentMethods" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <style>
+            .payment-header-view {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1rem;
+                padding: 1rem;
+                background-color: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 0.375rem;
+            }
+            .balance-info-view {
+                display: flex;
+                gap: 0.5rem;
+                align-items: center;
+            }
+            .balance-label-view {
+                font-weight: 600;
+                font-size: 1.1rem;
+                color: #28a745; /* Green for view mode */
+            }
+            .balance-amount-view {
+                font-weight: 700;
+                font-size: 1.2rem;
+                color: #28a745; /* Green for view mode */
+            }
+            .table-header-text-view {
+                font-weight: 600;
+                font-size: 1rem;
+                color: #6c757d;
+            }
+            .payment-method-display {
+                background-color: #e9ecef;
+                padding: 0.5rem 1rem;
+                border-radius: 0.25rem;
+                font-weight: 600;
+                color: #495057;
+                border: 1px solid #dee2e6;
+            }
+        </style>
+
+        <div class="col-12 p-0">
+            <!-- Balance Display (Read-only for view mode) -->
+            <h:panelGroup id="balanceDisplayView" layout="block" styleClass="payment-header-view">
+                <div class="balance-info-view">
+                    <p:outputLabel
+                        value="Payment Details (View Only):"
+                        styleClass="balance-label-view" />
+                    <p:outputLabel
+                        value="Total: #{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}"
+                        styleClass="balance-amount-view">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </p:outputLabel>
+                </div>
+            </h:panelGroup>
+
+            <p:dataTable class="w-100"
+                         id="tblMultiplePaymentsView"
+                         value="#{cc.attrs.controller.paymentMethodData.paymentMethodMultiple.multiplePaymentMethodComponentDetails}"
+                         var="pm"
+                         styleClass="ui-datatable-gridlines">
+                <p:column class="w-100">
+                    <f:facet name="header">
+                        <div class="d-flex align-items-center justify-content-between w-100 p-2">
+                            <h:outputText value="Payment Methods (Read-Only)" styleClass="table-header-text-view"/>
+                        </div>
+                    </f:facet>
+
+                    <div class="d-flex align-items-center justify-content-start gap-2 mb-3 p-2 bg-light border-bottom">
+                        <h:outputText
+                            value="#{pm.paymentMethod.label}"
+                            styleClass="payment-method-display"/>
+                    </div>
+
+                    <h:panelGroup layout="block" class="p-2" id="multiplePaymentDetailsView">
+                        <h:panelGroup id="cashView" rendered="#{pm.paymentMethod eq 'Cash'}" layout="block">
+                            <pa:cash_view paymentMethodData="#{pm.paymentMethodData}" componentDetail="#{pm}"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="creditCardView" rendered="#{pm.paymentMethod eq 'Card'}" layout="block">
+                            <pa:creditCard_view paymentMethodData="#{pm.paymentMethodData}" componentDetail="#{pm}"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="eWalletView" rendered="#{pm.paymentMethod eq 'ewallet'}" layout="block">
+                            <pa:ewallet_view paymentMethodData="#{pm.paymentMethodData}" componentDetail="#{pm}"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="chequeView" rendered="#{pm.paymentMethod eq 'Cheque'}" layout="block">
+                            <pa:cheque_view paymentMethodData="#{pm.paymentMethodData}" componentDetail="#{pm}"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="slipView" rendered="#{pm.paymentMethod eq 'Slip'}" layout="block">
+                            <pa:slip_view paymentMethodData="#{pm.paymentMethodData}" componentDetail="#{pm}"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="staffCreditView" rendered="#{pm.paymentMethod eq 'Staff'}" layout="block">
+                            <pa:staff_credit_view paymentMethodData="#{pm.paymentMethodData}" componentDetail="#{pm}"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="patientDepositView" rendered="#{pm.paymentMethod eq 'PatientDeposit'}" layout="block">
+                            <pa:patient_deposit_view paymentMethodData="#{pm.paymentMethodData}" componentDetail="#{pm}"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="Staff_WelfareView" rendered="#{pm.paymentMethod eq 'Staff_Welfare'}" layout="block">
+                            <pa:staff_welfare_view paymentMethodData="#{pm.paymentMethodData}" componentDetail="#{pm}"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="online_settlementView" rendered="#{pm.paymentMethod eq 'OnlineSettlement'}" layout="block">
+                            <pa:online_settlement_view paymentMethodData="#{pm.paymentMethodData}" componentDetail="#{pm}"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </p:column>
+            </p:dataTable>
+        </div>
+    </cc:implementation>
+</html>
