@@ -4647,7 +4647,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public String navigateToViewBillByAtomicBillTypeByBillId(Long BillId) {
-        System.out.println("navigateToViewBillByAtomicBillTypeByBillId");
         if (BillId == null) {
             JsfUtil.addErrorMessage("Bill ID is required");
             return null;
@@ -4664,7 +4663,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public String navigateToManageBillByAtomicBillTypeByBillId(Long BillId) {
-        System.out.println("navigateToManageBillByAtomicBillTypeByBillId");
         if (BillId == null) {
             JsfUtil.addErrorMessage("Bill ID is required");
             return null;
@@ -4681,7 +4679,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public String navigateToAdminBillByAtomicBillTypeByBillId(Long BillId) {
-        System.out.println("navigateToAdminBillByAtomicBillTypeByBillId");
         if (BillId == null) {
             JsfUtil.addErrorMessage("Bill ID is required");
             return null;
@@ -4698,7 +4695,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public String navigateToViewBillByAtomicBillTypeBySelectedId() {
-        System.out.println("navigateToViewBillByAtomicBillTypeBySelectedId called");
         if (selectedBillId == null) {
             JsfUtil.addErrorMessage("No Bill ID is selected");
             return null;
@@ -7854,12 +7850,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 batchBill
             );
              */
-
-            System.out.println("=== Batch Bill Balance Updated ===");
-            System.out.println("Batch Bill ID: " + batchBill.getInsId());
-            System.out.println("Individual Bill: " + individualBill.getInsId());
-            System.out.println("Refund Amount: " + refundAmount);
-            System.out.println("Old Balance: " + oldBalance + " → New Balance: " + batchBill.getBalance());
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error updating batch bill balance: " + e.getMessage());

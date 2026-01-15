@@ -2468,29 +2468,18 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
      * Otherwise, creates new payment data for the selected method.
      */
     public void onPaymentMethodChange() {
-        System.out.println("=== onPaymentMethodChange() CALLED ===");
-        System.out.println("Current paymentMethod: " + paymentMethod);
-        System.out.println("Original paymentMethod: " + originalCancellationPaymentMethod);
-
         // If payment method is null (shouldn't happen but handle gracefully)
         if (paymentMethod == null) {
-            System.out.println("Payment method is null, restoring original");
-            // Restore original payment method
             paymentMethod = originalCancellationPaymentMethod;
             return;
         }
 
         // If payment method matches the original, preserve the existing data
         if (paymentMethod == originalCancellationPaymentMethod) {
-            System.out.println("Payment method matches original, preserving data - EARLY RETURN");
             // Payment method hasn't actually changed - keep existing data
             return;
         }
-
-        // User changed to a DIFFERENT payment method - reset data
-        System.out.println("Payment method CHANGED - CLEARING ALL DATA");
         paymentMethodData = new PaymentMethodData();
-
         // Initialize basic payment data based on newly selected payment method
         if (batchBill != null) {
             double netTotal = Math.abs(batchBill.getNetTotal());
