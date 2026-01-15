@@ -688,7 +688,7 @@ public class ReportTemplateController implements Serializable {
     
     public ChannelServiceCategorywiseDetailsWrapperDTO generateChannelCategorywiseDetailsForShitEnd(Long shiftStartBillId){
         
-        return channelService.fetchAndGenerateChannelCategorywiseDetailsForShitEnd(shiftStartBillId);
+        return channelService.fetchAndGenerateChannelCategorywiseDetailsForShiftEnd(shiftStartBillId);
         
     }
 

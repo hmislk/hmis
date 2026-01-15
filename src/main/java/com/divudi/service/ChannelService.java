@@ -476,7 +476,7 @@ public class ChannelService {
 
     }
 
-    public ChannelServiceCategorywiseDetailsWrapperDTO fetchAndGenerateChannelCategorywiseDetailsForShitEnd(Long shiftStartBillId) {
+    public ChannelServiceCategorywiseDetailsWrapperDTO fetchAndGenerateChannelCategorywiseDetailsForShiftEnd(Long shiftStartBillId) {
         if (shiftStartBillId == null) {
             return null;
         }
