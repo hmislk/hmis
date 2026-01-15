@@ -21,19 +21,43 @@
 
 
                         </f:facet>
-                        <h:panelGrid columns="6">
-                            <p:outputLabel value="From Date" class="mx-2"></p:outputLabel>
+                        <h:panelGrid columns="9" style="width: 100%">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;"
+                                              styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+
                             <p:calendar 
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                id="fromDate"
                                 value="#{channelReportController.fromDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 ></p:calendar>
-                            <p:outputLabel value="To Date" class="mx-2"></p:outputLabel>
+                            <p:spacer width="50"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;"
+                                              styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To Date" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+
                             <p:calendar 
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                id="toDate"
                                 value="#{channelReportController.toDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 ></p:calendar>
 
-                            <h:outputLabel value="User" class="mx-2"/>
+                            <p:spacer width="50"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fas fa-user mr-2"/>
+                                <h:outputLabel value="User" class="mx-3"/>
+                            </h:panelGroup>
                             <p:autoComplete 
                                 class="w-100  " 
                                 inputStyleClass="w-100" 
@@ -46,34 +70,50 @@
                                 value="#{channelReportController.webUser}" >
                             </p:autoComplete>
 
-                            <p:commandButton 
-                                icon="fa-solid fa-check"
-                                class="ui-button-success"
-                                style="float: right;"
-                                value="Process" 
-                                ajax="false" 
-                                action="#{channelReportController.listShiftStartBills()}" >
-                            </p:commandButton>
+                            
+
                         </h:panelGrid>
+
+                        <div class="row my-3">
+                            <div class="col-2">
+                                <p:commandButton 
+                                    icon="fa-solid fa-check"
+                                    class="ui-button-success"
+                                    style="float: left;"
+                                    value="Process" 
+                                    ajax="false" 
+                                    action="#{channelReportController.listShiftStartBills()}" >
+                                </p:commandButton>
+                            </div>
+
+                        </div>
+
+
 
                         <p:dataTable rendered="#{channelReportController.categorywiseDetailsWrapperDTO eq null}" value="#{channelReportController.shiaftStartBills}" var="ssb" rowKey="#{ssb.id}">
 
-                            <p:column headerText="Date" width="10em" >
+                            <p:column headerText="Date" width="10%" >
                                 <h:outputText value="#{ssb.billDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                 </h:outputText>
 
                             </p:column>
-                            <p:column headerText="Time"  width="10em" >
+                            <p:column headerText="Start Time"  width="15%" >
                                 <h:outputText value="#{ssb.createdAt}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="User" >
-                                #{ssb.creater} - #{ssb.creater.role.name} - #{ssb.creater.staff.speciality.name}
+                            
+                             <p:column headerText="End Time"  width="15%" >
+                                 <h:outputText value="#{ssb.referenceBill ne null ? ssb.referenceBill.createdAt : 'Not Yet'}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+                            <p:column width="15%" style="text-align: center; font-weight: bold" headerText="User" filterMatchMode="contains" filterBy="#{ssb.creater.name}">
+                                #{ssb.creater.webUserPerson.nameWithTitle}
                             </p:column>
 
-                            <p:column headerText="Shift End" rendered="true" width="15em" >
+                            <p:column headerText="Shift End" style="text-align: center" rendered="true" width="25%" >
                                 <h:panelGroup rendered="#{ssb.referenceBill eq null}" class="text-danger">
                                     <h:outputText value="NOT Ended" ></h:outputText>
                                 </h:panelGroup>
@@ -85,7 +125,7 @@
                                 </h:panelGroup>
                             </p:column>
 
-                            <p:column headerText="Actions">
+                            <p:column headerText="Actions" width="30%" style="text-align: center">
                                 <h:panelGroup rendered="#{ssb.referenceBill eq null}" >
                                     <p:commandButton 
                                         ajax="false"
@@ -107,24 +147,26 @@
                         </p:dataTable>
                         <h:panelGroup rendered="#{channelReportController.categorywiseDetailsWrapperDTO ne null}">
 
-                            <div class="row">
-                                <div class="col-3">
-                                    <h:outputLabel value="Shift Start Date"></h:outputLabel>
-                                    <h:outputLabel value="#{channelReportController.categorywiseDetailsWrapperDTO.billingStartDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                            <div class="row my-4" style="font-weight: bold">
+                                <div class="col-4" >
+                                    <h:outputLabel value="Shift Start Date :" ></h:outputLabel>
+                                    <h:outputLabel class="mx-3" value="#{channelReportController.categorywiseDetailsWrapperDTO.billingStartDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </div>
-                                <div class="col-3">
-                                    <h:outputLabel value="Shift End Date"></h:outputLabel>
+                                <div class="col-4">
+                                    <h:outputLabel value="Shift End Date :" class="mx-3"></h:outputLabel>
                                     <h:outputLabel value="#{channelReportController.categorywiseDetailsWrapperDTO.billingEndDate eq null ? 'Not End Yet':channelReportController.categorywiseDetailsWrapperDTO.billingEndDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </div>
-                                <div class="col-3">
-                                    <h:outputLabel value="Cashier Name"></h:outputLabel>
+                                <div class="col-4">
+                                    <h:outputLabel value="Cashier Name :" class="mx-3"></h:outputLabel>
                                     <h:outputLabel value="#{channelReportController.categorywiseDetailsWrapperDTO.cashierUserName}"></h:outputLabel>
                                 </div>
                             </div>
+                            
+                            <hr></hr>
 
                             <p:dataTable  value="#{channelReportController.categorywiseDetailsWrapperDTO.dtoList}" var="wrapper" >
 
