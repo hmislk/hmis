@@ -23,6 +23,17 @@
                                 <p:outputLabel value="Comment" class="mx-2"></p:outputLabel>
                                 <p:inputText value="#{financialTransactionController.currentBill.comments}" ></p:inputText>
                             </h:panelGroup>
+
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}" style="float: right;">
+                                <p:commandButton
+                                    value="Config"
+                                    icon="fa fa-cog"
+                                    title="Page Configuration Management"
+                                    action="#{pageAdminController.navigateToPageAdmin('cashier/shift_end_for_handover')}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary ui-button-sm mx-2">
+                                </p:commandButton>
+                            </h:panelGroup>
                         </f:facet>
 
                         <h:panelGroup id="gpPrint" >

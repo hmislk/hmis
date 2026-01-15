@@ -55,8 +55,8 @@ public class ComponentDetail {
         getMultiplePaymentMethodComponentDetails().remove(cd);
     }
 
-    public void setMultiplePaymentMethod(List<ComponentDetail> multiplePaymentMethod) {
-        this.multiplePaymentMethodComponentDetails = multiplePaymentMethod;
+    public void setMultiplePaymentMethodComponentDetails(List<ComponentDetail> multiplePaymentMethodComponentDetails) {
+        this.multiplePaymentMethodComponentDetails = multiplePaymentMethodComponentDetails;
     }
 
     public Institution getInstitution() {

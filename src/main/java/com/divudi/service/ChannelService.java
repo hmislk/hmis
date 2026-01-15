@@ -8,6 +8,7 @@ import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.ApiKeyType;
 import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillFinanceType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
@@ -25,6 +26,8 @@ import com.divudi.core.data.ServiceType;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsDTO;
+import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.core.entity.ApiKey;
@@ -386,6 +389,119 @@ public class ChannelService {
         data.put("activePatients", activePatientCount);
 
         return data;
+
+    }
+
+    private Object[] fetchShiftEndBillDetails(Long shiftStartBillId) {
+
+        String sql = " Select COALESCE(bill.creater.name, ''), "
+                + " bill.creater.id, "
+                + " bill.createdAt, "
+                + " rbill.createdAt,"
+                + " rbill.id "
+                + " from Bill bill "
+                + " left join bill.referenceBill rbill"
+                + " where bill.id = :billId "
+                + " and bill.billType = :bt "
+                + " and bill.retired = :ret ";
+
+        Map<String, Object> params = new HashMap();
+        params.put("bt", BillType.ShiftStartFundBill);
+        params.put("billId", shiftStartBillId);
+        params.put("ret", false);
+
+        return billFacade.findAggregate(sql, params, TemporalType.TIMESTAMP);
+    }
+
+    private List<ChannelServiceCategorywiseDetailsDTO> fetchChannelCategorywiseDetailsForShiftEnd(Long shiftStartBillId, Long shiftEndBillId, Long createrId) {
+
+        String sql = " select new com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsDTO("
+                + " b.singleBillSession.sessionInstance.originatingSession.category.name, "
+                + " SUM(CASE"
+                + "        WHEN b.paymentMethod = :Cash THEN b.netTotal "
+                + "        WHEN b.paymentMethod = :MultiplePaymentMethods THEN COALESCE(pCash.paidValue, 0) "
+                + "        ELSE 0"
+                + " END),"
+                + " SUM(CASE"
+                + "        WHEN b.paymentMethod = :Card THEN b.netTotal "
+                + "        WHEN b.paymentMethod = :MultiplePaymentMethods THEN COALESCE(pCard.paidValue, 0) "
+                + "        ELSE 0"
+                + " END),"
+                + " SUM(CASE"
+                + "        WHEN b.paymentMethod = :Agent THEN b.netTotal "
+                + "        ELSE 0"
+                + " END),"
+                + " SUM(CASE WHEN TYPE(b) = CancelledBill THEN b.netTotal ELSE 0 END),"
+                + " SUM(CASE WHEN TYPE(b) = RefundBill THEN b.netTotal ELSE 0 END), "
+                + " SUM(CASE"
+                + "        WHEN b.cancelled = false THEN b.hospitalFee "
+                + "        ELSE 0"
+                + " END), "
+                + " SUM(CASE"
+                + "        WHEN b.cancelled = true THEN 0 "
+                + "        WHEN b.cancelled = false AND b.refunded = false THEN b.staffFee "
+                + "        ELSE 0"
+                + " END))"
+                + " FROM Bill b "
+                + " LEFT JOIN b.payments pCash ON pCash.paymentMethod = :Cash "
+                + " LEFT JOIN b.payments pCard ON pCard.paymentMethod = :Card "
+                + " where b.billTypeAtomic in :bta "
+                + " and b.id > :shiftStartBillId  ";
+
+        Map<String, Object> params = new HashMap<>();
+
+        List<BillTypeAtomic> billTypeAtomics = BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN);
+        billTypeAtomics.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+
+        params.put("bta", billTypeAtomics);
+        params.put("shiftStartBillId", shiftStartBillId);
+        
+        params.put("createrId", createrId);
+        params.put("Cash", PaymentMethod.Cash);
+        params.put("Card", PaymentMethod.Card);
+        params.put("Agent", PaymentMethod.Agent);
+        params.put("MultiplePaymentMethods", PaymentMethod.MultiplePaymentMethods);
+
+        if (shiftEndBillId != null) {
+            sql += " AND b.id < :shiftEndBillId";
+            params.put("shiftEndBillId", shiftEndBillId);
+        }
+
+        sql += " and b.creater.id = :createrId "
+                + " GROUP BY b.singleBillSession.sessionInstance.originatingSession.category.name";
+
+        List<ChannelServiceCategorywiseDetailsDTO> dtos = (List<ChannelServiceCategorywiseDetailsDTO>) billFacade.findDTOsByJpql(sql, params, TemporalType.TIMESTAMP);
+
+        return dtos;
+
+    }
+
+    public ChannelServiceCategorywiseDetailsWrapperDTO fetchAndGenerateChannelCategorywiseDetailsForShiftEnd(Long shiftStartBillId) {
+        if (shiftStartBillId == null) {
+            return null;
+        }
+
+        Object[] billMetaData = fetchShiftEndBillDetails(shiftStartBillId);
+        
+        if(billMetaData == null){
+            return null;
+        }
+
+        String creatorName = (String) billMetaData[0];
+        Long creatorId = (Long) billMetaData[1];
+        Date shiftStartAt = (Date) billMetaData[2];
+        Date shiftEndAt = (Date) billMetaData[3];
+        Long shiftEndBillId = (Long) billMetaData[4];
+
+        List<ChannelServiceCategorywiseDetailsDTO> dtoList = fetchChannelCategorywiseDetailsForShiftEnd(shiftStartBillId, shiftEndBillId, creatorId);
+        
+        ChannelServiceCategorywiseDetailsWrapperDTO wrapperDto = new ChannelServiceCategorywiseDetailsWrapperDTO();
+        wrapperDto.setDtoList(dtoList);
+        wrapperDto.setBillingEndDate(shiftEndAt);
+        wrapperDto.setCashierUserName(creatorName);
+        wrapperDto.setBillingStartDate(shiftStartAt);
+        
+        return wrapperDto;
 
     }
 
@@ -1249,8 +1365,10 @@ public class ChannelService {
     }
 
     public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelIncomeByUser(Date fromDate, Date toDate, Institution institution, WebUser user, List<Category> categoryList, String reportStatus, String paidStatus) {
+
         String sql = "select new com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto(bs.id, "
                 + "bill.id, "
+                + "bill.billTypeAtomic, "
                 + "session.sessionDate, "
                 + "bill.createdAt, "
                 + "bill.creater.name, "
@@ -1406,8 +1524,8 @@ public class ChannelService {
                     summeryDto.setTotalCancelAppoinments(summeryDto.getTotalCancelAppoinments() + 1);
                     summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() - 1);
                     summeryDto.setCancelTotal(summeryDto.getCancelTotal() + dto.getTotalAppoinmentFee());
-                } else if (dto.isIsRefunded()) {
-                    summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() - 1);
+                } else if (dto.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT) {
+                    summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments());
                     summeryDto.setTotalRefundAppoinments(summeryDto.getTotalRefundAppoinments() + 1);
                     summeryDto.setRefundTotal(summeryDto.getRefundTotal() + dto.getTotalAppoinmentFee());
                 } else {
