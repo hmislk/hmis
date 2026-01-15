@@ -4,6 +4,7 @@
 - **GitHub Repository**: https://github.com/hmislk/hmis
 - **Issues URL**: https://github.com/hmislk/hmis/issues
 - **Main Repository**: hmislk/hmis (not buddhika75/hmis)
+- **Project tmp Folder**: `/tmp/` directory contains project-specific temporary files, screenshots, and examples for development reference
 
 ## Core Workflows
 
