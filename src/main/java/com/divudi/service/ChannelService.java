@@ -393,7 +393,7 @@ public class ChannelService {
 
     }
 
-    private Object[] fetchShiftEndBillDetials(Long shiftStartBillId) {
+    private Object[] fetchShiftEndBillDetails(Long shiftStartBillId) {
 
         String sql = " Select COALESCE(bill.creater.name, ''), "
                 + " bill.creater.id, "
@@ -482,7 +482,11 @@ public class ChannelService {
             return null;
         }
 
-        Object[] billMetaData = fetchShiftEndBillDetials(shiftStartBillId);
+        Object[] billMetaData = fetchShiftEndBillDetails(shiftStartBillId);
+        
+        if(billMetaData == null){
+            return null;
+        }
 
         String creatorName = (String) billMetaData[0];
         Long creatorId = (Long) billMetaData[1];

@@ -180,12 +180,15 @@ public class ChannelReportController implements Serializable {
     private ReportTimerController reportTimerController;
     @Inject
     private InstitutionController institutionController;
+    @Inject
+    private ReportTemplateController reportTemplateController;
 
     private Speciality speciality;
 
     private List<SessionInstance> sessioninstances;
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
+    private List<Bill> shiftStartBills;
 
     private String reportStatus;
 
@@ -393,15 +396,13 @@ public class ChannelReportController implements Serializable {
         makeNull();
         return "/channel/service_category_list_by_user_shift?faces-redirect=true";
     }
-    
-    private List<Bill> shiaftStartBills;
 
-    public List<Bill> getShiaftStartBills() {
-        return shiaftStartBills;
+    public List<Bill> getShiftStartBills() {
+        return shiftStartBills;
     }
 
-    public void setShiaftStartBills(List<Bill> shiaftStartBills) {
-        this.shiaftStartBills = shiaftStartBills;
+    public void setShiaftStartBills(List<Bill> shiftStartBills) {
+        this.shiftStartBills = shiftStartBills;
     }
     
     private ChannelServiceCategorywiseDetailsWrapperDTO categorywiseDetailsWrapperDTO;
@@ -413,10 +414,7 @@ public class ChannelReportController implements Serializable {
     public void setCategorywiseDetailsWrapperDTO(ChannelServiceCategorywiseDetailsWrapperDTO categorywiseDetailsWrapperDTO) {
         this.categorywiseDetailsWrapperDTO = categorywiseDetailsWrapperDTO;
     }
-    
-    @Inject
-    private ReportTemplateController reportTemplateController;
-    
+
     public void generateChannelCategorywiseDetailsForShitEndFromChannelReportController(Long shiftStartBillId){
         categorywiseDetailsWrapperDTO = reportTemplateController.generateChannelCategorywiseDetailsForShitEnd(shiftStartBillId);
     }
@@ -449,7 +447,7 @@ public class ChannelReportController implements Serializable {
         }
         jpql += " order by b.createdAt ";
 
-        shiaftStartBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        shiftStartBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     private List<Payment> paymentsFromCardAppoinments;
@@ -3992,7 +3990,7 @@ public class ChannelReportController implements Serializable {
         dataBundle = null;
         categoryList = null;
         webUser = null;
-        shiaftStartBills = null;
+        shiftStartBills = null;
         categorywiseDetailsWrapperDTO = null;
     }
 
