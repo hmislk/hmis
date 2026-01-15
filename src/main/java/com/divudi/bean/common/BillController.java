@@ -188,6 +188,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     private PaymentScheme paymentScheme;
     private PaymentMethod paymentMethod;
     private PaymentMethod originalCancellationPaymentMethod;
+    private PaymentMethodData originalPaymentMethodData;
     private List<PaymentMethod> paymentMethods;
     private Patient newPatient;
     private Patient searchedPatient;
@@ -2225,6 +2226,117 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 }
             }
         }
+
+        // Capture original payment method data for restoration if user changes back to original payment method
+        captureOriginalPaymentMethodData();
+    }
+
+    /**
+     * Creates a deep copy of the current paymentMethodData to store as originalPaymentMethodData.
+     * This allows restoration of original payment details if user changes payment method and then
+     * switches back to the original payment method.
+     */
+    private void captureOriginalPaymentMethodData() {
+        if (paymentMethodData == null) {
+            originalPaymentMethodData = null;
+            return;
+        }
+
+        originalPaymentMethodData = deepCopyPaymentMethodData(paymentMethodData);
+    }
+
+    /**
+     * Creates a deep copy of PaymentMethodData including all ComponentDetail objects.
+     * This ensures that modifications to the copy don't affect the original and vice versa.
+     */
+    private PaymentMethodData deepCopyPaymentMethodData(PaymentMethodData source) {
+        if (source == null) {
+            return null;
+        }
+
+        PaymentMethodData copy = new PaymentMethodData();
+        copy.setPaymentMethod(source.getPaymentMethod());
+
+        // Deep copy each ComponentDetail field
+        if (source.getCash() != null) {
+            copy.setCash(deepCopyComponentDetail(source.getCash()));
+        }
+        if (source.getCreditCard() != null) {
+            copy.setCreditCard(deepCopyComponentDetail(source.getCreditCard()));
+        }
+        if (source.getCheque() != null) {
+            copy.setCheque(deepCopyComponentDetail(source.getCheque()));
+        }
+        if (source.getSlip() != null) {
+            copy.setSlip(deepCopyComponentDetail(source.getSlip()));
+        }
+        if (source.getIou() != null) {
+            copy.setIou(deepCopyComponentDetail(source.getIou()));
+        }
+        if (source.getEwallet() != null) {
+            copy.setEwallet(deepCopyComponentDetail(source.getEwallet()));
+        }
+        if (source.getPatient_deposit() != null) {
+            copy.setPatient_deposit(deepCopyComponentDetail(source.getPatient_deposit()));
+        }
+        if (source.getCredit() != null) {
+            copy.setCredit(deepCopyComponentDetail(source.getCredit()));
+        }
+        if (source.getStaffCredit() != null) {
+            copy.setStaffCredit(deepCopyComponentDetail(source.getStaffCredit()));
+        }
+        if (source.getStaffWelfare() != null) {
+            copy.setStaffWelfare(deepCopyComponentDetail(source.getStaffWelfare()));
+        }
+        if (source.getOnlineSettlement() != null) {
+            copy.setOnlineSettlement(deepCopyComponentDetail(source.getOnlineSettlement()));
+        }
+        if (source.getPaymentMethodMultiple() != null) {
+            copy.setPaymentMethodMultiple(deepCopyComponentDetail(source.getPaymentMethodMultiple()));
+        }
+
+        return copy;
+    }
+
+    /**
+     * Creates a deep copy of a ComponentDetail object including all its properties and
+     * nested ComponentDetail lists for multiple payment methods.
+     */
+    private ComponentDetail deepCopyComponentDetail(ComponentDetail source) {
+        if (source == null) {
+            return null;
+        }
+
+        ComponentDetail copy = new ComponentDetail();
+
+        // Copy basic properties
+        copy.setPaymentMethod(source.getPaymentMethod());
+        copy.setTotalValue(source.getTotalValue());
+        copy.setComment(source.getComment());
+        copy.setDate(source.getDate());
+        copy.setNo(source.getNo());
+        copy.setReferenceNo(source.getReferenceNo());
+        copy.setReferralNo(source.getReferralNo());
+
+        // Copy entity references
+        copy.setInstitution(source.getInstitution());
+        copy.setPatient(source.getPatient());
+        copy.setToStaff(source.getToStaff());
+
+        // Deep copy PaymentMethodData if it exists
+        if (source.getPaymentMethodData() != null) {
+            copy.setPaymentMethodData(deepCopyPaymentMethodData(source.getPaymentMethodData()));
+        }
+
+        // Deep copy multiple payment method component details
+        if (source.getMultiplePaymentMethodComponentDetails() != null) {
+            copy.setMultiplePaymentMethodComponentDetails(new ArrayList<>());
+            for (ComponentDetail detail : source.getMultiplePaymentMethodComponentDetails()) {
+                copy.getMultiplePaymentMethodComponentDetails().add(deepCopyComponentDetail(detail));
+            }
+        }
+
+        return copy;
     }
 
     /**
@@ -2425,9 +2537,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             return;
         }
 
-        // If payment method matches the original, preserve the existing data
+        // If payment method matches the original, restore the original payment details
         if (paymentMethod == originalCancellationPaymentMethod) {
-            // Payment method hasn't actually changed - keep existing data
+            // Restore original payment method data with all bank/cheque/reference details
+            if (originalPaymentMethodData != null) {
+                paymentMethodData = deepCopyPaymentMethodData(originalPaymentMethodData);
+            }
             return;
         }
         paymentMethodData = new PaymentMethodData();
