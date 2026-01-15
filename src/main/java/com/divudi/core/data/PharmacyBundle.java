@@ -868,13 +868,23 @@ public class PharmacyBundle implements Serializable {
     }
 
     public void generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionTypeDto() {
+
         Map<String, PharmacyRow> grouped = new LinkedHashMap<>();
+        int processedCount = 0;
+        int skippedNullBillLight = 0;
+        int skippedNullBillType = 0;
 
         for (PharmacyRow r : getRows()) {
             BillLight b = r.getBillLight();
-            if (b == null || b.getBillTypeAtomic() == null) {
+            if (b == null) {
+                skippedNullBillLight++;
                 continue;
             }
+            if (b.getBillTypeAtomic() == null) {
+                skippedNullBillType++;
+                continue;
+            }
+            processedCount++;
 
             populateRowFromBill(r, b);
 
@@ -950,6 +960,11 @@ public class PharmacyBundle implements Serializable {
         grouped.values().stream()
                 .sorted(Comparator.comparing(PharmacyRow::getRowType, Comparator.nullsLast(String::compareToIgnoreCase)))
                 .forEachOrdered(getRows()::add);
+
+        for (String key : grouped.keySet()) {
+            PharmacyRow gr = grouped.get(key);
+        }
+
         populateSummaryRow();
     }
 
