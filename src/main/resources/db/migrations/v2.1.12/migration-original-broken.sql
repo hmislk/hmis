@@ -1,9 +1,8 @@
--- Migration v2.1.12: Backfill missing approval tracking fields for historical direct purchase bills (FIXED CASE SENSITIVITY)
+-- Migration v2.1.12: Backfill missing approval tracking fields for historical direct purchase bills
 -- Author: Claude AI Assistant
--- Date: 2025-12-30 (Updated: 2026-01-15)
+-- Date: 2025-12-30
 -- GitHub Issue: #17317
 -- Description: Updates historical direct purchase bills to include missing approval audit trail data
--- FIXED: All table names now use correct uppercase case (BILL instead of bill)
 
 -- ==============================================================================
 -- BACKGROUND
@@ -20,32 +19,32 @@
 -- Count total completed direct purchase bills
 SELECT 'Total Completed Direct Purchases' as description,
        COUNT(*) as count
-FROM BILL
-WHERE BILLTYPEATOMIC = 'PHARMACY_DIRECT_PURCHASE'
-  AND COMPLETED = TRUE;
+FROM bill
+WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
+  AND completed = TRUE;
 
 -- Count bills missing approval data
 SELECT 'Bills Missing Approval Data' as description,
        COUNT(*) as count
-FROM BILL
-WHERE BILLTYPEATOMIC = 'PHARMACY_DIRECT_PURCHASE'
-  AND COMPLETED = TRUE
-  AND (APPROVEUSER_ID IS NULL OR APPROVEAT IS NULL OR EDITOR_ID IS NULL OR EDITEDAT IS NULL);
+FROM bill
+WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
+  AND completed = TRUE
+  AND (approve_user IS NULL OR approve_at IS NULL OR editor IS NULL OR edited_at IS NULL);
 
 -- Show sample of bills that will be updated
-SELECT ID,
-       DEPTID,
-       BILLDATE,
-       COMPLETEDBY_ID,
-       COMPLETEDAT,
-       APPROVEUSER_ID,
-       APPROVEAT,
-       EDITOR_ID,
-       EDITEDAT
-FROM BILL
-WHERE BILLTYPEATOMIC = 'PHARMACY_DIRECT_PURCHASE'
-  AND COMPLETED = TRUE
-  AND APPROVEUSER_ID IS NULL
+SELECT id,
+       deptId,
+       billdate,
+       completed_by,
+       completed_at,
+       approve_user,
+       approve_at,
+       editor,
+       edited_at
+FROM bill
+WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
+  AND completed = TRUE
+  AND approve_user IS NULL
 LIMIT 5;
 
 -- ==============================================================================
@@ -54,12 +53,12 @@ LIMIT 5;
 
 -- Step 1: Update approveUser field using completedBy
 -- Sets approveUser to the user who completed the transaction
-UPDATE BILL
-SET APPROVEUSER_ID = COMPLETEDBY_ID
-WHERE BILLTYPEATOMIC = 'PHARMACY_DIRECT_PURCHASE'
-  AND COMPLETED = TRUE
-  AND APPROVEUSER_ID IS NULL
-  AND COMPLETEDBY_ID IS NOT NULL;
+UPDATE bill
+SET approve_user = completed_by
+WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
+  AND completed = TRUE
+  AND approve_user IS NULL
+  AND completed_by IS NOT NULL;
 
 -- Check result of Step 1
 SELECT 'Updated approveUser fields' as description,
@@ -67,12 +66,12 @@ SELECT 'Updated approveUser fields' as description,
 
 -- Step 2: Update approveAt field using completedAt
 -- Sets approveAt to the timestamp when the transaction was completed
-UPDATE BILL
-SET APPROVEAT = COMPLETEDAT
-WHERE BILLTYPEATOMIC = 'PHARMACY_DIRECT_PURCHASE'
-  AND COMPLETED = TRUE
-  AND APPROVEAT IS NULL
-  AND COMPLETEDAT IS NOT NULL;
+UPDATE bill
+SET approve_at = completed_at
+WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
+  AND completed = TRUE
+  AND approve_at IS NULL
+  AND completed_at IS NOT NULL;
 
 -- Check result of Step 2
 SELECT 'Updated approveAt fields' as description,
@@ -80,12 +79,12 @@ SELECT 'Updated approveAt fields' as description,
 
 -- Step 3: Update editor field using completedBy
 -- Sets editor to the user who completed the transaction
-UPDATE BILL
-SET EDITOR_ID = COMPLETEDBY_ID
-WHERE BILLTYPEATOMIC = 'PHARMACY_DIRECT_PURCHASE'
-  AND COMPLETED = TRUE
-  AND EDITOR_ID IS NULL
-  AND COMPLETEDBY_ID IS NOT NULL;
+UPDATE bill
+SET editor = completed_by
+WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
+  AND completed = TRUE
+  AND editor IS NULL
+  AND completed_by IS NOT NULL;
 
 -- Check result of Step 3
 SELECT 'Updated editor fields' as description,
@@ -93,12 +92,12 @@ SELECT 'Updated editor fields' as description,
 
 -- Step 4: Update editedAt field using completedAt
 -- Sets editedAt to the timestamp when the transaction was completed
-UPDATE BILL
-SET EDITEDAT = COMPLETEDAT
-WHERE BILLTYPEATOMIC = 'PHARMACY_DIRECT_PURCHASE'
-  AND COMPLETED = TRUE
-  AND EDITEDAT IS NULL
-  AND COMPLETEDAT IS NOT NULL;
+UPDATE bill
+SET edited_at = completed_at
+WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
+  AND completed = TRUE
+  AND edited_at IS NULL
+  AND completed_at IS NOT NULL;
 
 -- Check result of Step 4
 SELECT 'Updated editedAt fields' as description,
@@ -111,54 +110,54 @@ SELECT 'Updated editedAt fields' as description,
 -- Count remaining bills with missing approval data (should be 0)
 SELECT 'Bills Still Missing Approval Data' as description,
        COUNT(*) as count
-FROM BILL
-WHERE BILLTYPEATOMIC = 'PHARMACY_DIRECT_PURCHASE'
-  AND COMPLETED = TRUE
-  AND (APPROVEUSER_ID IS NULL OR APPROVEAT IS NULL OR EDITOR_ID IS NULL OR EDITEDAT IS NULL);
+FROM bill
+WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
+  AND completed = TRUE
+  AND (approve_user IS NULL OR approve_at IS NULL OR editor IS NULL OR edited_at IS NULL);
 
 -- Count successfully updated bills
 SELECT 'Bills With Complete Approval Data' as description,
        COUNT(*) as count
-FROM BILL
-WHERE BILLTYPEATOMIC = 'PHARMACY_DIRECT_PURCHASE'
-  AND COMPLETED = TRUE
-  AND APPROVEUSER_ID IS NOT NULL
-  AND APPROVEAT IS NOT NULL
-  AND EDITOR_ID IS NOT NULL
-  AND EDITEDAT IS NOT NULL;
+FROM bill
+WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
+  AND completed = TRUE
+  AND approve_user IS NOT NULL
+  AND approve_at IS NOT NULL
+  AND editor IS NOT NULL
+  AND edited_at IS NOT NULL;
 
 -- Verify data consistency (approval fields should match completion fields for historical data)
 SELECT 'Data Consistency Check' as description,
        COUNT(*) as consistent_records
-FROM BILL
-WHERE BILLTYPEATOMIC = 'PHARMACY_DIRECT_PURCHASE'
-  AND COMPLETED = TRUE
-  AND APPROVEUSER_ID = COMPLETEDBY_ID
-  AND APPROVEAT = COMPLETEDAT
-  AND EDITOR_ID = COMPLETEDBY_ID
-  AND EDITEDAT = COMPLETEDAT;
+FROM bill
+WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
+  AND completed = TRUE
+  AND approve_user = completed_by
+  AND approve_at = completed_at
+  AND editor = completed_by
+  AND edited_at = completed_at;
 
 -- Sample of updated records for manual verification
 SELECT 'Sample Updated Records' as description;
-SELECT ID,
-       DEPTID,
-       BILLDATE,
-       COMPLETEDBY_ID,
-       COMPLETEDAT,
-       APPROVEUSER_ID,
-       APPROVEAT,
-       EDITOR_ID,
-       EDITEDAT,
+SELECT id,
+       deptId,
+       billdate,
+       completed_by,
+       completed_at,
+       approve_user,
+       approve_at,
+       editor,
+       edited_at,
        CASE
-         WHEN APPROVEUSER_ID = COMPLETEDBY_ID AND APPROVEAT = COMPLETEDAT
-              AND EDITOR_ID = COMPLETEDBY_ID AND EDITEDAT = COMPLETEDAT
+         WHEN approve_user = completed_by AND approve_at = completed_at
+              AND editor = completed_by AND edited_at = completed_at
          THEN 'CONSISTENT'
          ELSE 'INCONSISTENT'
        END as data_status
-FROM BILL
-WHERE BILLTYPEATOMIC = 'PHARMACY_DIRECT_PURCHASE'
-  AND COMPLETED = TRUE
-ORDER BY BILLDATE DESC
+FROM bill
+WHERE bill_type_atomic = 'PHARMACY_DIRECT_PURCHASE'
+  AND completed = TRUE
+ORDER BY billdate DESC
 LIMIT 10;
 
 -- ==============================================================================
