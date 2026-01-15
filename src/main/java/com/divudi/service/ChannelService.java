@@ -7,7 +7,6 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.ApiKeyType;
-import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillFinanceType;
 import com.divudi.core.data.BillType;
@@ -414,7 +413,7 @@ public class ChannelService {
         return billFacade.findAggregate(sql, params, TemporalType.TIMESTAMP);
     }
 
-    private List<ChannelServiceCategorywiseDetailsDTO> fetchChannelCategorywiseDetailsForShitEnd(Long shiftStartBillId, Long shiftEndBillId, Long createrId) {
+    private List<ChannelServiceCategorywiseDetailsDTO> fetchChannelCategorywiseDetailsForShiftEnd(Long shiftStartBillId, Long shiftEndBillId, Long createrId) {
 
         String sql = " select new com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsDTO("
                 + " b.singleBillSession.sessionInstance.originatingSession.category.name, "
@@ -494,7 +493,7 @@ public class ChannelService {
         Date shiftEndAt = (Date) billMetaData[3];
         Long shiftEndBillId = (Long) billMetaData[4];
 
-        List<ChannelServiceCategorywiseDetailsDTO> dtoList = fetchChannelCategorywiseDetailsForShitEnd(shiftStartBillId, shiftEndBillId, creatorId);
+        List<ChannelServiceCategorywiseDetailsDTO> dtoList = fetchChannelCategorywiseDetailsForShiftEnd(shiftStartBillId, shiftEndBillId, creatorId);
         
         ChannelServiceCategorywiseDetailsWrapperDTO wrapperDto = new ChannelServiceCategorywiseDetailsWrapperDTO();
         wrapperDto.setDtoList(dtoList);
