@@ -1101,7 +1101,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public double calculatRemainForMultiplePaymentTotal() {
 
-        if (settlePaymentMethod == PaymentMethod.MultiplePaymentMethods || paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+        if ((settlePaymentMethod == PaymentMethod.MultiplePaymentMethods || paymentMethod == PaymentMethod.MultiplePaymentMethods) && paymentMethodData != null) {
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
@@ -4065,7 +4065,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         fillBillSessions();
         billingStarted = false;
-        setSelectedSessionInstance(null);
+        //setSelectedSessionInstance(null);
 
     }
 
@@ -4252,7 +4252,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (printingBill.getBillType() != BillType.ChannelAgent) {
                 drawerController.updateDrawerForIns(p);
             }
-
         }
 
         boolean sendSmsAfterBooking = configOptionApplicationController.getBooleanValueByKey("Send SMS after Channel Booking", true);
