@@ -164,6 +164,14 @@ public class PharmacyConfigController implements Serializable {
     private boolean pettyCashA4Paper;
     private boolean pettyCashCustomPaper;
 
+    // Fund Transfer Receive Bill Settings
+    private boolean fundTransferReceivePosPaper;
+    private boolean fundTransferReceivePosPrintedPaper;
+    private boolean fundTransferReceiveFiveFivePaper;
+    private boolean fundTransferReceiveFiveFivePrintedPaper;
+    private boolean fundTransferReceiveA4Paper;
+    private boolean fundTransferReceiveA4PrintedPaper;
+
     public PharmacyConfigController() {
     }
     
@@ -311,6 +319,14 @@ public class PharmacyConfigController implements Serializable {
         pettyCashA4Paper = configOptionController.getBooleanValueByKey("Petty Cash Receipt A4 Paper", false);
         pettyCashCustomPaper = configOptionController.getBooleanValueByKey("Petty Cash Receipt Custom Paper", false);
 
+        // Fund Transfer Receive Bill Settings
+        fundTransferReceivePosPaper = configOptionController.getBooleanValueByKey("Fund Transfer Bill is POS Paper", false);
+        fundTransferReceivePosPrintedPaper = configOptionController.getBooleanValueByKey("Fund Transfer Bill is POS Printed Paper", false);
+        fundTransferReceiveFiveFivePaper = configOptionController.getBooleanValueByKey("Fund Transfer Bill is 5x5 Paper", true);
+        fundTransferReceiveFiveFivePrintedPaper = configOptionController.getBooleanValueByKey("Fund Transfer Bill is 5x5 Printed Paper", false);
+        fundTransferReceiveA4Paper = configOptionController.getBooleanValueByKey("Fund Transfer Bill is A4 Paper", false);
+        fundTransferReceiveA4PrintedPaper = configOptionController.getBooleanValueByKey("Fund Transfer Bill is A4 Printed Paper", false);
+
     }
 
     /**
@@ -442,6 +458,14 @@ public class PharmacyConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Petty Cash Receipt POS Paper", pettyCashPosPaper);
             configOptionController.setBooleanValueByKey("Petty Cash Receipt A4 Paper", pettyCashA4Paper);
             configOptionController.setBooleanValueByKey("Petty Cash Receipt Custom Paper", pettyCashCustomPaper);
+
+            // Fund Transfer Receive Bill Settings
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is POS Paper", fundTransferReceivePosPaper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is POS Printed Paper", fundTransferReceivePosPrintedPaper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is 5x5 Paper", fundTransferReceiveFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is 5x5 Printed Paper", fundTransferReceiveFiveFivePrintedPaper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is A4 Paper", fundTransferReceiveA4Paper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is A4 Printed Paper", fundTransferReceiveA4PrintedPaper);
 
             JsfUtil.addSuccessMessage("Configuration saved successfully");
 
@@ -707,6 +731,29 @@ public class PharmacyConfigController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving Petty Cash configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Fund Transfer Receive Bill configuration changes specifically
+     */
+    public void saveFundTransferReceiveConfig() {
+        try {
+            // Fund Transfer Receive Bill Settings
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is POS Paper", fundTransferReceivePosPaper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is POS Printed Paper", fundTransferReceivePosPrintedPaper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is 5x5 Paper", fundTransferReceiveFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is 5x5 Printed Paper", fundTransferReceiveFiveFivePrintedPaper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is A4 Paper", fundTransferReceiveA4Paper);
+            configOptionController.setBooleanValueByKey("Fund Transfer Bill is A4 Printed Paper", fundTransferReceiveA4PrintedPaper);
+
+            JsfUtil.addSuccessMessage("Fund Transfer Receive configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Fund Transfer Receive configuration: " + e.getMessage());
         }
     }
 
@@ -1465,6 +1512,55 @@ public class PharmacyConfigController implements Serializable {
 
     public void setPettyCashCustomPaper(boolean pettyCashCustomPaper) {
         this.pettyCashCustomPaper = pettyCashCustomPaper;
+    }
+
+    // Fund Transfer Receive Bill Getters and Setters
+    public boolean isFundTransferReceivePosPaper() {
+        return fundTransferReceivePosPaper;
+    }
+
+    public void setFundTransferReceivePosPaper(boolean fundTransferReceivePosPaper) {
+        this.fundTransferReceivePosPaper = fundTransferReceivePosPaper;
+    }
+
+    public boolean isFundTransferReceivePosPrintedPaper() {
+        return fundTransferReceivePosPrintedPaper;
+    }
+
+    public void setFundTransferReceivePosPrintedPaper(boolean fundTransferReceivePosPrintedPaper) {
+        this.fundTransferReceivePosPrintedPaper = fundTransferReceivePosPrintedPaper;
+    }
+
+    public boolean isFundTransferReceiveFiveFivePaper() {
+        return fundTransferReceiveFiveFivePaper;
+    }
+
+    public void setFundTransferReceiveFiveFivePaper(boolean fundTransferReceiveFiveFivePaper) {
+        this.fundTransferReceiveFiveFivePaper = fundTransferReceiveFiveFivePaper;
+    }
+
+    public boolean isFundTransferReceiveFiveFivePrintedPaper() {
+        return fundTransferReceiveFiveFivePrintedPaper;
+    }
+
+    public void setFundTransferReceiveFiveFivePrintedPaper(boolean fundTransferReceiveFiveFivePrintedPaper) {
+        this.fundTransferReceiveFiveFivePrintedPaper = fundTransferReceiveFiveFivePrintedPaper;
+    }
+
+    public boolean isFundTransferReceiveA4Paper() {
+        return fundTransferReceiveA4Paper;
+    }
+
+    public void setFundTransferReceiveA4Paper(boolean fundTransferReceiveA4Paper) {
+        this.fundTransferReceiveA4Paper = fundTransferReceiveA4Paper;
+    }
+
+    public boolean isFundTransferReceiveA4PrintedPaper() {
+        return fundTransferReceiveA4PrintedPaper;
+    }
+
+    public void setFundTransferReceiveA4PrintedPaper(boolean fundTransferReceiveA4PrintedPaper) {
+        this.fundTransferReceiveA4PrintedPaper = fundTransferReceiveA4PrintedPaper;
     }
 
 }
