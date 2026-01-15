@@ -2151,20 +2151,36 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                         cd.getPaymentMethodData().getCash().setTotalValue(refundAmount);
                         break;
                     case Card:
-                        cd.getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
+                        Institution cardBank = originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution();
+                        cd.getPaymentMethodData().getCreditCard().setInstitution(cardBank);
                         cd.getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
                         cd.getPaymentMethodData().getCreditCard().setComment(originalPayment.getComments());
                         cd.getPaymentMethodData().getCreditCard().setTotalValue(refundAmount);
+                        System.out.println("=== CARD BANK DEBUG ===");
+                        System.out.println("Original Payment ID: " + originalPayment.getId());
+                        System.out.println("Original Bank: " + (originalPayment.getBank() != null ? originalPayment.getBank().getName() + " (ID: " + originalPayment.getBank().getId() + ")" : "null"));
+                        System.out.println("Original Institution: " + (originalPayment.getInstitution() != null ? originalPayment.getInstitution().getName() + " (ID: " + originalPayment.getInstitution().getId() + ")" : "null"));
+                        System.out.println("Selected Bank: " + (cardBank != null ? cardBank.getName() + " (ID: " + cardBank.getId() + ")" : "null"));
+                        System.out.println("ComponentDetail Institution after set: " + (cd.getPaymentMethodData().getCreditCard().getInstitution() != null ? cd.getPaymentMethodData().getCreditCard().getInstitution().getName() + " (ID: " + cd.getPaymentMethodData().getCreditCard().getInstitution().getId() + ")" : "null"));
+                        System.out.println("=== END CARD BANK DEBUG ===");
                         break;
                     case Cheque:
-                        cd.getPaymentMethodData().getCheque().setInstitution(originalPayment.getBank());
+                        Institution chequeBank = originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution();
+                        cd.getPaymentMethodData().getCheque().setInstitution(chequeBank);
                         cd.getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
                         cd.getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
                         cd.getPaymentMethodData().getCheque().setComment(originalPayment.getComments());
                         cd.getPaymentMethodData().getCheque().setTotalValue(refundAmount);
+                        System.out.println("=== CHEQUE BANK DEBUG ===");
+                        System.out.println("Original Payment ID: " + originalPayment.getId());
+                        System.out.println("Original Bank: " + (originalPayment.getBank() != null ? originalPayment.getBank().getName() + " (ID: " + originalPayment.getBank().getId() + ")" : "null"));
+                        System.out.println("Original Institution: " + (originalPayment.getInstitution() != null ? originalPayment.getInstitution().getName() + " (ID: " + originalPayment.getInstitution().getId() + ")" : "null"));
+                        System.out.println("Selected Bank: " + (chequeBank != null ? chequeBank.getName() + " (ID: " + chequeBank.getId() + ")" : "null"));
+                        System.out.println("ComponentDetail Institution after set: " + (cd.getPaymentMethodData().getCheque().getInstitution() != null ? cd.getPaymentMethodData().getCheque().getInstitution().getName() + " (ID: " + cd.getPaymentMethodData().getCheque().getInstitution().getId() + ")" : "null"));
+                        System.out.println("=== END CHEQUE BANK DEBUG ===");
                         break;
                     case Slip:
-                        cd.getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                        cd.getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
                         cd.getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate() != null ? originalPayment.getPaymentDate() : originalPayment.getRealizedAt());
                         cd.getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
@@ -2223,6 +2239,20 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 // Add this component detail to the multiple payment method structure
                 getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().add(cd);
             }
+
+            // Final debug - show all component details that were created
+            System.out.println("=== FINAL MULTIPLE PAYMENT DEBUG ===");
+            System.out.println("Total ComponentDetails created: " + getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size());
+            for (int i = 0; i < getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size(); i++) {
+                ComponentDetail cd = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(i);
+                System.out.println("ComponentDetail[" + i + "] PaymentMethod: " + cd.getPaymentMethod());
+                if (cd.getPaymentMethod() == PaymentMethod.Card && cd.getPaymentMethodData().getCreditCard().getInstitution() != null) {
+                    System.out.println("ComponentDetail[" + i + "] Card Bank: " + cd.getPaymentMethodData().getCreditCard().getInstitution().getName());
+                } else if (cd.getPaymentMethod() == PaymentMethod.Cheque && cd.getPaymentMethodData().getCheque().getInstitution() != null) {
+                    System.out.println("ComponentDetail[" + i + "] Cheque Bank: " + cd.getPaymentMethodData().getCheque().getInstitution().getName());
+                }
+            }
+            System.out.println("=== END FINAL DEBUG ===");
         }
     }
 
@@ -2308,8 +2338,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
      * This ensures staff information is properly set in payment data before creating payments
      */
     private void transferStaffDataToPaymentMethodData() {
+        System.out.println("=== transferStaffDataToPaymentMethodData() CALLED ===");
         if (paymentMethodData == null) {
+            System.out.println("WARNING: paymentMethodData was null, creating new (THIS CLEARS ALL BANK DATA!)");
             paymentMethodData = new PaymentMethodData();
+        } else {
+            System.out.println("PaymentMethodData exists, preserving initialized data");
         }
 
         if (toStaff != null) {
@@ -2343,30 +2377,118 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     }
 
     /**
+     * Determines if we're in batch bill cancellation display mode
+     * where all payment fields should be read-only/disabled
+     */
+    public boolean isInBatchCancellationDisplayMode() {
+        return batchBill != null &&
+               originalCancellationPaymentMethod == PaymentMethod.MultiplePaymentMethods &&
+               paymentMethod == PaymentMethod.MultiplePaymentMethods;
+    }
+
+    /**
+     * Specialized method for batch bill cancellation payment method changes.
+     * NEVER clears data in batch cancellation context - only preserves or restores.
+     */
+    public void onPaymentMethodChangeForBatchCancellation() {
+        System.out.println("=== onPaymentMethodChangeForBatchCancellation() CALLED ===");
+        System.out.println("Current paymentMethod: " + paymentMethod);
+        System.out.println("Original paymentMethod: " + originalCancellationPaymentMethod);
+
+        // If payment method is null (shouldn't happen but handle gracefully)
+        if (paymentMethod == null) {
+            System.out.println("BATCH CANCELLATION: Payment method is null, restoring original");
+            paymentMethod = originalCancellationPaymentMethod;
+            return;
+        }
+
+        // CRITICAL: For batch cancellation with original multiple payments, NEVER clear data
+        if (originalCancellationPaymentMethod == PaymentMethod.MultiplePaymentMethods && batchBill != null) {
+            System.out.println("BATCH CANCELLATION: Protected mode - original was multiple payments");
+
+            if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+                // Staying with multiple payments - ensure data exists
+                if (paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null &&
+                    !paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+                    System.out.println("BATCH CANCELLATION: Data exists - preserving all bank details");
+                } else {
+                    System.out.println("BATCH CANCELLATION: Data missing - restoring from original payments");
+                    List<Payment> batchBillPayments = billBean.fetchBillPayments(batchBill);
+                    if (batchBillPayments != null && !batchBillPayments.isEmpty()) {
+                        initializePaymentDataFromOriginalPayments(batchBillPayments);
+                    }
+                }
+                return; // NEVER proceed to clearing logic
+            } else {
+                // User changing to single payment method - allow but don't clear multiple payment data yet
+                System.out.println("BATCH CANCELLATION: User selecting single payment: " + paymentMethod + " (preserving multiple data in background)");
+                // Initialize single payment data but keep multiple payment data intact
+                if (batchBill != null) {
+                    double netTotal = Math.abs(batchBill.getNetTotal());
+                    switch (paymentMethod) {
+                        case Cash:
+                            if (paymentMethodData.getCash() == null) {
+                                paymentMethodData.getCash().setTotalValue(netTotal);
+                            }
+                            break;
+                        case Card:
+                            if (paymentMethodData.getCreditCard() == null) {
+                                paymentMethodData.getCreditCard().setTotalValue(netTotal);
+                            }
+                            break;
+                        case Cheque:
+                            if (paymentMethodData.getCheque() == null) {
+                                paymentMethodData.getCheque().setTotalValue(netTotal);
+                            }
+                            break;
+                        // Add other cases as needed
+                    }
+                }
+                return; // NEVER proceed to clearing logic
+            }
+        }
+
+        // Non-batch-cancellation logic (regular individual bill cancellation)
+        System.out.println("BATCH CANCELLATION: Not in protected mode - proceeding with standard logic");
+
+        // For other cancellation types, follow standard logic
+        if (paymentMethod == originalCancellationPaymentMethod) {
+            System.out.println("BATCH CANCELLATION: Payment method matches original - preserving data");
+            return;
+        }
+
+        // This should rarely execute in batch cancellation context
+        System.out.println("BATCH CANCELLATION: WARNING - Creating new payment data (should be rare)");
+        paymentMethodData = new PaymentMethodData();
+    }
+
+    /**
      * Called when user changes payment method in cancellation form.
      * If user selects the original payment method, restores original payment details.
      * Otherwise, creates new payment data for the selected method.
      */
     public void onPaymentMethodChange() {
+        System.out.println("=== onPaymentMethodChange() CALLED ===");
+        System.out.println("Current paymentMethod: " + paymentMethod);
+        System.out.println("Original paymentMethod: " + originalCancellationPaymentMethod);
+
         // If payment method is null (shouldn't happen but handle gracefully)
         if (paymentMethod == null) {
+            System.out.println("Payment method is null, restoring original");
             // Restore original payment method
             paymentMethod = originalCancellationPaymentMethod;
             return;
         }
 
-        // If payment method matches the original, restore original payment details
-        if (paymentMethod == originalCancellationPaymentMethod && batchBill != null) {
-            // User switched back to original payment method - restore original details
-            paymentMethodData = new PaymentMethodData();
-            List<Payment> batchBillPayments = billBean.fetchBillPayments(batchBill);
-            if (batchBillPayments != null && !batchBillPayments.isEmpty()) {
-                initializePaymentDataFromOriginalPayments(batchBillPayments);
-            }
+        // If payment method matches the original, preserve the existing data
+        if (paymentMethod == originalCancellationPaymentMethod) {
+            System.out.println("Payment method matches original, preserving data - EARLY RETURN");
+            // Payment method hasn't actually changed - keep existing data
             return;
         }
 
         // User changed to a DIFFERENT payment method - reset data
+        System.out.println("Payment method CHANGED - CLEARING ALL DATA");
         paymentMethodData = new PaymentMethodData();
 
         // Initialize basic payment data based on newly selected payment method
