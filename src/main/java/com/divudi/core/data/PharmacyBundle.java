@@ -1296,9 +1296,18 @@ public class PharmacyBundle implements Serializable {
             return;
         }
 
-        r.setGrossTotal(b.getTotal());
+        double grossTotal = b.getTotal();
+        r.setGrossTotal(grossTotal);
         r.setNetTotal(b.getNetTotal());
-        r.setDiscount(b.getDiscount());
+
+        // Discount is inconsistently signed in database - some bills have positive, some negative
+        // Use absolute value and apply sign based on gross total (which is consistently signed)
+        double discountValue = Math.abs(b.getDiscount());
+        if (grossTotal < 0) {
+            discountValue = -discountValue;
+        }
+        r.setDiscount(discountValue);
+
         r.setServiceCharge(b.getMargin());
         r.setActualTotal(b.getTotal() - b.getMargin());
 
@@ -1385,9 +1394,18 @@ public class PharmacyBundle implements Serializable {
             return;
         }
 
-        r.setGrossTotal(nullSafeDouble(b.getTotal()));
+        double grossTotal = nullSafeDouble(b.getTotal());
+        r.setGrossTotal(grossTotal);
         r.setNetTotal(nullSafeDouble(b.getNetTotal()));
-        r.setDiscount(nullSafeDouble(b.getDiscount()));
+
+        // Discount is inconsistently signed in database - some bills have positive, some negative
+        // Use absolute value and apply sign based on gross total (which is consistently signed)
+        double discountValue = Math.abs(nullSafeDouble(b.getDiscount()));
+        if (grossTotal < 0) {
+            discountValue = -discountValue;
+        }
+        r.setDiscount(discountValue);
+
         r.setServiceCharge(nullSafeDouble(b.getMargin()));
         r.setActualTotal(nullSafeDouble(b.getTotal()) - nullSafeDouble(b.getMargin()));
 
