@@ -337,8 +337,8 @@ A: Large batch cancellations may require supervisor approval before processing. 
 A: For significant cash refunds, coordinate with your supervisor to ensure adequate cash availability and proper cash drawer reconciliation.
 
 ## Related Features
-- [OPD Bill Search](OPD-Bill-Search.md)
-- [Individual Bill Cancellation](Individual-Bill-Cancellation.md)
+- [OPD Bill Search](https://github.com/hmislk/hmis/wiki/OPD-Bill-Search)
+- [Individual Bill Cancellation](https://github.com/hmislk/hmis/wiki/Individual-Bill-Cancellation)
 
 ## Support
 

@@ -90,7 +90,7 @@ The search results display two main sections:
 
 1. Find the bill in search results
 2. Click the **Cancel** button (if visible)
-3. This opens the [Individual Bill Cancellation](Individual-Bill-Cancellation.md) process
+3. This opens the [Individual Bill Cancellation](https://github.com/hmislk/hmis/wiki/Individual-Bill-Cancellation) process
 
 > **Note**: If the Cancel button is not visible, contact your administrator to request cancellation privileges.
 
@@ -98,7 +98,7 @@ The search results display two main sections:
 
 1. Find the batch bill in search results
 2. Click the **Cancel Batch** button (if visible)
-3. This opens the [Batch Bill Cancellation](Batch-Bill-Cancellation.md) process
+3. This opens the [Batch Bill Cancellation](https://github.com/hmislk/hmis/wiki/Batch-Bill-Cancellation) process
 
 > **Note**: If the Cancel Batch button is not visible, contact your administrator to request batch cancellation privileges.
 
@@ -209,8 +209,8 @@ A: This depends on your system configuration. Generally, you can search for bill
 A: Export functionality depends on your user permissions and system configuration. Look for an "Export" button in the search results area, or contact your administrator about export options.
 
 ## Related Features
-- [Individual Bill Cancellation](Individual-Bill-Cancellation.md)
-- [Batch Bill Cancellation](Batch-Bill-Cancellation.md)
+- [Individual Bill Cancellation](https://github.com/hmislk/hmis/wiki/Individual-Bill-Cancellation)
+- [Batch Bill Cancellation](https://github.com/hmislk/hmis/wiki/Batch-Bill-Cancellation)
 
 ## Support
 

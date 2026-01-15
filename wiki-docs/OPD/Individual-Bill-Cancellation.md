@@ -293,8 +293,8 @@ A: This depends on hospital policy. Generally, the patient or their authorized r
 A: Contact your supervisor immediately. Cancellations cannot be easily reversed, and a new bill may need to be created for the correct services.
 
 ## Related Features
-- [OPD Bill Search](OPD-Bill-Search.md)
-- [Batch Bill Cancellation](Batch-Bill-Cancellation.md)
+- [OPD Bill Search](https://github.com/hmislk/hmis/wiki/OPD-Bill-Search)
+- [Batch Bill Cancellation](https://github.com/hmislk/hmis/wiki/Batch-Bill-Cancellation)
 
 ## Support
 
