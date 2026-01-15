@@ -1,4 +1,3 @@
-
 package com.divudi.core.data.dto;
 
 import java.util.Date;
@@ -9,7 +8,7 @@ import java.util.List;
  * @author CHINTHAKA
  */
 public class ChannelServiceCategorywiseDetailsWrapperDTO {
-    
+
     private Long shiftStartBillId;
     private Long shiftEndBillId;
     private String cashierUserName;
@@ -25,7 +24,9 @@ public class ChannelServiceCategorywiseDetailsWrapperDTO {
         this.billingEndDate = billingEndDate;
         this.dtoList = dtoList;
     }
-    
+
+    public ChannelServiceCategorywiseDetailsWrapperDTO() {
+    }
 
     public Long getShiftStartBillId() {
         return shiftStartBillId;
@@ -74,7 +75,5 @@ public class ChannelServiceCategorywiseDetailsWrapperDTO {
     public void setDtoList(List<ChannelServiceCategorywiseDetailsDTO> dtoList) {
         this.dtoList = dtoList;
     }
-    
-    
-    
+
 }
