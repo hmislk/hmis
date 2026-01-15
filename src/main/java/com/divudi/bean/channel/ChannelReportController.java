@@ -540,6 +540,7 @@ public class ChannelReportController implements Serializable {
 
         private long bsId;
         private long billId;
+        private BillTypeAtomic billTypeAtomic;
         private Date appoinmentDate;
         private Date billedDate;
         private String billedBy;
@@ -553,9 +554,10 @@ public class ChannelReportController implements Serializable {
         private boolean isCancelled;
         private boolean isRefunded;
 
-        public ChannelIncomeDetailDto(long bsId, long billId, Date appoinmentDate, Date billedDate, String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded) {
+        public ChannelIncomeDetailDto(long bsId, long billId, BillTypeAtomic billTypeAtomic, Date appoinmentDate, Date billedDate, String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded) {
             this.bsId = bsId;
             this.billId = billId;
+            this.billTypeAtomic = billTypeAtomic;
             this.appoinmentDate = appoinmentDate;
             this.billedDate = billedDate;
             this.billedBy = billedBy;
@@ -568,6 +570,14 @@ public class ChannelReportController implements Serializable {
             this.remark = remark;
             this.isCancelled = isCancelled;
             this.isRefunded = isRefunded;
+        }
+
+        public BillTypeAtomic getBillTypeAtomic() {
+            return billTypeAtomic;
+        }
+
+        public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+            this.billTypeAtomic = billTypeAtomic;
         }
 
         public boolean isIsCancelled() {

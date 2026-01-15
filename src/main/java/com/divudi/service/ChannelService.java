@@ -1362,8 +1362,10 @@ public class ChannelService {
     }
 
     public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelIncomeByUser(Date fromDate, Date toDate, Institution institution, WebUser user, List<Category> categoryList, String reportStatus, String paidStatus) {
+
         String sql = "select new com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto(bs.id, "
                 + "bill.id, "
+                + "bill.billTypeAtomic, "
                 + "session.sessionDate, "
                 + "bill.createdAt, "
                 + "bill.creater.name, "
@@ -1519,8 +1521,8 @@ public class ChannelService {
                     summeryDto.setTotalCancelAppoinments(summeryDto.getTotalCancelAppoinments() + 1);
                     summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() - 1);
                     summeryDto.setCancelTotal(summeryDto.getCancelTotal() + dto.getTotalAppoinmentFee());
-                } else if (dto.isIsRefunded()) {
-                    summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments() - 1);
+                } else if (dto.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT) {
+                    summeryDto.setTotalActiveAppoinments(summeryDto.getTotalActiveAppoinments());
                     summeryDto.setTotalRefundAppoinments(summeryDto.getTotalRefundAppoinments() + 1);
                     summeryDto.setRefundTotal(summeryDto.getRefundTotal() + dto.getTotalAppoinmentFee());
                 } else {
