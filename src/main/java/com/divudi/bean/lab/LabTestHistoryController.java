@@ -478,7 +478,7 @@ public class LabTestHistoryController implements Serializable {
 //  6. Reports Issue
     public List<LabTestHistoryLight> getReportIssueHistorys(PatientReport report) {
         List<TestHistoryType> types = new ArrayList<>();
-        types.add(TestHistoryType.REPORT_ISSUE_PATIENT);
+        types.add(TestHistoryType.REPORT_ISSUE_STAFF);
         types.add(TestHistoryType.REPORT_ISSUE_PATIENT);
         return getReportLabTestHistorys(report,types);
     }

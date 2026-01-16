@@ -2992,9 +2992,12 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Error in Patient Investigation");
             return "";
         }
-
+        laboratoryManagementController.setReportHandoverStaff(null);
         return navigateToCreatedPatientReport(pi);
     }
+    
+    @Inject
+    LaboratoryManagementController laboratoryManagementController;
 
     public String navigateToUploadNewPatientReport(PatientInvestigation pi) {
         if (pi == null) {
