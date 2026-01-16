@@ -126,8 +126,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         clearDataForPatientDeposit();
         patient = p;
         current = getDepositOfThePatient(patient, sessionController.getDepartment());
-        fillLatestPatientDeposits(current);
-        fillLatestPatientDepositHistory(current);
         fillLatestPatientDepositsDto(current);
         fillLatestPatientDepositHistoryDto(current);
         return "/patient_deposit/receive?faces-redirect=true";
@@ -179,8 +177,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             return;
         }
         current = getDepositOfThePatient(patient, sessionController.getDepartment());
-        fillLatestPatientDeposits(current);
-        fillLatestPatientDepositHistory(current);
         fillLatestPatientDepositsDto(current);
         fillLatestPatientDepositHistoryDto(current);
     }
@@ -192,8 +188,6 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             return;
         }
         current = getDepositOfThePatient(patient, sessionController.getDepartment());
-        fillLatestPatientDeposits(current);
-        fillLatestPatientDepositHistory(current);
         fillLatestPatientDepositsDto(current);
         fillLatestPatientDepositHistoryDto(current);
     }
