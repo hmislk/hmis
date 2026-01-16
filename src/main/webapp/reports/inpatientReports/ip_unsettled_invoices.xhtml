@@ -235,84 +235,96 @@
                             </p:selectOneMenu>
 
                             <!-- Service Centre -->
-<!--                            <h:panelGroup>
+                            <h:panelGroup>
                                 <h:outputText styleClass="fa fa-building mr-2"/>
                                 <p:outputLabel value="Service Center" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100">
+                            <p:selectOneMenu value="#{inwardReportController.serviceCenter}" filter="true" class="w-100">
                                 <f:selectItem itemLabel="All Service Centers"/>
+                                <f:selectItems
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                    var="dept"
+                                    itemLabel="#{dept.name}"
+                                    itemValue="#{dept}"/>
 
                             </p:selectOneMenu>                        
 
 
-                             Sponsor 
+                            <!--Sponsor--> 
                             <h:panelGroup>
                                 <h:outputText styleClass="fa fa-user mr-2"/>
                                 <p:outputLabel value="Sponsor Name" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100">
+                            <p:selectOneMenu value="#{inwardReportController.sponsor}" filter="true" class="w-100">
                                 <f:selectItem itemLabel="All Sponsors"/>
-
+                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
+                                                itemValue="#{cc.attrs}" ></f:selectItems>
                             </p:selectOneMenu>
 
-                             Discharge Type 
+                            <!--Discharge Type--> 
                             <h:panelGroup>
                                 <h:outputText styleClass="fa fa-medkit mr-2"/>
                                 <p:outputLabel value="Discharge Type" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100">
+                            <p:selectOneMenu value="#{inwardReportController.dischargeType}" filter="true" class="w-100">
                                 <f:selectItem itemLabel="All"/>
 
                             </p:selectOneMenu>
 
-                             Patient Category 
+                            <!--Patient Category--> 
                             <h:panelGroup>
                                 <h:outputText styleClass="fa fa-user mr-2"/>
                                 <p:outputLabel value="Patient Category" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100">
+                            <p:selectOneMenu value="#{inwardReportController.patientCategory}" filter="true" class="w-100">
                                 <f:selectItem itemLabel="All Categories"/>
 
                             </p:selectOneMenu>
 
-                             Admission Status 
+                            <!--Admission Status--> 
                             <h:panelGroup>
                                 <h:outputText styleClass="fa fa-user mr-2"/>
                                 <p:outputLabel value="Admission Status" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100">
+                            <p:selectOneMenu value="#{inwardReportController.admissionStatus}" filter="true" class="w-100">
                                 <f:selectItem itemLabel="All Admission Statuses"/>
+                                <f:selectItems value="#{enumController.admissionStatuses}"
+                                               var="status"
+                                               itemValue="#{status}" itemLabel="#{status.label}" />
                             </p:selectOneMenu>
 
-                             Admission Types 
+                            <!--Admission Types--> 
                             <h:panelGroup>
                                 <h:outputText styleClass="fa fa-user mr-2"/>
                                 <p:outputLabel value="Admission Types" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100">
+                            <p:selectOneMenu value="#{inwardReportController.admissionType}" filter="true" class="w-100">
                                 <f:selectItem itemLabel="All"/>
+                                <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" ></f:selectItems>
 
                             </p:selectOneMenu>
 
-                             Payment Mode 
+                            <!--Payment Mode--> 
                             <h:panelGroup>
                                 <h:outputText styleClass="fa fa-credit-card mr-2"/>
                                 <p:outputLabel value="Payment Mode" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100">
+                            <p:selectOneMenu value="#{inwardReportController.paymentMethod}" filter="true" class="w-100">
                                 <f:selectItem itemLabel="All"/>
+                                <f:selectItems  value="#{enumController.paymentMethodsForIpReports}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.label}"></f:selectItems>
 
                             </p:selectOneMenu>
 
-                             Room Category 
+                            <!--Room Category--> 
                             <h:panelGroup>
                                 <h:outputText styleClass="fa fa-bed mr-2"/>
                                 <p:outputLabel value="Room Category" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100">
+                            <p:selectOneMenu value="#{inwardReportController.roomCategory}" filter="true" class="w-100">
                                 <f:selectItem itemLabel="All"/>
+                                <f:selectItems value="#{roomCategoryController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
 
-                            </p:selectOneMenu>-->
+                            </p:selectOneMenu>
 
                         </p:panelGrid>
 
@@ -357,7 +369,7 @@
                                             Institution
                                         </td>
                                         <td style="padding: 8px; border: 1px solid #000000; width: 70%;">
-
+                                            <h:outputText value="#{inwardReportController.institution eq null ? 'All Institution' : inwardReportController.institution.name}" />
                                         </td>
                                     </tr>
                                     <tr>
@@ -365,7 +377,7 @@
                                             Site
                                         </td>
                                         <td style="padding: 8px; border: 1px solid #000000; width: 70%;">
-
+                                            <h:outputText value="#{inwardReportController.site eq null ? 'All Sites' : inwardReportController.site.name}" />
                                         </td>
                                     </tr>
                                     <tr>
@@ -373,7 +385,7 @@
                                             Department
                                         </td>
                                         <td style="padding: 8px; border: 1px solid #000000; width: 70%;">
-
+                                            <h:outputText value="#{inwardReportController.department eq null ? 'All Departments' : inwardReportController.department.name}" />
                                         </td>
                                     </tr>
                                     <tr>
@@ -381,7 +393,9 @@
                                             From Date
                                         </td>
                                         <td style="padding: 8px; border: 1px solid #000000; width: 70%;" >
-
+                                            <h:outputText value="#{inwardReportController.fromDate}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
                                         </td>
                                     </tr>
                                     <tr>
@@ -389,7 +403,9 @@
                                             To Date
                                         </td>
                                         <td style="padding: 8px; border: 1px solid #000000; width: 70%;">
-
+                                            <h:outputText value="#{inwardReportController.toDate}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
                                         </td>
                                     </tr>
                                 </table>
@@ -400,71 +416,73 @@
                             <h:outputText value="Report Data:" style="font-weight: bold; font-size: 16px;" />
                             <!-- Results Table -->
                             <div class ="mt-3 mb-5 ">
-                                <p:dataTable id="tbl" value="#{inwardReportController.admissions}" var="f" rows="10" class="w-100" paginator="true" paginatorPosition="bottom">
+                                <p:dataTable id="tbl" value="#{inwardReportController.admissions}" var="f" rows="10" class="w-100" rowIndexVar="rowIndex" paginator="true" paginatorPosition="bottom">
 
 
                                     <p:column headerText="SI No">
-                                        <h:outputText value="#{f.createdAt}" />
+                                        <h:outputText value="#{rowIndex+1}" />
                                     </p:column>
 
                                     <p:column headerText="MRN">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{f.patient.phn}" />
                                     </p:column>
 
                                     <p:column headerText="Patient Name">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{f.patient.person.nameWithTitle}" />
                                     </p:column>
 
                                     <p:column headerText="Mobile Number">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{f.patient.mobileNumberStringTransient}" />
                                     </p:column>
 
                                     <p:column headerText="Age">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{f.patient.age}" />
                                     </p:column>
 
                                     <p:column headerText="Location">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{f.roomAdmitted}" />
                                     </p:column>
 
                                     <p:column headerText="Discharged On">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{f.dateOfDischarge}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
                                     </p:column>
 
                                     <p:column headerText="Invoice Status">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{f.patient.person.nameWithTitle}" />
                                     </p:column>
 
                                     <p:column headerText="Total Amount">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{f.grantTotal}" />
                                     </p:column>
 
                                     <p:column headerText="Collected Amount">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{f.finalBill.paidAmount}" />
                                     </p:column>
 
                                     <p:column headerText="Amount to be Paid">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{f.finalBill.netTotal - f.finalBill.paidAmount}" />
                                     </p:column>
 
                                     <p:column headerText="Discharged By">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{f.creater.name}" />
                                     </p:column>
 
                                     <!-- FOOTER  -->
                                     <f:facet name="footer">
                                         <div class="d-flex justify-content-between w-100">
-
                                             <div>
-                                                <bold>Generated By: </bold>
-                                                <h:outputText value="" />
+                                                <h:outputText value="Generated By: " style="font-weight: bold;" />
+                                                <h:outputText value="#{sessionController.loggedUser.name}" />
                                             </div>
 
                                             <div>
-                                                <bold>Generated On: </bold>
-                                                <h:outputText value="" />
+                                                <h:outputText value="Generated On: " style="font-weight: bold;" />
+                                                <h:outputText value="#{sessionController.currentDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
                                             </div>
-
                                         </div>
                                     </f:facet>
                                 </p:dataTable>

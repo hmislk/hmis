@@ -14,6 +14,7 @@ import com.divudi.core.data.dto.InwardAdmissionDTO;
 import com.divudi.core.data.dto.PaymentTypeAdmissionDTO;
 import com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.inward.AdmissionStatus;
 import com.divudi.core.data.inward.InwardChargeType;
 
 import com.divudi.core.entity.Bill;
@@ -31,6 +32,7 @@ import com.divudi.core.entity.Speciality;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.facade.AdmissionFacade;
 import com.divudi.core.facade.AdmissionTypeFacade;
@@ -148,6 +150,12 @@ public class InwardReportController implements Serializable {
     double totalBilledBill;
     double totalCancelledBill;
     double totalRefundBill;
+    private Department serviceCenter;
+    private Institution sponsor;
+    private String dischargeType;
+    private String patientCategory;
+    private AdmissionStatus admissionStatus;
+    private RoomCategory roomCategory;
 
     // for disscharge book
     boolean dischargeDate = true;
@@ -2479,6 +2487,54 @@ public class InwardReportController implements Serializable {
 
     public void setConsultant(Staff consultant) {
         this.consultant = consultant;
+    }
+
+    public Department getServiceCenter() {
+        return serviceCenter;
+    }
+
+    public void setServiceCenter(Department serviceCenter) {
+        this.serviceCenter = serviceCenter;
+    }
+
+    public Institution getSponsor() {
+        return sponsor;
+    }
+
+    public void setSponsor(Institution sponsor) {
+        this.sponsor = sponsor;
+    }
+
+    public String getDischargeType() {
+        return dischargeType;
+    }
+
+    public void setDischargeType(String dischargeType) {
+        this.dischargeType = dischargeType;
+    }
+
+    public String getPatientCategory() {
+        return patientCategory;
+    }
+
+    public void setPatientCategory(String patientCategory) {
+        this.patientCategory = patientCategory;
+    }
+
+    public AdmissionStatus getAdmissionStatus() {
+        return admissionStatus;
+    }
+
+    public void setAdmissionStatus(AdmissionStatus admissionStatus) {
+        this.admissionStatus = admissionStatus;
+    }
+
+    public RoomCategory getRoomCategory() {
+        return roomCategory;
+    }
+
+    public void setRoomCategory(RoomCategory roomCategory) {
+        this.roomCategory = roomCategory;
     }
 
     public class IncomeByCategoryRecord {
