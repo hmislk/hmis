@@ -138,15 +138,16 @@ public class PatientDepositHistoryDto implements Serializable {
     }
 
     // Constructor for latest transactions list display (minimal fields)
+    // Note: Uses BillTypeAtomic enum directly since .label is not a persisted field
     public PatientDepositHistoryDto(Long id, Date createdAt, Double transactionValue,
             HistoryType historyType, String paymentMethodLabel,
-            String billTypeAtomicLabel, String billDeptId) {
+            BillTypeAtomic billTypeAtomicEnum, String billDeptId) {
         this.id = id;
         this.createdAt = createdAt;
         this.transactionValue = transactionValue;
         this.historyType = historyType;
         this.paymentMethodLabel = paymentMethodLabel;
-        this.billTypeAtomicLabel = billTypeAtomicLabel;
+        this.billTypeAtomicLabel = billTypeAtomicEnum != null ? billTypeAtomicEnum.getLabel() : null;
         this.billDeptId = billDeptId;
     }
 
