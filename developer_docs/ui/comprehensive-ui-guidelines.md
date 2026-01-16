@@ -6,6 +6,19 @@
 - Prefer simple, template-aligned solutions before adding custom code or CSS.
 - Keep behaviour aligned with centralized configuration (`configOptionApplicationController`) and feature toggles.
 
+## Critical Rules for Claude Code
+
+**🚨 These rules MUST be followed when working on UI tasks:**
+
+1. **UI-ONLY CHANGES**: When UI improvements are requested, make ONLY frontend/XHTML changes
+2. **NO BACKEND MODIFICATIONS**: Do NOT add new controller properties, methods, or backend dependencies unless explicitly requested
+3. **KEEP IT SIMPLE**: Use existing controller properties and methods - avoid introducing filteredValues, globalFilter, or new backend logic
+4. **FRONTEND FOCUS**: Stick to HTML/CSS styling, PrimeFaces component attributes, and layout improvements
+5. **ERP UI RULE**: Use `h:outputText` instead of HTML headings (h1-h6)
+6. **PRIMEFACES CSS**: Use PrimeFaces button classes, not Bootstrap button classes
+7. **XHTML STRUCTURE**: HTML DOCTYPE with `ui:composition` and template inside `h:body`
+8. **XML ENTITIES**: Always escape ampersands as `&amp;` in XHTML attributes
+
 ---
 
 ## Page Structure
