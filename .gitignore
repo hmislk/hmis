@@ -49,3 +49,6 @@ hs_err_pid*.log
 *-caveat-the-messages-below-*.txt
 claude-*.jsonl
 .claude-session*
+
+# Claude Code temporary working directories
+tmpclaude-*
