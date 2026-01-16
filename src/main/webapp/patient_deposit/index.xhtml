@@ -101,6 +101,13 @@
                                                 action="#{patientDepositBalanceReportController.navigateToPatientDepositBalanceReport()}"
                                                 class="w-100 m-1 ui-button-help"/>
                                             <p:commandButton
+                                                icon="pi pi-user"
+                                                ajax="false"
+                                                value="Patient Deposit Balance - By Patient"
+                                                title="View patient deposit balance for a specific patient"
+                                                action="#{patientSpecificDepositBalanceReportController.navigateToPatientSpecificDepositBalanceReport()}"
+                                                class="w-100 m-1 ui-button-help"/>
+                                            <p:commandButton
                                                 icon="pi pi-list"
                                                 ajax="false"
                                                 value="Patient Deposit Histories"
