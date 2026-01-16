@@ -440,7 +440,7 @@
                                     </p:column>
 
                                     <p:column headerText="Location">
-                                        <h:outputText value="#{f.currentPatientRoom}" />
+                                        <h:outputText value="#{f.currentPatientRoom.roomFacilityCharge.roomCategory.name}" />
                                     </p:column>
 
                                     <p:column headerText="Discharged On">
@@ -450,19 +450,20 @@
                                     </p:column>
 
                                     <p:column headerText="Invoice Status">
-                                        <h:outputText value="#{f.patient.person.nameWithTitle}" />
+                                        <h:outputText value="#{f.paymentFinalized}" rendered="#{f.paymentFinalized eq true}"/>
+                                        <h:outputText value="Pending        " rendered="#{f.paymentFinalized ne true}"/>
                                     </p:column>
 
                                     <p:column headerText="Total Amount">
-                                        <h:outputText value="#{f.grantTotal}" />
+                                        <h:outputText value="#{f.netTotal}" />
                                     </p:column>
 
                                     <p:column headerText="Collected Amount">
-                                        <h:outputText value="#{f.finalBill.paidAmount}" />
+                                        <h:outputText value="#{f.creditPaidAmount}" />
                                     </p:column>
 
                                     <p:column headerText="Amount to be Paid">
-                                        <h:outputText value="#{f.finalBill.netTotal - f.finalBill.paidAmount}" />
+                                        <h:outputText value="#{f.netTotal - f.creditPaidAmount}" />
                                     </p:column>
 
                                     <p:column headerText="Discharged By">

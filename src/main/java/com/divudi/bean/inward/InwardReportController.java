@@ -593,6 +593,77 @@ public class InwardReportController implements Serializable {
             params.put("iafd", invoiceApprovedFromDate);
             params.put("iatd", invoiceApprovedToDate);
         }
+        // Institution filter
+        if (institution != null) {
+            jpql.append(" AND c.institution = :inst ");
+            params.put("inst", institution);
+        }
+
+        // Site filter
+        if (site != null) {
+            jpql.append(" AND c.department.site = :site ");
+            params.put("site", site);
+        }
+
+        // Department filter
+        if (department != null) {
+            jpql.append(" AND c.department = :dept ");
+            params.put("dept", department);
+        }
+
+        // Consultant filter
+        if (consultant != null) {
+            jpql.append(" AND c.referringConsultant = :cons ");
+            params.put("cons", consultant);
+        }
+
+        // Service Center filter
+        if (serviceCenter != null) {
+            jpql.append(" AND c.serviceCenter = :sc ");
+            params.put("sc", serviceCenter);
+        }
+
+        // Sponsor/Credit Company filter
+        if (sponsor != null) {
+            jpql.append(" AND c.creditCompany = :sponsor ");
+            params.put("sponsor", sponsor);
+        }
+
+        // Discharge Type filter (assuming it's stored as a string property)
+        if (dischargeType != null && !dischargeType.trim().isEmpty()) {
+            jpql.append(" AND c.dischargeType = :dt ");
+            params.put("dt", dischargeType);
+        }
+
+        // Patient Category filter (assuming it's stored as a string property)
+        if (patientCategory != null && !patientCategory.trim().isEmpty()) {
+            jpql.append(" AND c.patient.category = :pc ");
+            params.put("pc", patientCategory);
+        }
+
+        // Admission Status filter
+        if (admissionStatus != null) {
+            jpql.append(" AND c.admissionStatus = :as ");
+            params.put("as", admissionStatus);
+        }
+
+        // Admission Type filter
+        if (admissionType != null) {
+            jpql.append(" AND c.admissionType = :at ");
+            params.put("at", admissionType);
+        }
+
+        // Payment Method filter
+        if (paymentMethod != null) {
+            jpql.append(" AND c.paymentMethod = :pm ");
+            params.put("pm", paymentMethod);
+        }
+
+        // Room Category filter
+        if (roomCategory != null) {
+            jpql.append(" AND c.currentPatientRoom.roomFacilityCharge.roomCategory = :rc ");
+            params.put("rc", roomCategory);
+        }
 
         jpql.append(" ORDER BY c.dateOfAdmission ");
 
