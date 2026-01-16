@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.Duration;
 import java.util.Properties;
 
 /**
@@ -125,5 +126,47 @@ public class VersionController {
 
     public String getGitBuildTime() {
         return gitBuildTime;
+    }
+
+    /**
+     * Gets the time elapsed since the build in a human-readable format
+     * @return A string like "2 minutes ago", "3 hours ago", "14 days ago", etc.
+     */
+    public String getGitBuildTimeElapsed() {
+        if (gitBuildTime == null || gitBuildTime.isEmpty()) {
+            return null;
+        }
+
+        try {
+            // Parse the formatted build time back to ZonedDateTime
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z");
+            ZonedDateTime buildTime = ZonedDateTime.parse(gitBuildTime, formatter);
+            ZonedDateTime now = ZonedDateTime.now(buildTime.getZone());
+
+            Duration duration = Duration.between(buildTime, now);
+            long totalMinutes = duration.toMinutes();
+            long totalHours = duration.toHours();
+            long totalDays = duration.toDays();
+
+            if (totalMinutes < 1) {
+                return "just now";
+            } else if (totalMinutes < 60) {
+                return totalMinutes == 1 ? "1 minute ago" : totalMinutes + " minutes ago";
+            } else if (totalHours < 24) {
+                return totalHours == 1 ? "1 hour ago" : totalHours + " hours ago";
+            } else if (totalDays < 30) {
+                return totalDays == 1 ? "1 day ago" : totalDays + " days ago";
+            } else if (totalDays < 365) {
+                long months = totalDays / 30;
+                return months == 1 ? "1 month ago" : months + " months ago";
+            } else {
+                long years = totalDays / 365;
+                return years == 1 ? "1 year ago" : years + " years ago";
+            }
+        } catch (Exception e) {
+            // If parsing fails, return null
+            e.printStackTrace();
+            return null;
+        }
     }
 }
