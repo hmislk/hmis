@@ -572,8 +572,15 @@ public class InwardReportController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
-        jpql.append("SELECT c FROM Admission c ")
-                .append("WHERE c.retired = :ret ")
+        jpql.append("SELECT c FROM Admission c ");
+
+        // Add explicit LEFT JOINs for room category filtering
+        if (roomCategory != null) {
+            jpql.append("LEFT JOIN c.currentPatientRoom room ")
+                    .append("LEFT JOIN room.roomFacilityCharge rfc ");
+        }
+
+        jpql.append("WHERE c.retired = :ret ")
                 .append("AND c.dateOfAdmission BETWEEN :fd AND :td ")
                 .append("AND c.discharged = TRUE ")
                 .append("AND c.paymentFinalized = FALSE ");
@@ -582,90 +589,90 @@ public class InwardReportController implements Serializable {
         params.put("fd", fromDate);
         params.put("td", toDate);
 
+        // Discharge date filter
         if (dischargeFromDate != null && dischargeToDate != null) {
-            jpql.append(" AND c.dateOfDischarge BETWEEN :dfd AND :dtd ");
+            jpql.append("AND c.dateOfDischarge BETWEEN :dfd AND :dtd ");
             params.put("dfd", dischargeFromDate);
             params.put("dtd", dischargeToDate);
         }
 
+        // Invoice approved date filter - guard against null finalBill
         if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
-            jpql.append(" AND c.finalBill.createdAt BETWEEN :iafd AND :iatd ");
+            jpql.append("AND c.finalBill IS NOT NULL ")
+                    .append("AND c.finalBill.createdAt BETWEEN :iafd AND :iatd ");
             params.put("iafd", invoiceApprovedFromDate);
             params.put("iatd", invoiceApprovedToDate);
         }
+
         // Institution filter
         if (institution != null) {
-            jpql.append(" AND c.institution = :inst ");
+            jpql.append("AND c.institution = :inst ");
             params.put("inst", institution);
         }
 
         // Site filter
         if (site != null) {
-            jpql.append(" AND c.department.site = :site ");
+            jpql.append("AND c.department.site = :site ");
             params.put("site", site);
         }
 
         // Department filter
         if (department != null) {
-            jpql.append(" AND c.department = :dept ");
+            jpql.append("AND c.department = :dept ");
             params.put("dept", department);
         }
 
         // Consultant filter
         if (consultant != null) {
-            jpql.append(" AND c.referringConsultant = :cons ");
+            jpql.append("AND c.referringConsultant = :cons ");
             params.put("cons", consultant);
         }
 
         // Service Center filter
         if (serviceCenter != null) {
-            jpql.append(" AND c.serviceCenter = :sc ");
+            jpql.append("AND c.serviceCenter = :sc ");
             params.put("sc", serviceCenter);
         }
 
         // Sponsor/Credit Company filter
         if (sponsor != null) {
-            jpql.append(" AND c.creditCompany = :sponsor ");
+            jpql.append("AND c.creditCompany = :sponsor ");
             params.put("sponsor", sponsor);
         }
 
-        // Discharge Type filter (assuming it's stored as a string property)
+        // Discharge Type filter
         if (dischargeType != null && !dischargeType.trim().isEmpty()) {
-            jpql.append(" AND c.dischargeType = :dt ");
+            jpql.append("AND c.dischargeType = :dt ");
             params.put("dt", dischargeType);
         }
 
-        // Patient Category filter (assuming it's stored as a string property)
-        if (patientCategory != null && !patientCategory.trim().isEmpty()) {
-            jpql.append(" AND c.patient.category = :pc ");
-            params.put("pc", patientCategory);
-        }
-
+        // Patient Category filter - REMOVED (c.patient.category doesn't exist)
+        // This filter has been removed as Patient entity doesn't have a category property
         // Admission Status filter
         if (admissionStatus != null) {
-            jpql.append(" AND c.admissionStatus = :as ");
+            jpql.append("AND c.admissionStatus = :as ");
             params.put("as", admissionStatus);
         }
 
         // Admission Type filter
         if (admissionType != null) {
-            jpql.append(" AND c.admissionType = :at ");
+            jpql.append("AND c.admissionType = :at ");
             params.put("at", admissionType);
         }
 
         // Payment Method filter
         if (paymentMethod != null) {
-            jpql.append(" AND c.paymentMethod = :pm ");
+            jpql.append("AND c.paymentMethod = :pm ");
             params.put("pm", paymentMethod);
         }
 
-        // Room Category filter
+        // Room Category filter - using explicit LEFT JOIN
         if (roomCategory != null) {
-            jpql.append(" AND c.currentPatientRoom.roomFacilityCharge.roomCategory = :rc ");
+            jpql.append("AND rfc.roomCategory = :rc ");
             params.put("rc", roomCategory);
         }
 
-        jpql.append(" ORDER BY c.dateOfAdmission ");
+        jpql.append("ORDER BY c.dateOfAdmission ");
 
         admissions = admissionFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
