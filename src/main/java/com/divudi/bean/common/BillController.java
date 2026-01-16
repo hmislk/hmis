@@ -2301,6 +2301,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     /**
      * Creates a deep copy of a ComponentDetail object including all its properties and
      * nested ComponentDetail lists for multiple payment methods.
+     *
+     * Note: This method intentionally does NOT deep copy the nested PaymentMethodData
+     * to avoid infinite recursion, since PaymentMethodData contains ComponentDetail
+     * objects which in turn can have PaymentMethodData. The nested PaymentMethodData
+     * in ComponentDetail is used for multiple payment methods and is handled separately
+     * through the multiplePaymentMethodComponentDetails list.
      */
     private ComponentDetail deepCopyComponentDetail(ComponentDetail source) {
         if (source == null) {
@@ -2323,13 +2329,13 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         copy.setPatient(source.getPatient());
         copy.setToStaff(source.getToStaff());
 
-        // Deep copy PaymentMethodData if it exists
-        if (source.getPaymentMethodData() != null) {
-            copy.setPaymentMethodData(deepCopyPaymentMethodData(source.getPaymentMethodData()));
-        }
+        // Note: We intentionally skip deep copying paymentMethodData here to avoid
+        // infinite recursion. The ComponentDetail's paymentMethodData is only used
+        // for nested multiple payment methods, which are handled below.
 
         // Deep copy multiple payment method component details
-        if (source.getMultiplePaymentMethodComponentDetails() != null) {
+        if (source.getMultiplePaymentMethodComponentDetails() != null
+                && !source.getMultiplePaymentMethodComponentDetails().isEmpty()) {
             copy.setMultiplePaymentMethodComponentDetails(new ArrayList<>());
             for (ComponentDetail detail : source.getMultiplePaymentMethodComponentDetails()) {
                 copy.getMultiplePaymentMethodComponentDetails().add(deepCopyComponentDetail(detail));
