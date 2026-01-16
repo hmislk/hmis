@@ -10,7 +10,6 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
-import com.divudi.core.data.dto.BillDetailsDTO;
 import com.divudi.core.data.dto.InwardAdmissionDTO;
 import com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO;
 import com.divudi.core.data.dto.PaymentTypeAdmissionDTO;
@@ -44,13 +43,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -168,7 +165,7 @@ public class InwardReportController implements Serializable {
     // for specialty/doctor wise income
     private List<InwardIncomeDoctorSpecialtyDTO> spcDocIncomeBillList;
     private InwardIncomeDoctorSpecialtyDTO totalValuesSpcDocIncome;
-    private Staff currentDoctor;
+    private Doctor currentDoctor;
     private boolean byDoctor;
 
     private ReportKeyWord reportKeyWord;
@@ -373,8 +370,8 @@ public class InwardReportController implements Serializable {
                 .append(" AND bf.bill.createdAt BETWEEN :fromDate AND :toDate ");
 
         params.put("btas", btas);
-        params.put("fromDate", fromDate);
-        params.put("toDate", toDate);
+        params.put("fromDate", fromYearStartDate);
+        params.put("toDate", toYearEndDate);
         params.put("doctorClass", Doctor.class);
         params.put("consultantClass", Consultant.class);
 
@@ -391,9 +388,6 @@ public class InwardReportController implements Serializable {
         jpql.append(" ORDER BY bf.staff.speciality.name, bf.staff.person.name ");
         
         List<InwardIncomeDoctorSpecialtyDTO> rawList = (List<InwardIncomeDoctorSpecialtyDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        
-        
-        System.out.println(" proocess completed .....= ");
         
         Map<Long, InwardIncomeDoctorSpecialtyDTO> specialtyMap = new LinkedHashMap<>();
         Map<Long, Map<Long, Double>> spacialtyBill = new LinkedHashMap<>();
@@ -415,7 +409,6 @@ public class InwardReportController implements Serializable {
             Map<Long, Double> currentBill = spacialtyBill.computeIfAbsent(sId, k -> new LinkedHashMap<>());
             if (currentBill.putIfAbsent(dto.getBillId(), dto.getBillTotal()) == null) {
                 currentSpc.setBillTotal(currentSpc.getBillTotal() + dto.getBillTotal());
-                System.out.println("currentBill.getTotal = " + currentBill.get(dto.getBillId()));
             }
             
             currentSpc.setDocFee(currentSpc.getDocFee() + dto.getDocFee());
@@ -470,8 +463,8 @@ public class InwardReportController implements Serializable {
                 .append(" AND bf.bill.createdAt BETWEEN :fromDate AND :toDate ");
 
         params.put("btas", btas);
-        params.put("fromDate", fromDate);
-        params.put("toDate", toDate);
+        params.put("fromDate", fromYearStartDate);
+        params.put("toDate", toYearEndDate);
         params.put("doctorClass", Doctor.class);
         params.put("consultantClass", Consultant.class);
 
@@ -488,8 +481,6 @@ public class InwardReportController implements Serializable {
         jpql.append(" ORDER BY bf.staff.speciality.name, bf.staff.person.name ");
         
         List<InwardIncomeDoctorSpecialtyDTO> rawList = (List<InwardIncomeDoctorSpecialtyDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        
-        System.out.println(" proocess completed .....= ");
         
         Map<Long, InwardIncomeDoctorSpecialtyDTO> doctorMap = new LinkedHashMap<>();
         Map<Long, Map<Long, Double>> doctorBill = new LinkedHashMap<>();
@@ -512,7 +503,6 @@ public class InwardReportController implements Serializable {
             Map<Long, Double> currentBill = doctorBill.computeIfAbsent(sId, k -> new LinkedHashMap<>());
             if (currentBill.putIfAbsent(dto.getBillId(), dto.getBillTotal()) == null) {
                 currentDoc.setBillTotal(currentDoc.getBillTotal() + dto.getBillTotal());
-                System.out.println("currentBill.getTotal = " + currentBill.get(dto.getBillId()));
             }
 
             
@@ -2598,11 +2588,11 @@ public class InwardReportController implements Serializable {
         this.totalValuesSpcDocIncome = totalValuesSpcDocIncome;
     }
     
-    public Staff getCurrentDoctor() {
+    public Doctor getCurrentDoctor() {
         return currentDoctor;
     }
     
-    public void setCurrentDoctor(Staff currentDoctor) {
+    public void setCurrentDoctor(Doctor currentDoctor) {
         this.currentDoctor = currentDoctor;
     }
     
