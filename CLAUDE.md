@@ -4,13 +4,16 @@
 - **GitHub Repository**: https://github.com/hmislk/hmis
 - **Issues URL**: https://github.com/hmislk/hmis/issues
 - **Main Repository**: hmislk/hmis (not buddhika75/hmis)
+- **Project tmp Folder**: `/tmp/` directory contains project-specific temporary files, screenshots, and examples for development reference
 
 ## Core Workflows
 
 ### Persistence Configuration
-- **🚨 CRITICAL**: Before any push, verify persistence.xml uses environment variables
+- **🚨 DEVELOPMENT**: During development, use hardcoded JNDI names (`jdbc/rhDS`, `jdbc/rhAuditDS`) for local environment
+- **🚨 PRE-COMMIT**: Only before creating PR, change to environment variables (`${JDBC_DATASOURCE}`, `${JDBC_AUDIT_DATASOURCE}`)
 - **File**: `src/main/resources/META-INF/persistence.xml`
-- **Required**: `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}` (NOT hardcoded JNDI names)
+- **Development**: Hardcoded JNDI names are REQUIRED for local development
+- **Deployment**: Environment variables are REQUIRED for production deployment
 - **Pre-Push Checklist**: [Detailed Verification Guide](developer_docs/deployment/persistence-verification.md)
 
 ### Git & GitHub Integration
@@ -23,7 +26,8 @@
 ### Wiki Publishing
 - **🚨 CRITICAL**: ALWAYS publish to GitHub Wiki immediately after creating user documentation
 - **Directory**: Create files in `wiki-docs/` (e.g., `wiki-docs/Pharmacy/Feature-Name.md`)
-- **Publishing Workflow**: [Complete Guide](developer_docs/github/wiki-publishing.md)
+- **Sibling Repository**: Uses `../hmis.wiki/` directory (not within project) for clean separation
+- **Publishing Workflow**: [Complete Guide](developer_docs/github/wiki-publishing.md) - automated sibling folder approach
 - **Writing Guidelines**: [Content Standards](developer_docs/github/wiki-writing-guidelines.md)
 - **Target Audience if not explicitly mentioned**: End users (pharmacy staff, nurses, doctors, administrators)
 
@@ -75,7 +79,7 @@
 ### User Control & Automation
 1. **🚨 NO AUTO-ACTIONS**: Do NOT commit, build, run, or push code unless the user explicitly requests it
 2. **🚨 EXPLICIT COMMANDS ONLY**: Wait for user confirmation before executing Git operations, Maven builds, or deployment commands
-3. **🚨 WIKI EXCEPTION**: Wiki publishing requires push - follow [Publishing Workflow](developer_docs/github/wiki-publishing.md) exactly
+3. **🚨 WIKI EXCEPTION**: Wiki publishing requires push - follow [Publishing Workflow](developer_docs/github/wiki-publishing.md) using sibling directory approach
 
 ### Deployment & Configuration
 3. **🚨 PERSISTENCE.XML**: Verify environment variables before push - [Guide](developer_docs/deployment/persistence-verification.md)
@@ -83,7 +87,7 @@
 
 ### Git & Documentation
 5. **Include issue closing keywords** (`Closes #N`) in commit messages
-6. **🚨 WIKI PUBLISHING**: Publish to GitHub Wiki immediately - [Guide](developer_docs/github/wiki-publishing.md)
+6. **🚨 WIKI PUBLISHING**: Publish to GitHub Wiki immediately using sibling folder - [Guide](developer_docs/github/wiki-publishing.md)
 
 ### Build & Testing
 5. **Run tests before committing** using `./detect-maven.sh test` (Java changes only, when user requests)

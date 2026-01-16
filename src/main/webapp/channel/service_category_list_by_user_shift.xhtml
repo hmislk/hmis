@@ -1,0 +1,235 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/channel/channel_reports.xhtml">
+
+            <ui:define name="subContent">
+
+                <h:form>
+
+                    <p:panel >
+                        <f:facet name="header">
+                            <i class="fa fa-money-bill-wave mt-2"/>
+                            <p:outputLabel value="Channel Service Category By User Shift" class="mx-2 mt-2"></p:outputLabel>
+
+
+                        </f:facet>
+                        <h:panelGrid columns="9" style="width: 100%">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;"
+                                              styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+
+                            <p:calendar 
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                id="fromDate"
+                                value="#{channelReportController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                ></p:calendar>
+                            <p:spacer width="50"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;"
+                                              styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To Date" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+
+                            <p:calendar 
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                id="toDate"
+                                value="#{channelReportController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                ></p:calendar>
+
+                            <p:spacer width="50"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fas fa-user mr-2"/>
+                                <h:outputLabel value="User" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete 
+                                class="w-100  " 
+                                inputStyleClass="w-100" 
+                                id="cmbUser"  
+                                placeholder="All Users"
+                                forceSelection="true" 
+                                completeMethod="#{webUserController.completeUser}" 
+                                var="w" itemLabel="#{w.webUserPerson.name}" 
+                                itemValue="#{w}"
+                                value="#{channelReportController.webUser}" >
+                            </p:autoComplete>
+
+                            
+
+                        </h:panelGrid>
+
+                        <div class="row my-3">
+                            <div class="col-2">
+                                <p:commandButton 
+                                    icon="fa-solid fa-check"
+                                    class="ui-button-success"
+                                    style="float: left;"
+                                    value="Process" 
+                                    ajax="false" 
+                                    action="#{channelReportController.listShiftStartBills()}" >
+                                </p:commandButton>
+                            </div>
+
+                        </div>
+
+
+
+                        <p:dataTable rendered="#{channelReportController.categorywiseDetailsWrapperDTO eq null}" value="#{channelReportController.shiftStartBills}" var="ssb" rowKey="#{ssb.id}">
+
+                            <p:column headerText="Date" width="10%" >
+                                <h:outputText value="#{ssb.billDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                </h:outputText>
+
+                            </p:column>
+                            <p:column headerText="Start Time"  width="15%" >
+                                <h:outputText value="#{ssb.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+                            
+                             <p:column headerText="End Time"  width="15%" >
+                                 <h:outputText value="#{ssb.referenceBill ne null ? ssb.referenceBill.createdAt : 'Not Yet'}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+                            <p:column width="15%" style="text-align: center; font-weight: bold" headerText="User" filterMatchMode="contains" filterBy="#{ssb.creater.name}">
+                                #{ssb.creater.webUserPerson.nameWithTitle}
+                            </p:column>
+
+                            <p:column headerText="Shift End" style="text-align: center" rendered="true" width="25%" >
+                                <h:panelGroup rendered="#{ssb.referenceBill eq null}" class="text-danger">
+                                    <h:outputText value="NOT Ended" ></h:outputText>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{ssb.referenceBill ne null}" class="text-success">
+                                    <h:outputText value="Ended at " ></h:outputText>
+                                    <h:outputText value="#{ssb.referenceBill.createdAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    </h:outputText>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Actions" width="30%" style="text-align: center">
+                                <h:panelGroup rendered="#{ssb.referenceBill eq null}" >
+                                    <p:commandButton 
+                                        ajax="false"
+                                        class="ui-button-danger"
+                                        value="View Summary - Not Closed" 
+                                        action="#{channelReportController.generateChannelCategorywiseDetailsForShitEndFromChannelReportController(ssb.id)}"  
+                                        ></p:commandButton>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{ssb.referenceBill ne null}" >
+                                    <p:commandButton 
+                                        ajax="false"
+                                        class="ui-button-success"
+                                        value="View Closed Summary" 
+                                        action="#{channelReportController.generateChannelCategorywiseDetailsForShitEndFromChannelReportController(ssb.id)}"  
+                                        ></p:commandButton>
+                                </h:panelGroup>
+                            </p:column>
+
+                        </p:dataTable>
+                        <h:panelGroup rendered="#{channelReportController.categorywiseDetailsWrapperDTO ne null}">
+
+                            <div class="row my-4" style="font-weight: bold">
+                                <div class="col-4" >
+                                    <h:outputLabel value="Shift Start Date :" ></h:outputLabel>
+                                    <h:outputLabel class="mx-3" value="#{channelReportController.categorywiseDetailsWrapperDTO.billingStartDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </div>
+                                <div class="col-4">
+                                    <h:outputLabel value="Shift End Date :" class="mx-3"></h:outputLabel>
+                                    <h:outputLabel value="#{channelReportController.categorywiseDetailsWrapperDTO.billingEndDate eq null ? 'Not End Yet':channelReportController.categorywiseDetailsWrapperDTO.billingEndDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </div>
+                                <div class="col-4">
+                                    <h:outputLabel value="Cashier Name :" class="mx-3"></h:outputLabel>
+                                    <h:outputLabel value="#{channelReportController.categorywiseDetailsWrapperDTO.cashierUserName}"></h:outputLabel>
+                                </div>
+                            </div>
+                            
+                            <hr></hr>
+
+                            <p:dataTable  value="#{channelReportController.categorywiseDetailsWrapperDTO.dtoList}" var="wrapper" >
+
+                                <p:column headerText="Category" width="10em" >
+                                    <h:outputText value="#{wrapper.category}" > 
+                                    </h:outputText>
+
+                                </p:column>
+
+                                <p:column headerText="Cash Total" width="10em" >
+                                    <h:outputText value="#{wrapper.cashTotal}" > 
+                                    </h:outputText>
+
+                                </p:column>
+
+                                <p:column headerText="Card Total" width="10em" >
+                                    <h:outputText value="#{wrapper.cardTotal}" > 
+                                    </h:outputText>
+
+                                </p:column>
+
+                                <p:column headerText="Agent Total" width="10em" >
+                                    <h:outputText value="#{wrapper.agentTotal}" > 
+                                    </h:outputText>
+
+                                </p:column>
+
+                                <p:column headerText="Cancel Total" width="10em" >
+                                    <h:outputText value="#{wrapper.cancelTotal}" > 
+                                    </h:outputText>
+
+                                </p:column>
+
+                                <p:column headerText="Refund Total" width="10em" >
+                                    <h:outputText value="#{wrapper.refundTotal}" > 
+                                    </h:outputText>
+
+                                </p:column>
+
+                                <p:column headerText="Doctor Payment" width="10em" >
+                                    <h:outputText value="#{wrapper.totalDoctorPayment}" > 
+                                    </h:outputText>
+
+                                </p:column>
+
+                                <p:column headerText="Hospital Payment" width="10em" >
+                                    <h:outputText value="#{wrapper.totalHospitalPayment}" > 
+                                    </h:outputText>
+
+                                </p:column>
+
+                            </p:dataTable>
+                        </h:panelGroup>
+
+
+                    </p:panel>
+
+
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

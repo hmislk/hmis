@@ -54,7 +54,7 @@
                                 <h:outputText styleClass="mx-2" value="#{versionController.systemVersion}" />
                                 <h:outputText styleClass="mx-2 fw-semibold" value="Build time" />
                                 <h:outputText styleClass="mx-2" value=":" />
-                                <h:outputText styleClass="mx-2" value="#{versionController.gitBuildTime}" />
+                                <h:outputText styleClass="mx-2" value="#{versionController.gitBuildTime}#{versionController.gitBuildTimeElapsed != null ? ' ('.concat(versionController.gitBuildTimeElapsed).concat(')') : ''}" />
                                 <h:outputText styleClass="mx-2 fw-semibold" value="Last commit" />
                                 <h:outputText styleClass="mx-2" value=":" />
                                 <h:outputText styleClass="mx-2" value="#{versionController.gitCommitIdAbbrev} (#{versionController.gitBranch})" />

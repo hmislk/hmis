@@ -5276,18 +5276,19 @@ public class FinancialTransactionController implements Serializable {
     /**
      * Navigates to the fund transfer bill cancellation page.
      *
-     * Security validations already implemented:
-     * - Bill null check
-     * - Bill type validation (must be FUND_TRANSFER_BILL)
-     * - Already cancelled check (bill.isCancelled())
-     * - Already accepted check (referenceBill != null means accepted)
-     * - Ownership authorization (fromWebUser must match logged user)
+     * Security validations already implemented: - Bill null check - Bill type
+     * validation (must be FUND_TRANSFER_BILL) - Already cancelled check
+     * (bill.isCancelled()) - Already accepted check (referenceBill != null
+     * means accepted) - Ownership authorization (fromWebUser must match logged
+     * user)
      *
-     * Added per GitHub issue #17652: Audit logging for unauthorized access attempts
-     * to track when non-originator users try to cancel another user's float transfer.
+     * Added per GitHub issue #17652: Audit logging for unauthorized access
+     * attempts to track when non-originator users try to cancel another user's
+     * float transfer.
      *
      * @param bill The fund transfer bill to cancel
-     * @return Navigation outcome to cancellation page, or empty string if validation fails
+     * @return Navigation outcome to cancellation page, or empty string if
+     * validation fails
      */
     public String navigateToFundTransferBillCancel(Bill bill) {
         if (bill == null) {
@@ -5352,19 +5353,19 @@ public class FinancialTransactionController implements Serializable {
     /**
      * Executes the fund transfer bill cancellation.
      *
-     * Security validations already implemented:
-     * - Bill null check
-     * - Fresh database reload to prevent stale state attacks
-     * - Already cancelled check (freshBill.isCancelled())
-     * - Already accepted check (referenceBill != null means accepted)
-     * - Ownership authorization (fromWebUser must match logged user)
-     * - Cancellation reason required validation
+     * Security validations already implemented: - Bill null check - Fresh
+     * database reload to prevent stale state attacks - Already cancelled check
+     * (freshBill.isCancelled()) - Already accepted check (referenceBill != null
+     * means accepted) - Ownership authorization (fromWebUser must match logged
+     * user) - Cancellation reason required validation
      *
-     * Added per GitHub issue #17652: Audit logging for unauthorized execution attempts
-     * to track when non-originator users try to execute cancellation of another user's
-     * float transfer (defense in depth - complements navigation check).
+     * Added per GitHub issue #17652: Audit logging for unauthorized execution
+     * attempts to track when non-originator users try to execute cancellation
+     * of another user's float transfer (defense in depth - complements
+     * navigation check).
      *
-     * @return Navigation outcome to cancellation print page, or empty string if validation fails
+     * @return Navigation outcome to cancellation print page, or empty string if
+     * validation fails
      */
     public String cancelFundTransferBill() {
         // Re-validate before executing
@@ -5677,6 +5678,21 @@ public class FinancialTransactionController implements Serializable {
             floatTransferStarted = false;
             return "";
         }
+        if (currentBill.getComments() == null) {
+            JsfUtil.addErrorMessage("Comments are required for receiving float transfer");
+            floatTransferStarted = false;
+            return "";
+        }
+        if (currentBill.getComments().trim().equals("")) {
+            JsfUtil.addErrorMessage("Comments are required for receiving float transfer");
+            floatTransferStarted = false;
+            return "";
+        }
+        if (currentBill.getComments().trim().isEmpty()) {
+            floatTransferStarted = false;
+            JsfUtil.addErrorMessage("Comments are required for receiving float transfer");
+            return "";
+        }
 
         if (currentBill.getReferenceBill() == null) {
             JsfUtil.addErrorMessage("Error");
@@ -5699,19 +5715,6 @@ public class FinancialTransactionController implements Serializable {
         if (currentBill.getReferenceBill().isCancelled()) {
             floatTransferStarted = false;
             JsfUtil.addErrorMessage("This float transfer has been cancelled and cannot be accepted");
-            return "";
-        }
-
-        // Validate required comments
-        if (currentBill.getComments() == null || currentBill.getComments().trim().isEmpty()) {
-            floatTransferStarted = false;
-            JsfUtil.addErrorMessage("Comments are required for receiving float transfer");
-            return "";
-        }
-
-        if (currentBill.getComments().trim().length() < 10) {
-            floatTransferStarted = false;
-            JsfUtil.addErrorMessage("Comments must be at least 10 characters long");
             return "";
         }
 
@@ -7621,8 +7624,9 @@ public class FinancialTransactionController implements Serializable {
     }
 
     /**
-     * Register page metadata for the admin configuration interface.
-     * This registers all configuration options used by the Shift Handover page and Fund Transfer Bill page.
+     * Register page metadata for the admin configuration interface. This
+     * registers all configuration options used by the Shift Handover page and
+     * Fund Transfer Bill page.
      */
     private void registerPageMetadata() {
         if (pageMetadataRegistry == null) {
@@ -8177,7 +8181,6 @@ public class FinancialTransactionController implements Serializable {
         shiftEndPrintMetadata.setControllerClass("FinancialTransactionController");
 
         // Configuration Options - All the configurations used by the FinancialTransactionController that may affect this page
-
         // Cash Handling Configurations
         shiftEndPrintMetadata.addConfigOption(new ConfigOptionInfo(
                 "Select All Cash During Handover",
