@@ -54,6 +54,11 @@ public class PatientDepositHistoryDto implements Serializable {
     // Creator info
     private String createrName;
 
+    // Display-specific fields for list views
+    private String paymentMethodLabel;
+    private String billDeptId;
+    private String billTypeAtomicLabel;
+
     public PatientDepositHistoryDto() {
     }
 
@@ -130,6 +135,19 @@ public class PatientDepositHistoryDto implements Serializable {
         this.cancelled = cancelled;
         this.refunded = refunded;
         this.createrName = createrName;
+    }
+
+    // Constructor for latest transactions list display (minimal fields)
+    public PatientDepositHistoryDto(Long id, Date createdAt, Double transactionValue,
+            HistoryType historyType, String paymentMethodLabel,
+            String billTypeAtomicLabel, String billDeptId) {
+        this.id = id;
+        this.createdAt = createdAt;
+        this.transactionValue = transactionValue;
+        this.historyType = historyType;
+        this.paymentMethodLabel = paymentMethodLabel;
+        this.billTypeAtomicLabel = billTypeAtomicLabel;
+        this.billDeptId = billDeptId;
     }
 
     // Getters and Setters
@@ -355,5 +373,29 @@ public class PatientDepositHistoryDto implements Serializable {
 
     public void setCreaterName(String createrName) {
         this.createrName = createrName;
+    }
+
+    public String getPaymentMethodLabel() {
+        return paymentMethodLabel;
+    }
+
+    public void setPaymentMethodLabel(String paymentMethodLabel) {
+        this.paymentMethodLabel = paymentMethodLabel;
+    }
+
+    public String getBillDeptId() {
+        return billDeptId;
+    }
+
+    public void setBillDeptId(String billDeptId) {
+        this.billDeptId = billDeptId;
+    }
+
+    public String getBillTypeAtomicLabel() {
+        return billTypeAtomicLabel;
+    }
+
+    public void setBillTypeAtomicLabel(String billTypeAtomicLabel) {
+        this.billTypeAtomicLabel = billTypeAtomicLabel;
     }
 }
