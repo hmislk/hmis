@@ -10,7 +10,9 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dto.BillDetailsDTO;
 import com.divudi.core.data.dto.InwardAdmissionDTO;
+import com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO;
 import com.divudi.core.data.dto.PaymentTypeAdmissionDTO;
 import com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
@@ -27,6 +29,7 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.PatientInvestigation;
@@ -41,11 +44,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -159,6 +164,12 @@ public class InwardReportController implements Serializable {
     // for disscharge book
     boolean withoutCancelBHT = true;
     private Speciality currentSpeciality;
+    
+    // for specialty/doctor wise income
+    private List<InwardIncomeDoctorSpecialtyDTO> spcDocIncomeBillList;
+    private InwardIncomeDoctorSpecialtyDTO totalValuesSpcDocIncome;
+    private Staff currentDoctor;
+    private boolean byDoctor;
 
     private ReportKeyWord reportKeyWord;
 
@@ -323,6 +334,209 @@ public class InwardReportController implements Serializable {
         billList.add(grandTotal);
 
         createChartModels();
+    }
+    
+    public void processSpecialtyDoctorWiseIncomeReport() {
+        if (byDoctor) {
+            processDoctorWiseIncomeReport();
+        } else {
+            processSpecialtyWiseIncomeReport();
+        }
+    }
+    
+    public void processSpecialtyWiseIncomeReport() {
+        spcDocIncomeBillList = new ArrayList<>();
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+        
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        btas.add(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+
+        jpql.append(" Select new com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO(")
+                .append(" bf.staff.speciality.id, ")
+                .append(" coalesce(bf.staff.person.name, 'N/A'), ")
+                .append(" coalesce(bf.staff.speciality.name, 'N/A'), ")
+                .append(" coalesce(bf.feeValue, 0.0), ")
+                .append(" coalesce(bf.billItem.hospitalFee, 0.0), ")
+                .append(" bf.bill.id, ")
+                .append(" bf.bill.netTotal ")
+                .append(") ")
+                .append(" from BillFee bf")
+                .append(" Where bf.retired = false ")
+                .append(" And bf.bill.retired=false ")
+                .append(" And bf.billItem.retired=false ")
+                .append(" And bf.bill.billTypeAtomic in :btas ")
+                .append(" And (type(bf.staff) = :doctorClass OR type(bf.staff) = :consultantClass) ")
+                .append(" AND bf.bill.createdAt BETWEEN :fromDate AND :toDate ");
+
+        params.put("btas", btas);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("doctorClass", Doctor.class);
+        params.put("consultantClass", Consultant.class);
+
+        if (currentSpeciality != null) {
+            jpql.append(" AND bf.staff.speciality = :spe ");
+            params.put("spe", currentSpeciality);
+        }
+        
+        if (currentDoctor != null) {
+            jpql.append(" and bf.staff.id=:staffid ");
+            params.put("staffid", currentDoctor.getId());
+        }
+
+        jpql.append(" ORDER BY bf.staff.speciality.name, bf.staff.person.name ");
+        
+        List<InwardIncomeDoctorSpecialtyDTO> rawList = (List<InwardIncomeDoctorSpecialtyDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        
+        
+        System.out.println(" proocess completed .....= ");
+        
+        Map<Long, InwardIncomeDoctorSpecialtyDTO> specialtyMap = new LinkedHashMap<>();
+        Map<Long, Map<Long, Double>> spacialtyBill = new LinkedHashMap<>();
+        
+        for (InwardIncomeDoctorSpecialtyDTO dto : rawList) {
+            if (dto.getStaffId() == null) {
+                continue;
+            }
+            
+            Long sId = dto.getStaffId();
+            InwardIncomeDoctorSpecialtyDTO currentSpc = specialtyMap.computeIfAbsent(sId, k -> {
+                InwardIncomeDoctorSpecialtyDTO spc = new InwardIncomeDoctorSpecialtyDTO();
+                spc.setStaffId(dto.getStaffId());
+                spc.setSpecialtyName(dto.getSpecialtyName());
+                
+                return spc;
+            });
+            
+            Map<Long, Double> currentBill = spacialtyBill.computeIfAbsent(sId, k -> new LinkedHashMap<>());
+            if (currentBill.putIfAbsent(dto.getBillId(), dto.getBillTotal()) == null) {
+                currentSpc.setBillTotal(currentSpc.getBillTotal() + dto.getBillTotal());
+                System.out.println("currentBill.getTotal = " + currentBill.get(dto.getBillId()));
+            }
+            
+            currentSpc.setDocFee(currentSpc.getDocFee() + dto.getDocFee());
+            currentSpc.setHosFee(currentSpc.getHosFee() + dto.getHosFee());
+        }
+        
+        Double docChargeTotal = 0.0;
+        Double hospitalChargeTotal = 0.0;
+        Double totalCharge = 0.0;
+        
+        for (Map.Entry<Long, InwardIncomeDoctorSpecialtyDTO> entry : specialtyMap.entrySet()) {
+            getSpcDocIncomeBillList().add(entry.getValue());
+            docChargeTotal += entry.getValue().getDocFee();
+            hospitalChargeTotal += entry.getValue().getHosFee();
+            totalCharge += entry.getValue().getBillTotal();
+        }
+        
+        totalValuesSpcDocIncome = new InwardIncomeDoctorSpecialtyDTO();
+        totalValuesSpcDocIncome.setDocFeeTotal(docChargeTotal);
+        totalValuesSpcDocIncome.setHosFeeTotal(hospitalChargeTotal);
+        totalValuesSpcDocIncome.setTotalCharge(totalCharge);
+        
+
+    }
+    
+    public void processDoctorWiseIncomeReport() {
+        spcDocIncomeBillList = new ArrayList<>();
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+        
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        btas.add(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+
+        jpql.append(" Select new com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO(")
+                .append(" bf.staff.id, ")
+                .append(" coalesce(bf.staff.person.name, 'N/A'), ")
+                .append(" coalesce(bf.staff.speciality.name, 'N/A'), ")
+                .append(" coalesce(bf.feeValue, 0.0), ")
+                .append(" coalesce(bf.billItem.hospitalFee, 0.0), ")
+                .append(" bf.bill.id, ")
+                .append(" bf.bill.netTotal ")
+                .append(") ")
+                .append(" from BillFee bf")
+                .append(" Where bf.retired = false ")
+                .append(" And bf.bill.retired=false ")
+                .append(" And bf.billItem.retired=false ")
+                .append(" And bf.bill.billTypeAtomic in :btas ")
+                .append(" And (type(bf.staff) = :doctorClass OR type(bf.staff) = :consultantClass) ")
+                .append(" AND bf.bill.createdAt BETWEEN :fromDate AND :toDate ");
+
+        params.put("btas", btas);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("doctorClass", Doctor.class);
+        params.put("consultantClass", Consultant.class);
+
+        if (currentSpeciality != null) {
+            jpql.append(" AND bf.staff.speciality = :spe ");
+            params.put("spe", currentSpeciality);
+        }
+        
+        if (currentDoctor != null) {
+            jpql.append(" and bf.staff.id=:staffid ");
+            params.put("staffid", currentDoctor.getId());
+        }
+
+        jpql.append(" ORDER BY bf.staff.speciality.name, bf.staff.person.name ");
+        
+        List<InwardIncomeDoctorSpecialtyDTO> rawList = (List<InwardIncomeDoctorSpecialtyDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        
+        System.out.println(" proocess completed .....= ");
+        
+        Map<Long, InwardIncomeDoctorSpecialtyDTO> doctorMap = new LinkedHashMap<>();
+        Map<Long, Map<Long, Double>> doctorBill = new LinkedHashMap<>();
+        
+        for (InwardIncomeDoctorSpecialtyDTO dto : rawList) {
+            if (dto.getStaffId() == null) {
+                continue;
+            }
+            
+            Long sId = dto.getStaffId();
+            InwardIncomeDoctorSpecialtyDTO currentDoc = doctorMap.computeIfAbsent(sId, k -> {
+                InwardIncomeDoctorSpecialtyDTO doc = new InwardIncomeDoctorSpecialtyDTO();
+                doc.setStaffId(dto.getStaffId());
+                doc.setDoctorName(dto.getDoctorName());
+                doc.setSpecialtyName(dto.getSpecialtyName());
+                
+                return doc;
+            });
+            
+            Map<Long, Double> currentBill = doctorBill.computeIfAbsent(sId, k -> new LinkedHashMap<>());
+            if (currentBill.putIfAbsent(dto.getBillId(), dto.getBillTotal()) == null) {
+                currentDoc.setBillTotal(currentDoc.getBillTotal() + dto.getBillTotal());
+                System.out.println("currentBill.getTotal = " + currentBill.get(dto.getBillId()));
+            }
+
+            
+            currentDoc.setDocFee(currentDoc.getDocFee() + dto.getDocFee());
+            currentDoc.setHosFee(currentDoc.getHosFee() + dto.getHosFee());
+        }
+        
+        Double docChargeTotal = 0.0;
+        Double hospitalChargeTotal = 0.0;
+        Double totalCharge = 0.0;
+        
+        for (Map.Entry<Long, InwardIncomeDoctorSpecialtyDTO> entry : doctorMap.entrySet()) {
+            getSpcDocIncomeBillList().add(entry.getValue());
+            docChargeTotal += entry.getValue().getDocFee();
+            hospitalChargeTotal += entry.getValue().getHosFee();
+            totalCharge += entry.getValue().getBillTotal();
+        }
+        
+        totalValuesSpcDocIncome = new InwardIncomeDoctorSpecialtyDTO();
+        totalValuesSpcDocIncome.setDocFeeTotal(docChargeTotal);
+        totalValuesSpcDocIncome.setHosFeeTotal(hospitalChargeTotal);
+        totalValuesSpcDocIncome.setTotalCharge(totalCharge);
+            
+
     }
 
     private String lineChartModel;
@@ -2366,6 +2580,38 @@ public class InwardReportController implements Serializable {
 
     public void setList(List<InwardAdmissionDTO> list) {
         this.list = list;
+    }
+    
+    public List<InwardIncomeDoctorSpecialtyDTO> getSpcDocIncomeBillList() {
+        return spcDocIncomeBillList;
+    }
+    
+    public void setSpcDocIncomeBillList(List<InwardIncomeDoctorSpecialtyDTO> spcDocIncomeBillList) {
+        this.spcDocIncomeBillList = spcDocIncomeBillList;
+    }
+    
+    public InwardIncomeDoctorSpecialtyDTO getTotalValuesSpcDocIncome() {
+        return totalValuesSpcDocIncome;
+    }
+
+    public void setTotalValuesSpcDocIncome(InwardIncomeDoctorSpecialtyDTO totalValuesSpcDocIncome) {
+        this.totalValuesSpcDocIncome = totalValuesSpcDocIncome;
+    }
+    
+    public Staff getCurrentDoctor() {
+        return currentDoctor;
+    }
+    
+    public void setCurrentDoctor(Staff currentDoctor) {
+        this.currentDoctor = currentDoctor;
+    }
+    
+    public boolean getByDoctor() {
+        return byDoctor;
+    }
+    
+    public void setByDoctor(boolean dw) {
+        this.byDoctor = dw;
     }
 
     public class IncomeByCategoryRecord {
