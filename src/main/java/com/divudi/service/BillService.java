@@ -1090,7 +1090,6 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt desc  ";
-        System.out.println("jpql = " + jpql);
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
     }
@@ -1318,7 +1317,13 @@ public class BillService {
 
         jpql += " order by b.createdAt desc ";
 
-        List<BillLight> fetchedBills = (List<BillLight>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+
+        List<BillLight> fetchedBills = null;
+        try {
+            fetchedBills = (List<BillLight>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return fetchedBills;
     }
 
@@ -1600,10 +1605,8 @@ public class BillService {
 
         // First, debug with count query
         Long count = countPharmacyReturnWithoutTrasingBills(fromDate, toDate, institution, site, department, webUser);
-        System.out.println("🔍 DEBUG: Found " + count + " PHARMACY_RETURN_WITHOUT_TREASING bills in date range");
 
         if (count == 0) {
-            System.out.println("🚨 No bills found - check BillTypeAtomic and date range");
             return new ArrayList<>();
         }
 
@@ -1671,11 +1674,9 @@ public class BillService {
             List<PharmacyReturnWithoutTrasingBillDTO> results =
                 (List<PharmacyReturnWithoutTrasingBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
-            System.out.println("🔍 DEBUG: DTO query returned " + (results != null ? results.size() : "null") + " results");
             return results != null ? results : new ArrayList<>();
 
         } catch (Exception e) {
-            System.err.println("🚨 DTO query failed: " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<>();
         }
@@ -1723,10 +1724,8 @@ public class BillService {
         }
 
         Long itemCount = (Long) billFacade.findLongByJpql(countJpql, countParams);
-        System.out.println("🔍 DEBUG: Found " + itemCount + " bill items in PHARMACY_RETURN_WITHOUT_TREASING bills");
 
         if (itemCount == 0) {
-            System.out.println("🚨 No bill items found");
             return new ArrayList<>();
         }
 
@@ -1797,11 +1796,9 @@ public class BillService {
             List<PharmacyReturnWithoutTrasingBillItemDTO> results =
                 (List<PharmacyReturnWithoutTrasingBillItemDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
-            System.out.println("🔍 DEBUG: Bill Item DTO query returned " + (results != null ? results.size() : "null") + " results");
             return results != null ? results : new ArrayList<>();
 
         } catch (Exception e) {
-            System.err.println("🚨 Bill Item DTO query failed: " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<>();
         }
@@ -1870,11 +1867,7 @@ public class BillService {
 
         jpql += " order by b.createdAt desc";
         // Debug logging
-
         // Debug logging
-        System.out.println("=== BillService.fetchOpdIncomeReportDTOs Query Debug ===");
-        System.out.println("JPQL: " + jpql);
-        System.out.println("Parameters: " + params);
 
         return (List<OpdIncomeReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -1938,11 +1931,7 @@ public class BillService {
 
         jpql += " order by b.createdAt desc";
         // Debug logging
-
         // Debug logging
-        System.out.println("=== BillService.fetchOpdIncomeReportDTOs Query Debug ===");
-        System.out.println("JPQL: " + jpql);
-        System.out.println("Parameters: " + params);
 
         return (List<OpdRevenueDashboardDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -1979,11 +1968,7 @@ public class BillService {
 
         jpql += " order by b.createdAt desc";
         // Debug logging
-
         // Debug logging
-        System.out.println("=== BillService.fetchBillDiscounts Query Debug ===");
-        System.out.println("JPQL: " + jpql);
-        System.out.println("Parameters: " + params);
 
         return (List<OpdRevenueDashboardDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
