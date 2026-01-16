@@ -1,5 +1,16 @@
 # Persistence.xml Verification Guide
 
+## Critical Rules for Claude Code
+
+**🚨 DEVELOPMENT vs DEPLOYMENT:**
+
+1. **DEVELOPMENT**: Use hardcoded JNDI names (`jdbc/rhDS`, `jdbc/rhAuditDS`) for local environment
+2. **PRE-COMMIT**: Only before creating PR, change to environment variables (`${JDBC_DATASOURCE}`, `${JDBC_AUDIT_DATASOURCE}`)
+
+**File**: `src/main/resources/META-INF/persistence.xml`
+
+---
+
 ## Overview
 
 The `persistence.xml` file configures database connections for the HMIS application. This file requires different settings for local development versus QA/production deployment. **Hardcoded local settings must NEVER be pushed to GitHub** as they will break QA deployments.
