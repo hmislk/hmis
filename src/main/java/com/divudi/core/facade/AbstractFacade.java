@@ -715,6 +715,8 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            System.out.println("DEBUG: findLightsByJpqlWithoutCache EXCEPTION: " + e.getClass().getName() + " - " + e.getMessage());
+            e.printStackTrace();
             resultList = new ArrayList<>();
         }
 

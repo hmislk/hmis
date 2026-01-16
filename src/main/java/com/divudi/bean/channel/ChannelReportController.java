@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
@@ -22,6 +23,7 @@ import com.divudi.core.data.channel.PaymentEnum;
 import com.divudi.core.data.dataStructure.BillsTotals;
 import com.divudi.core.data.dataStructure.ChannelDoctor;
 import com.divudi.core.data.dataStructure.WebUserBillsTotal;
+import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.data.table.String1Value1;
@@ -178,12 +180,15 @@ public class ChannelReportController implements Serializable {
     private ReportTimerController reportTimerController;
     @Inject
     private InstitutionController institutionController;
+    @Inject
+    private ReportTemplateController reportTemplateController;
 
     private Speciality speciality;
 
     private List<SessionInstance> sessioninstances;
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
+    private List<Bill> shiftStartBills;
 
     private String reportStatus;
 
@@ -386,6 +391,64 @@ public class ChannelReportController implements Serializable {
         makeNull();
         return "/channel/income_with_summery_by_user?faces-redirect=true";
     }
+    
+    public String navigateToServiceCategoryWiseIncomeForChanneling() {
+        makeNull();
+        return "/channel/service_category_list_by_user_shift?faces-redirect=true";
+    }
+
+    public List<Bill> getShiftStartBills() {
+        return shiftStartBills;
+    }
+
+    public void setShiaftStartBills(List<Bill> shiftStartBills) {
+        this.shiftStartBills = shiftStartBills;
+    }
+    
+    private ChannelServiceCategorywiseDetailsWrapperDTO categorywiseDetailsWrapperDTO;
+
+    public ChannelServiceCategorywiseDetailsWrapperDTO getCategorywiseDetailsWrapperDTO() {
+        return categorywiseDetailsWrapperDTO;
+    }
+
+    public void setCategorywiseDetailsWrapperDTO(ChannelServiceCategorywiseDetailsWrapperDTO categorywiseDetailsWrapperDTO) {
+        this.categorywiseDetailsWrapperDTO = categorywiseDetailsWrapperDTO;
+    }
+
+    public void generateChannelCategorywiseDetailsForShitEndFromChannelReportController(Long shiftStartBillId){
+        categorywiseDetailsWrapperDTO = reportTemplateController.generateChannelCategorywiseDetailsForShitEnd(shiftStartBillId);
+    }
+    
+    
+    public void listShiftStartBills() {
+        
+        categorywiseDetailsWrapperDTO = null;
+        
+        String jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret"
+                + " and b.billTypeAtomic=:bta "
+                + " and b.createdAt between :fd and :td ";
+
+        Map params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bta", BillTypeAtomic.FUND_SHIFT_START_BILL);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if(webUser != null){
+             jpql += " and b.creater = :webUser";
+             params.put("webUser", webUser);
+        }
+
+        if (getDepartment() != null) {
+            jpql += " and b.department =:dept";
+            params.put("dept", getDepartment());
+        }
+        jpql += " order by b.createdAt ";
+
+        shiftStartBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
 
     private List<Payment> paymentsFromCardAppoinments;
 
@@ -475,6 +538,7 @@ public class ChannelReportController implements Serializable {
 
         private long bsId;
         private long billId;
+        private BillTypeAtomic billTypeAtomic;
         private Date appoinmentDate;
         private Date billedDate;
         private String billedBy;
@@ -488,9 +552,10 @@ public class ChannelReportController implements Serializable {
         private boolean isCancelled;
         private boolean isRefunded;
 
-        public ChannelIncomeDetailDto(long bsId, long billId, Date appoinmentDate, Date billedDate, String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded) {
+        public ChannelIncomeDetailDto(long bsId, long billId, BillTypeAtomic billTypeAtomic, Date appoinmentDate, Date billedDate, String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded) {
             this.bsId = bsId;
             this.billId = billId;
+            this.billTypeAtomic = billTypeAtomic;
             this.appoinmentDate = appoinmentDate;
             this.billedDate = billedDate;
             this.billedBy = billedBy;
@@ -503,6 +568,14 @@ public class ChannelReportController implements Serializable {
             this.remark = remark;
             this.isCancelled = isCancelled;
             this.isRefunded = isRefunded;
+        }
+
+        public BillTypeAtomic getBillTypeAtomic() {
+            return billTypeAtomic;
+        }
+
+        public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+            this.billTypeAtomic = billTypeAtomic;
         }
 
         public boolean isIsCancelled() {
@@ -3916,6 +3989,9 @@ public class ChannelReportController implements Serializable {
         valueList = null;
         dataBundle = null;
         categoryList = null;
+        webUser = null;
+        shiftStartBills = null;
+        categorywiseDetailsWrapperDTO = null;
     }
 
     List<BillSession> nurseViewSessions;
