@@ -114,6 +114,13 @@
                                                 title="View patient deposit history report"
                                                 action="#{patientDepositHistoryReportController.navigateToPatientDepositHistoriesReport()}"
                                                 class="w-100 m-1 ui-button-help"/>
+                                            <p:commandButton
+                                                icon="pi pi-user-edit"
+                                                ajax="false"
+                                                value="Patient Deposit Histories - By Patient"
+                                                title="View patient deposit histories for a specific patient"
+                                                action="#{patientSpecificDepositHistoryReportController.navigateToPatientSpecificDepositHistoriesReport()}"
+                                                class="w-100 m-1 ui-button-help"/>
                                         </h:panelGrid>
                                     </p:tab>
 

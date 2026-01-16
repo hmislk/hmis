@@ -44,9 +44,9 @@
                                                 id="btnSearchbyPhoneNo"
                                                 icon="fa fa-search"
                                                 title="Quick Search from Phone Number"
-                                                action="#{patientController.searchByPatientPhoneNumber()}"
-                                                process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                                                update="ptSearch patientDisplay"
+                                                actionListener="#{patientController.searchByPatientPhoneNumber()}"
+                                                process="@this txtQuickSearchPhoneNumber"
+                                                update="ptSearch"
                                                 styleClass="btn-sm mx-1">
                                             </p:commandButton>
                                             <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
@@ -73,10 +73,11 @@
                                         <p:column>
                                             <p:commandButton
                                                 id="btnSelectPt"
-                                                process="btnSelectPt tblPatients"
-                                                update="ptSearch patientDisplay"
+                                                process="@this"
+                                                update=":frmPatientSpecificReport:ptSearch"
                                                 value="Select">
                                                 <f:setPropertyActionListener value="#{ps}" target="#{patientController.patient}" />
+                                                <f:setPropertyActionListener value="#{null}" target="#{patientController.searchedPatients}" />
                                             </p:commandButton>
                                         </p:column>
                                     </p:dataTable>
@@ -138,7 +139,8 @@
                                     <h:panelGroup layout="block" styleClass="col-12">
                                         <p:commandButton value="Process"
                                                          icon="fas fa-cogs"
-                                                         action="#{patientSpecificDepositBalanceReportController.processPatientDepositBalanceReport()}"
+                                                         actionListener="#{patientSpecificDepositBalanceReportController.processPatientDepositBalanceReport()}"
+                                                         process="@form"
                                                          update="tblResults"
                                                          styleClass="ui-button-warning mr-2"/>
                                         <p:commandButton value="Clear"
