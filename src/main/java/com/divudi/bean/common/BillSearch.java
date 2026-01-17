@@ -308,6 +308,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     PreReturnController preReturnController;
     @Inject
     GrnCostingController grnCostingController;
+    @Inject
+    BillReturnController billReturnController;
     /**
      * Class Variables
      */
@@ -5827,8 +5829,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public String navigateToViewCcBillRefund(Bill bill) {
-        loadBillDetails(bill);
-        return "/collecting_centre/view/cc_bill_refund_view?faces-redirect=true";
+        billReturnController.setNewlyReturnedBill(bill);
+        return "/collecting_centre/cc_bill_return_print?faces-redirect=true";
     }
 
     public String navigateToViewCcCreditNote(Bill bill) {
