@@ -377,11 +377,11 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             return;
         }
 
-        updateBalance(patientController.getCancelBill(), current);
+        patientDepositService.updateBalance(patientController.getCancelBill(), current);
         List<Payment> p = billBeanController.createPayment(patientController.getCancelBill(),
                 patientController.getCancelBill().getPaymentMethod(),
                 patientController.getPaymentMethodData());
-        drawerController.updateDrawerForOuts(p);        
+        drawerController.updateDrawerForOuts(p);
     }
 
     public void settlePatientDepositReturn() {
@@ -400,9 +400,9 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             JsfUtil.addErrorMessage("No Bill in patient controller. please start from beginning");
             return;
         }
-        
+
         patientController.setBillNetTotal();
-        
+
         if (validatePaymentMethodDataForPatientDepositReturn()) {
             return;
         }
@@ -432,7 +432,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             return;
         }
 
-        updateBalance(patientController.getBill(), current);
+        patientDepositService.updateBalance(patientController.getBill(), current);
         List<Payment> ps = billBeanController.createPayment(patientController.getBill(),
                 patientController.getBill().getPaymentMethod(),
                 patientController.getPaymentMethodData());
