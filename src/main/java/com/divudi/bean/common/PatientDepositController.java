@@ -370,18 +370,32 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         int code = patientController.settlePatientDepositReceiveCancelNew();
 
         if (code == 1) {
-            JsfUtil.addErrorMessage("Please select a Payment Method");
+            JsfUtil.addErrorMessage("No Patient");
             return;
         } else if (code == 2) {
-            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
+            JsfUtil.addErrorMessage("Error creating cancellation bill");
             return;
         }
 
+        // Ensure billedBill reference is set before creating payments
+        if (patientController.getCancelBill().getBilledBill() == null) {
+            patientController.getCancelBill().setBilledBill(patientController.getBill());
+        }
+
+        // Update patient deposit balance
         patientDepositService.updateBalance(patientController.getCancelBill(), current);
-        List<Payment> p = billBeanController.createPayment(patientController.getCancelBill(),
-                patientController.getCancelBill().getPaymentMethod(),
-                patientController.getPaymentMethodData());
-        drawerController.updateDrawerForOuts(p);
+
+        // Automatically reverse original payments (ignores any user input)
+        List<Payment> reversedPayments = paymentService.createPaymentsForCancelling(patientController.getCancelBill());
+
+        // Validate that payments were created (handles legacy data without payment records)
+        if (reversedPayments == null || reversedPayments.isEmpty()) {
+            JsfUtil.addErrorMessage("Cannot cancel deposit: Original payment records not found. This may be legacy data. Please contact system administrator.");
+            return;
+        }
+
+        // Note: No need to call drawerController.updateDrawerForOuts()
+        // because createPaymentsForCancelling() already handles drawer updates via drawerService.updateDrawer()
     }
 
     public void settlePatientDepositReturn() {

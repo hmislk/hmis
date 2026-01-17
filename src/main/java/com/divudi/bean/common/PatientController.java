@@ -1023,9 +1023,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void preparePatientDepositCancel() {
         cancelBill = new CancelledBill();
         current = getBill().getPatient();
-        
+
         PaymentMethod pm = getBill().getPaymentMethod();
-        
+
+        // Fetch original bill payments for display
         originalBillPayments = billBeanController.fetchBillPayments(getBill());
 
         if (originalBillPayments != null && !originalBillPayments.isEmpty()) {
@@ -1035,7 +1036,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
         } else {
             cancelBill.setPaymentMethod(pm);
         }
-        
+
+        // Fetch bill items for display in cancel page
+        billItems = billBeanController.fetchBillItems(getBill());
     }
 
     public void clearDataForPatientRefund() {
@@ -1307,30 +1310,31 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public int settlePatientDepositReceiveCancelNew() {
-        if (getCancelBill().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Please select a Payment Method");
-            return 1;
-        }
-//        if (!current.getHasAnAccount()) {
-//            JsfUtil.addErrorMessage("Please Create Patient Account");
-//            return;
-//        }
-        if (paymentSchemeController.checkPaymentMethodError(getCancelBill().getPaymentMethod(), paymentMethodData)) {
-            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
-            return 2;
+        if (current == null) {
+            return 1; // No Patient
         }
 
-        PaymentMethod tempPm = getCancelBill().getPaymentMethod();
+        // Ensure billedBill reference is set for automatic payment reversal
+        if (getCancelBill().getBilledBill() == null) {
+            getCancelBill().setBilledBill(getBill());
+        }
+
+        // Set payment method from original bill for display/record purposes
+        // (User input is ignored - payments will be auto-reversed from original bill)
+        getCancelBill().setPaymentMethod(getBill().getPaymentMethod());
+
         String tempComment = getCancelBill().getComments();
 
+        // Copy bill details
         cancelBill.copy(getBill());
-        getCancelBill().setPaymentMethod(tempPm);
+        getCancelBill().setPaymentMethod(getBill().getPaymentMethod());
         getCancelBill().setComments(tempComment);
         getBill().setCancelled(true);
         getBill().setCancelledBill(getCancelBill());
-        getCancelBill().setReferenceBill(cancelBill);
+        getCancelBill().setReferenceBill(getBill());
         getCancelBill().setNetTotal(0 - getBill().getNetTotal());
 
+        // Save the cancellation bill (payment creation happens in PatientDepositController)
         settleCancelBill(BillType.PatientPaymentCanceldBill, HistoryType.PatientDeposit, BillNumberSuffix.PDC, current);
 
         billFacade.edit(getCancelBill());
@@ -1371,7 +1375,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void settleCancelBill(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix, Patient patient) {
 
         saveCancelBill(billType, billNumberSuffix, patient);
-        billBeanController.setPaymentMethodData(getBill(), getCancelBill().getPaymentMethod(), getPaymentMethodData());
+        // Payment method data setting removed - payments are auto-reversed by PaymentService.createPaymentsForCancelling()
         addToCancelBill();
         saveBillItem();
         getCancelBill().setBillTypeAtomic(BillTypeAtomic.PATIENT_DEPOSIT_CANCELLED);
