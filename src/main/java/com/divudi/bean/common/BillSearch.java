@@ -5830,7 +5830,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
     public String navigateToViewCcBillRefund(Bill bill) {
         billReturnController.setNewlyReturnedBill(bill);
-        return "/collecting_centre/cc_bill_return_print?faces-redirect=true;";
+        return "/collecting_centre/cc_bill_return_print?faces-redirect=true";
     }
 
     public String navigateToViewCcCreditNote(Bill bill) {
