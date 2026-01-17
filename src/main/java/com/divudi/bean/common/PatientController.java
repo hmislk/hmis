@@ -1307,7 +1307,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public int settlePatientDepositReceiveCancelNew() {
-        if (patient == null) {
+        if (current == null) {
             return 1; // No Patient
         }
 
