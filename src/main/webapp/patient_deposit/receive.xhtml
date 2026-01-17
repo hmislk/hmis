@@ -10,7 +10,8 @@
                 xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
                 xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-                xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
+                xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+                xmlns:pt="http://xmlns.jcp.org/jsf/composite/ezcomp/patient_transactions">
 
     <ui:define name="subcontent">
 
@@ -503,74 +504,9 @@
                             </p:panel>
                         </div>
                     </div>
-                    <div class="row my-2" >
-                        <div class="col-6" >
-                            <p:dataTable id="lateDp" value="#{patientDepositController.latestPatientDeposits}"
-                                         var="lpd"
-                                         rowKey="#{lpd}">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Latest Deposits" />
-                                </f:facet>
-                                <p:column>
-                                    <h:outputLabel value="#{lpd.createdAt}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column>
-                                    <p:tag value="#{lpd.bill.paymentMethod}" severity="success" rendered="#{lpd.bill.paymentMethod eq 'Cash'}" style="font-size: 0.8em" />
-                                    <p:tag value="#{lpd.bill.paymentMethod}" severity="danger" rendered="#{lpd.bill.paymentMethod eq 'Card'}" style="font-size: 0.8em" />
-                                    <p:tag value="#{lpd.bill.paymentMethod}" severity="warning" rendered="#{lpd.bill.paymentMethod ne 'Card' and lpd.bill.paymentMethod ne 'Cash'}" style="font-size: 0.8em" />
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="#{lpd.transactionValue}">
-                                        <f:convertNumber pattern="#,###,##0.00" />
-                                    </h:outputLabel>
-                                </p:column>
-                            </p:dataTable>
-                        </div>
-                        <div class="col-6" >
-                            <p:dataTable id="lateTr" value="#{patientDepositController.latestPatientDepositHistory}"
-                                         var="lpdh"
-                                         rowKey="#{lpdh}">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Latest Tranceactins" />
-                                </f:facet>
-                                <p:column>
-                                    <h:outputLabel value="#{lpdh.createdAt}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="#{lpdh.bill.deptId}">
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="#{lpdh.bill.billTypeAtomic.label}">
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="#{lpdh.transactionValue}" 
-                                                   rendered="#{lpdh.transactionValue gt 0}" 
-                                                   style="color: green;">
-                                        <f:convertNumber pattern="#,###,##0.00" />
-                                    </h:outputLabel>
-
-                                    <h:outputLabel value="#{lpdh.transactionValue}" 
-                                                   rendered="#{lpdh.transactionValue lt 0}" 
-                                                   style="color: red;">
-                                        <f:convertNumber pattern="#,###,##0.00" />
-                                    </h:outputLabel>
-
-                                    <h:outputLabel value="#{lpdh.transactionValue}" 
-                                                   rendered="#{lpdh.transactionValue eq 0}" 
-                                                   style="color: black;">
-                                        <f:convertNumber pattern="#,###,##0.00" />
-                                    </h:outputLabel>
-                                </p:column>
-                            </p:dataTable>
-                        </div>
-
-                    </div>
+                    <pt:latestPatientTransactions
+                        deposits="#{patientDepositController.latestPatientDepositsDto}"
+                        transactions="#{patientDepositController.latestPatientDepositHistoryDto}" />
                 </p:panel>
             </h:form>
         </h:panelGroup>
