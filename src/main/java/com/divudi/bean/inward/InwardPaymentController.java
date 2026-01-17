@@ -119,7 +119,6 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         }
         due = getFinalBillDue();
         patient = current.getPatientEncounter().getPatient();
-        System.out.println("patient = " + patient);
         paymentMethod = null;
         paymentMethodData = new PaymentMethodData();
 
@@ -523,9 +522,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     }
 
     public String fillDataForInpatientsDepositBill(String template, Bill bill) {
-        //System.out.println("fillDataForInpatientsDepositBill");
         if (isInvalidInwardDepositBill(template, bill)) {
-            //System.out.println("Not Valid = " + bill);
             return "";
         }
 
@@ -675,11 +672,9 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             JsfUtil.addErrorMessage("No current bill available");
             return;
         }
-        
+       
         PaymentMethod pm = getPaymentMethod();
         
-        System.out.println("pm = " + pm);
-
         if (pm != null) {
             if (pm == PaymentMethod.PatientDeposit) {
 
@@ -790,7 +785,6 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     }
 
     private void saveBill() {
-        System.out.println("this = " + this);
         getCurrent().setInstitution(getSessionController().getInstitution());
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setBillType(BillType.InwardPaymentBill);
