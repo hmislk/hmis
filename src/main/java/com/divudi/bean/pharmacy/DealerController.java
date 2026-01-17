@@ -201,6 +201,7 @@ public class DealerController implements Serializable {
     public Institution getCurrent() {
         if (current == null) {
             current = new Institution();
+            current.setInstitutionType(InstitutionType.Dealer);
         }
         return current;
     }

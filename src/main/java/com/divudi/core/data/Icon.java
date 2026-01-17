@@ -136,7 +136,8 @@ public enum Icon {
     Purchase_Orders_Finalize("Finalize Purchase Orders"),
     pharmacy_bill_search("Pharmacy Bill Search"),
     pharmacy_bill_search_new("Pharmacy Bill Search (New)"),
-    pharmacy_disposal_issue("Pharmacy Disposal - Direct Issue");
+    pharmacy_disposal_issue("Pharmacy Disposal - Direct Issue"),
+    Patient_Deposit_Management("Patient Deposit Management");
 
     private final String label;
 
@@ -146,5 +147,19 @@ public enum Icon {
 
     public String getLabel() {
         return label;
+    }
+
+    /**
+     * Returns the image filename for this icon.
+     * For Patient_Deposit_Management, returns .svg extension.
+     * For all other icons, returns .png extension (legacy format).
+     *
+     * @return Image filename with extension (e.g., "Patient_Lookup.png" or "Patient_Deposit_Management.svg")
+     */
+    public String getImage() {
+        if (this == Patient_Deposit_Management) {
+            return this.name() + ".svg";
+        }
+        return this.name() + ".png";
     }
 }

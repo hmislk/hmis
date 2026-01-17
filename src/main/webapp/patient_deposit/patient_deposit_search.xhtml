@@ -160,21 +160,21 @@
                                              icon="fas fa-search"
                                              action="#{patientDepositSearchController.searchPatientDeposits()}"
                                              update="tblResults"
-                                             styleClass="ui-button-success mr-2"/>
+                                             styleClass="ui-button-success mx-1"/>
                             <p:commandButton value="Clear"
                                              icon="fas fa-eraser"
                                              action="#{patientDepositSearchController.clearSearch()}"
                                              update="@form"
-                                             styleClass="ui-button-secondary mr-2"/>
+                                             styleClass="ui-button-secondary mx-1"/>
                             <p:commandButton value="Print"
                                              icon="fas fa-print"
-                                             styleClass="ui-button-info mr-2">
+                                             styleClass="ui-button-info mx-1">
                                 <p:printer target="tblResults"/>
                             </p:commandButton>
                             <p:commandButton value="Excel"
                                              icon="fas fa-file-excel"
                                              ajax="false"
-                                             styleClass="ui-button-success">
+                                             styleClass="ui-button-success mx-1">
                                 <p:dataExporter type="xlsx"
                                                 target="tblResults"
                                                 fileName="Patient_Deposits_#{sessionController.institution.name}"/>

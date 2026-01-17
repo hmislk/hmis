@@ -26,6 +26,22 @@
             </div>
 
             <div class="d-flex align-items-center gap-2">
+                <p:outputLabel value="E-wallet No:" styleClass="form-label mb-0"/>
+                <h:outputText
+                    value="#{cc.attrs.paymentMethodData.ewallet.no}"
+                    styleClass="form-control-plaintext"
+                    style="width: 120px;"/>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <p:outputLabel value="Bank/Institution:" styleClass="form-label mb-0"/>
+                <h:outputText
+                    value="#{cc.attrs.paymentMethodData.ewallet.institution.name}"
+                    styleClass="form-control-plaintext"
+                    style="width: 150px;"/>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
                 <p:outputLabel value="Reference No:" styleClass="form-label mb-0"/>
                 <h:outputText
                     value="#{cc.attrs.paymentMethodData.ewallet.referenceNo}"
