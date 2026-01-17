@@ -42,8 +42,6 @@ public class InwardIncomeDoctorSpecialtyDTO {
         this.hosFee = hosFee;
         this.billId = billId;
         this.billTotal = billTotal;
-        
-        System.out.println("billId + billTotal = " + billId + billTotal);
     }
     
     public InwardIncomeDoctorSpecialtyDTO(Long staffId, Double docFee, Double hosFee) {
