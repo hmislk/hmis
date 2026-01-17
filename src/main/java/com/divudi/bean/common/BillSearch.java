@@ -322,6 +322,10 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     private Bill printingBill;
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
+
+    // Storage for original payment details loaded during navigation
+    private List<ComponentDetail> originalPaymentDetails;
+    private PaymentMethodData originalPaymentMethodData;
     private RefundBill billForRefund;
     @Temporal(TemporalType.TIME)
     private Date fromDate;
@@ -526,11 +530,17 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         return "bill_payment_opd?faces-redirect=true";
     }
 
+    
+    @Deprecated // Use #{opdBillCancellationController.navigateToCancelBillView()}
     public String navigateToCancelBillView() {
-        if (bill != null) {
+        if (bill == null) {
             JsfUtil.addErrorMessage("Bill is Missing..");
             return "";
         }
+
+        // Load and store original payment details for cancellation
+        loadOriginalPaymentDetails();
+
         printPreview = true;
         duplicate = true;
         return "/opd/bill_cancel?faces-redirect=true";
@@ -1895,6 +1905,10 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
      * Otherwise, creates new payment data for the selected method.
      */
     public void onPaymentMethodChange() {
+        try {
+            System.out.println("onPaymentMethodChange: Method started");
+            System.out.println("onPaymentMethodChange: Payment method changed to " + this.paymentMethod);
+
         // Check if user selected the original payment method - if so, restore original details
         if (billPayments != null && !billPayments.isEmpty()) {
             Payment originalPayment = billPayments.get(0);
@@ -1902,7 +1916,19 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 // User switched back to original payment method - restore original details
                 paymentMethodData = new PaymentMethodData();
                 initializePaymentDataFromOriginalPayments(billPayments);
+                System.out.println("onPaymentMethodChange: Used billPayments for original payment method");
                 return;
+            }
+        } else if (originalPaymentDetails != null && !originalPaymentDetails.isEmpty()) {
+            // Check stored original payment details when billPayments is not available
+            for (ComponentDetail originalDetail : originalPaymentDetails) {
+                if (paymentMethod == originalDetail.getPaymentMethod()) {
+                    // User selected a payment method that was used in original bill
+                    paymentMethodData = new PaymentMethodData();
+                    initializePaymentMethodData();
+                    System.out.println("onPaymentMethodChange: Used stored payment details for original payment method");
+                    return;
+                }
             }
         }
 
@@ -1956,7 +1982,18 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                     // For other payment methods, just initialize with net total
                     break;
             }
+            System.out.println("onPaymentMethodChange: Created new payment data with net total for " + paymentMethod);
         }
+        System.out.println("onPaymentMethodChange: Method completed successfully");
+        } catch (Exception e) {
+            System.err.println("onPaymentMethodChange: ERROR - " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // Temporary test method to verify AJAX is working
+    public void testAjaxMethod() {
+        System.out.println("TEST: AJAX method called successfully! Payment method is: " + this.paymentMethod);
     }
 
     public String refundCollectingCenterBill() {
@@ -7198,10 +7235,13 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
     public PaymentMethodData getPaymentMethodData() {
         // If we're viewing a bill that was paid with multiple payment methods,
-        // show the original payment data for read-only viewing when needed
-        if (this.bill != null && this.bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods &&
-            this.paymentMethod == PaymentMethod.MultiplePaymentMethods) {
-            return getOriginalBillPaymentMethodData();
+        // and we have stored original payment data, use that for the "Original Payment Details" section
+        if (this.bill != null &&
+            this.bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods &&
+            originalPaymentMethodData != null &&
+            originalPaymentMethodData.getPaymentMethodMultiple() != null &&
+            !originalPaymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return originalPaymentMethodData;
         }
 
         // Otherwise return the normal payment method data for editing
@@ -7213,6 +7253,43 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         this.paymentMethodData = paymentMethodData;
+    }
+
+    /**
+     * Initialize payment method data for newly selected payment method
+     * Uses stored original payment details if available
+     */
+    private void initializePaymentMethodData() {
+        try {
+            System.out.println("initializePaymentMethodData: Initializing for " + this.paymentMethod);
+
+            // Convert stored ComponentDetail objects back to Payment entities for compatibility
+            if (originalPaymentDetails != null && !originalPaymentDetails.isEmpty()) {
+                List<Payment> paymentEntities = new ArrayList<>();
+
+                for (ComponentDetail cd : originalPaymentDetails) {
+                    Payment payment = new Payment();
+                    payment.setPaymentMethod(cd.getPaymentMethod());
+                    payment.setPaidValue(cd.getTotalValue());
+                    payment.setComments(cd.getComment());
+                    payment.setReferenceNo(cd.getReferenceNo());
+                    payment.setPaymentDate(cd.getDate());
+                    payment.setBank(cd.getInstitution());
+
+                    paymentEntities.add(payment);
+                }
+
+                // Use existing method with converted payment entities
+                initializePaymentDataFromOriginalPayments(paymentEntities);
+
+                System.out.println("initializePaymentMethodData: Used stored payment details");
+            } else {
+                System.out.println("initializePaymentMethodData: No stored payment details available");
+            }
+        } catch (Exception e) {
+            System.out.println("Error initializing payment method data: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -8006,30 +8083,94 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     /**
-     * Helper method to get original payment methods by type from bill payments
+     * Get the original payment component details from stored payment details
+     * This provides the same data as the "Original Payment Details" section
+     */
+    public List<ComponentDetail> getOriginalPaymentComponentDetails() {
+        if (originalPaymentDetails != null) {
+            return new ArrayList<>(originalPaymentDetails);
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * Helper method to get original payment methods by type from stored payment details
      */
     private List<ComponentDetail> getOriginalPaymentsByMethod(PaymentMethod paymentMethod) {
         List<ComponentDetail> filteredPayments = new ArrayList<>();
 
-        if (this.bill != null && this.bill.getPayments() != null) {
-            for (Payment payment : this.bill.getPayments()) {
-                if (payment.getPaymentMethod() == paymentMethod && payment.getPaidValue() > 0) {
-                    // Create a ComponentDetail from the Payment entity
-                    ComponentDetail cd = new ComponentDetail();
-                    cd.setPaymentMethod(payment.getPaymentMethod());
-                    cd.setTotalValue(payment.getPaidValue());
-                    cd.setComment(payment.getComments());
-                    cd.setNo(payment.getReferenceNo()); // Used for various reference numbers
-                    cd.setReferenceNo(payment.getReferenceNo());
-                    cd.setDate(payment.getPaymentDate());
-                    cd.setInstitution(payment.getInstitution());
-
-                    filteredPayments.add(cd);
+        try {
+            // Use stored original payment details loaded during navigation
+            if (originalPaymentDetails != null) {
+                for (ComponentDetail pm : originalPaymentDetails) {
+                    if (pm != null && pm.getPaymentMethod() == paymentMethod) {
+                        filteredPayments.add(pm);
+                    }
                 }
             }
+
+            System.out.println("getOriginalPaymentsByMethod(" + paymentMethod + "): Found " + filteredPayments.size() + " payments");
+        } catch (Exception e) {
+            System.out.println("Error getting original payments by method: " + e.getMessage());
+            e.printStackTrace();
         }
 
         return filteredPayments;
+    }
+
+    /**
+     * Load and store original payment details during navigation from bill_reprint.xhtml
+     * This ensures payment details are available throughout the cancellation process
+     */
+    public void loadOriginalPaymentDetails() {
+        originalPaymentDetails = new ArrayList<>();
+
+        try {
+            if (this.bill != null) {
+                // Use existing fetchBillPayments method that's working correctly
+                List<Payment> payments = fetchBillPayments(this.bill);
+                System.out.println("loadOriginalPaymentDetails: Found " + payments.size() + " payments");
+
+                // Convert Payment entities to ComponentDetail objects for UI compatibility
+                for (Payment payment : payments) {
+                    if (payment.getPaidValue() > 0) {
+                        ComponentDetail cd = new ComponentDetail();
+                        cd.setPaymentMethod(payment.getPaymentMethod());
+                        cd.setTotalValue(payment.getPaidValue());
+                        cd.setComment(payment.getComments());
+                        cd.setNo(payment.getReferenceNo());
+                        cd.setReferenceNo(payment.getReferenceNo());
+                        cd.setDate(payment.getPaymentDate());
+                        cd.setInstitution(payment.getBank());
+
+                        originalPaymentDetails.add(cd);
+                        System.out.println("  Stored: " + payment.getPaymentMethod() +
+                                         ", Amount: " + payment.getPaidValue() +
+                                         ", Ref: " + payment.getReferenceNo());
+                    }
+                }
+
+                // Create PaymentMethodData structure for compatibility with existing components
+                createOriginalPaymentMethodData();
+
+                System.out.println("loadOriginalPaymentDetails: Total stored payment details: " + originalPaymentDetails.size());
+            }
+        } catch (Exception e) {
+            System.out.println("Error loading original payment details: " + e.getMessage());
+            e.printStackTrace();
+            JsfUtil.addErrorMessage("Error loading original payment details: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Create PaymentMethodData structure from stored payment details
+     */
+    private void createOriginalPaymentMethodData() {
+        if (originalPaymentDetails != null && !originalPaymentDetails.isEmpty()) {
+            originalPaymentMethodData = new PaymentMethodData();
+            ComponentDetail multipleComponent = originalPaymentMethodData.getPaymentMethodMultiple();
+            multipleComponent.setMultiplePaymentMethodComponentDetails(new ArrayList<>(originalPaymentDetails));
+        }
     }
 
     /**
@@ -8039,49 +8180,38 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         return !getOriginalPaymentsByMethod(paymentMethod).isEmpty();
     }
 
+
+
+    // ======== Getter and Setter Methods for Original Payment Details ========
+
     /**
-     * Get all original payment methods from the bill for read-only display
+     * Get stored original payment details loaded during navigation
      */
-    public List<ComponentDetail> getAllOriginalPayments() {
-        List<ComponentDetail> allPayments = new ArrayList<>();
-
-        if (this.bill != null && this.bill.getPayments() != null) {
-            for (Payment payment : this.bill.getPayments()) {
-                if (payment.getPaidValue() > 0) {
-                    // Create a ComponentDetail from the Payment entity
-                    ComponentDetail cd = new ComponentDetail();
-                    cd.setPaymentMethod(payment.getPaymentMethod());
-                    cd.setTotalValue(payment.getPaidValue());
-                    cd.setComment(payment.getComments());
-                    cd.setNo(payment.getReferenceNo()); // Used for various reference numbers
-                    cd.setReferenceNo(payment.getReferenceNo());
-                    cd.setDate(payment.getPaymentDate());
-                    cd.setInstitution(payment.getInstitution());
-
-                    allPayments.add(cd);
-                }
-            }
-        }
-
-        return allPayments;
+    public List<ComponentDetail> getOriginalPaymentDetails() {
+        return originalPaymentDetails;
     }
 
     /**
-     * Get the original bill's paymentMethodData structure for compatibility with existing components
-     * This creates a PaymentMethodData structure from the original bill's payments
+     * Set original payment details (used for testing or manual setting)
      */
-    public PaymentMethodData getOriginalBillPaymentMethodData() {
-        if (this.bill != null && this.bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
-            PaymentMethodData originalPmd = new PaymentMethodData();
-            ComponentDetail multipleComponent = originalPmd.getPaymentMethodMultiple();
+    public void setOriginalPaymentDetails(List<ComponentDetail> originalPaymentDetails) {
+        this.originalPaymentDetails = originalPaymentDetails;
+        // Recreate PaymentMethodData structure when details are set
+        createOriginalPaymentMethodData();
+    }
 
-            // Populate the multiple payment method component details from original payments
-            List<ComponentDetail> originalPayments = getAllOriginalPayments();
-            multipleComponent.setMultiplePaymentMethodComponentDetails(originalPayments);
+    /**
+     * Get original payment method data structure
+     */
+    public PaymentMethodData getOriginalPaymentMethodData() {
+        return originalPaymentMethodData;
+    }
 
-            return originalPmd;
-        }
-        return new PaymentMethodData();
+    /**
+     * Set original payment method data structure
+     */
+    public void setOriginalPaymentMethodData(PaymentMethodData originalPaymentMethodData) {
+        this.originalPaymentMethodData = originalPaymentMethodData;
     }
 
 
