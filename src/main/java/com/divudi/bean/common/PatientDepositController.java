@@ -361,7 +361,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
             JsfUtil.addErrorMessage("Entered Patient is Not Registered");
             return;
         }
-        current = getDepositOfThePatient(patientController.getBill().getPatient(), sessionController.getDepartment());
+        current = patientDepositService.getDepositOfThePatient(patientController.getBill().getPatient(), sessionController.getDepartment());
         if (patientController.getBill().getNetTotal() > current.getBalance()) {
             JsfUtil.addErrorMessage("Insufficient Balance");
             return;
