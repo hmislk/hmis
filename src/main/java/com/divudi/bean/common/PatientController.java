@@ -1023,9 +1023,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void preparePatientDepositCancel() {
         cancelBill = new CancelledBill();
         current = getBill().getPatient();
-        
+
         PaymentMethod pm = getBill().getPaymentMethod();
-        
+
+        // Fetch original bill payments for display
         originalBillPayments = billBeanController.fetchBillPayments(getBill());
 
         if (originalBillPayments != null && !originalBillPayments.isEmpty()) {
@@ -1035,7 +1036,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
         } else {
             cancelBill.setPaymentMethod(pm);
         }
-        
+
+        // Fetch bill items for display in cancel page
+        billItems = billBeanController.fetchBillItems(getBill());
     }
 
     public void clearDataForPatientRefund() {
