@@ -57,98 +57,82 @@
                                 </h:panelGrid>
                             </f:facet>
 
-                            <!-- Payment Mode Panel -->
+                            <!-- Payment Reversal Information Message -->
+                            <p:panel styleClass="mb-3 ui-panel-info">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-info-circle mr-2"/>
+                                    <h:outputText value="Payment Reversal Information"/>
+                                </f:facet>
+                                <div class="alert alert-info mb-3">
+                                    <p><strong>Important:</strong> Cancelling this patient deposit will automatically reverse the original payment method(s).</p>
+                                    <p>The payment details shown below are read-only and display how the deposit was originally received.</p>
+                                    <p class="mb-2"><strong>Note:</strong> If you need to return funds using different payment methods, please use the button below:</p>
+                                    <p:commandButton
+                                        icon="pi pi-undo"
+                                        ajax="false"
+                                        value="Return Patient Deposits"
+                                        title="Process patient deposit returns"
+                                        action="/patient_deposit/pay?faces-redirect=true"
+                                        actionListener="#{patientDepositController.clearDataForPatientDeposit()}"
+                                        class="ui-button-warning"/>
+                                </div>
+                            </p:panel>
+
+                            <!-- Original Payment Details (Read-Only Display) -->
                             <p:panel>
                                 <f:facet name="header">
-                                    <h:outputText styleClass="fas fa-money-bill"></h:outputText>
-                                    <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
+                                    <h:outputText styleClass="fas fa-money-bill"/>
+                                    <h:outputLabel value="Original Payment Method (Read-Only)" class="mx-2"/>
                                 </f:facet>
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <p:selectOneMenu 
-                                            id="cmbPs" 
-                                            value="#{patientController.cancelBill.paymentMethod}" >
-                                            <f:selectItem itemLabel="Select payment Method"/>
-                                            <f:selectItems value="#{enumController.paymentMethodsForPatientDepositCancel}"/>
-                                            <p:ajax process="cmbPs" update="paymentDetails creditCard credit multiplePaymentMethods patientDeposit slip cheque eWallet"  event="itemSelect"></p:ajax>
-                                        </p:selectOneMenu>
+
+                                <h:panelGroup id="originalPaymentDisplay">
+                                    <!-- Display payment method type badge -->
+                                    <div class="mb-3">
+                                        <h:outputLabel value="Payment Method: " styleClass="font-weight-bold"/>
+                                        <p:badge value="#{patientController.bill.paymentMethod.label}"
+                                                 severity="info"
+                                                 styleClass="ml-2"/>
                                     </div>
-                                </div>
-                                
 
-                                <div class="row">
-                                    <h:panelGroup id="paymentDetails" layout="block" class="col-md-12" >
+                                    <!-- Single Payment Method Display -->
+                                    <h:panelGroup rendered="#{patientController.bill.paymentMethod ne 'MultiplePaymentMethods'}">
 
-<!--                                        <h:panelGroup id="cashC" rendered="#{patientController.cancelBill.paymentMethod eq 'Cash'}">
-                                            <div class="row">
-                                                <div class="col-6">
-                                                    <p:inputText 
-                                                        placeholder="Amount"
-                                                        autocomplete="off" 
-                                                        value="" 
-                                                        onfocus="this.select()"
-                                                        class="m-1"
-                                                        id="txtVal">
-                                                        <p:ajax process="@this" ></p:ajax>
-                                                    </p:inputText>
-                                                </div>   
-                                            </div>
-                                        </h:panelGroup>-->
-
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block"  
-                                            id="creditCard" rendered="#{patientController.cancelBill.paymentMethod eq 'Card'}" >
-                                            <pa:creditCard paymentMethodData="#{patientController.paymentMethodData}"/>
+                                        <!-- Cash View -->
+                                        <h:panelGroup rendered="#{patientController.bill.paymentMethod eq 'Cash'}">
+                                            <pa:cash_view paymentMethodData="#{patientController.paymentMethodData}"/>
                                         </h:panelGroup>
 
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block"  
-                                            id="credit" rendered="#{patientController.cancelBill.paymentMethod eq 'Credit'}" >
-                                            <pa:credit paymentMethodData="#{patientController.paymentMethodData}"/>
+                                        <!-- Card View -->
+                                        <h:panelGroup rendered="#{patientController.bill.paymentMethod eq 'Card'}">
+                                            <pa:creditCard_view paymentMethodData="#{patientController.paymentMethodData}"/>
                                         </h:panelGroup>
 
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="eWallet"  rendered="#{patientController.cancelBill.paymentMethod eq 'ewallet'}" >
-                                            <pa:ewallet paymentMethodData="#{patientController.paymentMethodData}" />
+                                        <!-- Cheque View -->
+                                        <h:panelGroup rendered="#{patientController.bill.paymentMethod eq 'Cheque'}">
+                                            <pa:cheque_view paymentMethodData="#{patientController.paymentMethodData}"/>
                                         </h:panelGroup>
 
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="cheque"  rendered="#{patientController.cancelBill.paymentMethod eq 'Cheque'}" >
-                                            <pa:cheque paymentMethodData="#{patientController.paymentMethodData}"/>
+                                        <!-- Slip View -->
+                                        <h:panelGroup rendered="#{patientController.bill.paymentMethod eq 'Slip'}">
+                                            <pa:slip_view paymentMethodData="#{patientController.paymentMethodData}"/>
                                         </h:panelGroup>
 
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="slip"  rendered="#{patientController.cancelBill.paymentMethod eq 'Slip'}" >
-                                            <pa:slip paymentMethodData="#{patientController.paymentMethodData}"/>
+                                        <!-- E-wallet View -->
+                                        <h:panelGroup rendered="#{patientController.bill.paymentMethod eq 'ewallet'}">
+                                            <pa:ewallet_view paymentMethodData="#{patientController.paymentMethodData}"/>
                                         </h:panelGroup>
 
-                                        <h:panelGroup 
-                                            class="row my-1"
-                                            layout="block" 
-                                            id="patientDeposit"  rendered="#{patientController.cancelBill.paymentMethod eq 'PatientDeposit'}" >
-                                            <pa:patient_deposit paymentMethodData="#{patientController.paymentMethodData}"/>
+                                        <!-- Patient Deposit View -->
+                                        <h:panelGroup rendered="#{patientController.bill.paymentMethod eq 'PatientDeposit'}">
+                                            <pa:patient_deposit_view paymentMethodData="#{patientController.paymentMethodData}"/>
                                         </h:panelGroup>
-
-                                        <h:panelGroup
-                                            class="row my-1 w-100"
-                                            layout="block" 
-                                            id="multiplePaymentMethods"  rendered="#{patientController.cancelBill.paymentMethod eq 'MultiplePaymentMethods'}" >
-                                            <pa:multiple_payment_methods controller="#{patientController}" paymentMethods="#{enumController.paymentMethodsForPatientDepositCancel}" class="w-100"/>
-                                        </h:panelGroup>
-
-
                                     </h:panelGroup>
 
-                                </div>
-
+                                    <!-- Multiple Payment Methods Display -->
+                                    <h:panelGroup rendered="#{patientController.bill.paymentMethod eq 'MultiplePaymentMethods'}">
+                                        <pa:multiple_payment_methods_view controller="#{patientController}"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
                             </p:panel>
 
                             <!-- Patient Details and Bill Details Panels -->
