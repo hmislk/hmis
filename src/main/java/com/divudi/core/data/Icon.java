@@ -149,7 +149,17 @@ public enum Icon {
         return label;
     }
 
+    /**
+     * Returns the image filename for this icon.
+     * For Patient_Deposit_Management, returns .svg extension.
+     * For all other icons, returns .png extension (legacy format).
+     *
+     * @return Image filename with extension (e.g., "Patient_Lookup.png" or "Patient_Deposit_Management.svg")
+     */
     public String getImage() {
-        return this.name() + ".svg";
+        if (this == Patient_Deposit_Management) {
+            return this.name() + ".svg";
+        }
+        return this.name() + ".png";
     }
 }
