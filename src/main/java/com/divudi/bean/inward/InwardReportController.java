@@ -45,9 +45,12 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -340,6 +343,24 @@ public class InwardReportController implements Serializable {
             processSpecialtyWiseIncomeReport();
         }
     }
+
+    public void calculateTotalValuesSpcDocIncome(Map<Long, InwardIncomeDoctorSpecialtyDTO> m) {
+        Double docChargeTotal = 0.0;
+        Double hospitalChargeTotal = 0.0;
+        Double totalCharge = 0.0;
+
+        for (Map.Entry<Long, InwardIncomeDoctorSpecialtyDTO> entry : m.entrySet()) {
+            getSpcDocIncomeBillList().add(entry.getValue());
+            docChargeTotal += entry.getValue().getDocFee();
+            hospitalChargeTotal += entry.getValue().getHosFee();
+            totalCharge += entry.getValue().getBillTotal();
+        }
+
+        totalValuesSpcDocIncome = new InwardIncomeDoctorSpecialtyDTO();
+        totalValuesSpcDocIncome.setDocFeeTotal(docChargeTotal);
+        totalValuesSpcDocIncome.setHosFeeTotal(hospitalChargeTotal);
+        totalValuesSpcDocIncome.setTotalCharge(totalCharge);
+    }
     
     public void processSpecialtyWiseIncomeReport() {
         spcDocIncomeBillList = new ArrayList<>();
@@ -390,7 +411,7 @@ public class InwardReportController implements Serializable {
         List<InwardIncomeDoctorSpecialtyDTO> rawList = (List<InwardIncomeDoctorSpecialtyDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
         
         Map<Long, InwardIncomeDoctorSpecialtyDTO> specialtyMap = new LinkedHashMap<>();
-        Map<Long, Map<Long, Double>> spacialtyBill = new LinkedHashMap<>();
+        Map<Long, Set<Long>> spacialtyBill = new LinkedHashMap<>();
         
         for (InwardIncomeDoctorSpecialtyDTO dto : rawList) {
             if (dto.getStaffId() == null) {
@@ -406,8 +427,8 @@ public class InwardReportController implements Serializable {
                 return spc;
             });
             
-            Map<Long, Double> currentBill = spacialtyBill.computeIfAbsent(sId, k -> new LinkedHashMap<>());
-            if (currentBill.putIfAbsent(dto.getBillId(), dto.getBillTotal()) == null) {
+            Set<Long> currentBill = spacialtyBill.computeIfAbsent(sId, k -> new HashSet<>());
+            if (currentBill.add(dto.getBillId())) {
                 currentSpc.setBillTotal(currentSpc.getBillTotal() + dto.getBillTotal());
             }
             
@@ -415,21 +436,7 @@ public class InwardReportController implements Serializable {
             currentSpc.setHosFee(currentSpc.getHosFee() + dto.getHosFee());
         }
         
-        Double docChargeTotal = 0.0;
-        Double hospitalChargeTotal = 0.0;
-        Double totalCharge = 0.0;
-        
-        for (Map.Entry<Long, InwardIncomeDoctorSpecialtyDTO> entry : specialtyMap.entrySet()) {
-            getSpcDocIncomeBillList().add(entry.getValue());
-            docChargeTotal += entry.getValue().getDocFee();
-            hospitalChargeTotal += entry.getValue().getHosFee();
-            totalCharge += entry.getValue().getBillTotal();
-        }
-        
-        totalValuesSpcDocIncome = new InwardIncomeDoctorSpecialtyDTO();
-        totalValuesSpcDocIncome.setDocFeeTotal(docChargeTotal);
-        totalValuesSpcDocIncome.setHosFeeTotal(hospitalChargeTotal);
-        totalValuesSpcDocIncome.setTotalCharge(totalCharge);
+        calculateTotalValuesSpcDocIncome(specialtyMap);
         
 
     }
@@ -483,7 +490,7 @@ public class InwardReportController implements Serializable {
         List<InwardIncomeDoctorSpecialtyDTO> rawList = (List<InwardIncomeDoctorSpecialtyDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
         
         Map<Long, InwardIncomeDoctorSpecialtyDTO> doctorMap = new LinkedHashMap<>();
-        Map<Long, Map<Long, Double>> doctorBill = new LinkedHashMap<>();
+        Map<Long, Set<Long>> doctorBill = new LinkedHashMap<>();
         
         for (InwardIncomeDoctorSpecialtyDTO dto : rawList) {
             if (dto.getStaffId() == null) {
@@ -500,8 +507,8 @@ public class InwardReportController implements Serializable {
                 return doc;
             });
             
-            Map<Long, Double> currentBill = doctorBill.computeIfAbsent(sId, k -> new LinkedHashMap<>());
-            if (currentBill.putIfAbsent(dto.getBillId(), dto.getBillTotal()) == null) {
+            Set<Long> currentBill = doctorBill.computeIfAbsent(sId, k -> new HashSet<>());
+            if (currentBill.add(dto.getBillId())) {
                 currentDoc.setBillTotal(currentDoc.getBillTotal() + dto.getBillTotal());
             }
 
@@ -510,23 +517,23 @@ public class InwardReportController implements Serializable {
             currentDoc.setHosFee(currentDoc.getHosFee() + dto.getHosFee());
         }
         
-        Double docChargeTotal = 0.0;
-        Double hospitalChargeTotal = 0.0;
-        Double totalCharge = 0.0;
+        // Double docChargeTotal = 0.0;
+        // Double hospitalChargeTotal = 0.0;
+        // Double totalCharge = 0.0;
         
-        for (Map.Entry<Long, InwardIncomeDoctorSpecialtyDTO> entry : doctorMap.entrySet()) {
-            getSpcDocIncomeBillList().add(entry.getValue());
-            docChargeTotal += entry.getValue().getDocFee();
-            hospitalChargeTotal += entry.getValue().getHosFee();
-            totalCharge += entry.getValue().getBillTotal();
-        }
+        // for (Map.Entry<Long, InwardIncomeDoctorSpecialtyDTO> entry : doctorMap.entrySet()) {
+        //     getSpcDocIncomeBillList().add(entry.getValue());
+        //     docChargeTotal += entry.getValue().getDocFee();
+        //     hospitalChargeTotal += entry.getValue().getHosFee();
+        //     totalCharge += entry.getValue().getBillTotal();
+        // }
         
-        totalValuesSpcDocIncome = new InwardIncomeDoctorSpecialtyDTO();
-        totalValuesSpcDocIncome.setDocFeeTotal(docChargeTotal);
-        totalValuesSpcDocIncome.setHosFeeTotal(hospitalChargeTotal);
-        totalValuesSpcDocIncome.setTotalCharge(totalCharge);
-            
+        // totalValuesSpcDocIncome = new InwardIncomeDoctorSpecialtyDTO();
+        // totalValuesSpcDocIncome.setDocFeeTotal(docChargeTotal);
+        // totalValuesSpcDocIncome.setHosFeeTotal(hospitalChargeTotal);
+        // totalValuesSpcDocIncome.setTotalCharge(totalCharge);
 
+        calculateTotalValuesSpcDocIncome(doctorMap);
     }
 
     private String lineChartModel;
