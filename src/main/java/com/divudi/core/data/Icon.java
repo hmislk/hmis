@@ -136,7 +136,8 @@ public enum Icon {
     Purchase_Orders_Finalize("Finalize Purchase Orders"),
     pharmacy_bill_search("Pharmacy Bill Search"),
     pharmacy_bill_search_new("Pharmacy Bill Search (New)"),
-    pharmacy_disposal_issue("Pharmacy Disposal - Direct Issue");
+    pharmacy_disposal_issue("Pharmacy Disposal - Direct Issue"),
+    Patient_Deposit_Management("Patient Deposit Management");
 
     private final String label;
 
@@ -146,5 +147,9 @@ public enum Icon {
 
     public String getLabel() {
         return label;
+    }
+
+    public String getImage() {
+        return this.name() + ".svg";
     }
 }
