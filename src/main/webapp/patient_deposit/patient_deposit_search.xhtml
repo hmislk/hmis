@@ -284,12 +284,18 @@
                     <h:outputText value="#{dto.cancelledBillComments}" rendered="#{dto.cancelled}"/>
                 </p:column>
 
-                <p:column headerText="Action" style="width: 50px;">
+                <p:column headerText="Action" style="width: 100px;">
                     <p:commandButton icon="fas fa-eye"
                                      ajax="false"
                                      styleClass="ui-button-info"
                                      action="#{patientDepositSearchController.navigateToReprintBill(dto.id)}"
                                      title="View Bill"/>
+                    <p:commandButton icon="fas fa-ban"
+                                     ajax="false"
+                                     styleClass="ui-button-danger ml-1"
+                                     action="#{patientDepositSearchController.navigateToViewCancelledBill(dto.cancelledBillId)}"
+                                     title="View Cancelled Bill"
+                                     rendered="#{dto.cancelled and dto.cancelledBillId ne null}"/>
                 </p:column>
 
             </p:dataTable>

@@ -1022,6 +1022,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void preparePatientDepositCancel() {
         cancelBill = new CancelledBill();
+        paymentMethodData = new PaymentMethodData();
         current = getBill().getPatient();
 
         PaymentMethod pm = getBill().getPaymentMethod();
@@ -1332,7 +1333,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getBill().setCancelled(true);
         getBill().setCancelledBill(getCancelBill());
         getCancelBill().setReferenceBill(getBill());
-        getCancelBill().setNetTotal(0 - getBill().getNetTotal());
+        getCancelBill().invertValueOfThisBill();
 
         // Save the cancellation bill (payment creation happens in PatientDepositController)
         settleCancelBill(BillType.PatientPaymentCanceldBill, HistoryType.PatientDeposit, BillNumberSuffix.PDC, current);
@@ -1575,6 +1576,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private void saveBillItem() {
         if (getBill().isCancelled() && getBill().getCancelledBill() != null) {
             for (BillItem tmp : getBillItems()) {
+                tmp.setId(null);
                 tmp.setCreatedAt(new Date());
                 tmp.setCreater(getSessionController().getLoggedUser());
                 tmp.setBill(getBill().getCancelledBill());
@@ -1584,6 +1586,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return;
         }
         for (BillItem tmp : getBillItems()) {
+            tmp.setId(null);
             tmp.setCreatedAt(new Date());
             tmp.setCreater(getSessionController().getLoggedUser());
             tmp.setBill(getBill());
