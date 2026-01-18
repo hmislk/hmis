@@ -225,7 +225,7 @@ public class DataAdministrationController implements Serializable {
     @Inject
     com.divudi.service.CacheAdminService cacheAdminService;
     @Inject
-    com.divudi.service.PharmacyCostingService pharmacyCostingService;
+    com.divudi.service.pharmacy.PharmacyCostingService pharmacyCostingService;
 
     @EJB
     ItemFacade itemFacade;
