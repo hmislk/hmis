@@ -540,11 +540,8 @@ public class PharmacyCalculation implements Serializable {
     }
 
     public double calQty3(BillItem bil) {
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
-        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
 
-        double returnBill = getTotalQty(bil, btas);
+        double returnBill = getTotalQty(bil, BillType.PharmacyPre, new RefundBill());
 
         return bil.getQty() - returnBill;
     }
