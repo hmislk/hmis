@@ -199,12 +199,7 @@ public class PaymentService {
     
     public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Institution institution, Department department, WebUser webUser) {
         List<Payment> ps = new ArrayList<>();
-        
-        System.out.println("createPayment");
-        System.out.println("bill = " + bill);
-        System.out.println("pm = " + pm);
-        
-        
+
         if (pm == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 Payment p = new Payment();
@@ -279,7 +274,6 @@ public class PaymentService {
                 ps.add(p);
             }
         } else {
-            System.out.println("ELSE = ");
             Payment p = new Payment();
             p.setBill(bill);
             p.setInstitution(institution);
@@ -287,10 +281,6 @@ public class PaymentService {
             p.setCreatedAt(new Date());
             p.setCreater(webUser);
             p.setPaymentMethod(pm);
-            
-            System.out.println("pm = " + pm);
-            System.out.println("bill = " + bill);
-            System.out.println("Total = " + bill.getTotal());
             
             switch (pm) {
                 case Cash:
