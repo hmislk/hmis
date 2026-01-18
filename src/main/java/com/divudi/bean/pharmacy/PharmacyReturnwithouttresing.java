@@ -790,6 +790,21 @@ public class PharmacyReturnwithouttresing implements Serializable {
             fd.setTotalCost(totalCostValue.negate());
         }
 
+        // Set BIFD value fields for aggregation by createBillFinanceDetails()
+        // Calculate stock valuation values (NEGATIVE for returns)
+        if (fd.getCostRate() != null) {
+            BigDecimal costValue = fd.getCostRate().multiply(totalQtyByUnits.abs()).negate();
+            fd.setValueAtCostRate(costValue);
+        }
+        if (fd.getPurchaseRate() != null) {
+            BigDecimal purchaseValue = fd.getPurchaseRate().multiply(totalQtyByUnits.abs()).negate();
+            fd.setValueAtPurchaseRate(purchaseValue);
+        }
+        if (fd.getRetailSaleRate() != null) {
+            BigDecimal retailValue = fd.getRetailSaleRate().multiply(totalQtyByUnits.abs()).negate();
+            fd.setValueAtRetailRate(retailValue);
+        }
+
         // Set PharmaceuticalBillItem stock values (negative for returns)
         if (phi != null) {
             double totalQtyInUnits = totalQtyByUnits.doubleValue();
@@ -805,6 +820,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
                 phi.setRetailRate(fd.getRetailSaleRate().doubleValue());
             }
         }
+
 
         // Set zero-value fields (no discounts, taxes, or expenses on returns without tracing)
         fd.setLineDiscount(BigDecimal.ZERO);
