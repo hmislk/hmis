@@ -49,5 +49,8 @@
 ### When Committing Code
 - [Commit Conventions](developer_docs/git/commit-conventions.md) - Message format
 
+## Common Abbreviations & Terms
+- **TIA**: Thanks In Advance
+
 ---
 This behavior should persist across all Claude Code sessions for this project.

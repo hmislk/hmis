@@ -242,9 +242,9 @@
                                                 ajax="false"
                                                 id="cancelBillNo"
                                                 value="#{bill.cancelledBill.deptId}"
-                                                action="#{billSearch.navigateToCancelBillView()}"
+                                                action="#{opdBillCancellationController.navigateToCancelBillView()}"
                                                 rendered="#{bill.cancelled}" style="color: red">
-                                                <f:setPropertyActionListener value="#{bill.cancelledBill}" target="#{billSearch.bill}"/>
+                                                <f:setPropertyActionListener value="#{bill.cancelledBill}" target="#{opdBillCancellationController.bill}"/>
                                             </p:commandLink>
                                             <p:commandLink
                                                 id="RefundBillNo"
