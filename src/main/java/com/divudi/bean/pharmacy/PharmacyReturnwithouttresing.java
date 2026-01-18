@@ -577,11 +577,12 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
         getPreBill().setPaidAmount(getPreBill().getTotal());
         //   ////System.out.println("getPreBill().getPaidAmount() = " + getPreBill().getPaidAmount());
-        List<BillItem> tmpBillItems = getPreBill().getBillItems();
-        getPreBill().setBillItems(null);
 
         // Create financial details for proper cost accounting
         createFinanceDetailsForReturnItems();
+
+        List<BillItem> tmpBillItems = getPreBill().getBillItems();
+        getPreBill().setBillItems(null);
 
         savePreBillFinally();
         savePreBillItemsFinally(tmpBillItems);
