@@ -1041,8 +1041,24 @@ public class PharmacyReturnwithouttresing implements Serializable {
     }
 
     public void handleSelect(SelectEvent event) {
+        if (stock == null) {
+            return;
+        }
+
+        // Set the stock and itemBatch for proper rate display
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
+        getBillItem().getPharmaceuticalBillItem().setItemBatch(stock.getItemBatch());
+
+        // Set the item for the bill item
+        getBillItem().setItem(stock.getItemBatch().getItem());
+
+        // Calculate rates first to set purchase rate
         calculateRates(billItem);
+
+        // If quantity is set, calculate the value immediately
+        if (qty != null && qty > 0) {
+            calculateBillItem();
+        }
     }
 
     public void paymentSchemeChanged(AjaxBehaviorEvent ajaxBehavior) {
