@@ -36,6 +36,7 @@ import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
@@ -50,6 +51,7 @@ import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -578,13 +580,13 @@ public class PharmacyReturnwithouttresing implements Serializable {
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
 
+        // Create financial details for proper cost accounting
+        createFinanceDetailsForReturnItems();
+
         savePreBillFinally();
         savePreBillItemsFinally(tmpBillItems);
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
         getBillFacade().edit(getPreBill());
-
-        // Create financial details for proper cost accounting
-        createFinanceDetailsForReturnItems();
 
         setPrintBill(getBillFacade().find(getPreBill().getId()));
 
@@ -613,9 +615,6 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
         // Step 2: Create BFD at bill level
         createBillFinanceDetails();
-
-        // Step 3: Persist updated bill
-        getBillFacade().edit(getPreBill());
     }
 
     /**
@@ -650,20 +649,9 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
         // Set line rates (using purchase rate for return pricing)
         bifd.setLineGrossRate(bifd.getPurchaseRate());
-        bifd.setGrossRate(bifd.getLineGrossRate());
-        bifd.setNetRate(bifd.getLineGrossRate());
 
-        // Calculate stock valuation values (NEGATIVE for returns)
-        BigDecimal absQuantityInUnits = bifd.getQuantityByUnits().abs();
-        bifd.setValueAtCostRate(bifd.getCostRate().multiply(absQuantityInUnits).negate());
-        bifd.setValueAtPurchaseRate(bifd.getPurchaseRate().multiply(absQuantityInUnits).negate());
-        bifd.setValueAtRetailRate(bifd.getRetailSaleRate().multiply(absQuantityInUnits).negate());
-
-        // Calculate line totals (positive revenue)
-        BigDecimal absQuantity = bifd.getQuantity().abs();
-        bifd.setLineGrossTotal(bifd.getLineGrossRate().multiply(absQuantity));
-        bifd.setGrossTotal(bifd.getLineGrossTotal());
-        bifd.setNetTotal(bifd.getLineGrossTotal());
+        // Apply comprehensive line total calculation
+        calculateLineTotal(billItem);
     }
 
     /**
@@ -715,6 +703,118 @@ public class PharmacyReturnwithouttresing implements Serializable {
         bfd.setTotalCostValue(totalCostValue);
         bfd.setTotalPurchaseValue(totalPurchaseValue);
         bfd.setTotalRetailSaleValue(totalRetailValue);
+    }
+
+    /**
+     * Comprehensive line total calculation for return without tracing items.
+     * Follows DirectPurchaseReturnWorkflowController pattern for consistency.
+     */
+    private void calculateLineTotal(BillItem bi) {
+        if (bi == null || bi.getBillItemFinanceDetails() == null) {
+            return;
+        }
+
+        BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+        PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
+
+        // Get current quantities and rates
+        BigDecimal qty = fd.getQuantity();
+        BigDecimal freeQty = fd.getFreeQuantity();
+        BigDecimal rate = fd.getLineGrossRate();
+
+        // Null safety
+        if (qty == null) qty = BigDecimal.ZERO;
+        if (freeQty == null) freeQty = BigDecimal.ZERO;
+        if (rate == null) rate = BigDecimal.ZERO;
+
+        // Use absolute values for calculation (quantities are already negative)
+        qty = qty.abs();
+        freeQty = freeQty.abs();
+
+        // Calculate total quantity and line total
+        BigDecimal totalQty = qty.add(freeQty);
+        BigDecimal lineTotal = totalQty.multiply(rate);
+
+        // Set total quantity (negative for returns - stock moving out)
+        fd.setTotalQuantity(totalQty.abs().negate());
+
+        // Set financial totals (positive for refund amounts)
+        fd.setLineGrossTotal(lineTotal);
+        fd.setLineNetTotal(lineTotal);
+
+        // Calculate line net rate
+        if (totalQty.compareTo(BigDecimal.ZERO) > 0) {
+            fd.setLineNetRate(lineTotal.divide(totalQty, 4, RoundingMode.HALF_UP));
+        } else {
+            fd.setLineNetRate(BigDecimal.ZERO);
+        }
+
+        // Set bill-level rates and totals in BIFD
+        fd.setGrossRate(rate);
+        fd.setNetRate(fd.getLineNetRate());
+        fd.setGrossTotal(lineTotal);
+        fd.setNetTotal(lineTotal);
+
+        // Set BillItem legacy fields (matching BIFD values)
+        bi.setRate(rate.doubleValue());
+        bi.setQty(qty.doubleValue());
+        bi.setNetRate(fd.getLineNetRate() != null ? fd.getLineNetRate().doubleValue() : 0.0);
+        bi.setGrossValue(lineTotal.doubleValue());
+        bi.setNetValue(lineTotal.doubleValue());
+
+        // Calculate unit-based quantities
+        boolean isAmpp = bi.getItem() instanceof Ampp;
+        BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
+        BigDecimal qtyByUnits = isAmpp ? qty.multiply(unitsPerPack) : qty;
+        BigDecimal freeQtyByUnits = isAmpp ? freeQty.multiply(unitsPerPack) : freeQty;
+        BigDecimal totalQtyByUnits = qtyByUnits.add(freeQtyByUnits);
+
+        // Update BIFD quantities (negative for returns - stock moving out)
+        fd.setQuantity(qty.abs().negate());
+        fd.setFreeQuantity(freeQty.abs().negate());
+        fd.setQuantityByUnits(qtyByUnits.abs().negate());
+        fd.setFreeQuantityByUnits(freeQtyByUnits.abs().negate());
+        fd.setTotalQuantityByUnits(totalQtyByUnits.abs().negate());
+
+        // Set cost rate fields for consistency
+        if (fd.getCostRate() != null) {
+            fd.setLineCostRate(fd.getCostRate());
+            fd.setBillCostRate(fd.getCostRate());
+            fd.setTotalCostRate(fd.getCostRate());
+
+            // Calculate cost values (negative for returns)
+            BigDecimal totalCostValue = fd.getCostRate().multiply(totalQtyByUnits.abs());
+            fd.setLineCost(totalCostValue.negate());
+            fd.setBillCost(totalCostValue.negate());
+            fd.setTotalCost(totalCostValue.negate());
+        }
+
+        // Set PharmaceuticalBillItem stock values (negative for returns)
+        if (phi != null) {
+            double totalQtyInUnits = totalQtyByUnits.doubleValue();
+            if (fd.getPurchaseRate() != null) {
+                phi.setPurchaseValue(-Math.abs(totalQtyInUnits * fd.getPurchaseRate().doubleValue()));
+            }
+            if (fd.getCostRate() != null) {
+                phi.setCostValue(-Math.abs(totalQtyInUnits * fd.getCostRate().doubleValue()));
+                phi.setCostRate(fd.getCostRate().doubleValue());
+            }
+            if (fd.getRetailSaleRate() != null) {
+                phi.setRetailValue(-Math.abs(totalQtyInUnits * fd.getRetailSaleRate().doubleValue()));
+                phi.setRetailRate(fd.getRetailSaleRate().doubleValue());
+            }
+        }
+
+        // Set zero-value fields (no discounts, taxes, or expenses on returns without tracing)
+        fd.setLineDiscount(BigDecimal.ZERO);
+        fd.setLineTax(BigDecimal.ZERO);
+        fd.setLineExpense(BigDecimal.ZERO);
+        fd.setBillDiscount(BigDecimal.ZERO);
+        fd.setBillTax(BigDecimal.ZERO);
+        fd.setBillExpense(BigDecimal.ZERO);
+        fd.setTotalDiscount(BigDecimal.ZERO);
+        fd.setTotalTax(BigDecimal.ZERO);
+        fd.setTotalExpense(BigDecimal.ZERO);
     }
 
     private boolean checkItemBatch() {
