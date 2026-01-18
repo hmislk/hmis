@@ -26,14 +26,6 @@
             </div>
 
             <div class="d-flex align-items-center gap-2">
-                <p:outputLabel value="Slip No:" styleClass="form-label mb-0"/>
-                <h:outputText
-                    value="#{cc.attrs.paymentMethodData.slip.no}"
-                    styleClass="form-control-plaintext"
-                    style="width: 120px;"/>
-            </div>
-
-            <div class="d-flex align-items-center gap-2">
                 <p:outputLabel value="Bank:" styleClass="form-label mb-0"/>
                 <h:outputText
                     value="#{cc.attrs.paymentMethodData.slip.institution.name}"
@@ -49,6 +41,14 @@
                     style="width: 120px;">
                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                 </h:outputText>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <p:outputLabel value="Reference No:" styleClass="form-label mb-0"/>
+                <h:outputText
+                    value="#{cc.attrs.paymentMethodData.slip.referenceNo}"
+                    styleClass="form-control-plaintext"
+                    style="width: 120px;"/>
             </div>
 
             <div class="d-flex align-items-center gap-2 flex-grow-1">

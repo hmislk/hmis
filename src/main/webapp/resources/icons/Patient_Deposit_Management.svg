@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <!-- Gradient for person -->
+    <linearGradient id="personGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#357ABD;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Gradient for dollar bill -->
+    <linearGradient id="moneyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5CB85C;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#449D44;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Gradient for dollar symbol -->
+    <linearGradient id="dollarGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E8F5E8;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Shadow filter -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background circle (optional, can be removed for transparent background) -->
+  <circle cx="100" cy="100" r="95" fill="#F8F9FA" opacity="0.5"/>
+
+  <!-- Person silhouette -->
+  <g filter="url(#shadow)">
+    <!-- Head -->
+    <circle cx="75" cy="60" r="22" fill="url(#personGradient)"/>
+
+    <!-- Body -->
+    <path d="M 75 82 Q 55 85 50 110 L 50 140 Q 50 145 55 145 L 65 145 L 65 120 Q 65 115 70 115 L 80 115 Q 85 115 85 120 L 85 145 L 95 145 Q 100 145 100 140 L 100 110 Q 95 85 75 82 Z"
+          fill="url(#personGradient)" stroke="#2E6DA4" stroke-width="1"/>
+  </g>
+
+  <!-- Dollar bill -->
+  <g filter="url(#shadow)">
+    <!-- Bill rectangle with rounded corners -->
+    <rect x="95" y="95" width="80" height="50" rx="5" ry="5"
+          fill="url(#moneyGradient)" stroke="#3D8B3D" stroke-width="2"/>
+
+    <!-- Decorative corner circles -->
+    <circle cx="105" cy="105" r="4" fill="#449D44" opacity="0.5"/>
+    <circle cx="165" cy="105" r="4" fill="#449D44" opacity="0.5"/>
+    <circle cx="105" cy="135" r="4" fill="#449D44" opacity="0.5"/>
+    <circle cx="165" cy="135" r="4" fill="#449D44" opacity="0.5"/>
+
+    <!-- Dollar sign -->
+    <text x="135" y="132" font-family="Arial, sans-serif" font-size="32" font-weight="bold"
+          fill="url(#dollarGradient)" text-anchor="middle">$</text>
+
+    <!-- Decorative lines on bill -->
+    <line x1="100" y1="110" x2="115" y2="110" stroke="#449D44" stroke-width="1.5" opacity="0.6"/>
+    <line x1="100" y1="130" x2="115" y2="130" stroke="#449D44" stroke-width="1.5" opacity="0.6"/>
+    <line x1="155" y1="110" x2="170" y2="110" stroke="#449D44" stroke-width="1.5" opacity="0.6"/>
+    <line x1="155" y1="130" x2="170" y2="130" stroke="#449D44" stroke-width="1.5" opacity="0.6"/>
+  </g>
+
+  <!-- Deposit arrow (optional enhancement) -->
+  <g filter="url(#shadow)" opacity="0.9">
+    <path d="M 135 75 L 135 90" stroke="#F39C12" stroke-width="4" stroke-linecap="round"/>
+    <path d="M 128 83 L 135 90 L 142 83" fill="none" stroke="#F39C12" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

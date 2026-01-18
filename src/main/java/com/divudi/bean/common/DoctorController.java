@@ -172,6 +172,19 @@ public class DoctorController implements Serializable {
 
        return docList;
     }
+    
+    // used in specialty/doctor wise income report
+    public List<Doctor> fillDoctorsAndConsultants() {
+        String j;
+        j = "select c "
+                + " from Doctor c "
+                + " where c.retired=:ret"
+                + " order by c.person.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        List<Doctor> docList = getFacade().findByJpql(j, m);
+        return docList;
+    }
 
     public void prepareAdd() {
         current = new Doctor();
