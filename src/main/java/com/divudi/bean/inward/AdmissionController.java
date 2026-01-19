@@ -836,26 +836,34 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return "";
         }
 
-        if (current.isRoomAdmitted()) {
+        if (configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)) {
             current.getPatient().setEditingMode(false);
             bhtSummeryController.setPatientEncounter(current);
             bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
             return bhtSummeryController.navigateToInpatientProfile();
         } else {
-            if (current.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment() == null) {
-                JsfUtil.addErrorMessage("Selected Room no has a department.");
-                return "";
-            }
+            if (current.isRoomAdmitted() || current.isDischarged() || current.isPaymentFinalized()) {
+                current.getPatient().setEditingMode(false);
+                bhtSummeryController.setPatientEncounter(current);
+                bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
+                return bhtSummeryController.navigateToInpatientProfile();
+            } else {
+                if (current.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment() == null) {
+                    JsfUtil.addErrorMessage("Selected Room no has a department.");
+                    return "";
+                }
 
-            if (!current.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getId().equals(sessionController.getDepartment().getId())) {
-                JsfUtil.addErrorMessage("Patient is not in your department. Please transfer to the correct department.");
-                return "";
-            }
+                if (!current.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getId().equals(sessionController.getDepartment().getId())) {
+                    JsfUtil.addErrorMessage("Patient is not in your department. Please transfer to the correct department.");
+                    return "";
+                }
 
-            roomChangeController.setCurrent(current);
-            roomChangeController.setCurrentPatientRoom(current.getCurrentPatientRoom());
-            return "/inward/admit_room?faces-redirect=true";
+                roomChangeController.setCurrent(current);
+                roomChangeController.setCurrentPatientRoom(current.getCurrentPatientRoom());
+                return "/inward/admit_room?faces-redirect=true";
+            }
         }
+
     }
 
     public List<Admission> completeAdmission(String query) {
