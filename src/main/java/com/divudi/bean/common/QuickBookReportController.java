@@ -946,14 +946,14 @@ public class QuickBookReportController implements Serializable {
             // Get approved Direct Purchases
             billsDirectPurchase.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
 
-            // Get approved GRN Returns
-            billsReturn.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_GRN_RETURN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            // Get approved GRN Returns (uses RefundBill class, so query with Bill parent)
+            billsReturn.addAll(getApprovedBills(new Bill(), BillTypeAtomic.PHARMACY_GRN_RETURN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
 
-            // Get approved Direct Purchase Returns
-            billsDirectPurchaseReturn.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            // Get approved Direct Purchase Returns (uses RefundBill class, so query with Bill parent)
+            billsDirectPurchaseReturn.addAll(getApprovedBills(new Bill(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
 
-            // Get approved Returns without tracing receipts
-            billsReturnP.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            // Get approved Returns without tracing receipts (uses PreBill class, so query with Bill parent)
+            billsReturnP.addAll(getApprovedBills(new Bill(), BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
 
             // Get cancelled bills (if needed for QB reporting)
             billsCanceled.addAll(getApprovedBills(new CancelledBill(), BillTypeAtomic.PHARMACY_GRN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));

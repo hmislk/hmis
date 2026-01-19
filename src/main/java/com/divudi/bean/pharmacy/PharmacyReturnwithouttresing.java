@@ -581,6 +581,9 @@ public class PharmacyReturnwithouttresing implements Serializable {
         savePreBillFinally();
         savePreBillItemsFinally(tmpBillItems);
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+        getPreBill().setCompleted(true);
+        getPreBill().setApproveAt(new Date());
+        getPreBill().setApproveUser(getSessionController().getLoggedUser());
         getBillFacade().edit(getPreBill());
 
         // Create financial details for proper cost accounting
