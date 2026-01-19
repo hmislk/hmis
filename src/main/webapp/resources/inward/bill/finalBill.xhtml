@@ -423,116 +423,96 @@
                                     </h:panelGroup>
                                 </ui:repeat>
 
-                                <!-- Bed Charges - Display individually if option is off -->
-                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Group Bed Charges in Bills', false)}">
-                                    <!-- Loop through NursingCharges first -->
-                                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
-                                        <h:panelGroup rendered="#{bip.inwardChargeType eq 'NursingCharges' and bip.adjustedValue != 0}" style="font-size: 12px;">
-                                            <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                                <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                    <h:outputLabel value="#{bip.inwardChargeType.name}" />
-                                                </td>
-                                                <td style="margin-top: -10px;">
-                                                </td>
-                                                <td style="width: 30%; text-align: right; font-size: 13px!important;">
-                                                    <h:outputLabel value="#{bip.adjustedValue}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputLabel>
-                                                </td>
-                                            </tr>
-                                        </h:panelGroup>
-                                    </ui:repeat>
-
-                                    <!-- Loop through MOCharges -->
-                                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
-                                        <h:panelGroup rendered="#{bip.inwardChargeType eq 'MOCharges' and bip.adjustedValue != 0}" style="font-size: 12px;">
-                                            <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                                <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                    <h:outputLabel value="#{bip.inwardChargeType.name}" />
-                                                </td>
-                                                <td style="margin-top: -10px;">
-                                                </td>
-                                                <td style="width: 30%; text-align: right; font-size: 13px!important;">
-                                                    <h:outputLabel value="#{bip.adjustedValue}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputLabel>
-                                                </td>
-                                            </tr>
-                                        </h:panelGroup>
-                                    </ui:repeat>
-
-                                    <!-- Loop through LinenCharges -->
-                                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
-                                        <h:panelGroup rendered="#{bip.inwardChargeType eq 'LinenCharges' and bip.adjustedValue != 0}" style="font-size: 12px;">
-                                            <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                                <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                    <h:outputLabel value="#{bip.inwardChargeType.name}" />
-                                                </td>
-                                                <td style="margin-top: -10px;">
-                                                </td>
-                                                <td style="width: 30%; text-align: right; font-size: 13px!important;">
-                                                    <h:outputLabel value="#{bip.adjustedValue}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputLabel>
-                                                </td>
-                                            </tr>
-                                        </h:panelGroup>
-                                    </ui:repeat>
-
-                                    <!-- Loop through MedicalCareICU -->
-                                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
-                                        <h:panelGroup rendered="#{bip.inwardChargeType eq 'MedicalCareICU' and bip.adjustedValue != 0}" style="font-size: 12px;">
-                                            <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                                <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                    <h:outputLabel value="#{bip.inwardChargeType.name}" />
-                                                </td>
-                                                <td style="margin-top: -10px;">
-                                                </td>
-                                                <td style="width: 30%; text-align: right; font-size: 13px!important;">
-                                                    <h:outputLabel value="#{bip.adjustedValue}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputLabel>
-                                                </td>
-                                            </tr>
-                                        </h:panelGroup>
-                                    </ui:repeat>
-
-                                    <!-- Loop through AdministrationCharge -->
-                                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
-                                        <h:panelGroup rendered="#{bip.inwardChargeType eq 'AdministrationCharge' and bip.adjustedValue != 0}" style="font-size: 12px;">
-                                            <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                                <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                    <h:outputLabel value="#{bip.inwardChargeType.name}" />
-                                                </td>
-                                                <td style="margin-top: -10px;">
-                                                </td>
-                                                <td style="width: 30%; text-align: right; font-size: 13px!important;">
-                                                    <h:outputLabel value="#{bip.adjustedValue}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputLabel>
-                                                </td>
-                                            </tr>
-                                        </h:panelGroup>
-                                    </ui:repeat>
-                                </h:panelGroup>
-
-                                <!-- Grouped Bed Charges - Display as single line if option is on -->
-                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Group Bed Charges in Bills', false)}">
-                                    <h:panelGroup rendered="#{bhtSummeryController.getBedChargesTotal(cc.attrs.bill.billItems) > 0}" style="font-size: 12px;">
+                                <!-- Display all bed-related charges -->
+                                <!-- Loop through NursingCharges first -->
+                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                    <h:panelGroup rendered="#{bip.inwardChargeType eq 'NursingCharges' and bip.adjustedValue != 0}" style="font-size: 12px;">
                                         <tr style="width: 100%; font-weight: 400; line-height: 18px;">
                                             <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                <h:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Bed Charges Label', 'Bed Charges')}" />
+                                                <h:outputLabel value="#{bip.inwardChargeType.name}" />
                                             </td>
                                             <td style="margin-top: -10px;">
                                             </td>
                                             <td style="width: 30%; text-align: right; font-size: 13px!important;">
-                                                <h:outputLabel value="#{bhtSummeryController.getBedChargesTotal(cc.attrs.bill.billItems)}">
+                                                <h:outputLabel value="#{bip.adjustedValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </td>
                                         </tr>
                                     </h:panelGroup>
-                                </h:panelGroup>
+                                </ui:repeat>
+
+                                <!-- Loop through MOCharges -->
+                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                    <h:panelGroup rendered="#{bip.inwardChargeType eq 'MOCharges' and bip.adjustedValue != 0}" style="font-size: 12px;">
+                                        <tr style="width: 100%; font-weight: 400; line-height: 18px;">
+                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
+                                                <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                            </td>
+                                            <td style="margin-top: -10px;">
+                                            </td>
+                                            <td style="width: 30%; text-align: right; font-size: 13px!important;">
+                                                <h:outputLabel value="#{bip.adjustedValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </ui:repeat>
+
+                                <!-- Loop through LinenCharges -->
+                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                    <h:panelGroup rendered="#{bip.inwardChargeType eq 'LinenCharges' and bip.adjustedValue != 0}" style="font-size: 12px;">
+                                        <tr style="width: 100%; font-weight: 400; line-height: 18px;">
+                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
+                                                <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                            </td>
+                                            <td style="margin-top: -10px;">
+                                            </td>
+                                            <td style="width: 30%; text-align: right; font-size: 13px!important;">
+                                                <h:outputLabel value="#{bip.adjustedValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </ui:repeat>
+
+                                <!-- Loop through MedicalCareICU -->
+                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                    <h:panelGroup rendered="#{bip.inwardChargeType eq 'MedicalCareICU' and bip.adjustedValue != 0}" style="font-size: 12px;">
+                                        <tr style="width: 100%; font-weight: 400; line-height: 18px;">
+                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
+                                                <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                            </td>
+                                            <td style="margin-top: -10px;">
+                                            </td>
+                                            <td style="width: 30%; text-align: right; font-size: 13px!important;">
+                                                <h:outputLabel value="#{bip.adjustedValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </ui:repeat>
+
+                                <!-- Loop through AdministrationCharge -->
+                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                    <h:panelGroup rendered="#{bip.inwardChargeType eq 'AdministrationCharge' and bip.adjustedValue != 0}" style="font-size: 12px;">
+                                        <tr style="width: 100%; font-weight: 400; line-height: 18px;">
+                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
+                                                <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                            </td>
+                                            <td style="margin-top: -10px;">
+                                            </td>
+                                            <td style="width: 30%; text-align: right; font-size: 13px!important;">
+                                                <h:outputLabel value="#{bip.adjustedValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </ui:repeat>
 
                                 <!-- Loop through all other items excluding RoomCharges and ProfessionalCharge -->
                                 <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
@@ -839,6 +819,36 @@
 
                                     </td>
                                 </tr>
+
+                                <!-- VAT Row (Selective - only for vatable charges) - Uses pre-calculated value from bill entity -->
+                                <h:panelGroup rendered="#{cc.attrs.bill.vat > 0}">
+                                    <tr>
+                                        <td style="text-align: left; font-size: 12px!important;">
+                                            <h:outputLabel value="#{bhtSummeryController.getVatLabel()} (#{bhtSummeryController.getVatPercentage()}%)" />
+                                        </td>
+                                        <td>&nbsp;</td>
+                                        <td style="text-align: right; font-size: 12px!important;">
+                                            <h:outputLabel value="#{cc.attrs.bill.vat}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </h:panelGroup>
+
+                                <!-- VAT Plus Total Row (Selective) - Uses pre-calculated value from bill entity -->
+                                <h:panelGroup rendered="#{cc.attrs.bill.vat > 0}">
+                                    <tr>
+                                        <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="#{bhtSummeryController.getVatLabel()} + Net Total"/>
+                                        </td>
+                                        <td>&nbsp;</td>
+                                        <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="#{cc.attrs.bill.vatPlusNetTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </h:panelGroup>
 
                                 <tr>
                                     <td>&nbsp;</td>
