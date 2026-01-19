@@ -280,7 +280,7 @@
 
                         <h:panelGroup id="gpBillPreview">
                             <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a A4 paper.', true)}">
-                                <bi:staffBill bill="#{inwardStaffPaymentBillController.current}" dup="false" />
+                                <bi:staffBill bill="#{inwardStaffPaymentBillController.current}" controller="#{inwardStaffPaymentBillController}" dup="false" />
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a five five paper.',false)}">

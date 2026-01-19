@@ -173,7 +173,7 @@
                                                            completeMethod="#{specialityController.completeSpeciality}" var="sp" 
                                                            itemLabel="#{sp.name}" 
                                                            itemValue="#{sp}" size="70"  style="width: 400px;" class="mx-4 my-1">
-                                            <f:ajax event="itemSelect" execute="cmbSpe" render="cmbDoc pIxAdd" />
+                                            <f:ajax event="itemSelect" execute="cmbSpe" render="cmbDoc" />
                                         </p:autoComplete>
 
 
@@ -183,7 +183,6 @@
                                                           completeMethod="#{inwardProfessionalBillController.completeItems}" var="st" 
                                                           itemLabel="#{st.person.nameWithTitle}" itemValue="#{st}" size="70" 
                                                           style="width: 400px;" class="mx-4 my-1">
-                                            <f:ajax event="itemSelect" execute="cmbDoc" render="pIxAdd"  />
                                         </p:autoComplete>
 
                                         <h:outputLabel value="Fee"/>
