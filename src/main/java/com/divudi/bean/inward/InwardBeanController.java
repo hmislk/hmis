@@ -6,6 +6,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -111,6 +112,8 @@ public class InwardBeanController implements Serializable {
     InwardReportControllerBht inwardReportControllerBht;
     @Inject
     SessionController sessionController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
 
     public String inwardDepositBillText(Bill b) {
         String template = sessionController.getDepartmentPreference().getInwardDepositBillTemplate();
@@ -377,8 +380,7 @@ public class InwardBeanController implements Serializable {
     public double calCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> btas, List<PatientEncounter> cpts) {
         String sql;
         HashMap hm;
-        sql = "SELECT  sum(b.netTotal)"
-                + " FROM Bill b "
+        sql = "SELECT b FROM Bill b "
                 + " WHERE b.retired=false "
                 + " and b.billTypeAtomic IN :btp "
                 + " and  b.patientEncounter IN :pe";
@@ -390,7 +392,21 @@ public class InwardBeanController implements Serializable {
             pts.addAll(cpts);
         }
         hm.put("pe", pts);
-        return getBillItemFacade().findDoubleByJpql(sql, hm);
+        
+        List<Bill> bills = getBillItemFacade().findByJpql(sql, hm);
+        double total = 0;
+        
+        // Calculate total with sign inversion for cancelled and refund bills
+        for (Bill bill : bills) {
+            // For RefundBill and CancelledBill, invert the value (deduct instead of add)
+            if (bill instanceof RefundBill || bill instanceof CancelledBill) {
+                total -= bill.getNetTotal();
+            } else {
+                total += bill.getNetTotal();
+            }
+        }
+        
+        return total;
 
     }
 
@@ -967,6 +983,12 @@ public class InwardBeanController implements Serializable {
                 + " where p.retired=false "
                 + " and p.bill.patientEncounter IN :pe"
                 + " and p.bill.billType=:bilTp ";
+        
+        // Exclude fees collected by doctor if option is enabled
+        if (configOptionApplicationController.getBooleanValueByKey("Exclude Fees Collected by Doctor from Bill Calculations", false)) {
+            sql += " and p.feeCollectedByDoctor=false ";
+        }
+        
         HashMap hm = new HashMap();
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);

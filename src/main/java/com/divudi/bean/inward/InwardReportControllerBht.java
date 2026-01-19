@@ -625,6 +625,14 @@ public class InwardReportControllerBht implements Serializable {
 
     public void updateBillItemAndBill(Bill bill) {
         bill.setNetTotal(bill.getTotal() - bill.getDiscount());
+        
+        // Recalculate VAT when bill totals change
+        if (bill.getBillItems() != null && !bill.getBillItems().isEmpty()) {
+            double vatAmount = calculateSelectiveVatAmount(bill.getBillItems());
+            bill.setVat(vatAmount);
+            bill.setVatPlusNetTotal(bill.getNetTotal() + vatAmount);
+        }
+        
         billFacade.edit(bill);
 
         if (bill.getSingleBillItem() != null) {
@@ -1800,5 +1808,23 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setPharmacyIssueDtosToPatientEncounterNetTotal(double pharmacyIssueDtosToPatientEncounterNetTotal) {
         this.pharmacyIssueDtosToPatientEncounterNetTotal = pharmacyIssueDtosToPatientEncounterNetTotal;
+    }
+
+    /**
+     * Calculate selective VAT amount from bill items
+     * VAT is calculated based on specific charge types configured for VAT
+     */
+    private double calculateSelectiveVatAmount(List<BillItem> billItems) {
+        if (billItems == null || billItems.isEmpty()) {
+            return 0.0;
+        }
+        
+        double vat = 0.0;
+        for (BillItem billItem : billItems) {
+            if (billItem != null && billItem.getVat() > 0) {
+                vat += billItem.getVat();
+            }
+        }
+        return vat;
     }
 }
