@@ -693,6 +693,124 @@
 
                                     </div>
                                 </p:tab>
+                                <p:tab title="Diagnostic Card" class="m-0">
+                                    <div class="ui-g">
+                                        <div class="ui-g-12">
+                                            <p:panel class="w-100 m-1">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-file-prescription"/>
+                                                    <h:outputText class="mx-4" value="Diagnostic Card"/>
+                                                </f:facet>
+                                                <h:panelGroup id="diagnosisCardTemplateSection" style="display: block; margin-bottom: 15px;">
+                                                    <div class="d-flex gap-2 align-items-end">
+                                                        <div class="flex-grow-1">
+                                                            <h:outputLabel value="Select Template: " styleClass="font-weight-bold" for="diagnosisCardTemplateSelect"/>
+                                                            <p:selectOneMenu id="diagnosisCardTemplateSelect" value="#{inpatientClinicalDataController.selectedDiagnosisTemplate}" style="width: 100%;">
+                                                                <f:selectItem itemLabel="-- Select Template --" itemValue="" noSelectionOption="true" />
+                                                                <f:selectItems value="#{inpatientClinicalDataController.availableDiagnosisTemplates}" var="template" 
+                                                                    itemLabel="#{template.name}" itemValue="#{template.id.toString()}" />
+                                                            </p:selectOneMenu>
+                                                        </div>
+                                                        <p:commandButton 
+                                                            value="Generate" 
+                                                            ajax="true" 
+                                                            icon="pi pi-sync"
+                                                            styleClass="ui-button-primary"
+                                                            action="#{inpatientClinicalDataController.loadDiagnosisCard}"
+                                                            update="diagnosisCardContentPanel">
+                                                        </p:commandButton>
+                                                    </div>
+                                                </h:panelGroup>
+                                                
+                                                <h:panelGroup id="diagnosisCardContentPanel">
+                                                    <div class="card">
+                                                        <div class="card-body">
+                                                            <h:outputText value="#{inpatientClinicalDataController.diagnosisCardHtml}" escape="false" rendered="#{inpatientClinicalDataController.diagnosisCardHtml ne null}"/>
+                                                            <h:outputText value="No template selected. Please select a template and click Generate." rendered="#{inpatientClinicalDataController.diagnosisCardHtml eq null}" styleClass="text-muted"/>
+                                                        </div>
+                                                    </div>
+                                                </h:panelGroup>
+                                                
+                                                <div style="margin-top: 15px;">
+                                                    <p:commandButton 
+                                                        value="Print" 
+                                                        ajax="true" 
+                                                        icon="pi pi-print"
+                                                        styleClass="ui-button-success"
+                                                        rendered="#{inpatientClinicalDataController.diagnosisCardHtml ne null}">
+                                                        <p:printer target="diagnosisCardContentPanel" />
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        value="Save as PDF" 
+                                                        ajax="true" 
+                                                        icon="pi pi-download"
+                                                        onclick="window.print()"
+                                                        styleClass="ui-button-warning"
+                                                        rendered="#{inpatientClinicalDataController.diagnosisCardHtml ne null}" />
+                                                </div>
+                                            </p:panel>
+                                        </div>
+                                    </div>
+                                </p:tab>
+                                <p:tab title="Ward Admission Card" class="m-0">
+                                    <div class="ui-g">
+                                        <div class="ui-g-12">
+                                            <p:panel class="w-100 m-1">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-hospital-user"/>
+                                                    <h:outputText class="mx-4" value="Ward Admission Card"/>
+                                                </f:facet>
+                                                <h:panelGroup id="wardCardTemplateSection" style="display: block; margin-bottom: 15px;">
+                                                    <div class="d-flex gap-2 align-items-end">
+                                                        <div class="flex-grow-1">
+                                                            <h:outputLabel value="Select Template: " styleClass="font-weight-bold" for="wardCardTemplateSelect"/>
+                                                            <p:selectOneMenu id="wardCardTemplateSelect" value="#{inpatientClinicalDataController.selectedWardTemplate}" style="width: 100%;">
+                                                                <f:selectItem itemLabel="-- Select Template --" itemValue="" noSelectionOption="true" />
+                                                                <f:selectItems value="#{inpatientClinicalDataController.availableWardTemplates}" var="template" 
+                                                                    itemLabel="#{template.name}" itemValue="#{template.id.toString()}" />
+                                                            </p:selectOneMenu>
+                                                        </div>
+                                                        <p:commandButton 
+                                                            value="Generate" 
+                                                            ajax="true" 
+                                                            icon="pi pi-sync"
+                                                            styleClass="ui-button-primary"
+                                                            action="#{inpatientClinicalDataController.loadWardAdmissionDiagnosisCard}"
+                                                            update="wardCardContentPanel">
+                                                        </p:commandButton>
+                                                    </div>
+                                                </h:panelGroup>
+                                                
+                                                <h:panelGroup id="wardCardContentPanel">
+                                                    <div class="card">
+                                                        <div class="card-body">
+                                                            <h:outputText value="#{inpatientClinicalDataController.wardAdmissionDiagnosisCardHtml}" escape="false" rendered="#{inpatientClinicalDataController.wardAdmissionDiagnosisCardHtml ne null}"/>
+                                                            <h:outputText value="No template selected. Please select a template and click Generate." rendered="#{inpatientClinicalDataController.wardAdmissionDiagnosisCardHtml eq null}" styleClass="text-muted"/>
+                                                        </div>
+                                                    </div>
+                                                </h:panelGroup>
+                                                
+                                                <div style="margin-top: 15px;">
+                                                    <p:commandButton 
+                                                        value="Print" 
+                                                        ajax="true" 
+                                                        icon="pi pi-print"
+                                                        styleClass="ui-button-success"
+                                                        rendered="#{inpatientClinicalDataController.wardAdmissionDiagnosisCardHtml ne null}">
+                                                        <p:printer target="wardCardContentPanel" />
+                                                    </p:commandButton>
+                                                    <p:commandButton 
+                                                        value="Save as PDF" 
+                                                        ajax="true" 
+                                                        icon="pi pi-download"
+                                                        onclick="window.print()"
+                                                        styleClass="ui-button-warning"
+                                                        rendered="#{inpatientClinicalDataController.wardAdmissionDiagnosisCardHtml ne null}" />
+                                                </div>
+                                            </p:panel>
+                                        </div>
+                                    </div>
+                                </p:tab>
                                 <p:tab title="Visit History and Notes" >
 
                                     <div class="card m-1 p-1" >
