@@ -10,6 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.clinical.*;
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.inward.AdmissionController;
@@ -137,6 +138,8 @@ public class InpatientClinicalDataController implements Serializable {
     SearchController searchController;
     @Inject
     AdmissionController admissionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     /**
      * Properties
