@@ -127,8 +127,12 @@
                                                 <li><code>{sex}</code> - Patient gender</li>
                                                 <li><code>{address}</code> - Patient address</li>
                                                 <li><code>{phone}</code> - Patient phone</li>
-                                                <li><code>{patient_phn_number}</code> - Patient PHN</li>
-                                                <li><code>{patient_nic}</code> - Patient NIC</li>
+                                                <li><code>{nic}</code> - Patient NIC</li>
+                                                <li><code>{patient_nic}</code> - Patient NIC (alias)</li>
+                                                <li><code>{patient_nic_number}</code> - Patient NIC (full alias)</li>
+                                                <li><code>{phn}</code> - Patient PHN</li>
+                                                <li><code>{patient_phn}</code> - Patient PHN (alias)</li>
+                                                <li><code>{patient_phn_number}</code> - Patient PHN (full alias)</li>
                                             </ul>
                                         </div>
 
@@ -149,18 +153,39 @@
                                         </div>
 
                                         <div class="col-md-3">
-                                            <h6 class="fw-bold text-primary">Clinical Data</h6>
+                                            <h6 class="fw-bold text-primary">Admission Details</h6>
                                             <ul class="list-unstyled small">
-                                                <li><code>{visit-dx}</code> - Visit diagnosis</li>
-                                                <li><code>{past-dx}</code> - Past diagnosis</li>
-                                                <li><code>{medicines}</code> - All medicines</li>
-                                                <li><code>{indoor}</code> - Indoor medicines</li>
-                                                <li><code>{outdoor}</code> - Outdoor medicines</li>
-                                                <li><code>{routine-medicines}</code> - Routine medicines</li>
-                                                <li><code>{ix}</code> - Investigations (multiline)</li>
-                                                <li><code>{ix-same-line}</code> - Investigations (single line)</li>
-                                                <li><code>{pa}</code> - Plan of action</li>
-                                                <li><code>{allergies}</code> - Patient allergies</li>
+                                                <li><code>{bht}</code> - BHT number</li>
+                                                <li><code>{bht-number}</code> - BHT number (alias)</li>
+                                                <li><code>{admission-number}</code> - Admission number (alias)</li>
+                                                <li><code>{doa}</code> - Date of admission</li>
+                                                <li><code>{admission-date}</code> - Date of admission (alias)</li>
+                                                <li><code>{date-of-admission}</code> - Date of admission (full alias)</li>
+                                                <li><code>{dod}</code> - Date of discharge</li>
+                                                <li><code>{discharge-date}</code> - Date of discharge (alias)</li>
+                                                <li><code>{date-of-discharge}</code> - Date of discharge (full alias)</li>
+                                                <li><code>{room}</code> - Room number</li>
+                                                <li><code>{room-number}</code> - Room number (alias)</li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="col-md-3">
+                                            <h6 class="fw-bold text-success">Surgery Details</h6>
+                                            <ul class="list-unstyled small">
+                                                <li><code>{surgery-name}</code> - Surgery name</li>
+                                                <li><code>{procedure}</code> - Procedure (alias)</li>
+                                                <li><code>{surgery-procedure}</code> - Surgery procedure</li>
+                                                <li><code>{performed-by}</code> - Surgeon name</li>
+                                                <li><code>{surgeon}</code> - Surgeon (alias)</li>
+                                                <li><code>{surgery-surgeon}</code> - Surgery surgeon (full)</li>
+                                                <li><code>{assistant}</code> - Assistant name</li>
+                                                <li><code>{surgery-assistant}</code> - Surgery assistant (full)</li>
+                                                <li><code>{anesthesia}</code> - Anesthesia type</li>
+                                                <li><code>{anesthesia-type}</code> - Anesthesia type (alias)</li>
+                                                <li><code>{anesthesiologist}</code> - Anesthesiologist name</li>
+                                                <li><code>{surgery-anesthesiologist}</code> - Surgery anesthesiologist (full)</li>
+                                                <li><code>{surgery-date}</code> - Surgery date</li>
+                                                <li><code>{surgery-time}</code> - Surgery time</li>
                                             </ul>
                                         </div>
 
