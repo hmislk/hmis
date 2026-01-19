@@ -1009,10 +1009,10 @@ public class QuickBookReportController implements Serializable {
             // Determine TRNSTYPE based on transaction type
             String trnsType = isReturnTransaction ? "Bill Refund" : "Bill";
 
-            // Calculate inventory value (TOTAL without expenses) - stored as negative for GRN
-            // For GRN: b.getTotal() is negative (e.g., -10750), we need positive for SPL
-            // For Returns: b.getTotal() is positive (e.g., 10750), we need negative for SPL
-            double inventoryValue = Math.abs(b.getTotal());
+            // Calculate inventory value (NET TOTAL without expenses) - stored as negative for GRN
+            // For GRN: b.getNetTotal() is negative (e.g., -10750), we need positive for SPL
+            // For Returns: b.getNetTotal() is positive (e.g., 10750), we need negative for SPL
+            double inventoryValue = Math.abs(b.getNetTotal());
             double splInventoryAmount = isReturnTransaction ? (0 - inventoryValue) : inventoryValue;
 
             // Store inventory SPL for later addition (after expenses)
@@ -1033,7 +1033,10 @@ public class QuickBookReportController implements Serializable {
                     String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
                     // Expenses are stored as positive, for returns we negate them
                     double expenseSplAmount = isReturnTransaction ? (0 - bi.getNetValue()) : bi.getNetValue();
-                    qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), expenseAccount, "", "", "", expenseSplAmount, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                    // Prepend expense item code to docNum
+                    String expenseItemCode = bi.getItem() != null && bi.getItem().getCode() != null ? bi.getItem().getCode() : "";
+                    String docNumWithExpenseCode = expenseItemCode.isEmpty() ? b.getInvoiceNumber() : expenseItemCode + " " + b.getInvoiceNumber();
+                    qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), expenseAccount, "", "", "", expenseSplAmount, docNumWithExpenseCode, b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     expensesConsideredTotal += bi.getNetValue();
                     qbfs.add(qbf);
                 }
