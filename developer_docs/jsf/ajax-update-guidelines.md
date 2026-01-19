@@ -1,5 +1,16 @@
 # JSF AJAX Update Guidelines
 
+## Critical Rules for Claude Code
+
+**🚨 These rules MUST be followed when working on JSF/XHTML:**
+
+1. **AJAX UPDATE RULE**: NEVER use plain HTML elements (div, span, etc.) with id attributes for AJAX updates - use JSF components (h:panelGroup, p:outputPanel, etc.) instead
+2. **RENDERED ATTRIBUTE RULE**: NEVER use `rendered` attribute on plain HTML elements - JSF ignores it; use JSF components like `h:panelGroup` with `layout="block"` instead
+3. **PRIMEFACES COMPONENT REFERENCES**: Use PrimeFaces `p:resolveFirstComponentWithId` function for component updates: `update=":#{p:resolveFirstComponentWithId('componentId',view).clientId}"`
+4. **AJAX SELECTORS**: NEVER use PrimeFaces CSS/jQuery selectors like `@(.class)`, `@(#id)`, `@parent`, etc. in `update` or `process` attributes. Use `@this`, `@form`, explicit component IDs, or `:#{p:resolveFirstComponentWithId('id',view).clientId}`
+
+---
+
 ## Critical Rule: AJAX Updates Require JSF Components
 
 ### ❌ WRONG - Plain HTML with id attribute

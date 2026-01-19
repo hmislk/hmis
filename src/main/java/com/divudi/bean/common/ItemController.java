@@ -209,6 +209,7 @@ public class ItemController implements Serializable {
                 e.printStackTrace();
             }
         }
+        file = null;
     }
 
     public void uploadToReplaceSiteFeesByItemCode() {
@@ -224,6 +225,7 @@ public class ItemController implements Serializable {
                 e.printStackTrace();
             }
         }
+        file = null;
     }
 
     public void uploadToAddSiteFeesByItemCode() {
@@ -239,6 +241,7 @@ public class ItemController implements Serializable {
                 e.printStackTrace();
             }
         }
+        file = null;
     }
 
     public void uploadToAddCcFeesByItemCode() {
@@ -254,6 +257,7 @@ public class ItemController implements Serializable {
                 e.printStackTrace();
             }
         }
+        file = null;
     }
 
     public void uploadToAddDepartmentFeesByItemCode() {
@@ -282,6 +286,7 @@ public class ItemController implements Serializable {
                 }
             }
         }
+        file = null;
     }
 
     public void saveImportedDepartmentFees() {

@@ -16,6 +16,7 @@ import com.divudi.bean.collectingCentre.CourierController;
 import com.divudi.bean.lab.LaboratoryDoctorDashboardController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.Icon;
 import com.divudi.core.data.InstitutionType;
 import static com.divudi.core.data.LoginPage.CHANNELLING_QUEUE_PAGE;
 import static com.divudi.core.data.LoginPage.CHANNELLING_TV_DISPLAY;
@@ -2790,6 +2791,28 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setEnforcedPasswordChange(boolean enforcedPasswordChange) {
         this.enforcedPasswordChange = enforcedPasswordChange;
+    }
+
+    /**
+     * Maps Icon enum values to their corresponding navigation actions/URLs.
+     * Used by user_icon_bar.xhtml to determine where each icon should navigate.
+     *
+     * @param icon The Icon enum value
+     * @return Navigation string for JSF (e.g., "/patient_deposit/index?faces-redirect=true")
+     */
+    public String getActionForIcon(Icon icon) {
+        if (icon == null) {
+            return null;
+        }
+
+        switch (icon) {
+            case Patient_Deposit_Management:
+                return "/patient_deposit/index?faces-redirect=true";
+
+            // Add other icon mappings here as needed
+            default:
+                return null;
+        }
     }
 
 }
