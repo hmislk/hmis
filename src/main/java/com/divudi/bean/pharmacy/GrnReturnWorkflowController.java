@@ -570,6 +570,8 @@ public class GrnReturnWorkflowController implements Serializable {
             currentBill.setCompleted(true);
             currentBill.setCompletedBy(sessionController.getLoggedUser());
             currentBill.setCompletedAt(new Date());
+            currentBill.setApproveAt(new Date());
+            currentBill.setApproveUser(sessionController.getLoggedUser());
 
             // Save the bill with completed status
             try {
