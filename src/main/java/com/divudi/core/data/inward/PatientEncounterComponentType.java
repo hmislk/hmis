@@ -16,6 +16,7 @@ public enum PatientEncounterComponentType {
     Ananesthesia_by,
     Item,
     Category,
+    OTHER
 
 }
 
