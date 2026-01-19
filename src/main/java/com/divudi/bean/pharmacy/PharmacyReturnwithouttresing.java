@@ -870,10 +870,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
             return;
         }
 
-        if (getToInstitution() == null) {
-            JsfUtil.addErrorMessage("Please Select To Supplier");
-            return;
-        }
+
 
         //IssueRateMargins issueRateMargins = pharmacyBean.fetchIssueRateMargins(sessionController.getDepartment(), getToDepartment());
 //        if (issueRateMargins == null) {
@@ -1041,9 +1038,14 @@ public class PharmacyReturnwithouttresing implements Serializable {
     }
 
     public void handleSelect(SelectEvent event) {
-        if (stock == null) {
+        System.out.println("handleSelect method called!");
+        if (event == null || event.getObject() == null) {
             return;
         }
+
+        // Get the selected stock from the event
+        stock = (Stock) event.getObject();
+        System.out.println("Selected stock: " + stock.getItemBatch().getItem().getName());
 
         // Set the stock and itemBatch for proper rate display
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
