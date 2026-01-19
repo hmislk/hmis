@@ -14,6 +14,7 @@ import com.divudi.core.data.lab.ListingEntity;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.data.lab.PatientInvestigationWrapper;
 import com.divudi.core.data.lab.PatientSampleWrapper;
+import com.divudi.core.data.lab.Priority;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
@@ -129,6 +130,8 @@ public class LaboratoryManagementController implements Serializable {
     
     private List<PatientInvestigationDTO> tempSelectedDTOItems;
     private List<PatientInvestigationDTO> selectedDTOItems;
+    
+    private Priority priority;
     
     
     // </editor-fold>
@@ -399,6 +402,7 @@ public class LaboratoryManagementController implements Serializable {
         jpql = "SELECT new com.divudi.core.data.dto.PatientInvestigationDTO( "
                     + " COALESCE(i.id, 0), "
                     + " COALESCE(i.billItem.item.name, ''), "
+                    + " i.billItem.priority, "
                     + " COALESCE(i.billItem.bill.deptId, ''), "
                     + " i.billItem.bill.createdAt, "
                     + " COALESCE(i.billItem.bill.patient.id, 0 ), "
@@ -515,6 +519,7 @@ public class LaboratoryManagementController implements Serializable {
         jpql ="SELECT new com.divudi.core.data.dto.PatientInvestigationDTO( "
                     + " COALESCE(i.id, 0), "
                     + " COALESCE(i.billItem.item.name, ''), "
+                    + " i.billItem.priority, "
                     + " COALESCE(i.billItem.bill.deptId, ''), "
                     + " i.billItem.bill.createdAt, "
                     + " COALESCE(i.billItem.bill.patient.id, 0 ), "
@@ -627,6 +632,7 @@ public class LaboratoryManagementController implements Serializable {
         this.investigationDTO = new ArrayList<>();
         this.tempSelectedDTOItems = new ArrayList<>();
         this.selectedDTOItems = new ArrayList<>();
+        this.priority = null;
     }
 
     public void searchLabBillsForWorkSheet() {
@@ -2202,6 +2208,7 @@ public class LaboratoryManagementController implements Serializable {
             jpql = "SELECT new com.divudi.core.data.dto.PatientInvestigationDTO( "
                     + " COALESCE(i.id, 0), "
                     + " COALESCE(i.billItem.item.name, ''), "
+                    + " i.billItem.priority, "
                     + " COALESCE(i.billItem.bill.deptId, ''), "
                     + " i.billItem.bill.createdAt, "
                     + " COALESCE(i.billItem.bill.patient.id, 0 ), "
@@ -2288,6 +2295,10 @@ public class LaboratoryManagementController implements Serializable {
             if (patientInvestigationStatus != null) {
                 jpql += " AND i.status = :patientInvestigationStatus ";
                 params.put("patientInvestigationStatus", getPatientInvestigationStatus());
+            }
+            if (priority != null ) {
+                jpql += " AND i.billItem.priority = :priority ";
+                params.put("priority", priority );
             }
 
             jpql += " ORDER BY i.id DESC";
@@ -2626,6 +2637,7 @@ public class LaboratoryManagementController implements Serializable {
             jpql = "SELECT new com.divudi.core.data.dto.PatientInvestigationDTO( "
                     + " COALESCE(r.patientInvestigation.id, 0), "
                     + " COALESCE(r.patientInvestigation.billItem.item.name, ''), "
+                    + " r.patientInvestigation.billItem.priority, "
                     + " COALESCE(r.patientInvestigation.billItem.bill.deptId, ''), "
                     + " r.patientInvestigation.billItem.bill.createdAt, "
                     + " COALESCE(r.patientInvestigation.billItem.bill.patient.id, 0 ), "
@@ -2713,6 +2725,10 @@ public class LaboratoryManagementController implements Serializable {
             if ("Approved".equals(filteringStatus)) {
                 jpql += " AND r.approved = :approved ";
                 params.put("approved", true);
+            }
+            if (priority != null ) {
+                jpql += " AND r.patientInvestigation.billItem.priority = :priority ";
+                params.put("priority", priority );
             }
 
             jpql += " group by r, r.patientInvestigation ";
@@ -3057,7 +3073,6 @@ public class LaboratoryManagementController implements Serializable {
         this.tempSelectedItems = tempSelectedItems;
     }
 
-// </editor-fold>
     public List<SampleDTO> getSampleDtos() {
         return sampleDtos;
     }
@@ -3098,4 +3113,14 @@ public class LaboratoryManagementController implements Serializable {
         this.selectedDTOItems = selectedDTOItems;
     }
 
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+    
+// </editor-fold>
+    
 }

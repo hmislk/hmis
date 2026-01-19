@@ -14,6 +14,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+        
         <p:panel id="tab">
             <f:facet name="header">
                 <div class="d-flex align-items-center justify-content-between">
@@ -33,12 +34,13 @@
                         <p:calendar class="mx-2" id="toDate" value="#{pharmacyController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
 
                         </p:calendar>
-                        <p:commandButton 
-                            update="panelHistoryData" 
-                            process="@this frmDate toDate" 
+                        <p:commandButton
+                            id="btnViewHistory"
+                            update="panelHistoryData"
+                            process="@this frmDate toDate"
                             action="#{pharmacyController.fillDetails()}"
                             class="ui-button-info"
-                            icon="far fa-eye" 
+                            icon="far fa-eye"
                             value="View Detail"/>
                     </div>
                 </div>
@@ -1547,7 +1549,7 @@
                                                     Total Quantity:
                                                 </th>
                                                 <th style="text-align: right; font-weight: bold;">
-                                                    <h:outputText value="#{pharmacyController.batchDetailsDtos.stream().mapToDouble(dto -> dto.quantity != null ? dto.quantity : 0.0).sum()}">
+                                                    <h:outputText value="#{pharmacyController.totalBatchQuantity}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </th>

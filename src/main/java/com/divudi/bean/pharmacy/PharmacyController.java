@@ -2028,7 +2028,7 @@ public class PharmacyController implements Serializable {
         grantIssueQty = 0.00;
         grantIssueValue = 0.00;
 
-        fromDate = CommonFunctions.getStartOfMonth();
+        fromDate = CommonFunctions.addDaysToDate(new Date(), -30L);
         toDate = CommonFunctions.getEndOfDay(new Date());
 
         pharmacyItem = null;
@@ -9422,6 +9422,15 @@ public class PharmacyController implements Serializable {
 
     public void setBatchDetailsDtos(List<com.divudi.core.data.dto.PharmacyBatchStockDTO> batchDetailsDtos) {
         this.batchDetailsDtos = batchDetailsDtos;
+    }
+
+    public double getTotalBatchQuantity() {
+        if (batchDetailsDtos == null || batchDetailsDtos.isEmpty()) {
+            return 0.0;
+        }
+        return batchDetailsDtos.stream()
+            .mapToDouble(dto -> dto.getQuantity() != null ? dto.getQuantity() : 0.0)
+            .sum();
     }
 
     public boolean isBatchDetailsEnabled() {

@@ -11,6 +11,8 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dto.InwardAdmissionDTO;
+import com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO;
+import com.divudi.core.data.dto.PaymentTypeAdmissionDTO;
 import com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -26,6 +28,7 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.PatientInvestigation;
@@ -42,9 +45,12 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -158,6 +164,12 @@ public class InwardReportController implements Serializable {
     // for disscharge book
     boolean withoutCancelBHT = true;
     private Speciality currentSpeciality;
+    
+    // for specialty/doctor wise income
+    private List<InwardIncomeDoctorSpecialtyDTO> spcDocIncomeBillList;
+    private InwardIncomeDoctorSpecialtyDTO totalValuesSpcDocIncome;
+    private Doctor currentDoctor;
+    private boolean byDoctor;
 
     private ReportKeyWord reportKeyWord;
 
@@ -219,6 +231,15 @@ public class InwardReportController implements Serializable {
         Date startTime = new Date();
         fillAdmissions(true, true);
 
+    }
+
+    public List<SurgeryCountDoctorWiseDTO> getExportableBillList() {
+        if (billList == null) {
+            return new ArrayList<>();
+        }
+        return billList.stream()
+                .filter(dto -> !dto.isGrandTotal())
+                .collect(java.util.stream.Collectors.toList());
     }
 
     private List<SurgeryCountDoctorWiseDTO> billList;
@@ -313,6 +334,206 @@ public class InwardReportController implements Serializable {
         billList.add(grandTotal);
 
         createChartModels();
+    }
+    
+    public void processSpecialtyDoctorWiseIncomeReport() {
+        if (byDoctor) {
+            processDoctorWiseIncomeReport();
+        } else {
+            processSpecialtyWiseIncomeReport();
+        }
+    }
+
+    public void calculateTotalValuesSpcDocIncome(Map<Long, InwardIncomeDoctorSpecialtyDTO> m) {
+        Double docChargeTotal = 0.0;
+        Double hospitalChargeTotal = 0.0;
+        Double totalCharge = 0.0;
+
+        for (Map.Entry<Long, InwardIncomeDoctorSpecialtyDTO> entry : m.entrySet()) {
+            getSpcDocIncomeBillList().add(entry.getValue());
+            docChargeTotal += entry.getValue().getDocFee();
+            hospitalChargeTotal += entry.getValue().getHosFee();
+            totalCharge += entry.getValue().getBillTotal();
+        }
+
+        totalValuesSpcDocIncome = new InwardIncomeDoctorSpecialtyDTO();
+        totalValuesSpcDocIncome.setDocFeeTotal(docChargeTotal);
+        totalValuesSpcDocIncome.setHosFeeTotal(hospitalChargeTotal);
+        totalValuesSpcDocIncome.setTotalCharge(totalCharge);
+    }
+    
+    public void processSpecialtyWiseIncomeReport() {
+        spcDocIncomeBillList = new ArrayList<>();
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+        
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        btas.add(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+
+        jpql.append(" Select new com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO(")
+                .append(" bf.staff.speciality.id, ")
+                .append(" coalesce(bf.staff.person.name, 'N/A'), ")
+                .append(" coalesce(bf.staff.speciality.name, 'N/A'), ")
+                .append(" coalesce(bf.feeValue, 0.0), ")
+                .append(" coalesce(bf.billItem.hospitalFee, 0.0), ")
+                .append(" bf.bill.id, ")
+                .append(" bf.bill.netTotal ")
+                .append(") ")
+                .append(" from BillFee bf")
+                .append(" Where bf.retired = false ")
+                .append(" And bf.bill.retired=false ")
+                .append(" And bf.billItem.retired=false ")
+                .append(" And bf.bill.billTypeAtomic in :btas ")
+                .append(" And (type(bf.staff) = :doctorClass OR type(bf.staff) = :consultantClass) ")
+                .append(" AND bf.bill.createdAt BETWEEN :fromDate AND :toDate ");
+
+        params.put("btas", btas);
+        params.put("fromDate", fromYearStartDate);
+        params.put("toDate", toYearEndDate);
+        params.put("doctorClass", Doctor.class);
+        params.put("consultantClass", Consultant.class);
+
+        if (currentSpeciality != null) {
+            jpql.append(" AND bf.staff.speciality = :spe ");
+            params.put("spe", currentSpeciality);
+        }
+        
+        if (currentDoctor != null) {
+            jpql.append(" and bf.staff.id=:staffid ");
+            params.put("staffid", currentDoctor.getId());
+        }
+
+        jpql.append(" ORDER BY bf.staff.speciality.name, bf.staff.person.name ");
+        
+        List<InwardIncomeDoctorSpecialtyDTO> rawList = (List<InwardIncomeDoctorSpecialtyDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        
+        Map<Long, InwardIncomeDoctorSpecialtyDTO> specialtyMap = new LinkedHashMap<>();
+        Map<Long, Set<Long>> spacialtyBill = new LinkedHashMap<>();
+        
+        for (InwardIncomeDoctorSpecialtyDTO dto : rawList) {
+            if (dto.getStaffId() == null) {
+                continue;
+            }
+            
+            Long sId = dto.getStaffId();
+            InwardIncomeDoctorSpecialtyDTO currentSpc = specialtyMap.computeIfAbsent(sId, k -> {
+                InwardIncomeDoctorSpecialtyDTO spc = new InwardIncomeDoctorSpecialtyDTO();
+                spc.setStaffId(dto.getStaffId());
+                spc.setSpecialtyName(dto.getSpecialtyName());
+                
+                return spc;
+            });
+            
+            Set<Long> currentBill = spacialtyBill.computeIfAbsent(sId, k -> new HashSet<>());
+            if (currentBill.add(dto.getBillId())) {
+                currentSpc.setBillTotal(currentSpc.getBillTotal() + dto.getBillTotal());
+            }
+            
+            currentSpc.setDocFee(currentSpc.getDocFee() + dto.getDocFee());
+            currentSpc.setHosFee(currentSpc.getHosFee() + dto.getHosFee());
+        }
+        
+        calculateTotalValuesSpcDocIncome(specialtyMap);
+        
+
+    }
+    
+    public void processDoctorWiseIncomeReport() {
+        spcDocIncomeBillList = new ArrayList<>();
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+        
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        btas.add(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+
+        jpql.append(" Select new com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO(")
+                .append(" bf.staff.id, ")
+                .append(" coalesce(bf.staff.person.name, 'N/A'), ")
+                .append(" coalesce(bf.staff.speciality.name, 'N/A'), ")
+                .append(" coalesce(bf.feeValue, 0.0), ")
+                .append(" coalesce(bf.billItem.hospitalFee, 0.0), ")
+                .append(" bf.bill.id, ")
+                .append(" bf.bill.netTotal ")
+                .append(") ")
+                .append(" from BillFee bf")
+                .append(" Where bf.retired = false ")
+                .append(" And bf.bill.retired=false ")
+                .append(" And bf.billItem.retired=false ")
+                .append(" And bf.bill.billTypeAtomic in :btas ")
+                .append(" And (type(bf.staff) = :doctorClass OR type(bf.staff) = :consultantClass) ")
+                .append(" AND bf.bill.createdAt BETWEEN :fromDate AND :toDate ");
+
+        params.put("btas", btas);
+        params.put("fromDate", fromYearStartDate);
+        params.put("toDate", toYearEndDate);
+        params.put("doctorClass", Doctor.class);
+        params.put("consultantClass", Consultant.class);
+
+        if (currentSpeciality != null) {
+            jpql.append(" AND bf.staff.speciality = :spe ");
+            params.put("spe", currentSpeciality);
+        }
+        
+        if (currentDoctor != null) {
+            jpql.append(" and bf.staff.id=:staffid ");
+            params.put("staffid", currentDoctor.getId());
+        }
+
+        jpql.append(" ORDER BY bf.staff.speciality.name, bf.staff.person.name ");
+        
+        List<InwardIncomeDoctorSpecialtyDTO> rawList = (List<InwardIncomeDoctorSpecialtyDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        
+        Map<Long, InwardIncomeDoctorSpecialtyDTO> doctorMap = new LinkedHashMap<>();
+        Map<Long, Set<Long>> doctorBill = new LinkedHashMap<>();
+        
+        for (InwardIncomeDoctorSpecialtyDTO dto : rawList) {
+            if (dto.getStaffId() == null) {
+                continue;
+            }
+            
+            Long sId = dto.getStaffId();
+            InwardIncomeDoctorSpecialtyDTO currentDoc = doctorMap.computeIfAbsent(sId, k -> {
+                InwardIncomeDoctorSpecialtyDTO doc = new InwardIncomeDoctorSpecialtyDTO();
+                doc.setStaffId(dto.getStaffId());
+                doc.setDoctorName(dto.getDoctorName());
+                doc.setSpecialtyName(dto.getSpecialtyName());
+                
+                return doc;
+            });
+            
+            Set<Long> currentBill = doctorBill.computeIfAbsent(sId, k -> new HashSet<>());
+            if (currentBill.add(dto.getBillId())) {
+                currentDoc.setBillTotal(currentDoc.getBillTotal() + dto.getBillTotal());
+            }
+
+            
+            currentDoc.setDocFee(currentDoc.getDocFee() + dto.getDocFee());
+            currentDoc.setHosFee(currentDoc.getHosFee() + dto.getHosFee());
+        }
+        
+        // Double docChargeTotal = 0.0;
+        // Double hospitalChargeTotal = 0.0;
+        // Double totalCharge = 0.0;
+        
+        // for (Map.Entry<Long, InwardIncomeDoctorSpecialtyDTO> entry : doctorMap.entrySet()) {
+        //     getSpcDocIncomeBillList().add(entry.getValue());
+        //     docChargeTotal += entry.getValue().getDocFee();
+        //     hospitalChargeTotal += entry.getValue().getHosFee();
+        //     totalCharge += entry.getValue().getBillTotal();
+        // }
+        
+        // totalValuesSpcDocIncome = new InwardIncomeDoctorSpecialtyDTO();
+        // totalValuesSpcDocIncome.setDocFeeTotal(docChargeTotal);
+        // totalValuesSpcDocIncome.setHosFeeTotal(hospitalChargeTotal);
+        // totalValuesSpcDocIncome.setTotalCharge(totalCharge);
+
+        calculateTotalValuesSpcDocIncome(doctorMap);
     }
 
     private String lineChartModel;
@@ -789,6 +1010,229 @@ public class InwardReportController implements Serializable {
         barOptionsObj.setScales(scales);
         barChart.setOptions(barOptionsObj);
         specialtyBarChartModel = barChart.toJson();
+    }
+
+    private String paymentTypeLineChartModel;
+    private String paymentTypeBarChartModel;
+
+    private List<PaymentTypeAdmissionDTO> paymentTypeAdmissionCountList;
+
+    public void processPaymentTypeWiseAdmissionCountReport() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append(" SELECT new com.divudi.core.data.dto.PaymentTypeAdmissionDTO(")
+                .append(" e.dateOfAdmission, ")
+                .append(" e.paymentMethod, ")
+                .append(" e.claimable ")
+                .append(") ")
+                .append(" FROM PatientEncounter e ")
+                .append(" WHERE e.retired = false ")
+                .append(" AND e.paymentMethod IN :methods ")
+                .append(" AND e.dateOfAdmission BETWEEN :fromDate AND :toDate ");
+
+        params.put("methods", Arrays.asList(
+                PaymentMethod.Cash,
+                PaymentMethod.Credit
+        ));
+
+        params.put("fromDate", fromYearStartDate);
+        params.put("toDate", toYearEndDate);
+
+        List<PaymentTypeAdmissionDTO> rawList
+                = (List<PaymentTypeAdmissionDTO>) peFacade.findLightsByJpqlWithoutCache(
+                        jpql.toString(),
+                        params,
+                        TemporalType.TIMESTAMP
+                );
+
+        // Month-wise aggregation
+        Map<Integer, PaymentTypeAdmissionDTO> monthMap = new LinkedHashMap<>();
+
+        for (PaymentTypeAdmissionDTO dto : rawList) {
+
+            int month = dto.getMonth();
+
+            PaymentTypeAdmissionDTO aggregated = monthMap.get(month);
+            if (aggregated == null) {
+                aggregated = new PaymentTypeAdmissionDTO();
+                aggregated.setMonth(month);
+                monthMap.put(month, aggregated);
+            }
+
+            aggregated.add(dto);
+
+        }
+
+        // Final list + grand total
+        paymentTypeAdmissionCountList = new ArrayList<>();
+        PaymentTypeAdmissionDTO grandTotal = new PaymentTypeAdmissionDTO();
+
+//        for (PaymentTypeAdmissionDTO row : monthMap.values()) {
+//            System.out.println(
+//                    "Month=" + row.getMonth()
+//                    + " Cash=" + row.getCash()
+//                    + " Claim=" + row.getCashToBeClaim()
+//                    + " Credit=" + row.getCredit()
+//            );
+//            paymentTypeAdmissionCountList.add(row);
+//            grandTotal.addAll(row);
+//        }
+        for (int month = 0; month < 12; month++) {
+            PaymentTypeAdmissionDTO row = monthMap.get(month);
+            if (row != null) {
+                paymentTypeAdmissionCountList.add(row);
+                grandTotal.addAll(row);
+            }
+        }
+
+        grandTotal.setIsGrandTotal(true);
+        paymentTypeAdmissionCountList.add(grandTotal);
+
+        createPaymentTypeWiseAdmissionCountCharts();
+
+    }
+
+    public void createPaymentTypeWiseAdmissionCountCharts() {
+        createPaymentTypeLineChart();
+        createPaymentTypeBarChart();
+    }
+
+    private void createPaymentTypeLineChart() {
+
+        long[] cash = new long[12];
+        long[] cashTbc = new long[12];
+        long[] credit = new long[12];
+
+        for (PaymentTypeAdmissionDTO dto : paymentTypeAdmissionCountList) {
+
+            if (dto.isIsGrandTotal()) {
+                continue;
+            }
+            int m = dto.getMonth();
+            cash[m] = dto.getCash();
+            cashTbc[m] = dto.getCashToBeClaim();
+            credit[m] = dto.getCredit();
+        }
+
+        LineChart chart = new LineChart();
+        LineData data = new LineData();
+
+        data.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+
+        // Cash
+        LineDataset cashDs = new LineDataset()
+                .setLabel("Cash")
+                .setBorderColor(new RGBAColor(54, 162, 235, 1))
+                .setFill(new Fill(false))
+                .setTension(0.4f);
+        for (long v : cash) {
+            cashDs.addData(v);
+        }
+
+        // Cash To Be Claim
+        LineDataset tbcDs = new LineDataset()
+                .setLabel("Cash (To Be Claim)")
+                .setBorderColor(new RGBAColor(255, 159, 64, 1))
+                .setFill(new Fill(false))
+                .setTension(0.4f);
+        for (long v : cashTbc) {
+            tbcDs.addData(v);
+        }
+
+        // Credit
+        LineDataset creditDs = new LineDataset()
+                .setLabel("Credit")
+                .setBorderColor(new RGBAColor(255, 99, 132, 1))
+                .setFill(new Fill(false))
+                .setTension(0.4f);
+        for (long v : credit) {
+            creditDs.addData(v);
+        }
+
+        data.addDataset(cashDs);
+        data.addDataset(tbcDs);
+        data.addDataset(creditDs);
+
+        chart.setData(data);
+
+        LineOptions options = new LineOptions();
+        options.setPlugins(new Plugins()
+                .setTitle(new Title().setDisplay(true)
+                        .setText("Payment Type Wise Admission Count"))
+                .setLegend(new Legend().setDisplay(true)));
+
+        Scales scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions().setBeginAtZero(true).setTicks(new LinearTickOptions().setStepSize(5)));
+        options.setScales(scales);
+        chart.setOptions(options);
+
+        paymentTypeLineChartModel = chart.toJson();
+    }
+
+    private void createPaymentTypeBarChart() {
+
+        long[] cash = new long[12];
+        long[] cashTbc = new long[12];
+        long[] credit = new long[12];
+
+        for (PaymentTypeAdmissionDTO dto : paymentTypeAdmissionCountList) {
+            if (dto.isIsGrandTotal()) {
+                continue;
+            }
+            int m = dto.getMonth();
+            cash[m] = dto.getCash();
+            cashTbc[m] = dto.getCashToBeClaim();
+            credit[m] = dto.getCredit();
+        }
+
+        BarChart chart = new BarChart();
+        BarData data = new BarData();
+
+        data.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+
+        BarDataset cashDs = new BarDataset().setLabel("Cash").setBackgroundColor(new RGBAColor(54, 162, 235, 0.7f))
+                .setBorderColor(new RGBAColor(54, 162, 235, 1f))
+                .setBorderWidth(1);
+        for (long v : cash) {
+            cashDs.addData(v);
+        }
+
+        BarDataset tbcDs = new BarDataset().setLabel("Cash (To Be Claim)").setBackgroundColor(new RGBAColor(255, 159, 64, 0.7f))
+                .setBorderColor(new RGBAColor(255, 159, 64, 1f))
+                .setBorderWidth(1);
+        for (long v : cashTbc) {
+            tbcDs.addData(v);
+        }
+
+        BarDataset creditDs = new BarDataset().setLabel("Credit").setBackgroundColor(new RGBAColor(255, 99, 132, 0.7f))
+                .setBorderColor(new RGBAColor(255, 99, 132, 1f))
+                .setBorderWidth(1);
+        for (long v : credit) {
+            creditDs.addData(v);
+        }
+
+        data.addDataset(cashDs);
+        data.addDataset(tbcDs);
+        data.addDataset(creditDs);
+
+        chart.setData(data);
+
+        BarOptions options = new BarOptions();
+        options.setPlugins(new Plugins()
+                .setTitle(new Title().setDisplay(true)
+                        .setText("Payment Type Wise Admission Count"))
+                .setLegend(new Legend().setDisplay(true)));
+
+        Scales scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions().setBeginAtZero(true).setTicks(new LinearTickOptions().setStepSize(5)));
+        options.setScales(scales);
+
+        chart.setOptions(options);
+
+        paymentTypeBarChartModel = chart.toJson();
     }
 
     public void fillAdmissions(Boolean discharged, Boolean finalized) {
@@ -2111,12 +2555,60 @@ public class InwardReportController implements Serializable {
         this.specialtyBarChartModel = specialtyBarChartModel;
     }
 
+    public List<PaymentTypeAdmissionDTO> getPaymentTypeAdmissionCountList() {
+        return paymentTypeAdmissionCountList;
+    }
+
+    public void setPaymentTypeAdmissionCountList(List<PaymentTypeAdmissionDTO> paymentTypeAdmissionCountList) {
+        this.paymentTypeAdmissionCountList = paymentTypeAdmissionCountList;
+    }
+
+    public String getPaymentTypeLineChartModel() {
+        return paymentTypeLineChartModel;
+    }
+
+    public String getPaymentTypeBarChartModel() {
+        return paymentTypeBarChartModel;
+    }
+
     public List<InwardAdmissionDTO> getList() {
         return list;
     }
 
     public void setList(List<InwardAdmissionDTO> list) {
         this.list = list;
+    }
+    
+    public List<InwardIncomeDoctorSpecialtyDTO> getSpcDocIncomeBillList() {
+        return spcDocIncomeBillList;
+    }
+    
+    public void setSpcDocIncomeBillList(List<InwardIncomeDoctorSpecialtyDTO> spcDocIncomeBillList) {
+        this.spcDocIncomeBillList = spcDocIncomeBillList;
+    }
+    
+    public InwardIncomeDoctorSpecialtyDTO getTotalValuesSpcDocIncome() {
+        return totalValuesSpcDocIncome;
+    }
+
+    public void setTotalValuesSpcDocIncome(InwardIncomeDoctorSpecialtyDTO totalValuesSpcDocIncome) {
+        this.totalValuesSpcDocIncome = totalValuesSpcDocIncome;
+    }
+    
+    public Doctor getCurrentDoctor() {
+        return currentDoctor;
+    }
+    
+    public void setCurrentDoctor(Doctor currentDoctor) {
+        this.currentDoctor = currentDoctor;
+    }
+    
+    public boolean getByDoctor() {
+        return byDoctor;
+    }
+    
+    public void setByDoctor(boolean dw) {
+        this.byDoctor = dw;
     }
 
     public class IncomeByCategoryRecord {

@@ -49,6 +49,9 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.lims.Lims.class);
         resources.add(com.divudi.ws.lims.LimsMiddlewareController.class);
         resources.add(com.divudi.ws.lims.MiddlewareController.class);
+        resources.add(com.divudi.ws.pharmacy.PharmacyAdjustmentApi.class);
+        resources.add(com.divudi.ws.pharmacy.PharmacyBatchApi.class);
+        resources.add(com.divudi.ws.pharmacy.PharmacySearchApi.class);
     }
     
 }

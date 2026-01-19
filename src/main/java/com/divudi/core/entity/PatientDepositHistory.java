@@ -47,6 +47,19 @@ public class PatientDepositHistory implements Serializable, RetirableEntity {
     private Institution institution;
     @ManyToOne
     private Department department;
+    @ManyToOne
+    private Institution site;
+
+    // This patient's aggregate balances (snapshot after transaction)
+    private Double patientDepositBalanceForSite;
+    private Double patientDepositBalanceForInstitution;
+    private Double patientDepositBalanceForAllInstitutions;
+
+    // All patients' aggregate balances (snapshot after transaction)
+    private Double allPatientsDepositBalanceForDepartment;
+    private Double allPatientsDepositBalanceForSite;
+    private Double allPatientsDepositBalanceForInstitution;
+    private Double allPatientsDepositBalanceForAllInstitutions;
 
     @Enumerated(EnumType.ORDINAL)
     private HistoryType historyType;
@@ -238,6 +251,70 @@ public class PatientDepositHistory implements Serializable, RetirableEntity {
 
     public void setHistoryType(HistoryType historyType) {
         this.historyType = historyType;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Double getPatientDepositBalanceForSite() {
+        return patientDepositBalanceForSite;
+    }
+
+    public void setPatientDepositBalanceForSite(Double patientDepositBalanceForSite) {
+        this.patientDepositBalanceForSite = patientDepositBalanceForSite;
+    }
+
+    public Double getPatientDepositBalanceForInstitution() {
+        return patientDepositBalanceForInstitution;
+    }
+
+    public void setPatientDepositBalanceForInstitution(Double patientDepositBalanceForInstitution) {
+        this.patientDepositBalanceForInstitution = patientDepositBalanceForInstitution;
+    }
+
+    public Double getPatientDepositBalanceForAllInstitutions() {
+        return patientDepositBalanceForAllInstitutions;
+    }
+
+    public void setPatientDepositBalanceForAllInstitutions(Double patientDepositBalanceForAllInstitutions) {
+        this.patientDepositBalanceForAllInstitutions = patientDepositBalanceForAllInstitutions;
+    }
+
+    public Double getAllPatientsDepositBalanceForDepartment() {
+        return allPatientsDepositBalanceForDepartment;
+    }
+
+    public void setAllPatientsDepositBalanceForDepartment(Double allPatientsDepositBalanceForDepartment) {
+        this.allPatientsDepositBalanceForDepartment = allPatientsDepositBalanceForDepartment;
+    }
+
+    public Double getAllPatientsDepositBalanceForSite() {
+        return allPatientsDepositBalanceForSite;
+    }
+
+    public void setAllPatientsDepositBalanceForSite(Double allPatientsDepositBalanceForSite) {
+        this.allPatientsDepositBalanceForSite = allPatientsDepositBalanceForSite;
+    }
+
+    public Double getAllPatientsDepositBalanceForInstitution() {
+        return allPatientsDepositBalanceForInstitution;
+    }
+
+    public void setAllPatientsDepositBalanceForInstitution(Double allPatientsDepositBalanceForInstitution) {
+        this.allPatientsDepositBalanceForInstitution = allPatientsDepositBalanceForInstitution;
+    }
+
+    public Double getAllPatientsDepositBalanceForAllInstitutions() {
+        return allPatientsDepositBalanceForAllInstitutions;
+    }
+
+    public void setAllPatientsDepositBalanceForAllInstitutions(Double allPatientsDepositBalanceForAllInstitutions) {
+        this.allPatientsDepositBalanceForAllInstitutions = allPatientsDepositBalanceForAllInstitutions;
     }
 
 }

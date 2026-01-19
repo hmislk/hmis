@@ -139,14 +139,14 @@
                                     <p:panelGrid columns="2" >
                                         <p:outputLabel value="Return Comments" ></p:outputLabel>
                                         <p:inputText value="#{billReturnController.refundComment}"  class="w-100"></p:inputText>
-                                        <p:outputLabel value="Payment Method" ></p:outputLabel>
+                                        <p:outputLabel value="Return Payment Method" ></p:outputLabel>
                                         <p:selectOneMenu
                                             id="cmbPs"
                                             value="#{billReturnController.paymentMethod}"
                                             disabled="#{billReturnController.paymentMethod eq 'Credit'}">
                                             <f:selectItem itemLabel="Select paymentMethod"/>
                                             <f:selectItems value="#{billReturnController.paymentMethods}"/>
-                                            <p:ajax process="cmbPs" update="paymentDetails" listener="#{billReturnController.onPaymentMethodChange()}" ></p:ajax>
+                                            <p:ajax process="@this" update="paymentDetails" event="change" listener="#{billReturnController.onPaymentMethodChange()}" />
                                         </p:selectOneMenu>
                                     </p:panelGrid>
 
@@ -157,7 +157,7 @@
                                             class="row"
                                             layout="block"  
                                             rendered="#{billReturnController.paymentMethod eq 'Credit'}" >
-                                            <pa:creditDetailsAsOnlyPayment paymentMethodData="#{billReturnController.paymentMethodData}"/>
+                                            <pa:creditDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{billReturnController.paymentMethodData}"/>
                                         </h:panelGroup>
                                         <h:panelGroup
                                             class="row"
@@ -251,7 +251,7 @@
                                             class="row my-1"
                                             layout="block"  
                                             id="creditCard" rendered="#{billReturnController.paymentMethod eq 'Card'}" >
-                                            <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{billReturnController.paymentMethodData}"/>
+                                            <pa:creditCardDetailsAsOnlyPayment valueRequired="false" paymentMethodData="#{billReturnController.paymentMethodData}"/>
                                         </h:panelGroup>
                                         <h:panelGroup 
                                             class="row my-1"

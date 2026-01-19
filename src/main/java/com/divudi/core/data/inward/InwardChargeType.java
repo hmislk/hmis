@@ -22,6 +22,7 @@ public enum InwardChargeType {
     MedicalCareICU("Medical Care"),//Goes With Room
     MedicalServices("Medical Services"),
     Medicine("Medicine"),//For BHT ISSUE
+    MedicinesAndSurgicalSupplies("Medicines and Surgical Supplies"),//For Surgery Bill Medicines
     MOCharges("MO Charges"),//GOES WITH PATIENT ROOM
     MaintainCharges("Maintain Charges"),//GOES WITH PATIENT ROOM
     DoctorAndNurses("Assisting Charge"),//Set Doctor && Nurse Fees

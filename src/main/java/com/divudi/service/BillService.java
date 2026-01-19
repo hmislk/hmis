@@ -37,6 +37,7 @@ import com.divudi.core.data.dto.OpdSaleSummaryDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
 import com.divudi.core.data.dto.OpdIncomeReportDTO;
+import com.divudi.core.data.dto.OpdRevenueDashboardDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillFinanceDetails;
@@ -1089,7 +1090,6 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt desc  ";
-        System.out.println("jpql = " + jpql);
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
     }
@@ -1317,7 +1317,13 @@ public class BillService {
 
         jpql += " order by b.createdAt desc ";
 
-        List<BillLight> fetchedBills = (List<BillLight>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+
+        List<BillLight> fetchedBills = null;
+        try {
+            fetchedBills = (List<BillLight>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return fetchedBills;
     }
 
@@ -1599,10 +1605,8 @@ public class BillService {
 
         // First, debug with count query
         Long count = countPharmacyReturnWithoutTrasingBills(fromDate, toDate, institution, site, department, webUser);
-        System.out.println("🔍 DEBUG: Found " + count + " PHARMACY_RETURN_WITHOUT_TREASING bills in date range");
 
         if (count == 0) {
-            System.out.println("🚨 No bills found - check BillTypeAtomic and date range");
             return new ArrayList<>();
         }
 
@@ -1670,11 +1674,9 @@ public class BillService {
             List<PharmacyReturnWithoutTrasingBillDTO> results =
                 (List<PharmacyReturnWithoutTrasingBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
-            System.out.println("🔍 DEBUG: DTO query returned " + (results != null ? results.size() : "null") + " results");
             return results != null ? results : new ArrayList<>();
 
         } catch (Exception e) {
-            System.err.println("🚨 DTO query failed: " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<>();
         }
@@ -1722,10 +1724,8 @@ public class BillService {
         }
 
         Long itemCount = (Long) billFacade.findLongByJpql(countJpql, countParams);
-        System.out.println("🔍 DEBUG: Found " + itemCount + " bill items in PHARMACY_RETURN_WITHOUT_TREASING bills");
 
         if (itemCount == 0) {
-            System.out.println("🚨 No bill items found");
             return new ArrayList<>();
         }
 
@@ -1796,11 +1796,9 @@ public class BillService {
             List<PharmacyReturnWithoutTrasingBillItemDTO> results =
                 (List<PharmacyReturnWithoutTrasingBillItemDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
-            System.out.println("🔍 DEBUG: Bill Item DTO query returned " + (results != null ? results.size() : "null") + " results");
             return results != null ? results : new ArrayList<>();
 
         } catch (Exception e) {
-            System.err.println("🚨 Bill Item DTO query failed: " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<>();
         }
@@ -1869,13 +1867,110 @@ public class BillService {
 
         jpql += " order by b.createdAt desc";
         // Debug logging
-
         // Debug logging
-        System.out.println("=== BillService.fetchOpdIncomeReportDTOs Query Debug ===");
-        System.out.println("JPQL: " + jpql);
-        System.out.println("Parameters: " + params);
 
         return (List<OpdIncomeReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+    
+    public List<OpdRevenueDashboardDTO> fetchOpdRevenueDashboardDTOs(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme) {
+
+        if (fromDate == null || toDate == null) {
+            throw new IllegalArgumentException("fromDate and toDate cannot be null");
+        }
+        if (fromDate.after(toDate)) {
+            throw new IllegalArgumentException("fromDate cannot be after toDate");
+        }
+
+        String jpql = "select new com.divudi.core.data.dto.OpdRevenueDashboardDTO("
+                + " b.id, b.deptId, b.billTypeAtomic, b.createdAt, "
+                + " coalesce(b.netTotal,0.0), coalesce(b.total,0.0), "
+                + " b.department, b.institution, b.toDepartment) "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins";
+            params.put("ins", institution);
+        }
+        if (webUser != null) {
+            jpql += " and b.creater=:user";
+            params.put("user", webUser);
+        }
+        if (department != null) {
+            jpql += " and b.toDepartment=:dep";
+            params.put("dep", department);
+        }
+        if (site != null) {
+            jpql += " and b.toDepartment.site=:site";
+            params.put("site", site);
+        }
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType";
+            params.put("admissionType", admissionType);
+        }
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        jpql += " order by b.createdAt desc";
+        // Debug logging
+        // Debug logging
+
+        return (List<OpdRevenueDashboardDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+    
+    public List<OpdRevenueDashboardDTO> fetchBillDiscounts(Date fromDate,
+            Date toDate,
+            Department department,
+            List<BillTypeAtomic> billTypeAtomics) {
+
+        if (fromDate == null || toDate == null) {
+            throw new IllegalArgumentException("fromDate and toDate cannot be null");
+        }
+        if (fromDate.after(toDate)) {
+            throw new IllegalArgumentException("fromDate cannot be after toDate");
+        }
+
+        String jpql = "Select new com.divudi.core.data.dto.OpdRevenueDashboardDTO("
+                + " b.id, b.deptId, b.billTypeAtomic, coalesce(b.discount, 0.0), b.toDepartment) "
+                + " from Bill b"
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        
+        if (department != null) {
+            jpql += " and b.toDepartment=:dep";
+            params.put("dep", department);
+        }
+
+        jpql += " order by b.createdAt desc";
+        // Debug logging
+        // Debug logging
+
+        return (List<OpdRevenueDashboardDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public List<BillItem> fetchBillItems(Date fromDate,

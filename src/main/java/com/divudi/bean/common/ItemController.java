@@ -209,6 +209,7 @@ public class ItemController implements Serializable {
                 e.printStackTrace();
             }
         }
+        file = null;
     }
 
     public void uploadToReplaceSiteFeesByItemCode() {
@@ -224,6 +225,7 @@ public class ItemController implements Serializable {
                 e.printStackTrace();
             }
         }
+        file = null;
     }
 
     public void uploadToAddSiteFeesByItemCode() {
@@ -239,6 +241,7 @@ public class ItemController implements Serializable {
                 e.printStackTrace();
             }
         }
+        file = null;
     }
 
     public void uploadToAddCcFeesByItemCode() {
@@ -254,6 +257,7 @@ public class ItemController implements Serializable {
                 e.printStackTrace();
             }
         }
+        file = null;
     }
 
     public void uploadToAddDepartmentFeesByItemCode() {
@@ -282,6 +286,7 @@ public class ItemController implements Serializable {
                 }
             }
         }
+        file = null;
     }
 
     public void saveImportedDepartmentFees() {
@@ -1857,6 +1862,30 @@ public class ItemController implements Serializable {
             itemFacade.edit(i);
         }
         JsfUtil.addSuccessMessage("All Unmarked for Rates visible during Inward Billing");
+    }
+    
+    public void markSelectedItemsToAllowPriorityMarkingWhenBilling() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setAllowedForBillingPriority(true);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Items Marked for Allowed Priority for Billing");
+    }
+    
+    public void unMarkSelectedItemsToAllowPriorityMarkingWhenBilling() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setAllowedForBillingPriority(false);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Items Unmarked for Allowed Priority for Billing");
     }
 
     public void addSessionNumberType() {

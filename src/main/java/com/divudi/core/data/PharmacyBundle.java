@@ -868,13 +868,23 @@ public class PharmacyBundle implements Serializable {
     }
 
     public void generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionTypeDto() {
+
         Map<String, PharmacyRow> grouped = new LinkedHashMap<>();
+        int processedCount = 0;
+        int skippedNullBillLight = 0;
+        int skippedNullBillType = 0;
 
         for (PharmacyRow r : getRows()) {
             BillLight b = r.getBillLight();
-            if (b == null || b.getBillTypeAtomic() == null) {
+            if (b == null) {
+                skippedNullBillLight++;
                 continue;
             }
+            if (b.getBillTypeAtomic() == null) {
+                skippedNullBillType++;
+                continue;
+            }
+            processedCount++;
 
             populateRowFromBill(r, b);
 
@@ -950,6 +960,11 @@ public class PharmacyBundle implements Serializable {
         grouped.values().stream()
                 .sorted(Comparator.comparing(PharmacyRow::getRowType, Comparator.nullsLast(String::compareToIgnoreCase)))
                 .forEachOrdered(getRows()::add);
+
+        for (String key : grouped.keySet()) {
+            PharmacyRow gr = grouped.get(key);
+        }
+
         populateSummaryRow();
     }
 
@@ -1296,9 +1311,18 @@ public class PharmacyBundle implements Serializable {
             return;
         }
 
-        r.setGrossTotal(b.getTotal());
+        double grossTotal = b.getTotal();
+        r.setGrossTotal(grossTotal);
         r.setNetTotal(b.getNetTotal());
-        r.setDiscount(b.getDiscount());
+
+        // Discount is inconsistently signed in database - some bills have positive, some negative
+        // Use absolute value and apply sign based on gross total (which is consistently signed)
+        double discountValue = Math.abs(b.getDiscount());
+        if (grossTotal < 0) {
+            discountValue = -discountValue;
+        }
+        r.setDiscount(discountValue);
+
         r.setServiceCharge(b.getMargin());
         r.setActualTotal(b.getTotal() - b.getMargin());
 
@@ -1385,9 +1409,18 @@ public class PharmacyBundle implements Serializable {
             return;
         }
 
-        r.setGrossTotal(nullSafeDouble(b.getTotal()));
+        double grossTotal = nullSafeDouble(b.getTotal());
+        r.setGrossTotal(grossTotal);
         r.setNetTotal(nullSafeDouble(b.getNetTotal()));
-        r.setDiscount(nullSafeDouble(b.getDiscount()));
+
+        // Discount is inconsistently signed in database - some bills have positive, some negative
+        // Use absolute value and apply sign based on gross total (which is consistently signed)
+        double discountValue = Math.abs(nullSafeDouble(b.getDiscount()));
+        if (grossTotal < 0) {
+            discountValue = -discountValue;
+        }
+        r.setDiscount(discountValue);
+
         r.setServiceCharge(nullSafeDouble(b.getMargin()));
         r.setActualTotal(nullSafeDouble(b.getTotal()) - nullSafeDouble(b.getMargin()));
 
