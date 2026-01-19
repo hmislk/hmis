@@ -934,30 +934,30 @@ public class QuickBookReportController implements Serializable {
             departmentsToProcess = Arrays.asList(department);
         } else {
             // Get all approved departments, optionally filtered by site
-            departmentsToProcess = getApprovedDepartments(approvedBillTypes, getInstitution(), site, CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate));
+            departmentsToProcess = getApprovedDepartments(approvedBillTypes, getInstitution(), site, fromDate, toDate);
         }
 
         // Get bills for each department
         for (Department d : departmentsToProcess) {
 
             // Get approved GRNs (not pending/pre-approval)
-            billsBilled.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_GRN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsBilled.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_GRN, d, getInstitution(), fromDate, toDate));
 
             // Get approved Direct Purchases
-            billsDirectPurchase.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsDirectPurchase.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, d, getInstitution(), fromDate, toDate));
 
             // Get approved GRN Returns (uses RefundBill class, so query with Bill parent)
-            billsReturn.addAll(getApprovedBills(new Bill(), BillTypeAtomic.PHARMACY_GRN_RETURN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsReturn.addAll(getApprovedBills(new Bill(), BillTypeAtomic.PHARMACY_GRN_RETURN, d, getInstitution(), fromDate, toDate));
 
             // Get approved Direct Purchase Returns (uses RefundBill class, so query with Bill parent)
-            billsDirectPurchaseReturn.addAll(getApprovedBills(new Bill(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsDirectPurchaseReturn.addAll(getApprovedBills(new Bill(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND, d, getInstitution(), fromDate, toDate));
 
             // Get approved Returns without tracing receipts (uses PreBill class, so query with Bill parent)
-            billsReturnP.addAll(getApprovedBills(new Bill(), BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsReturnP.addAll(getApprovedBills(new Bill(), BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING, d, getInstitution(), fromDate, toDate));
 
             // Get cancelled bills (if needed for QB reporting)
-            billsCanceled.addAll(getApprovedBills(new CancelledBill(), BillTypeAtomic.PHARMACY_GRN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-            billsReturnCancel.addAll(getApprovedBills(new CancelledBill(), BillTypeAtomic.PHARMACY_GRN_RETURN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsCanceled.addAll(getApprovedBills(new CancelledBill(), BillTypeAtomic.PHARMACY_GRN, d, getInstitution(), fromDate, toDate));
+            billsReturnCancel.addAll(getApprovedBills(new CancelledBill(), BillTypeAtomic.PHARMACY_GRN_RETURN, d, getInstitution(), fromDate, toDate));
         }
 
         // Aggregate all approved bills for processing
