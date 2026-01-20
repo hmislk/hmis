@@ -161,10 +161,11 @@
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperBatchBill'}" >
                                                 <prints:five_five_paper_with_headings_badge_bill_with_bill_items billController="#{opdBillController}" payments="#{opdBillController.payments}" duplicate="#{opdBillController.duplicatePrint}"/>                        
                                             </h:panelGroup>
+                                            
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom3'}" >
                                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Sale Bill is FiveFiveCustom3',false)}"> 
                                                     <ui:repeat value="#{opdBillController.bills}" var="bc3" >
-                                                        <ph:sale_bill_five_five_custom_3 bill="#{bc3}" duplicate="false"/>
+                                                        <ph:sale_bill_five_five_custom_3 bill="#{bc3}" duplicate="#{opdBillController.duplicatePrint}"/>
                                                     </ui:repeat>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('OPD Sale Bill is FiveFiveCustom3',false)}">
