@@ -3,7 +3,8 @@
 -- Date: 2026-01-20
 -- Issue: GRN Returns, Direct Purchase Returns, and Returns Without Tracing not appearing in QB Report
 -- Root Cause: These bill types were not setting approveAt during approval, and QB report filters by approveAt
--- Fix: Code was updated to set approveAt going forward; this migration backfills historical data
+-- Fix: Code was updated to set approveAt going forward; 
+-- this migration backfills historical data
 
 -- ==========================================
 -- STEP 1: DIAGNOSTIC - CHECK CURRENT STATE
