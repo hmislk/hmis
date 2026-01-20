@@ -162,8 +162,10 @@
                                     <h:outputLabel value="Patient Name" ></h:outputLabel>
                                 </f:facet>
                                 <h:outputLabel value="#{bip.referanceBillItem.bill.patient.person.name}" rendered="#{bf.bill.patientEncounter eq null}" style="margin: 4px;font-size:  10pt!important;"  />
-                                <h:outputLabel value="#{bip.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}"
-                                               style="margin: 4px; font-size:  10pt!important;"   />
+                                <h:outputLabel 
+                                    value="#{bip.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}"
+                                    rendered="#{bf.bill.patientEncounter ne null}"
+                                    style="margin: 4px; font-size:  10pt!important;"   />
                             </h:column>
                             <h:column>
                                 <f:facet name="header" >
