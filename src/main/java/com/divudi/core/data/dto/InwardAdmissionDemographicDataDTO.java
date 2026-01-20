@@ -11,7 +11,7 @@ import com.divudi.core.data.Sex;
 public class InwardAdmissionDemographicDataDTO {
 
     // referring consultant data
-    private Long staffId;
+    private Long id;
     private String doctorName;
     private String specialityName;
 
@@ -23,6 +23,7 @@ public class InwardAdmissionDemographicDataDTO {
     private int maleCount;
     private int femaleCount;
     private int otherCount;
+    private int unknownCount;
 
     // age group-wise counters
     private int noAgeCount;
@@ -39,11 +40,17 @@ public class InwardAdmissionDemographicDataDTO {
     private int totalCount;
 
     // Constructor for processing data
-    public InwardAdmissionDemographicDataDTO(String specialityName) {
+    public InwardAdmissionDemographicDataDTO(String specialityName, String doctorName) {
         this.specialityName = specialityName;
+        
+        if (doctorName != null) {
+            this.doctorName = doctorName;
+        }
+        
         this.maleCount = 0;
         this.femaleCount = 0;
         this.otherCount = 0;
+        this.unknownCount = 0;
         this.noAgeCount = 0;
         this.belowOneYearCount = 0;
         this.oneToFiveYearsCount = 0;
@@ -57,16 +64,21 @@ public class InwardAdmissionDemographicDataDTO {
         this.totalCount = 0;
     }
 
-
-    // Constructor for fetching data from database
-    public InwardAdmissionDemographicDataDTO(Long staffId, String doctorName, String specialityName, Date dob, Sex sex) {
-        this.staffId = staffId;
+    // Constructor for fetching data from database (Doctor Wise)
+    public InwardAdmissionDemographicDataDTO(Long id, String doctorName, String specialityName, Date dob, Sex sex) {
+        this.id = id;
         this.doctorName = doctorName;
         this.specialityName = specialityName;
-        this.patientSex = sex;
+        this.patientSex = (sex != null ? sex : Sex.Unknown);
         calShortAgeFromDob(dob);
-        
-        System.out.println("specialityName = " + specialityName + "doctorName -- " + doctorName + " Sex " + patientSex.getLabel() + "age -- " + patientAge);
+    }
+    
+    // Constructor for fetching data from database (Doctor Wise)
+    public InwardAdmissionDemographicDataDTO(Long id, String specialityName, Date dob, Sex sex) {
+        this.id = id;
+        this.specialityName = specialityName;
+        this.patientSex = (sex != null ? sex : Sex.Unknown);
+        calShortAgeFromDob(dob);
     }
 
     // Calculation of age from date of birth
@@ -96,6 +108,9 @@ public class InwardAdmissionDemographicDataDTO {
                 break;  
             case Other:
                 otherCount++;
+                break;
+            case Unknown:
+                unknownCount++;
                 break;
             default:
                 break;
@@ -130,12 +145,12 @@ public class InwardAdmissionDemographicDataDTO {
         totalCount++;
     }
 
-    public Long getStaffId() {
-        return staffId;
+    public Long getId() {
+        return id;
     }
 
-    public void setStaffId(Long staffId) {
-        this.staffId = staffId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getDoctorName() {
@@ -193,7 +208,15 @@ public class InwardAdmissionDemographicDataDTO {
     public void setOtherCount(int otherCount) {
         this.otherCount = otherCount;
     }
+    
+    public int getUnknownCount() {
+        return unknownCount;
+    }
 
+    public void setUnknownCount(int unknownCount) {
+        this.unknownCount = unknownCount;
+    }
+    
     public int getNoAgeCount() {
         return noAgeCount;
     }
