@@ -80,6 +80,11 @@
                                     filterMatchMode="contains">
                                     <h:outputText value="#{item.name}" ></h:outputText>
                                 </p:column>
+                                
+                                 <p:column headerText="Created At"  sortBy="#{item.createdAt}" filterBy="#{item.createdAt}" filterMatchMode="contains">
+                                    <h:outputText value="#{item.createdAt eq null ? 'N/A':item.createdAt}" ></h:outputText>
+                                </p:column>
+                                
                                 <p:column 
                                     headerText="Institution" 
                                     sortBy="#{item.institution.name}" 
