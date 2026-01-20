@@ -52,9 +52,7 @@
       "Bash(fi)",
       "Bash(git clone:*)",
       "Bash(git push:*)",
-      "WebFetch(domain:github.com)",
-      "Bash(git merge-base:*)",
-      "Bash(git merge:*)"
+      "WebFetch(domain:github.com)"
     ]
   }
 }
