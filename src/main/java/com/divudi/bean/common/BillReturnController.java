@@ -28,6 +28,7 @@ import com.divudi.core.entity.lab.PatientSampleComponant;
 import com.divudi.core.entity.lab.Sample;
 
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PatientSampleComponantFacade;
 import com.divudi.service.BillService;
@@ -71,6 +72,8 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     ProfessionalPaymentService professionalPaymentService;
     @EJB
     BillService billService;
+    @Inject
+    InstitutionFacade institutionFacade;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -217,7 +220,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                     }
                     // Re-fetch from database to ensure managed entity
                     if (cardInstitution != null && cardInstitution.getId() != null) {
-                        cardInstitution = institutionController.getEjbFacade().find(cardInstitution.getId());
+                        cardInstitution = institutionFacade.find(cardInstitution.getId());
                     }
                     getPaymentMethodData().getCreditCard().setInstitution(cardInstitution);
                     getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
@@ -232,7 +235,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                     }
                     // Re-fetch from database to ensure managed entity
                     if (chequeInstitution != null && chequeInstitution.getId() != null) {
-                        chequeInstitution = institutionController.getEjbFacade().find(chequeInstitution.getId());
+                        chequeInstitution = institutionFacade.find(chequeInstitution.getId());
                     }
                     getPaymentMethodData().getCheque().setInstitution(chequeInstitution);
                     getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
@@ -248,7 +251,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                     }
                     // Re-fetch from database to ensure managed entity
                     if (slipInstitution != null && slipInstitution.getId() != null) {
-                        slipInstitution = institutionController.getEjbFacade().find(slipInstitution.getId());
+                        slipInstitution = institutionFacade.find(slipInstitution.getId());
                     }
                     getPaymentMethodData().getSlip().setInstitution(slipInstitution);
                     getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate());
@@ -274,7 +277,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                     // CRITICAL FIX: Re-fetch the institution from database to ensure it's a managed entity
                     // This prevents JSF converter issues with detached entities during form submission
                     if (ewalletInstitution != null && ewalletInstitution.getId() != null) {
-                        ewalletInstitution = institutionController.getEjbFacade().find(ewalletInstitution.getId());
+                        ewalletInstitution = institutionFacade.find(ewalletInstitution.getId());
                     }
 
                     System.out.println("Selected Institution: " + (ewalletInstitution != null ? ewalletInstitution.getName() + " (ID: " + ewalletInstitution.getId() + ")" : "null"));
@@ -343,7 +346,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                     }
                     // Re-fetch from database to ensure managed entity
                     if (onlineInstitution != null && onlineInstitution.getId() != null) {
-                        onlineInstitution = institutionController.getEjbFacade().find(onlineInstitution.getId());
+                        onlineInstitution = institutionFacade.find(onlineInstitution.getId());
                     }
                     getPaymentMethodData().getOnlineSettlement().setInstitution(onlineInstitution);
                     getPaymentMethodData().getOnlineSettlement().setReferenceNo(originalPayment.getReferenceNo());
@@ -1347,22 +1350,26 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     // </editor-fold>
     @Override
     public double calculatRemainForMultiplePaymentTotal() {
-        throw new UnsupportedOperationException("Multiple Payments Not supported in Returns and Refunds.");
+        // Multiple payments not supported in returns/refunds - return 0
+        return 0.0;
     }
 
     @Override
     public void recieveRemainAmountAutomatically() {
-        throw new UnsupportedOperationException("Multiple Payments Not supported in Returns and Refunds");
+        // Multiple payments not supported in returns/refunds - no-op
     }
 
     @Override
     public boolean isLastPaymentEntry(ComponentDetail cd) {
-        throw new UnsupportedOperationException("Multiple Payments Not supported in Returns and Refunds");
+        // Multiple payments not supported in returns/refunds - always return true
+        return true;
     }
 
     @Override
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
-        throw new UnsupportedOperationException("Multiple Payments Not supported in Returns and Refunds");
+        // Allow setting payment method data for form binding
+        // This is needed for JSF to properly bind form values during submission
+        this.paymentMethodData = paymentMethodData;
     }
 
     public Staff getToStaff() {
