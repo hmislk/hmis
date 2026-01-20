@@ -58,40 +58,111 @@ SELECT 'Creating Index 1: Stock calculation optimization...' AS status;
 
 -- Create index 1 if not exists (MySQL compatible way)
 -- Note: We'll use a stored procedure approach or handle the error gracefully
-CREATE INDEX IF NOT EXISTS idx_stockhistory_dept_batch_date_retired
-ON STOCKHISTORY (DEPARTMENT_ID, ITEMBATCH_ID, CREATEDAT, RETIRED, STOCKQTY);
+
+SET @index_exists = (
+  SELECT COUNT(*) 
+  FROM INFORMATION_SCHEMA.STATISTICS 
+  WHERE TABLE_SCHEMA = DATABASE() 
+    AND TABLE_NAME = 'STOCKHISTORY' 
+    AND INDEX_NAME = 'idx_stockhistory_dept_batch_date_retired'
+);
+
+SET @sql = IF(@index_exists > 0, 
+  'SELECT ''Index already exists'' AS message', 
+  'CREATE INDEX idx_stockhistory_dept_batch_date_retired ON STOCKHISTORY (DEPARTMENT_ID, ITEMBATCH_ID, CREATEDAT, RETIRED, STOCKQTY)'
+);
+
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SELECT 'Index 1: Stock calculation optimization - Created successfully' AS result;
 
 -- INDEX 2: Opening/closing stock queries optimization
 SELECT 'Creating Index 2: Date-based stock queries...' AS status;
 
-CREATE INDEX IF NOT EXISTS idx_stockhistory_date_dept_retired
-ON STOCKHISTORY (CREATEDAT, DEPARTMENT_ID, RETIRED);
+SET @index_exists = (
+  SELECT COUNT(*) 
+  FROM INFORMATION_SCHEMA.STATISTICS 
+  WHERE TABLE_SCHEMA = DATABASE() 
+    AND TABLE_NAME = 'STOCKHISTORY' 
+    AND INDEX_NAME = 'idx_stockhistory_date_dept_retired'
+);
+
+SET @sql = IF(@index_exists > 0, 
+  'SELECT ''Index already exists'' AS message', 
+  'CREATE INDEX idx_stockhistory_date_dept_retired ON STOCKHISTORY (CREATEDAT, DEPARTMENT_ID, RETIRED)'
+);
+
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SELECT 'Index 2: Date-based stock queries - Created successfully' AS result;
 
 -- INDEX 3: Batch-level stock queries optimization
 SELECT 'Creating Index 3: Batch-level optimization...' AS status;
 
-CREATE INDEX IF NOT EXISTS idx_stockhistory_batch_date_retired
-ON STOCKHISTORY (ITEMBATCH_ID, CREATEDAT, RETIRED);
+SET @index_exists = (
+  SELECT COUNT(*) 
+  FROM INFORMATION_SCHEMA.STATISTICS 
+  WHERE TABLE_SCHEMA = DATABASE() 
+    AND TABLE_NAME = 'STOCKHISTORY' 
+    AND INDEX_NAME = 'idx_stockhistory_batch_date_retired'
+);
+
+SET @sql = IF(@index_exists > 0, 
+  'SELECT ''Index already exists'' AS message', 
+  'CREATE INDEX idx_stockhistory_batch_date_retired ON STOCKHISTORY (ITEMBATCH_ID, CREATEDAT, RETIRED)'
+);
+
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SELECT 'Index 3: Batch-level optimization - Created successfully' AS result;
 
 -- INDEX 4: Bill queries optimization
 SELECT 'Creating Index 4: Bill fetching optimization...' AS status;
 
-CREATE INDEX IF NOT EXISTS idx_bill_createdat_billtype_dept_retired
-ON BILL (CREATEDAT, BILLTYPEATOMIC, DEPARTMENT_ID, RETIRED);
+SET @index_exists = (
+  SELECT COUNT(*) 
+  FROM INFORMATION_SCHEMA.STATISTICS 
+  WHERE TABLE_SCHEMA = DATABASE() 
+    AND TABLE_NAME = 'BILL' 
+    AND INDEX_NAME = 'idx_bill_createdat_billtype_dept_retired'
+);
+
+SET @sql = IF(@index_exists > 0, 
+  'SELECT ''Index already exists'' AS message', 
+  'CREATE INDEX idx_bill_createdat_billtype_dept_retired ON BILL (CREATEDAT, BILLTYPEATOMIC, DEPARTMENT_ID, RETIRED)'
+);
+
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SELECT 'Index 4: Bill fetching optimization - Created successfully' AS result;
 
 -- INDEX 5: Payment queries optimization (fixes N+1 problem)
 SELECT 'Creating Index 5: Payment query optimization...' AS status;
 
-CREATE INDEX IF NOT EXISTS idx_payment_bill_paymentmethod
-ON PAYMENT (BILL_ID, PAYMENTMETHOD);
+SET @index_exists = (
+  SELECT COUNT(*) 
+  FROM INFORMATION_SCHEMA.STATISTICS 
+  WHERE TABLE_SCHEMA = DATABASE() 
+    AND TABLE_NAME = 'PAYMENT' 
+    AND INDEX_NAME = 'idx_payment_bill_paymentmethod'
+);
+
+SET @sql = IF(@index_exists > 0, 
+  'SELECT ''Index already exists'' AS message', 
+  'CREATE INDEX idx_payment_bill_paymentmethod ON PAYMENT (BILL_ID, PAYMENTMETHOD)'
+);
+
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 SELECT 'Index 5: Payment query optimization - Created successfully' AS result;
 
