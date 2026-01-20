@@ -53,8 +53,8 @@
                         <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" />
                     </h:panelGroup>
                     <h:panelGroup>
-                         <br/>
-                       <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
+                        <br/>
+                        <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
                     </h:panelGroup>
                 </div>
 
@@ -131,55 +131,61 @@
                     <hr/>
                     <br/>
                 </div>
-                <div class="billDetailsFiveFive" >
-                    <h:dataTable value="#{billBeanController.fetchBillItems(cc.attrs.bill)}"
-                                 var="bip" style="margin: auto; padding: 1%; width: 100%; margin-right: 10%; " >
+                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide the details on the OPD Doctor Payment Bill',false)}">
+                    <div class="billDetailsFiveFive" >
+                        <h:dataTable value="#{billBeanController.fetchBillItems(cc.attrs.bill)}"
+                                     var="bip" style="margin: auto; padding: 1%; width: 100%; margin-right: 10%; " >
 
-                        <p:column style="text-align: center; margin-left: 10%" >
-                            <f:facet name="header" >
-                                <h:outputLabel value="" ></h:outputLabel>
-                            </f:facet>
-                            <h:outputLabel value="&emsp;"
-                                           style="font-size:10px!important;" />
-                        </p:column>
-                        <p:column style="text-align: center;" >
-                            <f:facet name="header" >
-                                <h:outputLabel value="Bill No"  ></h:outputLabel>
-                            </f:facet>
-                            <h:outputLabel value="#{bip.referanceBillItem.bill.deptId}"
-                                           style="font-size:10pt!important;" />
-                        </p:column>
-                        <p:column style="text-align: center;" >
-                            <f:facet name="header" >
-                                <h:outputLabel value="Investigation/Service"  ></h:outputLabel>
-                            </f:facet>
-                            <h:outputLabel value="#{bip.referanceBillItem.item.name}"
-                                           style="font-size:10pt!important;" />
-                        </p:column>
-                        <h:column   >
-                            <f:facet name="header" >
-                                <h:outputLabel value="Patient Name" ></h:outputLabel>
-                            </f:facet>
-                            <h:outputLabel value="#{bip.referanceBillItem.bill.patient.person.name}" rendered="#{bf.bill.patientEncounter eq null}" style="margin: 4px;font-size:  10pt!important;"  />
-                            <h:outputLabel value="#{bip.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}"
-                                           style="margin: 4px; font-size:  10pt!important;"   />
-                        </h:column>
-                        <h:column>
-                            <f:facet name="header" >
-                                <h:outputLabel value="Value" ></h:outputLabel>
-                            </f:facet>
-                            <h:outputLabel value="#{bip.netValue}" class="d-flex"
-                                           style="font-size:  10pt!important; text-align: right!important;" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </h:column>
-                    </h:dataTable>
-                </div>
-                <div class="billline">
-                    <br/>
-                    <hr/>
-                    <br/>
-                </div>
+                            <p:column style="text-align: center; margin-left: 10%" >
+                                <f:facet name="header" >
+                                    <h:outputLabel value="" ></h:outputLabel>
+                                </f:facet>
+                                <h:outputLabel value="&emsp;"
+                                               style="font-size:10px!important;" />
+                            </p:column>
+                            <p:column style="text-align: center;" >
+                                <f:facet name="header" >
+                                    <h:outputLabel value="Bill No"  ></h:outputLabel>
+                                </f:facet>
+                                <h:outputLabel value="#{bip.referanceBillItem.bill.deptId}"
+                                               style="font-size:10pt!important;" />
+                            </p:column>
+                            <p:column style="text-align: center;" >
+                                <f:facet name="header" >
+                                    <h:outputLabel value="Investigation/Service"  ></h:outputLabel>
+                                </f:facet>
+                                <h:outputLabel value="#{bip.referanceBillItem.item.name}"
+                                               style="font-size:10pt!important;" />
+                            </p:column>
+                            <h:column   >
+                                <f:facet name="header" >
+                                    <h:outputLabel value="Patient Name" ></h:outputLabel>
+                                </f:facet>
+                                <h:outputLabel value="#{bip.referanceBillItem.bill.patient.person.name}" rendered="#{bf.bill.patientEncounter eq null}" style="margin: 4px;font-size:  10pt!important;"  />
+                                <h:outputLabel value="#{bip.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}"
+                                               style="margin: 4px; font-size:  10pt!important;"   />
+                            </h:column>
+                            <h:column>
+                                <f:facet name="header" >
+                                    <h:outputLabel value="Value" ></h:outputLabel>
+                                </f:facet>
+                                <h:outputLabel value="#{bip.netValue}" class="d-flex"
+                                               style="font-size:  10pt!important; text-align: right!important;" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </h:column>
+                        </h:dataTable>
+
+                    </div>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide the details on the OPD Doctor Payment Bill',false)}">
+
+                    <div class="billline">
+                        <br/>
+                        <hr/>
+                        <br/>
+                    </div>
+                </h:panelGroup>
 
                 <div  >
 
