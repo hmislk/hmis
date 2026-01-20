@@ -140,7 +140,9 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         creditCompany = originalBillToReturn.getCreditCompany();
         paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(originalBillToReturn);
 
-      
+        // CRITICAL: Create fresh PaymentMethodData to avoid stale data from previous returns
+        // This ensures ewallet field is not null when initializePaymentDataFromOriginalPayments runs
+        paymentMethodData = new PaymentMethodData();
 
         // Check if this is an individual bill that references a batch bill (has payments)
         Bill billToFetchPaymentsFrom = originalBillToReturn;
@@ -149,7 +151,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         }
 
         originalBillPayments = billBeanController.fetchBillPayments(billToFetchPaymentsFrom);
-      
+
         if (originalBillPayments != null && !originalBillPayments.isEmpty()) {
             initializePaymentDataFromOriginalPayments(originalBillPayments);
         }
@@ -208,20 +210,47 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                     getPaymentMethodData().getCash().setTotalValue(Math.abs(originalBillToReturn.getNetTotal()));
                     break;
                 case Card:
-                    getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
+                    // For backward compatibility: try bank first, then creditCompany
+                    Institution cardInstitution = originalPayment.getBank();
+                    if (cardInstitution == null) {
+                        cardInstitution = originalPayment.getCreditCompany();
+                    }
+                    // Re-fetch from database to ensure managed entity
+                    if (cardInstitution != null && cardInstitution.getId() != null) {
+                        cardInstitution = institutionController.getEjbFacade().find(cardInstitution.getId());
+                    }
+                    getPaymentMethodData().getCreditCard().setInstitution(cardInstitution);
                     getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
                     getPaymentMethodData().getCreditCard().setComment(originalPayment.getComments());
                     getPaymentMethodData().getCreditCard().setTotalValue(Math.abs(originalBillToReturn.getNetTotal()));
                     break;
                 case Cheque:
-                    getPaymentMethodData().getCheque().setInstitution(originalPayment.getBank());
+                    // For backward compatibility: try bank first, then creditCompany
+                    Institution chequeInstitution = originalPayment.getBank();
+                    if (chequeInstitution == null) {
+                        chequeInstitution = originalPayment.getCreditCompany();
+                    }
+                    // Re-fetch from database to ensure managed entity
+                    if (chequeInstitution != null && chequeInstitution.getId() != null) {
+                        chequeInstitution = institutionController.getEjbFacade().find(chequeInstitution.getId());
+                    }
+                    getPaymentMethodData().getCheque().setInstitution(chequeInstitution);
                     getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
                     getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
                     getPaymentMethodData().getCheque().setComment(originalPayment.getComments());
                     getPaymentMethodData().getCheque().setTotalValue(Math.abs(originalBillToReturn.getNetTotal()));
                     break;
                 case Slip:
-                    getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                    // For backward compatibility: try bank first, then creditCompany
+                    Institution slipInstitution = originalPayment.getBank();
+                    if (slipInstitution == null) {
+                        slipInstitution = originalPayment.getCreditCompany();
+                    }
+                    // Re-fetch from database to ensure managed entity
+                    if (slipInstitution != null && slipInstitution.getId() != null) {
+                        slipInstitution = institutionController.getEjbFacade().find(slipInstitution.getId());
+                    }
+                    getPaymentMethodData().getSlip().setInstitution(slipInstitution);
                     getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate());
                     getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
@@ -232,22 +261,36 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                     System.out.println("Original Payment ID: " + originalPayment.getId());
                     System.out.println("Bank: " + (originalPayment.getBank() != null ? originalPayment.getBank().getName() + " (ID: " + originalPayment.getBank().getId() + ")" : "null"));
                     System.out.println("Institution: " + (originalPayment.getInstitution() != null ? originalPayment.getInstitution().getName() + " (ID: " + originalPayment.getInstitution().getId() + ")" : "null"));
+                    System.out.println("CreditCompany: " + (originalPayment.getCreditCompany() != null ? originalPayment.getCreditCompany().getName() + " (ID: " + originalPayment.getCreditCompany().getId() + ")" : "null"));
                     System.out.println("ReferenceNo: " + originalPayment.getReferenceNo());
                     System.out.println("Comments: " + originalPayment.getComments());
 
-                    Institution selectedInstitution = originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution();
-                    System.out.println("Selected Institution: " + (selectedInstitution != null ? selectedInstitution.getName() + " (ID: " + selectedInstitution.getId() + ")" : "null"));
+                    // For backward compatibility: try bank first, then creditCompany (used for ewallet in older records)
+                    Institution ewalletInstitution = originalPayment.getBank();
+                    if (ewalletInstitution == null) {
+                        ewalletInstitution = originalPayment.getCreditCompany();
+                    }
 
-                    getPaymentMethodData().getEwallet().setInstitution(selectedInstitution);
-                    getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
-                    getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
-                    getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
-                    getPaymentMethodData().getEwallet().setTotalValue(Math.abs(originalBillToReturn.getNetTotal()));
-                    getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
+                    // CRITICAL FIX: Re-fetch the institution from database to ensure it's a managed entity
+                    // This prevents JSF converter issues with detached entities during form submission
+                    if (ewalletInstitution != null && ewalletInstitution.getId() != null) {
+                        ewalletInstitution = institutionController.getEjbFacade().find(ewalletInstitution.getId());
+                    }
+
+                    System.out.println("Selected Institution: " + (ewalletInstitution != null ? ewalletInstitution.getName() + " (ID: " + ewalletInstitution.getId() + ")" : "null"));
+
+                    // Get reference to ewallet once to avoid multiple getter calls creating new objects
+                    ComponentDetail ewalletDetail = getPaymentMethodData().getEwallet();
+                    ewalletDetail.setInstitution(ewalletInstitution);
+                    ewalletDetail.setReferenceNo(originalPayment.getReferenceNo());
+                    ewalletDetail.setNo(originalPayment.getReferenceNo());
+                    ewalletDetail.setReferralNo(originalPayment.getPolicyNo());
+                    ewalletDetail.setTotalValue(Math.abs(originalBillToReturn.getNetTotal()));
+                    ewalletDetail.setComment(originalPayment.getComments());
 
                     System.out.println("After setting - PaymentMethodData eWallet Institution: " +
-                        (getPaymentMethodData().getEwallet().getInstitution() != null ?
-                         getPaymentMethodData().getEwallet().getInstitution().getName() + " (ID: " + getPaymentMethodData().getEwallet().getInstitution().getId() + ")" :
+                        (ewalletDetail.getInstitution() != null ?
+                         ewalletDetail.getInstitution().getName() + " (ID: " + ewalletDetail.getInstitution().getId() + ")" :
                          "null"));
                     System.out.println("=== END EWALLET CASE DEBUG ===");
                     break;
@@ -293,7 +336,16 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                     getPaymentMethodData().getStaffWelfare().setTotalValue(Math.abs(originalBillToReturn.getNetTotal()));
                     break;
                 case OnlineSettlement:
-                    getPaymentMethodData().getOnlineSettlement().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                    // For backward compatibility: try bank first, then creditCompany
+                    Institution onlineInstitution = originalPayment.getBank();
+                    if (onlineInstitution == null) {
+                        onlineInstitution = originalPayment.getCreditCompany();
+                    }
+                    // Re-fetch from database to ensure managed entity
+                    if (onlineInstitution != null && onlineInstitution.getId() != null) {
+                        onlineInstitution = institutionController.getEjbFacade().find(onlineInstitution.getId());
+                    }
+                    getPaymentMethodData().getOnlineSettlement().setInstitution(onlineInstitution);
                     getPaymentMethodData().getOnlineSettlement().setReferenceNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getOnlineSettlement().setDate(originalPayment.getPaymentDate());
                     getPaymentMethodData().getOnlineSettlement().setComment(originalPayment.getComments());
@@ -555,6 +607,20 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     }
 
     public String settleOpdReturnBill() {
+        System.out.println("=== settleOpdReturnBill() START ===");
+        System.out.println("Payment Method: " + paymentMethod);
+        System.out.println("PaymentMethodData: " + (paymentMethodData != null ? "NOT NULL" : "NULL"));
+        if (paymentMethodData != null && paymentMethod == PaymentMethod.ewallet) {
+            ComponentDetail ewalletDetail = paymentMethodData.getEwallet();
+            System.out.println("Ewallet ComponentDetail: " + (ewalletDetail != null ? "NOT NULL" : "NULL"));
+            if (ewalletDetail != null) {
+                System.out.println("Ewallet Institution: " + (ewalletDetail.getInstitution() != null ? ewalletDetail.getInstitution().getName() + " (ID: " + ewalletDetail.getInstitution().getId() + ")" : "NULL"));
+                System.out.println("Ewallet ReferenceNo: " + ewalletDetail.getReferenceNo());
+                System.out.println("Ewallet TotalValue: " + ewalletDetail.getTotalValue());
+            }
+        }
+        System.out.println("=== END settleOpdReturnBill() START DEBUG ===");
+
         if (!returningStarted.compareAndSet(false, true)) {
             JsfUtil.addErrorMessage("Already Returning Started");
             return null;
@@ -1155,6 +1221,18 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         if (paymentMethodData == null) {
             paymentMethodData = new PaymentMethodData();
         }
+
+        // Debug logging to track when getter is called and state of ewallet institution
+        if (paymentMethod == PaymentMethod.ewallet && paymentMethodData != null) {
+            ComponentDetail ewalletDetail = paymentMethodData.getEwallet();
+            if (ewalletDetail != null) {
+                System.out.println("[getPaymentMethodData] Ewallet Institution: " +
+                    (ewalletDetail.getInstitution() != null ?
+                    ewalletDetail.getInstitution().getName() + " (ID: " + ewalletDetail.getInstitution().getId() + ")" :
+                    "NULL"));
+            }
+        }
+
         return paymentMethodData;
     }
 
@@ -1418,11 +1496,16 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
      * Otherwise, creates new payment data for the selected method.
      */
     public void onPaymentMethodChange() {
+        System.out.println("=== onPaymentMethodChange() CALLED ===");
+        System.out.println("Current paymentMethod: " + paymentMethod);
+
         // Check if user selected the original payment method - if so, restore original details
         if (originalBillPayments != null && !originalBillPayments.isEmpty()) {
             Payment originalPayment = originalBillPayments.get(0);
+            System.out.println("Original payment method: " + originalPayment.getPaymentMethod());
             if (paymentMethod == originalPayment.getPaymentMethod()) {
                 // User switched back to original payment method - restore original details
+                System.out.println("Restoring original payment details - creating NEW PaymentMethodData");
                 paymentMethodData = new PaymentMethodData();
                 initializePaymentDataFromOriginalPayments(originalBillPayments);
                 return;
@@ -1430,6 +1513,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         }
 
         // User selected a different payment method - create new payment data
+        System.out.println("Different payment method selected - creating NEW PaymentMethodData");
         paymentMethodData = new PaymentMethodData();
 
         // Clear controller properties that should only be set for specific payment methods
