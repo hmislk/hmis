@@ -27,11 +27,11 @@
 
         <!-- Composite Component Implementation -->
         <cc:implementation>
-            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable OPD 5x8 Bill Header',false)}" >
+            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable OPD 5x5 Custom 4 Bill Header',false)}" >
                 <h:outputStylesheet library="css" name="five_eight_bill.css" />
             </h:panelGroup>
-            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD 5x8 Bill Header')}" >
-                <h:outputStylesheet library="css" name="five_eight_bill_without_header.css" />
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD 5x5 Custom 4 Bill Header')}" >
+                <h:outputStylesheet library="css" name="five_five_custom_4_bill_without_header.css" />
             </h:panelGroup>
 
             <style>
@@ -51,7 +51,7 @@
             </style>
 
             <div class="receipt-container" style="margin-left: 5mm;">
-                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD 5x8 Bill Header')}">
+                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable OPD 5x5 Custom 4 Bill Header')}">
                     <div class="hospital-name" >
                         <h:outputLabel value="#{cc.attrs.bill.institution.name}" />
                     </div>
@@ -132,15 +132,8 @@
                             </td>
                         </h:panelGroup>
                         <td style="padding: 2px;" class="spacer"></td>
-                        <td style="padding: 2px;">Mobile</td>
+                        <td style="padding: 2px;">To Department</td>
                         <td style="padding: 2px;">
-                            <h:outputLabel value="#{not empty cc.attrs.bill.patient.person.phone ? cc.attrs.bill.patient.person.phone : 'N/A'}" />
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td style="padding: 2px;">To Department </td>
-                        <td style="padding: 2px;" colspan="4">
                             <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"/>
                         </td>
                     </tr>
@@ -173,7 +166,7 @@
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th>Particular</th>
+                            <th>PROCEDURE</th>
                             <th style="text-align: right">Amount</th>
                         </tr>
                     </thead>
@@ -185,11 +178,18 @@
 
                     <tbody>
                         <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="item" varStatus="s">
-                            <tr>
+                            <tr  style="text-transform: uppercase;">
                                 <!-- Display the item number across all items -->
-                                <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
+                                <td >#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
                                 <td>
-                                    <h:outputLabel value="#{item.item.name}"/>
+                                    <h:outputLabel 
+                                        value="#{item.item.name}" 
+                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('Show the print name of the items on the 5x5 Custum 4 bill.',false)}">
+                                    </h:outputLabel>
+                                    <h:outputLabel 
+                                        value="#{item.item.printName}" 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Show the print name of the items on the 5x5 Custum 4 bill.',false)}">
+                                    </h:outputLabel>  
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show the Priority in Bill Preview.',false)}" >
                                         <h:outputLabel 
                                             value="(#{item.priority.displayName})" 
@@ -241,24 +241,27 @@
                     </div>
                     <div class="w-100">
                         <table class="total-table" style="line-height: 1.0;">
-                            <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter eq null}">
-                                <tr>
-                                    <td >Total Amount</td>
-                                    <td  style="text-align: right;">
-                                        <h:outputLabel value="#{cc.attrs.bill.total}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-                                </tr>
+                            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide the bill Total and Discount',true)}">
 
-                                <tr>
-                                    <td >Discount</td>
-                                    <td  style="text-align: right;">
-                                        <h:outputLabel  value="#{- cc.attrs.bill.discount}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-                                </tr>
+                                <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter eq null}">
+                                    <tr>
+                                        <td >Total Amount</td>
+                                        <td  style="text-align: right;">
+                                            <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td >Discount</td>
+                                        <td  style="text-align: right;">
+                                            <h:outputLabel  value="#{- cc.attrs.bill.discount}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </h:panelGroup>
                             </h:panelGroup>
                             <tr>
                                 <td >Net Amount</td>
@@ -325,18 +328,18 @@
 
                         </td>
                     </tr>
-                    
-                    <h:panelGroup rendered="#{cc.attrs.bill.backwardReferenceBill ne null}">
-                        <tr>
-                            <td style="width: 4cm; vertical-align: top;" colspan="3">
-                                <div class="d-flex gap-1">
-                                    <h:outputLabel value="Batch Bill"/>
-                                    <h:outputLabel value=" : "/>
-                                    <h:outputLabel value=" #{cc.attrs.bill.backwardReferenceBill.deptId}"/>
-                                </div>
-                            </td>
-                        </tr>
-                    </h:panelGroup>
+
+<!--                    <h:panelGroup rendered="#{cc.attrs.bill.backwardReferenceBill ne null}">
+    <tr>
+        <td style="width: 4cm; vertical-align: top;" colspan="3">
+            <div class="d-flex gap-1">
+                <h:outputLabel value="Batch Bill"/>
+                <h:outputLabel value=" : "/>
+                <h:outputLabel value=" #{cc.attrs.bill.backwardReferenceBill.deptId}"/>
+            </div>
+        </td>
+    </tr>
+</h:panelGroup>-->
 
                     <h:panelGroup rendered="#{cc.attrs.duplicate}">
                         <tr>
@@ -354,11 +357,6 @@
                     </h:panelGroup>
                 </table>
 
-                <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter eq null}">
-                    <div class="d-flex justify-content-center mt-2">
-                        <h:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Footer Massage of 5x8 inch Paper','Please receive your report within 3 months.')}"/>
-                    </div>
-                </h:panelGroup>
                 <div class="d-flex justify-content-center mt-3" style="font-size: 10px;">
                     <h:outputLabel value="Powered by CareCode (Pvt) Ltd."/>
                 </div>

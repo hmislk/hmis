@@ -4,7 +4,7 @@
     font-size: 12px;
     line-height: 1.2;
     width: 5.0in;
-    height: 7.9in;
+    height: 4.9in;
     margin: auto;
     padding: 2px;
     box-sizing: border-box;
@@ -128,11 +128,11 @@
     .receipt-container {
         border: none;
         width: 5.0in!important;
-        height: 6.70in!important;
+        height: 3.00in!important;
         margin-left: 0cm!important;
         margin-right: 0cm!important;
-        margin-bottom: 3cm!important;
-        margin-top: 1.25in!important;
+        margin-bottom: 1cm!important;
+        margin-top: 0.8in!important;
         font-family: sans-serif !important;
         padding-left: 0.4cm!important;
         padding-right: 0.25cm!important;
