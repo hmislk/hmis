@@ -194,6 +194,32 @@ public class PaymentService {
                     new Object[]{bill != null ? bill.getId() : null, cd.getPaymentMethod()});
             return null;
         }
+
+        // For multiple payment methods, use ComponentDetail fields directly as they contain the actual data
+        // The nested paymentMethodData might be empty/uninitialized
+        if (cd.getInstitution() != null) {
+            payment.setBank(cd.getInstitution());
+        }
+        if (cd.getReferenceNo() != null && !cd.getReferenceNo().isEmpty()) {
+            payment.setReferenceNo(cd.getReferenceNo());
+        }
+        if (cd.getNo() != null && !cd.getNo().isEmpty()) {
+            payment.setChequeRefNo(cd.getNo());
+        }
+        if (cd.getDate() != null) {
+            payment.setChequeDate(cd.getDate());
+            payment.setPaymentDate(cd.getDate());
+        }
+        if (cd.getComment() != null && !cd.getComment().isEmpty()) {
+            payment.setComments(cd.getComment());
+        }
+        if (cd.getTotalValue() > 0) {
+            payment.setPaidValue(cd.getTotalValue());
+        }
+        if (cd.getToStaff() != null) {
+            payment.setToStaff(cd.getToStaff());
+        }
+
         return payment;
     }
 
