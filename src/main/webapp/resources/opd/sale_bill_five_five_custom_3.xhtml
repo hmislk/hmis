@@ -92,7 +92,7 @@
 
                 <!-- Separator Line -->
                 <div class="separator"></div>
-
+#{configOptionApplicationController.getBooleanValueByKey('Show the print name of the items on the 5x5 Custum 3 bill.',false)}
                 <!-- Item Table -->
                 <table class="receipt-table">
                     <thead>
@@ -109,7 +109,16 @@
                             <tr>
                                 <!-- Display the item number across all items -->
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
-                                <td>#{item.item.name}</td>
+                                <td>
+                                    <h:outputLabel 
+                                        value="#{item.item.name}" 
+                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('Show the print name of the items on the 5x5 Custum 3 bill.',false)}">
+                                    </h:outputLabel>
+                                    <h:outputLabel 
+                                        value="#{item.item.printName}" 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Show the print name of the items on the 5x5 Custum 3 bill.',false)}">
+                                    </h:outputLabel>                                
+                                </td>
                                 <td>
                                     <h:outputLabel value="#{item.qty}">
                                         <f:convertNumber integerOnly="true" />
