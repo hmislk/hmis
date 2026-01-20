@@ -10,222 +10,232 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Speciality/Doctor wise Demographic Data" styleClass="my-2" >
-                        <h:panelGrid 
-                            columns="5" 
-                            class="w-100 ui-fluid"
-                            style="table-layout: fixed">
+                        <h:panelGroup layout="block" style="padding-left: 30px">
+                            <h:panelGrid 
+                                columns="6" 
+                                class="w-100 ui-fluid"
+                                style="table-layout: fixed">
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
-                                <p:outputLabel value="From" for="fromDate" styleClass="m-3"/>
-                            </h:panelGroup>
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                    <p:outputLabel value="From" for="fromDate" styleClass="m-3"/>
+                                </h:panelGroup>
 
-                            <p:datePicker
-                                id="fromDate"
-                                styleClass="w-100"
-                                inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy HH:mm:ss "   
-                                showTime="true"                                                           
-                                monthNavigator="true"           
-                                yearNavigator="true"                              
-                                timeInput="true"                
-                                value="#{inwardReportController.fromDate}"/>
+                                <p:datePicker
+                                    id="fromDate"
+                                    styleClass="w-100"
+                                    inputStyleClass="w-100 form-control"
+                                    pattern="dd/MM/yyyy HH:mm:ss "   
+                                    showTime="true"                                                           
+                                    monthNavigator="true"           
+                                    yearNavigator="true"                              
+                                    timeInput="true"                
+                                    value="#{inwardReportController.fromDate}"/>
 
-                            <p:spacer width="40"/>
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
-                                <p:outputLabel value="To" for="toDate" styleClass="m-3"/>
-                            </h:panelGroup>
-
-                            <p:datePicker
-                                id="toDate"
-                                styleClass="w-100"
-                                inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy HH:mm:ss "   
-                                showTime="true"                                                           
-                                monthNavigator="true"           
-                                yearNavigator="true"                              
-                                timeInput="true"                
-                                value="#{inwardReportController.toDate}"/>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-university mr-2"/>
-                                <p:outputLabel value="Institution" for="phmIns" class="m-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                    id="phmIns"
-                                    styleClass="w-100 form-control"
-                                    value="#{inwardReportController.institution}"
-                                    filter="true">
-                                <f:selectItem itemLabel="All Institutions"/>
-                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
-                                               itemValue="#{ins}"/>
-                                <p:ajax process="phmIns" update="phmDept"/>
-                            </p:selectOneMenu>
-
-                            <p:spacer width="20"></p:spacer>
+                                <p:spacer width="20"/>
 
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
-                                <p:outputLabel value="Site" for="phmSite" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                    id="phmSite"
-                                    styleClass="w-100 form-control"
-                                    value="#{inwardReportController.site}"
-                                    filter="true">
-                                <f:selectItem itemLabel="All Sites"/>
-                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
-                                               itemValue="#{site}"/>
-                                <p:ajax process="phmSite" update="phmDept"/>
-                            </p:selectOneMenu>
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                    <p:outputLabel value="To" for="toDate" styleClass="m-3"/>
+                                </h:panelGroup>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-building mr-2"/>
-                                <p:outputLabel value="Department" for="phmDept" class="m-3"/>
-                            </h:panelGroup>
-                            <h:panelGroup id="phmDept">
+                                <p:datePicker
+                                    id="toDate"
+                                    styleClass="w-100"
+                                    inputStyleClass="w-100 form-control"
+                                    pattern="dd/MM/yyyy HH:mm:ss "   
+                                    showTime="true"                                                           
+                                    monthNavigator="true"           
+                                    yearNavigator="true"                              
+                                    timeInput="true"                
+                                    value="#{inwardReportController.toDate}"/>
 
-                                <!-- Component 1: Without Institution and Site -->
+                                <p:spacer width="20"></p:spacer>
+
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText styleClass="fa fa-university mr-2"/>
+                                    <p:outputLabel value="Institution" for="phmIns" class="m-3">
+                                    </p:outputLabel>
+                                </h:panelGroup>
                                 <p:selectOneMenu
-                                        rendered="#{inwardReportController.institution eq null and inwardReportController.site eq null}"
+                                        id="phmIns"
                                         styleClass="w-100 form-control"
-                                        value="#{inwardReportController.department}"
-                                        filterMatchMode="contains"
+                                        value="#{inwardReportController.institution}"
                                         filter="true">
-                                    <f:selectItem itemLabel="All Departments"/>
-                                    <f:selectItems
-                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
-                                            var="d"
-                                            itemLabel="#{d.name}"
-                                            itemValue="#{d}"/>
+                                    <f:selectItem itemLabel="All Institutions"/>
+                                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                                   itemValue="#{ins}"/>
+                                    <p:ajax process="phmIns" update="phmDept"/>
                                 </p:selectOneMenu>
 
-                                <!-- Component 2: With Site Only -->
+                                <p:spacer width="20"></p:spacer>
+
+
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
+                                    <p:outputLabel value="Site" for="phmSite" class="m-3"/>
+                                </h:panelGroup>
                                 <p:selectOneMenu
-                                        rendered="#{inwardReportController.institution eq null and inwardReportController.site ne null}"
+                                        id="phmSite"
                                         styleClass="w-100 form-control"
-                                        value="#{inwardReportController.department}"
-                                        filterMatchMode="contains"
+                                        value="#{inwardReportController.site}"
                                         filter="true">
-                                    <f:selectItem itemLabel="All Departments"/>
-                                    <f:selectItems
-                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.site)}"
-                                            var="d"
-                                            itemLabel="#{d.name}"
-                                            itemValue="#{d}"/>
+                                    <f:selectItem itemLabel="All Sites"/>
+                                    <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                                   itemValue="#{site}"/>
+                                    <p:ajax process="phmSite" update="phmDept"/>
                                 </p:selectOneMenu>
 
-                                <!-- Component 3: With Institution Only -->
+                                <p:spacer width="20"></p:spacer>
+
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText styleClass="fa fa-building mr-2"/>
+                                    <p:outputLabel value="Department" for="phmDept" class="m-3"/>
+                                </h:panelGroup>
+                                <h:panelGroup id="phmDept">
+
+                                    <!-- Component 1: Without Institution and Site -->
+                                    <p:selectOneMenu
+                                            rendered="#{inwardReportController.institution eq null and inwardReportController.site eq null}"
+                                            styleClass="w-100 form-control"
+                                            value="#{inwardReportController.department}"
+                                            filterMatchMode="contains"
+                                            filter="true">
+                                        <f:selectItem itemLabel="All Departments"/>
+                                        <f:selectItems
+                                                value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                var="d"
+                                                itemLabel="#{d.name}"
+                                                itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+
+                                    <!-- Component 2: With Site Only -->
+                                    <p:selectOneMenu
+                                            rendered="#{inwardReportController.institution eq null and inwardReportController.site ne null}"
+                                            styleClass="w-100 form-control"
+                                            value="#{inwardReportController.department}"
+                                            filterMatchMode="contains"
+                                            filter="true">
+                                        <f:selectItem itemLabel="All Departments"/>
+                                        <f:selectItems
+                                                value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.site)}"
+                                                var="d"
+                                                itemLabel="#{d.name}"
+                                                itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+
+                                    <!-- Component 3: With Institution Only -->
+                                    <p:selectOneMenu
+                                            rendered="#{inwardReportController.institution ne null and inwardReportController.site eq null}"
+                                            styleClass="w-100 form-control"
+                                            value="#{inwardReportController.department}"
+                                            filterMatchMode="contains"
+                                            filter="true">
+                                        <f:selectItem itemLabel="All Departments"/>
+                                        <f:selectItems
+                                                value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(inwardReportController.institution)}"
+                                                var="d"
+                                                itemLabel="#{d.name}"
+                                                itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+
+                                    <!-- Component 4: With Both Institution and Site -->
+                                    <p:selectOneMenu
+                                            rendered="#{inwardReportController.institution ne null and inwardReportController.site ne null}"
+                                            styleClass="w-100 form-control"
+                                            value="#{inwardReportController.department}"
+                                            filterMatchMode="contains"
+                                            filter="true">
+                                        <f:selectItem itemLabel="All Departments"/>
+                                        <f:selectItems
+                                                value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.institution, inwardReportController.site)}"
+                                                var="d"
+                                                itemLabel="#{d.name}"
+                                                itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+
+                                <p:spacer width="20"></p:spacer>
+
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf2b9;" styleClass="fa mr-2" />
+                                    <p:outputLabel value="Speciality" for="acSpeciality" class="m-3"/>
+                                </h:panelGroup>
                                 <p:selectOneMenu
-                                        rendered="#{inwardReportController.institution ne null and inwardReportController.site eq null}"
-                                        styleClass="w-100 form-control"
-                                        value="#{inwardReportController.department}"
-                                        filterMatchMode="contains"
-                                        filter="true">
-                                    <f:selectItem itemLabel="All Departments"/>
-                                    <f:selectItems
-                                            value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(inwardReportController.institution)}"
-                                            var="d"
-                                            itemLabel="#{d.name}"
-                                            itemValue="#{d}"/>
-                                </p:selectOneMenu>
-
-                                <!-- Component 4: With Both Institution and Site -->
-                                <p:selectOneMenu
-                                        rendered="#{inwardReportController.institution ne null and inwardReportController.site ne null}"
-                                        styleClass="w-100 form-control"
-                                        value="#{inwardReportController.department}"
-                                        filterMatchMode="contains"
-                                        filter="true">
-                                    <f:selectItem itemLabel="All Departments"/>
-                                    <f:selectItems
-                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.institution, inwardReportController.site)}"
-                                            var="d"
-                                            itemLabel="#{d.name}"
-                                            itemValue="#{d}"/>
-                                </p:selectOneMenu>
-                            </h:panelGroup>
-
-                            <p:spacer width="20"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf2b9;" styleClass="fa mr-2" />
-                                <p:outputLabel value="Speciality" for="acSpeciality" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                id="acSpeciality"
-                                styleClass="form-control"
-                                filter="true"
-                                value="#{inwardReportController.currentSpeciality}">
-                                <f:selectItem itemLabel="All Specialty"/>
-                                <f:selectItems 
-                                    value="#{doctorSpecialityController.selectedItems}"
-                                    var="spe" 
-                                    itemValue="#{spe}"
-                                    itemLabel="#{spe.name}">
-                                </f:selectItems>
-                                <p:ajax process="@this"
-                                        update="doctor" 
-                                        event="change"/>
-                            </p:selectOneMenu>
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
-                                <p:outputLabel value="Doctor Name" class="m-3"/>
-                            </h:panelGroup>
-                            <h:panelGroup id="doctor">
-                                <p:selectOneMenu
-                                    rendered="#{inwardReportController.currentSpeciality ne null}"
-                                    id="docws"
+                                    id="acSpeciality"
                                     styleClass="form-control"
                                     filter="true"
-                                    filterMatchMode="contains"
-                                    value="#{inwardReportController.currentDoctor}">
-                                    <f:selectItem itemLabel="All Doctors"/>
-                                    <f:selectItems
-                                        value="#{doctorController.fillDoctorsIncludingConsultantsWithSpeciality(inwardReportController.currentSpeciality)}"
-                                            var="d"
-                                            itemLabel="#{d.name}"
-                                            itemValue="#{d}"/>
+                                    value="#{inwardReportController.currentSpeciality}">
+                                    <f:selectItem itemLabel="All Specialty"/>
+                                    <f:selectItems 
+                                        value="#{doctorSpecialityController.selectedItems}"
+                                        var="spe" 
+                                        itemValue="#{spe}"
+                                        itemLabel="#{spe.name}">
+                                    </f:selectItems>
+                                    <p:ajax process="@this"
+                                            update="doctor" 
+                                            event="change"/>
                                 </p:selectOneMenu>
-                                <p:selectOneMenu
-                                    rendered="#{inwardReportController.currentSpeciality eq null}"
-                                    id="doc"
-                                    styleClass="form-control"
-                                    filter="true"
-                                    filterMatchMode="contains"
-                                    value="#{inwardReportController.currentDoctor}">
-                                    <f:selectItem itemLabel="All Doctors"/>
-                                    <f:selectItems
-                                        value="#{doctorController.fillDoctorsAndConsultants()}"
-                                            var="d"
-                                            itemLabel="#{d.name}"
-                                            itemValue="#{d}"/>
+
+                                <p:spacer width="20"></p:spacer>
+
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
+                                    <p:outputLabel value="Doctor Name" class="m-3"/>
+                                </h:panelGroup>
+                                <h:panelGroup id="doctor">
+                                    <p:selectOneMenu
+                                        rendered="#{inwardReportController.currentSpeciality ne null}"
+                                        id="docws"
+                                        styleClass="form-control"
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        value="#{inwardReportController.currentDoctor}">
+                                        <f:selectItem itemLabel="All Doctors"/>
+                                        <f:selectItems
+                                            value="#{doctorController.fillDoctorsIncludingConsultantsWithSpeciality(inwardReportController.currentSpeciality)}"
+                                                var="d"
+                                                itemLabel="#{d.name}"
+                                                itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+                                    <p:selectOneMenu
+                                        rendered="#{inwardReportController.currentSpeciality eq null}"
+                                        id="doc"
+                                        styleClass="form-control"
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        value="#{inwardReportController.currentDoctor}">
+                                        <f:selectItem itemLabel="All Doctors"/>
+                                        <f:selectItems
+                                            value="#{doctorController.fillDoctorsAndConsultants()}"
+                                                var="d"
+                                                itemLabel="#{d.name}"
+                                                itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+                               </h:panelGroup>
+
+                                <p:spacer width="20"></p:spacer>
+
+                                <h:panelGroup layout="block" styleClass="form-group">
+                                    <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
+                                    <h:outputLabel value="Type" for="type" class="m-3"/>
+                                </h:panelGroup>
+                                <p:selectOneMenu id="type" class="w-100 " value="#{inwardReportController.byDoctor}">
+                                    <f:selectItem itemLabel="Speciality wise" itemValue="#{false}"/>
+                                    <f:selectItem itemLabel="Doctor wise" itemValue="#{true}"/>
                                 </p:selectOneMenu>
-                           </h:panelGroup>
 
-                            <p:spacer width="20"></p:spacer>
+                                <p:spacer width="20"></p:spacer>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf02b;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Type" for="type" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu id="type" class="w-100 " value="#{inwardReportController.byDoctor}">
-                                <f:selectItem itemLabel="Speciality wise" itemValue="#{false}"/>
-                                <f:selectItem itemLabel="Doctor wise" itemValue="#{true}"/>
-                            </p:selectOneMenu>
-
-
-                        </h:panelGrid>
+                            </h:panelGrid>
+                            
+                        </h:panelGroup>
+                        
                         
                         <h:panelGroup id="printPanel" rendered="#{!inwardReportController.byDoctor}">
-                            <div class="d-flex align-items-center my-4">
+                            <div class="d-flex align-items-center my-4 ps-3">
 
                                 <p:commandButton 
                                     class="ui-button-warning mx-1"
@@ -356,7 +366,7 @@
                             </p:panel>
                         </h:panelGroup> 
                         <h:panelGroup rendered="#{inwardReportController.byDoctor}">
-                            <div class="d-flex align-items-center my-4">
+                            <div class="d-flex align-items-center my-4 ps-3">
 
                                 <p:commandButton 
                                     class="ui-button-warning mx-1"
