@@ -51,7 +51,8 @@
       "Bash(then mkdir -p \"C:/Development/hmis/wiki-docs/Cashier\")",
       "Bash(fi)",
       "Bash(git clone:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }
