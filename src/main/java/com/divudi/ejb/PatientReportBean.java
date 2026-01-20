@@ -250,6 +250,7 @@ public class PatientReportBean {
 
             if (val != null) {
                 if(val.getId() == null){
+                    val.setAllowToExportChart(ii.isAllowToExportChart());
                     getPtRivFacade().create(val);
                     ptReport.getPatientReportItemValues().add(val);
                 }
