@@ -1328,6 +1328,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         // Copy bill details
         cancelBill.copy(getBill());
+        // Copy financial values (netTotal, total, discount, etc.) which are needed for proper cancellation
+        getCancelBill().copyValue(getBill());
         getCancelBill().setPaymentMethod(getBill().getPaymentMethod());
         getCancelBill().setComments(tempComment);
         getBill().setCancelled(true);
