@@ -205,7 +205,9 @@ public class ReportItem implements Serializable {
 
     private double absoluteLowValue;
     private double absoluteHighValue;
-
+    
+    private boolean allowToExportChart;
+    
     public CssTextDecoration getCssTextDecoration() {
         return cssTextDecoration;
     }
@@ -1256,6 +1258,14 @@ public class ReportItem implements Serializable {
 
     public void setCustomCss(String customCss) {
         this.customCss = customCss;
+    }
+
+    public boolean isAllowToExportChart() {
+        return allowToExportChart;
+    }
+
+    public void setAllowToExportChart(boolean allowToExportChart) {
+        this.allowToExportChart = allowToExportChart;
     }
 
 }
