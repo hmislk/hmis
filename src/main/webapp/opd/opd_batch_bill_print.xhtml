@@ -242,11 +242,11 @@
                                                     icon="fa fa-ban" 
                                                     value="To Cancel Batch Bill"
                                                     disabled="#{opdBillController.batchBill.cancelled or opdBillController.batchBill.refunded}"
-                                                    action="#{billController.navigateToCancelOpdBatchBill()}" 
+                                                    action="#{opdBatchBillCancellationController.navigateToCancelOpdBatchBill()}" 
                                                     styleClass="ui-button-danger">
                                                     <f:setPropertyActionListener 
                                                         value="#{opdBillController.batchBill}" 
-                                                        target="#{billController.batchBill}" />
+                                                        target="#{opdBatchBillCancellationController.batchBill}" />
                                                 </p:commandButton>
                                             </div>
                                         </div>
