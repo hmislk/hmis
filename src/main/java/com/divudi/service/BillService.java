@@ -1932,8 +1932,10 @@ public class BillService {
         }
 
         String jpql = "Select new com.divudi.core.data.dto.OpdRevenueDashboardDTO("
-                + " b.id, b.deptId, b.billTypeAtomic, coalesce(b.discount, 0.0), b.department, b.toDepartment) "
+                + " b.id, b.deptId, b.billTypeAtomic, coalesce(b.discount, 0.0), d, td) "
                 + " from Bill b"
+                + " left join b.toDepartment td"
+                + " left join b.department d"
                 + " where b.retired=:ret "
                 + " and b.billTypeAtomic in :billTypesAtomics "
                 + " and b.createdAt between :fromDate and :toDate";
@@ -1945,7 +1947,7 @@ public class BillService {
         params.put("toDate", toDate);
         
         if (department != null) {
-            jpql += " and b.toDepartment=:dep";
+            jpql += " and (td= :dep or (td is null and d= :dep))";
             params.put("dep", department);
         }
 

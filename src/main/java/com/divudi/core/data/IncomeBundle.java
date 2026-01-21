@@ -1049,7 +1049,7 @@ public class IncomeBundle implements Serializable {
         for (IncomeRow r : getRows()) {
             Bill b = r.getBill();
             
-            if(b == null && b.getDepartment() == null && b.getToDepartment() == null) {
+            if(b == null || (b.getDepartment() == null && b.getToDepartment() == null)) {
                 continue;
             }
             
