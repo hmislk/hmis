@@ -14,7 +14,9 @@ import com.divudi.core.facade.DrawerEntryFacade;
 import com.divudi.core.facade.PatientDepositHistoryFacade;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -61,9 +63,17 @@ public class BalanceHistoryApi {
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
             .create();
 
-    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public BalanceHistoryApi() {
+    }
+
+    /**
+     * Helper method to parse date string to Date object using thread-safe DateTimeFormatter
+     */
+    private Date parseDate(String dateStr) {
+        LocalDateTime localDateTime = LocalDateTime.parse(dateStr, DATE_FORMATTER);
+        return java.sql.Timestamp.valueOf(localDateTime);
     }
 
     /**
@@ -107,20 +117,20 @@ public class BalanceHistoryApi {
 
             if (fromDateStr != null && !fromDateStr.trim().isEmpty()) {
                 try {
-                    Date fromDate = dateFormatter.parse(fromDateStr);
+                    Date fromDate = parseDate(fromDateStr);
                     jpql.append(" AND de.createdAt >= :fromDate");
                     params.put("fromDate", fromDate);
-                } catch (Exception e) {
+                } catch (DateTimeParseException e) {
                     return errorResponse("Invalid fromDate format. Expected: yyyy-MM-dd HH:mm:ss", 400);
                 }
             }
 
             if (toDateStr != null && !toDateStr.trim().isEmpty()) {
                 try {
-                    Date toDate = dateFormatter.parse(toDateStr);
+                    Date toDate = parseDate(toDateStr);
                     jpql.append(" AND de.createdAt <= :toDate");
                     params.put("toDate", toDate);
-                } catch (Exception e) {
+                } catch (DateTimeParseException e) {
                     return errorResponse("Invalid toDate format. Expected: yyyy-MM-dd HH:mm:ss", 400);
                 }
             }
@@ -182,20 +192,20 @@ public class BalanceHistoryApi {
 
             if (fromDateStr != null && !fromDateStr.trim().isEmpty()) {
                 try {
-                    Date fromDate = dateFormatter.parse(fromDateStr);
+                    Date fromDate = parseDate(fromDateStr);
                     jpql.append(" AND pdh.createdAt >= :fromDate");
                     params.put("fromDate", fromDate);
-                } catch (Exception e) {
+                } catch (DateTimeParseException e) {
                     return errorResponse("Invalid fromDate format. Expected: yyyy-MM-dd HH:mm:ss", 400);
                 }
             }
 
             if (toDateStr != null && !toDateStr.trim().isEmpty()) {
                 try {
-                    Date toDate = dateFormatter.parse(toDateStr);
+                    Date toDate = parseDate(toDateStr);
                     jpql.append(" AND pdh.createdAt <= :toDate");
                     params.put("toDate", toDate);
-                } catch (Exception e) {
+                } catch (DateTimeParseException e) {
                     return errorResponse("Invalid toDate format. Expected: yyyy-MM-dd HH:mm:ss", 400);
                 }
             }
@@ -257,20 +267,20 @@ public class BalanceHistoryApi {
 
             if (fromDateStr != null && !fromDateStr.trim().isEmpty()) {
                 try {
-                    Date fromDate = dateFormatter.parse(fromDateStr);
+                    Date fromDate = parseDate(fromDateStr);
                     jpql.append(" AND ah.createdAt >= :fromDate");
                     params.put("fromDate", fromDate);
-                } catch (Exception e) {
+                } catch (DateTimeParseException e) {
                     return errorResponse("Invalid fromDate format. Expected: yyyy-MM-dd HH:mm:ss", 400);
                 }
             }
 
             if (toDateStr != null && !toDateStr.trim().isEmpty()) {
                 try {
-                    Date toDate = dateFormatter.parse(toDateStr);
+                    Date toDate = parseDate(toDateStr);
                     jpql.append(" AND ah.createdAt <= :toDate");
                     params.put("toDate", toDate);
-                } catch (Exception e) {
+                } catch (DateTimeParseException e) {
                     return errorResponse("Invalid toDate format. Expected: yyyy-MM-dd HH:mm:ss", 400);
                 }
             }
@@ -332,20 +342,20 @@ public class BalanceHistoryApi {
 
             if (fromDateStr != null && !fromDateStr.trim().isEmpty()) {
                 try {
-                    Date fromDate = dateFormatter.parse(fromDateStr);
+                    Date fromDate = parseDate(fromDateStr);
                     jpql.append(" AND de.createdAt >= :fromDate");
                     params.put("fromDate", fromDate);
-                } catch (Exception e) {
+                } catch (DateTimeParseException e) {
                     return errorResponse("Invalid fromDate format. Expected: yyyy-MM-dd HH:mm:ss", 400);
                 }
             }
 
             if (toDateStr != null && !toDateStr.trim().isEmpty()) {
                 try {
-                    Date toDate = dateFormatter.parse(toDateStr);
+                    Date toDate = parseDate(toDateStr);
                     jpql.append(" AND de.createdAt <= :toDate");
                     params.put("toDate", toDate);
-                } catch (Exception e) {
+                } catch (DateTimeParseException e) {
                     return errorResponse("Invalid toDate format. Expected: yyyy-MM-dd HH:mm:ss", 400);
                 }
             }
