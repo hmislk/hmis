@@ -8145,11 +8145,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                         cd.setDate(payment.getPaymentDate());
 
                         // Get bank/institution from payment
-                        // For backward compatibility: try bank first, then institution, then creditCompany (used for ewallet in older records)
+                        // For backward compatibility: try bank first, then creditCompany (used for ewallet in older records)
                         Institution bankOrInstitution = payment.getBank();
-                        if (bankOrInstitution == null) {
-                            bankOrInstitution = payment.getInstitution();
-                        }
                         if (bankOrInstitution == null) {
                             bankOrInstitution = payment.getCreditCompany();
                         }
