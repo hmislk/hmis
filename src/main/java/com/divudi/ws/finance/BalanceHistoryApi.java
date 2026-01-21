@@ -6,8 +6,8 @@ import com.divudi.core.data.dto.DrawerEntryDTO;
 import com.divudi.core.data.dto.PatientDepositHistoryDto;
 import com.divudi.core.entity.AgentHistory;
 import com.divudi.core.entity.ApiKey;
-import com.divudi.core.entity.DrawerEntry;
 import com.divudi.core.entity.PatientDepositHistory;
+import com.divudi.core.entity.cashTransaction.DrawerEntry;
 import com.divudi.core.facade.AgentHistoryFacade;
 import com.divudi.core.facade.DrawerEntryFacade;
 import com.divudi.core.facade.PatientDepositHistoryFacade;
@@ -373,7 +373,7 @@ public class BalanceHistoryApi {
         dto.setId(entry.getId());
         dto.setDrawerId(entry.getDrawer() != null ? entry.getDrawer().getId() : null);
         dto.setDrawerName(entry.getDrawer() != null ? entry.getDrawer().getName() : null);
-        dto.setPaymentMethod(entry.getPaymentMethod());
+        dto.setPaymentMethod(entry.getPaymentMethod().toString());
         dto.setBeforeBalance(entry.getBeforeBalance());
         dto.setAfterBalance(entry.getAfterBalance());
         dto.setTransactionValue(entry.getTransactionValue());
