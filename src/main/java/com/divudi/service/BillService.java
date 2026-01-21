@@ -1892,7 +1892,7 @@ public class BillService {
 
         String jpql = "select new com.divudi.core.data.dto.HospitalDoctorFeeReportDTO("
                 + " b.id, coalesce(pers.name,'N/A'), "
-                + " coalesce(rb.person.nameWithTitle, coalesce(ts.person.nameWithTitle, 'No Doctor')), "
+                + " coalesce(rb.person.name, coalesce(ts.person.name, 'No Doctor')), "
                 + " coalesce(b.hospitalFee,0.0), coalesce(b.professionalFee,0.0), "
                 + " coalesce(b.netTotal,0.0), b.createdAt, b.paymentMethod, b.billTypeAtomic ) "
                 + " from Bill b "
