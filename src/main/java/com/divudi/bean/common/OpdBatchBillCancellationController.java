@@ -5884,8 +5884,8 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                     if (payment.getPaidValue() > 0) {
                         ComponentDetail cd = new ComponentDetail();
 
-                        // Determine the actual payment method for multiple payment bills
-                        PaymentMethod actualPaymentMethod = determineActualPaymentMethod(payment);
+                        // Get the actual payment method (already correctly stored in payment.paymentMethod)
+                        PaymentMethod actualPaymentMethod = getActualPaymentMethod(payment);
                         cd.setPaymentMethod(actualPaymentMethod);
 
                         cd.setTotalValue(payment.getPaidValue());
@@ -5938,56 +5938,20 @@ public class OpdBatchBillCancellationController implements Serializable, Control
     }
 
     /**
-     * Determine the actual payment method from Payment entity fields
-     * For multiple payment bills, all Payment records have paymentMethod = MultiplePaymentMethods
-     * The actual type is determined by which fields are populated
+     * Get the actual payment method from Payment entity.
+     *
+     * The payment method is ALWAYS stored correctly in the Payment.paymentMethod field.
+     *
+     * Note: Even for bills with bill.paymentMethod = 'MultiplePaymentMethods',
+     * each individual Payment record stores its actual method (Cash, Card, Cheque, etc.)
+     * This was verified in production database - NO Payment records have paymentMethod = 'MultiplePaymentMethods'.
+     *
+     * @param payment The payment entity
+     * @return The actual payment method stored in the database
      */
-    private PaymentMethod determineActualPaymentMethod(Payment payment) {
-        if (payment.getPaymentMethod() != PaymentMethod.MultiplePaymentMethods) {
-            // Single payment method bills - return the actual payment method
-            return payment.getPaymentMethod();
-        }
-
-        // For multiple payment method bills, determine by populated fields
-
-        // Cheque: has cheque-specific fields
-        if (payment.getChequeDate() != null
-                || (payment.getChequeRefNo() != null && !payment.getChequeRefNo().trim().isEmpty())) {
-            return PaymentMethod.Cheque;
-        }
-
-        // Card: has referenceNo and bank
-        // For backward compatibility: try bank first, then creditCompany
-        Institution cardInstitution = payment.getBank();
-        if (cardInstitution == null) {
-            cardInstitution = payment.getCreditCompany();
-        }
-        if ((payment.getReferenceNo() != null && !payment.getReferenceNo().trim().isEmpty())
-                && cardInstitution != null) {
-            return PaymentMethod.Card;
-        }
-
-        // eWallet or Slip: has referenceNo and institution (but not bank/creditCompany)
-        if ((payment.getReferenceNo() != null && !payment.getReferenceNo().trim().isEmpty())
-                && payment.getInstitution() != null
-                && payment.getBank() == null && payment.getCreditCompany() == null) {
-            // Could be eWallet or Slip - for now default to eWallet
-            return PaymentMethod.ewallet;
-        }
-
-        // Staff or StaffWelfare: check for toStaff field
-        if (payment.getToStaff() != null) {
-            return PaymentMethod.Staff;
-        }
-
-        // Credit: check for credit company or policy number
-        if (payment.getCreditCompany() != null
-                || (payment.getPolicyNo() != null && !payment.getPolicyNo().trim().isEmpty())) {
-            return PaymentMethod.Credit;
-        }
-
-        // Default to Cash if no specific fields are populated
-        return PaymentMethod.Cash;
+    private PaymentMethod getActualPaymentMethod(Payment payment) {
+        // Payment method is already correctly stored - no need to determine from fields
+        return payment.getPaymentMethod();
     }
 
     /**
