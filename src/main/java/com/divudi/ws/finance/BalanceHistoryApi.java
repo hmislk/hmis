@@ -379,7 +379,7 @@ public class BalanceHistoryApi {
         dto.setId(entry.getId());
         dto.setDrawerId(entry.getDrawer() != null ? entry.getDrawer().getId() : null);
         dto.setDrawerName(entry.getDrawer() != null ? entry.getDrawer().getName() : null);
-        dto.setPaymentMethod(entry.getPaymentMethod().toString());
+        dto.setPaymentMethod(entry.getPaymentMethod() != null ? entry.getPaymentMethod().toString() : null);
         dto.setBeforeBalance(entry.getBeforeBalance());
         dto.setAfterBalance(entry.getAfterBalance());
         dto.setTransactionValue(entry.getTransactionValue());

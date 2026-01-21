@@ -72,7 +72,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     ProfessionalPaymentService professionalPaymentService;
     @EJB
     BillService billService;
-    @Inject
+    @EJB
     InstitutionFacade institutionFacade;
 
     // </editor-fold>
