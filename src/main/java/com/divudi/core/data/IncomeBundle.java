@@ -1049,7 +1049,7 @@ public class IncomeBundle implements Serializable {
         for (IncomeRow r : getRows()) {
             Bill b = r.getBill();
             
-            if(b == null) {
+            if(b == null && b.getDepartment() == null && b.getToDepartment() == null) {
                 continue;
             }
             
@@ -1066,7 +1066,6 @@ public class IncomeBundle implements Serializable {
                 }
             } else {
                 st = b.getDepartment().getDepartmentType();
-                System.out.println("pharmacy"+ b.getDepartment() + " disct = " + b.getDiscount());
                 if (st == null) {
                     dept = b.getDepartment().getName();
                 } else {

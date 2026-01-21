@@ -74,7 +74,6 @@ public class InwardReportDashboardController implements Serializable{
     private String selectionTypeOpdRevenue;
     private List<OpdRevenueDashboardDTO> opdRevenueDashboardDtos; 
     private double totalRevenue;
-    private IncomeBundle opdRevenueBundle;
     
     // Discount
     private List<OpdRevenueDashboardDTO> discountDashboard;
@@ -378,10 +377,6 @@ public class InwardReportDashboardController implements Serializable{
         this.selectionTypeOpdRevenue = s;
     }
     
-    public IncomeBundle getOpdRevenueBundle() {
-        return opdRevenueBundle;
-    }
-    
     public IncomeBundle getDiscountBundle() {
         return discountBundle;
     }
@@ -481,7 +476,7 @@ public class InwardReportDashboardController implements Serializable{
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
 
-            // pahrmacy income
+            // pharmacy income
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
@@ -492,6 +487,11 @@ public class InwardReportDashboardController implements Serializable{
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND);
+            
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_PRE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
 
             billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
