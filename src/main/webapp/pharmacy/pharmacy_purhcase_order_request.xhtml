@@ -57,7 +57,7 @@
                                             id="btnViewSelectedItemDetails"
                                             title="View Item Details"
                                             action="#{purchaseOrderRequestController.displayItemDetails(bi)}"
-                                            update=":#{p:resolveFirstComponentWithId('itemHistory',view).clientId}"
+                                            update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
                                             process="@this"
                                             class="ui-button-icon-only mx-3"/>
                                     </p:column>
