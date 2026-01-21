@@ -314,6 +314,35 @@ limit=100  # Return max 100 records (default)
 limit=500  # Return max 500 records
 ```
 
+### Payment Method Parameter
+The `paymentMethod` parameter for drawer entries endpoint accepts enum constant names (not display labels).
+
+**Valid Values:**
+- `Cash` - Cash payment
+- `Card` - Credit/debit card
+- `Cheque` - Cheque payment
+- `Slip` - Bank slip
+- `ewallet` - E-wallet payment (note: lowercase 'e')
+- `PatientDeposit` - Patient deposit deduction
+- `Credit` - Credit company payment
+- `Staff_Welfare` - Staff welfare payment (note: underscore)
+- `Agent` - Agent payment
+- `MultiplePaymentMethods` - Multiple payment methods
+
+**Important:**
+- Use exact enum constant names (case-sensitive)
+- Use underscore for `Staff_Welfare`, not space or hyphen
+- Invalid payment method returns 400 error with message
+
+**Example:**
+```bash
+# Correct
+/api/balance_history/drawer_entries?paymentMethod=Staff_Welfare
+
+# Incorrect (will return 400 error)
+/api/balance_history/drawer_entries?paymentMethod=Staff%20Welfare
+```
+
 ### Combining Filters
 You can combine multiple query parameters to narrow down results:
 
@@ -483,6 +512,63 @@ success, message = verify_cash_payment(bill_id=5661712, expected_amount=1500.00)
 print(f"Verification: {message}")
 ```
 
+## Tested Examples
+
+These examples have been verified working against a live HMIS instance:
+
+### Get Drawer Entries by Payment Method
+```bash
+curl -X GET \
+  'http://localhost:8080/hmis/api/balance_history/drawer_entries?paymentMethod=Cash&limit=5' \
+  -H 'Finance: your-api-key-here'
+```
+
+### Get Drawer Entries for Specific Bill
+```bash
+# Bill with multiple payment methods (Cash + ewallet)
+curl -X GET \
+  'http://localhost:8080/hmis/api/balance_history/drawer_entries?billId=3416102' \
+  -H 'Finance: your-api-key-here'
+```
+
+### Get Patient Deposit History by Patient ID
+```bash
+curl -X GET \
+  'http://localhost:8080/hmis/api/balance_history/patient_deposits?patientId=140694&limit=3' \
+  -H 'Finance: your-api-key-here'
+```
+
+### Get Agent Histories with Date Filter
+```bash
+curl -G "http://localhost:8080/hmis/api/balance_history/agent_histories" \
+  --data-urlencode "fromDate=2025-01-02 00:00:00" \
+  --data-urlencode "toDate=2025-01-03 00:00:00" \
+  --data-urlencode "limit=5" \
+  -H 'Finance: your-api-key-here'
+```
+
+### Get Staff Welfare Histories
+```bash
+curl -X GET \
+  'http://localhost:8080/hmis/api/balance_history/staff_welfare_histories?limit=10' \
+  -H 'Finance: your-api-key-here'
+```
+
+### Verify Multiple Payment Methods
+```bash
+# 1. Get bill details with payments array
+curl -X GET \
+  'http://localhost:8080/hmis/api/costing_data/by_bill_id/3416102' \
+  -H 'Finance: your-api-key-here'
+
+# 2. Get corresponding drawer entries
+curl -X GET \
+  'http://localhost:8080/hmis/api/balance_history/drawer_entries?billId=3416102' \
+  -H 'Finance: your-api-key-here'
+
+# Expected: Payments total should match sum of drawer entry transaction values
+```
+
 ## API Key Management
 
 To generate or manage API keys:
@@ -493,6 +579,46 @@ To generate or manage API keys:
 5. Copy the generated key (it will only be shown once)
 6. Use the key in the `Finance` header for all API requests
 
+## Troubleshooting
+
+### Empty Results with Date Filters
+
+If date filtering returns empty results when you expect data:
+
+1. **Check date range is wide enough**: Very narrow time ranges may not contain any records
+   ```bash
+   # Too narrow - may return empty
+   fromDate=2025-01-20 08:54:00&toDate=2025-01-20 08:55:00
+
+   # Better - use wider range
+   fromDate=2025-01-20 00:00:00&toDate=2025-01-20 23:59:59
+   ```
+
+2. **Verify dates exist in database**: Query the database directly to confirm records exist in the date range
+
+3. **Use curl -G for proper URL encoding**:
+   ```bash
+   curl -G "http://localhost:8080/hmis/api/balance_history/drawer_entries" \
+     --data-urlencode "fromDate=2025-01-20 00:00:00" \
+     --data-urlencode "toDate=2025-01-20 23:59:59" \
+     -H 'Finance: your-api-key-here'
+   ```
+
+### Invalid Payment Method Error
+
+If you get a 400 error with "Invalid payment method":
+
+- **Cause**: Payment method parameter must use exact enum constant name
+- **Solution**: Use `Staff_Welfare` (with underscore), not `Staff Welfare` or `Staff-Welfare`
+- **Valid values**: See "Payment Method Parameter" section above
+
+### ClassCastException for Enum Types
+
+If you see `ClassCastException: class java.lang.String cannot be cast to class java.lang.Enum`:
+
+- **Cause**: Internal error - enum comparison issue in JPQL query
+- **Solution**: This was fixed in the implementation. If you encounter it, ensure you're using the latest deployed version
+
 ## Notes
 
 - All datetime fields are in format: `yyyy-MM-dd HH:mm:ss`
@@ -502,3 +628,4 @@ To generate or manage API keys:
 - Response character encoding is UTF-8
 - History records are filtered by `retired = false` by default
 - Results are ordered by ID descending (newest first)
+- Payment method parameters are case-sensitive enum constants

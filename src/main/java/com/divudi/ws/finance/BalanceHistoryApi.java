@@ -1,6 +1,7 @@
 package com.divudi.ws.finance;
 
 import com.divudi.bean.common.ApiKeyController;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dto.AgentHistoryDTO;
 import com.divudi.core.data.dto.DrawerEntryDTO;
 import com.divudi.core.data.dto.PatientDepositHistoryDto;
@@ -95,8 +96,13 @@ public class BalanceHistoryApi {
             }
 
             if (paymentMethod != null && !paymentMethod.trim().isEmpty()) {
-                jpql.append(" AND de.paymentMethod = :paymentMethod");
-                params.put("paymentMethod", paymentMethod.trim());
+                try {
+                    PaymentMethod pm = PaymentMethod.valueOf(paymentMethod.trim());
+                    jpql.append(" AND de.paymentMethod = :paymentMethod");
+                    params.put("paymentMethod", pm);
+                } catch (IllegalArgumentException e) {
+                    return errorResponse("Invalid payment method: " + paymentMethod, 400);
+                }
             }
 
             if (fromDateStr != null && !fromDateStr.trim().isEmpty()) {
@@ -311,7 +317,7 @@ public class BalanceHistoryApi {
             }
 
             // Build JPQL query - filter by Staff_Welfare payment method
-            StringBuilder jpql = new StringBuilder("SELECT de FROM DrawerEntry de WHERE de.retired = false AND de.paymentMethod = 'Staff_Welfare'");
+            StringBuilder jpql = new StringBuilder("SELECT de FROM DrawerEntry de WHERE de.retired = false AND de.paymentMethod = com.divudi.core.data.PaymentMethod.Staff_Welfare");
             Map<String, Object> params = new HashMap<>();
 
             if (billId != null) {
