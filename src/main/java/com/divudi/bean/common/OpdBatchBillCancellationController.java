@@ -5956,21 +5956,20 @@ public class OpdBatchBillCancellationController implements Serializable, Control
             return PaymentMethod.Cheque;
         }
 
-        // Card: has referenceNo and bank
+        // Card: has card-specific identifier (creditCardRefNo) and bank/creditCompany
         // For backward compatibility: try bank first, then creditCompany
         Institution cardInstitution = payment.getBank();
         if (cardInstitution == null) {
             cardInstitution = payment.getCreditCompany();
         }
-        if ((payment.getReferenceNo() != null && !payment.getReferenceNo().trim().isEmpty())
+        if ((payment.getCreditCardRefNo() != null && !payment.getCreditCardRefNo().trim().isEmpty())
                 && cardInstitution != null) {
             return PaymentMethod.Card;
         }
 
-        // eWallet or Slip: has referenceNo and institution (but not bank/creditCompany)
+        // eWallet or Slip: has referenceNo and institution
         if ((payment.getReferenceNo() != null && !payment.getReferenceNo().trim().isEmpty())
-                && payment.getInstitution() != null
-                && payment.getBank() == null && payment.getCreditCompany() == null) {
+                && payment.getInstitution() != null) {
             // Could be eWallet or Slip - for now default to eWallet
             return PaymentMethod.ewallet;
         }
