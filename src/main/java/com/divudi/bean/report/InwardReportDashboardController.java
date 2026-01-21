@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -72,6 +73,7 @@ public class InwardReportDashboardController implements Serializable{
     private final List<String> selectionTypesOpdRevenue = List.of("Department Wise", "Site Wise", "Institution Wise");
     private String selectionTypeOpdRevenue;
     private List<OpdRevenueDashboardDTO> opdRevenueDashboardDtos; 
+    private double totalRevenue;
     private IncomeBundle opdRevenueBundle;
     
     // Discount
@@ -146,7 +148,6 @@ public class InwardReportDashboardController implements Serializable{
 
         if (totalRooms !=  null && occupiedRooms != null && underConstruction != null){
             setBedOccupancyChart();
-            System.out.println("totalRooms = " + totalRooms + "---oR = " + occupiedRooms + "---UR = " + underConstruction);
         }
     }
     
@@ -192,8 +193,8 @@ public class InwardReportDashboardController implements Serializable{
         }
         
         List<Number> rooms = new ArrayList<>();
-        rooms.add(occupiedRooms);
-        rooms.add(underConstruction);
+        rooms.add((occupiedRooms != null ? occupiedRooms : Long.valueOf(0)));
+        rooms.add((underConstruction != null ? underConstruction : Long.valueOf(0)));
         rooms.add(vacantRooms);
         if (totalRooms != null && availableRooms != null && underConstruction != null) {
             rooms.add(totalRooms - (availableRooms+underConstruction));
@@ -215,7 +216,7 @@ public class InwardReportDashboardController implements Serializable{
         
         List<String> labels = new ArrayList<>();
         labels.add("Occupied Rooms");
-        labels.add("UnderConstruction Rooms");
+        labels.add("Blocked Rooms");
         labels.add("Vacant Rooms");
         labels.add("Unavailable Rooms");
         data.setLabels(labels);
@@ -223,17 +224,21 @@ public class InwardReportDashboardController implements Serializable{
         bedOccupancyChart.setData(data);
     }
     
-    private void setOpdRevenueChart() {        
+    private void setOpdRevenueChart() {  
+        if (opdRevenueDashboardDtos == null || opdRevenueDashboardDtos.isEmpty()) {
+            return;
+        }
+        
         BarChartDataSet dataSet = new BarChartDataSet();
 
         List<Object> values = new ArrayList<>();
         List<String> labels = new ArrayList<>();
         List<String> bgColors = new ArrayList<>();
         
-        for (int i = 0; i < opdRevenueBundle.getRows().size(); i++) {
-            IncomeRow r = opdRevenueBundle.getRows().get(i);
-            values.add(r.getGrossTotal());
-            labels.add(r.getRowType());
+        for (int i = 0; i < opdRevenueDashboardDtos.size(); i++) {
+            OpdRevenueDashboardDTO dto = opdRevenueDashboardDtos.get(i);
+            values.add(dto.getTotal());
+            labels.add(dto.getServiceCategoryName());
             bgColors.add(colorPalette[i % colorPalette.length]);
         } 
         
@@ -381,26 +386,68 @@ public class InwardReportDashboardController implements Serializable{
         return discountBundle;
     }
     
+    public double getTotalRevenue() {
+        return totalRevenue;
+    }
+
+    public void setTotalRevenue(double totalRevenue) {
+        this.totalRevenue = totalRevenue;
+    }
+
+    
+    public List<OpdRevenueDashboardDTO> getOpdRevenueDashboardDtos() {
+        return opdRevenueDashboardDtos;
+    }
+    
+    public void setOpdRevenueDashboardDtos(List<OpdRevenueDashboardDTO> dtos) {
+        this.opdRevenueDashboardDtos = dtos;
+    }
+    
     public void generateOpdIncomeReportDto() {
         opdRevenueChart = new BarChartModel();
         List<BillTypeAtomic> btas = fetchBillTypeAtomicForOpdRevenue();
-        opdRevenueDashboardDtos = billService.fetchOpdRevenueDashboardDTOs(getFromDate(), getToDate(), institution, site, department, loggedUser, btas, null, null);
+        List<OpdRevenueDashboardDTO> rawList = billService.fetchOpdRevenueDashboardDTOs(getFromDate(), getToDate(), institution, site, department, btas);
 
-        System.out.println("Results returned: " + (opdRevenueDashboardDtos != null ? opdRevenueDashboardDtos.size() : 0));
+        Map<Object, OpdRevenueDashboardDTO> grouped = new LinkedHashMap<>();
+        totalRevenue = 0;
 
-        opdRevenueBundle = new IncomeBundle(opdRevenueDashboardDtos);
-        opdRevenueBundle.generatePaymentDetailsForOpdRevenue(selectionTypeOpdRevenue);
+        for (OpdRevenueDashboardDTO dto : rawList) {
+            if (dto.getServiceCategoryId() == null) {
+                continue; // Skip if service category is null
+            }
+
+            Long catId = dto.getServiceCategoryId();
+            OpdRevenueDashboardDTO currentCat = grouped.computeIfAbsent(catId, k -> {
+                OpdRevenueDashboardDTO cat = new OpdRevenueDashboardDTO();
+                cat.setServiceCategoryId(catId);
+                cat.setServiceCategoryName(dto.getServiceCategoryName());
+                cat.setTotal(0.0);
+
+                return cat;
+            });
+
+            currentCat.setTotal(currentCat.getTotal() + dto.getTotal());
+            totalRevenue += dto.getTotal();
+        }
+
+        opdRevenueDashboardDtos = new ArrayList<>();
+        for (Map.Entry<Object, OpdRevenueDashboardDTO> entry : grouped.entrySet()) {
+            if (entry.getValue().getTotal() == 0) {
+                continue;
+            }
+            
+            opdRevenueDashboardDtos.add(entry.getValue());
+        }
+
         setOpdRevenueChart();
         
     }
     
     public void generateDiscountDashboard() {
         discountChart = new BarChartModel();
-        List<BillTypeAtomic> btas = fetchBillTypeAtomicForOpdRevenue();
+        List<BillTypeAtomic> btas = getOpdAndPharmacyIncomeBillTypes();
         
         discountDashboard = billService.fetchBillDiscounts(getFromDate(), getToDate(), discountDept, btas);
-
-        System.out.println("Results returned: " + (discountDashboard != null ? discountDashboard.size() : 0));
 
         discountBundle = new IncomeBundle(discountDashboard);
         discountBundle.generateDiscountDetailsForDashboard();
@@ -424,5 +471,46 @@ public class InwardReportDashboardController implements Serializable{
             
          return billTypeAtomics;
         
+    }
+    
+    public List<BillTypeAtomic> getOpdAndPharmacyIncomeBillTypes() {
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+
+            // pahrmacy income
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
+
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND);
+
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
+
+            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+
+            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE);
+            billTypeAtomics.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION);
+
+            billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
+            billTypeAtomics.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE);
+            
+        return billTypeAtomics;
     }
 }
