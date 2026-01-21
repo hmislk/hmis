@@ -171,11 +171,11 @@
                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
                                     styleClass="table-sm">
-                                    <p:column width="8em" styleClass="text-center">
+                                    <p:column width="8em">
                                         <f:facet name="header" >
-                                            <h:outputText value="Performed Doctor Name" />
+                                            <h:outputText value="Performed Doctor Name"/>
                                         </f:facet>
-                                            <h:outputText value="#{var.doctorName}"/>
+                                        <h:outputText value="Dr. #{var.doctorName}"/>
                                         <f:facet name="footer" >
                                             <h:outputText value="Total" />
                                         </f:facet>
@@ -185,7 +185,7 @@
                                         <f:facet name="header" >
                                             <h:outputText value="Doctor Specialty" />
                                         </f:facet>
-                                        <h:outputText value="#{var.specialtyName}">
+                                        <h:outputText value="#{var.specialtyName}" styleClass="text-left">
                                         </h:outputText>
                                     </p:column>
 
