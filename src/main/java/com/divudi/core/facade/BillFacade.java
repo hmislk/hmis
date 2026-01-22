@@ -51,11 +51,16 @@ public class BillFacade extends AbstractFacade<Bill> {
             throw new IllegalArgumentException("From date cannot be after to date");
         }
 
+        // Detect correct table name case (BILL vs bill)
+        String[] tableNamePairs = detectTableNameCase();
+        String billTableName = tableNamePairs[0];
+        String billItemTableName = tableNamePairs[1];
+
         try {
             // First, get count of bills that need correction
             String countSql =
                 "SELECT COUNT(*) as bill_count " +
-                "FROM bill b " +
+                "FROM " + billTableName + " b " +
                 "WHERE b.created_at >= ? AND b.created_at <= ? " +
                 "AND b.retired = false " +
                 "AND b.bill_type = 'OpdBill' " +
@@ -84,26 +89,26 @@ public class BillFacade extends AbstractFacade<Bill> {
 
             // Update bill-level fees based on BillItem aggregation
             String updateSql =
-                "UPDATE bill b " +
+                "UPDATE " + billTableName + " b " +
                 "SET " +
                 "    b.total_hospital_fee = (" +
                 "        SELECT COALESCE(SUM(bi.hospital_fee), 0) " +
-                "        FROM billitem bi " +
+                "        FROM " + billItemTableName + " bi " +
                 "        WHERE bi.bill_id = b.id AND bi.retired = false" +
                 "    ), " +
                 "    b.total_staff_fee = (" +
                 "        SELECT COALESCE(SUM(bi.staff_fee), 0) " +
-                "        FROM billitem bi " +
+                "        FROM " + billItemTableName + " bi " +
                 "        WHERE bi.bill_id = b.id AND bi.retired = false" +
                 "    ), " +
                 "    b.total_center_fee = (" +
                 "        SELECT COALESCE(SUM(bi.collecting_centre_fee), 0) " +
-                "        FROM billitem bi " +
+                "        FROM " + billItemTableName + " bi " +
                 "        WHERE bi.bill_id = b.id AND bi.retired = false" +
                 "    ), " +
                 "    b.perform_institution_fee = (" +
                 "        SELECT COALESCE(SUM(bi.hospital_fee), 0) " +
-                "        FROM billitem bi " +
+                "        FROM " + billItemTableName + " bi " +
                 "        WHERE bi.bill_id = b.id AND bi.retired = false" +
                 "    ) " +
                 "WHERE b.created_at >= ? AND b.created_at <= ? " +
@@ -148,6 +153,44 @@ public class BillFacade extends AbstractFacade<Bill> {
                          fromDate + " to " + toDate);
 
         return correctHistoricalBillFeeAggregation(fromDate, toDate, dryRun);
+    }
+
+    /**
+     * Detects the correct table name case (uppercase vs lowercase) for the current database.
+     * Some database instances use BILL/BILLITEM while others use bill/billitem.
+     *
+     * @return Array of [billTableName, billItemTableName] with correct case
+     * @throws Exception if neither case works
+     */
+    private String[] detectTableNameCase() throws Exception {
+        String[] uppercaseNames = {"BILL", "BILLITEM"};
+        String[] lowercaseNames = {"bill", "billitem"};
+
+        // Try uppercase first
+        try {
+            String testSql = "SELECT COUNT(*) FROM " + uppercaseNames[0] + " WHERE 1=0";
+            javax.persistence.Query testQuery = getEntityManager().createNativeQuery(testSql);
+            testQuery.getSingleResult();
+            // If we reach here, uppercase works
+            System.out.println("Detected uppercase table names: BILL, BILLITEM");
+            return uppercaseNames;
+        } catch (Exception e1) {
+            // Try lowercase
+            try {
+                String testSql = "SELECT COUNT(*) FROM " + lowercaseNames[0] + " WHERE 1=0";
+                javax.persistence.Query testQuery = getEntityManager().createNativeQuery(testSql);
+                testQuery.getSingleResult();
+                // If we reach here, lowercase works
+                System.out.println("Detected lowercase table names: bill, billitem");
+                return lowercaseNames;
+            } catch (Exception e2) {
+                // Neither worked - this is a serious problem
+                String errorMsg = "Could not detect table name case. Tried both uppercase (BILL/BILLITEM) and lowercase (bill/billitem). " +
+                                 "Uppercase error: " + e1.getMessage() + ". Lowercase error: " + e2.getMessage();
+                System.err.println(errorMsg);
+                throw new Exception(errorMsg);
+            }
+        }
     }
 
 }
