@@ -57,6 +57,8 @@ import com.divudi.service.BillService;
 import com.divudi.service.StockHistoryService;
 import com.divudi.core.data.dto.LabDailySummaryDTO;
 import com.divudi.core.data.dto.OpdIncomeReportDTO;
+import com.divudi.core.data.dto.HospitalDoctorFeeReportDTO;
+import com.divudi.core.data.HospitalDoctorFeeBundle;
 import com.divudi.core.data.reports.CommonReports;
 import com.divudi.core.data.reports.LaboratoryReport;
 import java.io.Serializable;
@@ -228,6 +230,8 @@ public class OpdReportController implements Serializable {
     private ReportTemplateRowBundle bundleReport;
     private List<LabDailySummaryDTO> labDailySummaryDtos;
     private List<OpdIncomeReportDTO> opdIncomeReportDtos;
+    private List<HospitalDoctorFeeReportDTO> hospitalDoctorFeeReportDtos;
+    private HospitalDoctorFeeBundle hospitalDoctorFeeBundle;
 
     private DailyStockBalanceReport dailyStockBalanceReport;
 
@@ -284,6 +288,10 @@ public class OpdReportController implements Serializable {
 
     public String navigateToPatientIndicationsReport() {
         return "/reports/opd/patient_indications_report?faces-redirect=true";
+    }
+
+    public String navigateToHospitalDoctorFeeReport() {
+        return "/opd/analytics/summary_reports/hospital_doctor_fee_report.xhtml?faces-redirect=true";
     }
 
 // </editor-fold>
@@ -581,6 +589,32 @@ public class OpdReportController implements Serializable {
             bundle = new IncomeBundle(opdIncomeReportDtos);
             bundle.generatePaymentDetailsForBillsAndBatchBills();
         }, CommonReports.LAB_REPORTS, "OpdReportController.generateOpdIncomeReportDto", sessionController.getLoggedUser());
+    }
+
+    public void generateHospitalDoctorFeeReport() {
+        reportTimerController.trackReportExecution(() -> {
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            // OPD Bills
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+
+            // Inward Service Bills - ADDED MISSING TYPES
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+
+            hospitalDoctorFeeReportDtos = billService.fetchHospitalDoctorFeeReportDTOs(
+                    fromDate, toDate, institution, site, department, webUser,
+                    billTypeAtomics, admissionType, paymentScheme);
+
+            System.out.println("Hospital Doctor Fee Report Results returned: " + (hospitalDoctorFeeReportDtos != null ? hospitalDoctorFeeReportDtos.size() : 0));
+
+            hospitalDoctorFeeBundle = new HospitalDoctorFeeBundle(hospitalDoctorFeeReportDtos);
+        }, CommonReports.LAB_REPORTS, "OpdReportController.generateHospitalDoctorFeeReport", sessionController.getLoggedUser());
     }
 
     public void processOpdIncomeSummaryByDateDTO() {
@@ -2517,6 +2551,22 @@ public class OpdReportController implements Serializable {
 
     public void setOpdIncomeReportDtos(List<OpdIncomeReportDTO> opdIncomeReportDtos) {
         this.opdIncomeReportDtos = opdIncomeReportDtos;
+    }
+
+    public List<HospitalDoctorFeeReportDTO> getHospitalDoctorFeeReportDtos() {
+        return hospitalDoctorFeeReportDtos;
+    }
+
+    public void setHospitalDoctorFeeReportDtos(List<HospitalDoctorFeeReportDTO> hospitalDoctorFeeReportDtos) {
+        this.hospitalDoctorFeeReportDtos = hospitalDoctorFeeReportDtos;
+    }
+
+    public HospitalDoctorFeeBundle getHospitalDoctorFeeBundle() {
+        return hospitalDoctorFeeBundle;
+    }
+
+    public void setHospitalDoctorFeeBundle(HospitalDoctorFeeBundle hospitalDoctorFeeBundle) {
+        this.hospitalDoctorFeeBundle = hospitalDoctorFeeBundle;
     }
 
 }
