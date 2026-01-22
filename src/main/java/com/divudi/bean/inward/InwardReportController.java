@@ -2487,11 +2487,6 @@ public class InwardReportController implements Serializable {
 
         jpql.append("ORDER BY pe.dateOfAdmission ");
 
-        // Debug logging
-        System.out.println("=== IP Unsettled Invoices Query ===");
-        System.out.println("JPQL: " + jpql.toString());
-        System.out.println("Params: " + params);
-
         try {
             unsettledInvoicesList = (List<IpUnsettledInvoiceDTO>) peFacade.findLightsByJpql(
                     jpql.toString(),
@@ -2499,10 +2494,8 @@ public class InwardReportController implements Serializable {
                     TemporalType.TIMESTAMP
             );
 
-            System.out.println("Result count: " + (unsettledInvoicesList != null ? unsettledInvoicesList.size() : 0));
 
         } catch (Exception e) {
-            System.err.println("Error executing query: " + e.getMessage());
             e.printStackTrace();
             JsfUtil.addErrorMessage("Error loading unsettled invoices: " + e.getMessage());
             unsettledInvoicesList = new ArrayList<>();
