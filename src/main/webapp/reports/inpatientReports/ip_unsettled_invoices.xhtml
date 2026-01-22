@@ -416,7 +416,7 @@
                             <h:outputText value="Report Data:" style="font-weight: bold; font-size: 16px;" />
                             <!-- Results Table -->
                             <div class ="mt-3 mb-5 ">
-                                <p:dataTable id="tbl" value="#{inwardReportController.admissions}" var="f" rows="10" class="w-100" rowIndexVar="rowIndex" paginator="true" paginatorPosition="bottom">
+                                <p:dataTable id="tbl" value="#{inwardReportController.unsettledInvoicesList}" var="f" rows="10" class="w-100" rowIndexVar="rowIndex" paginator="true" paginatorPosition="bottom">
 
 
                                     <p:column headerText="SI No">
@@ -424,23 +424,23 @@
                                     </p:column>
 
                                     <p:column headerText="MRN">
-                                        <h:outputText value="#{f.patient.phn}" />
+                                        <h:outputText value="#{f.phn}" />
                                     </p:column>
 
                                     <p:column headerText="Patient Name">
-                                        <h:outputText value="#{f.patient.person.nameWithTitle}" />
+                                        <h:outputText value="#{f.patientNameWithTitle}" />
                                     </p:column>
 
                                     <p:column headerText="Mobile Number">
-                                        <h:outputText value="#{f.patient.mobileNumberStringTransient}" />
+                                        <h:outputText value="#{f.mobileNumber}" />
                                     </p:column>
 
                                     <p:column headerText="Age">
-                                        <h:outputText value="#{f.patient.age}" />
+                                        <h:outputText value="#{f.age}" />
                                     </p:column>
 
                                     <p:column headerText="Location">
-                                        <h:outputText value="#{f.currentPatientRoom.roomFacilityCharge.roomCategory.name}" />
+                                        <h:outputText value="#{f.roomCategoryName.roomFacilityCharge.name}" />
                                     </p:column>
 
                                     <p:column headerText="Discharged On">
@@ -450,24 +450,29 @@
                                     </p:column>
 
                                     <p:column headerText="Invoice Status">
-                                        <h:outputText value="#{f.paymentFinalized}" rendered="#{f.paymentFinalized eq true}"/>
-                                        <h:outputText value="Pending" rendered="#{f.paymentFinalized ne true}"/>
+                                        <h:outputText value="#{f.paymentStatusLabel}" />
                                     </p:column>
 
                                     <p:column headerText="Total Amount">
-                                        <h:outputText value="#{f.netTotal}" />
+                                        <h:outputText value="#{f.netTotal}">
+                                            <f:convertNumber type="number" groupingUsed="true" minFractionDigits="2" maxFractionDigits="2" />
+                                        </h:outputText>
                                     </p:column>
 
                                     <p:column headerText="Collected Amount">
-                                        <h:outputText value="#{f.creditPaidAmount}" />
+                                        <h:outputText value="#{f.creditPaidAmount}">
+                                            <f:convertNumber type="number" groupingUsed="true" minFractionDigits="2" maxFractionDigits="2" />
+                                        </h:outputText>
                                     </p:column>
 
                                     <p:column headerText="Amount to be Paid">
-                                        <h:outputText value="#{f.netTotal - f.creditPaidAmount}" />
+                                        <h:outputText value="#{f.amountToBePaid}">
+                                            <f:convertNumber type="number" groupingUsed="true" minFractionDigits="2" maxFractionDigits="2" />
+                                        </h:outputText>
                                     </p:column>
 
                                     <p:column headerText="Discharged By">
-                                        <h:outputText value="#{f.creater.name}" />
+                                        <h:outputText value="#{f.createrName.name}" />
                                     </p:column>
 
                                     <!-- FOOTER  -->
