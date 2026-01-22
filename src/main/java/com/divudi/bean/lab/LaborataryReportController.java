@@ -242,10 +242,7 @@ public class LaborataryReportController implements Serializable {
 // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Navigators">
-    public String navigateToLaborataryReportResultDataChartView() {
-        return "/reports/lab/report_data_chart_view?faces-redirect=true";
-    }
-    
+
     public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
         return "/reportLab/lab_inward_order_report?faces-redirect=true";
