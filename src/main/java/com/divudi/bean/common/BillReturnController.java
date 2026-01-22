@@ -858,6 +858,8 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         newlyReturnedBill.setHospitalFee(0 - returningHospitalTotal);
         newlyReturnedBill.setProfessionalFee(0 - returningStaffTotal);
         newlyReturnedBill.setDiscount(0 - returningDiscount);
+        newlyReturnedBill.setTotalHospitalFee(0 - returningHospitalTotal);
+        newlyReturnedBill.setTotalStaffFee(0 - returningStaffTotal);
         billController.save(newlyReturnedBill);
 
         // Update batch bill balance for credit payment method returns
