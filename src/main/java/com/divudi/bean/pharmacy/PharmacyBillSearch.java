@@ -1659,7 +1659,7 @@ public class PharmacyBillSearch implements Serializable {
             // Set relationships
             cancelledBfd.setBill(cancelledBill);
             cancelledBfd.setCreatedAt(new Date());
-            cancelledBfd.setCreater(getSessionController().getLoggedUser());
+            cancelledBfd.setCreatedBy(getSessionController().getLoggedUser());
 
             // Set finance details on bill (will be cascade saved when bill is saved)
             cancelledBill.setBillFinanceDetails(cancelledBfd);
