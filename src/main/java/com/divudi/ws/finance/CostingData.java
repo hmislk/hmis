@@ -5,15 +5,18 @@ import com.divudi.core.data.dto.BillDetailsDTO;
 import com.divudi.core.data.dto.BillFinanceDetailsDTO;
 import com.divudi.core.data.dto.BillItemDetailsDTO;
 import com.divudi.core.data.dto.BillItemFinanceDetailsDTO;
+import com.divudi.core.data.dto.PaymentDTO;
 import com.divudi.core.data.dto.PharmaceuticalBillItemDTO;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -50,6 +53,9 @@ public class CostingData {
 
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
+
+    @EJB
+    private PaymentFacade paymentFacade;
 
     @Inject
     ApiKeyController apiKeyController;
@@ -294,6 +300,17 @@ public class CostingData {
             dto.setBillItems(billItemDTOs);
         }
 
+        // Convert Payments - always use explicit query to avoid LazyInitializationException
+        List<Payment> payments = findPaymentsFromBill(bill);
+
+        if (payments != null && !payments.isEmpty()) {
+            List<PaymentDTO> paymentDTOs = new ArrayList<>();
+            for (Payment payment : payments) {
+                paymentDTOs.add(convertPaymentToDTO(payment));
+            }
+            dto.setPayments(paymentDTOs);
+        }
+
         return dto;
     }
 
@@ -415,6 +432,60 @@ public class CostingData {
         Map<String, Object> params = new HashMap<>();
         params.put("billItem", billItem);
         return pharmaceuticalBillItemFacade.findFirstByJpql(jpql, params);
+    }
+
+    /**
+     * Find Payments from Bill
+     */
+    private List<Payment> findPaymentsFromBill(Bill bill) {
+        if (bill == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT p FROM Payment p WHERE p.bill.id = :billId AND p.retired = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", bill.getId());
+        return paymentFacade.findByJpql(jpql, params);
+    }
+
+    /**
+     * Convert Payment entity to PaymentDTO
+     */
+    private PaymentDTO convertPaymentToDTO(Payment payment) {
+        PaymentDTO dto = new PaymentDTO();
+        dto.setId(payment.getId());
+        dto.setBillId(payment.getBill() != null ? payment.getBill().getId() : null);
+        dto.setPaymentMethod(payment.getPaymentMethod() != null ? payment.getPaymentMethod().name() : null);
+        dto.setPaidValue(payment.getPaidValue());
+        dto.setCreatedAt(payment.getCreatedAt());
+        dto.setPaymentDate(payment.getPaymentDate());
+
+        // Bank details
+        if (payment.getBank() != null) {
+            dto.setBankId(payment.getBank().getId());
+            dto.setBankName(payment.getBank().getName());
+        }
+
+        // Credit company
+        if (payment.getCreditCompany() != null) {
+            dto.setCreditCompanyId(payment.getCreditCompany().getId());
+            dto.setCreditCompanyName(payment.getCreditCompany().getName());
+        }
+
+        // Staff
+        if (payment.getToStaff() != null) {
+            dto.setToStaffId(payment.getToStaff().getId());
+            dto.setToStaffName(payment.getToStaff().getName());
+        }
+
+        // Other fields
+        dto.setReferenceNo(payment.getReferenceNo());
+        dto.setPolicyNo(payment.getPolicyNo());
+        dto.setChequeRefNo(payment.getChequeRefNo());
+        dto.setChequeDate(payment.getChequeDate());
+        dto.setComments(payment.getComments());
+        dto.setRetired(payment.isRetired());
+
+        return dto;
     }
 
     /**

@@ -2055,27 +2055,47 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                     getPaymentMethodData().getCash().setTotalValue(Math.abs(batchBill.getNetTotal()));
                     break;
                 case Card:
-                    getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
+                    // For backward compatibility: try bank first, then creditCompany
+                    Institution cardInstitution = originalPayment.getBank();
+                    if (cardInstitution == null) {
+                        cardInstitution = originalPayment.getCreditCompany();
+                    }
+                    getPaymentMethodData().getCreditCard().setInstitution(cardInstitution);
                     getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
                     getPaymentMethodData().getCreditCard().setComment(originalPayment.getComments());
                     getPaymentMethodData().getCreditCard().setTotalValue(Math.abs(batchBill.getNetTotal()));
                     break;
                 case Cheque:
-                    getPaymentMethodData().getCheque().setInstitution(originalPayment.getBank());
+                    // For backward compatibility: try bank first, then creditCompany
+                    Institution chequeInstitution = originalPayment.getBank();
+                    if (chequeInstitution == null) {
+                        chequeInstitution = originalPayment.getCreditCompany();
+                    }
+                    getPaymentMethodData().getCheque().setInstitution(chequeInstitution);
                     getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
                     getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
                     getPaymentMethodData().getCheque().setComment(originalPayment.getComments());
                     getPaymentMethodData().getCheque().setTotalValue(Math.abs(batchBill.getNetTotal()));
                     break;
                 case Slip:
-                    getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank());
+                    // For backward compatibility: try bank first, then creditCompany
+                    Institution slipInstitution = originalPayment.getBank();
+                    if (slipInstitution == null) {
+                        slipInstitution = originalPayment.getCreditCompany();
+                    }
+                    getPaymentMethodData().getSlip().setInstitution(slipInstitution);
                     getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate());
                     getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
                     getPaymentMethodData().getSlip().setTotalValue(Math.abs(batchBill.getNetTotal()));
                     break;
                 case ewallet:
-                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                    // For backward compatibility: try bank first, then creditCompany (used for ewallet in older records)
+                    Institution ewalletInstitution = originalPayment.getBank();
+                    if (ewalletInstitution == null) {
+                        ewalletInstitution = originalPayment.getCreditCompany();
+                    }
+                    getPaymentMethodData().getEwallet().setInstitution(ewalletInstitution);
                     getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
@@ -2113,7 +2133,12 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                     getPaymentMethodData().getStaffWelfare().setTotalValue(Math.abs(batchBill.getNetTotal()));
                     break;
                 case OnlineSettlement:
-                    getPaymentMethodData().getOnlineSettlement().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                    // For backward compatibility: try bank first, then creditCompany
+                    Institution onlineInstitution = originalPayment.getBank();
+                    if (onlineInstitution == null) {
+                        onlineInstitution = originalPayment.getCreditCompany();
+                    }
+                    getPaymentMethodData().getOnlineSettlement().setInstitution(onlineInstitution);
                     getPaymentMethodData().getOnlineSettlement().setReferenceNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getOnlineSettlement().setDate(originalPayment.getPaymentDate());
                     getPaymentMethodData().getOnlineSettlement().setComment(originalPayment.getComments());
@@ -2142,14 +2167,22 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                         cd.getPaymentMethodData().getCash().setTotalValue(refundAmount);
                         break;
                     case Card:
-                        Institution cardBank = originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution();
+                        // For backward compatibility: try bank first, then creditCompany
+                        Institution cardBank = originalPayment.getBank();
+                        if (cardBank == null) {
+                            cardBank = originalPayment.getCreditCompany();
+                        }
                         cd.getPaymentMethodData().getCreditCard().setInstitution(cardBank);
                         cd.getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
                         cd.getPaymentMethodData().getCreditCard().setComment(originalPayment.getComments());
                         cd.getPaymentMethodData().getCreditCard().setTotalValue(refundAmount);
                         break;
                     case Cheque:
-                        Institution chequeBank = originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution();
+                        // For backward compatibility: try bank first, then creditCompany
+                        Institution chequeBank = originalPayment.getBank();
+                        if (chequeBank == null) {
+                            chequeBank = originalPayment.getCreditCompany();
+                        }
                         cd.getPaymentMethodData().getCheque().setInstitution(chequeBank);
                         cd.getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
                         cd.getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
@@ -2157,14 +2190,24 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                         cd.getPaymentMethodData().getCheque().setTotalValue(refundAmount);
                         break;
                     case Slip:
-                        cd.getPaymentMethodData().getSlip().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                        // For backward compatibility: try bank first, then creditCompany
+                        Institution slipBank = originalPayment.getBank();
+                        if (slipBank == null) {
+                            slipBank = originalPayment.getCreditCompany();
+                        }
+                        cd.getPaymentMethodData().getSlip().setInstitution(slipBank);
                         cd.getPaymentMethodData().getSlip().setDate(originalPayment.getPaymentDate() != null ? originalPayment.getPaymentDate() : originalPayment.getRealizedAt());
                         cd.getPaymentMethodData().getSlip().setReferenceNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getSlip().setComment(originalPayment.getComments());
                         cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
                         break;
                     case ewallet:
-                        cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                        // For backward compatibility: try bank first, then creditCompany (used for ewallet in older records)
+                        Institution ewalletBank = originalPayment.getBank();
+                        if (ewalletBank == null) {
+                            ewalletBank = originalPayment.getCreditCompany();
+                        }
+                        cd.getPaymentMethodData().getEwallet().setInstitution(ewalletBank);
                         cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
@@ -2202,7 +2245,12 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                         cd.getPaymentMethodData().getStaffWelfare().setComment(originalPayment.getComments());
                         break;
                     case OnlineSettlement:
-                        cd.getPaymentMethodData().getOnlineSettlement().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                        // For backward compatibility: try bank first, then creditCompany
+                        Institution onlineBank = originalPayment.getBank();
+                        if (onlineBank == null) {
+                            onlineBank = originalPayment.getCreditCompany();
+                        }
+                        cd.getPaymentMethodData().getOnlineSettlement().setInstitution(onlineBank);
                         cd.getPaymentMethodData().getOnlineSettlement().setReferenceNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getOnlineSettlement().setDate(originalPayment.getPaymentDate());
                         cd.getPaymentMethodData().getOnlineSettlement().setTotalValue(refundAmount);
@@ -5836,8 +5884,8 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                     if (payment.getPaidValue() > 0) {
                         ComponentDetail cd = new ComponentDetail();
 
-                        // Determine the actual payment method for multiple payment bills
-                        PaymentMethod actualPaymentMethod = determineActualPaymentMethod(payment);
+                        // Get the actual payment method (already correctly stored in payment.paymentMethod)
+                        PaymentMethod actualPaymentMethod = getActualPaymentMethod(payment);
                         cd.setPaymentMethod(actualPaymentMethod);
 
                         cd.setTotalValue(payment.getPaidValue());
@@ -5845,13 +5893,21 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                         cd.setNo(payment.getReferenceNo());
                         cd.setReferenceNo(payment.getReferenceNo());
                         cd.setDate(payment.getPaymentDate());
-                        cd.setInstitution(payment.getBank());
+
+                        // Get bank/institution from payment
+                        // For backward compatibility: try bank first, then creditCompany (used for ewallet in older records)
+                        Institution bankOrInstitution = payment.getBank();
+                        if (bankOrInstitution == null) {
+                            bankOrInstitution = payment.getCreditCompany();
+                        }
+                        cd.setInstitution(bankOrInstitution);
 
                         originalPaymentDetails.add(cd);
                         System.out.println("  Stored: " + actualPaymentMethod
                                 + " (was: " + payment.getPaymentMethod() + ")"
                                 + ", Amount: " + payment.getPaidValue()
-                                + ", Ref: " + payment.getReferenceNo());
+                                + ", Ref: " + payment.getReferenceNo()
+                                + ", Bank/Institution: " + (bankOrInstitution != null ? bankOrInstitution.getName() : "null"));
                     }
                 }
 
@@ -5882,50 +5938,20 @@ public class OpdBatchBillCancellationController implements Serializable, Control
     }
 
     /**
-     * Determine the actual payment method from Payment entity fields
-     * For multiple payment bills, all Payment records have paymentMethod = MultiplePaymentMethods
-     * The actual type is determined by which fields are populated
+     * Get the actual payment method from Payment entity.
+     *
+     * The payment method is ALWAYS stored correctly in the Payment.paymentMethod field.
+     *
+     * Note: Even for bills with bill.paymentMethod = 'MultiplePaymentMethods',
+     * each individual Payment record stores its actual method (Cash, Card, Cheque, etc.)
+     * This was verified in production database - NO Payment records have paymentMethod = 'MultiplePaymentMethods'.
+     *
+     * @param payment The payment entity
+     * @return The actual payment method stored in the database
      */
-    private PaymentMethod determineActualPaymentMethod(Payment payment) {
-        if (payment.getPaymentMethod() != PaymentMethod.MultiplePaymentMethods) {
-            // Single payment method bills - return the actual payment method
-            return payment.getPaymentMethod();
-        }
-
-        // For multiple payment method bills, determine by populated fields
-
-        // Cheque: has cheque-specific fields
-        if (payment.getChequeDate() != null
-                || (payment.getChequeRefNo() != null && !payment.getChequeRefNo().trim().isEmpty())) {
-            return PaymentMethod.Cheque;
-        }
-
-        // Card: has referenceNo and bank
-        if ((payment.getReferenceNo() != null && !payment.getReferenceNo().trim().isEmpty())
-                && payment.getBank() != null) {
-            return PaymentMethod.Card;
-        }
-
-        // eWallet or Slip: has referenceNo and institution (but not bank)
-        if ((payment.getReferenceNo() != null && !payment.getReferenceNo().trim().isEmpty())
-                && payment.getInstitution() != null && payment.getBank() == null) {
-            // Could be eWallet or Slip - for now default to eWallet
-            return PaymentMethod.ewallet;
-        }
-
-        // Staff or StaffWelfare: check for toStaff field
-        if (payment.getToStaff() != null) {
-            return PaymentMethod.Staff;
-        }
-
-        // Credit: check for credit company or policy number
-        if (payment.getCreditCompany() != null
-                || (payment.getPolicyNo() != null && !payment.getPolicyNo().trim().isEmpty())) {
-            return PaymentMethod.Credit;
-        }
-
-        // Default to Cash if no specific fields are populated
-        return PaymentMethod.Cash;
+    private PaymentMethod getActualPaymentMethod(Payment payment) {
+        // Payment method is already correctly stored - no need to determine from fields
+        return payment.getPaymentMethod();
     }
 
     /**

@@ -180,6 +180,12 @@
                                                     <prints:five_eight_opd_bill bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" billCount="#{opdBillController.bills.size()}"/>                        
                                                 </ui:repeat>
                                             </h:panelGroup>
+                                            
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom4'}" >
+                                                <ui:repeat value="#{opdBillController.bills}" var="ffb" >
+                                                    <prints:five_five_opd_bill_custom_4 bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" billCount="#{opdBillController.bills.size()}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
 
                                         </ui:repeat>
                                     </h:panelGroup>

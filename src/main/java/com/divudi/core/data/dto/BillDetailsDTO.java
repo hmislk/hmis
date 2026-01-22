@@ -43,8 +43,12 @@ public class BillDetailsDTO implements Serializable {
     // Bill Items
     private List<BillItemDetailsDTO> billItems;
 
+    // Payments
+    private List<PaymentDTO> payments;
+
     public BillDetailsDTO() {
         billItems = new ArrayList<>();
+        payments = new ArrayList<>();
     }
 
     // Getters and Setters
@@ -279,5 +283,13 @@ public class BillDetailsDTO implements Serializable {
 
     public void setDeptId(String deptId) {
         this.deptId = deptId;
+    }
+
+    public List<PaymentDTO> getPayments() {
+        return payments;
+    }
+
+    public void setPayments(List<PaymentDTO> payments) {
+        this.payments = payments;
     }
 }
