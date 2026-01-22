@@ -175,7 +175,8 @@
                                         <f:facet name="header" >
                                             <h:outputText value="Performed Doctor Name"/>
                                         </f:facet>
-                                        <h:outputText value="Dr. #{var.doctorName}"/>
+                                        <h:outputText value="#{var.doctorTitle.label}"/>
+                                        <h:outputText value="#{var.doctorName}"/>
                                         <f:facet name="footer" >
                                             <h:outputText value="Total" />
                                         </f:facet>

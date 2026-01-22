@@ -360,6 +360,7 @@ public class InwardReportController implements Serializable {
         if (byDoctor) {
             jpql.append(" Select new com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO(")
                 .append(" bf.staff.id, ")
+                .append(" bf.staff.person.title,")
                 .append(" coalesce(bf.staff.person.name, 'N/A'), ")
                 .append(" coalesce(bf.staff.speciality.name, 'N/A'), ")
                 .append(" coalesce(bf.feeValue, 0.0), ")
@@ -370,7 +371,6 @@ public class InwardReportController implements Serializable {
         } else {
             jpql.append(" Select new com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO(")
                 .append(" bf.staff.speciality.id, ")
-                .append(" coalesce(bf.staff.person.name, 'N/A'), ")
                 .append(" coalesce(bf.staff.speciality.name, 'N/A'), ")
                 .append(" coalesce(bf.feeValue, 0.0), ")
                 .append(" coalesce(bf.billItem.hospitalFee, 0.0), ")
@@ -488,6 +488,7 @@ public class InwardReportController implements Serializable {
             InwardIncomeDoctorSpecialtyDTO currentDoc = doctorMap.computeIfAbsent(sId, k -> {
                 InwardIncomeDoctorSpecialtyDTO doc = new InwardIncomeDoctorSpecialtyDTO();
                 doc.setStaffId(dto.getStaffId());
+                doc.setDoctorTitle(dto.getDoctorTitle());
                 doc.setDoctorName(dto.getDoctorName());
                 doc.setSpecialtyName(dto.getSpecialtyName());
                 
@@ -510,11 +511,13 @@ public class InwardReportController implements Serializable {
     public void processSpecialtyDoctorDemographicDataReport() {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
+        demographicDataList = null;
         
         if (byDoctor) {
             jpql.append(" Select new com.divudi.core.data.dto.InwardAdmissionDemographicDataDTO(")
                 .append(" rc.id, ")
-                .append(" coalesce(rcp.name, 'N/A'),")
+                .append(" rcp.title, ")
+                .append(" coalesce(rcp.name, 'N/A'), ")
                 .append(" coalesce(rcs.name, 'N/A'), ")
                 .append(" pp.dob, ")
                 .append(" pp.sex ")
@@ -589,7 +592,7 @@ public class InwardReportController implements Serializable {
             }
             
             InwardAdmissionDemographicDataDTO currentSpc = specialtyList.computeIfAbsent(dto.getId(), k -> {
-                    InwardAdmissionDemographicDataDTO newDto = new InwardAdmissionDemographicDataDTO(dto.getSpecialityName(), null);
+                    InwardAdmissionDemographicDataDTO newDto = new InwardAdmissionDemographicDataDTO(dto.getSpecialityName(), null, null);
                     return newDto;
                 }
             );
@@ -619,7 +622,7 @@ public class InwardReportController implements Serializable {
             }
             
             InwardAdmissionDemographicDataDTO currentSpc = doctorList.computeIfAbsent(dto.getId(), k -> {
-                    InwardAdmissionDemographicDataDTO newDto = new InwardAdmissionDemographicDataDTO(dto.getSpecialityName(), dto.getDoctorName());
+                    InwardAdmissionDemographicDataDTO newDto = new InwardAdmissionDemographicDataDTO(dto.getSpecialityName(), dto.getDoctorTitle(), dto.getDoctorName());
                     return newDto;
                 }
             );
