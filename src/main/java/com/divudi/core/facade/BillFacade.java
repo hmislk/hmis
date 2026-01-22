@@ -61,12 +61,12 @@ public class BillFacade extends AbstractFacade<Bill> {
             String countSql =
                 "SELECT COUNT(*) as bill_count " +
                 "FROM " + billTableName + " b " +
-                "WHERE b.created_at >= ? AND b.created_at <= ? " +
-                "AND b.retired = false " +
-                "AND b.bill_type = 'OpdBill' " +
-                "AND (b.total_hospital_fee IS NULL OR b.total_hospital_fee = 0 " +
-                "     OR b.total_staff_fee IS NULL OR b.total_staff_fee = 0 " +
-                "     OR b.total_center_fee IS NULL OR b.total_center_fee = 0)";
+                "WHERE b.CREATEDAT >= ? AND b.CREATEDAT <= ? " +
+                "AND b.RETIRED = false " +
+                "AND b.BILLTYPE = 'OpdBill' " +
+                "AND (b.TOTALHOSPITALFEE IS NULL OR b.TOTALHOSPITALFEE = 0 " +
+                "     OR b.TOTALSTAFFFEE IS NULL OR b.TOTALSTAFFFEE = 0 " +
+                "     OR b.TOTALCENTERFEE IS NULL OR b.TOTALCENTERFEE = 0)";
 
             javax.persistence.Query countQuery = getEntityManager().createNativeQuery(countSql);
             countQuery.setParameter(1, fromDate);
@@ -91,32 +91,32 @@ public class BillFacade extends AbstractFacade<Bill> {
             String updateSql =
                 "UPDATE " + billTableName + " b " +
                 "SET " +
-                "    b.total_hospital_fee = (" +
-                "        SELECT COALESCE(SUM(bi.hospital_fee), 0) " +
+                "    b.TOTALHOSPITALFEE = (" +
+                "        SELECT COALESCE(SUM(bi.HOSPITALFEE), 0) " +
                 "        FROM " + billItemTableName + " bi " +
-                "        WHERE bi.bill_id = b.id AND bi.retired = false" +
+                "        WHERE bi.BILL_ID = b.ID AND bi.RETIRED = false" +
                 "    ), " +
-                "    b.total_staff_fee = (" +
-                "        SELECT COALESCE(SUM(bi.staff_fee), 0) " +
+                "    b.TOTALSTAFFFEE = (" +
+                "        SELECT COALESCE(SUM(bi.STAFFFEE), 0) " +
                 "        FROM " + billItemTableName + " bi " +
-                "        WHERE bi.bill_id = b.id AND bi.retired = false" +
+                "        WHERE bi.BILL_ID = b.ID AND bi.RETIRED = false" +
                 "    ), " +
-                "    b.total_center_fee = (" +
-                "        SELECT COALESCE(SUM(bi.collecting_centre_fee), 0) " +
+                "    b.TOTALCENTERFEE = (" +
+                "        SELECT COALESCE(SUM(bi.COLLECTINGCENTREFEE), 0) " +
                 "        FROM " + billItemTableName + " bi " +
-                "        WHERE bi.bill_id = b.id AND bi.retired = false" +
+                "        WHERE bi.BILL_ID = b.ID AND bi.RETIRED = false" +
                 "    ), " +
-                "    b.perform_institution_fee = (" +
-                "        SELECT COALESCE(SUM(bi.hospital_fee), 0) " +
+                "    b.PERFORMINSTITUTIONFEE = (" +
+                "        SELECT COALESCE(SUM(bi.HOSPITALFEE), 0) " +
                 "        FROM " + billItemTableName + " bi " +
-                "        WHERE bi.bill_id = b.id AND bi.retired = false" +
+                "        WHERE bi.BILL_ID = b.ID AND bi.RETIRED = false" +
                 "    ) " +
-                "WHERE b.created_at >= ? AND b.created_at <= ? " +
-                "AND b.retired = false " +
-                "AND b.bill_type = 'OpdBill' " +
-                "AND (b.total_hospital_fee IS NULL OR b.total_hospital_fee = 0 " +
-                "     OR b.total_staff_fee IS NULL OR b.total_staff_fee = 0 " +
-                "     OR b.total_center_fee IS NULL OR b.total_center_fee = 0)";
+                "WHERE b.CREATEDAT >= ? AND b.CREATEDAT <= ? " +
+                "AND b.RETIRED = false " +
+                "AND b.BILLTYPE = 'OpdBill' " +
+                "AND (b.TOTALHOSPITALFEE IS NULL OR b.TOTALHOSPITALFEE = 0 " +
+                "     OR b.TOTALSTAFFFEE IS NULL OR b.TOTALSTAFFFEE = 0 " +
+                "     OR b.TOTALCENTERFEE IS NULL OR b.TOTALCENTERFEE = 0)";
 
             javax.persistence.Query updateQuery = getEntityManager().createNativeQuery(updateSql);
             updateQuery.setParameter(1, fromDate);
