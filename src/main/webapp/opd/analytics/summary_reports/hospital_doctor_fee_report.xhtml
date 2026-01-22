@@ -9,6 +9,142 @@
     <h:body>
         <ui:composition template="/opd/analytics/index.xhtml">
             <ui:define name="subcontent">
+                <!-- Enhanced CSS for nested grouping -->
+                <style>
+                    .table-responsive {
+                        font-size: 0.9em;
+                        overflow-x: auto;
+                    }
+
+                    .data-row:hover {
+                        background-color: #f8f9fa !important;
+                        cursor: pointer;
+                    }
+
+                    .category-subtotal {
+                        border-top: 2px solid #dee2e6 !important;
+                        background-color: #e9ecef !important;
+                    }
+
+                    .payment-method-total {
+                        border-top: 3px solid #ffc107 !important;
+                        border-bottom: 3px solid #ffc107 !important;
+                        background-color: #fff3cd !important;
+                    }
+
+                    .grand-total {
+                        border-top: 4px solid #28a745 !important;
+                        background-color: #d4edda !important;
+                    }
+
+                    .badge-success {
+                        background-color: #28a745;
+                        color: white;
+                    }
+
+                    .badge-warning {
+                        background-color: #ffc107;
+                        color: #212529;
+                    }
+
+                    .badge-danger {
+                        background-color: #dc3545;
+                        color: white;
+                    }
+
+                    .table-secondary td {
+                        background-color: #6c757d !important;
+                        color: white !important;
+                        font-weight: bold;
+                    }
+
+                    .table-light td {
+                        background-color: #f8f9fa !important;
+                        font-weight: 500;
+                    }
+
+                    .table-info td {
+                        background-color: #bee5eb !important;
+                        border-color: #86cfda !important;
+                    }
+
+                    .table-warning td {
+                        background-color: #ffeaa7 !important;
+                        border-color: #fdcb6e !important;
+                    }
+
+                    .table-success td {
+                        background-color: #a8e6cf !important;
+                        border-color: #88d8a3 !important;
+                    }
+
+                    .pi {
+                        font-family: "PrimeIcons" !important;
+                        font-style: normal;
+                        font-weight: normal;
+                        line-height: 1;
+                    }
+
+                    .pi-credit-card:before {
+                        content: "\e900";
+                    }
+
+                    .pi-angle-right:before {
+                        content: "\e930";
+                    }
+
+                    .mr-2 {
+                        margin-right: 0.5rem;
+                    }
+
+                    .pl-4 {
+                        padding-left: 1.5rem;
+                    }
+
+                    .text-end {
+                        text-align: right;
+                    }
+
+                    .text-right {
+                        text-align: right;
+                    }
+
+                    .font-weight-bold {
+                        font-weight: bold !important;
+                    }
+
+                    .font-weight-medium {
+                        font-weight: 500 !important;
+                    }
+
+                    .h5 {
+                        font-size: 1.25rem;
+                        font-weight: 500;
+                    }
+
+                    .badge {
+                        display: inline-block;
+                        padding: 0.25rem 0.5rem;
+                        font-size: 0.75rem;
+                        font-weight: 700;
+                        line-height: 1;
+                        text-align: center;
+                        white-space: nowrap;
+                        vertical-align: baseline;
+                        border-radius: 0.25rem;
+                    }
+
+                    /* Responsive adjustments */
+                    @media (max-width: 768px) {
+                        .table-responsive {
+                            font-size: 0.8em;
+                        }
+                        .table th,
+                        .table td {
+                            padding: 0.25rem;
+                        }
+                    }
+                </style>
                 <p:panel header="Hospital Fee &amp; Doctor Fee Report">
                     <h:form>
                         <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
@@ -150,11 +286,11 @@
                         </p:commandButton>
 
                         <p:commandButton
-                            value="Download"
+                            value="Download Enhanced Report"
                             ajax="false"
                             styleClass="ui-button-info m-1"
                             icon="pi pi-download">
-                            <p:dataExporter fileName="hospital_doctor_fee_report.xlsx" target="tbl" type="xlsx" />
+                            <p:dataExporter fileName="hospital_doctor_fee_enhanced_report.xlsx" target="tbl" type="xlsx" />
                         </p:commandButton>
 
                         <!-- Display grouped data by payment method -->
@@ -213,59 +349,163 @@
                                 </p:dataTable>
                             </p:panel>
 
-                            <!-- Detailed data table -->
-                            <p:panel header="Detailed Report" styleClass="mt-3">
-                                <p:dataTable
-                                    id="tbl"
-                                    style="padding: 0px!important; margin: 0px!important; font-size: #{opdReportController.fontSizeForScreen}!important;"
-                                    styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
-                                    value="#{opdReportController.hospitalDoctorFeeReportDtos}"
-                                    var="dto"
-                                    paginator="true"
-                                    rows="#{opdReportController.rowsPerPageForScreen}"
-                                    rowsPerPageTemplate="#{opdReportController.rowsPerPageForScreen}, 25,50,100,250,500"
-                                    paginatorPosition="bottom"
-                                    sortBy="#{dto.paymentMethod}"
-                                    groupBy="#{dto.paymentMethod}"
-                                    emptyMessage="No data available">
+                            <!-- Enhanced Nested Grouping Report -->
+                            <p:panel header="Enhanced Hospital Fee &amp; Doctor Fee Report - Grouped by Payment Method and Bill Type" styleClass="mt-3">
 
-                                    <p:column headerText="Patient Name" width="20em" style="padding: 2px!important;">
-                                        <h:outputText value="#{dto.patientName}" />
-                                    </p:column>
+                                <div class="table-responsive">
+                                    <table id="tbl" class="table table-hover table-bordered table-sm">
+                                        <thead class="table-primary">
+                                            <tr>
+                                                <th style="width: 200px;">Patient Name</th>
+                                                <th style="width: 180px;">Doctor Name</th>
+                                                <th style="width: 120px;">Bill Type</th>
+                                                <th style="width: 120px;" class="text-end">Hospital Fee</th>
+                                                <th style="width: 120px;" class="text-end">Doctor Fee</th>
+                                                <th style="width: 120px;" class="text-end">Net Total</th>
+                                                <th style="width: 120px;">Bill Date</th>
+                                                <th style="width: 150px;">Payment Method</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- LEVEL 1: Payment Method Groups -->
+                                            <ui:repeat value="#{opdReportController.hospitalDoctorFeeBundle.nestedPaymentMethodGroups.entrySet()}"
+                                                       var="paymentEntry" varStatus="pmStatus">
 
-                                    <p:column headerText="Doctor Name" width="20em" style="padding: 2px!important;">
-                                        <h:outputText value="#{dto.doctorName}" />
-                                    </p:column>
+                                                <!-- Payment Method Header Row -->
+                                                <tr class="table-secondary">
+                                                    <td colspan="8" class="font-weight-bold">
+                                                        <i class="pi pi-credit-card mr-2"></i>
+                                                        #{paymentEntry.key.label} Payment Method
+                                                    </td>
+                                                </tr>
 
-                                    <p:column headerText="Hospital Fee" width="12em" styleClass="text-end" style="padding: 2px!important;">
-                                        <h:outputText value="#{dto.hospitalFee}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </p:column>
+                                                <!-- LEVEL 2: Bill Category Groups within Payment Method -->
+                                                <ui:repeat value="#{paymentEntry.value.entrySet()}" var="categoryEntry" varStatus="catStatus">
 
-                                    <p:column headerText="Doctor Fee" width="12em" styleClass="text-end" style="padding: 2px!important;">
-                                        <h:outputText value="#{dto.doctorFee}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </p:column>
+                                                    <!-- Bill Category Sub-header Row -->
+                                                    <tr class="table-light">
+                                                        <td colspan="8" class="font-weight-medium pl-4">
+                                                            <i class="pi pi-angle-right mr-2"></i>
+                                                            #{categoryEntry.key == 'BILL' ? 'Normal Bills' :
+                                                              categoryEntry.key == 'CANCELLATION' ? 'Cancellations' : 'Returns'}
+                                                            (#{categoryEntry.value.size()} records)
+                                                        </td>
+                                                    </tr>
 
-                                    <p:column headerText="Net Total" width="12em" styleClass="text-end" style="padding: 2px!important;">
-                                        <h:outputText value="#{dto.netTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </p:column>
+                                                    <!-- LEVEL 3: Individual Bill Rows -->
+                                                    <ui:repeat value="#{categoryEntry.value}" var="dto" varStatus="billStatus">
+                                                        <tr class="data-row">
+                                                            <td style="padding-left: 30px;">#{dto.patientName}</td>
+                                                            <td>#{dto.doctorName}</td>
+                                                            <td>
+                                                                <span class="badge badge-#{dto.billTypeAtomic.name().contains('CANCELLATION') ? 'warning' :
+                                                                                          dto.billTypeAtomic.name().contains('REFUND') ? 'danger' : 'success'}">
+                                                                    #{dto.transactionTypeLabel}
+                                                                </span>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{dto.hospitalFee}">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{dto.doctorFee}">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{dto.netTotal}">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td>
+                                                                <h:outputText value="#{dto.billDate}">
+                                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td>#{dto.paymentMethod.label}</td>
+                                                        </tr>
+                                                    </ui:repeat>
 
-                                    <p:column headerText="Date" width="12em" style="padding: 2px!important;">
-                                        <h:outputText value="#{dto.billDate}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                        </h:outputText>
-                                    </p:column>
+                                                    <!-- Bill Category Subtotal Row -->
+                                                    <tr class="table-info category-subtotal">
+                                                        <td colspan="3" class="text-right font-weight-bold pl-4">
+                                                            #{categoryEntry.key == 'BILL' ? 'Normal Bills' :
+                                                              categoryEntry.key == 'CANCELLATION' ? 'Cancellations' : 'Returns'} Subtotal:
+                                                        </td>
+                                                        <td class="text-end font-weight-bold">
+                                                            <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getBillCategorySubtotal(paymentEntry.key, categoryEntry.key, 'HOSPITAL')}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end font-weight-bold">
+                                                            <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getBillCategorySubtotal(paymentEntry.key, categoryEntry.key, 'DOCTOR')}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end font-weight-bold">
+                                                            <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getBillCategorySubtotal(paymentEntry.key, categoryEntry.key, 'NET')}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td colspan="2"></td>
+                                                    </tr>
 
-                                    <p:column headerText="Payment Method" width="12em" style="padding: 2px!important;">
-                                        <h:outputText value="#{dto.paymentMethod.label}" />
-                                    </p:column>
+                                                </ui:repeat>
 
-                                </p:dataTable>
+                                                <!-- Payment Method Total Row -->
+                                                <tr class="table-warning payment-method-total">
+                                                    <td colspan="3" class="text-right font-weight-bold">
+                                                        #{paymentEntry.key.label} Total:
+                                                    </td>
+                                                    <td class="text-end font-weight-bold">
+                                                        <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getHospitalFeeSubtotalForPaymentMethod(paymentEntry.key)}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end font-weight-bold">
+                                                        <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getDoctorFeeSubtotalForPaymentMethod(paymentEntry.key)}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end font-weight-bold">
+                                                        <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getSubtotalForPaymentMethod(paymentEntry.key)}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td colspan="2"></td>
+                                                </tr>
+
+                                            </ui:repeat>
+                                        </tbody>
+
+                                        <!-- Grand Total Footer -->
+                                        <tfoot class="table-success">
+                                            <tr class="grand-total">
+                                                <td colspan="3" class="text-right font-weight-bold h5">
+                                                    GRAND TOTAL:
+                                                </td>
+                                                <td class="text-end font-weight-bold h5">
+                                                    <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.grandHospitalFeeTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end font-weight-bold h5">
+                                                    <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.grandDoctorFeeTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end font-weight-bold h5">
+                                                    <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.grandTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td colspan="2"></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+
                             </p:panel>
                         </h:panelGroup>
 

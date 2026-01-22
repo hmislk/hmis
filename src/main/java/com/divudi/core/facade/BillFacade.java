@@ -5,6 +5,8 @@
 package com.divudi.core.facade;
 
 import com.divudi.core.entity.Bill;
+import java.util.Date;
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -25,6 +27,127 @@ public class BillFacade extends AbstractFacade<Bill> {
 
     public BillFacade() {
         super(Bill.class);
+    }
+
+    /**
+     * Corrects historical bill-level fee aggregation data for bills affected by
+     * the OPD billing fee aggregation bug (April 18, 2025 - January 22, 2026).
+     *
+     * This method uses native SQL to efficiently update bill-level fee totals
+     * based on aggregating BillItem-level fees.
+     *
+     * @param fromDate Start date for correction (inclusive)
+     * @param toDate End date for correction (inclusive)
+     * @param dryRun If true, only counts affected records without updating
+     * @return Number of bills corrected
+     * @throws Exception If correction fails
+     */
+    public int correctHistoricalBillFeeAggregation(Date fromDate, Date toDate, boolean dryRun) throws Exception {
+        if (fromDate == null || toDate == null) {
+            throw new IllegalArgumentException("From date and to date cannot be null");
+        }
+
+        if (fromDate.after(toDate)) {
+            throw new IllegalArgumentException("From date cannot be after to date");
+        }
+
+        try {
+            // First, get count of bills that need correction
+            String countSql =
+                "SELECT COUNT(*) as bill_count " +
+                "FROM bill b " +
+                "WHERE b.created_at >= ? AND b.created_at <= ? " +
+                "AND b.retired = false " +
+                "AND b.bill_type = 'OpdBill' " +
+                "AND (b.total_hospital_fee IS NULL OR b.total_hospital_fee = 0 " +
+                "     OR b.total_staff_fee IS NULL OR b.total_staff_fee = 0 " +
+                "     OR b.total_center_fee IS NULL OR b.total_center_fee = 0)";
+
+            javax.persistence.Query countQuery = getEntityManager().createNativeQuery(countSql);
+            countQuery.setParameter(1, fromDate);
+            countQuery.setParameter(2, toDate);
+
+            Object countResult = countQuery.getSingleResult();
+            int billsToCorrect = ((Number) countResult).intValue();
+
+            if (billsToCorrect == 0) {
+                System.out.println("No bills found that need fee aggregation correction in the specified date range.");
+                return 0;
+            }
+
+            System.out.println("Found " + billsToCorrect + " bills that need fee aggregation correction.");
+
+            if (dryRun) {
+                System.out.println("DRY RUN: Would correct " + billsToCorrect + " bills.");
+                return billsToCorrect;
+            }
+
+            // Update bill-level fees based on BillItem aggregation
+            String updateSql =
+                "UPDATE bill b " +
+                "SET " +
+                "    b.total_hospital_fee = (" +
+                "        SELECT COALESCE(SUM(bi.hospital_fee), 0) " +
+                "        FROM billitem bi " +
+                "        WHERE bi.bill_id = b.id AND bi.retired = false" +
+                "    ), " +
+                "    b.total_staff_fee = (" +
+                "        SELECT COALESCE(SUM(bi.staff_fee), 0) " +
+                "        FROM billitem bi " +
+                "        WHERE bi.bill_id = b.id AND bi.retired = false" +
+                "    ), " +
+                "    b.total_center_fee = (" +
+                "        SELECT COALESCE(SUM(bi.collecting_centre_fee), 0) " +
+                "        FROM billitem bi " +
+                "        WHERE bi.bill_id = b.id AND bi.retired = false" +
+                "    ), " +
+                "    b.perform_institution_fee = (" +
+                "        SELECT COALESCE(SUM(bi.hospital_fee), 0) " +
+                "        FROM billitem bi " +
+                "        WHERE bi.bill_id = b.id AND bi.retired = false" +
+                "    ) " +
+                "WHERE b.created_at >= ? AND b.created_at <= ? " +
+                "AND b.retired = false " +
+                "AND b.bill_type = 'OpdBill' " +
+                "AND (b.total_hospital_fee IS NULL OR b.total_hospital_fee = 0 " +
+                "     OR b.total_staff_fee IS NULL OR b.total_staff_fee = 0 " +
+                "     OR b.total_center_fee IS NULL OR b.total_center_fee = 0)";
+
+            javax.persistence.Query updateQuery = getEntityManager().createNativeQuery(updateSql);
+            updateQuery.setParameter(1, fromDate);
+            updateQuery.setParameter(2, toDate);
+
+            int updatedCount = updateQuery.executeUpdate();
+
+            System.out.println("Successfully corrected fee aggregation for " + updatedCount + " bills.");
+
+            return updatedCount;
+
+        } catch (Exception e) {
+            System.err.println("Error correcting historical bill fee aggregation: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    /**
+     * Convenience method to correct all bills affected by the April 2025 OPD billing bug.
+     * Covers the period from April 18, 2025 to January 22, 2026.
+     *
+     * @param dryRun If true, only counts affected records without updating
+     * @return Number of bills corrected
+     * @throws Exception If correction fails
+     */
+    public int correctOpdBillingBugData(boolean dryRun) throws Exception {
+        // April 18, 2025 - when Lawan commented out the fee aggregation
+        Date fromDate = java.sql.Date.valueOf("2025-04-18");
+        // January 22, 2026 - when the bug was fixed
+        Date toDate = java.sql.Date.valueOf("2026-01-22");
+
+        System.out.println("Correcting OPD billing fee aggregation data for period: " +
+                         fromDate + " to " + toDate);
+
+        return correctHistoricalBillFeeAggregation(fromDate, toDate, dryRun);
     }
 
 }

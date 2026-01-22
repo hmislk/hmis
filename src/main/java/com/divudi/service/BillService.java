@@ -894,8 +894,6 @@ public class BillService {
             billStaffFee += staffFeesCalculatedByBillFees;
             billHospitalFee += hospitalFeeCalculatedByBillFees;
 
-            billItemFacade.create(bi);
-
         }
 
         // Set the accumulated totals to the Bill
@@ -1890,16 +1888,50 @@ public class BillService {
             throw new IllegalArgumentException("fromDate cannot be after toDate");
         }
 
+        // DEBUG: Log all input parameters
+        System.out.println("=== DEBUG Hospital Doctor Fee Report Query ===");
+        System.out.println("fromDate: " + fromDate);
+        System.out.println("toDate: " + toDate);
+        System.out.println("institution: " + (institution != null ? institution.getName() : "NULL"));
+        System.out.println("site: " + (site != null ? site.getName() : "NULL"));
+        System.out.println("department: " + (department != null ? department.getName() : "NULL"));
+        System.out.println("webUser: " + (webUser != null ? webUser.getName() : "NULL"));
+        System.out.println("admissionType: " + (admissionType != null ? admissionType.getName() : "NULL"));
+        System.out.println("paymentScheme: " + (paymentScheme != null ? paymentScheme.getName() : "NULL"));
+        System.out.println("billTypeAtomics count: " + (billTypeAtomics != null ? billTypeAtomics.size() : 0));
+        if (billTypeAtomics != null) {
+            for (BillTypeAtomic bta : billTypeAtomics) {
+                System.out.println("  - " + bta);
+            }
+        }
+
+        // SIMPLIFIED TEST: First, let's just count bills to see if the basic query works
+        String countJpql = "select count(b) from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate";
+
+        Map<String, Object> countParams = new HashMap<>();
+        countParams.put("ret", false);
+        countParams.put("billTypesAtomics", billTypeAtomics);
+        countParams.put("fromDate", fromDate);
+        countParams.put("toDate", toDate);
+
+        Long basicCount = (Long) billFacade.findLongByJpql(countJpql, countParams, TemporalType.TIMESTAMP);
+        System.out.println("Basic count of bills (no additional filters): " + basicCount);
+
+        // Enhanced query with LEFT JOINs to handle null associations safely
         String jpql = "select new com.divudi.core.data.dto.HospitalDoctorFeeReportDTO("
-                + " b.id, coalesce(pers.name,'N/A'), "
-                + " coalesce(rb.person.name, coalesce(ts.person.name, 'No Doctor')), "
-                + " coalesce(b.hospitalFee,0.0), coalesce(b.professionalFee,0.0), "
+                + " b.id, "
+                + " coalesce(p.name, 'N/A'), "  // Patient name from LEFT JOIN
+                + " coalesce(fs.name, 'N/A'), "  // Doctor name from fromStaff only
+                + " coalesce(b.totalHospitalFee,0.0), coalesce(b.totalStaffFee,0.0), "
                 + " coalesce(b.netTotal,0.0), b.createdAt, b.paymentMethod, b.billTypeAtomic ) "
                 + " from Bill b "
-                + " left join b.patient pat "
-                + " left join pat.person pers "
-                + " left join b.referredBy rb "
-                + " left join b.toStaff ts "
+                + " LEFT JOIN b.patient pt "
+                + " LEFT JOIN pt.person p "
+                + " LEFT JOIN b.fromStaff fromStaff "
+                + " LEFT JOIN fromStaff.person fs "
                 + " where b.retired=:ret "
                 + " and b.billTypeAtomic in :billTypesAtomics "
                 + " and b.createdAt between :fromDate and :toDate";
@@ -1910,34 +1942,48 @@ public class BillService {
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
 
+        // Add filters one by one with debugging
         if (institution != null) {
             jpql += " and b.institution=:ins";
             params.put("ins", institution);
+            System.out.println("Adding institution filter: " + institution.getName());
         }
         if (webUser != null) {
             jpql += " and b.creater=:user";
             params.put("user", webUser);
+            System.out.println("Adding user filter: " + webUser.getName());
         }
         if (department != null) {
             jpql += " and b.department=:dep";
             params.put("dep", department);
+            System.out.println("Adding department filter: " + department.getName());
         }
         if (site != null) {
             jpql += " and b.department.site=:site";
             params.put("site", site);
+            System.out.println("Adding site filter: " + site.getName());
         }
         if (admissionType != null) {
             jpql += " and b.patientEncounter.admissionType=:admissionType";
             params.put("admissionType", admissionType);
+            System.out.println("Adding admissionType filter: " + admissionType.getName());
         }
         if (paymentScheme != null) {
             jpql += " and b.paymentScheme=:paymentScheme";
             params.put("paymentScheme", paymentScheme);
+            System.out.println("Adding paymentScheme filter: " + paymentScheme.getName());
         }
 
         jpql += " order by b.createdAt desc";
 
-        return (List<HospitalDoctorFeeReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("Final JPQL: " + jpql);
+        System.out.println("Parameters: " + params);
+
+        List<HospitalDoctorFeeReportDTO> results = (List<HospitalDoctorFeeReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("Query returned: " + (results != null ? results.size() : 0) + " results");
+        System.out.println("=== END DEBUG ===");
+
+        return results;
     }
 
     public List<OpdRevenueDashboardDTO> fetchOpdRevenueDashboardDTOs(Date fromDate,

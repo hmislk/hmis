@@ -3,6 +3,7 @@ package com.divudi.core.data;
 import com.divudi.core.data.dto.HospitalDoctorFeeReportDTO;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.BillCategory;
 
 import java.io.Serializable;
 import java.util.*;
@@ -16,6 +17,13 @@ public class HospitalDoctorFeeBundle implements Serializable {
     private Map<PaymentMethod, Double> paymentMethodSubtotals = new HashMap<>();
     private Map<PaymentMethod, Double> paymentMethodHospitalFeeSubtotals = new HashMap<>();
     private Map<PaymentMethod, Double> paymentMethodDoctorFeeSubtotals = new HashMap<>();
+
+    // Enhanced nested grouping structure
+    private Map<PaymentMethod, Map<BillCategory, List<HospitalDoctorFeeReportDTO>>> nestedPaymentMethodGroups = new HashMap<>();
+    private Map<PaymentMethod, Map<BillCategory, Double>> nestedSubtotals = new HashMap<>();
+    private Map<PaymentMethod, Map<BillCategory, Double>> nestedHospitalFeeSubtotals = new HashMap<>();
+    private Map<PaymentMethod, Map<BillCategory, Double>> nestedDoctorFeeSubtotals = new HashMap<>();
+
     private Double grandTotal = 0.0;
     private Double grandHospitalFeeTotal = 0.0;
     private Double grandDoctorFeeTotal = 0.0;
@@ -41,7 +49,26 @@ public class HospitalDoctorFeeBundle implements Serializable {
             paymentMethodGroups.computeIfAbsent(paymentMethod, k -> new ArrayList<>()).add(dto);
         }
 
-        // Calculate subtotals for each payment method
+        // Create nested grouping by bill category within each payment method
+        for (Map.Entry<PaymentMethod, List<HospitalDoctorFeeReportDTO>> pmEntry : paymentMethodGroups.entrySet()) {
+            PaymentMethod paymentMethod = pmEntry.getKey();
+            List<HospitalDoctorFeeReportDTO> groupDtos = pmEntry.getValue();
+
+            Map<BillCategory, List<HospitalDoctorFeeReportDTO>> categoryMap = new HashMap<>();
+
+            // Group DTOs by bill category within this payment method
+            for (HospitalDoctorFeeReportDTO dto : groupDtos) {
+                BillCategory category = getBillCategoryFromBillTypeAtomic(dto.getBillTypeAtomic());
+                categoryMap.computeIfAbsent(category, k -> new ArrayList<>()).add(dto);
+            }
+
+            nestedPaymentMethodGroups.put(paymentMethod, categoryMap);
+
+            // Calculate category subtotals for this payment method
+            calculateCategorySubtotals(paymentMethod, categoryMap);
+        }
+
+        // Calculate payment method subtotals for each payment method (existing logic)
         for (Map.Entry<PaymentMethod, List<HospitalDoctorFeeReportDTO>> entry : paymentMethodGroups.entrySet()) {
             PaymentMethod paymentMethod = entry.getKey();
             List<HospitalDoctorFeeReportDTO> groupDtos = entry.getValue();
@@ -92,6 +119,65 @@ public class HospitalDoctorFeeBundle implements Serializable {
             default:
                 return 1.0; // Default to positive
         }
+    }
+
+    /**
+     * Maps BillTypeAtomic to BillCategory for grouping purposes
+     */
+    private BillCategory getBillCategoryFromBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return BillCategory.BILL; // Default fallback
+        }
+
+        switch (billTypeAtomic) {
+            case OPD_BILL_WITH_PAYMENT:
+            case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
+            case INWARD_SERVICE_BILL:
+                return BillCategory.BILL;
+            case OPD_BILL_CANCELLATION:
+            case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
+                return BillCategory.CANCELLATION;
+            case OPD_BILL_REFUND:
+            case INWARD_SERVICE_BILL_REFUND:
+                return BillCategory.REFUND;
+            default:
+                return BillCategory.BILL; // Default to BILL for unknown types
+        }
+    }
+
+    /**
+     * Calculate subtotals for each bill category within a payment method
+     */
+    private void calculateCategorySubtotals(PaymentMethod paymentMethod,
+                                            Map<BillCategory, List<HospitalDoctorFeeReportDTO>> categoryMap) {
+        Map<BillCategory, Double> netSubtotals = new HashMap<>();
+        Map<BillCategory, Double> hospitalFeeSubtotals = new HashMap<>();
+        Map<BillCategory, Double> doctorFeeSubtotals = new HashMap<>();
+
+        for (Map.Entry<BillCategory, List<HospitalDoctorFeeReportDTO>> categoryEntry : categoryMap.entrySet()) {
+            BillCategory category = categoryEntry.getKey();
+            List<HospitalDoctorFeeReportDTO> categoryDtos = categoryEntry.getValue();
+
+            double categoryNetTotal = 0.0;
+            double categoryHospitalFeeTotal = 0.0;
+            double categoryDoctorFeeTotal = 0.0;
+
+            for (HospitalDoctorFeeReportDTO dto : categoryDtos) {
+                double multiplier = getMultiplier(dto.getBillTypeAtomic());
+
+                categoryNetTotal += (dto.getNetTotal() != null ? dto.getNetTotal() : 0.0) * multiplier;
+                categoryHospitalFeeTotal += (dto.getHospitalFee() != null ? dto.getHospitalFee() : 0.0) * multiplier;
+                categoryDoctorFeeTotal += (dto.getDoctorFee() != null ? dto.getDoctorFee() : 0.0) * multiplier;
+            }
+
+            netSubtotals.put(category, categoryNetTotal);
+            hospitalFeeSubtotals.put(category, categoryHospitalFeeTotal);
+            doctorFeeSubtotals.put(category, categoryDoctorFeeTotal);
+        }
+
+        nestedSubtotals.put(paymentMethod, netSubtotals);
+        nestedHospitalFeeSubtotals.put(paymentMethod, hospitalFeeSubtotals);
+        nestedDoctorFeeSubtotals.put(paymentMethod, doctorFeeSubtotals);
     }
 
     public Map<PaymentMethod, List<HospitalDoctorFeeReportDTO>> getPaymentMethodGroups() {
@@ -184,5 +270,88 @@ public class HospitalDoctorFeeBundle implements Serializable {
      */
     public Set<PaymentMethod> getPaymentMethods() {
         return paymentMethodGroups.keySet();
+    }
+
+    // ============ ENHANCED NESTED GROUPING ACCESS METHODS ============
+
+    /**
+     * Get the nested grouping structure: PaymentMethod -> BillCategory -> List<DTO>
+     */
+    public Map<PaymentMethod, Map<BillCategory, List<HospitalDoctorFeeReportDTO>>> getNestedPaymentMethodGroups() {
+        return nestedPaymentMethodGroups;
+    }
+
+    public void setNestedPaymentMethodGroups(Map<PaymentMethod, Map<BillCategory, List<HospitalDoctorFeeReportDTO>>> nestedPaymentMethodGroups) {
+        this.nestedPaymentMethodGroups = nestedPaymentMethodGroups;
+    }
+
+    /**
+     * Get bill category subtotal for a specific payment method and category
+     * @param paymentMethod The payment method
+     * @param category The bill category
+     * @param feeType "NET", "HOSPITAL", or "DOCTOR"
+     */
+    public Double getBillCategorySubtotal(PaymentMethod paymentMethod, BillCategory category, String feeType) {
+        if (paymentMethod == null || category == null || feeType == null) {
+            return 0.0;
+        }
+
+        switch (feeType.toUpperCase()) {
+            case "NET":
+                return nestedSubtotals.getOrDefault(paymentMethod, new HashMap<>()).getOrDefault(category, 0.0);
+            case "HOSPITAL":
+                return nestedHospitalFeeSubtotals.getOrDefault(paymentMethod, new HashMap<>()).getOrDefault(category, 0.0);
+            case "DOCTOR":
+                return nestedDoctorFeeSubtotals.getOrDefault(paymentMethod, new HashMap<>()).getOrDefault(category, 0.0);
+            default:
+                return 0.0;
+        }
+    }
+
+    /**
+     * Get all bill categories available for a specific payment method
+     */
+    public Set<BillCategory> getAvailableBillCategories(PaymentMethod paymentMethod) {
+        return nestedPaymentMethodGroups.getOrDefault(paymentMethod, new HashMap<>()).keySet();
+    }
+
+    /**
+     * Get category totals for a specific payment method
+     */
+    public Map<BillCategory, Double> getCategoryTotalsForPaymentMethod(PaymentMethod paymentMethod) {
+        return nestedSubtotals.getOrDefault(paymentMethod, new HashMap<>());
+    }
+
+    /**
+     * Get nested subtotals map
+     */
+    public Map<PaymentMethod, Map<BillCategory, Double>> getNestedSubtotals() {
+        return nestedSubtotals;
+    }
+
+    public void setNestedSubtotals(Map<PaymentMethod, Map<BillCategory, Double>> nestedSubtotals) {
+        this.nestedSubtotals = nestedSubtotals;
+    }
+
+    /**
+     * Get nested hospital fee subtotals map
+     */
+    public Map<PaymentMethod, Map<BillCategory, Double>> getNestedHospitalFeeSubtotals() {
+        return nestedHospitalFeeSubtotals;
+    }
+
+    public void setNestedHospitalFeeSubtotals(Map<PaymentMethod, Map<BillCategory, Double>> nestedHospitalFeeSubtotals) {
+        this.nestedHospitalFeeSubtotals = nestedHospitalFeeSubtotals;
+    }
+
+    /**
+     * Get nested doctor fee subtotals map
+     */
+    public Map<PaymentMethod, Map<BillCategory, Double>> getNestedDoctorFeeSubtotals() {
+        return nestedDoctorFeeSubtotals;
+    }
+
+    public void setNestedDoctorFeeSubtotals(Map<PaymentMethod, Map<BillCategory, Double>> nestedDoctorFeeSubtotals) {
+        this.nestedDoctorFeeSubtotals = nestedDoctorFeeSubtotals;
     }
 }

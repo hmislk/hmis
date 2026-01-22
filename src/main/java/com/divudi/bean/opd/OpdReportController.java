@@ -592,17 +592,19 @@ public class OpdReportController implements Serializable {
     }
 
     public void generateHospitalDoctorFeeReport() {
-        processOpdIncomeReport();
         reportTimerController.trackReportExecution(() -> {
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-            // Regular bills
+            // OPD Bills
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            // Cancellations
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-            // Returns
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+
+            // Inward Service Bills - ADDED MISSING TYPES
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
             billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
 
             hospitalDoctorFeeReportDtos = billService.fetchHospitalDoctorFeeReportDTOs(
