@@ -185,12 +185,25 @@ public class HospitalDoctorFeeReportDTO implements Serializable {
             case OPD_BILL_WITH_PAYMENT:
             case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
             case INWARD_SERVICE_BILL:
+            // OPD Batch Bill Types - Normal Bills
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+            case OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER:
+            case OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER:
+            // Package OPD Batch Bill Types - Normal Bills
+            case PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT:
+            case PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER:
+            case PACKAGE_OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER:
                 return BillCategory.BILL;
             case OPD_BILL_CANCELLATION:
             case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
+            // OPD Batch Bill Types - Cancellations
+            case OPD_BATCH_BILL_CANCELLATION:
+            case PACKAGE_OPD_BATCH_BILL_CANCELLATION:
                 return BillCategory.CANCELLATION;
             case OPD_BILL_REFUND:
             case INWARD_SERVICE_BILL_REFUND:
+            // Inward Service Batch Refund
+            case INWARD_SERVICE_BATCH_BILL_REFUND:
                 return BillCategory.REFUND;
             default:
                 return BillCategory.BILL; // Default to BILL for unknown types
@@ -209,12 +222,25 @@ public class HospitalDoctorFeeReportDTO implements Serializable {
             case OPD_BILL_WITH_PAYMENT:
             case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
             case INWARD_SERVICE_BILL:
+            // OPD Batch Bill Types - Normal Bills
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+            case OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER:
+            case OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER:
+            // Package OPD Batch Bill Types - Normal Bills
+            case PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT:
+            case PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER:
+            case PACKAGE_OPD_BATCH_BILL_TO_COLLECT_PAYMENT_AT_CASHIER:
                 return "Normal";
             case OPD_BILL_CANCELLATION:
             case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
+            // OPD Batch Bill Types - Cancellations
+            case OPD_BATCH_BILL_CANCELLATION:
+            case PACKAGE_OPD_BATCH_BILL_CANCELLATION:
                 return "Cancellation";
             case OPD_BILL_REFUND:
             case INWARD_SERVICE_BILL_REFUND:
+            // Inward Service Batch Refund
+            case INWARD_SERVICE_BATCH_BILL_REFUND:
                 return "Return";
             default:
                 return "Normal"; // Default to Normal for unknown types
