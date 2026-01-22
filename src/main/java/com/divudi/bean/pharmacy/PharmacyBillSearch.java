@@ -44,8 +44,6 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillFeePaymentFacade;
 import com.divudi.core.facade.BillItemFacade;
-import com.divudi.core.facade.BillFinanceDetailsFacade;
-import com.divudi.core.facade.BillItemFinanceDetailsFacade;
 import com.divudi.core.facade.ItemBatchFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.EmailFacade;
@@ -54,6 +52,7 @@ import com.divudi.core.entity.AppEmail;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.StockBill;
@@ -109,10 +108,6 @@ public class PharmacyBillSearch implements Serializable {
     private BillFacade billFacade;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @EJB
-    private BillFinanceDetailsFacade billFinanceDetailsFacade;
-    @EJB
-    private BillItemFinanceDetailsFacade billItemFinanceDetailsFacade;
 
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -1666,8 +1661,7 @@ public class PharmacyBillSearch implements Serializable {
             cancelledBfd.setCreatedAt(new Date());
             cancelledBfd.setCreater(getSessionController().getLoggedUser());
 
-            // Save and assign
-            getBillFinanceDetailsFacade().create(cancelledBfd);
+            // Set finance details on bill (will be cascade saved when bill is saved)
             cancelledBill.setBillFinanceDetails(cancelledBfd);
         }
     }
@@ -1682,8 +1676,7 @@ public class PharmacyBillSearch implements Serializable {
             cancelledBifd.setBillItem(cancelledItem);
             cancelledBifd.setCreatedAt(new Date());
 
-            // Save and assign
-            getBillItemFinanceDetailsFacade().create(cancelledBifd);
+            // Set finance details on bill item (will be cascade saved when bill item is saved)
             cancelledItem.setBillItemFinanceDetails(cancelledBifd);
         }
     }
@@ -4151,22 +4144,6 @@ public class PharmacyBillSearch implements Serializable {
 
     public void setPharmaceuticalBillItemFacade(PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade) {
         this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
-    }
-
-    public BillFinanceDetailsFacade getBillFinanceDetailsFacade() {
-        return billFinanceDetailsFacade;
-    }
-
-    public void setBillFinanceDetailsFacade(BillFinanceDetailsFacade billFinanceDetailsFacade) {
-        this.billFinanceDetailsFacade = billFinanceDetailsFacade;
-    }
-
-    public BillItemFinanceDetailsFacade getBillItemFinanceDetailsFacade() {
-        return billItemFinanceDetailsFacade;
-    }
-
-    public void setBillItemFinanceDetailsFacade(BillItemFinanceDetailsFacade billItemFinanceDetailsFacade) {
-        this.billItemFinanceDetailsFacade = billItemFinanceDetailsFacade;
     }
 
     public PharmacyBean getPharmacyBean() {
