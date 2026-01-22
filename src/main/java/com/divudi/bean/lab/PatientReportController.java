@@ -474,7 +474,7 @@ public class PatientReportController implements Serializable {
         String j = "select r from PatientReport r "
                 + " where r.patientInvestigation.investigation=:ins"
                 + " and r.approved =:approved "
-                + " and r.returned =:ret";
+                + " and r.retired =:ret";
         Map m = new HashMap();
         m.put("ins", i);
         m.put("ret", false);

@@ -82,6 +82,7 @@ public class LaboratoryChartViewController implements Serializable {
     private List<InvestigationDTO> investigationList;
     private Date fromDate;
     private Date toDate;
+    private List<PatientReport> chartReportTimeline;
 
     // </editor-fold>
     
@@ -104,6 +105,7 @@ public class LaboratoryChartViewController implements Serializable {
         toDate = null;
         investigationList = new ArrayList<>();
         lineModel = null;
+        chartReportTimeline = null;
     }
 
     public void processInvestigationsInPatient() {
@@ -189,10 +191,11 @@ public class LaboratoryChartViewController implements Serializable {
                 + " ORDER BY priv.patientReport.approveAt ASC";
 
         List<PatientReport> rawData = patientReportFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        chartReportTimeline = rawData;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy MM dd hh:mm aa");
 
         for (PatientReport pr : rawData) {
             Date approveAt = pr.getApproveAt();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy MM dd hh:mm aa");
             String dateString = sdf.format(approveAt);
             labels.add(dateString);
         }
@@ -204,6 +207,12 @@ public class LaboratoryChartViewController implements Serializable {
         List<LineDataset> lineDataset = new ArrayList<>();
         List<InvestigationItem> reportValues = loadPatientReportItemValueInSelectedInvestigationForChart();
 
+        if (chartReportTimeline == null) {
+            getLableList();
+        }
+        
+        List<PatientReport> timeline = chartReportTimeline != null ? chartReportTimeline : new ArrayList<>();
+ 
         for (InvestigationItem priv : reportValues) {
             LineDataset newLineDataset = new LineDataset();
 
@@ -227,7 +236,7 @@ public class LaboratoryChartViewController implements Serializable {
                     + "ORDER BY priv.patientReport.approveAt ASC";
 
             List<PatientReportItemValue> rawData = patientReportItemValueFacade.findByJpqlWithoutCache(jpql, params, null);
-            Collection<Number> d = new ArrayList<>();
+            Map<Long, Double> valuesByReportId = new HashMap<>();
             for (PatientReportItemValue row : rawData) {
                 try {
                     Double doubleVal = row.getDoubleValue();
@@ -246,13 +255,18 @@ public class LaboratoryChartViewController implements Serializable {
                     }
 
                     // Add to chart data if value and date are available
-                    if (finalValue != null) {
-                        d.add(finalValue);
+                    if (finalValue != null && row.getPatientReport() != null) {
+                        valuesByReportId.put(row.getPatientReport().getId(), finalValue);
                     }
                 } catch (Exception e) {
                     // Skip problematic records
                     continue;
                 }
+            }
+            
+            Collection<Number> d = new ArrayList<>();
+            for (PatientReport pr : timeline) {
+                d.add(valuesByReportId.get(pr.getId()));
             }
             newLineDataset.setData(d);
             lineDataset.add(newLineDataset);
@@ -277,6 +291,7 @@ public class LaboratoryChartViewController implements Serializable {
                                             .setText(currtntPatinetInvestigations.getName())))
                     ).toJson();
         } catch (Exception e) {
+            FacesContext.getCurrentInstance().addMessage("Error", new FacesMessage(FacesMessage.SEVERITY_ERROR, "Unable to build chart", e.getMessage()));
             System.err.println("ERROR in createLineModel(): " + e.getMessage());
         }
     }
@@ -358,5 +373,13 @@ public class LaboratoryChartViewController implements Serializable {
     }
     
     // </editor-fold>
+
+    public List<PatientReport> getChartReportTimeline() {
+        return chartReportTimeline;
+    }
+
+    public void setChartReportTimeline(List<PatientReport> chartReportTimeline) {
+        this.chartReportTimeline = chartReportTimeline;
+    }
 
 }

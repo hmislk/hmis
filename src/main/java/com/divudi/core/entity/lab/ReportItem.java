@@ -1073,6 +1073,7 @@ public class ReportItem implements Serializable {
         toRi.referenceHeader = fromRi.referenceHeader;
         toRi.testLabel = fromRi.testLabel;
         toRi.valueValue = fromRi.valueValue;
+        toRi.allowToExportChart = fromRi.allowToExportChart;
 
     }
 
