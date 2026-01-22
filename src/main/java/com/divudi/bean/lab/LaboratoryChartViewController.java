@@ -3,7 +3,6 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.dto.InvestigationDTO;
 import com.divudi.core.entity.Patient;
-import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.InvestigationItem;
 import com.divudi.core.entity.lab.PatientReport;
@@ -43,6 +42,7 @@ import software.xdev.chartjs.model.options.elements.Fill;
 /**
  * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
  */
+
 @Named
 @SessionScoped
 public class LaboratoryChartViewController implements Serializable {
@@ -52,7 +52,8 @@ public class LaboratoryChartViewController implements Serializable {
     public LaboratoryChartViewController() {
 
     }
-    
+
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     PatientReportItemValueFacade patientReportItemValueFacade;
     @EJB
@@ -63,10 +64,14 @@ public class LaboratoryChartViewController implements Serializable {
     PatientFacade patientFacade;
     @EJB
     InvestigationItemFacade investigationItemFacade;
+    // </editor-fold>
     
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Variables">
     private String json;
 
     private String lineModel;
@@ -78,35 +83,30 @@ public class LaboratoryChartViewController implements Serializable {
     private Date fromDate;
     private Date toDate;
 
-    public void makeNull() {
-        System.out.println("makeNull() - START");
-        fromDate = null;
-        toDate = null;
-        investigationList = new ArrayList<>();
-        lineModel = null;
-        System.out.println("makeNull() - END");
-    }
+    // </editor-fold>
     
+    // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
     public String navigateToPatientList() {
         return "/opd/patient_search?faces-redirect=true";
     }
 
     public String navigateToProcessInvestigations(Patient pt) {
-        System.out.println("navigateToProcessInvestigations() - START");
-        System.out.println("pt = " + pt);
         makeNull();
         setPatient(pt);
-        System.out.println("patient = " + patient);
-        String navigateTo = "/lab/patient_lab_investigation_list?faces-redirect=true";
-        System.out.println("navigateToProcessInvestigations() - END, returning: " + navigateTo);
-        return navigateTo;
+        return "/lab/patient_lab_investigation_list?faces-redirect=true";
+    }
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Function Methods">
+    
+    public void makeNull() {
+        fromDate = null;
+        toDate = null;
+        investigationList = new ArrayList<>();
+        lineModel = null;
     }
 
     public void processInvestigationsInPatient() {
-        System.out.println("patient = " + patient);
-        System.out.println("patient = " + getPatient());
-        System.out.println("processInvestigationsInPatient() - START");
-
         Map<String, Object> params = new HashMap<>();
         String jpql = "SELECT new com.divudi.core.data.dto.InvestigationDTO("
                 + " pr.patientInvestigation.investigation.id, "
@@ -125,73 +125,22 @@ public class LaboratoryChartViewController implements Serializable {
         params.put("pt", patient);
         params.put("app", true);
 
-        // Log JPQL query
-        System.out.println("JPQL Query: " + jpql);
-
-        // Log parameters
-        System.out.println("Parameters:");
-        System.out.println("  fd (fromDate): " + getFromDate());
-        System.out.println("  td (toDate): " + getToDate());
-        System.out.println("  pt (patient): " + patient);
-        System.out.println("  app (approved): " + true);
-
-        try {
-            investigationList = (List<InvestigationDTO>) patientReportFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
-
-            // Log results
-            System.out.println("Query executed successfully");
-            System.out.println("Number of results: " + (investigationList != null ? investigationList.size() : 0));
-
-            if (investigationList != null && !investigationList.isEmpty()) {
-                System.out.println("First few results:");
-                for (int i = 0; i < Math.min(5, investigationList.size()); i++) {
-                    System.out.println("  Result " + (i + 1) + ": " + investigationList.get(i));
-                }
-            } else {
-                System.out.println("No results found");
-            }
-
-        } catch (Exception e) {
-            System.err.println("ERROR in processInvestigationsInPatient(): " + e.getMessage());
-            e.printStackTrace();
-            throw e; // Re-throw if you want the error to propagate
-        }
+        investigationList = (List<InvestigationDTO>) patientReportFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
         lineModel = null;
 
-        System.out.println("processInvestigationsInPatient() - END");
     }
 
-    public void navigateToChart(Long investigationId, Patient pt) {
-        System.out.println("navigateToChart() - START");
-        System.out.println("Parameters:");
-        System.out.println("  investigationId: " + investigationId);
-        System.out.println("  pt (Patient): " + pt);
-        System.out.println("  pt.getId(): " + (pt != null ? pt.getId() : "null"));
-
+    public void processChart(Long investigationId, Patient pt) {
         try {
-            System.out.println("Fetching investigation from database...");
             currtntPatinetInvestigations = investigationFacade.findWithoutCache(investigationId);
-            System.out.println("currtntPatinetInvestigations: " + currtntPatinetInvestigations);
-
-            System.out.println("Fetching patient from database...");
             patient = patientFacade.findWithoutCache(pt.getId());
-            System.out.println("patient: " + patient);
-
-            System.out.println("Creating line model...");
             createLineModel();
-            System.out.println("Line model created successfully");
 
-            String navigateTo = "/reports/lab/report_data_chart_view?faces-redirect=true";
-            
         } catch (Exception e) {
-            System.err.println("ERROR in navigateToChart(): " + e.getMessage());
-            e.printStackTrace();
-            throw e;
         }
     }
 
     public List<InvestigationItem> loadPatientReportItemValueInSelectedInvestigationForChart() {
-        System.out.println("loadPatientReportItemValueInSelectedInvestigationForChart() - START");
 
         Map<String, Object> params = new HashMap<>();
         params.put("ins", currtntPatinetInvestigations);
@@ -207,28 +156,11 @@ public class LaboratoryChartViewController implements Serializable {
                 + "AND priv.allowToExportChart = :allow "
                 + "ORDER BY priv.patientReport.id ASC";
 
-        System.out.println("JPQL Query: " + jpql);
-        System.out.println("Parameters:");
-        System.out.println("  ins (Investigation): " + currtntPatinetInvestigations);
-        System.out.println("  ptId (Patient ID): " + patient.getId());
-        System.out.println("  allow: " + true);
-
-        try {
-            List<InvestigationItem> rawData = investigationItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-            System.out.println("Query executed successfully");
-            System.out.println("Number of results: " + (rawData != null ? rawData.size() : 0));
-            System.out.println("loadPatientReportItemValueInSelectedInvestigationForChart() - END");
-            return rawData;
-        } catch (Exception e) {
-            System.err.println("ERROR in loadPatientReportItemValueInSelectedInvestigationForChart(): " + e.getMessage());
-            e.printStackTrace();
-            throw e;
-        }
+        List<InvestigationItem> rawData = investigationItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return rawData;
     }
 
     public RGBAColor generateRandomRGBAColor(String name) {
-        System.out.println("generateRandomRGBAColor() - START, name: " + name);
-
         // Use name + timestamp as seed for Random
         Random random = new Random(name.hashCode() + System.nanoTime());
 
@@ -236,14 +168,11 @@ public class LaboratoryChartViewController implements Serializable {
         int g = random.nextInt(256);
         int b = random.nextInt(256);
 
-        System.out.println("Generated color - R:" + r + " G:" + g + " B:" + b + " A:255");
         RGBAColor color = new RGBAColor(r, g, b);
-        System.out.println("generateRandomRGBAColor() - END");
         return color;
     }
 
     public Collection<String> getLableList() {
-        System.out.println("getLableList() - START");
         Collection<String> labels = new ArrayList<>();
 
         Map<String, Object> params = new HashMap<>();
@@ -259,15 +188,7 @@ public class LaboratoryChartViewController implements Serializable {
                 + " AND priv.allowToExportChart =:allow"
                 + " ORDER BY priv.patientReport.approveAt ASC";
 
-        System.out.println("JPQL Query: " + jpql);
-        System.out.println("Parameters:");
-        System.out.println("  ins (Investigation): " + currtntPatinetInvestigations);
-        System.out.println("  ptId (Patient ID): " + patient.getId());
-        System.out.println("  allow: " + true);
-
         List<PatientReport> rawData = patientReportFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("Query executed successfully");
-        System.out.println("Number of results (Reports): " + (rawData != null ? rawData.size() : 0));
 
         for (PatientReport pr : rawData) {
             Date approveAt = pr.getApproveAt();
@@ -276,20 +197,14 @@ public class LaboratoryChartViewController implements Serializable {
             labels.add(dateString);
         }
 
-        System.out.println("Total labels created: " + labels.size());
-        System.out.println("getLableList() - END");
         return labels;
     }
 
     public List<LineDataset> generateInvestigationChart() {
-        System.out.println("generateInvestigationChart() - START");
-
         List<LineDataset> lineDataset = new ArrayList<>();
         List<InvestigationItem> reportValues = loadPatientReportItemValueInSelectedInvestigationForChart();
-        System.out.println("Processing " + (reportValues != null ? reportValues.size() : 0) + " report values for chart generation");
 
         for (InvestigationItem priv : reportValues) {
-            System.out.println("Processing investigation item: " + priv.getName());
             LineDataset newLineDataset = new LineDataset();
 
             newLineDataset.setLabel(priv.getName());
@@ -311,66 +226,43 @@ public class LaboratoryChartViewController implements Serializable {
                     + "AND (priv.doubleValue IS NOT NULL OR priv.strValue IS NOT NULL) "
                     + "ORDER BY priv.patientReport.approveAt ASC";
 
-            try {
-                List<PatientReportItemValue> rawData = patientReportItemValueFacade.findByJpqlWithoutCache(jpql, params, null);
-                System.out.println("  Retrieved " + (rawData != null ? rawData.size() : 0) + " data points for item: " + priv.getName());
-                Collection<Number> d = new ArrayList<>();
-                for (PatientReportItemValue row : rawData) {
-                    try {
-                        Double doubleVal = row.getDoubleValue();
-                        String strVal = row.getStrValue();
-                        System.out.println("doubleVal = " + doubleVal);
-                        System.out.println("strVal = " + strVal);
+            List<PatientReportItemValue> rawData = patientReportItemValueFacade.findByJpqlWithoutCache(jpql, params, null);
+            Collection<Number> d = new ArrayList<>();
+            for (PatientReportItemValue row : rawData) {
+                try {
+                    Double doubleVal = row.getDoubleValue();
+                    String strVal = row.getStrValue();
 
-                        // Get numeric value with fallback logic
-                        Double finalValue = null;
-                        if (doubleVal != null) {
-                            System.out.println("doubleVal");
-                            finalValue = doubleVal;
-                            System.out.println("Double finalValue = " + finalValue);
-                        } else if (strVal != null && !strVal.trim().isEmpty()) {
-                            System.out.println("String");
-                            try {
-                                System.out.println("Try");
-                                finalValue = Double.valueOf(strVal.trim());
-                            } catch (NumberFormatException e) {
-                                System.out.println("catch");
-                                continue; // Skip non-numeric string values
-                            }
-                            System.out.println("STR finalValue = " + finalValue);
+                    // Get numeric value with fallback logic
+                    Double finalValue = null;
+                    if (doubleVal != null) {
+                        finalValue = doubleVal;
+                    } else if (strVal != null && !strVal.trim().isEmpty()) {
+                        try {
+                            finalValue = Double.valueOf(strVal.trim());
+                        } catch (NumberFormatException e) {
+                            continue; // Skip non-numeric string values
                         }
-                        
-                        System.out.println("finalValue = " + finalValue);
-
-                        // Add to chart data if value and date are available
-                        if (finalValue != null) {
-                            d.add(finalValue);
-                        }
-                        System.out.println("Data Array Size = " + d.size());
-                    } catch (Exception e) {
-                        // Skip problematic records
-                        continue;
                     }
-                }
-                newLineDataset.setData(d);
-                lineDataset.add(newLineDataset);
-            } catch (Exception e) {
-                System.err.println("  ERROR processing investigation item " + priv.getName() + ": " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
 
-        System.out.println("Total datasets created: " + lineDataset.size());
-        System.out.println("generateInvestigationChart() - END");
+                    // Add to chart data if value and date are available
+                    if (finalValue != null) {
+                        d.add(finalValue);
+                    }
+                } catch (Exception e) {
+                    // Skip problematic records
+                    continue;
+                }
+            }
+            newLineDataset.setData(d);
+            lineDataset.add(newLineDataset);
+
+        }
         return lineDataset;
     }
 
     public void createLineModel() {
-        System.out.println("createLineModel() - START");
-        System.out.println("Current Investigation: " + (currtntPatinetInvestigations != null ? currtntPatinetInvestigations.getName() : "null"));
-
         try {
-            System.out.println("Generating datasets and labels...");
             lineModel = new LineChart()
                     .setData(new LineData()
                             .setDatasets(generateInvestigationChart())
@@ -384,76 +276,23 @@ public class LaboratoryChartViewController implements Serializable {
                                             .setDisplay(true)
                                             .setText(currtntPatinetInvestigations.getName())))
                     ).toJson();
-            System.out.println("Line model JSON created successfully");
-            System.out.println("JSON length: " + (lineModel != null ? lineModel.length() : 0) + " characters");
-            System.out.println("createLineModel() - END");
         } catch (Exception e) {
             System.err.println("ERROR in createLineModel(): " + e.getMessage());
-            e.printStackTrace();
-            throw e;
         }
     }
 
-//    public void createLineModel() {
-//        lineModel = new LineChart()
-//                .setData(new LineData()
-//                        .addDataset(new LineDataset()
-//                                .setData(65, 59, 80, 81, 36, 55, 40)
-//                                .setLabel("Maths")
-//                                .setBorderColor(new RGBAColor(75, 192, 192))
-//                                .setLineTension(0.1f)
-//                                .setFill(new Fill<Boolean>(false)))
-//                        .addDataset(new LineDataset()
-//                                .setData(35, 78, 96, 78, 11, 14, 88)
-//                                .setLabel("Science")
-//                                .setBorderColor(new RGBAColor(175, 19, 122))
-//                                .setLineTension(0.1f)
-//                                .setFill(new Fill<Boolean>(false)))
-//                        .addDataset(new LineDataset()
-//                                .setData(78, 68, 40, 51, 55, 63, 18)
-//                                .setLabel("History")
-//                                .setBorderColor(new RGBAColor(175, 119, 141))
-//                                .setLineTension(0.1f)
-//                                .setFill(new Fill<Boolean>(false)))
-//                        .addDataset(new LineDataset()
-//                                .setData(63, 20, 45, 86, 61, 74, 88)
-//                                .setLabel("ICT")
-//                                .setBorderColor(new RGBAColor(75, 119, 12))
-//                                .setLineTension(0.1f)
-//                                .setFill(new Fill<Boolean>(false)))
-//                        .addDataset(new LineDataset()
-//                                .setData(14, 48, 91, 70, 34, 48, 28)
-//                                .setLabel("Music")
-//                                .setBorderColor(new RGBAColor(15, 19, 12))
-//                                .setLineTension(0.1f)
-//                                .setFill(new Fill<Boolean>(false)))
-//                        .setLabels("January", "February", "March", "April", "May", "June", "July")
-//                )
-//
-//                .setOptions(new LineOptions()
-//                        .setResponsive(true)
-//                        .setMaintainAspectRatio(false)
-//                        .setPlugins(new Plugins()
-//                                .setTitle(new Title()
-//                                        .setDisplay(true)
-//                                        .setText("Line Chart Subtitle")))
-//                ).toJson();
-//    }
     public void itemSelect(ItemSelectEvent event) {
-        System.out.println("itemSelect() - START");
-        System.out.println("Event data: " + event.getData());
-        System.out.println("Item Index: " + event.getItemIndex());
-        System.out.println("DataSet Index: " + event.getDataSetIndex());
-
         FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Item selected",
                 "Value: " + event.getData()
                 + ", Item Index: " + event.getItemIndex()
                 + ", DataSet Index:" + event.getDataSetIndex());
 
         FacesContext.getCurrentInstance().addMessage(null, msg);
-        System.out.println("itemSelect() - END");
     }
-
+    
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public String getJson() {
         return json;
     }
@@ -517,5 +356,7 @@ public class LaboratoryChartViewController implements Serializable {
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
+    
+    // </editor-fold>
 
 }
