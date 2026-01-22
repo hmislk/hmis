@@ -2396,7 +2396,6 @@ public class InwardReportController implements Serializable {
                 .append("pe.creater")
                 .append(") FROM PatientEncounter pe ");
 
-        // Add explicit LEFT JOINs for room category filtering
         if (roomCategory != null) {
             jpql.append("LEFT JOIN pe.currentPatientRoom room ")
                     .append("LEFT JOIN room.roomFacilityCharge rfc ");

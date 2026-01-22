@@ -22,7 +22,6 @@ public class IpUnsettledInvoiceDTO implements Serializable {
     private Double creditPaidAmount;
     private WebUser creater;
 
-    // Updated constructor with primitive types for potential JPA matching
     public IpUnsettledInvoiceDTO(
             Long admissionId,
             String phn,
@@ -32,9 +31,9 @@ public class IpUnsettledInvoiceDTO implements Serializable {
             Date dateOfBirth,
             PatientRoom patientRoom,
             Date dateOfDischarge,
-            boolean paymentFinalized, // Primitive boolean
-            double netTotal, // Primitive double
-            double creditPaidAmount, // Primitive double
+            boolean paymentFinalized, 
+            double netTotal, 
+            double creditPaidAmount, 
             WebUser creater) {
         this.admissionId = admissionId;
         this.phn = phn;
@@ -44,13 +43,12 @@ public class IpUnsettledInvoiceDTO implements Serializable {
         this.dateOfBirth = dateOfBirth;
         this.patientRoom = patientRoom;
         this.dateOfDischarge = dateOfDischarge;
-        this.paymentFinalized = paymentFinalized; // Auto-box to Boolean
-        this.netTotal = netTotal;                 // Auto-box to Double
-        this.creditPaidAmount = creditPaidAmount; // Auto-box to Double
+        this.paymentFinalized = paymentFinalized; 
+        this.netTotal = netTotal;                 
+        this.creditPaidAmount = creditPaidAmount; 
         this.creater = creater;
     }
 
-    // Computed properties
     public String getPatientNameWithTitle() {
         if (patientTitle != null && patientName != null) {
             return patientTitle.getLabel() + " " + patientName;
@@ -69,7 +67,6 @@ public class IpUnsettledInvoiceDTO implements Serializable {
 
         int age = now.get(Calendar.YEAR) - dob.get(Calendar.YEAR);
 
-        // Adjust if birthday hasn't occurred this year
         if (now.get(Calendar.MONTH) < dob.get(Calendar.MONTH)
                 || (now.get(Calendar.MONTH) == dob.get(Calendar.MONTH)
                 && now.get(Calendar.DAY_OF_MONTH) < dob.get(Calendar.DAY_OF_MONTH))) {
