@@ -215,7 +215,22 @@
                             <h:outputText style="display: none;" value="Accept Payments for Pharmacy Bills" />
                         </p:commandLink>
                     </h:form>
-                </h:panelGroup> 
+                </h:panelGroup>
+
+                <!-- Patient Deposit Management -->
+                <h:panelGroup rendered="#{ui.icon eq 'Patient_Deposit_Management' and webUserController.hasPrivilege('PaymentBilling')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Patient_Deposit_Management" value="Patient Deposit Management" showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink
+                            id="Patient_Deposit_Management"
+                            ajax="false"
+                            action="/patient_deposit/index?faces-redirect=true"
+                            styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/patient-deposit-management.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Patient Deposit Management" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
 
                 <h:panelGroup rendered="#{ui.icon eq 'Refunds'}" layout="block" class="col-1 p-1"  >
                     <h:form>

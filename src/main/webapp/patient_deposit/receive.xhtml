@@ -28,12 +28,11 @@
                                 <p:commandButton class="ui-button-success"
                                                  icon="fas fa-check"
                                                  id="btnSettle"
-                                                 value="Settle"
+                                                 value="Receive Patient Deposit"
                                                  action="#{patientDepositController.settlePatientDeposit}"
                                                  onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                                                return false;"
-                                                 ajax="false"
-                                                 style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
+                                                             return false;"
+                                                 ajax="false" >
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSettle"/>
                                 <p:commandButton icon="fas fa-plus" 
@@ -464,42 +463,43 @@
                                     <h:outputLabel value="Add New Patient Deposit" />
                                 </f:facet>
 
-                                <h:panelGrid columns="2" columnClasses="label-column, input-column" style="width:100%" >
+                                <p:panelGrid columns="2" layout="tabular" style="width:100%" >
+
+
+                                    <p:outputLabel value="Value" ></p:outputLabel>
+                                    <p:inputText onfocus="this.select()" class="mx-1" value="#{patientDepositController.bill.netTotal}" id="txtNetTotal"  styleClass="w-100"/>
+
+                                    <p:outputLabel value="Comments" ></p:outputLabel>
+                                    <p:inputText value="#{patientDepositController.bill.comments}" placeholder="Enter a Comment" id="comment"  styleClass="w-100"/>
+
                                     <p:outputLabel value="Payment Method" ></p:outputLabel>
-                                    <p:selectOneMenu id="cmbPs" value="#{patientDepositController.bill.paymentMethod}" style="width:200px">
+                                    <p:selectOneMenu id="cmbPs" value="#{patientDepositController.bill.paymentMethod}" styleClass="w-100">
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                         <p:ajax process="cmbPs" update="gpPaymentDetails" event="change" />
                                     </p:selectOneMenu>
 
-                                    <p:outputLabel value="Value" ></p:outputLabel>
-                                    <p:inputText onfocus="this.select()" class="mx-1" value="#{patientDepositController.bill.netTotal}" id="txtNetTotal" style="width:200px"/>
+                                    <f:facet name="footer" >
+                                        <h:panelGroup id="gpPaymentDetails" class="d-flex flex-wrap w-100 gap-2" >
+                                            <h:panelGroup id="creditCard" class="m-1" rendered="#{patientDepositController.bill.paymentMethod eq 'Card'}">
+                                                <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{patientDepositController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="mt-2" id="cheque"  rendered="#{patientDepositController.bill.paymentMethod eq 'Cheque'}" >
+                                                <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{patientDepositController.paymentMethodData}"/>
+                                            </h:panelGroup>
 
-                                    <p:outputLabel value="Comments" ></p:outputLabel>
-                                    <p:inputText value="#{patientDepositController.bill.comments}" placeholder="Enter a Comment" id="comment" style="width:200px"/>
+                                            <h:panelGroup layout="block" styleClass="mt-2" id="slip"   rendered="#{patientDepositController.bill.paymentMethod eq 'Slip'}" >
+                                                <pa:slipDetailsAsOnlyPayment paymentMethodData="#{patientDepositController.paymentMethodData}"/>
+                                            </h:panelGroup>
 
-
-                                </h:panelGrid>
-
-                                <div class="d-flex flex-wrap w-100 gap-2">
-                                    <h:panelGroup id="gpPaymentDetails" >
-                                        <h:panelGroup id="creditCard" class="m-1" rendered="#{patientDepositController.bill.paymentMethod eq 'Card'}">
-                                            <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{patientDepositController.paymentMethodData}"/>
+                                            <h:panelGroup layout="block" styleClass="mt-2" id="eWallet"   rendered="#{patientDepositController.bill.paymentMethod eq 'ewallet'}" >
+                                                <pa:ewalletDetailsAsOnlyPayment class="m-2" paymentMethodData="#{patientDepositController.paymentMethodData}" />
+                                            </h:panelGroup>
                                         </h:panelGroup>
-                                        <h:panelGroup layout="block" styleClass="mt-2" id="cheque"  rendered="#{patientDepositController.bill.paymentMethod eq 'Cheque'}" >
-                                            <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{patientDepositController.paymentMethodData}"/>
-                                        </h:panelGroup>
+                                    </f:facet>
 
-                                        <h:panelGroup layout="block" styleClass="mt-2" id="slip"   rendered="#{patientDepositController.bill.paymentMethod eq 'Slip'}" >
-                                            <pa:slipDetailsAsOnlyPayment paymentMethodData="#{patientDepositController.paymentMethodData}"/>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup layout="block" styleClass="mt-2" id="eWallet"   rendered="#{patientDepositController.bill.paymentMethod eq 'ewallet'}" >
-                                            <pa:ewalletDetailsAsOnlyPayment class="m-2" paymentMethodData="#{patientDepositController.paymentMethodData}" />
-                                        </h:panelGroup>
-                                    </h:panelGroup>
+                                </p:panelGrid>
 
 
-                                </div>
 
                             </p:panel>
                         </div>

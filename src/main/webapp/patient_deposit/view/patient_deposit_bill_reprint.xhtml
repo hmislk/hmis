@@ -41,15 +41,20 @@
                                     onclick="PF('patientDepositReprintConfigDialog').show();" />
 
                                 <p:commandButton
-                                    value="Cancel"
+                                    value="To Cancel"
+                                    id="btnToCancel"
                                     icon="pi pi-ban"
                                     action="#{patientDepositController.navigateToNewPatientDepositCancel()}"
                                     class="ui-button-danger mx-1"
-                                    ajax="false" />
+                                    ajax="false">
+                                    <f:setPropertyActionListener
+                                        value="#{patientDepositSearchController.selectedBill}"
+                                        target="#{patientController.bill}" />
+                                </p:commandButton>
                                 <p:commandButton
                                     icon="fas fa-plus"
                                     class="mx-1"
-                                    value="New Bill"
+                                    value="New Patient Deposit Bill"
                                     ajax="false"
                                     action="/patient_deposit/receive?faces-redirect=true"
                                     actionListener="#{patientDepositController.clearDataForPatientDeposit()}" />

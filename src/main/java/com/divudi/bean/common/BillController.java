@@ -179,7 +179,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     LabTestHistoryController labTestHistoryController;
 
     /**
-     * Class Vairables
+     * Class Variables
      */
     private boolean batchBillCancellationStarted = false;
     private boolean printPreview;
@@ -400,9 +400,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         temp.setCreatedAt(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
         getFacade().create(temp);
-        //create bill fee payments
-        //create bill fee payments
-        //create bill fee payments
         //create bill fee payments
         reminingCashPaid = opdPaymentCredit;
 
@@ -668,8 +665,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     public boolean findByFilter(String property, String value) {
         String sql = "Select b From Bill b where b.retired=false and (b." + property + ") like '%" + value.toUpperCase() + " %'";
         Bill b = getBillFacade().findFirstByJpql(sql);
-        //System.err.println("SQL " + sql);
-        //System.err.println("Bill " + b);
         if (b != null) {
             return true;
         } else {
@@ -680,7 +675,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     public void feeChangeListener(BillFee bf) {
         if (bf.getFeeGrossValue() == null) {
             bf.setFeeGrossValue(0.0);
-//            return;
+            //return;
         }
 
         lstBillItems = null;
@@ -772,8 +767,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
         try {
             if (qry != null) {
-// Try simple version first without COALESCE
-                // Try simple version first without COALESCE
                 sql = "select c from BilledBill c "
                         + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
                         + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount) - COALESCE(abs(c.refundAmount), 0)) > :val) "
@@ -788,7 +781,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                         + " order by c.deptId";
 
                 List<BillTypeAtomic> btas = new ArrayList<>();
-//                btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+                //btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
                 btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
                 btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
                 hash.put("btas", btas);
@@ -907,8 +900,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
         try {
             if (qry != null) {
-// Try simple version first without COALESCE
-                // Try simple version first without COALESCE
                 sql = "select b from BilledBill b "
                         + " where ((b.balance IS NOT NULL AND abs(b.balance) > :val) "
                         + " OR (abs(b.netTotal) + abs(b.vat) - abs(b.paidAmount) - COALESCE(abs(b.refundAmount), 0)) > :val) "
@@ -1151,8 +1142,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         hash.put("val", 0.1);
         hash.put("company", institution);
         hash.put("ins", getSessionController().getInstitution());
-//        hash.put("dep", getSessionController().getDepartment());
-        //     hash.put("pm", PaymentMethod.Credit);
+      //hash.put("dep", getSessionController().getDepartment());
+      //hash.put("pm", PaymentMethod.Credit);
         List<Bill> bill = getFacade().findByJpql(sql, hash);
 
         if (bill == null) {
@@ -1960,6 +1951,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     private Request currentRequest;
 
+    @Deprecated // Use OpdBatchBillCancellationController's method with the same name
     public String navigateToCancelOpdBatchBill() {
         if (batchBill == null) {
             JsfUtil.addErrorMessage("No Batch bill is selected");
@@ -3751,8 +3743,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (omitPaymentGeneratedBills != null && omitPaymentGeneratedBills) {
             jpql += " AND (b.paymentGenerated = false OR b.paymentGenerated = 0 OR b.paymentGenerated IS NULL)";
         }
-        // Logging
-        // Logging
+        
 
         return getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -4382,8 +4373,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             bi.setSessionDate(sessionDate);
 //        New Session
             //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
-//        New Session
-            //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
             lastBillItem = bi;
             BillEntry addingEntry = new BillEntry();
             addingEntry.setBillItem(bi);
@@ -4790,7 +4779,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         for (BillEntry b : getLstBillEntries()) {
             if (b.getBillItem().getItem() != r.getBillItem().getItem()) {
                 temp.add(b);
-                //////// // System.out.println(b.getBillItem().getNetValue());
             }
         }
         lstBillEntries = temp;
@@ -5364,7 +5352,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 + " and ((p.patient.person.name)  "
                 + "like :q or (p.insId)  "
                 + "like :q) order by p.insId";
-        //////// // System.out.println(sql);
         hm.put("q", "%" + query.toUpperCase() + "%");
         hm.put("btp", BillType.InwardAppointmentBill);
         suggestions = getFacade().findByJpql(sql, hm);
