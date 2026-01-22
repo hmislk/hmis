@@ -49,9 +49,9 @@
                                     value="#{inwardSurgeryPaymentBillController.surgery}"
                                     inputStyleClass="w-100" class="m-1 w-100"
                                     id="scSurgery"
-                                    completeMethod="#{inwardSurgeryPaymentBillController.completeSurgery}"
+                                    completeMethod="#{procedureController.completeProcedures}"
                                     var="mys" 
-                                    itemLabel="#{mys.item.name}" 
+                                    itemLabel="#{mys.name}" 
                                     itemValue="#{mys}"
                                     >
                                 </p:autoComplete>
@@ -287,7 +287,7 @@
                         <h:panelGroup id="gpBillPreview">
                             <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a A4 paper.', true)}">
                                 <!-- Using professional payment bill view until surgery-specific bill is created -->
-                                <bi:staffBill bill="#{inwardSurgeryPaymentBillController.current}" dup="false" />
+                                <bi:staffBill bill="#{inwardSurgeryPaymentBillController.current}" controller="#{inwardSurgeryPaymentBillController}" dup="false" />
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a five five paper.',false)}">

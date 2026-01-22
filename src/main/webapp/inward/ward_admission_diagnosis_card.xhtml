@@ -1,0 +1,1135 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr"
+      >
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content" >
+
+                <style>
+                    .ui-tabs-panel {
+                        padding: 0 !important;
+                    }
+                </style>
+
+                <h:form id="formWardAdmissionDiagnosisCard" enctype="multipart/form-data" rendered="true">
+                    <p:growl id="msg"/>
+                    
+                    <div class="row">
+                        <div class="col-12 px-4">
+                            <p:commandButton 
+                                action="#{inpatientClinicalDataController.saveWardAdmissionCardData()}"
+                                ajax="false"
+                                icon="pi pi-save"
+                                class="ui-button-success p-0 m-1" 
+                                value="Save"
+                                title="Save Ward Admission Diagnosis Card"/>
+
+                            <p:commandButton 
+                                class="p-0 m-1 ui-button-secondary" 
+                                action="#{inpatientClinicalDataController.cancelWardAdmissionCapture()}" 
+                                icon="pi pi-times" 
+                                value="Cancel"
+                                ajax="false"
+                                title="Cancel"/>
+
+                            <p:commandButton 
+                                id="btnGeneratePreview"
+                                ajax="true" 
+                                icon="pi pi-sync"
+                                class="p-0 m-1 ui-button-warning" 
+                                value="Generate Preview"
+                                title="Generate Card Preview"
+                                process="@form"
+                                update="wardCardPreviewPanel">
+                            </p:commandButton>
+
+                            <p:commandButton
+                                id="btnPrint"
+                                ajax="true"
+                                icon="pi pi-print"
+                                class="p-0 m-1 ui-button-info" 
+                                value="Print"
+                                title="Print Ward Admission Diagnosis Card"
+                                rendered="#{inpatientClinicalDataController.wardAdmissionDiagnosisCardHtml ne null}">
+                                <p:printer target="wardCardPreviewPanel" />
+                            </p:commandButton>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <!-- Left Column: Data Capture -->
+                        <div class="col-md-6">
+                            <p:panel header="Ward Admission Diagnosis Card - Data Entry" class="w-100">
+                                <div class="row mb-3 p-3">
+                                    <div class="col-12">
+                                        <h:outputLabel value="Patient: " styleClass="font-weight-bold"></h:outputLabel>
+                                        <h:outputText value="#{patientController.current.person.nameWithTitle}"></h:outputText>
+                                        <br/>
+                                        <h:outputLabel value="BHT Number: " styleClass="font-weight-bold"></h:outputLabel>
+                                        <h:outputText value="#{inpatientClinicalDataController.current.bhtNo}"></h:outputText>
+                                        <br/>
+                                        <h:outputLabel value="Admission Date: " styleClass="font-weight-bold"></h:outputLabel>
+                                        <h:outputText value="#{inpatientClinicalDataController.current.dateOfAdmission}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
+                                        </h:outputText>
+                                    </div>
+                                </div>
+
+                                <p:tabView id="captureView" style="width: 100%">
+                                    <p:tab title="Admission Details" class="m-0">
+                                        <div class="p-3">
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <h:outputLabel value="BHT Number:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputText 
+                                                        id="txtBHT"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.bhtNumber}"
+                                                        class="w-100"
+                                                        placeholder="BHT Number">
+                                                    </p:inputText>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h:outputLabel value="Admission Type:" styleClass="form-label"></h:outputLabel>
+                                                    <p:selectOneMenu 
+                                                        id="cmbAdmissionType"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.admissionType}"
+                                                        class="w-100">
+                                                        <f:selectItem itemLabel="-- Select Type --" itemValue="" />
+                                                        <f:selectItem itemLabel="Emergency" itemValue="Emergency" />
+                                                        <f:selectItem itemLabel="Planned" itemValue="Planned" />
+                                                        <f:selectItem itemLabel="Urgent" itemValue="Urgent" />
+                                                        <f:selectItem itemLabel="Elective" itemValue="Elective" />
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <h:outputLabel value="Ward:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputText 
+                                                        id="txtWard"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.ward}"
+                                                        class="w-100"
+                                                        placeholder="Ward Name/Number">
+                                                    </p:inputText>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h:outputLabel value="Bed Number:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputText 
+                                                        id="txtBedNumber"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.bedNumber}"
+                                                        class="w-100"
+                                                        placeholder="Bed Number">
+                                                    </p:inputText>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <h:outputLabel value="Date of Admission:" styleClass="form-label"></h:outputLabel>
+                                                    <p:calendar 
+                                                        id="txtDOA"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.dateOfAdmission}"
+                                                        pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                                        mask="true"
+                                                        navigator="true"
+                                                        yearNavigator="true"
+                                                        monthNavigator="true">
+                                                    </p:calendar>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h:outputLabel value="Time of Admission:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputText 
+                                                        id="txtAdmissionTime"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.timeOfAdmission}"
+                                                        placeholder="HH:MM"
+                                                        class="w-100">
+                                                    </p:inputText>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Clinical Presentation" class="m-0">
+                                        <div class="p-3">
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Chief Complaint:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtChiefComplaint"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="2"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.chiefComplaint}"
+                                                        placeholder="What brought patient to hospital">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="History of Present Illness:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtHPI"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="2"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.historyOfPresentIllness}"
+                                                        placeholder="Detailed history">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <h:outputLabel value="Temperature (°C):" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputNumber 
+                                                        id="txtTemp"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.temperature}"
+                                                        class="w-100"
+                                                        decimalPlaces="1">
+                                                    </p:inputNumber>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h:outputLabel value="Blood Pressure:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputText 
+                                                        id="txtBP"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.bloodPressure}"
+                                                        placeholder="120/80"
+                                                        class="w-100">
+                                                    </p:inputText>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-md-4">
+                                                    <h:outputLabel value="Pulse (bpm):" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputNumber 
+                                                        id="txtPulse"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.pulseRate}"
+                                                        class="w-100">
+                                                    </p:inputNumber>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <h:outputLabel value="Respiratory Rate:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputNumber 
+                                                        id="txtRR"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.respiratoryRate}"
+                                                        class="w-100">
+                                                    </p:inputNumber>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <h:outputLabel value="Weight (kg):" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputNumber 
+                                                        id="txtWeight"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.weight}"
+                                                        class="w-100"
+                                                        decimalPlaces="1">
+                                                    </p:inputNumber>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Diagnosis &amp; Management" class="m-0">
+                                        <div class="p-3">
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Primary Diagnosis:" styleClass="form-label"></h:outputLabel>
+                                                    <p:autoComplete id="acDiagnosis" 
+                                                        value="#{inpatientClinicalDataController.wardDiagnosisCaptureItem}"
+                                                        completeMethod="#{diagnosisController.completeDiagnosis}"
+                                                        var="dx" forceSelection="true"
+                                                        itemLabel="#{dx.name}" 
+                                                        itemValue="#{dx}"
+                                                        class="w-100"
+                                                        inputStyleClass="w-100">
+                                                    </p:autoComplete>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Treatment Plan:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtTreatmentPlan"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="2"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.treatmentPlan}"
+                                                        placeholder="Detailed treatment plan">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Medications Prescribed:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtMedicationsPrescribed"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="2"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.medicationsPrescribed}"
+                                                        placeholder="All prescribed medications">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Laboratory Tests:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtLabTests"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="2"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.laboratoryTests}"
+                                                        placeholder="Ordered lab investigations">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Additional Info" class="m-0">
+                                        <div class="p-3">
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Allergies:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtAllergies"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="2"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.allergies}"
+                                                        placeholder="Known allergies">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Precautions:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtPrecautions"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="2"
+                                                        value="#{inpatientClinicalDataController.wardAdmissionCardData.precautions}"
+                                                        placeholder="Special precautions/restrictions">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </p:tab>
+                                </p:tabView>
+                            </p:panel>
+                        </div>
+
+                        <!-- Right Column: Card Preview -->
+                        <div class="col-md-6">
+                            <p:panel header="Card Preview" class="w-100" id="wardCardPreviewPanel">
+                                <div class="row mb-3 p-3">
+                                    <div class="col-12">
+                                        <h:outputLabel value="Select Template:" styleClass="font-weight-bold form-label" for="wardCardTemplateSelect"/>
+                                        <p:selectOneMenu id="wardCardTemplateSelect" value="#{inpatientClinicalDataController.selectedWardTemplate}" style="width: 100%;" class="mb-3">
+                                            <f:selectItem itemLabel="-- Select Template --" itemValue="" noSelectionOption="true" />
+                                            <f:selectItems value="#{inpatientClinicalDataController.availableWardTemplates}" var="template" 
+                                                itemLabel="#{template.name}" itemValue="#{template.id.toString()}" />
+                                        </p:selectOneMenu>
+                                        <br/>
+                                        <p:commandButton 
+                                            value="Generate Preview" 
+                                            ajax="true" 
+                                            icon="pi pi-sync"
+                                            styleClass="ui-button-primary w-100"
+                                            action="#{inpatientClinicalDataController.loadWardAdmissionDiagnosisCard}"
+                                            update="wardCardContentArea">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                                
+                                <h:panelGroup id="wardCardContentArea">
+                                    <div class="card mt-3 p-3" style="background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px; min-height: 400px; max-height: 600px; overflow-y: auto;">
+                                        <h:outputText value="#{inpatientClinicalDataController.wardAdmissionDiagnosisCardHtml}" escape="false" rendered="#{inpatientClinicalDataController.wardAdmissionDiagnosisCardHtml ne null}"/>
+                                        <h:outputText value="Select a template and click 'Generate Preview' to see the card preview here." rendered="#{inpatientClinicalDataController.wardAdmissionDiagnosisCardHtml eq null}" styleClass="text-muted"/>
+                                    </div>
+                                </h:panelGroup>
+                            </p:panel>
+                        </div>
+                    </div>
+                                    <div class="ui-g">
+                                        <div class="ui-g-12 ui-md-4">
+                                            <p:panel class="w-100 m-1">
+                                                <f:facet name="header" >
+                                                    <h:outputText styleClass="fas fa-notes-medical"/>
+                                                    <h:outputText class="mx-4" value="Clinical Details" ></h:outputText>
+                                                </f:facet>
+                                                <h:outputText value="Presenting Complaints :"/><br/>
+                                                <p:inputTextarea id="txtComments" 
+                                                                 queryDelay="0" 
+                                                                 placeholder="Write comments here."
+                                                                 class="w-100 my-2" 
+                                                                 autoResize="true"
+                                                                 value="#{patientEncounterController.current.comments}" 
+                                                                 completeMethod="#{patientEncounterController.completeClinicalComments}" 
+                                                                 minQueryLength="1">
+
+                                                    <f:ajax event="keyup" execute="@this" ></f:ajax>
+                                                </p:inputTextarea>
+
+
+                                                <div class="row my-1" ></div>
+                                                <div class="row" >
+                                                    <div class="col-md-7" >
+                                                        <p:commandLink 
+                                                            value="Weight&nbsp;:&nbsp;"
+                                                            action="#{patientEncounterController.createWtChart()}" 
+                                                            ajax="false"  
+                                                            target="_blank"></p:commandLink>
+                                                        <p:inputText  
+                                                            id="txtWt"
+                                                            style="width: 5em;"
+                                                            value="#{patientEncounterController.current.weight}" >
+                                                            <p:ajax 
+                                                                event="keyup" 
+                                                                process="txtWt" 
+                                                                update="txtBmi"></p:ajax>
+                                                            <p:ajax 
+                                                                event="keyup" 
+                                                                process="txtWt" 
+                                                                update="txtBmi"></p:ajax>
+                                                        </p:inputText>
+                                                        <p:outputLabel  value="&nbsp;kg"  ></p:outputLabel>
+                                                    </div>
+                                                    <div class="col-md-5" >
+                                                        <p:outputLabel value="Height&nbsp;:&nbsp;" ></p:outputLabel>
+                                                        <p:inputText  
+                                                            id="txtHt"
+                                                            style="width: 5em;"
+                                                            value="#{patientEncounterController.current.height}" >
+                                                            <p:ajax 
+                                                                event="keyup" 
+                                                                process="txtHt" 
+                                                                update="txtBmi"></p:ajax>
+                                                        </p:inputText>
+                                                        <p:outputLabel  value="&nbsp;cm"  ></p:outputLabel>
+                                                    </div>
+                                                </div>
+                                                <div class="row my-1" ></div>
+                                                <div class="row"  >
+                                                    <div class="col-md-7" >
+                                                        <p:commandLink value="BP : " action="#{patientEncounterController.createBpChart()}" ajax="false"  target="_blank"></p:commandLink>
+                                                        <h:panelGroup >
+                                                            <p:inputText
+                                                                id="txtSbp"
+                                                                style="width: 4em;" maxlength="3" 
+                                                                value="#{patientEncounterController.current.sbp}"
+                                                                >
+
+                                                            </p:inputText>
+                                                            <p:outputLabel value="/" ></p:outputLabel>
+                                                            <p:inputText  style="width: 4em;" maxlength="3" 
+                                                                          value="#{patientEncounterController.current.dbp}" ></p:inputText>
+                                                            <p:outputLabel  value="&nbsp;mmHg"  ></p:outputLabel>
+                                                        </h:panelGroup>
+                                                    </div>
+                                                    <div class="col-md-5" >
+                                                        <p:outputLabel value="BMI&nbsp;:&nbsp;" ></p:outputLabel>
+                                                        <p:inputText 
+                                                            id="txtBmi"
+                                                            value="#{patientEncounterController.current.bmi}" style="width:5em;" >
+                                                            <f:convertNumber pattern="#0.0" ></f:convertNumber>
+                                                        </p:inputText>
+                                                        <p:outputLabel value="&nbsp;kg/m" escape="false"></p:outputLabel>
+                                                        <p:outputLabel value="2" style="vertical-align: super;" escape="false"></p:outputLabel>
+
+                                                    </div>
+                                                </div>
+                                                <div class="row my-1" ></div>
+                                                <div class="row" >
+                                                    <div class="col-md-7" >
+                                                        <p:outputLabel 
+                                                            value="Pulse Rate :&nbsp;"/>
+
+                                                        <p:inputText  
+                                                            id="txtPr"
+                                                            style="width: 5em;"
+                                                            value="#{patientEncounterController.current.pr}" >
+                                                        </p:inputText>
+                                                        <p:outputLabel  value="&nbsp;bpm"  ></p:outputLabel>
+                                                    </div>
+                                                    <div class="col-md-5" >
+                                                        <p:outputLabel value="PFR&nbsp;:&nbsp;" ></p:outputLabel>
+                                                        <p:inputText  
+                                                            id="txtPfr"
+                                                            style="width: 5em;"
+                                                            value="#{patientEncounterController.current.pfr}" >
+
+                                                        </p:inputText>
+                                                        <!--                                                        <p:outputLabel  value="&nbsp;cm"  ></p:outputLabel>-->
+                                                    </div>
+                                                </div>
+                                                <div class="row my-1" ></div>
+                                                <div class="row" >
+                                                    <div class="col-md-7" >
+                                                        <h:outputLabel
+                                                            value="Saturation :&nbsp;"
+                                                            />
+                                                        <p:inputText  
+                                                            id="txtsat"
+                                                            style="width: 5em;"
+                                                            value="#{patientEncounterController.current.saturation}" >
+                                                        </p:inputText>
+                                                        <!--                                                        <p:outputLabel  value="&nbsp;bpm"  ></p:outputLabel>-->
+                                                    </div>
+                                                    <div class="col-md-5" >
+                                                        <p:outputLabel value="Resp. Rate&nbsp;:&nbsp;" ></p:outputLabel>
+                                                        <p:inputText  
+                                                            id="txtRr"
+                                                            style="width: 5em;"
+                                                            value="#{patientEncounterController.current.respiratoryRate}" >
+
+                                                        </p:inputText>
+                                                        <!--                                                        <p:outputLabel  value="&nbsp;cm"  ></p:outputLabel>-->
+                                                    </div>
+                                                </div>
+                                            </p:panel>
+
+                                            <p:panel id="panelDiagnosis" class="w-100 m-1" >
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-stethoscope"/>
+                                                    <h:outputText class="mx-4" value="Diagnosis"/>
+                                                </f:facet>
+                                                <div class="row" >
+                                                    <div class="col-md-9" >
+                                                        <p:autoComplete id="acDx" 
+                                                                        value="#{patientEncounterController.diagnosis}"
+                                                                        completeMethod="#{diagnosisController.completeDiagnosis}"
+                                                                        var="dx" forceSelection="true"
+                                                                        itemLabel="#{dx.name}" 
+                                                                        itemValue="#{dx}"
+                                                                        class="w-100"
+                                                                        inputStyleClass="w-100">
+                                                        </p:autoComplete>
+                                                    </div>
+                                                    <div class="col-md-3 d-flex gap-2" >
+                                                        <p:commandButton ajax="true"
+                                                                         class="ui-button-success"
+                                                                         value="Add"
+                                                                         id="btnAddDx"
+                                                                         action="#{patientEncounterController.addDx}"
+                                                                         process="acDx txtDx btnAddDx"
+                                                                         update="acDx txtDx gpDx :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                         icon="pi pi-plus">
+                                                        </p:commandButton>
+                                                        <p:commandButton ajax="true"
+                                                                         class="ui-button-info"
+                                                                         value="Add Favourites"
+                                                                         id="btnAddFavDx"
+                                                                         action="#{patientEncounterController.addFavouriteDiagnosis}"
+                                                                         process="acDx txtDx btnAddFavDx"
+                                                                         update="acDx txtDx gpDx tblRxx :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                         icon="fas fa-star">
+                                                        </p:commandButton>
+                                                    </div>
+                                                </div>
+                                                <p:inputTextarea class="w-100 my-2" autoResize="true"
+                                                                 id="txtDx" 
+                                                                 value="#{patientEncounterController.diagnosisComments}">
+                                                </p:inputTextarea>
+
+
+                                                <p:tooltip value="Add a Diagnosis" for="btnAddDx" ></p:tooltip>
+                                                <h:panelGroup id="gpDx" >
+                                                    <p:dataTable id="tblDx" 
+                                                                 rendered="#{patientEncounterController.encounterDiagnoses ne null and patientEncounterController.encounterDiagnoses.size() > 0}"
+                                                                 value="#{patientEncounterController.encounterDiagnoses}"
+                                                                 emptyMessage="No Diagnosis Added Yet" rows="5"
+                                                                 paginatorAlwaysVisible="false"
+                                                                 paginator="true"
+                                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                                 var="edx" class="w-100">
+                                                        <p:column headerText="Diagnosis">
+                                                            <h:outputLabel value="#{edx.itemValue.name}"></h:outputLabel>
+                                                        </p:column>
+                                                        <p:column headerText="Details">
+                                                            <h:outputLabel value="#{edx.lobValue}"></h:outputLabel>
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:commandButton icon="fas fa-trash"
+                                                                             id="clRemoveDx"
+                                                                             class="ui-button-danger"
+                                                                             process="clRemoveDx" 
+                                                                             action="#{patientEncounterController.removeEncounterDiagnoses()}"
+                                                                             update=":#{p:resolveFirstComponentWithId('tblDx',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}">
+                                                                <f:setPropertyActionListener value="#{edx}" target="#{patientEncounterController.removingCfv}" />
+                                                            </p:commandButton>
+
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </h:panelGroup>
+
+
+                                            </p:panel>
+
+                                            <p:panel header="Ordered Tests For Visit" class="w-100 m-1">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-vial"/>
+                                                    <h:outputText class="mx-4" value="Order Tests For Visit"/>
+                                                </f:facet>
+                                                <div class="row" >
+                                                    <div class="col-9" >
+                                                        <p:autoComplete 
+                                                            id="acIx" 
+                                                            value="#{patientEncounterController.encounterInvestigation.itemValue}"
+                                                            completeMethod="#{investigationController.completeInvestigation}"
+                                                            var="ix" forceSelection="true"
+                                                            itemLabel="#{ix.name}" 
+                                                            itemValue="#{ix}"
+                                                            class="w-100"
+                                                            inputStyleClass="w-100"
+                                                            scrollHeight="400"
+                                                            minQueryLength="3" 
+                                                            maxResults="20" >
+                                                        </p:autoComplete>
+                                                    </div>
+                                                    <div class="col-3" >
+                                                        <p:commandButton 
+                                                            ajax="true" 
+                                                            id="btnIx" 
+                                                            value="Add"
+                                                            class="ui-button-success"
+                                                            action="#{patientEncounterController.addEncounterInvestigation()}"
+                                                            process="acIx txtIx btnIx" 
+                                                            update="acIx txtIx gpIx :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                            icon="pi pi-plus">
+                                                        </p:commandButton>
+                                                    </div>
+                                                </div>
+
+                                                <p:tooltip value="Add an Investigation" for="btnIx" ></p:tooltip>
+                                                <p:inputTextarea class="w-100 my-2" 
+                                                                 id="txtIx" 
+                                                                 value="#{patientEncounterController.encounterInvestigation.lobValue}">
+                                                </p:inputTextarea>
+
+
+                                                <h:panelGroup id="gpIx" >
+                                                    <p:dataTable id="tblIx" 
+                                                                 rendered="#{patientEncounterController.encounterInvestigations ne null and patientEncounterController.encounterInvestigations.size() > 0}"
+                                                                 value="#{patientEncounterController.encounterInvestigations}"
+                                                                 emptyMessage="No Investigations Added Yet" rows="5"
+                                                                 paginatorAlwaysVisible="false"
+                                                                 paginator="true"
+                                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                                 var="ix" class="w-100">
+                                                        <p:column headerText="Procedure" >
+                                                            <h:outputLabel value="#{ix.itemValue.name}"></h:outputLabel>
+
+                                                        </p:column>
+                                                        <p:column headerText="Details">
+                                                            <h:outputLabel value="#{ix.lobValue}"></h:outputLabel>
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:commandButton
+                                                                id="clRemoveIx"
+                                                                action="#{patientEncounterController.removeEncounterInvestigation()}" 
+                                                                process="clRemoveIx"
+                                                                update=":#{p:resolveFirstComponentWithId('gpIx',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                class="ui-button-danger"
+                                                                icon="fas fa-trash">
+                                                                <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.removingCfv}" />
+                                                            </p:commandButton>
+
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </h:panelGroup>
+
+                                            </p:panel>
+
+
+                                        </div>
+
+                                        <div class="ui-g-12 ui-md-4">
+                                            <p:focus id="focusItem" for="acMedicine" ></p:focus>
+                                            <p:panel class="w-100 m-0 p-0" id="medicines">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-pills"/>
+                                                    <p:outputLabel class="mx-4" value="Medicines" />
+
+
+                                                    <p:commandButton value="Refill" process="@this" class='ui-button-warning' icon='fas fa-fill' style="float: right;" update="#{p:resolveFirstComponentWithId('medicines',view).clientId} #{p:resolveFirstComponentWithId('msg',view).clientId}" action="#{patientEncounterController.fillMedicines(patientController.current)}"/>
+
+                                                </f:facet>
+                                                <div class="container-fluid m-0 p-0 w-100">
+                                                    <div class="d-flex flex-wrap w-100">
+                                                        <!-- Medicine Selection -->
+                                                        <div class="m-1">
+                                                            <label for="acMedicine" class="w-100">Medicine:</label>
+                                                            <p:autoComplete id="acMedicine"
+                                                                            completeMethod="#{pharmaceuticalItemController.completeItem}"
+                                                                            value="#{patientEncounterController.encounterMedicine.prescription.item}"
+                                                                            var="item"
+                                                                            class="w-100"
+                                                                            inputStyleClass="w-100"
+                                                                            itemLabel="#{item}"
+                                                                            itemValue="#{item}"
+                                                                            minQueryLength="4"
+                                                                            maxResults="10"
+                                                                            placeholder="Select Medicine" />
+                                                        </div>
+
+                                                        <!-- Dose Group -->
+                                                        <div class="m-1 d-flex flex-column">
+                                                            <label>Dose:</label>
+                                                            <div class="d-flex">
+                                                                <p:inputText style="width: 6em;"
+                                                                             id="txtDose"
+                                                                             value="#{patientEncounterController.encounterMedicine.prescription.dose}"
+                                                                             placeholder="Dose"/>
+                                                                <p:selectOneMenu id="cmbDose" 
+                                                                                 value="#{patientEncounterController.encounterMedicine.prescription.doseUnit}">
+                                                                    <f:selectItem itemLabel="Select" />
+                                                                    <f:selectItems value="#{measurementUnitController.getDoseUnitsForMedicine(patientEncounterController.encounterMedicine.prescription.item)}" 
+                                                                                   var="du" itemLabel="#{du.name}" itemValue="#{du}" />
+                                                                </p:selectOneMenu>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Frequency Selection -->
+                                                        <div class="m-1 d-flex flex-column">
+                                                            <label for="cmbFrequency">Frequency:</label>
+                                                            <p:selectOneMenu id="cmbFrequency" 
+                                                                             value="#{patientEncounterController.encounterMedicine.prescription.frequencyUnit}">
+                                                                <f:selectItem itemLabel="Select" />
+                                                                <f:selectItems value="#{measurementUnitController.frequencyUnits}" 
+                                                                               var="du" 
+                                                                               itemLabel="#{du.name}"
+                                                                               itemValue="#{du}" />
+                                                            </p:selectOneMenu>
+                                                        </div>
+
+                                                        <!-- Duration Group -->
+                                                        <div class="m-1 d-flex flex-column">
+                                                            <label>Duration:</label>
+                                                            <div class="d-flex">
+                                                                <p:inputText style="width: 6em;"
+                                                                             id="txtDuration"
+                                                                             value="#{patientEncounterController.encounterMedicine.prescription.duration}"
+                                                                             placeholder="Duration"/>
+                                                                <p:selectOneMenu id="cmbDuration" 
+                                                                                 value="#{patientEncounterController.encounterMedicine.prescription.durationUnit}">
+                                                                    <f:selectItem itemLabel="Select" />
+                                                                    <f:selectItems value="#{measurementUnitController.durationUnits}" 
+                                                                                   var="du" 
+                                                                                   itemLabel="#{du.name}" 
+                                                                                   itemValue="#{du}" />
+                                                                </p:selectOneMenu>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Indoor/Outdoor Selection -->
+                                                        <div class="m-1 d-flex flex-column">
+                                                            <label for="chkIndoor">Location:</label>
+                                                            <p:selectBooleanButton id="chkIndoor"
+                                                                                   onLabel="Indoor"
+                                                                                   offLabel="Outdoor"
+                                                                                   value="#{patientEncounterController.encounterMedicine.prescription.indoor}" />
+                                                        </div>
+
+                                                        <!-- Add Prescription Button -->
+                                                        <div>
+                                                            <label for="chkIndoor" class="w-100"></label>
+                                                            <p:commandButton 
+                                                                value="Add"
+                                                                class="ui-button-success"
+                                                                id="btnAddRx"
+                                                                icon="pi pi-plus"
+                                                                process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" 
+                                                                action="#{patientEncounterController.addEncounterMedicine}" />
+
+                                                            <p:commandButton 
+                                                                id="btnAddRxFav"
+                                                                value="Add Favourite" 
+                                                                process="btnAddRxFav acMedicine" 
+                                                                class='ui-button-success' 
+                                                                icon='fas fa-star' 
+                                                                style="float: right; margin-right: 5px;" 
+                                                                update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" 
+                                                                action="#{patientEncounterController.addFavouriteMedicines(patientController.current)}"/>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <p:dataTable id="tblRxx"
+                                                             value="#{patientEncounterController.encounterMedicines}"
+                                                             var="rx">
+                                                    <p:column>
+                                                        <p:outputLabel value="#{rx.prescription.item.name} #{rx.prescription.dose % 1 == 0 ? rx.prescription.dose.intValue() : rx.prescription.dose} #{rx.prescription.doseUnit.name} #{rx.prescription.frequencyUnit.name} for #{rx.prescription.duration % 1 == 0 ? rx.prescription.duration.intValue() : rx.prescription.duration} #{rx.prescription.durationUnit.name} #{rx.prescription.indoor ? 'Indoor' : 'Outdoor'}" />
+                                                    </p:column>
+                                                    <p:column>
+                                                        <p:commandButton icon="fas fa-trash" 
+                                                                         id="btnRemove"
+                                                                         process="btnRemove"
+                                                                         update="tblRxx :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                         class="ui-button-danger"
+                                                                         action="#{patientEncounterController.removeCfv()}">
+                                                            <f:setPropertyActionListener value="#{rx}" target="#{patientEncounterController.removingCfv}" ></f:setPropertyActionListener>
+
+                                                        </p:commandButton>
+                                                    </p:column>
+                                                </p:dataTable>
+                                            </p:panel>
+                                            <p:panel header="Add Test Results" class="w-100 m-1">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-vial-virus"/>
+                                                    <h:outputText class="mx-4" value="Add Test Results"/>
+                                                </f:facet>
+                                                <div class="row" >
+                                                    <div class="col-9" >
+                                                        <p:autoComplete
+                                                            id="acIxp"
+                                                            value="#{patientEncounterController.encounterInvestigationResult.itemValue}"
+                                                            completeMethod="#{investigationController.completeInvestigation}"
+                                                            var="ix" forceSelection="true"
+                                                            itemLabel="#{ix.name}"
+                                                            itemValue="#{ix}"
+                                                            class="w-100"
+                                                            inputStyleClass="w-100">
+                                                        </p:autoComplete>
+                                                    </div>
+                                                    <div class="col-3" >
+                                                        <p:commandButton
+                                                            ajax="true"
+                                                            id="btnIxp"
+                                                            value="Add"
+                                                            class="ui-button-success"
+                                                            action="#{patientEncounterController.addEncounterInvestigationResults()}"
+                                                            process="acIxp txtIxp btnIxp"
+                                                            update="acIxp txtIxp gpIxp :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                            icon="pi pi-plus">
+                                                        </p:commandButton>
+                                                    </div>
+                                                </div>
+
+
+                                                <p:tooltip value="Add an Investigation" for="btnIxp" ></p:tooltip>
+                                                <p:inputTextarea class="w-100 my-2"
+                                                                 id="txtIxp"
+                                                                 value="#{patientEncounterController.encounterInvestigationResult.lobValue}">
+                                                </p:inputTextarea>
+
+
+                                                <h:panelGroup id="gpIxp" >
+                                                    <p:dataTable id="tblIxp"
+                                                                 rendered="#{patientEncounterController.encounterInvestigationResults ne null and patientEncounterController.encounterInvestigationResults.size() > 0}"
+                                                                 value="#{patientEncounterController.encounterInvestigationResults}"
+                                                                 emptyMessage="No Investigations Added Yet" rows="5"
+                                                                 paginatorAlwaysVisible="false"
+                                                                 paginator="true"
+                                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                                 var="ix" class="w-100">
+                                                        <p:column headerText="Procedure" >
+                                                            <h:outputLabel value="#{ix.itemValue.name}"></h:outputLabel>
+                                                        </p:column>
+
+                                                        <p:column headerText="Details">
+                                                            <h:outputLabel value="#{ix.lobValue}"></h:outputLabel>
+                                                        </p:column>
+                                                        <p:column headerText="Action">
+                                                            <div class="d-flex">
+                                                                <p:commandLink id="btnNewReport" ajax="false"
+                                                                               disabled="#{ix.patientInvestigation ne null}"
+                                                                               action="/emr/patient_report">
+                                                                    <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.currentEIResult}"></f:setPropertyActionListener>
+                                                                    <f:setPropertyActionListener value="#{ix}" target="#{patientReportController.clinicalFindingValue}"/>
+                                                                    <f:setPropertyActionListener value="#{ix.patientReport}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                                                    <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
+                                                                </p:commandLink>
+                                                                <p:commandButton
+                                                                    id="clRemoveIxp"
+                                                                    action="#{patientEncounterController.removeEncounterInvestigationResult()}"
+                                                                    process="clRemoveIxp"
+                                                                    disabled="#{ix.patientInvestigation ne null}"
+                                                                    update=":#{p:resolveFirstComponentWithId('gpIxp',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                    class="mx-2 ui-button-danger"
+                                                                    icon="fas fa-trash">
+                                                                    <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.removingCfv}" />
+                                                                </p:commandButton>
+                                                                <div>
+                                                                    <ui:repeat value="#{patientReportController.patientReports(ix.patientInvestigation)}" var="dpr">
+                                                                        <p:commandLink id="cmdOldReportEdit" ajax="false" action="/lab/patient_report">
+                                                                            <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                                                            <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
+                                                                        </p:commandLink>
+                                                                    </ui:repeat>
+                                                                </div>
+
+                                                            </div>
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </h:panelGroup>
+
+                                            </p:panel>
+
+                                            <p:panel class="w-100 m-1" id="procedures">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-medkit"/>
+                                                    <h:outputText class="mx-4" value="Procedures"/>
+                                                </f:facet>
+                                                <div class="row" >
+                                                    <div class="col-md-9" >
+                                                        <p:autoComplete id="acSx" 
+                                                                        value="#{patientEncounterController.encounterProcedure.itemValue}"
+                                                                        completeMethod="#{procedureController.completeProcedures}"
+                                                                        var="sx" forceSelection="true"
+                                                                        itemLabel="#{sx.name}" 
+                                                                        itemValue="#{sx}"
+                                                                        class="w-100"
+
+                                                                        inputStyleClass="w-100">
+                                                        </p:autoComplete>
+
+                                                    </div>
+                                                    <div class="col-md-3" >
+                                                        <p:commandButton ajax="true" 
+                                                                         value="Add"
+                                                                         class="ui-button-success"
+                                                                         id="btnSx" 
+                                                                         action="#{patientEncounterController.addEncounterProcedure}"
+                                                                         process="acSx txtSx btnSx" update="acSx txtSx gpSx :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                         icon="pi pi-plus">
+                                                        </p:commandButton>
+                                                        <p:tooltip value="Add a procedure" for="btnSx" ></p:tooltip>
+                                                    </div>
+                                                </div>
+                                                <p:inputTextarea class="w-100 my-2" autoResize="true"
+                                                                 id="txtSx" 
+                                                                 value="#{patientEncounterController.encounterProcedure.lobValue}">
+                                                </p:inputTextarea>
+
+
+
+                                                <h:panelGroup id="gpSx" >
+                                                    <p:dataTable id="tblSx" 
+                                                                 rendered="#{patientEncounterController.encounterProcedures ne null and patientEncounterController.encounterProcedures.size() > 0}"
+                                                                 value="#{patientEncounterController.encounterProcedures}"
+                                                                 emptyMessage="No Procedure Added Yet" rows="5"
+                                                                 paginatorAlwaysVisible="false"
+                                                                 paginator="true"
+                                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                                 var="sx" class="w-100">
+                                                        <p:column headerText="Procedure" >
+                                                            <h:outputLabel value="#{sx.itemValue.name}"></h:outputLabel>
+
+                                                        </p:column>
+                                                        <p:column headerText="Details">
+                                                            <h:outputLabel value="#{sx.lobValue}"></h:outputLabel>
+                                                        </p:column>
+                                                        <p:column>
+                                                            <p:commandButton  
+                                                                class="ui-button-danger"
+                                                                icon="fas fa-trash"
+                                                                id="btnRemoveSx"
+                                                                ajax="true" 
+                                                                action="#{patientEncounterController.removeCfv}" 
+                                                                process="btnRemoveSx"
+                                                                update="tblSx :#{p:resolveFirstComponentWithId('msg',view).clientId}">
+                                                                <f:setPropertyActionListener value="#{sx}" target="#{patientEncounterController.removingCfv}" />
+                                                            </p:commandButton>
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </h:panelGroup>
+                                            </p:panel>
+                                            <p:panel class="w-100 m-1" >
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-medkit"/>
+                                                    <h:outputText class="mx-4" value="Follow Up Plan"/>
+                                                </f:facet>
+                                                <div class="row" >
+                                                    <div class="col-md-9" >
+                                                        <p:autoComplete id="acPa" 
+                                                                        value="#{patientEncounterController.encounterPlanOfAction.itemValue}"
+                                                                        completeMethod="#{planController.completePlanOfActions}"
+                                                                        var="pa" forceSelection="true"
+                                                                        itemLabel="#{pa.name}" 
+                                                                        itemValue="#{pa}"
+                                                                        class="w-100"
+
+                                                                        inputStyleClass="w-100">
+                                                        </p:autoComplete>
+
+                                                    </div>
+                                                    <div class="col-md-3" >
+                                                        <p:commandButton ajax="true" 
+                                                                         value="Add"
+                                                                         class="ui-button-success"
+                                                                         id="btnPr" 
+                                                                         action="#{patientEncounterController.addPlanOfAction()}"
+                                                                         process="acPa txtPa btnPr" update="acPa hgPa txtPa :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                         icon="pi pi-plus">
+                                                        </p:commandButton>
+                                                        <p:tooltip value="Add a procedure" for="btnPr" ></p:tooltip>
+                                                    </div>
+                                                </div>
+                                                <p:inputTextarea class="w-100 my-2" autoResize="true"
+                                                                 id="txtPa" 
+                                                                 value="#{patientEncounterController.encounterPlanOfAction.lobValue}">
+                                                </p:inputTextarea>
+
+
+
+                                                <h:panelGroup id="hgPa">
+                                                    <p:dataTable id="tblPa" 
+                                                                 rendered="#{patientEncounterController.encounterPlanOfActions ne null and patientEncounterController.encounterPlanOfActions.size() > 0}"
+                                                                 value="#{patientEncounterController.encounterPlanOfActions}"
+                                                                 emptyMessage="No Plan Of Action Added" rows="5"
+                                                                 paginatorAlwaysVisible="false"
+                                                                 paginator="true"
+                                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                                 var="pa" >
+                                                        <p:column headerText="Plan Name" >
+                                                            <h:outputLabel value="#{pa.itemValue.name}"></h:outputLabel>
+
+                                                        </p:column>
+                                                        <p:column headerText="Details" >
+                                                            <h:outputLabel value="#{pa.lobValue}"></h:outputLabel>
+
+                                                        </p:column>
+
+                                                        <p:column headerText="Action" >
+                                                            <p:commandButton  
+                                                                class="ui-button-danger"
+                                                                icon="fas fa-trash"
+                                                                id="btnRemovePa"
+                                                                ajax="true" 
+                                                                action="#{patientEncounterController.removeCfv}" 
+                                                                process="@this"
+                                                                update=":#{p:resolveFirstComponentWithId('hgPa',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}">
+                                                                <f:setPropertyActionListener value="#{pa}" target="#{patientEncounterController.removingCfv}" />
+                                                            </p:commandButton>
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </h:panelGroup>
+                                            </p:panel>
+
+
+                                        </div>
+
+
+                                        <div class="ui-g-12 ui-md-4">
+                                            <!-- Warning panel when no default prescription template -->
+                                            <p:panel id="prescriptionWarning"
+                                                     rendered="#{not patientEncounterController.hasDefaultPrescriptionTemplate()}"
+                                                     styleClass="ui-panel-warning">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-exclamation-triangle"/>
+                                                    <h:outputText class="mx-4" value="Prescription Configuration Required"/>
+                                                </f:facet>
+                                                <div class="p-3">
+                                                    <h:outputText value="#{patientEncounterController.prescriptionWarningMessage}"
+                                                                  styleClass="text-warning"/>
+                                                    <br/><br/>
+                                                    <p:commandButton
+                                                        value="Configure Prescription Template"
+                                                        icon="fas fa-cog"
+                                                        styleClass="ui-button-warning"
+                                                        action="/emr/settings/index"
+                                                        ajax="false"/>
+                                                </div>
+                                            </p:panel>
+
+                                            <!-- Prescription panel (only shows when default template exists) -->
+                                            <p:panel id="docPrescreption" rendered="#{patientEncounterController.hasDefaultPrescriptionTemplate()}" >
+                                                <h:outputStylesheet library="css" name="printing/prescription.css" ></h:outputStylesheet>
+                                                <f:facet name="header">
+                                                    <h:outputText  styleClass="fas fa-prescription-bottle"/>
+                                                    <h:outputText class="mx-4" value="Prescription"/>
+                                                    <div style="float: right">
+                                                        <p:commandButton
+                                                            icon="fas fa-refresh"
+                                                            class="mx-1 ui-button-warning"
+                                                            id="btnRefresh"
+                                                            ajax="false" 
+                                                            value="Refresh" 
+                                                            action="#{patientEncounterController.refreshPrescription}"/>
+                                                        <p:commandButton
+                                                            class="ui-button-info mx-1" 
+                                                            ajax="false" 
+                                                            value="Print" 
+                                                            icon="pi pi-print">
+                                                            <p:printer target="txtPrescriptionDoc" />
+                                                        </p:commandButton>
+                                                        <p:commandButton
+                                                            class="ui-button-info mx-1" 
+                                                            ajax="false" 
+                                                            value="To Print" 
+                                                            action="opd_visit_print"
+                                                            icon="pi pi-print">
+                                                        </p:commandButton>
+
+
+
+                                                    </div>
+
+                                                </f:facet>
+
+                                                <style>
+                                                    @media print {
+                                                        /* Target the ui-texteditor container and its children */
+                                                        #docPrescreption .ui-texteditor,
+                                                        #docPrescreption .ui-texteditor *,
+                                                        #docPrescreption .ui-texteditor *::after,
+                                                        #docPrescreption .ui-texteditor *::before {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important; /* Reset box-sizing */
+                                                            /* Additional styles to reset other properties if needed */
+                                                        }
+
+                                                        /* Ensure that the specific ids are targeted */
+                                                        #txtPrescriptionDoc,
+                                                        #txtPrescriptionDoc * {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important;
+                                                            /* Reset other styles, if necessary */
+                                                        }
+
+                                                        /* If there are iframes or other embedded elements, target them too */
+                                                        #txtPrescriptionDoc iframe,
+                                                        #txtPrescriptionDoc iframe * {
+                                                            border: none !important;
+                                                            box-sizing: content-box !important;
+                                                            /* Reset other styles, if necessary */
+                                                        }
+
+                                                        form, form * {
+                                                            border: none !important;
+                                                </style>
+
+
+
+                                                <h:panelGroup id="txtPrescriptionDoc">
+                                                    <p:textEditor
+                                                        id="txtGeneratedPrescreption"
+                                                        styleClass="textEditer"
+                                                        class="my-2"
+                                                        toolbarVisible="false"
+                                                        rendered="#{patientEncounterController.encounterPrescreption ne null}"
+                                                        secure='false'
+                                                        widgetVar="textEditorWidget"
+                                                        value="#{patientEncounterController.encounterPrescreption.lobValue}"
+                                                        >
+                                                    </p:textEditor>
+                                                </h:panelGroup>
+                            </p:panel>
+                        </div>
+                    </div>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

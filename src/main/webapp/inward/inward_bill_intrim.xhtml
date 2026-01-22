@@ -539,7 +539,9 @@
                                         rowStyleClass="#{((iss.billClass eq 'class com.divudi.core.entity.PreBill')
                                                          or
                                                          (iss.billedBill ne null
-                                                         and iss.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
+                                                         and iss.billClass eq 'class com.divudi.core.entity.RefundBill'
+                                                         or (configOptionApplicationController.getBooleanValueByKey('Separate Medicines and Surgical Supplies Tab', false) 
+                                                             and iss.billClass eq 'class com.divudi.core.entity.CancelledBill')))? '':'noDisplayRow'}">
                                         <p:column headerText="Bill No">
                                             <h:outputLabel  value="#{iss.deptId}"></h:outputLabel>
                                         </p:column>
@@ -629,7 +631,9 @@
                                                  rowStyleClass="#{((iss.billClass eq 'class com.divudi.core.entity.PreBill')
                                                                   or
                                                                   (iss.billedBill ne null
-                                                                  and iss.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
+                                                                  and iss.billClass eq 'class com.divudi.core.entity.RefundBill'
+                                                                  or (configOptionApplicationController.getBooleanValueByKey('Separate Medicines and Surgical Supplies Tab', false) 
+                                                                      and iss.billClass eq 'class com.divudi.core.entity.CancelledBill')))? '':'noDisplayRow'}">
                                         <p:column headerText="Bill No">
 
                                             #{iss.deptId}
@@ -711,7 +715,9 @@
                                         rowStyleClass="#{((iss.billClass eq 'class com.divudi.core.entity.PreBill')
                                                          or
                                                          (iss.billedBill ne null
-                                                         and iss.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
+                                                         and iss.billClass eq 'class com.divudi.core.entity.RefundBill'
+                                                         or (configOptionApplicationController.getBooleanValueByKey('Separate Medicines and Surgical Supplies Tab', false) 
+                                                             and iss.billClass eq 'class com.divudi.core.entity.CancelledBill')))? '':'noDisplayRow'}">
                                         <p:column headerText="Bill No">
                                             <h:outputLabel  value="#{iss.deptId}"></h:outputLabel>
                                         </p:column>
@@ -730,7 +736,7 @@
                                             </h:panelGroup>
                                         </p:column>
                                         <p:column headerText="Bill Total" class="text-end">
-                                            <h:outputLabel  value="#{iss.netTotal}">
+                                            <h:outputLabel  value="#{(iss.billClass eq 'class com.divudi.core.entity.CancelledBill' or iss.billClass eq 'class com.divudi.core.entity.RefundBill') ? -iss.netTotal : iss.netTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>

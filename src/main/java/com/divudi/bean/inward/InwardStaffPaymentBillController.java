@@ -2073,4 +2073,26 @@ public class InwardStaffPaymentBillController implements Serializable {
         this.bundle = bundle;
     }
 
+    /**
+     * Check if any bill fees are marked as collected by doctor
+     * Used to display "FEE COLLECTED DIRECTLY BY DOCTOR" message on bill
+     */
+    public boolean hasFeeCollectedByDoctor() {
+        if (current == null) {
+            return false;
+        }
+        
+        List<BillFee> billFees = current.getBillFees();
+        if (billFees == null || billFees.isEmpty()) {
+            return false;
+        }
+        
+        for (BillFee bf : billFees) {
+            if (bf.isFeeCollectedByDoctor()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

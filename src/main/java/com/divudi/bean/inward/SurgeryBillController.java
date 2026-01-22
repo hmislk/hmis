@@ -20,6 +20,7 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.PreBill;
@@ -92,6 +93,8 @@ public class SurgeryBillController implements Serializable {
     private InwardBeanController inwardBean;
     @Inject
     BhtSummeryController bhtSummeryController;
+    @Inject
+    private com.divudi.bean.common.ConfigOptionApplicationController configOptionApplicationController;
 
     public InwardTimedItemController getInwardTimedItemController() {
         return inwardTimedItemController;
@@ -488,6 +491,20 @@ public class SurgeryBillController implements Serializable {
         return surgeryBill;
     }
 
+    private List<Bill> getBillsByForwardRef(Bill b) {
+        String sql = "Select bf from Bill bf where bf.cancelled=false and "
+                + " bf.retired=false and bf.forwardReferenceBill=:bill";
+        HashMap hm = new HashMap();
+        hm.put("bill", b);
+        List<Bill> list = getBillFacade().findByJpql(sql, hm);
+
+        if (list == null) {
+            return new ArrayList<>();
+        }
+
+        return list;
+    }
+
 //    private List<Bill> getBillsByForwardRef(Bill b) {
 //        String sql = "Select bf from Bill bf where bf.cancelled=false and "
 //                + " bf.retired=false and bf.forwardReferenceBill=:bill";
@@ -531,6 +548,13 @@ public class SurgeryBillController implements Serializable {
     List<BillItem> storeIssues;
 
     public List<BillItem> getStoreIssues() {
+        if (storeIssues == null && getSurgeryBill() != null) {
+            // Lazy-load store issues from database
+            storeIssues = createIssueTable(BillType.StoreBhtPre);
+        }
+        if (storeIssues == null) {
+            storeIssues = new ArrayList<>();
+        }
         return storeIssues;
     }
 
@@ -567,18 +591,41 @@ public class SurgeryBillController implements Serializable {
                 + " and b.bill.billType=:btp"
                 + " and b.bill.forwardReferenceBill=:bil "
                 + " and type(b.bill.billedBill)=:billedClass "
-                + " and (type(b.bill)=:class)"
+                + " and (type(b.bill)=:refundClass)"
                 + " order by b.item.name ";
         hm = new HashMap();
         hm.put("btp", billType);
-        hm.put("class", RefundBill.class);
+        hm.put("refundClass", RefundBill.class);
         hm.put("billedClass", PreBill.class);
         hm.put("bil", getSurgeryBill());
-//        hm.put("pe", getBatchBill().getPatientEncounter());
 
         List<BillItem> billItems1 = getBillItemFacade().findByJpql(sql, hm);
 
         billItems.addAll(billItems1);
+
+        // Also fetch CancelledBill items if feature is enabled (for cancelled medicines/surgical supplies)
+        boolean includeCancelledBills = configOptionApplicationController.getBooleanValueByKey(
+            "Separate Medicines and Surgical Supplies Tab", false);
+        
+        if (includeCancelledBills) {
+            hm.clear();
+            sql = "SELECT  b FROM BillItem b "
+                    + " WHERE b.retired=false "
+                    + " and b.bill.billType=:btp"
+                    + " and b.bill.forwardReferenceBill=:bil "
+                    + " and type(b.bill.billedBill)=:billedClass "
+                    + " and (type(b.bill)=:cancelledClass)"
+                    + " order by b.item.name ";
+            hm = new HashMap();
+            hm.put("btp", billType);
+            hm.put("cancelledClass", CancelledBill.class);
+            hm.put("billedClass", PreBill.class);
+            hm.put("bil", getSurgeryBill());
+
+            List<BillItem> billItems2 = getBillItemFacade().findByJpql(sql, hm);
+
+            billItems1.addAll(billItems2);
+        }
 
         return billItems;
 
@@ -653,6 +700,25 @@ public class SurgeryBillController implements Serializable {
     }
 
     public List<EncounterComponent> getProEncounterComponents() {
+        if (proEncounterComponents == null && getSurgeryBill() != null) {
+            // Lazy-load professional fee components from database
+            Bill professionalBill = getBillsByForwardRef(getSurgeryBill()).stream()
+                .filter(b -> b.getSurgeryBillType() == SurgeryBillType.ProfessionalFee)
+                .findFirst()
+                .orElse(null);
+            
+            if (professionalBill != null) {
+                setProfessionalBill(professionalBill);
+                List<EncounterComponent> enc = getBillBean().getEncounterComponents(professionalBill);
+                if (enc != null && !enc.isEmpty()) {
+                    proEncounterComponents = enc;
+                } else {
+                    proEncounterComponents = new ArrayList<>();
+                }
+            } else {
+                proEncounterComponents = new ArrayList<>();
+            }
+        }
         if (proEncounterComponents == null) {
             proEncounterComponents = new ArrayList<>();
         }
@@ -720,6 +786,24 @@ public class SurgeryBillController implements Serializable {
     }
 
     public List<EncounterComponent> getTimedEncounterComponents() {
+        if (timedEncounterComponents == null && getSurgeryBill() != null) {
+            // Lazy-load timed service components from database
+            Bill timedBill = getBillsByForwardRef(getSurgeryBill()).stream()
+                .filter(b -> b.getSurgeryBillType() == SurgeryBillType.TimedService)
+                .findFirst()
+                .orElse(null);
+            
+            if (timedBill != null) {
+                List<EncounterComponent> enc = getBillBean().getEncounterComponents(timedBill);
+                if (enc != null && !enc.isEmpty()) {
+                    timedEncounterComponents = enc;
+                } else {
+                    timedEncounterComponents = new ArrayList<>();
+                }
+            } else {
+                timedEncounterComponents = new ArrayList<>();
+            }
+        }
         if (timedEncounterComponents == null) {
             timedEncounterComponents = new ArrayList<>();
         }
@@ -783,6 +867,13 @@ public class SurgeryBillController implements Serializable {
     }
 
     public List<BillItem> getPharmacyIssues() {
+        if (pharmacyIssues == null && getSurgeryBill() != null) {
+            // Lazy-load pharmacy issues from database
+            pharmacyIssues = createIssueTable(BillType.PharmacyBhtPre);
+        }
+        if (pharmacyIssues == null) {
+            pharmacyIssues = new ArrayList<>();
+        }
         return pharmacyIssues;
     }
 

@@ -167,53 +167,20 @@
 
 
                         <table class="tbl"  >
-                            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Group Bed Charges in Bills', false)}">
-                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
-                                    <h:panelGroup rendered="#{bip.adjustedValue !=0}">
-                                        <tr>
-                                            <td style="text-align: left;" >
-                                                <h:outputLabel  value="#{bip.inwardChargeType.name}" />
-                                            </td>                                   
-                                            <td style="text-align: right;" >
-                                                <h:outputLabel value="#{bip.adjustedValue}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>  
-                                            </td>
-                                        </tr>
-                                    </h:panelGroup>
-                                </ui:repeat>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Group Bed Charges in Bills', false)}">
-                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
-                                    <h:panelGroup rendered="#{bip.adjustedValue != 0 and bip.inwardChargeType ne 'LinenCharges' and bip.inwardChargeType ne 'MOCharges' and bip.inwardChargeType ne 'NursingCharges' and bip.inwardChargeType ne 'MaintainCharges' and bip.inwardChargeType ne 'MedicalCareICU' and bip.inwardChargeType ne 'AdministrationCharge'}">
-                                        <tr>
-                                            <td style="text-align: left;" >
-                                                <h:outputLabel  value="#{bip.inwardChargeType.name}" />
-                                            </td>                                   
-                                            <td style="text-align: right;" >
-                                                <h:outputLabel value="#{bip.adjustedValue}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>  
-                                            </td>
-                                        </tr>
-                                    </h:panelGroup>
-                                </ui:repeat>
-
-                                <!-- Grouped Bed Charges -->
-                                <h:panelGroup rendered="#{bhtSummeryController.getBedChargesTotal(cc.attrs.bill.billItems) > 0}">
+                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                <h:panelGroup rendered="#{bip.adjustedValue !=0}">
                                     <tr>
                                         <td style="text-align: left;" >
-                                            <h:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Bed Charges Label', 'Bed Charges')}" />
+                                            <h:outputLabel  value="#{bip.inwardChargeType.name}" />
                                         </td>                                   
                                         <td style="text-align: right;" >
-                                            <h:outputLabel value="#{bhtSummeryController.getBedChargesTotal(cc.attrs.bill.billItems)}">
+                                            <h:outputLabel value="#{bip.adjustedValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
+                                            </h:outputLabel>  
                                         </td>
                                     </tr>
                                 </h:panelGroup>
-                            </h:panelGroup>
+                            </ui:repeat>
 
                             <h:panelGroup>
                                 <tr>   
@@ -231,6 +198,34 @@
 
                                     </td>
                                 </tr>
+
+                                <!-- VAT Row (Selective - only for vatable charges) - Uses pre-calculated value from bill entity -->
+                                <h:panelGroup rendered="#{cc.attrs.bill.vat > 0}">
+                                    <tr>
+                                        <td style="text-align: left; font-size: 12px!important;">
+                                            <h:outputLabel value="#{bhtSummeryController.getVatLabel()} (#{bhtSummeryController.getVatPercentage()}%)" />
+                                        </td>
+                                        <td style="text-align: right; font-size: 12px!important;">
+                                            <h:outputLabel value="#{cc.attrs.bill.vat}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </h:panelGroup>
+
+                                <!-- VAT Plus Total Row (Selective) - Uses pre-calculated value from bill entity -->
+                                <h:panelGroup rendered="#{cc.attrs.bill.vat > 0}">
+                                    <tr style="width: 100%;">
+                                        <td style="text-align: left; font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="#{bhtSummeryController.getVatLabel()} + Total"/>
+                                        </td>
+                                        <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
+                                            <h:outputLabel value="#{cc.attrs.bill.vatPlusNetTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </h:panelGroup>
 
                             </h:panelGroup>
 

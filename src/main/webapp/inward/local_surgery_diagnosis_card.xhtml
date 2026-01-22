@@ -1,0 +1,342 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr"
+      >
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <style>
+                    .ui-tabs-panel {
+                        padding: 0 !important;
+                    }
+                </style>
+
+                <h:form id="formLocalSurgeryDiagnosisCard" enctype="multipart/form-data" rendered="true">
+                    <p:growl id="msg"/>
+                    
+                    <div class="row">
+                        <div class="col-12 px-4">
+                            <p:commandButton 
+                                action="#{inpatientClinicalDataController.saveDiagnosticCardData()}"
+                                ajax="false"
+                                icon="pi pi-save"
+                                class="ui-button-success p-0 m-1" 
+                                value="Save"
+                                title="Save Local Surgery Diagnosis Card"/>
+
+                            <p:commandButton 
+                                class="p-0 m-1 ui-button-secondary" 
+                                action="#{inpatientClinicalDataController.cancelDiagnosticCardCapture()}" 
+                                icon="pi pi-times" 
+                                value="Cancel"
+                                ajax="false"
+                                title="Cancel"/>
+
+                            <p:commandButton 
+                                id="btnGeneratePreview"
+                                ajax="true" 
+                                icon="pi pi-sync"
+                                class="p-0 m-1 ui-button-warning" 
+                                value="Generate Preview"
+                                title="Generate Card Preview"
+                                process="@form"
+                                update="cardPreviewPanel">
+                            </p:commandButton>
+
+                            <p:commandButton
+                                id="btnPrint"
+                                ajax="true"
+                                icon="pi pi-print"
+                                class="p-0 m-1 ui-button-info" 
+                                value="Print"
+                                title="Print Local Surgery Diagnosis Card"
+                                rendered="#{inpatientClinicalDataController.diagnosisCardHtml ne null}">
+                                <p:printer target="cardPreviewPanel" />
+                            </p:commandButton>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <!-- Left Column: Data Capture -->
+                        <div class="col-md-6">
+                            <p:panel header="Local Surgery Diagnosis Card - Data Entry" class="w-100">
+                                <div class="row mb-3 p-3">
+                                    <div class="col-12">
+                                        <h:outputLabel value="Patient: " styleClass="font-weight-bold"></h:outputLabel>
+                                        <h:outputText value="#{patientController.current.person.nameWithTitle}"></h:outputText>
+                                        <br/>
+                                        <h:outputLabel value="BHT Number: " styleClass="font-weight-bold"></h:outputLabel>
+                                        <h:outputText value="#{inpatientClinicalDataController.current.bhtNo}"></h:outputText>
+                                        <br/>
+                                        <h:outputLabel value="Admission Date: " styleClass="font-weight-bold"></h:outputLabel>
+                                        <h:outputText value="#{inpatientClinicalDataController.current.dateOfAdmission}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
+                                        </h:outputText>
+                                    </div>
+                                </div>
+
+                                <p:tabView id="captureView" style="width: 100%">
+                                    <p:tab title="Clinical Findings" class="m-0">
+                                        <div class="p-3">
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Chief Complaint:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtChiefComplaint"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="3"
+                                                        value="#{inpatientClinicalDataController.diagnosticCardData.chiefComplaint}"
+                                                        placeholder="Enter chief complaint">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="History of Present Illness:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtHPI"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="3"
+                                                        value="#{inpatientClinicalDataController.diagnosticCardData.historyOfPresentIllness}"
+                                                        placeholder="Enter history of present illness">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Physical Examination:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtExamination"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="3"
+                                                        value="#{inpatientClinicalDataController.diagnosticCardData.physicalExamination}"
+                                                        placeholder="Enter physical examination findings">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Vital Signs:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtVitals"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="3"
+                                                        value="#{inpatientClinicalDataController.diagnosticCardData.vitalSigns}"
+                                                        placeholder="BP, Pulse, Temperature, RR">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Diagnosis &amp; Management" class="m-0">
+                                        <div class="p-3">
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Primary Diagnosis:" styleClass="form-label"></h:outputLabel>
+                                                    <p:autoComplete id="acDiagnosis" 
+                                                        value="#{inpatientClinicalDataController.diagnosisCaptureItem}"
+                                                        completeMethod="#{diagnosisController.completeDiagnosis}"
+                                                        var="dx" forceSelection="true"
+                                                        itemLabel="#{dx.name}" 
+                                                        itemValue="#{dx}"
+                                                        class="w-100"
+                                                        inputStyleClass="w-100"
+                                                        placeholder="Search diagnosis">
+                                                    </p:autoComplete>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Diagnosis Details:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtDiagnosisDetails"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="3"
+                                                        value="#{inpatientClinicalDataController.diagnosisCaptureDetails}"
+                                                        placeholder="Additional details">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Treatment Plan:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtTreatmentPlan"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="3"
+                                                        value="#{inpatientClinicalDataController.diagnosticCardData.treatmentPlan}"
+                                                        placeholder="Enter treatment plan">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Medications:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtMedications"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="3"
+                                                        value="#{inpatientClinicalDataController.diagnosticCardData.medications}"
+                                                        placeholder="Medications prescribed">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Investigations" class="m-0">
+                                        <div class="p-3">
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Investigations Ordered:" styleClass="form-label"></h:outputLabel>
+                                                    <p:autoComplete id="acInvestigation" 
+                                                        value="#{inpatientClinicalDataController.investigationCaptureItem}"
+                                                        completeMethod="#{investigationController.completeInvestigation}"
+                                                        var="ix" forceSelection="true"
+                                                        itemLabel="#{ix.name}" 
+                                                        itemValue="#{ix}"
+                                                        class="w-100"
+                                                        inputStyleClass="w-100">
+                                                    </p:autoComplete>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Investigation Details/Results:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtInvestigationDetails"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="3"
+                                                        value="#{inpatientClinicalDataController.investigationCaptureDetails}"
+                                                        placeholder="Results or findings">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Follow-up Instructions:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtFollowUp"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="3"
+                                                        value="#{inpatientClinicalDataController.diagnosticCardData.followUpNotes}"
+                                                        placeholder="Follow-up instructions">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Additional Notes" class="m-0">
+                                        <div class="p-3">
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Differential Diagnosis:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtDifferentialDx"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="2"
+                                                        value="#{inpatientClinicalDataController.diagnosticCardData.differentialDiagnosis}"
+                                                        placeholder="Enter differential diagnosis considerations">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Prognosis:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtPrognosis"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="2"
+                                                        value="#{inpatientClinicalDataController.diagnosticCardData.prognosis}"
+                                                        placeholder="Enter prognosis information">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <h:outputLabel value="Special Instructions/Warnings:" styleClass="form-label"></h:outputLabel>
+                                                    <p:inputTextarea 
+                                                        id="txtSpecialInstructions"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="2"
+                                                        value="#{inpatientClinicalDataController.diagnosticCardData.specialInstructions}"
+                                                        placeholder="Any special precautions or instructions">
+                                                    </p:inputTextarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </p:tab>
+                                </p:tabView>
+                            </p:panel>
+                        </div>
+
+                        <!-- Right Column: Card Preview -->
+                        <div class="col-md-6">
+                            <p:panel header="Card Preview" class="w-100" id="cardPreviewPanel">
+                                <div class="row mb-3 p-3">
+                                    <div class="col-12">
+                                        <h:outputLabel value="Select Template:" styleClass="font-weight-bold form-label" for="cardTemplateSelect"/>
+                                        <p:selectOneMenu id="cardTemplateSelect" value="#{inpatientClinicalDataController.selectedDiagnosisTemplate}" style="width: 100%;" class="mb-3">
+                                            <f:selectItem itemLabel="-- Select Template --" itemValue="" noSelectionOption="true" />
+                                            <f:selectItems value="#{inpatientClinicalDataController.availableDiagnosisTemplates}" var="template" 
+                                                itemLabel="#{template.name}" itemValue="#{template.id.toString()}" />
+                                        </p:selectOneMenu>
+                                        <br/>
+                                        <p:commandButton 
+                                            value="Generate Preview" 
+                                            ajax="true" 
+                                            icon="pi pi-sync"
+                                            styleClass="ui-button-primary w-100"
+                                            action="#{inpatientClinicalDataController.loadDiagnosisCard}"
+                                            update="cardContentArea">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                                
+                                <h:panelGroup id="cardContentArea">
+                                    <div class="card mt-3 p-3" style="background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px; min-height: 400px; max-height: 600px; overflow-y: auto;">
+                                        <h:outputText value="#{inpatientClinicalDataController.diagnosisCardHtml}" escape="false" rendered="#{inpatientClinicalDataController.diagnosisCardHtml ne null}"/>
+                                        <h:outputText value="Select a template and click 'Generate Preview' to see the card preview here." rendered="#{inpatientClinicalDataController.diagnosisCardHtml eq null}" styleClass="text-muted"/>
+                                    </div>
+                                </h:panelGroup>
+                            </p:panel>
+                        </div>
+                    </div>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -10,14 +10,16 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.clinical.*;
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
-
+import com.divudi.bean.inward.AdmissionController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.SymanticType;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.data.clinical.PrescriptionTemplateType;
+import com.divudi.core.data.inward.PatientEncounterComponentType;
 import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.core.data.lab.InvestigationResultForGraph;
 import com.divudi.core.entity.Bill;
@@ -35,6 +37,7 @@ import com.divudi.core.entity.clinical.DocumentTemplate;
 import com.divudi.core.entity.clinical.ItemUsage;
 import com.divudi.core.entity.clinical.Prescription;
 import com.divudi.core.entity.clinical.PrescriptionTemplate;
+import com.divudi.core.entity.inward.EncounterComponent;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.InvestigationItem;
 import com.divudi.core.entity.lab.PatientInvestigation;
@@ -44,6 +47,8 @@ import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.ClinicalEntityFacade;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
+import com.divudi.core.facade.DocumentTemplateFacade;
+import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.ItemUsageFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientFacade;
@@ -114,6 +119,10 @@ public class InpatientClinicalDataController implements Serializable {
     private ItemUsageFacade itemUsageFacade;
     @EJB
     private PrescriptionFacade prescriptionFacade;
+    @EJB
+    private DocumentTemplateFacade documentTemplateFacade;
+    @EJB
+    private EncounterComponentFacade encounterComponentFacade;
     /**
      * Controllers
      */
@@ -127,6 +136,10 @@ public class InpatientClinicalDataController implements Serializable {
     DocumentTemplateController documentTemplateController;
     @Inject
     SearchController searchController;
+    @Inject
+    AdmissionController admissionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     /**
      * Properties
@@ -228,6 +241,12 @@ public class InpatientClinicalDataController implements Serializable {
     private Upload selectedDiagnosisCardTemplate;
     private Upload selectedDiagnosisCard;
 
+    // Diagnosis card types - Ward Admission and Local Surgery
+    private String wardAdmissionDiagnosisCardHtml;
+    private String localSurgeryDiagnosisCardHtml;
+    private String diagnosisCardHtml;
+    private String selectedDiagnosisCardTypeHtml;
+
     @Deprecated
     public void calculateBmi() {
         if (current == null) {
@@ -271,59 +290,89 @@ public class InpatientClinicalDataController implements Serializable {
 
     public Map<String, String> createReplacementsMap(PatientEncounter encounter) {
         Map<String, String> replacements = new HashMap<>();
-        // Extracting information from the encounter
-        String name = encounter.getPatient().getPerson().getNameWithTitle();
-        String age = encounter.getPatient().getPerson().getAgeAsString() != null ? encounter.getPatient().getPerson().getAgeAsString() : "";
-        String sex = encounter.getPatient().getPerson().getSex() != null ? encounter.getPatient().getPerson().getSex().name() : "";
-        String address = encounter.getPatient().getPerson().getAddress() != null ? encounter.getPatient().getPerson().getAddress() : "";
-        String phone = encounter.getPatient().getPerson().getPhone() != null ? encounter.getPatient().getPerson().getPhone() : "";
-        String visitDate = CommonFunctions.formatDate(encounter.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
-        String doa = CommonFunctions.formatDate(encounter.getDateOfAdmission(), sessionController.getApplicationPreference().getLongDateFormat());
-        String dod;
-        if (encounter.getDateOfDischarge() == null) {
-            dod = CommonFunctions.formatDate(new Date(), sessionController.getApplicationPreference().getLongDateFormat());
-        } else {
-            dod = CommonFunctions.formatDate(encounter.getDateOfDischarge(), sessionController.getApplicationPreference().getLongDateFormat());
+        
+        // Extracting information from the encounter with null safety
+        String name = "";
+        String age = "";
+        String sex = "";
+        String address = "";
+        String phone = "";
+        String nic = "";
+        String phn = "";
+        
+        if (encounter != null && encounter.getPatient() != null && encounter.getPatient().getPerson() != null) {
+            Person person = encounter.getPatient().getPerson();
+            name = person.getNameWithTitle() != null ? person.getNameWithTitle() : "";
+            age = person.getAgeAsString() != null ? person.getAgeAsString() : "";
+            sex = person.getSex() != null ? person.getSex().name() : "";
+            address = person.getAddress() != null ? person.getAddress() : "";
+            phone = person.getPhone() != null ? person.getPhone() : "";
+            nic = person.getNic() != null ? person.getNic() : "";
         }
-        String bht = encounter.getBhtNo();
+        
+        if (encounter != null && encounter.getPatient() != null) {
+            phn = encounter.getPatient().getPhn() != null ? encounter.getPatient().getPhn() : "";
+        }
+        
+        String visitDate = "";
+        String doa = "";
+        String dod = "";
+        
+        if (encounter != null) {
+            visitDate = CommonFunctions.formatDate(encounter.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
+            doa = CommonFunctions.formatDate(encounter.getDateOfAdmission(), sessionController.getApplicationPreference().getLongDateFormat());
+            if (encounter.getDateOfDischarge() == null) {
+                dod = CommonFunctions.formatDate(new Date(), sessionController.getApplicationPreference().getLongDateFormat());
+            } else {
+                dod = CommonFunctions.formatDate(encounter.getDateOfDischarge(), sessionController.getApplicationPreference().getLongDateFormat());
+            }
+        }
+        
+        String bht = encounter != null ? (encounter.getBhtNo() != null ? encounter.getBhtNo() : "") : "";
         String room = "";
-        if (encounter.getCurrentPatientRoom() != null) {
-            encounter.getCurrentPatientRoom().getName();
+        if (encounter != null && encounter.getCurrentPatientRoom() != null) {
+            room = encounter.getCurrentPatientRoom().getName() != null ? encounter.getCurrentPatientRoom().getName() : "";
         }
-        String weight = CommonFunctions.formatNumber(encounter.getWeight(), "0.0") + " kg";
-        String height = CommonFunctions.formatNumber(encounter.getHeight(), "0") + " cm";
-        String bmi = encounter.getBmiFormatted();
-        String rr = encounter.getRespiratoryRate()+" bpm";
-        String bp = encounter.getBp();
+        String weight = encounter != null && encounter.getWeight() != null ? CommonFunctions.formatNumber(encounter.getWeight(), "0.0") + " kg" : "0.0 kg";
+        String height = encounter != null && encounter.getHeight() != null ? CommonFunctions.formatNumber(encounter.getHeight(), "0") + " cm" : "0 cm";
+        String bmi = encounter != null ? (encounter.getBmiFormatted() != null ? encounter.getBmiFormatted() : "") : "";
+        String rr = encounter != null && encounter.getRespiratoryRate() != null ? encounter.getRespiratoryRate()+" bpm" : "";
+        String bp = encounter != null ? (encounter.getBp() != null ? encounter.getBp() : "") : "";
         String comments = encounter.getComments() != null ? encounter.getComments() : "";
         if (comments == null) {
             comments = "";
         }
 
         StringBuilder diagnosisTextBuilder = new StringBuilder();
-        for (ClinicalFindingValue dx : getEncounterDiagnoses()) {
-            if (dx != null && dx.getItemValue() != null) {
-                diagnosisTextBuilder.append(dx.getItemValue().getName());
-                if (dx.getLobValue() != null) {
-                    diagnosisTextBuilder.append(" ").append(dx.getLobValue());
+        List<ClinicalFindingValue> diagnoses = getEncounterDiagnoses();
+        if (diagnoses != null) {
+            for (ClinicalFindingValue dx : diagnoses) {
+                if (dx != null && dx.getItemValue() != null) {
+                    diagnosisTextBuilder.append(dx.getItemValue().getName());
+                    if (dx.getLobValue() != null) {
+                        diagnosisTextBuilder.append(" ").append(dx.getLobValue());
+                    }
+                    diagnosisTextBuilder.append("<br/>"); // Using <br> for new line in HTML
                 }
-                diagnosisTextBuilder.append("<br/>"); // Using <br> for new line in HTML
             }
         }
         String diagnosisText = diagnosisTextBuilder.toString();
 
         String inpatientRxStrat = "Rx" + "<br/>";
         String inpatientRx = inpatientRxStrat;
-        for (ClinicalFindingValue cf : getEncounterMedicines()) {
-            if (cf != null && cf.getPrescription() != null) {
-                if (!cf.getPrescription().isIndoor()) {
-                    String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
-                    String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
-                    String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
-                    String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
-                    String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
-                    String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
-                    inpatientRx += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+        List<ClinicalFindingValue> medicines = getEncounterMedicines();
+        if (medicines != null) {
+            for (ClinicalFindingValue cf : medicines) {
+                if (cf != null && cf.getPrescription() != null) {
+                    if (!cf.getPrescription().isIndoor()) {
+                        String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
+                        String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
+                        String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
+                        String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
+                        String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
+                        String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
+                        inpatientRx += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                    }
                 }
             }
         }
@@ -333,17 +382,18 @@ public class InpatientClinicalDataController implements Serializable {
 
         String drxStart = "Rx" + "<br/>";
         String drxAsString = drxStart;
-        for (ClinicalFindingValue cf : getDischargeMedicines()) {
-            if (cf != null && cf.getPrescription() != null) {
-
-                String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
-                String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
-                String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
-                String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
-                String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
-                String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
-                drxAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
-
+        List<ClinicalFindingValue> dischargeMedicines = getDischargeMedicines();
+        if (dischargeMedicines != null) {
+            for (ClinicalFindingValue cf : dischargeMedicines) {
+                if (cf != null && cf.getPrescription() != null) {
+                    String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
+                    String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
+                    String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
+                    String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
+                    String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
+                    String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
+                    drxAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                }
             }
         }
         if (drxAsString.equals(drxStart)) {
@@ -352,8 +402,13 @@ public class InpatientClinicalDataController implements Serializable {
 
         String ixStart = " " + "<br/>";
         String ixAsString = ixStart;
-        for (ClinicalFindingValue ix : getEncounterInvestigations()) {
-            ixAsString += ix.getItemValue().getName() + ixStart;
+        List<ClinicalFindingValue> investigations = getEncounterInvestigations();
+        if (investigations != null) {
+            for (ClinicalFindingValue ix : investigations) {
+                if (ix != null && ix.getItemValue() != null && ix.getItemValue().getName() != null) {
+                    ixAsString += ix.getItemValue().getName() + ixStart;
+                }
+            }
         }
         if (ixAsString.equals(ixStart)) {
             ixAsString = "No investigations peformed";
@@ -361,11 +416,14 @@ public class InpatientClinicalDataController implements Serializable {
 
         String allergyStart = "Allergies " + "<br/>";
         String allergiesAsString = allergyStart;
-        for (ClinicalFindingValue cf : getPatientAllergies()) {
-            if (cf != null) {
-                String allergyName = cf.getItemValue() != null && cf.getItemValue().getName() != null ? cf.getItemValue().getName() : "";
-                String details = cf.getStringValue() != null ? cf.getStringValue() : "";
-                allergiesAsString += allergyName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+        List<ClinicalFindingValue> allergies = getPatientAllergies();
+        if (allergies != null) {
+            for (ClinicalFindingValue cf : allergies) {
+                if (cf != null) {
+                    String allergyName = cf.getItemValue() != null && cf.getItemValue().getName() != null ? cf.getItemValue().getName() : "";
+                    String details = cf.getStringValue() != null ? cf.getStringValue() : "";
+                    allergiesAsString += allergyName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+                }
             }
         }
         if (allergiesAsString.equals(allergyStart)) {
@@ -374,29 +432,35 @@ public class InpatientClinicalDataController implements Serializable {
 
         String routeineMedicineStart = "Routeine Medicines " + "<br/>";
         String routineMedicinesAsString = "";
-        for (ClinicalFindingValue rx : getPatientMedicines()) {
-            if (rx != null && rx.getPrescription() != null) {
-                String medicineName = rx.getPrescription().getItem() != null ? rx.getPrescription().getItem().getName() : "";
-                String dose = rx.getPrescription().getDose() != null ? String.valueOf(rx.getPrescription().getDose()) : "";
-                String doseUnit = rx.getPrescription().getDoseUnit() != null ? rx.getPrescription().getDoseUnit().getName() : "";
-                String frequency = rx.getPrescription().getFrequencyUnit() != null ? rx.getPrescription().getFrequencyUnit().getName() : "";
-                String duration = rx.getPrescription().getDuration() != null ? String.valueOf(rx.getPrescription().getDuration()) : "";
-                String durationUnit = rx.getPrescription().getDurationUnit() != null ? rx.getPrescription().getDurationUnit().getName() : "";
+        List<ClinicalFindingValue> patientMeds = getPatientMedicines();
+        if (patientMeds != null) {
+            for (ClinicalFindingValue rx : patientMeds) {
+                if (rx != null && rx.getPrescription() != null) {
+                    String medicineName = rx.getPrescription().getItem() != null ? rx.getPrescription().getItem().getName() : "";
+                    String dose = rx.getPrescription().getDose() != null ? String.valueOf(rx.getPrescription().getDose()) : "";
+                    String doseUnit = rx.getPrescription().getDoseUnit() != null ? rx.getPrescription().getDoseUnit().getName() : "";
+                    String frequency = rx.getPrescription().getFrequencyUnit() != null ? rx.getPrescription().getFrequencyUnit().getName() : "";
+                    String duration = rx.getPrescription().getDuration() != null ? String.valueOf(rx.getPrescription().getDuration()) : "";
+                    String durationUnit = rx.getPrescription().getDurationUnit() != null ? rx.getPrescription().getDurationUnit().getName() : "";
 
-                routineMedicinesAsString += medicineName + " " + dose + " " + doseUnit + " - " + frequency + " - " + duration + " " + durationUnit + "<br/>";
+                    routineMedicinesAsString += medicineName + " " + dose + " " + doseUnit + " - " + frequency + " - " + duration + " " + durationUnit + "<br/>";
+                }
             }
         }
-        if (routineMedicinesAsString.equals(routeineMedicineStart)) {
+        if (routineMedicinesAsString.isEmpty() || routineMedicinesAsString.equals(routeineMedicineStart)) {
             routineMedicinesAsString = "Not on any routeine medicines";
         }
 
         String pastDxStart = "Past History " + "<br/>";
         String pastDxAsString = pastDxStart;
-        for (ClinicalFindingValue dx : getPatientDiagnoses()) {
-            if (dx != null) {
-                String diagnosisName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
-                String details = dx.getStringValue() != null ? dx.getStringValue() : "";
-                pastDxAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+        List<ClinicalFindingValue> patientDxs = getPatientDiagnoses();
+        if (patientDxs != null) {
+            for (ClinicalFindingValue dx : patientDxs) {
+                if (dx != null) {
+                    String diagnosisName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
+                    String details = dx.getStringValue() != null ? dx.getStringValue() : "";
+                    pastDxAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+                }
             }
         }
         if (pastDxAsString.equals(pastDxStart)) {
@@ -406,8 +470,13 @@ public class InpatientClinicalDataController implements Serializable {
         //Procedures - {procedures}
         String prStart = " " + "<br/>";
         String prAsString = prStart;
-        for (ClinicalFindingValue pr : getEncounterProcedures()) {
-            prAsString += pr.getItemValue().getName();
+        List<ClinicalFindingValue> procedures = getEncounterProcedures();
+        if (procedures != null) {
+            for (ClinicalFindingValue pr : procedures) {
+                if (pr != null && pr.getItemValue() != null && pr.getItemValue().getName() != null) {
+                    prAsString += pr.getItemValue().getName();
+                }
+            }
         }
         if (prAsString.equals(prStart)) {
             prAsString = "No Procedures peformed";
@@ -416,20 +485,38 @@ public class InpatientClinicalDataController implements Serializable {
 
         // Add more replacement keys and values as needed
         replacements.put("{name}", name);
-        replacements.put("{age}", age); // Duplicate removed
-        replacements.put("{sex}", sex); // Duplicate removed
-        replacements.put("{address}", address); // Duplicate removed
-        replacements.put("{phone}", phone); // Duplicate removed
-        replacements.put("{visit-date}", visitDate); // Duplicate removed
-        replacements.put("{doa}", doa);
-        replacements.put("{dod}", dod);
-        replacements.put("{room}", room);
+        replacements.put("{patient_name}", name); // Alias
+        replacements.put("{age}", age);
+        replacements.put("{patient_age}", age); // Alias
+        replacements.put("{sex}", sex);
+        replacements.put("{address}", address);
+        replacements.put("{phone}", phone);
+        replacements.put("{nic}", nic);
+        replacements.put("{patient_nic}", nic); // Alias
+        replacements.put("{patient_nic_number}", nic); // Alias
+        replacements.put("{phn}", phn);
+        replacements.put("{patient_phn}", phn); // Alias
+        replacements.put("{patient_phn_number}", phn); // Alias
+        replacements.put("{visit-date}", visitDate);
+        
+        // Admission Details
         replacements.put("{bht}", bht);
-        replacements.put("{height}", height); // Duplicate removed
-        replacements.put("{weight}", weight); // Duplicate removed
-        replacements.put("{bmi}", bmi); // Duplicate removed
-        replacements.put("{bp}", bp); // Duplicate removed
-        replacements.put("{comments}", comments); // Duplicate removed
+        replacements.put("{bht-number}", bht); // Alias
+        replacements.put("{admission-number}", bht); // Alias
+        replacements.put("{doa}", doa);
+        replacements.put("{admission-date}", doa); // Alias
+        replacements.put("{date-of-admission}", doa); // Alias
+        replacements.put("{dod}", dod);
+        replacements.put("{discharge-date}", dod); // Alias
+        replacements.put("{date-of-discharge}", dod); // Alias
+        replacements.put("{room}", room);
+        replacements.put("{room-number}", room); // Alias
+        
+        replacements.put("{height}", height);
+        replacements.put("{weight}", weight);
+        replacements.put("{bmi}", bmi);
+        replacements.put("{bp}", bp);
+        replacements.put("{comments}", comments);
         replacements.put("{rx}", inpatientRx);
         replacements.put("{drx}", drxAsString);
         replacements.put("{ix}", ixAsString);
@@ -438,6 +525,50 @@ public class InpatientClinicalDataController implements Serializable {
         replacements.put("{routine-medicines}", routineMedicinesAsString);
         replacements.put("{allergies}", allergiesAsString);
         replacements.put("{dx}", diagnosisText);
+        
+        // Surgery Details
+        String surgeryName = "";
+        String surgeryProcedure = "";
+        String surgeryPerformedBy = "";
+        String surgeryAssistant = "";
+        String anesthesia = "";
+        String anesthesiologist = "";
+        String surgeryDate = "";
+        String surgeryTime = "";
+        
+        // Fetch surgery details from EncounterComponent records
+        try {
+            Map<String, String> surgeryData = fetchSurgeryDetails(encounter);
+            if (surgeryData != null) {
+                surgeryName = surgeryData.getOrDefault("procedure", "");
+                surgeryProcedure = surgeryData.getOrDefault("procedure", "");
+                surgeryPerformedBy = surgeryData.getOrDefault("surgeon", "");
+                surgeryAssistant = surgeryData.getOrDefault("assistant", "");
+                anesthesiologist = surgeryData.getOrDefault("anesthesiologist", "");
+                // For anesthesia type, we use the same anesthesiologist info (can be extended if more data exists)
+                anesthesia = anesthesiologist.isEmpty() ? "" : "General Anesthesia";
+                surgeryDate = surgeryData.getOrDefault("date", "");
+                surgeryTime = surgeryData.getOrDefault("time", "");
+            }
+        } catch (Exception e) {
+            // Silently handle if surgery details are not available
+            System.out.println("Error loading surgery details: " + e.getMessage());
+        }
+        
+        replacements.put("{surgery-name}", surgeryName);
+        replacements.put("{procedure}", surgeryName); // Alias
+        replacements.put("{surgery-procedure}", surgeryProcedure);
+        replacements.put("{performed-by}", surgeryPerformedBy);
+        replacements.put("{surgeon}", surgeryPerformedBy); // Alias
+        replacements.put("{surgery-surgeon}", surgeryPerformedBy); // Alias
+        replacements.put("{assistant}", surgeryAssistant);
+        replacements.put("{surgery-assistant}", surgeryAssistant); // Alias
+        replacements.put("{anesthesia}", anesthesia);
+        replacements.put("{anesthesia-type}", anesthesia); // Alias
+        replacements.put("{anesthesiologist}", anesthesiologist);
+        replacements.put("{surgery-anesthesiologist}", anesthesiologist); // Alias
+        replacements.put("{surgery-date}", surgeryDate);
+        replacements.put("{surgery-time}", surgeryTime);
 
         return replacements;
     }
@@ -479,6 +610,183 @@ public class InpatientClinicalDataController implements Serializable {
         upload.setComments(updatedComments);
 
         return upload;
+    }
+
+    /**
+     * Initialize controller for Ward Admission Card generation
+     * Should be called from admission_profile.xhtml before opening the dialog
+     */
+    public void initializeWardAdmissionCard() {
+        // current should be set from the calling page context
+        // If not set, try to get it from the session
+        if (current == null) {
+            JsfUtil.addErrorMessage("Patient encounter not loaded. Please try again.");
+            return;
+        }
+
+        // Load available templates
+        availableWardTemplates = null;
+        getAvailableWardTemplates();
+
+        // Reset selected template and card HTML
+        selectedWardTemplate = "";
+        wardAdmissionDiagnosisCardHtml = null;
+    }
+
+    /**
+     * Initialize controller for Local Surgery Card generation
+     * Should be called from admission_profile.xhtml before opening the dialog
+     */
+    public void initializeSurgeryCard() {
+        // current should be set from the calling page context
+        // If not set, try to get it from the session
+        if (current == null) {
+            JsfUtil.addErrorMessage("Patient encounter not loaded. Please try again.");
+            return;
+        }
+
+        // Load available templates
+        availableSurgeryTemplates = null;
+        getAvailableSurgeryTemplates();
+
+        // Reset selected template and card HTML
+        selectedSurgeryTemplate = "";
+        localSurgeryDiagnosisCardHtml = null;
+    }
+
+    /**
+     * Load and display Ward Admission Diagnosis Card with variable replacement
+     */
+    public void loadWardAdmissionDiagnosisCard() {
+        // If current is not set, try to get it from admissionController
+        if (current == null && admissionController != null) {
+            current = admissionController.getCurrent();
+        }
+
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient encounter selected");
+            return;
+        }
+
+        String templateHtml = null;
+
+        // Debug: Check what template ID was selected
+        System.out.println("Selected Ward Template ID: " + selectedWardTemplate);
+
+        // Try to load from selected template in dropdown first
+        if (selectedWardTemplate != null && !selectedWardTemplate.isEmpty() && !selectedWardTemplate.equals("")) {
+            try {
+                Long templateId = Long.parseLong(selectedWardTemplate);
+                System.out.println("Parsing template ID: " + templateId);
+
+                DocumentTemplate template = documentTemplateFacade.find(templateId);
+                System.out.println("Template found: " + (template != null ? template.getName() : "NULL"));
+
+                if (template != null && !template.isRetired()) {
+                    templateHtml = template.getContents();
+                    System.out.println("Template contents length: " + (templateHtml != null ? templateHtml.length() : "NULL"));
+                }
+            } catch (NumberFormatException nfe) {
+                System.out.println("Error parsing template ID: " + nfe.getMessage());
+                JsfUtil.addErrorMessage("Invalid template ID selected: " + selectedWardTemplate);
+            } catch (Exception e) {
+                System.out.println("Error loading template: " + e.getMessage());
+                e.printStackTrace();
+                // Fall through to config option if selected template fails
+            }
+        }
+
+        // Fallback to config option if no template selected or not found
+        if (templateHtml == null || templateHtml.isEmpty()) {
+            System.out.println("Falling back to config option");
+            templateHtml = configOptionApplicationController.getLongTextValueByKey("Ward Admission Diagnosis Card Template", "");
+        }
+
+        if (templateHtml == null || templateHtml.isEmpty()) {
+            JsfUtil.addErrorMessage("Ward Admission Diagnosis Card template not configured. Please select a template or configure a default.");
+            return;
+        }
+
+        System.out.println("Creating replacements map");
+        Map<String, String> replacements = createReplacementsMap(current);
+        System.out.println("Applying replacements to template");
+        wardAdmissionDiagnosisCardHtml = replaceVariablesInHtml(templateHtml, replacements);
+        System.out.println("Ward card HTML generated, length: " + (wardAdmissionDiagnosisCardHtml != null ? wardAdmissionDiagnosisCardHtml.length() : "NULL"));
+        selectedDiagnosisCardTypeHtml = wardAdmissionDiagnosisCardHtml;
+    }
+
+    /**
+     * Load and display Local Surgery Diagnosis Card with variable replacement
+     */
+    public void loadLocalSurgeryDiagnosisCard() {
+        // If current is not set, try to get it from admissionController
+        if (current == null && admissionController != null) {
+            current = admissionController.getCurrent();
+        }
+
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient encounter selected");
+            return;
+        }
+
+        String templateHtml = null;
+
+        // Debug: Check what template ID was selected
+        System.out.println("Selected Surgery Template ID: " + selectedSurgeryTemplate);
+
+        // Try to load from selected template in dropdown first
+        if (selectedSurgeryTemplate != null && !selectedSurgeryTemplate.isEmpty() && !selectedSurgeryTemplate.equals("")) {
+            try {
+                Long templateId = Long.parseLong(selectedSurgeryTemplate);
+                System.out.println("Parsing template ID: " + templateId);
+
+                DocumentTemplate template = documentTemplateFacade.find(templateId);
+                System.out.println("Template found: " + (template != null ? template.getName() : "NULL"));
+
+                if (template != null && !template.isRetired()) {
+                    templateHtml = template.getContents();
+                    System.out.println("Template contents length: " + (templateHtml != null ? templateHtml.length() : "NULL"));
+                }
+            } catch (NumberFormatException nfe) {
+                System.out.println("Error parsing template ID: " + nfe.getMessage());
+                JsfUtil.addErrorMessage("Invalid template ID selected: " + selectedSurgeryTemplate);
+            } catch (Exception e) {
+                System.out.println("Error loading template: " + e.getMessage());
+                e.printStackTrace();
+                // Fall through to config option if selected template fails
+            }
+        }
+
+        // Fallback to config option if no template selected or not found
+        if (templateHtml == null || templateHtml.isEmpty()) {
+            System.out.println("Falling back to config option");
+            templateHtml = configOptionApplicationController.getLongTextValueByKey("Local Surgery Diagnosis Card Template", "");
+        }
+
+        if (templateHtml == null || templateHtml.isEmpty()) {
+            JsfUtil.addErrorMessage("Local Surgery Diagnosis Card template not configured. Please select a template or configure a default.");
+            return;
+        }
+
+        System.out.println("Creating replacements map");
+        Map<String, String> replacements = createReplacementsMap(current);
+        System.out.println("Applying replacements to template");
+        localSurgeryDiagnosisCardHtml = replaceVariablesInHtml(templateHtml, replacements);
+        System.out.println("Surgery card HTML generated, length: " + (localSurgeryDiagnosisCardHtml != null ? localSurgeryDiagnosisCardHtml.length() : "NULL"));
+        selectedDiagnosisCardTypeHtml = localSurgeryDiagnosisCardHtml;
+    }
+
+    /**
+     * Replace variables in HTML with actual values using the replacements map
+     */
+    public String replaceVariablesInHtml(String htmlTemplate, Map<String, String> replacements) {
+        String result = htmlTemplate;
+        for (Map.Entry<String, String> replacement : replacements.entrySet()) {
+            if (replacement.getValue() != null) {
+                result = result.replace("{{" + replacement.getKey().substring(1, replacement.getKey().length() - 1) + "}}", replacement.getValue());
+            }
+        }
+        return result;
     }
 
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
@@ -1461,6 +1769,86 @@ public class InpatientClinicalDataController implements Serializable {
             }
         }
         return vs;
+    }
+
+    /**
+     * Fetch surgery details from EncounterComponent records
+     * @param encounter PatientEncounter to fetch surgery details for
+     * @return Map with surgery details (surgeon, assistant, anesthesiologist)
+     */
+    private Map<String, String> fetchSurgeryDetails(PatientEncounter encounter) {
+        Map<String, String> surgeryDetails = new HashMap<>();
+        surgeryDetails.put("surgeon", "");
+        surgeryDetails.put("assistant", "");
+        surgeryDetails.put("anesthesiologist", "");
+        surgeryDetails.put("procedure", "");
+        surgeryDetails.put("date", "");
+        surgeryDetails.put("time", "");
+
+        try {
+            if (encounter == null || encounter.getEncounterId() == null) {
+                return surgeryDetails;
+            }
+
+            // Query EncounterComponent records for this encounter
+            String jpql = "SELECT ec FROM EncounterComponent ec WHERE ec.patientEncounter = :encounter AND ec.retired = false ORDER BY ec.createdAt DESC";
+            List<EncounterComponent> components = encounterComponentFacade.findByJpql(jpql, 
+                new java.util.HashMap<String, Object>() {
+                    {
+                        put("encounter", encounter);
+                    }
+                });
+
+            if (components != null) {
+                for (EncounterComponent component : components) {
+                    if (component == null || component.getPatientEncounterComponentType() == null) {
+                        continue;
+                    }
+
+                    PatientEncounterComponentType componentType = component.getPatientEncounterComponentType();
+                    
+                    // Extract surgeon (Performed_By)
+                    if (componentType == PatientEncounterComponentType.Performed_By) {
+                        if (component.getStaff() != null && component.getStaff().getPerson() != null) {
+                            surgeryDetails.put("surgeon", component.getStaff().getPerson().getNameWithTitle());
+                        } else if (component.getName() != null) {
+                            surgeryDetails.put("surgeon", component.getName());
+                        }
+                    }
+                    // Extract assistant (Assisted_by)
+                    else if (componentType == PatientEncounterComponentType.Assisted_by) {
+                        if (component.getStaff() != null && component.getStaff().getPerson() != null) {
+                            surgeryDetails.put("assistant", component.getStaff().getPerson().getNameWithTitle());
+                        } else if (component.getName() != null) {
+                            surgeryDetails.put("assistant", component.getName());
+                        }
+                    }
+                    // Extract anesthesiologist (Ananesthesia_by - note: typo in enum)
+                    else if (componentType == PatientEncounterComponentType.Ananesthesia_by) {
+                        if (component.getStaff() != null && component.getStaff().getPerson() != null) {
+                            surgeryDetails.put("anesthesiologist", component.getStaff().getPerson().getNameWithTitle());
+                        } else if (component.getName() != null) {
+                            surgeryDetails.put("anesthesiologist", component.getName());
+                        }
+                    }
+                    // Extract procedure (Item)
+                    else if (componentType == PatientEncounterComponentType.Item) {
+                        if (component.getItem() != null && component.getItem().getName() != null) {
+                            surgeryDetails.put("procedure", component.getItem().getName());
+                        } else if (component.getName() != null) {
+                            surgeryDetails.put("procedure", component.getName());
+                        }
+                    }
+                }
+            }
+
+            // If no surgery data found, use empty strings (already set above)
+        } catch (Exception e) {
+            // Log error but don't throw - surgery details are optional
+            System.out.println("Error fetching surgery details: " + e.getMessage());
+        }
+
+        return surgeryDetails;
     }
 
     public String navigateToOldOpdVisitFromSearch() {
@@ -3199,6 +3587,574 @@ public class InpatientClinicalDataController implements Serializable {
 
     public void setDiagnosisCardText(String diagnosisCardText) {
         this.diagnosisCardText = diagnosisCardText;
+    }
+
+    public String getDiagnosisCardHtml() {
+        return diagnosisCardHtml;
+    }
+
+    public void setDiagnosisCardHtml(String diagnosisCardHtml) {
+        this.diagnosisCardHtml = diagnosisCardHtml;
+    }
+
+    // Template Selection Properties
+    private String selectedWardTemplate;
+    private String selectedSurgeryTemplate;
+    private String selectedDiagnosisTemplate;
+    private List<DocumentTemplate> availableWardTemplates;
+    private List<DocumentTemplate> availableSurgeryTemplates;
+    private List<DocumentTemplate> availableDiagnosisTemplates;
+
+    /**
+     * Get available Ward Admission templates from database
+     */
+    public List<DocumentTemplate> getAvailableWardTemplates() {
+        if (availableWardTemplates == null || availableWardTemplates.isEmpty()) {
+            try {
+                String jpql = "SELECT d FROM DocumentTemplate d WHERE d.type = com.divudi.core.data.clinical.DocumentTemplateType.WardAdmissionCard AND d.retired = false ORDER BY d.name";
+                availableWardTemplates = (List<DocumentTemplate>) documentTemplateFacade.executeQuery(DocumentTemplate.class, jpql);
+                if (availableWardTemplates == null) {
+                    availableWardTemplates = new ArrayList<>();
+                }
+            } catch (Exception e) {
+                availableWardTemplates = new ArrayList<>();
+                JsfUtil.addErrorMessage("Error loading Ward templates: " + e.getMessage());
+            }
+        }
+        return availableWardTemplates;
+    }
+
+    public void setAvailableWardTemplates(List<DocumentTemplate> availableWardTemplates) {
+        this.availableWardTemplates = availableWardTemplates;
+    }
+
+    /**
+     * Get available Local Surgery templates from database
+     */
+    /**
+     * Get available Local Surgery templates from database
+     */
+    public List<DocumentTemplate> getAvailableSurgeryTemplates() {
+        if (availableSurgeryTemplates == null || availableSurgeryTemplates.isEmpty()) {
+            try {
+                String jpql = "SELECT d FROM DocumentTemplate d WHERE d.type = com.divudi.core.data.clinical.DocumentTemplateType.LocalSurgeryCard AND d.retired = false ORDER BY d.name";
+                availableSurgeryTemplates = (List<DocumentTemplate>) documentTemplateFacade.executeQuery(DocumentTemplate.class, jpql);
+                if (availableSurgeryTemplates == null) {
+                    availableSurgeryTemplates = new ArrayList<>();
+                }
+            } catch (Exception e) {
+                availableSurgeryTemplates = new ArrayList<>();
+                JsfUtil.addErrorMessage("Error loading Surgery templates: " + e.getMessage());
+            }
+        }
+        return availableSurgeryTemplates;
+    }
+
+    public void setAvailableSurgeryTemplates(List<DocumentTemplate> availableSurgeryTemplates) {
+        this.availableSurgeryTemplates = availableSurgeryTemplates;
+    }
+
+    /**
+     * Get available Diagnosis templates from database
+     */
+    public List<DocumentTemplate> getAvailableDiagnosisTemplates() {
+        if (availableDiagnosisTemplates == null || availableDiagnosisTemplates.isEmpty()) {
+            try {
+                String jpql = "SELECT d FROM DocumentTemplate d WHERE d.type = com.divudi.core.data.clinical.DocumentTemplateType.DiagnosisCard AND d.retired = false ORDER BY d.name";
+                availableDiagnosisTemplates = (List<DocumentTemplate>) documentTemplateFacade.executeQuery(DocumentTemplate.class, jpql);
+                if (availableDiagnosisTemplates == null) {
+                    availableDiagnosisTemplates = new ArrayList<>();
+                }
+            } catch (Exception e) {
+                availableDiagnosisTemplates = new ArrayList<>();
+                JsfUtil.addErrorMessage("Error loading Diagnosis templates: " + e.getMessage());
+            }
+        }
+        return availableDiagnosisTemplates;
+    }
+
+    public void setAvailableDiagnosisTemplates(List<DocumentTemplate> availableDiagnosisTemplates) {
+        this.availableDiagnosisTemplates = availableDiagnosisTemplates;
+    }
+
+    /**
+     * Get selected Ward template ID
+     */
+    public String getSelectedWardTemplate() {
+        return selectedWardTemplate;
+    }
+
+    public void setSelectedWardTemplate(String selectedWardTemplate) {
+        this.selectedWardTemplate = selectedWardTemplate;
+    }
+
+    /**
+     * Get selected Surgery template ID
+     */
+    public String getSelectedSurgeryTemplate() {
+        return selectedSurgeryTemplate;
+    }
+
+    public void setSelectedSurgeryTemplate(String selectedSurgeryTemplate) {
+        this.selectedSurgeryTemplate = selectedSurgeryTemplate;
+    }
+
+    /**
+     * Handle Ward template selection change
+     */
+    public void onWardTemplateChange() {
+        if (selectedWardTemplate != null && !selectedWardTemplate.isEmpty()) {
+            loadWardAdmissionDiagnosisCard();
+        }
+    }
+
+    /**
+     * Handle Surgery template selection change
+     */
+    public void onSurgeryTemplateChange() {
+        if (selectedSurgeryTemplate != null && !selectedSurgeryTemplate.isEmpty()) {
+            loadLocalSurgeryDiagnosisCard();
+        }
+    }
+
+    /**
+     * Get selected Diagnosis template ID
+     */
+    public String getSelectedDiagnosisTemplate() {
+        return selectedDiagnosisTemplate;
+    }
+
+    public void setSelectedDiagnosisTemplate(String selectedDiagnosisTemplate) {
+        this.selectedDiagnosisTemplate = selectedDiagnosisTemplate;
+    }
+
+    /**
+     * Load and display Diagnosis Card with variable replacement
+     */
+    public void loadDiagnosisCard() {
+        // If current is not set, try to get it from admissionController
+        if (current == null && admissionController != null) {
+            current = admissionController.getCurrent();
+        }
+        
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient encounter selected");
+            return;
+        }
+        
+        String templateHtml = null;
+        
+        // Debug: Check what template ID was selected
+        System.out.println("Selected Diagnosis Template ID: " + selectedDiagnosisTemplate);
+        
+        // Try to load from selected template in dropdown first
+        if (selectedDiagnosisTemplate != null && !selectedDiagnosisTemplate.isEmpty() && !selectedDiagnosisTemplate.equals("")) {
+            try {
+                Long templateId = Long.parseLong(selectedDiagnosisTemplate);
+                System.out.println("Parsing template ID: " + templateId);
+                
+                DocumentTemplate template = documentTemplateFacade.find(templateId);
+                System.out.println("Template found: " + (template != null ? template.getName() : "NULL"));
+                
+                if (template != null && !template.isRetired()) {
+                    templateHtml = template.getContents();
+                    System.out.println("Template contents length: " + (templateHtml != null ? templateHtml.length() : "NULL"));
+                }
+            } catch (NumberFormatException nfe) {
+                System.out.println("Error parsing template ID: " + nfe.getMessage());
+                JsfUtil.addErrorMessage("Invalid template ID selected: " + selectedDiagnosisTemplate);
+            } catch (Exception e) {
+                System.out.println("Error loading template: " + e.getMessage());
+                e.printStackTrace();
+                // Fall through to config option if selected template fails
+            }
+        }
+        
+        // Fallback to config option if no template selected or not found
+        if (templateHtml == null || templateHtml.isEmpty()) {
+            System.out.println("Falling back to config option");
+            templateHtml = configOptionApplicationController.getLongTextValueByKey("Diagnosis Card Template", "");
+        }
+        
+        if (templateHtml == null || templateHtml.isEmpty()) {
+            JsfUtil.addErrorMessage("Diagnosis Card template not configured. Please select a template or configure a default.");
+            return;
+        }
+        
+        System.out.println("Creating replacements map");
+        Map<String, String> replacements = createReplacementsMap(current);
+        System.out.println("Applying replacements to template");
+        diagnosisCardHtml = replaceVariablesInHtml(templateHtml, replacements);
+        System.out.println("Diagnosis card HTML generated, length: " + (diagnosisCardHtml != null ? diagnosisCardHtml.length() : "NULL"));
+    }
+
+    /**
+     * Handle Diagnosis template selection change
+     */
+    public void onDiagnosisTemplateChange() {
+        if (selectedDiagnosisTemplate != null && !selectedDiagnosisTemplate.isEmpty()) {
+            loadDiagnosisCard();
+        }
+    }
+
+    // Diagnostic Card Data Holder
+    private DiagnosticCardData diagnosticCardData;
+    private ClinicalEntity diagnosisCaptureItem;
+    private String diagnosisCaptureDetails;
+    private List<ClinicalEntity> capturedDiagnoses = new ArrayList<>();
+    
+    private InvestigationItem investigationCaptureItem;
+    private String investigationCaptureDetails;
+    private List<InvestigationItem> capturedInvestigations = new ArrayList<>();
+
+    // Ward Admission Card Data Holder
+    private WardAdmissionCardData wardAdmissionCardData;
+    private ClinicalEntity wardDiagnosisCaptureItem;
+
+    public DiagnosticCardData getDiagnosticCardData() {
+        if (diagnosticCardData == null) {
+            diagnosticCardData = new DiagnosticCardData();
+        }
+        return diagnosticCardData;
+    }
+
+    public void setDiagnosticCardData(DiagnosticCardData diagnosticCardData) {
+        this.diagnosticCardData = diagnosticCardData;
+    }
+
+    public ClinicalEntity getDiagnosisCaptureItem() {
+        return diagnosisCaptureItem;
+    }
+
+    public void setDiagnosisCaptureItem(ClinicalEntity diagnosisCaptureItem) {
+        this.diagnosisCaptureItem = diagnosisCaptureItem;
+    }
+
+    public String getDiagnosisCaptureDetails() {
+        return diagnosisCaptureDetails;
+    }
+
+    public void setDiagnosisCaptureDetails(String diagnosisCaptureDetails) {
+        this.diagnosisCaptureDetails = diagnosisCaptureDetails;
+    }
+
+    public List<ClinicalEntity> getCapturedDiagnoses() {
+        return capturedDiagnoses;
+    }
+
+    public void setCapturedDiagnoses(List<ClinicalEntity> capturedDiagnoses) {
+        this.capturedDiagnoses = capturedDiagnoses;
+    }
+
+    public InvestigationItem getInvestigationCaptureItem() {
+        return investigationCaptureItem;
+    }
+
+    public void setInvestigationCaptureItem(InvestigationItem investigationCaptureItem) {
+        this.investigationCaptureItem = investigationCaptureItem;
+    }
+
+    public String getInvestigationCaptureDetails() {
+        return investigationCaptureDetails;
+    }
+
+    public void setInvestigationCaptureDetails(String investigationCaptureDetails) {
+        this.investigationCaptureDetails = investigationCaptureDetails;
+    }
+
+    public List<InvestigationItem> getCapturedInvestigations() {
+        return capturedInvestigations;
+    }
+
+    public void setCapturedInvestigations(List<InvestigationItem> capturedInvestigations) {
+        this.capturedInvestigations = capturedInvestigations;
+    }
+
+    public WardAdmissionCardData getWardAdmissionCardData() {
+        if (wardAdmissionCardData == null) {
+            wardAdmissionCardData = new WardAdmissionCardData();
+        }
+        return wardAdmissionCardData;
+    }
+
+    public void setWardAdmissionCardData(WardAdmissionCardData wardAdmissionCardData) {
+        this.wardAdmissionCardData = wardAdmissionCardData;
+    }
+
+    public ClinicalEntity getWardDiagnosisCaptureItem() {
+        return wardDiagnosisCaptureItem;
+    }
+
+    public void setWardDiagnosisCaptureItem(ClinicalEntity wardDiagnosisCaptureItem) {
+        this.wardDiagnosisCaptureItem = wardDiagnosisCaptureItem;
+    }
+
+    /**
+     * Save Diagnostic Card Data
+     */
+    public void saveDiagnosticCardData() {
+        if (diagnosticCardData == null) {
+            JsfUtil.addErrorMessage("No diagnostic card data to save");
+            return;
+        }
+        try {
+            // Logic to save diagnosticCardData to database
+            JsfUtil.addSuccessMessage("Diagnostic card data saved successfully");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving diagnostic card data: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Cancel Diagnostic Card Capture
+     */
+    public void cancelDiagnosticCardCapture() {
+        diagnosticCardData = null;
+        capturedDiagnoses.clear();
+        capturedInvestigations.clear();
+        diagnosisCaptureItem = null;
+        investigationCaptureItem = null;
+    }
+
+    /**
+     * Add Diagnosis to Captured List
+     */
+    public void addDiagnosisToCapture() {
+        if (diagnosisCaptureItem != null) {
+            capturedDiagnoses.add(diagnosisCaptureItem);
+            diagnosisCaptureItem = null;
+            diagnosisCaptureDetails = null;
+        }
+    }
+
+    /**
+     * Remove Captured Diagnosis
+     */
+    public void removeCapturedDiagnosis(ClinicalEntity dx) {
+        capturedDiagnoses.remove(dx);
+    }
+
+    /**
+     * Add Investigation to Captured List
+     */
+    public void addInvestigationToCapture() {
+        if (investigationCaptureItem != null) {
+            capturedInvestigations.add(investigationCaptureItem);
+            investigationCaptureItem = null;
+            investigationCaptureDetails = null;
+        }
+    }
+
+    /**
+     * Remove Captured Investigation
+     */
+    public void removeCapturedInvestigation(InvestigationItem ix) {
+        capturedInvestigations.remove(ix);
+    }
+
+    /**
+     * Save Ward Admission Card Data
+     */
+    public void saveWardAdmissionCardData() {
+        if (wardAdmissionCardData == null) {
+            JsfUtil.addErrorMessage("No ward admission card data to save");
+            return;
+        }
+        try {
+            // Logic to save wardAdmissionCardData to database
+            JsfUtil.addSuccessMessage("Ward admission card data saved successfully");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving ward admission card data: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Cancel Ward Admission Card Capture
+     */
+    public void cancelWardAdmissionCapture() {
+        wardAdmissionCardData = null;
+        wardDiagnosisCaptureItem = null;
+    }
+
+    /**
+     * Inner class to hold Diagnostic Card data
+     */
+    public static class DiagnosticCardData implements Serializable {
+        private String chiefComplaint;
+        private String historyOfPresentIllness;
+        private String physicalExamination;
+        private String vitalSigns;
+        private String treatmentPlan;
+        private String medications;
+        private String followUpNotes;
+        private String differentialDiagnosis;
+        private String prognosis;
+        private String specialInstructions;
+
+        public String getChiefComplaint() { return chiefComplaint; }
+        public void setChiefComplaint(String chiefComplaint) { this.chiefComplaint = chiefComplaint; }
+
+        public String getHistoryOfPresentIllness() { return historyOfPresentIllness; }
+        public void setHistoryOfPresentIllness(String historyOfPresentIllness) { this.historyOfPresentIllness = historyOfPresentIllness; }
+
+        public String getPhysicalExamination() { return physicalExamination; }
+        public void setPhysicalExamination(String physicalExamination) { this.physicalExamination = physicalExamination; }
+
+        public String getVitalSigns() { return vitalSigns; }
+        public void setVitalSigns(String vitalSigns) { this.vitalSigns = vitalSigns; }
+
+        public String getTreatmentPlan() { return treatmentPlan; }
+        public void setTreatmentPlan(String treatmentPlan) { this.treatmentPlan = treatmentPlan; }
+
+        public String getMedications() { return medications; }
+        public void setMedications(String medications) { this.medications = medications; }
+
+        public String getFollowUpNotes() { return followUpNotes; }
+        public void setFollowUpNotes(String followUpNotes) { this.followUpNotes = followUpNotes; }
+
+        public String getDifferentialDiagnosis() { return differentialDiagnosis; }
+        public void setDifferentialDiagnosis(String differentialDiagnosis) { this.differentialDiagnosis = differentialDiagnosis; }
+
+        public String getPrognosis() { return prognosis; }
+        public void setPrognosis(String prognosis) { this.prognosis = prognosis; }
+
+        public String getSpecialInstructions() { return specialInstructions; }
+        public void setSpecialInstructions(String specialInstructions) { this.specialInstructions = specialInstructions; }
+    }
+
+    /**
+     * Inner class to hold Ward Admission Card data
+     */
+    public static class WardAdmissionCardData implements Serializable {
+        private String bhtNumber;
+        private String admissionType;
+        private String ward;
+        private String bedNumber;
+        private Date dateOfAdmission;
+        private String timeOfAdmission;
+        private String chiefComplaint;
+        private String historyOfPresentIllness;
+        private String pastMedicalHistory;
+        private String medicationsOnAdmission;
+        private Double temperature;
+        private String bloodPressure;
+        private Integer pulseRate;
+        private Integer respiratoryRate;
+        private Double weight;
+        private Double height;
+        private Double bmi;
+        private String generalExamination;
+        private String primaryDiagnosis;
+        private String treatmentPlan;
+        private String medicationsPrescribed;
+        private String laboratoryTests;
+        private String imaging;
+        private String physicianName;
+        private String physicianContact;
+        private String physicianSignature;
+        private String nurseName;
+        private String nurseContact;
+        private String nurseSignature;
+        private String allergies;
+        private String precautions;
+        private String additionalNotes;
+
+        // Getters and Setters
+        public String getBhtNumber() { return bhtNumber; }
+        public void setBhtNumber(String bhtNumber) { this.bhtNumber = bhtNumber; }
+
+        public String getAdmissionType() { return admissionType; }
+        public void setAdmissionType(String admissionType) { this.admissionType = admissionType; }
+
+        public String getWard() { return ward; }
+        public void setWard(String ward) { this.ward = ward; }
+
+        public String getBedNumber() { return bedNumber; }
+        public void setBedNumber(String bedNumber) { this.bedNumber = bedNumber; }
+
+        public Date getDateOfAdmission() { return dateOfAdmission; }
+        public void setDateOfAdmission(Date dateOfAdmission) { this.dateOfAdmission = dateOfAdmission; }
+
+        public String getTimeOfAdmission() { return timeOfAdmission; }
+        public void setTimeOfAdmission(String timeOfAdmission) { this.timeOfAdmission = timeOfAdmission; }
+
+        public String getChiefComplaint() { return chiefComplaint; }
+        public void setChiefComplaint(String chiefComplaint) { this.chiefComplaint = chiefComplaint; }
+
+        public String getHistoryOfPresentIllness() { return historyOfPresentIllness; }
+        public void setHistoryOfPresentIllness(String historyOfPresentIllness) { this.historyOfPresentIllness = historyOfPresentIllness; }
+
+        public String getPastMedicalHistory() { return pastMedicalHistory; }
+        public void setPastMedicalHistory(String pastMedicalHistory) { this.pastMedicalHistory = pastMedicalHistory; }
+
+        public String getMedicationsOnAdmission() { return medicationsOnAdmission; }
+        public void setMedicationsOnAdmission(String medicationsOnAdmission) { this.medicationsOnAdmission = medicationsOnAdmission; }
+
+        public Double getTemperature() { return temperature; }
+        public void setTemperature(Double temperature) { this.temperature = temperature; }
+
+        public String getBloodPressure() { return bloodPressure; }
+        public void setBloodPressure(String bloodPressure) { this.bloodPressure = bloodPressure; }
+
+        public Integer getPulseRate() { return pulseRate; }
+        public void setPulseRate(Integer pulseRate) { this.pulseRate = pulseRate; }
+
+        public Integer getRespiratoryRate() { return respiratoryRate; }
+        public void setRespiratoryRate(Integer respiratoryRate) { this.respiratoryRate = respiratoryRate; }
+
+        public Double getWeight() { return weight; }
+        public void setWeight(Double weight) { this.weight = weight; }
+
+        public Double getHeight() { return height; }
+        public void setHeight(Double height) { this.height = height; }
+
+        public Double getBmi() { return bmi; }
+        public void setBmi(Double bmi) { this.bmi = bmi; }
+
+        public String getGeneralExamination() { return generalExamination; }
+        public void setGeneralExamination(String generalExamination) { this.generalExamination = generalExamination; }
+
+        public String getPrimaryDiagnosis() { return primaryDiagnosis; }
+        public void setPrimaryDiagnosis(String primaryDiagnosis) { this.primaryDiagnosis = primaryDiagnosis; }
+
+        public String getTreatmentPlan() { return treatmentPlan; }
+        public void setTreatmentPlan(String treatmentPlan) { this.treatmentPlan = treatmentPlan; }
+
+        public String getMedicationsPrescribed() { return medicationsPrescribed; }
+        public void setMedicationsPrescribed(String medicationsPrescribed) { this.medicationsPrescribed = medicationsPrescribed; }
+
+        public String getLaboratoryTests() { return laboratoryTests; }
+        public void setLaboratoryTests(String laboratoryTests) { this.laboratoryTests = laboratoryTests; }
+
+        public String getImaging() { return imaging; }
+        public void setImaging(String imaging) { this.imaging = imaging; }
+
+        public String getPhysicianName() { return physicianName; }
+        public void setPhysicianName(String physicianName) { this.physicianName = physicianName; }
+
+        public String getPhysicianContact() { return physicianContact; }
+        public void setPhysicianContact(String physicianContact) { this.physicianContact = physicianContact; }
+
+        public String getPhysicianSignature() { return physicianSignature; }
+        public void setPhysicianSignature(String physicianSignature) { this.physicianSignature = physicianSignature; }
+
+        public String getNurseName() { return nurseName; }
+        public void setNurseName(String nurseName) { this.nurseName = nurseName; }
+
+        public String getNurseContact() { return nurseContact; }
+        public void setNurseContact(String nurseContact) { this.nurseContact = nurseContact; }
+
+        public String getNurseSignature() { return nurseSignature; }
+        public void setNurseSignature(String nurseSignature) { this.nurseSignature = nurseSignature; }
+
+        public String getAllergies() { return allergies; }
+        public void setAllergies(String allergies) { this.allergies = allergies; }
+
+        public String getPrecautions() { return precautions; }
+        public void setPrecautions(String precautions) { this.precautions = precautions; }
+
+        public String getAdditionalNotes() { return additionalNotes; }
+        public void setAdditionalNotes(String additionalNotes) { this.additionalNotes = additionalNotes; }
     }
 
 }

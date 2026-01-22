@@ -1,0 +1,111 @@
+<![CDATA[<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC
+    "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- Ward Admission Card with Template Selection -->
+    <p:panel header="Ward Admission Card" style="margin: 20px 0;">
+        <h:panelGrid columns="3" cellpadding="10" style="width: 100%;">
+            <h:outputLabel for="wardTemplateSelect" value="Select Template:" 
+                         style="font-weight: bold;"/>
+            <p:selectOneMenu id="wardTemplateSelect" 
+                           value="#{inpatientClinicalDataController.selectedWardTemplate}"
+                           effect="fade" 
+                           editable="false"
+                           style="width: 300px;">
+                <p:ajax event="change" 
+                       listener="#{inpatientClinicalDataController.onWardTemplateChange}"
+                       update="wardCardContent"/>
+                <f:selectItems value="#{inpatientClinicalDataController.availableWardTemplates}" 
+                             var="template"
+                             itemLabel="#{template.name}" 
+                             itemValue="#{template.id}"/>
+            </p:selectOneMenu>
+            <p:button value="Generate Ward Card" 
+                    icon="pi pi-file-pdf"
+                    onclick="PF('wardCardDialog').show();"
+                    styleClass="ui-button-success"/>
+        </h:panelGrid>
+
+        <!-- Ward Admission Card Dialog -->
+        <p:dialog id="wardCardDialog" header="Ward Admission Card" 
+                modal="true" width="900" height="600" maximizable="true"
+                closable="true" resizable="true">
+            <div id="wardCardContent" style="padding: 20px; max-height: 500px; overflow-y: auto;">
+                <h:outputText value="#{inpatientClinicalDataController.generateWardAdmissionCard()}" 
+                            escape="false"/>
+            </div>
+            <f:facet name="footer">
+                <p:button value="Print" icon="pi pi-print" 
+                        onclick="window.print();"
+                        styleClass="ui-button-success"
+                        style="margin-right: 10px;"/>
+                <p:button value="Save as PDF" icon="pi pi-download"
+                        onclick="window.print();"
+                        styleClass="ui-button-info"
+                        style="margin-right: 10px;"/>
+                <p:button value="Close" icon="pi pi-times"
+                        onclick="PF('wardCardDialog').hide();"
+                        styleClass="ui-button-secondary"/>
+            </f:facet>
+        </p:dialog>
+    </p:panel>
+
+    <hr style="margin: 20px 0; border: 1px solid #ddd;"/>
+
+    <!-- Local Surgery Card with Template Selection -->
+    <p:panel header="Local Surgery Card" style="margin: 20px 0;">
+        <h:panelGrid columns="3" cellpadding="10" style="width: 100%;">
+            <h:outputLabel for="surgeryTemplateSelect" value="Select Template:" 
+                         style="font-weight: bold;"/>
+            <p:selectOneMenu id="surgeryTemplateSelect" 
+                           value="#{inpatientClinicalDataController.selectedSurgeryTemplate}"
+                           effect="fade" 
+                           editable="false"
+                           style="width: 300px;">
+                <p:ajax event="change" 
+                       listener="#{inpatientClinicalDataController.onSurgeryTemplateChange}"
+                       update="surgeryCardContent"/>
+                <f:selectItems value="#{inpatientClinicalDataController.availableSurgeryTemplates}" 
+                             var="template"
+                             itemLabel="#{template.name}" 
+                             itemValue="#{template.id}"/>
+            </p:selectOneMenu>
+            <p:button value="Generate Surgery Card"
+                    icon="pi pi-file-pdf"
+                    onclick="PF('surgeryCardDialog').show();"
+                    styleClass="ui-button-danger"/>
+        </h:panelGrid>
+
+        <!-- Local Surgery Card Dialog -->
+        <p:dialog id="surgeryCardDialog" header="Surgical Procedure Record"
+                modal="true" width="900" height="600" maximizable="true"
+                closable="true" resizable="true">
+            <div id="surgeryCardContent" style="padding: 20px; max-height: 500px; overflow-y: auto;">
+                <h:outputText value="#{inpatientClinicalDataController.generateLocalSurgeryCard()}"
+                            escape="false"/>
+            </div>
+            <f:facet name="footer">
+                <p:button value="Print" icon="pi pi-print"
+                        onclick="window.print();"
+                        styleClass="ui-button-danger"
+                        style="margin-right: 10px;"/>
+                <p:button value="Save as PDF" icon="pi pi-download"
+                        onclick="window.print();"
+                        styleClass="ui-button-info"
+                        style="margin-right: 10px;"/>
+                <p:button value="Close" icon="pi pi-times"
+                        onclick="PF('surgeryCardDialog').hide();"
+                        styleClass="ui-button-secondary"/>
+            </f:facet>
+        </p:dialog>
+    </p:panel>
+
+</ui:composition>
+]]>

@@ -351,6 +351,23 @@
                                     icon="fa fa-diagnoses" 
                                     class="w-100">
                                 </p:commandButton>
+
+                                <p:commandButton
+                                    id="wardCardBtn"
+                                    value="Ward Admission Diagnosis Card"
+                                    ajax="false"
+                                    icon="pi pi-document"
+                                    styleClass="ui-button-success w-100"
+                                    action="ward_admission_diagnosis_card">
+                                </p:commandButton>
+                                <p:commandButton
+                                    id="localSurgeryCardBtn"
+                                    value="Local Surgery Diagnosis Card"
+                                    ajax="false"
+                                    icon="pi pi-document"
+                                    styleClass="ui-button-info w-100"
+                                    action="local_surgery_diagnosis_card">
+                                </p:commandButton>
                             </div>
                         </p:panel>
 
@@ -524,13 +541,6 @@
                     </div>
                 </div>
             </p:panel>
-
-
-
-
-
-
-
 
         </h:form>
     </ui:define>

@@ -32,6 +32,7 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PatientItem;
@@ -219,7 +220,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<PatientRoom> getPatientRooms() {
-        if (patientRooms == null) {
+        if (patientRooms == null && patientEncounter != null) {
+            if (childPatientEncouters == null || childPatientEncouters.isEmpty()) {
+                childPatientEncouters = getInwardBean().fetchChildPatientEncounter(getPatientEncounter());
+            }
             patientRooms = createPatientRooms();
         }
         return patientRooms;
@@ -230,9 +234,11 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<BillFee> getDoctorAndNurseFee() {
-        if (doctorAndNurseFee == null) {
-            List<PatientEncounter> cpts = getInwardBean().fetchChildPatientEncounter(getPatientEncounter());
-            doctorAndNurseFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(), cpts);
+        if (doctorAndNurseFee == null && patientEncounter != null) {
+            if (childPatientEncouters == null || childPatientEncouters.isEmpty()) {
+                childPatientEncouters = getInwardBean().fetchChildPatientEncounter(getPatientEncounter());
+            }
+            doctorAndNurseFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(), childPatientEncouters);
         }
         return doctorAndNurseFee;
     }
@@ -1854,6 +1860,11 @@ public class BhtSummeryController implements Serializable {
         getTempBill().setCreatedAt(new Date());
         getTempBill().setCreater(getSessionController().getLoggedUser());
 
+        // Calculate and save VAT for temp bill to avoid recalculation in preview
+        double vatAmount = calculateSelectiveVatAmount(getTempBill().getBillItems());
+        getTempBill().setVat(vatAmount);
+        getTempBill().setVatPlusNetTotal(getTempBill().getNetTotal() + vatAmount);
+
     }
 
     private void saveOriginalBill() {
@@ -1882,6 +1893,11 @@ public class BhtSummeryController implements Serializable {
 //        getCurrent().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patientEncounter.getPatient(), getSessionController().getApplicationPreference().isMembershipExpires()));
         getOriginalBill().setCreatedAt(new Date());
         getOriginalBill().setCreater(getSessionController().getLoggedUser());
+
+        // Calculate and save VAT for original bill to avoid recalculation in preview
+        double vatAmount = calculateSelectiveVatAmount(getOriginalBill().getBillItems());
+        getOriginalBill().setVat(vatAmount);
+        getOriginalBill().setVatPlusNetTotal(getOriginalBill().getNetTotal() + vatAmount);
 
         if (getOriginalBill().getId() == null) {
             getBillFacade().create(getOriginalBill());
@@ -2251,7 +2267,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<PatientItem> getPatientItems() {
-        if (patientItems == null) {
+        if (patientItems == null && patientEncounter != null) {
+            if (childPatientEncouters == null || childPatientEncouters.isEmpty()) {
+                childPatientEncouters = getInwardBean().fetchChildPatientEncounter(getPatientEncounter());
+            }
             patientItems = createPatientItems();
         }
 
@@ -2440,6 +2459,34 @@ public class BhtSummeryController implements Serializable {
             if (p.getAdmittedAt() == null) {
                 p.setAdmittedAt(new Date());
             }
+            
+            // Initialize current charges from room facility if not already set
+            if (p.getRoomFacilityCharge() != null) {
+                if (p.getCurrentRoomCharge() == 0) {
+                    p.setCurrentRoomCharge(p.getRoomFacilityCharge().getRoomCharge());
+                }
+                if (p.getCurrentMaintananceCharge() == 0) {
+                    p.setCurrentMaintananceCharge(p.getRoomFacilityCharge().getMaintananceCharge());
+                }
+                if (p.getCurrentLinenCharge() == 0) {
+                    p.setCurrentLinenCharge(p.getRoomFacilityCharge().getLinenCharge());
+                }
+                if (!(p instanceof GuardianRoom)) {
+                    if (p.getCurrentNursingCharge() == 0) {
+                        p.setCurrentNursingCharge(p.getRoomFacilityCharge().getNursingCharge());
+                    }
+                    if (p.getCurrentMoCharge() == 0) {
+                        p.setCurrentMoCharge(p.getRoomFacilityCharge().getMoCharge());
+                    }
+                    if (p.getCurrentAdministrationCharge() == 0) {
+                        p.setCurrentAdministrationCharge(p.getRoomFacilityCharge().getAdminstrationCharge());
+                    }
+                    if (p.getCurrentMedicalCareCharge() == 0) {
+                        p.setCurrentMedicalCareCharge(p.getRoomFacilityCharge().getMedicalCareCharge());
+                    }
+                }
+            }
+            
             calculateRoomCharge(p);
             calculateMaintananceCharge(p);
             calculateLinenCharge(p);
@@ -2638,7 +2685,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<BillFee> getProfesionallFee() {
-        if (profesionallFee == null) {
+        if (profesionallFee == null && patientEncounter != null) {
+            if (childPatientEncouters == null || childPatientEncouters.isEmpty()) {
+                childPatientEncouters = getInwardBean().fetchChildPatientEncounter(getPatientEncounter());
+            }
             profesionallFee = getInwardBean().createProfesionallFee(getPatientEncounter(), childPatientEncouters);
         }
         return profesionallFee;
@@ -2649,7 +2699,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<Bill> getPaymentBill() {
-        if (paymentBill == null) {
+        if (paymentBill == null && patientEncounter != null) {
+            if (childPatientEncouters == null || childPatientEncouters.isEmpty()) {
+                childPatientEncouters = getInwardBean().fetchChildPatientEncounter(getPatientEncounter());
+            }
             paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
         }
         return paymentBill;
@@ -2751,8 +2804,13 @@ public class BhtSummeryController implements Serializable {
         List<Bill> filtered = new ArrayList<>();
         
         for (Bill bill : pharmacyIssues) {
-            // Check if bill's bill type atomic is an inward/regular medicine type
-            if (isInwardMedicineType(bill.getBillTypeAtomic())) {
+            // For RefundBill and CancelledBill, check the original bill's category
+            if ((bill instanceof RefundBill || bill instanceof CancelledBill) && bill.getBilledBill() != null) {
+                if (isInwardMedicineType(bill.getBilledBill().getBillTypeAtomic())) {
+                    filtered.add(bill);
+                }
+            } else if (isInwardMedicineType(bill.getBillTypeAtomic())) {
+                // For PreBill, check the bill itself
                 filtered.add(bill);
             }
         }
@@ -2773,8 +2831,13 @@ public class BhtSummeryController implements Serializable {
         }
         
         for (Bill bill : pharmacyIssues) {
-            // Check if bill's bill type atomic is a theatre/surgical supplies medicine type
-            if (isTheatreMedicineType(bill.getBillTypeAtomic())) {
+            // For RefundBill and CancelledBill, check the original bill's category
+            if ((bill instanceof RefundBill || bill instanceof CancelledBill) && bill.getBilledBill() != null) {
+                if (isTheatreMedicineType(bill.getBilledBill().getBillTypeAtomic())) {
+                    filtered.add(bill);
+                }
+            } else if (isTheatreMedicineType(bill.getBillTypeAtomic())) {
+                // For PreBill, check the bill itself
                 filtered.add(bill);
             }
         }
@@ -3128,7 +3191,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<Bill> getAdditionalChargeBill() {
-        if (additionalChargeBill == null) {
+        if (additionalChargeBill == null && patientEncounter != null) {
+            if (childPatientEncouters == null || childPatientEncouters.isEmpty()) {
+                childPatientEncouters = getInwardBean().fetchChildPatientEncounter(getPatientEncounter());
+            }
             additionalChargeBill = getInwardBean().fetchOutSideBill(getPatientEncounter(), childPatientEncouters);
         }
         return additionalChargeBill;
@@ -3155,7 +3221,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     public List<DepartmentBillItems> getDepartmentBillItems() {
-        if (departmentBillItems == null) {
+        if (departmentBillItems == null && patientEncounter != null) {
+            if (childPatientEncouters == null || childPatientEncouters.isEmpty()) {
+                childPatientEncouters = getInwardBean().fetchChildPatientEncounter(getPatientEncounter());
+            }
             departmentBillItems = getInwardBean().createDepartmentBillItems(patientEncounter, null, childPatientEncouters);
         }
         return departmentBillItems;
@@ -3352,6 +3421,189 @@ public class BhtSummeryController implements Serializable {
     }
 
     /**
+     * Check if VAT is enabled via application option
+     * Default: false (VAT disabled)
+     */
+    public boolean isVatEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey("Enable VAT in Bills", false);
+    }
+
+    /**
+     * Get VAT percentage from application option
+     * Default: 18
+     */
+    public double getVatPercentage() {
+        try {
+            Double vatPercent = configOptionApplicationController.getDoubleValueByKey("VAT Percentage", 18.0);
+            return vatPercent != null ? vatPercent : 18.0;
+        } catch (Exception e) {
+            return 18.0;
+        }
+    }
+
+    /**
+     * Get VAT percentage for a specific charge type
+     * Application option format: "VAT Percentage For [ChargeTypeName]"
+     * Falls back to global VAT Percentage if not found
+     */
+    public double getVatPercentageForChargeType(InwardChargeType chargeType) {
+        if (chargeType == null) {
+            return getVatPercentage();
+        }
+
+        try {
+            String optionKey = "VAT Percentage For " + chargeType.name();
+            Double vatPercent = configOptionApplicationController.getDoubleValueByKey(optionKey, null);
+
+            // If charge-type-specific percentage exists, use it
+            if (vatPercent != null && vatPercent > 0) {
+                return vatPercent;
+            }
+
+            // Otherwise fall back to global VAT percentage
+            return getVatPercentage();
+        } catch (Exception e) {
+            return getVatPercentage();
+        }
+    }
+
+    /**
+     * Calculate VAT amount based on vatable charge types in bill items
+     * Only includes charges marked as vatable
+     */
+    public double calculateVatAmount(List<BillItem> billItems) {
+        return calculateSelectiveVatAmount(billItems);
+    }
+
+    /**
+     * Calculate total with VAT (Net Total + Selective VAT)
+     * VAT is only applied to vatable charge types
+     */
+    public double calculateVatPlusNetTotal(double netTotal, List<BillItem> billItems) {
+        if (!isVatEnabled()) {
+            return netTotal;
+        }
+        return netTotal + calculateSelectiveVatAmount(billItems);
+    }
+
+    /**
+     * Get VAT label from application option
+     * Default: "VAT"
+     */
+    public String getVatLabel() {
+        String label = configOptionApplicationController.getLongTextValueByKey("VAT Label", "VAT");
+        return label != null ? label : "VAT";
+    }
+
+    /**
+     * Check if a specific InwardChargeType should have VAT applied
+     * Application option format: "VAT Enabled For [ChargeTypeName]"
+     * Default: false (VAT disabled for specific charge type)
+     */
+    public boolean isChargeTypeVatable(InwardChargeType chargeType) {
+        if (chargeType == null || !isVatEnabled()) {
+            return false;
+        }
+        String optionKey = "VAT Enabled For " + chargeType.name();
+        return configOptionApplicationController.getBooleanValueByKey(optionKey, false);
+    }
+
+    /**
+     * Calculate VAT amount for a specific charge type
+     * Only applies VAT if that charge type is marked as vatable
+     * Uses charge-type-specific VAT percentage if configured
+     */
+    public double calculateVatAmountForChargeType(double amount, InwardChargeType chargeType) {
+        if (!isChargeTypeVatable(chargeType) || amount <= 0) {
+            return 0.0;
+        }
+        double vatPercent = getVatPercentageForChargeType(chargeType);
+        return amount * (vatPercent / 100.0);
+    }
+
+    /**
+     * Calculate VAT amount only for specified charge types from bill items
+     * Sums VAT for items whose charge type is marked as vatable
+     */
+    public double calculateSelectiveVatAmount(List<BillItem> billItems) {
+        if (!isVatEnabled() || billItems == null || billItems.isEmpty()) {
+            return 0.0;
+        }
+        double totalVat = 0.0;
+        for (BillItem item : billItems) {
+            if (item.getAdjustedValue() != 0 && item.getInwardChargeType() != null) {
+                if (isChargeTypeVatable(item.getInwardChargeType())) {
+                    totalVat += calculateVatAmountForChargeType(item.getAdjustedValue(), item.getInwardChargeType());
+                }
+            }
+        }
+        return totalVat;
+    }
+
+    /**
+     * Get the name/label for a specific charge type (supports customization via application option)
+     * Format: "Inward Charge Type - Name For [ChargeTypeName]"
+     * Default: charge type's label
+     */
+    public String getChargeTypeLabel(InwardChargeType chargeType) {
+        if (chargeType == null) {
+            return "";
+        }
+        try {
+            String label = configOptionApplicationController.getLongTextValueByKey(
+                    "Inward Charge Type - Name For " + chargeType.name(),
+                    chargeType.getLabel()
+            );
+            return label != null ? label : chargeType.getLabel();
+        } catch (Exception e) {
+            return chargeType.getLabel();
+        }
+    }
+
+    /**
+     * Calculate VAT amount - public method that can be called from templates
+     * Returns 0 if VAT is not enabled or no items to calculate
+     */
+    public double getVatAmount() {
+        try {
+            // If not enabled, return 0
+            if (!isVatEnabled()) {
+                return 0.0;
+            }
+
+            // If no patient encounter, return 0
+            if (patientEncounter == null) {
+                return 0.0;
+            }
+
+            // Calculate VAT from charge item totals (more reliable for interim bills)
+            double totalVat = 0.0;
+            if (chargeItemTotals != null && !chargeItemTotals.isEmpty()) {
+                for (ChargeItemTotal cit : chargeItemTotals) {
+                    if (cit.getInwardChargeType() != null && isChargeTypeVatable(cit.getInwardChargeType())) {
+                        totalVat += calculateVatAmountForChargeType(cit.getAdjustedTotal(), cit.getInwardChargeType());
+                    }
+                }
+            }
+
+            return totalVat;
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+
+    /**
+     * Get all bill items for the current patient encounter
+     * Used for VAT calculation in interim and final bills
+     */
+    public List<BillItem> getAllBillItemsForEncounter() {
+        if (patientEncounter == null) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>();
+    }
+
+    /**
      * Calculate total of bed charges (Linen, MO, Nursing, Maintain, Medical Care, Administration)
      * @param billItems List of bill items to calculate from
      * @return Total of all bed charges
@@ -3360,10 +3612,10 @@ public class BhtSummeryController implements Serializable {
         if (billItems == null) {
             return 0.0;
         }
-        
+
         double total = 0.0;
         for (BillItem item : billItems) {
-            if (item.getAdjustedValue() != 0 && 
+            if (item.getAdjustedValue() != 0 &&
                 (item.getInwardChargeType() == InwardChargeType.LinenCharges ||
                  item.getInwardChargeType() == InwardChargeType.MOCharges ||
                  item.getInwardChargeType() == InwardChargeType.NursingCharges ||
