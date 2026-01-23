@@ -469,6 +469,18 @@ public class PatientReportController implements Serializable {
         m.put("ret", false);
         return getFacade().findByJpql(j, m);
     }
+    
+    public List<PatientReport> approvedPatientReportList(Investigation i) {
+        String j = "select r from PatientReport r "
+                + " where r.patientInvestigation.investigation=:ins"
+                + " and r.approved =:approved "
+                + " and r.retired =:ret";
+        Map m = new HashMap();
+        m.put("ins", i);
+        m.put("ret", false);
+        m.put("approved", true);
+        return getFacade().findByJpql(j, m);
+    }
 
     public int approvedPatientReportCount(PatientInvestigation pi) {
         int reportCount = 0;
