@@ -1,4 +1,3 @@
-
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
@@ -7,7 +6,9 @@ import com.divudi.core.entity.inward.SurgeryType;
 import com.divudi.core.facade.SurgeryTypeFacade;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -20,8 +21,7 @@ import javax.inject.Named;
 /**
  *
  * @author Dhanesh
- */ 
-
+ */
 @Named
 @SessionScoped
 public class SurgeryTypeController implements Serializable {
@@ -37,7 +37,17 @@ public class SurgeryTypeController implements Serializable {
     String selectText = "";
 
     public List<SurgeryType> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from SurgeryType c where c.retired=false  and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+
+        String jpql
+                = "SELECT c FROM SurgeryType c "
+                + "WHERE c.retired = false "
+                + "AND UPPER(c.name) LIKE :q "
+                + "ORDER BY c.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("q", "%" + getSelectText().toUpperCase() + "%");
+
+        selectedItems = getFacade().findByJpql(jpql, params);
         return selectedItems;
     }
 
@@ -108,15 +118,23 @@ public class SurgeryTypeController implements Serializable {
 
     public void delete() {
 
-        if (current != null) {
-            current.setRetired(true);
-            current.setRetiredAt(new Date());
-            current.setRetirer(getSessionController().getLoggedUser());
-            getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Deleted Successfully");
-        } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing to delete");
+            return;
         }
+
+        if (current.getId() == null) {
+            JsfUtil.addErrorMessage("Cannot delete an unsaved Surgery Type");
+            current = null;
+            return;
+        }
+
+        current.setRetired(true);
+        current.setRetiredAt(new Date());
+        current.setRetirer(getSessionController().getLoggedUser());
+        getFacade().edit(current);
+        JsfUtil.addSuccessMessage("Deleted Successfully");
+
         recreateModel();
         getItems();
         current = null;
@@ -144,7 +162,6 @@ public class SurgeryTypeController implements Serializable {
     /**
      *
      */
-
     @FacesConverter(forClass = SurgeryType.class)
     public static class SurgeryTypeControllerConverter implements Converter {
 
