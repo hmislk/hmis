@@ -78,11 +78,10 @@ public class HospitalDoctorFeeBundle implements Serializable {
             double doctorFeeTotal = 0.0;
 
             for (HospitalDoctorFeeReportDTO dto : groupDtos) {
-                double multiplier = getMultiplier(dto.getBillTypeAtomic());
-
-                netTotal += (dto.getNetTotal() != null ? dto.getNetTotal() : 0.0) * multiplier;
-                hospitalFeeTotal += (dto.getHospitalFee() != null ? dto.getHospitalFee() : 0.0) * multiplier;
-                doctorFeeTotal += (dto.getDoctorFee() != null ? dto.getDoctorFee() : 0.0) * multiplier;
+                // DTOs already have correct signs (negative for cancellations), so no multiplier needed
+                netTotal += (dto.getNetTotal() != null ? dto.getNetTotal() : 0.0);
+                hospitalFeeTotal += (dto.getHospitalFee() != null ? dto.getHospitalFee() : 0.0);
+                doctorFeeTotal += (dto.getDoctorFee() != null ? dto.getDoctorFee() : 0.0);
             }
 
             paymentMethodSubtotals.put(paymentMethod, netTotal);
@@ -98,28 +97,6 @@ public class HospitalDoctorFeeBundle implements Serializable {
         totalCount = (long) dtos.size();
     }
 
-    /**
-     * Returns multiplier based on bill type for net calculation
-     * Bills = +1, Cancellations = -1, Returns = -1
-     */
-    private double getMultiplier(BillTypeAtomic billTypeAtomic) {
-        if (billTypeAtomic == null) {
-            return 1.0;
-        }
-
-        switch (billTypeAtomic) {
-            case OPD_BILL_WITH_PAYMENT:
-            case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
-                return 1.0; // Bills - positive
-            case OPD_BILL_CANCELLATION:
-            case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
-            case OPD_BILL_REFUND:
-            case INWARD_SERVICE_BILL_REFUND:
-                return -1.0; // Cancellations and Returns - negative
-            default:
-                return 1.0; // Default to positive
-        }
-    }
 
     /**
      * Maps BillTypeAtomic to BillCategory for grouping purposes
@@ -163,11 +140,10 @@ public class HospitalDoctorFeeBundle implements Serializable {
             double categoryDoctorFeeTotal = 0.0;
 
             for (HospitalDoctorFeeReportDTO dto : categoryDtos) {
-                double multiplier = getMultiplier(dto.getBillTypeAtomic());
-
-                categoryNetTotal += (dto.getNetTotal() != null ? dto.getNetTotal() : 0.0) * multiplier;
-                categoryHospitalFeeTotal += (dto.getHospitalFee() != null ? dto.getHospitalFee() : 0.0) * multiplier;
-                categoryDoctorFeeTotal += (dto.getDoctorFee() != null ? dto.getDoctorFee() : 0.0) * multiplier;
+                // DTOs already have correct signs (negative for cancellations), so no multiplier needed
+                categoryNetTotal += (dto.getNetTotal() != null ? dto.getNetTotal() : 0.0);
+                categoryHospitalFeeTotal += (dto.getHospitalFee() != null ? dto.getHospitalFee() : 0.0);
+                categoryDoctorFeeTotal += (dto.getDoctorFee() != null ? dto.getDoctorFee() : 0.0);
             }
 
             netSubtotals.put(category, categoryNetTotal);
