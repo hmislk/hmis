@@ -683,13 +683,13 @@ public class OpdReportController implements Serializable {
             org.apache.poi.ss.usermodel.Cell institutionCell = institutionRow.createCell(0);
             institutionCell.setCellValue(sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "Institution");
             institutionCell.setCellStyle(headerStyle);
-            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 7));
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 8));
 
             org.apache.poi.ss.usermodel.Row titleRow = sheet.createRow(rowNum++);
             org.apache.poi.ss.usermodel.Cell titleCell = titleRow.createCell(0);
             titleCell.setCellValue("Hospital Fee & Doctor Fee Report");
             titleCell.setCellStyle(headerStyle);
-            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(1, 1, 0, 7));
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(1, 1, 0, 8));
 
             org.apache.poi.ss.usermodel.Row dateRow = sheet.createRow(rowNum++);
             org.apache.poi.ss.usermodel.Cell dateCell = dateRow.createCell(0);
@@ -700,7 +700,7 @@ public class OpdReportController implements Serializable {
 
             // Column headers
             org.apache.poi.ss.usermodel.Row headerRow = sheet.createRow(rowNum++);
-            String[] headers = {"Patient Name", "Doctor Name", "Bill Type", "Hospital Fee", "Doctor Fee", "Net Total", "Bill Date", "Payment Method"};
+            String[] headers = {"Bill Number", "Patient Name", "Doctor Name", "Bill Type", "Hospital Fee", "Doctor Fee", "Net Total", "Bill Date", "Payment Method"};
             for (int i = 0; i < headers.length; i++) {
                 org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
@@ -718,7 +718,7 @@ public class OpdReportController implements Serializable {
                 org.apache.poi.ss.usermodel.Cell pmCell = pmHeaderRow.createCell(0);
                 pmCell.setCellValue(paymentMethod.getLabel() + " Payment Method");
                 pmCell.setCellStyle(subHeaderStyle);
-                sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowNum - 1, rowNum - 1, 0, 7));
+                sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowNum - 1, rowNum - 1, 0, 8));
 
                 for (Map.Entry<BillCategory, List<HospitalDoctorFeeReportDTO>> categoryEntry : paymentEntry.getValue().entrySet()) {
                     BillCategory category = categoryEntry.getKey();
@@ -731,61 +731,62 @@ public class OpdReportController implements Serializable {
                                           category == BillCategory.CANCELLATION ? "Cancellations" : "Returns";
                     catCell.setCellValue("  " + categoryLabel + " (" + dtos.size() + " records)");
                     catCell.setCellStyle(categoryStyle);
-                    sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowNum - 1, rowNum - 1, 0, 7));
+                    sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowNum - 1, rowNum - 1, 0, 8));
 
                     // Data rows
                     for (HospitalDoctorFeeReportDTO dto : dtos) {
                         org.apache.poi.ss.usermodel.Row dataRow = sheet.createRow(rowNum++);
-                        dataRow.createCell(0).setCellValue(dto.getPatientName() != null ? dto.getPatientName() : "");
-                        dataRow.createCell(1).setCellValue(dto.getDoctorName() != null ? dto.getDoctorName() : "");
-                        dataRow.createCell(2).setCellValue(dto.getTransactionTypeLabel() != null ? dto.getTransactionTypeLabel() : "");
+                        dataRow.createCell(0).setCellValue(dto.getDeptId() != null ? dto.getDeptId() : "");
+                        dataRow.createCell(1).setCellValue(dto.getPatientName() != null ? dto.getPatientName() : "");
+                        dataRow.createCell(2).setCellValue(dto.getDoctorName() != null ? dto.getDoctorName() : "");
+                        dataRow.createCell(3).setCellValue(dto.getTransactionTypeLabel() != null ? dto.getTransactionTypeLabel() : "");
 
-                        org.apache.poi.ss.usermodel.Cell hospitalFeeCell = dataRow.createCell(3);
+                        org.apache.poi.ss.usermodel.Cell hospitalFeeCell = dataRow.createCell(4);
                         hospitalFeeCell.setCellValue(dto.getHospitalFee() != null ? dto.getHospitalFee() : 0.0);
                         hospitalFeeCell.setCellStyle(numberStyle);
 
-                        org.apache.poi.ss.usermodel.Cell doctorFeeCell = dataRow.createCell(4);
+                        org.apache.poi.ss.usermodel.Cell doctorFeeCell = dataRow.createCell(5);
                         doctorFeeCell.setCellValue(dto.getDoctorFee() != null ? dto.getDoctorFee() : 0.0);
                         doctorFeeCell.setCellStyle(numberStyle);
 
-                        org.apache.poi.ss.usermodel.Cell netTotalCell = dataRow.createCell(5);
+                        org.apache.poi.ss.usermodel.Cell netTotalCell = dataRow.createCell(6);
                         netTotalCell.setCellValue(dto.getNetTotal() != null ? dto.getNetTotal() : 0.0);
                         netTotalCell.setCellStyle(numberStyle);
 
-                        dataRow.createCell(6).setCellValue(dto.getBillDate() != null ? dateFormat.format(dto.getBillDate()) : "");
-                        dataRow.createCell(7).setCellValue(dto.getPaymentMethod() != null ? dto.getPaymentMethod().getLabel() : "");
+                        dataRow.createCell(7).setCellValue(dto.getBillDate() != null ? dateFormat.format(dto.getBillDate()) : "");
+                        dataRow.createCell(8).setCellValue(dto.getPaymentMethod() != null ? dto.getPaymentMethod().getLabel() : "");
                     }
 
                     // Category subtotal
                     org.apache.poi.ss.usermodel.Row catSubtotalRow = sheet.createRow(rowNum++);
-                    catSubtotalRow.createCell(2).setCellValue(categoryLabel + " Subtotal:");
+                    catSubtotalRow.createCell(3).setCellValue(categoryLabel + " Subtotal:");
 
-                    org.apache.poi.ss.usermodel.Cell catHospitalCell = catSubtotalRow.createCell(3);
+                    org.apache.poi.ss.usermodel.Cell catHospitalCell = catSubtotalRow.createCell(4);
                     catHospitalCell.setCellValue(hospitalDoctorFeeBundle.getBillCategorySubtotal(paymentMethod, category, "HOSPITAL"));
                     catHospitalCell.setCellStyle(totalStyle);
 
-                    org.apache.poi.ss.usermodel.Cell catDoctorCell = catSubtotalRow.createCell(4);
+                    org.apache.poi.ss.usermodel.Cell catDoctorCell = catSubtotalRow.createCell(5);
                     catDoctorCell.setCellValue(hospitalDoctorFeeBundle.getBillCategorySubtotal(paymentMethod, category, "DOCTOR"));
                     catDoctorCell.setCellStyle(totalStyle);
 
-                    org.apache.poi.ss.usermodel.Cell catNetCell = catSubtotalRow.createCell(5);
+                    org.apache.poi.ss.usermodel.Cell catNetCell = catSubtotalRow.createCell(6);
                     catNetCell.setCellValue(hospitalDoctorFeeBundle.getBillCategorySubtotal(paymentMethod, category, "NET"));
                     catNetCell.setCellStyle(totalStyle);
                 }
 
                 // Payment method total
                 org.apache.poi.ss.usermodel.Row pmTotalRow = sheet.createRow(rowNum++);
-                pmTotalRow.createCell(2).setCellValue(paymentMethod.getLabel() + " Total:");
+                pmTotalRow.createCell(3).setCellValue(paymentMethod.getLabel() + " Total:");
 
-                org.apache.poi.ss.usermodel.Cell pmHospitalCell = pmTotalRow.createCell(3);
+                org.apache.poi.ss.usermodel.Cell pmHospitalCell = pmTotalRow.createCell(4);
                 pmHospitalCell.setCellValue(hospitalDoctorFeeBundle.getHospitalFeeSubtotalForPaymentMethod(paymentMethod));
                 pmHospitalCell.setCellStyle(totalStyle);
 
-                org.apache.poi.ss.usermodel.Cell pmDoctorCell = pmTotalRow.createCell(4);
+                org.apache.poi.ss.usermodel.Cell pmDoctorCell = pmTotalRow.createCell(5);
                 pmDoctorCell.setCellValue(hospitalDoctorFeeBundle.getDoctorFeeSubtotalForPaymentMethod(paymentMethod));
                 pmDoctorCell.setCellStyle(totalStyle);
 
-                org.apache.poi.ss.usermodel.Cell pmNetCell = pmTotalRow.createCell(5);
+                org.apache.poi.ss.usermodel.Cell pmNetCell = pmTotalRow.createCell(6);
                 pmNetCell.setCellValue(hospitalDoctorFeeBundle.getSubtotalForPaymentMethod(paymentMethod));
                 pmNetCell.setCellStyle(totalStyle);
 
@@ -794,19 +795,19 @@ public class OpdReportController implements Serializable {
 
             // Grand total
             org.apache.poi.ss.usermodel.Row grandTotalRow = sheet.createRow(rowNum++);
-            org.apache.poi.ss.usermodel.Cell gtLabelCell = grandTotalRow.createCell(2);
+            org.apache.poi.ss.usermodel.Cell gtLabelCell = grandTotalRow.createCell(3);
             gtLabelCell.setCellValue("GRAND TOTAL:");
             gtLabelCell.setCellStyle(grandTotalStyle);
 
-            org.apache.poi.ss.usermodel.Cell gtHospitalCell = grandTotalRow.createCell(3);
+            org.apache.poi.ss.usermodel.Cell gtHospitalCell = grandTotalRow.createCell(4);
             gtHospitalCell.setCellValue(hospitalDoctorFeeBundle.getGrandHospitalFeeTotal());
             gtHospitalCell.setCellStyle(grandTotalStyle);
 
-            org.apache.poi.ss.usermodel.Cell gtDoctorCell = grandTotalRow.createCell(4);
+            org.apache.poi.ss.usermodel.Cell gtDoctorCell = grandTotalRow.createCell(5);
             gtDoctorCell.setCellValue(hospitalDoctorFeeBundle.getGrandDoctorFeeTotal());
             gtDoctorCell.setCellStyle(grandTotalStyle);
 
-            org.apache.poi.ss.usermodel.Cell gtNetCell = grandTotalRow.createCell(5);
+            org.apache.poi.ss.usermodel.Cell gtNetCell = grandTotalRow.createCell(6);
             gtNetCell.setCellValue(hospitalDoctorFeeBundle.getGrandTotal());
             gtNetCell.setCellStyle(grandTotalStyle);
 

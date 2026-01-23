@@ -9,6 +9,7 @@ import java.util.Date;
 
 public class HospitalDoctorFeeReportDTO implements Serializable {
     private Long billId;
+    private String deptId;                 // Bill Number
     private String patientName;
     private String doctorName;
     private Double hospitalFee;
@@ -27,11 +28,12 @@ public class HospitalDoctorFeeReportDTO implements Serializable {
     public HospitalDoctorFeeReportDTO() {
     }
 
-    // Constructor for JPQL
-    public HospitalDoctorFeeReportDTO(Long billId, String patientName, String doctorName,
+    // Constructor for JPQL with deptId (Bill Number)
+    public HospitalDoctorFeeReportDTO(Long billId, String deptId, String patientName, String doctorName,
                                      Double hospitalFee, Double doctorFee, Double netTotal,
                                      Date billDate, PaymentMethod paymentMethod, BillTypeAtomic billTypeAtomic) {
         this.billId = billId;
+        this.deptId = deptId;
         this.patientName = patientName;
         this.doctorName = doctorName;
         this.hospitalFee = hospitalFee;
@@ -47,11 +49,11 @@ public class HospitalDoctorFeeReportDTO implements Serializable {
     }
 
     // Enhanced constructor for JPQL with additional fields
-    public HospitalDoctorFeeReportDTO(Long billId, String patientName, String doctorName,
+    public HospitalDoctorFeeReportDTO(Long billId, String deptId, String patientName, String doctorName,
                                      Double hospitalFee, Double doctorFee, Double netTotal,
                                      Date billDate, PaymentMethod paymentMethod, BillTypeAtomic billTypeAtomic,
                                      String billReferenceNo, Date originalBillDate) {
-        this(billId, patientName, doctorName, hospitalFee, doctorFee, netTotal, billDate, paymentMethod, billTypeAtomic);
+        this(billId, deptId, patientName, doctorName, hospitalFee, doctorFee, netTotal, billDate, paymentMethod, billTypeAtomic);
         this.billReferenceNo = billReferenceNo;
         this.originalBillDate = originalBillDate;
     }
@@ -62,6 +64,14 @@ public class HospitalDoctorFeeReportDTO implements Serializable {
 
     public void setBillId(Long billId) {
         this.billId = billId;
+    }
+
+    public String getDeptId() {
+        return deptId;
+    }
+
+    public void setDeptId(String deptId) {
+        this.deptId = deptId;
     }
 
     public String getPatientName() {
