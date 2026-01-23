@@ -134,6 +134,7 @@ public class EncounterLaboratoryChartViewController implements Serializable {
             createLineModel();
 
         } catch (Exception e) {
+            
         }
     }
 
