@@ -15,53 +15,21 @@
                             <div class="d-flex justify-content-between">
                                 <div class="d-flex gap-2">
                                     <div class="mt-2">
-                                        <h:outputText styleClass="fas fas fa-search" />
-                                        <h:outputText class="mx-2" value="#{laboratoryChartViewController.patient.person.nameWithTitle} All Lab Result Summary"/>
+                                        <h:outputText styleClass="fa fa-id-card" />
+                                        <h:outputText class="mx-2" value="#{encounterLaboratoryChartViewController.currtntPatinetEncounter.bhtNo} (#{encounterLaboratoryChartViewController.patient.person.nameWithTitle}) Lab Result Summary"/>
                                     </div>
                                 </div>
                                 <div class="d-flex gap-2">
                                     <p:commandButton 
                                         ajax="false" 
-                                        value="Back to Patient List"
+                                        value="Back to Inpatient Dashboard"
                                         icon="fa fa-arrow-left"
-                                        class="ui-button-warning" 
-                                        action="#{laboratoryChartViewController.navigateToPatientList()}">
+                                        class="ui-button-secondary" 
+                                        action="#{encounterLaboratoryChartViewController.navigateToBackInpatientDashboard()}">
                                     </p:commandButton>
                                 </div>
                             </div>
                         </f:facet>
-
-                        <div class="d-flex justify-content-center">
-                            <div class="d-flex gap-4">
-                                <h:outputLabel value="From Date " class="mt-2"/>
-                                <p:calendar 
-                                    styleClass="dateTimePicker" 
-                                    id="fromDate" 
-                                    class="mx-2" 
-                                    value="#{laboratoryChartViewController.fromDate}" 
-                                    navigator="false" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
-                                </p:calendar>
-
-                                <h:outputLabel value="To Date " class="mt-2"/>
-                                <p:calendar 
-                                    id="toDate" 
-                                    value="#{laboratoryChartViewController.toDate}" 
-                                    class="mx-2" 
-                                    navigator="false" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
-                                </p:calendar>
-
-                                <p:commandButton 
-                                    id="btnSearch2" 
-                                    ajax="false" 
-                                    value="Search All" 
-                                    icon="fas fas fa-search" 
-                                    class="ui-button-success" 
-                                    action="#{laboratoryChartViewController.processInvestigationsInPatient()}">
-                                </p:commandButton>
-                            </div>
-                        </div>
 
                         <div class="row mt-3">
                             <div class="col-md-3 card">
@@ -74,7 +42,7 @@
                                             <div>
                                                 <h4 class="alert-heading">Notice !</h4>
                                                 <div>
-                                                    This includes all reports <b>( OPD / IP / CC )</b> approved during the above period.
+                                                    This includes inward patient reports <b>( IP )</b> approved during the above period.
                                                 </div>
                                             </div>
                                         </div>
@@ -84,7 +52,7 @@
                                 <p:dataTable 
                                     class="mt-2" 
                                     id="tblBills" 
-                                    value="#{laboratoryChartViewController.investigationList}" 
+                                    value="#{encounterLaboratoryChartViewController.investigationList}" 
                                     var="pi" 
                                     rowIndexVar="i" >
                                     <p:column  headerText="#" width="2em;" style="padding: 6px;" >
@@ -102,14 +70,14 @@
                                             disabled="#{pi.count eq 1}"
                                             icon="pi pi-chart-line" 
                                             class="ui-button-success" 
-                                            action="#{laboratoryChartViewController.processChart(pi.id,laboratoryChartViewController.patient)}">
+                                            action="#{encounterLaboratoryChartViewController.processChart(pi.id)}">
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
                             </div>
                             <div class="col-md-9">
                                 <p:panel header="Result Chart" >
-                                    <h:panelGroup rendered="#{laboratoryChartViewController.lineModel eq null}">
+                                    <h:panelGroup rendered="#{encounterLaboratoryChartViewController.lineModel eq null}">
                                         <style>
                                             .container {
                                                 background: white;
@@ -149,9 +117,9 @@
                                         </div>
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{laboratoryChartViewController.lineModel ne null}">
+                                    <h:panelGroup rendered="#{encounterLaboratoryChartViewController.lineModel ne null}">
                                         <p:chart 
-                                            value="#{laboratoryChartViewController.lineModel}" 
+                                            value="#{encounterLaboratoryChartViewController.lineModel}" 
                                             style="width: 100%; height: 700px; font-size: 24px;">
                                         </p:chart>
                                     </h:panelGroup>
