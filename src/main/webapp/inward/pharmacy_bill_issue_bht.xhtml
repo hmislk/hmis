@@ -207,8 +207,11 @@
                                         </div>
 
                                         <p:commandButton
+                                            id="btnSettleInpatientDirectIssue"
                                             value="Settle"
                                             ajax="false"
+                                            onclick="return confirm('Are you sure you want to settle this pharmacy bill issue?')"
+                                            ondblclick="return false;"
                                             action="#{pharmacySaleBhtController.settlePharmacyBhtIssue()}"
                                             class="ui-button-success mx-2"
                                             style="width: 250px"
