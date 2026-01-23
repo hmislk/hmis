@@ -10,7 +10,7 @@
     <ui:define name="subcontent">
 
         <h:form  >
-            <p:growl/>
+            <p:growl id="msg"/>
             <p:focus id="selectFocus" for="lstSelect"/>
             <p:focus id="detailFocus" for="txtName"  />
 
@@ -29,7 +29,7 @@
                                         id="btnAdd"
                                         value="Add" 
                                         icon="fa fa-plus"
-                                   
+                                        action="#{surgeryTypeController.prepareAdd()}"
                                         class="w-25 ui-button-success"
                                         process="btnAdd"
                                         update="lstSelect gpDetail">
@@ -38,12 +38,12 @@
                                         id="btnDelete" 
                                         onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                     return false;" 
-                                        class="w-25  mx-2 ui-button-danger"
-                                 
+                                        class="w-25 mx-2 ui-button-danger"
+                                        action="#{surgeryTypeController.delete()}"
                                         value="Delete" 
                                         icon="fa fa-trash"
                                         process="btnDelete"
-                                        update="lstSelect gpDetail">
+                                        update="lstSelect gpDetail msg">
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -53,11 +53,11 @@
 
                                         <p:selectOneListbox  
                                             id="lstSelect"  
-                                            value="" 
+                                            value="#{surgeryTypeController.current}" 
                                             class="w-100 mt-2 overflow-auto" 
                                             filter="true">
                                             <f:selectItems  
-                                                value="" 
+                                                value="#{surgeryTypeController.items}" 
                                                 var="myItem" 
                                                 itemValue="#{myItem}" 
                                                 itemLabel="#{myItem.name}" >
@@ -80,11 +80,11 @@
                                     id="btnSave"
                                     value="Save" 
                                     icon="fa fa-save"
-                                 
+                                    action="#{surgeryTypeController.saveSelected()}"
                                     class="ui-button-warning"
                                     process="btnSave gpDetail"
                                     style="float: right"
-                                    update="lstSelect">
+                                    update="lstSelect msg">
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSave"/>
 
@@ -93,12 +93,12 @@
                                 
                                 <h:outputText id="lblName" value="Name" ></h:outputText>
                                 <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
-                                <p:inputText class="mx-2 w-100" autocomplete="off" id="txtName" value=""  ></p:inputText>
+                                <p:inputText class="mx-2 w-100" autocomplete="off" id="txtName" required="true" requiredMessage="Name is required" value="#{surgeryTypeController.current.name}"  ></p:inputText>
                                 
-                                <h:outputText id="user" value="Created at" ></h:outputText>
+                                <h:outputText id="user" value="Created by" ></h:outputText>
                                 <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
-                                <p:inputText class="m-2 w-100" autocomplete="off" id="userId" ></p:inputText>
-
+                                <p:inputText class="m-2 w-100" value="#{sessionController.loggedUser.name}" readonly="true" ></p:inputText>
+                                
                             </h:panelGrid>
                         </p:panel>
 
