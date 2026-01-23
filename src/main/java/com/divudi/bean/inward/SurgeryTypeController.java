@@ -1,6 +1,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.CategoryType;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.inward.SurgeryType;
 import com.divudi.core.facade.SurgeryTypeFacade;
@@ -74,6 +75,7 @@ public class SurgeryTypeController implements Serializable {
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
+            current.setCategoryType(CategoryType.SURGERY_TYPE);
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Saved Successfully");
