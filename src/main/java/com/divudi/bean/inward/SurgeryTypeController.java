@@ -44,7 +44,7 @@ public class SurgeryTypeController implements Serializable {
                 + "WHERE c.retired = false "
                 + "AND UPPER(c.name) LIKE :q "
                 + "ORDER BY c.name";
-        
+
         String q = getSelectText() == null ? "" : getSelectText().trim().toUpperCase();
 
         Map<String, Object> params = new HashMap<>();
@@ -155,12 +155,21 @@ public class SurgeryTypeController implements Serializable {
             items = getEjbFacade().findByJpql(sql);
         }
         return items;
-    }
+    } 
 
     public List<SurgeryType> completeSurgeryType(String qry) {
-        String sql;
-        sql = "select c from SurgeryType c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
-        return getFacade().findByJpql(sql);
+
+        String q = (qry == null ? "" : qry.trim().toUpperCase());
+
+        String jpql = "SELECT c FROM SurgeryType c "
+                + "WHERE c.retired = false "
+                + "AND UPPER(c.name) LIKE :q "
+                + "ORDER BY c.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("q", "%" + q + "%");
+
+        return getFacade().findByJpql(jpql, params);
     }
 
     /**
