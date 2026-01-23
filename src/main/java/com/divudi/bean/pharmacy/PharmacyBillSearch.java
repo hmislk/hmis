@@ -2663,7 +2663,9 @@ public class PharmacyBillSearch implements Serializable {
         newlyCreatedCancellationBill.setDeptId(deptId);
         newlyCreatedCancellationBill.setReferenceBill(getBill());
         getBillFacade().edit(newlyCreatedCancellationBill);
-        billService.createBillFinancialDetailsForPharmacyBill(newlyCreatedCancellationBill);
+        // REMOVED: Finance details already correctly created by reAddToStock() method
+        // Fixes #18144 - This redundant call was overwriting correct positive values with incorrect negative values
+        // billService.createBillFinancialDetailsForPharmacyBill(newlyCreatedCancellationBill);
 
         getBill().setCancelled(true);
         getBill().setCancelledBill(newlyCreatedCancellationBill);

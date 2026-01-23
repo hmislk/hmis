@@ -442,6 +442,33 @@
                                             #{dataAdministrationController.executionFeedback}
                                         </td>
                                     </tr>
+                                    <tr>
+                                        <td><strong>Correct Direct Issue Inward Medicine Cancellation Stock Values</strong></td>
+                                        <td>
+                                            Corrects the sign of BillFinanceDetails totals (totalRetailValue, totalPurchaseValue,
+                                            totalCostValue) for Direct Issue Inward Medicine Cancellation bills.
+                                            These cancellations reverse the original stock issue, so finance values should be
+                                            POSITIVE (stock returning to pharmacy inventory).
+                                            <br/>
+                                            <strong>Use date range to limit scope.</strong>
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                id="btnCorrectDirectIssueInwardCancellationSigns"
+                                                action="#{dataAdministrationController.correctDirectIssueInwardMedicineCancellationStockValues()}"
+                                                ajax="false"
+                                                value="Correct DIIM Cancellation Signs"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-wrench"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                onclick="return confirm('This will correct totalRetailValue and totalPurchaseValue signs for Direct Issue Inward Medicine Cancellation bills in the specified date range. Continue?');" />
+                                        </td>
+                                        <td>
+                                            <h:outputText value="#{dataAdministrationController.executionFeedback}"
+                                                          escape="false"
+                                                          style="white-space: pre-wrap;" />
+                                        </td>
+                                    </tr>
 
 
 
