@@ -44,9 +44,11 @@ public class SurgeryTypeController implements Serializable {
                 + "WHERE c.retired = false "
                 + "AND UPPER(c.name) LIKE :q "
                 + "ORDER BY c.name";
+        
+        String q = getSelectText() == null ? "" : getSelectText().trim().toUpperCase();
 
         Map<String, Object> params = new HashMap<>();
-        params.put("q", "%" + getSelectText().toUpperCase() + "%");
+        params.put("q", "%" + q + "%");
 
         selectedItems = getFacade().findByJpql(jpql, params);
         return selectedItems;
