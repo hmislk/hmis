@@ -52,6 +52,7 @@ import com.divudi.core.entity.AppEmail;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.StockBill;
@@ -1630,6 +1631,56 @@ public class PharmacyBillSearch implements Serializable {
         return cb;
     }
 
+    private void calculateCancelledDirectPurchaseFinancials(CancelledBill cancelledBill, Bill originalBill) {
+        // Create BillFinanceDetails for cancellation (following DirectPurchaseReturnWorkflowController pattern)
+        if (originalBill.getBillFinanceDetails() != null) {
+            BillFinanceDetails cancelledBfd = new BillFinanceDetails();
+            BillFinanceDetails originalBfd = originalBill.getBillFinanceDetails();
+
+            // Clone and invert financial totals (money flows)
+            if (originalBfd.getNetTotal() != null) {
+                cancelledBfd.setNetTotal(originalBfd.getNetTotal().negate()); // Money refunded (positive)
+            }
+            if (originalBfd.getGrossTotal() != null) {
+                cancelledBfd.setGrossTotal(originalBfd.getGrossTotal().negate());
+            }
+
+            // Invert stock valuations (following DirectPurchaseReturn pattern lines 1021-1023)
+            if (originalBfd.getTotalPurchaseValue() != null) {
+                cancelledBfd.setTotalPurchaseValue(originalBfd.getTotalPurchaseValue().abs().negate()); // Stock value removed (negative)
+            }
+            if (originalBfd.getTotalCostValue() != null) {
+                cancelledBfd.setTotalCostValue(originalBfd.getTotalCostValue().abs().negate()); // Cost removed (negative)
+            }
+            if (originalBfd.getTotalRetailSaleValue() != null) {
+                cancelledBfd.setTotalRetailSaleValue(originalBfd.getTotalRetailSaleValue().abs().negate()); // Retail value removed (negative)
+            }
+
+            // Set relationships
+            cancelledBfd.setBill(cancelledBill);
+            cancelledBfd.setCreatedAt(new Date());
+            cancelledBfd.setCreatedBy(getSessionController().getLoggedUser());
+
+            // Set finance details on bill (will be cascade saved when bill is saved)
+            cancelledBill.setBillFinanceDetails(cancelledBfd);
+        }
+    }
+
+    private void calculateCancelledBillItemFinancials(BillItem cancelledItem, BillItem originalItem) {
+        // Create BillItemFinanceDetails for cancellation (following pharmacyCancelReceivedItems pattern)
+        if (originalItem.getBillItemFinanceDetails() != null) {
+            BillItemFinanceDetails cancelledBifd = new BillItemFinanceDetails();
+            cancelledBifd.invertValue(originalItem.getBillItemFinanceDetails()); // Use existing invertValue method
+
+            // Set relationships
+            cancelledBifd.setBillItem(cancelledItem);
+            cancelledBifd.setCreatedAt(new Date());
+
+            // Set finance details on bill item (will be cascade saved when bill item is saved)
+            cancelledItem.setBillItemFinanceDetails(cancelledBifd);
+        }
+    }
+
     private RefundBill pharmacyCreateRefundCancelBill() {
         RefundBill cb = new RefundBill();
         cb.invertQty();
@@ -1829,6 +1880,7 @@ public class PharmacyBillSearch implements Serializable {
             newlyCreatedBillItemForCancelBill.setBill(cancellationBill);
             newlyCreatedBillItemForCancelBill.copy(originalBillItem);
             newlyCreatedBillItemForCancelBill.invertValue(originalBillItem);
+            calculateCancelledBillItemFinancials(newlyCreatedBillItemForCancelBill, originalBillItem);
 
             if (cancellationBill.getBillType() == BillType.PharmacyGrnBill || cancellationBill.getBillType() == BillType.PharmacyGrnReturn) {
                 newlyCreatedBillItemForCancelBill.setReferanceBillItem(originalBillItem.getReferanceBillItem());
@@ -3374,6 +3426,7 @@ public class PharmacyBillSearch implements Serializable {
             Payment p = pharmacySaleController.createPayment(cb, getBill().getPaymentMethod());
 
             pharmacyCancelBillItemsReduceStock(cb, p);
+            calculateCancelledDirectPurchaseFinancials(cb, getBill());
 
 //            //   List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findByJpql("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
 //            for (BillItem bi : getBill().getBillItems()) {
