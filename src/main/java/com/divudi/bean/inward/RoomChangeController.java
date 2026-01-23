@@ -115,7 +115,7 @@ public class RoomChangeController implements Serializable {
         if (newConsultant != null || newPrimeConsultant != null) {
             StringBuilder consultantInfo = new StringBuilder();
 
-            if (newConsultant != null) {
+            if (newConsultant != null && newConsultant.getPerson() != null) {
                 consultantInfo.append("Consultant:")
                         .append(newConsultant.getId())
                         .append(":")
@@ -124,7 +124,7 @@ public class RoomChangeController implements Serializable {
                 hasConsultant = true;
             }
 
-            if (newPrimeConsultant != null) {
+            if (newPrimeConsultant != null && newPrimeConsultant.getPerson() != null) {
                 consultantInfo.append("PrimeConsultant:")
                         .append(newPrimeConsultant.getId())
                         .append(":")
@@ -406,7 +406,6 @@ public class RoomChangeController implements Serializable {
         } else {
             JsfUtil.addSuccessMessage("Successfully Room Changed");
         }
-
 
         newRoomFacilityCharge = null;
         changeAt = null;
