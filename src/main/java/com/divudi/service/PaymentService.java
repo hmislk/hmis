@@ -41,6 +41,58 @@ import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 /**
+ * Service class for handling payment operations including creation, validation, and balance updates.
+ *
+ * RECENT REFACTORING (2026-01-21):
+ * Issue #17132 - E-wallet refund using e-wallet payment mode
+ *
+ * CHANGES MADE:
+ * 1. Enhanced populatePaymentDetails() method to accept ComponentDetail parameter
+ * 2. Moved ComponentDetail field population from createPaymentFromComponentDetail to populatePaymentDetails
+ * 3. Centralized all payment field population logic in one method
+ *
+ * AFFECTED METHODS:
+ * - populatePaymentDetails(Payment, PaymentMethod, PaymentMethodData, ComponentDetail) - signature changed
+ * - createPaymentFromComponentDetail(...) - removed duplicate ComponentDetail field setting code
+ * - createPayment(...) - updated to pass null for ComponentDetail in single payment scenarios
+ *
+ * CONTROLLERS POTENTIALLY AFFECTED (uses createPayment methods):
+ * - PharmacySaleController
+ * - OpdBillController
+ * - BillController
+ * - ChannelBillController
+ * - Any controller that creates bills with payments
+ *
+ * ROLLBACK INSTRUCTIONS:
+ * If this refactoring causes payment creation issues in any controller:
+ *
+ * Step 1: Identify the commit hash of this change
+ *   git log --oneline --grep="17132" -n 5
+ *
+ * Step 2: Revert to the commit BEFORE this change
+ *   git revert <commit_hash>
+ *   OR
+ *   git reset --hard <previous_commit_hash>
+ *   git push origin <branch_name> --force (CAUTION: only if safe to force push)
+ *
+ * Step 3: Manual rollback (if git revert doesn't work):
+ *   a) Change populatePaymentDetails signature back to:
+ *      private boolean populatePaymentDetails(Payment payment, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData)
+ *   b) Remove lines 364-401 (ComponentDetail null check block from populatePaymentDetails)
+ *   c) Restore lines in createPaymentFromComponentDetail (after populatePaymentDetails call):
+ *      if (cd.getInstitution() != null) { payment.setBank(cd.getInstitution()); }
+ *      if (cd.getReferenceNo() != null && !cd.getReferenceNo().isEmpty()) { payment.setReferenceNo(cd.getReferenceNo()); }
+ *      if (cd.getNo() != null && !cd.getNo().isEmpty()) { payment.setChequeRefNo(cd.getNo()); }
+ *      if (cd.getDate() != null) { payment.setChequeDate(cd.getDate()); payment.setPaymentDate(cd.getDate()); }
+ *      if (cd.getComment() != null && !cd.getComment().isEmpty()) { payment.setComments(cd.getComment()); }
+ *      if (cd.getToStaff() != null) { payment.setToStaff(cd.getToStaff()); }
+ *   d) Update call sites to remove ComponentDetail parameter:
+ *      Line ~170: populatePaymentDetails(payment, pm, paymentMethodData)
+ *      Line ~194: populatePaymentDetails(payment, cd.getPaymentMethod(), cd.getPaymentMethodData())
+ *
+ * Step 4: Recompile and test
+ *   mvn clean compile
+ *   Test payment creation in affected modules
  *
  * @author Dr M H B Ariyaratne
  *
@@ -166,7 +218,8 @@ public class PaymentService {
             payment.setCreatedAt(currentDate);
             payment.setCreater(webUser);
             payment.setPaymentMethod(pm);
-            if (!populatePaymentDetails(payment, pm, paymentMethodData)) {
+            // Single payment method: pass null for componentDetail parameter
+            if (!populatePaymentDetails(payment, pm, paymentMethodData, null)) {
                 LOGGER.log(Level.WARNING, "Skipping payment creation for bill {0} due to missing payment data for method {1}.",
                         new Object[]{bill != null ? bill.getId() : null, pm});
                 return payments;
@@ -188,16 +241,55 @@ public class PaymentService {
         payment.setCreatedAt(currentDate);
         payment.setCreater(webUser);
         payment.setPaymentMethod(cd.getPaymentMethod());
-        if (!populatePaymentDetails(payment, cd.getPaymentMethod(), cd.getPaymentMethodData())) {
+        // Multiple payment method: pass the ComponentDetail to populate fields from it
+        // The ComponentDetail fields are now handled inside populatePaymentDetails method
+        if (!populatePaymentDetails(payment, cd.getPaymentMethod(), cd.getPaymentMethodData(), cd)) {
             LOGGER.log(Level.WARNING,
                     "Skipping payment component due to missing payment data. Bill={0}, PaymentMethod={1}.",
                     new Object[]{bill != null ? bill.getId() : null, cd.getPaymentMethod()});
             return null;
         }
+
+        // REMOVED DUPLICATE CODE (2026-01-21):
+        // Previously, ComponentDetail fields were set here (lines 200-222 in old version).
+        // This logic has been moved to populatePaymentDetails method (lines 364-401)
+        // to centralize all payment field population in one place with proper null checks.
+        //
+        // ROLLBACK NOTE: If this refactoring causes issues, restore the following code block:
+        //   if (cd.getInstitution() != null) { payment.setBank(cd.getInstitution()); }
+        //   if (cd.getReferenceNo() != null && !cd.getReferenceNo().isEmpty()) { payment.setReferenceNo(...); }
+        //   if (cd.getNo() != null && !cd.getNo().isEmpty()) { payment.setChequeRefNo(...); }
+        //   if (cd.getDate() != null) { payment.setChequeDate(...); payment.setPaymentDate(...); }
+        //   if (cd.getComment() != null && !cd.getComment().isEmpty()) { payment.setComments(...); }
+        //   if (cd.getToStaff() != null) { payment.setToStaff(...); }
+        // And revert populatePaymentDetails to its old signature (without ComponentDetail parameter)
+
         return payment;
     }
 
-    private boolean populatePaymentDetails(Payment payment, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
+    /**
+     * Populates payment details from PaymentMethodData and optionally from ComponentDetail.
+     *
+     * REFACTORING DATE: 2026-01-21
+     * ISSUE: #17132 - E-wallet refund using e-wallet payment mode
+     *
+     * This method was enhanced to accept ComponentDetail parameter to centralize payment field
+     * population logic. Previously, ComponentDetail fields were being set separately in
+     * createPaymentFromComponentDetail method, causing duplication.
+     *
+     * ROLLBACK INSTRUCTIONS (if needed):
+     * If this refactoring causes issues, revert to commit: [COMMIT_HASH_BEFORE_THIS_CHANGE]
+     * The previous version had signature:
+     *   private boolean populatePaymentDetails(Payment payment, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData)
+     * And ComponentDetail fields were set in createPaymentFromComponentDetail method (lines 198-222 of old version)
+     *
+     * @param payment The payment object to populate
+     * @param paymentMethod The payment method being used
+     * @param paymentMethodData The nested payment method data (may be incomplete in multiple payment scenarios)
+     * @param componentDetail The component detail object (used in multiple payment scenarios, null for single payments)
+     * @return true if payment details were populated successfully, false otherwise
+     */
+    private boolean populatePaymentDetails(Payment payment, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData, ComponentDetail componentDetail) {
         if (paymentMethodData == null) {
             return false;
         }
@@ -312,6 +404,44 @@ public class PaymentService {
             default:
                 break;
         }
+
+        // ENHANCEMENT: Populate/override with ComponentDetail fields if available
+        // This is used for Multiple Payment Methods where ComponentDetail contains the actual UI-entered data
+        // The nested PaymentMethodData might be empty/uninitialized in multiple payment scenarios
+        // For single payment methods, componentDetail will be null and this section is skipped
+        if (componentDetail != null) {
+            // Set bank/institution if provided in ComponentDetail
+            if (componentDetail.getInstitution() != null) {
+                payment.setBank(componentDetail.getInstitution());
+            }
+
+            // Set reference number if provided
+            if (componentDetail.getReferenceNo() != null && !componentDetail.getReferenceNo().isEmpty()) {
+                payment.setReferenceNo(componentDetail.getReferenceNo());
+            }
+
+            // Set cheque/reference number if provided
+            if (componentDetail.getNo() != null && !componentDetail.getNo().isEmpty()) {
+                payment.setChequeRefNo(componentDetail.getNo());
+            }
+
+            // Set dates if provided
+            if (componentDetail.getDate() != null) {
+                payment.setChequeDate(componentDetail.getDate());
+                payment.setPaymentDate(componentDetail.getDate());
+            }
+
+            // Set comments if provided
+            if (componentDetail.getComment() != null && !componentDetail.getComment().isEmpty()) {
+                payment.setComments(componentDetail.getComment());
+            }
+
+            // Set staff member if provided (for Staff/Staff_Welfare payment methods)
+            if (componentDetail.getToStaff() != null) {
+                payment.setToStaff(componentDetail.getToStaff());
+            }
+        }
+
         return true;
     }
 

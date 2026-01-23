@@ -52,7 +52,14 @@
       "Bash(fi)",
       "Bash(git clone:*)",
       "Bash(git push:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(echo:*)",
+      "Bash(~/.local/bin/claude:*)",
+      "Bash(export PATH=\"$HOME/.local/bin:$PATH\")",
+      "Bash(claude --version)",
+      "Bash(PATH=\"/home/buddhika/.local/bin:$PATH\")",
+      "Bash(export PATH=\"/home/buddhika/.local/bin:$PATH\")",
+      "Bash(git show:*)"
     ]
   }
 }

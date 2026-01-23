@@ -70,7 +70,7 @@
                                         target="#{bhtEditController.current}" >
                                     </f:setPropertyActionListener>
                                 </p:commandButton>
-                                
+
                                 <p:commandButton 
                                     disabled="#{admissionController.current.discharged eq true}"
                                     value="Room Change" 
@@ -519,19 +519,19 @@
                                         value="#{null}" 
                                         target="#{inwardReportControllerBht.department}" />
                                 </p:commandButton>
+                                <p:commandButton 
+                                    value="Lab Result Summary"
+                                    action="#{encounterLaboratoryChartViewController.navigateToProcessInvestigations(admissionController.current)}"
+                                    ajax="false"
+                                    icon="pi pi-chart-line"
+                                    class="ui-button-success mx-1 mb-2">
+                                </p:commandButton>
                             </div>
                         </p:panel>
+                        
                     </div>
                 </div>
             </p:panel>
-
-
-
-
-
-
-
-
         </h:form>
     </ui:define>
 </ui:composition>

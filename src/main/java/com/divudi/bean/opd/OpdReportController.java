@@ -57,6 +57,9 @@ import com.divudi.service.BillService;
 import com.divudi.service.StockHistoryService;
 import com.divudi.core.data.dto.LabDailySummaryDTO;
 import com.divudi.core.data.dto.OpdIncomeReportDTO;
+import com.divudi.core.data.dto.HospitalDoctorFeeReportDTO;
+import com.divudi.core.data.HospitalDoctorFeeBundle;
+import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.reports.CommonReports;
 import com.divudi.core.data.reports.LaboratoryReport;
 import java.io.Serializable;
@@ -228,6 +231,8 @@ public class OpdReportController implements Serializable {
     private ReportTemplateRowBundle bundleReport;
     private List<LabDailySummaryDTO> labDailySummaryDtos;
     private List<OpdIncomeReportDTO> opdIncomeReportDtos;
+    private List<HospitalDoctorFeeReportDTO> hospitalDoctorFeeReportDtos;
+    private HospitalDoctorFeeBundle hospitalDoctorFeeBundle;
 
     private DailyStockBalanceReport dailyStockBalanceReport;
 
@@ -284,6 +289,10 @@ public class OpdReportController implements Serializable {
 
     public String navigateToPatientIndicationsReport() {
         return "/reports/opd/patient_indications_report?faces-redirect=true";
+    }
+
+    public String navigateToHospitalDoctorFeeReport() {
+        return "/opd/analytics/summary_reports/hospital_doctor_fee_report.xhtml?faces-redirect=true";
     }
 
 // </editor-fold>
@@ -581,6 +590,252 @@ public class OpdReportController implements Serializable {
             bundle = new IncomeBundle(opdIncomeReportDtos);
             bundle.generatePaymentDetailsForBillsAndBatchBills();
         }, CommonReports.LAB_REPORTS, "OpdReportController.generateOpdIncomeReportDto", sessionController.getLoggedUser());
+    }
+
+    public void generateHospitalDoctorFeeReport() {
+        reportTimerController.trackReportExecution(() -> {
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            // OPD Bills
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+
+            // Inward Service Bills - ADDED MISSING TYPES
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+
+            hospitalDoctorFeeReportDtos = billService.fetchHospitalDoctorFeeReportDTOs(
+                    fromDate, toDate, institution, site, department, webUser,
+                    billTypeAtomics, admissionType, paymentScheme);
+
+            System.out.println("Hospital Doctor Fee Report Results returned: " + (hospitalDoctorFeeReportDtos != null ? hospitalDoctorFeeReportDtos.size() : 0));
+
+            hospitalDoctorFeeBundle = new HospitalDoctorFeeBundle(hospitalDoctorFeeReportDtos);
+        }, CommonReports.LAB_REPORTS, "OpdReportController.generateHospitalDoctorFeeReport", sessionController.getLoggedUser());
+    }
+
+    public void downloadHospitalDoctorFeeExcel() {
+        if (hospitalDoctorFeeBundle == null || hospitalDoctorFeeReportDtos == null || hospitalDoctorFeeReportDtos.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to download. Please process the report first.");
+            return;
+        }
+
+        try {
+            org.apache.poi.xssf.usermodel.XSSFWorkbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook();
+            org.apache.poi.xssf.usermodel.XSSFSheet sheet = workbook.createSheet("Hospital Doctor Fee Report");
+
+            // Create styles
+            org.apache.poi.ss.usermodel.CellStyle headerStyle = workbook.createCellStyle();
+            org.apache.poi.ss.usermodel.Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setFontHeightInPoints((short) 14);
+            headerStyle.setFont(headerFont);
+            headerStyle.setAlignment(org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
+
+            org.apache.poi.ss.usermodel.CellStyle subHeaderStyle = workbook.createCellStyle();
+            org.apache.poi.ss.usermodel.Font subHeaderFont = workbook.createFont();
+            subHeaderFont.setBold(true);
+            subHeaderFont.setFontHeightInPoints((short) 11);
+            subHeaderStyle.setFont(subHeaderFont);
+            subHeaderStyle.setFillForegroundColor(org.apache.poi.ss.usermodel.IndexedColors.GREY_25_PERCENT.getIndex());
+            subHeaderStyle.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+
+            org.apache.poi.ss.usermodel.CellStyle categoryStyle = workbook.createCellStyle();
+            org.apache.poi.ss.usermodel.Font categoryFont = workbook.createFont();
+            categoryFont.setBold(true);
+            categoryStyle.setFont(categoryFont);
+            categoryStyle.setFillForegroundColor(org.apache.poi.ss.usermodel.IndexedColors.PALE_BLUE.getIndex());
+            categoryStyle.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+
+            org.apache.poi.ss.usermodel.CellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.setAlignment(org.apache.poi.ss.usermodel.HorizontalAlignment.RIGHT);
+            org.apache.poi.ss.usermodel.DataFormat format = workbook.createDataFormat();
+            numberStyle.setDataFormat(format.getFormat("#,##0.00"));
+
+            org.apache.poi.ss.usermodel.CellStyle totalStyle = workbook.createCellStyle();
+            totalStyle.cloneStyleFrom(numberStyle);
+            org.apache.poi.ss.usermodel.Font totalFont = workbook.createFont();
+            totalFont.setBold(true);
+            totalStyle.setFont(totalFont);
+            totalStyle.setFillForegroundColor(org.apache.poi.ss.usermodel.IndexedColors.LIGHT_YELLOW.getIndex());
+            totalStyle.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+
+            org.apache.poi.ss.usermodel.CellStyle grandTotalStyle = workbook.createCellStyle();
+            grandTotalStyle.cloneStyleFrom(numberStyle);
+            org.apache.poi.ss.usermodel.Font grandTotalFont = workbook.createFont();
+            grandTotalFont.setBold(true);
+            grandTotalFont.setFontHeightInPoints((short) 12);
+            grandTotalStyle.setFont(grandTotalFont);
+            grandTotalStyle.setFillForegroundColor(org.apache.poi.ss.usermodel.IndexedColors.LIGHT_GREEN.getIndex());
+            grandTotalStyle.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+
+            java.text.SimpleDateFormat dateTimeFormat = new java.text.SimpleDateFormat("dd MMM yyyy hh:mm:ss a");
+            java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd MMM yyyy");
+
+            int rowNum = 0;
+
+            // Header rows
+            org.apache.poi.ss.usermodel.Row institutionRow = sheet.createRow(rowNum++);
+            org.apache.poi.ss.usermodel.Cell institutionCell = institutionRow.createCell(0);
+            institutionCell.setCellValue(sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "Institution");
+            institutionCell.setCellStyle(headerStyle);
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 8));
+
+            org.apache.poi.ss.usermodel.Row titleRow = sheet.createRow(rowNum++);
+            org.apache.poi.ss.usermodel.Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Hospital Fee & Doctor Fee Report");
+            titleCell.setCellStyle(headerStyle);
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(1, 1, 0, 8));
+
+            org.apache.poi.ss.usermodel.Row dateRow = sheet.createRow(rowNum++);
+            org.apache.poi.ss.usermodel.Cell dateCell = dateRow.createCell(0);
+            dateCell.setCellValue("From: " + dateTimeFormat.format(fromDate) + "  To: " + dateTimeFormat.format(toDate));
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(2, 2, 0, 7));
+
+            rowNum++; // Empty row
+
+            // Column headers
+            org.apache.poi.ss.usermodel.Row headerRow = sheet.createRow(rowNum++);
+            String[] headers = {"Bill Number", "Patient Name", "Doctor Name", "Bill Type", "Hospital Fee", "Doctor Fee", "Net Total", "Bill Date", "Payment Method"};
+            for (int i = 0; i < headers.length; i++) {
+                org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(subHeaderStyle);
+            }
+
+            // Data rows grouped by payment method and category
+            for (Map.Entry<PaymentMethod, Map<BillCategory, List<HospitalDoctorFeeReportDTO>>> paymentEntry
+                    : hospitalDoctorFeeBundle.getNestedPaymentMethodGroups().entrySet()) {
+
+                PaymentMethod paymentMethod = paymentEntry.getKey();
+
+                // Payment method header
+                org.apache.poi.ss.usermodel.Row pmHeaderRow = sheet.createRow(rowNum++);
+                org.apache.poi.ss.usermodel.Cell pmCell = pmHeaderRow.createCell(0);
+                pmCell.setCellValue(paymentMethod.getLabel() + " Payment Method");
+                pmCell.setCellStyle(subHeaderStyle);
+                sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowNum - 1, rowNum - 1, 0, 8));
+
+                for (Map.Entry<BillCategory, List<HospitalDoctorFeeReportDTO>> categoryEntry : paymentEntry.getValue().entrySet()) {
+                    BillCategory category = categoryEntry.getKey();
+                    List<HospitalDoctorFeeReportDTO> dtos = categoryEntry.getValue();
+
+                    // Category header
+                    org.apache.poi.ss.usermodel.Row catHeaderRow = sheet.createRow(rowNum++);
+                    org.apache.poi.ss.usermodel.Cell catCell = catHeaderRow.createCell(0);
+                    String categoryLabel = category == BillCategory.BILL ? "Normal Bills" :
+                                          category == BillCategory.CANCELLATION ? "Cancellations" : "Returns";
+                    catCell.setCellValue("  " + categoryLabel + " (" + dtos.size() + " records)");
+                    catCell.setCellStyle(categoryStyle);
+                    sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowNum - 1, rowNum - 1, 0, 8));
+
+                    // Data rows
+                    for (HospitalDoctorFeeReportDTO dto : dtos) {
+                        org.apache.poi.ss.usermodel.Row dataRow = sheet.createRow(rowNum++);
+                        dataRow.createCell(0).setCellValue(dto.getDeptId() != null ? dto.getDeptId() : "");
+                        dataRow.createCell(1).setCellValue(dto.getPatientName() != null ? dto.getPatientName() : "");
+                        dataRow.createCell(2).setCellValue(dto.getDoctorName() != null ? dto.getDoctorName() : "");
+                        dataRow.createCell(3).setCellValue(dto.getTransactionTypeLabel() != null ? dto.getTransactionTypeLabel() : "");
+
+                        org.apache.poi.ss.usermodel.Cell hospitalFeeCell = dataRow.createCell(4);
+                        hospitalFeeCell.setCellValue(dto.getHospitalFee() != null ? dto.getHospitalFee() : 0.0);
+                        hospitalFeeCell.setCellStyle(numberStyle);
+
+                        org.apache.poi.ss.usermodel.Cell doctorFeeCell = dataRow.createCell(5);
+                        doctorFeeCell.setCellValue(dto.getDoctorFee() != null ? dto.getDoctorFee() : 0.0);
+                        doctorFeeCell.setCellStyle(numberStyle);
+
+                        org.apache.poi.ss.usermodel.Cell netTotalCell = dataRow.createCell(6);
+                        netTotalCell.setCellValue(dto.getNetTotal() != null ? dto.getNetTotal() : 0.0);
+                        netTotalCell.setCellStyle(numberStyle);
+
+                        dataRow.createCell(7).setCellValue(dto.getBillDate() != null ? dateFormat.format(dto.getBillDate()) : "");
+                        dataRow.createCell(8).setCellValue(dto.getPaymentMethod() != null ? dto.getPaymentMethod().getLabel() : "");
+                    }
+
+                    // Category subtotal
+                    org.apache.poi.ss.usermodel.Row catSubtotalRow = sheet.createRow(rowNum++);
+                    catSubtotalRow.createCell(3).setCellValue(categoryLabel + " Subtotal:");
+
+                    org.apache.poi.ss.usermodel.Cell catHospitalCell = catSubtotalRow.createCell(4);
+                    catHospitalCell.setCellValue(hospitalDoctorFeeBundle.getBillCategorySubtotal(paymentMethod, category, "HOSPITAL"));
+                    catHospitalCell.setCellStyle(totalStyle);
+
+                    org.apache.poi.ss.usermodel.Cell catDoctorCell = catSubtotalRow.createCell(5);
+                    catDoctorCell.setCellValue(hospitalDoctorFeeBundle.getBillCategorySubtotal(paymentMethod, category, "DOCTOR"));
+                    catDoctorCell.setCellStyle(totalStyle);
+
+                    org.apache.poi.ss.usermodel.Cell catNetCell = catSubtotalRow.createCell(6);
+                    catNetCell.setCellValue(hospitalDoctorFeeBundle.getBillCategorySubtotal(paymentMethod, category, "NET"));
+                    catNetCell.setCellStyle(totalStyle);
+                }
+
+                // Payment method total
+                org.apache.poi.ss.usermodel.Row pmTotalRow = sheet.createRow(rowNum++);
+                pmTotalRow.createCell(3).setCellValue(paymentMethod.getLabel() + " Total:");
+
+                org.apache.poi.ss.usermodel.Cell pmHospitalCell = pmTotalRow.createCell(4);
+                pmHospitalCell.setCellValue(hospitalDoctorFeeBundle.getHospitalFeeSubtotalForPaymentMethod(paymentMethod));
+                pmHospitalCell.setCellStyle(totalStyle);
+
+                org.apache.poi.ss.usermodel.Cell pmDoctorCell = pmTotalRow.createCell(5);
+                pmDoctorCell.setCellValue(hospitalDoctorFeeBundle.getDoctorFeeSubtotalForPaymentMethod(paymentMethod));
+                pmDoctorCell.setCellStyle(totalStyle);
+
+                org.apache.poi.ss.usermodel.Cell pmNetCell = pmTotalRow.createCell(6);
+                pmNetCell.setCellValue(hospitalDoctorFeeBundle.getSubtotalForPaymentMethod(paymentMethod));
+                pmNetCell.setCellStyle(totalStyle);
+
+                rowNum++; // Empty row between payment methods
+            }
+
+            // Grand total
+            org.apache.poi.ss.usermodel.Row grandTotalRow = sheet.createRow(rowNum++);
+            org.apache.poi.ss.usermodel.Cell gtLabelCell = grandTotalRow.createCell(3);
+            gtLabelCell.setCellValue("GRAND TOTAL:");
+            gtLabelCell.setCellStyle(grandTotalStyle);
+
+            org.apache.poi.ss.usermodel.Cell gtHospitalCell = grandTotalRow.createCell(4);
+            gtHospitalCell.setCellValue(hospitalDoctorFeeBundle.getGrandHospitalFeeTotal());
+            gtHospitalCell.setCellStyle(grandTotalStyle);
+
+            org.apache.poi.ss.usermodel.Cell gtDoctorCell = grandTotalRow.createCell(5);
+            gtDoctorCell.setCellValue(hospitalDoctorFeeBundle.getGrandDoctorFeeTotal());
+            gtDoctorCell.setCellStyle(grandTotalStyle);
+
+            org.apache.poi.ss.usermodel.Cell gtNetCell = grandTotalRow.createCell(6);
+            gtNetCell.setCellValue(hospitalDoctorFeeBundle.getGrandTotal());
+            gtNetCell.setCellStyle(grandTotalStyle);
+
+            // Auto-size columns
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            // Write to response
+            javax.faces.context.FacesContext fc = javax.faces.context.FacesContext.getCurrentInstance();
+            javax.servlet.http.HttpServletResponse response = (javax.servlet.http.HttpServletResponse) fc.getExternalContext().getResponse();
+            response.reset();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            java.text.SimpleDateFormat fileDateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd");
+            String filename = "Hospital_Doctor_Fee_Report_" + fileDateFormat.format(fromDate) + "_to_" + fileDateFormat.format(toDate) + ".xlsx";
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+
+            try (javax.servlet.ServletOutputStream outputStream = response.getOutputStream()) {
+                workbook.write(outputStream);
+                fc.responseComplete();
+            }
+            workbook.close();
+
+        } catch (java.io.IOException e) {
+            JsfUtil.addErrorMessage("Error generating Excel file: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void processOpdIncomeSummaryByDateDTO() {
@@ -2517,6 +2772,22 @@ public class OpdReportController implements Serializable {
 
     public void setOpdIncomeReportDtos(List<OpdIncomeReportDTO> opdIncomeReportDtos) {
         this.opdIncomeReportDtos = opdIncomeReportDtos;
+    }
+
+    public List<HospitalDoctorFeeReportDTO> getHospitalDoctorFeeReportDtos() {
+        return hospitalDoctorFeeReportDtos;
+    }
+
+    public void setHospitalDoctorFeeReportDtos(List<HospitalDoctorFeeReportDTO> hospitalDoctorFeeReportDtos) {
+        this.hospitalDoctorFeeReportDtos = hospitalDoctorFeeReportDtos;
+    }
+
+    public HospitalDoctorFeeBundle getHospitalDoctorFeeBundle() {
+        return hospitalDoctorFeeBundle;
+    }
+
+    public void setHospitalDoctorFeeBundle(HospitalDoctorFeeBundle hospitalDoctorFeeBundle) {
+        this.hospitalDoctorFeeBundle = hospitalDoctorFeeBundle;
     }
 
 }

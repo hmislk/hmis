@@ -442,6 +442,33 @@
                                             #{dataAdministrationController.executionFeedback}
                                         </td>
                                     </tr>
+                                    <tr>
+                                        <td><strong>Correct Direct Issue Inward Medicine Cancellation Stock Values</strong></td>
+                                        <td>
+                                            Corrects the sign of BillFinanceDetails totals (totalRetailValue, totalPurchaseValue,
+                                            totalCostValue) for Direct Issue Inward Medicine Cancellation bills.
+                                            These cancellations reverse the original stock issue, so finance values should be
+                                            POSITIVE (stock returning to pharmacy inventory).
+                                            <br/>
+                                            <strong>Use date range to limit scope.</strong>
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                id="btnCorrectDirectIssueInwardCancellationSigns"
+                                                action="#{dataAdministrationController.correctDirectIssueInwardMedicineCancellationStockValues()}"
+                                                ajax="false"
+                                                value="Correct DIIM Cancellation Signs"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-wrench"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                onclick="return confirm('This will correct totalRetailValue and totalPurchaseValue signs for Direct Issue Inward Medicine Cancellation bills in the specified date range. Continue?');" />
+                                        </td>
+                                        <td>
+                                            <h:outputText value="#{dataAdministrationController.executionFeedback}"
+                                                          escape="false"
+                                                          style="white-space: pre-wrap;" />
+                                        </td>
+                                    </tr>
 
 
 
@@ -745,6 +772,134 @@
                                         value="12. Update Staff Shift Without Roster"/>
                                 </div>
 
+                            </div>
+                        </p:tab>
+
+                        <p:tab
+                            id="tabOpdBillingFeeCorrection"
+                            title="OPD" >
+
+                            <h5 class="mb-3">
+                                <i class="fa fa-calculator"></i> Billing Fee Correction
+                            </h5>
+
+                            <div class="alert alert-warning mb-3">
+                                <h6><i class="fa fa-exclamation-triangle"></i> Data Correction for April 2025 Bug</h6>
+                                <p><strong>Issue:</strong> Between April 18, 2025 and January 22, 2026, hospital fee and staff fee were not being aggregated at the bill level for OPD billing due to a commented-out method call.</p>
+                                <p><strong>Impact:</strong> Bill-level fields <code>totalHospitalFee</code>, <code>totalStaffFee</code>, and <code>totalCenterFee</code> remained empty while BillItem-level fees were calculated correctly.</p>
+                                <p><strong>Solution:</strong> These methods reconstruct bill-level fee totals from BillItem data using native SQL for optimal performance.</p>
+                            </div>
+
+                            <table class="table table-sm table-bordered w-100">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 15%;">Name</th>
+                                        <th style="width: 30%;">Description</th>
+                                        <th style="width: 15%;">Action</th>
+                                        <th style="width: 40%;">Output</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Check Affected Bills</strong></td>
+                                        <td>
+                                            Scans for OPD bills from April 18, 2025 to January 22, 2026 that are missing bill-level fee aggregation.
+                                            Shows count of bills that would be corrected without making any changes.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                id="btnCheckHistoricalOpdBillingFees"
+                                                action="#{dataAdministrationController.correctHistoricalOpdBillingFees()}"
+                                                ajax="true"
+                                                update="@form"
+                                                value="Check Affected Bills"
+                                                styleClass="ui-button-info m-1"
+                                                icon="pi pi-search"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}" />
+                                        </td>
+                                        <td>
+                                            <p:messages id="msgCheckHistorical" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Execute Correction</strong></td>
+                                        <td>
+                                            <strong>CAUTION:</strong> Executes the actual correction for all affected bills from the April 2025 bug period.
+                                            Updates <code>totalHospitalFee</code>, <code>totalStaffFee</code>, and <code>totalCenterFee</code> based on BillItem aggregation.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                id="btnExecuteHistoricalOpdBillingFees"
+                                                action="#{dataAdministrationController.executeHistoricalOpdBillingFeesCorrection()}"
+                                                ajax="true"
+                                                update="@form"
+                                                value="Execute Correction"
+                                                styleClass="ui-button-danger m-1"
+                                                icon="pi pi-cog"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                onclick="return confirm('This will modify bill-level fee data for thousands of historical bills. Continue?');" />
+                                        </td>
+                                        <td>
+                                            <p:messages id="msgExecuteHistorical" />
+                                        </td>
+                                    </tr>
+                                    <tr style="background-color: #f8f9fa;">
+                                        <td colspan="4"><strong>Custom Date Range Correction</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Check Custom Range</strong></td>
+                                        <td>
+                                            Uses the date range selected at the top of this page to check for bills needing fee aggregation correction.
+                                            Useful for testing specific periods or correcting newly discovered issues.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                id="btnCheckCustomDateRange"
+                                                action="#{dataAdministrationController.correctCustomDateRangeBillingFees()}"
+                                                ajax="true"
+                                                update="@form"
+                                                value="Check Custom Range"
+                                                styleClass="ui-button-secondary m-1"
+                                                icon="pi pi-calendar"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}" />
+                                        </td>
+                                        <td>
+                                            <p:messages id="msgCheckCustomRange" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Execute Custom Range</strong></td>
+                                        <td>
+                                            <strong>CAUTION:</strong> Executes correction for bills in the selected date range only.
+                                            Make sure to run 'Check Custom Range' first to see what would be affected.
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                id="btnExecuteCustomDateRange"
+                                                action="#{dataAdministrationController.executeCustomDateRangeBillingFeesCorrection()}"
+                                                ajax="true"
+                                                update="@form"
+                                                value="Execute Custom Range"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-wrench"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                                onclick="return confirm('This will modify bill-level fee data for bills in the selected date range. Continue?');" />
+                                        </td>
+                                        <td>
+                                            <p:messages id="msgExecuteCustomRange" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div class="alert alert-info mt-3">
+                                <h6><i class="fa fa-info-circle"></i> Technical Details</h6>
+                                <ul class="mb-0">
+                                    <li><strong>Performance:</strong> Uses native SQL for bulk updates - can process thousands of bills quickly</li>
+                                    <li><strong>Safety:</strong> Only updates bills where fee totals are null or zero</li>
+                                    <li><strong>Data Source:</strong> Aggregates from existing BillItem-level fees (which were calculated correctly)</li>
+                                    <li><strong>Validation:</strong> Check operations are non-destructive and show counts before execution</li>
+                                </ul>
                             </div>
                         </p:tab>
 
