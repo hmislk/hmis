@@ -3588,8 +3588,7 @@ public class QuickBookReportController implements Serializable {
         String sql;
         Map<String, Object> temMap = new HashMap<>();
 
-        sql = "SELECT b FROM Bill b WHERE type(b)=:bill"
-                + " and b.retired=false "
+        sql = "SELECT b FROM Bill b WHERE b.retired=false "
                 + " and b.billTypeAtomic = :bta "
                 + " and b.department=:d "
                 + " and b.institution=:ins "
@@ -3599,7 +3598,6 @@ public class QuickBookReportController implements Serializable {
 
         temMap.put("fromDate", fd);
         temMap.put("toDate", td);
-        temMap.put("bill", billClass.getClass());
         temMap.put("bta", billTypeAtomic);
         temMap.put("d", dep);
         temMap.put("ins", ins);

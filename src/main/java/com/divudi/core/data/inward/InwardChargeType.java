@@ -48,6 +48,14 @@ public enum InwardChargeType {
     VAT("VAT (18%)"),
     AccessoryCharges("Endoscopy Charges"),
     EyeLence("Opthalmic Technician & Lense Fee"),
+    @Deprecated
+    RoomChargesVAT("RoomChargesVAT"),
+    @Deprecated
+    ProfessionalChargeVAT("ProfessionalChargeVAT"),
+    @Deprecated
+    LensFee("Lense Fee"),
+    @Deprecated
+    PackageFee("PackageFee"),
     HospitalSupportService("Hospital Support Service Charges"),
     ExtraMedicine("Extra Medicine Charges"),
     DialysisTreatment("Dialysis Treatment Charges"),
@@ -57,6 +65,8 @@ public enum InwardChargeType {
     Investigations("Investigations"),
     @Deprecated
     MedicalCare("MedicalCare"),
+    @Deprecated
+    MedicalCareWard("MedicalCareWard"),
     BabyCare("BabyCare Charges"),
     LabourCharges("Labour Charges"),
     @Deprecated

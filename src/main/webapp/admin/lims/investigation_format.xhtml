@@ -635,6 +635,9 @@
 
                                                     <h:outputText value="Suffix"/>
                                                     <p:inputText autocomplete="off" id="txtSuffix" value="#{investigationItemController.current.formatSuffix}"/>
+                                                    
+                                                    <h:outputText value="Allow to Generate Chart "/>
+                                                    <p:selectBooleanCheckbox value="#{investigationItemController.current.allowToExportChart}" ></p:selectBooleanCheckbox>
                                                 </h:panelGrid>
                                             </p:tab>
 

@@ -4255,7 +4255,7 @@ public class PatientEncounterController implements Serializable {
                         finalValue = doubleVal;
                     } else if (strVal != null && !strVal.trim().isEmpty()) {
                         try {
-                            finalValue = Double.parseDouble(strVal.trim());
+                            finalValue = Double.valueOf(strVal.trim());
                         } catch (NumberFormatException e) {
                             continue; // Skip non-numeric string values
                         }
