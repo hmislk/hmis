@@ -65,8 +65,24 @@
 
                         <div class="row mt-3">
                             <div class="col-md-3 card">
+                                <h:panelGroup>
+                                    <div class="alert alert-warning align-items-center mt-3" role="alert">
+                                        <div class="d-flex">
+                                            <div style="width: 100px;">
+                                                <i class="bi bi-exclamation-triangle mx-2" style="font-size: 55px; color: red; align-content: center; align-items: center;"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="alert-heading">Notice !</h4>
+                                                <div>
+                                                    This includes all reports <b>( OPD / IP / CC )</b> approved during the above period.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
                                 <p:dataTable 
-                                    class="mt-4" 
+                                    class="mt-2" 
                                     id="tblBills" 
                                     value="#{laboratoryChartViewController.investigationList}" 
                                     var="pi" 
@@ -101,7 +117,7 @@
                                                 padding: 60px 40px;
                                                 text-align: center;
                                                 max-width: 95%;
-                                                
+
                                             }
 
                                             .icon {
