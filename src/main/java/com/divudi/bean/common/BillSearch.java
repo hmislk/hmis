@@ -1763,6 +1763,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         refundingBill.setNetTotal(billNetTotal);
         refundingBill.setTotal(billNetTotal);
         refundingBill.setDiscount(0);
+        refundingBill.setTotalHospitalFee(billHospitalTotal);
+        refundingBill.setTotalStaffFee(billStaffTotal);
 
         return true;
     }
