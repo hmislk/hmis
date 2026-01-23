@@ -131,14 +131,15 @@
                         <table class="printTable">
                             <thead>
                                 <tr>
-                                    <th style="width: 180px;">Patient Name</th>
-                                    <th style="width: 150px;">Doctor Name</th>
-                                    <th style="width: 80px;">Bill Type</th>
-                                    <th style="width: 100px;" class="text-end">Hospital Fee</th>
-                                    <th style="width: 100px;" class="text-end">Doctor Fee</th>
-                                    <th style="width: 100px;" class="text-end">Net Total</th>
-                                    <th style="width: 90px;">Bill Date</th>
-                                    <th style="width: 100px;">Payment Method</th>
+                                    <th style="width: 100px;">Bill Number</th>
+                                    <th style="width: 160px;">Patient Name</th>
+                                    <th style="width: 140px;">Doctor Name</th>
+                                    <th style="width: 70px;">Bill Type</th>
+                                    <th style="width: 90px;" class="text-end">Hospital Fee</th>
+                                    <th style="width: 90px;" class="text-end">Doctor Fee</th>
+                                    <th style="width: 90px;" class="text-end">Net Total</th>
+                                    <th style="width: 80px;">Bill Date</th>
+                                    <th style="width: 90px;">Payment Method</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -146,7 +147,7 @@
                                            var="paymentEntry">
 
                                     <tr class="payment-method-header">
-                                        <td colspan="8">
+                                        <td colspan="9">
                                             #{paymentEntry.key.label} Payment Method
                                         </td>
                                     </tr>
@@ -154,7 +155,7 @@
                                     <ui:repeat value="#{paymentEntry.value.entrySet()}" var="categoryEntry">
 
                                         <tr class="category-header">
-                                            <td colspan="8">
+                                            <td colspan="9">
                                                 #{categoryEntry.key == 'BILL' ? 'Normal Bills' :
                                                   categoryEntry.key == 'CANCELLATION' ? 'Cancellations' : 'Returns'}
                                                 (#{categoryEntry.value.size()} records)
@@ -163,6 +164,7 @@
 
                                         <ui:repeat value="#{categoryEntry.value}" var="dto">
                                             <tr class="data-row">
+                                                <td>#{dto.deptId}</td>
                                                 <td>#{dto.patientName}</td>
                                                 <td>#{dto.doctorName}</td>
                                                 <td>#{dto.transactionTypeLabel}</td>
@@ -191,7 +193,7 @@
                                         </ui:repeat>
 
                                         <tr class="category-subtotal">
-                                            <td colspan="3" class="text-end">
+                                            <td colspan="4" class="text-end">
                                                 #{categoryEntry.key == 'BILL' ? 'Normal Bills' :
                                                   categoryEntry.key == 'CANCELLATION' ? 'Cancellations' : 'Returns'} Subtotal:
                                             </td>
@@ -216,7 +218,7 @@
                                     </ui:repeat>
 
                                     <tr class="payment-method-total">
-                                        <td colspan="3" class="text-end">
+                                        <td colspan="4" class="text-end">
                                             #{paymentEntry.key.label} Total:
                                         </td>
                                         <td class="text-end">
@@ -241,7 +243,7 @@
                             </tbody>
                             <tfoot>
                                 <tr class="grand-total">
-                                    <td colspan="3" class="text-end">
+                                    <td colspan="4" class="text-end">
                                         GRAND TOTAL:
                                     </td>
                                     <td class="text-end">
