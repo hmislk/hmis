@@ -19829,13 +19829,18 @@ public class SearchController implements Serializable {
 
     public ReportTemplateRowBundle generateInwardPatientDepositPayments() {
         try {
-            // Get Inpatient bill types
-            List<BillTypeAtomic> inwardBillTypes = BillTypeAtomic.findByServiceType(ServiceType.INWARD);
+            // Get specific inward deposit bill types only
+            List<BillTypeAtomic> inwardDepositBillTypes = Arrays.asList(
+                BillTypeAtomic.INWARD_DEPOSIT,
+                BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION,
+                BillTypeAtomic.INWARD_DEPOSIT_REFUND,
+                BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION
+            );
 
             // Use payment report method with bill type filtering
             ReportTemplateRowBundle ap = reportTemplateController.generatePaymentReportByBillTypes(
                     PaymentMethod.PatientDeposit,
-                    inwardBillTypes,
+                    inwardDepositBillTypes,
                     fromDate,
                     toDate,
                     institution,
@@ -19843,22 +19848,22 @@ public class SearchController implements Serializable {
                     site);
 
             if (ap != null) {
-                ap.setName("Patient Deposit Utilization for Inpatient Bills");
+                ap.setName("Patient Deposit Utilization for Inward Payments");
                 ap.setBundleType("inwardPatientDepositPayments");
                 return ap;
             } else {
                 // Return empty bundle if result is null
                 ReportTemplateRowBundle emptyBundle = new ReportTemplateRowBundle();
-                emptyBundle.setName("Patient Deposit Utilization for Inpatient Bills");
+                emptyBundle.setName("Patient Deposit Utilization for Inward Payments");
                 emptyBundle.setBundleType("inwardPatientDepositPayments");
                 return emptyBundle;
             }
         } catch (Exception e) {
             // Log error and return empty bundle on any exception
-            System.err.println("Error generating inpatient patient deposit payments report: " + e.getMessage());
+            System.err.println("Error generating inward patient deposit payments report: " + e.getMessage());
             e.printStackTrace();
             ReportTemplateRowBundle emptyBundle = new ReportTemplateRowBundle();
-            emptyBundle.setName("Patient Deposit Utilization for Inpatient Bills (Error)");
+            emptyBundle.setName("Patient Deposit Utilization for Inward Payments (Error)");
             emptyBundle.setBundleType("inwardPatientDepositPayments");
             return emptyBundle;
         }
