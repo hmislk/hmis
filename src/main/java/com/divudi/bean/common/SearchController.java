@@ -19198,6 +19198,53 @@ public class SearchController implements Serializable {
         return depositCollection;
     }
 
+    public ReportTemplateRowBundle generateInwardDepositCollection() {
+        ReportTemplateRowBundle depositCollection = new ReportTemplateRowBundle();
+
+        // Query bills for inward deposit receipts
+        List<BillTypeAtomic> inwardDepositBillTypes = new ArrayList<>();
+        inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT);
+        inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+        inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+        inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
+
+        String jpql = "select b "
+                + " from Bill b "
+                + " left join fetch b.patient patient "
+                + " left join fetch patient.person "
+                + " where b.retired = :br "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :btas ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("br", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("btas", inwardDepositBillTypes);
+
+        if (department != null) {
+            jpql += " and b.department = :dep ";
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql += " and b.department.institution = :ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += " and b.department.site = :site ";
+            m.put("site", site);
+        }
+
+        List<Bill> bills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        billToBundleForPatientDeposits(depositCollection, bills);
+        depositCollection.setName("Inward Deposit Collection");
+        depositCollection.setBundleType("inwardDepositPayments");
+        depositCollection.setDescription("Inward Deposit Receipts, Cancellations, and Refunds");
+
+        return depositCollection;
+    }
+
     public ReportTemplateRowBundle generatePharmacyCollection() {
         ReportTemplateRowBundle pb;
         //TODO: Use a List of Bill Type Atomics instead of calling the findByServiceTypeAndPaymentCategory
