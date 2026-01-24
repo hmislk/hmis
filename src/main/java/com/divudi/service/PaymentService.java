@@ -284,7 +284,7 @@ public class PaymentService {
             
             switch (pm) {
                 case Cash:
-                    p.setPaidValue(bill.getTotal());
+                    p.setPaidValue(bill.getNetTotal());
                     p.setComments("");
                     break;
                 case Card:
