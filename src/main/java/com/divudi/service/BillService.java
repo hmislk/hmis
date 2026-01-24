@@ -1923,6 +1923,7 @@ public class BillService {
         // Enhanced query with LEFT JOINs to handle null associations safely
         String jpql = "select new com.divudi.core.data.dto.HospitalDoctorFeeReportDTO("
                 + " b.id, "
+                + " b.deptId, "  // Bill Number
                 + " coalesce(p.name, 'N/A'), "  // Patient name from LEFT JOIN
                 + " coalesce(fs.name, 'N/A'), "  // Doctor name from fromStaff only
                 + " coalesce(b.totalHospitalFee,0.0), coalesce(b.totalStaffFee,0.0), "
