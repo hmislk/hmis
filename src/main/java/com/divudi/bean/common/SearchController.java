@@ -16506,6 +16506,11 @@ public class SearchController implements Serializable {
             // Use getTotal() directly - see comment above for OPD credit company collection
             collectionForTheDay += getSafeTotal(inwardCreditCompanyCollection);
 
+            // Generate Inward Deposit Collection and add to the main bundle
+            ReportTemplateRowBundle inwardDepositCollection = generateInwardDepositCollection();
+            bundle.getBundles().add(inwardDepositCollection);
+            collectionForTheDay += getSafeTotal(inwardDepositCollection);
+
             // NOTE: Pharmacy Credit Company Payment Collection is NOT generated separately here
             // because pharmacy credit company bill types are already included in the OPD credit
             // company collection above (generateCreditCompanyCollectionForOpd() includes both
