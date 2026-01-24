@@ -302,7 +302,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                             JsfUtil.addErrorMessage("Please enter the Online Settlement payment Amount");
                             return true;
                         }
-                        if (methodData.getOnlineSettlement().getInstitution() == null || (methodData.getOnlineSettlement().getReferenceNo() == null || methodData.getOnlineSettlement().getReferenceNo().trim().isEmpty()) && methodData.getOnlineSettlement().getDate() == null) {
+                        if (methodData.getOnlineSettlement().getInstitution() == null || methodData.getOnlineSettlement().getReferenceNo() == null || methodData.getOnlineSettlement().getReferenceNo().trim().isEmpty() || methodData.getOnlineSettlement().getDate() == null) {
                             JsfUtil.addErrorMessage("Please Fill Online Settlement Reference Number, Date and Bank.");
                             return true;
                         }
@@ -424,7 +424,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                                             JsfUtil.addErrorMessage("Please enter the amount to be paid from Online Settlement.");
                                             return true;
                                         }
-                                        if (cd.getPaymentMethodData().getOnlineSettlement().getInstitution() == null || (cd.getPaymentMethodData().getOnlineSettlement().getReferenceNo() == null || cd.getPaymentMethodData().getOnlineSettlement().getReferenceNo().trim().isEmpty()) && cd.getPaymentMethodData().getOnlineSettlement().getDate() == null) {
+                                        if (cd.getPaymentMethodData().getOnlineSettlement().getInstitution() == null || cd.getPaymentMethodData().getOnlineSettlement().getReferenceNo() == null || cd.getPaymentMethodData().getOnlineSettlement().getReferenceNo().trim().isEmpty() || cd.getPaymentMethodData().getOnlineSettlement().getDate() == null) {
                                             JsfUtil.addErrorMessage("Please Fill Online Settlement Reference Number, Date and Bank.");
                                             return true;
                                         }
