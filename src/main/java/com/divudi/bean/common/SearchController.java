@@ -16550,7 +16550,17 @@ public class SearchController implements Serializable {
             double collectionBeforeDeduction = collectionForTheDay;
             double deductionAmount = Math.abs(getSafeTotal(pharmacyPatientDepositPayments));
             collectionForTheDay -= deductionAmount;
-            
+
+
+            // Inpatient Patient Deposit Payments - bills paid using deposits (deducted from collection for the day)
+            ReportTemplateRowBundle inwardPatientDepositPayments = generateInwardPatientDepositPayments();
+            inwardPatientDepositPayments.calculateTotalByPayments();
+            // Fix sign for display - invert the sign to show utilization as positive
+            double inwardDepositTotal = inwardPatientDepositPayments.getTotal();
+            inwardPatientDepositPayments.setTotal(-inwardDepositTotal);
+            bundle.getBundles().add(inwardPatientDepositPayments);
+            collectionForTheDay -= Math.abs(getSafeTotal(inwardPatientDepositPayments));
+
             // Final collection for the day
             ReportTemplateRowBundle collectionForTheDayBundle = new ReportTemplateRowBundle();
             collectionForTheDayBundle.setName("Collection for the day");
@@ -19813,6 +19823,43 @@ public class SearchController implements Serializable {
             ReportTemplateRowBundle emptyBundle = new ReportTemplateRowBundle();
             emptyBundle.setName("Patient Deposit Utilization for Pharmacy Bills (Error)");
             emptyBundle.setBundleType("pharmacyPatientDepositPayments");
+            return emptyBundle;
+        }
+    }
+
+    public ReportTemplateRowBundle generateInwardPatientDepositPayments() {
+        try {
+            // Get Inpatient bill types
+            List<BillTypeAtomic> inwardBillTypes = BillTypeAtomic.findByServiceType(ServiceType.INWARD);
+
+            // Use payment report method with bill type filtering
+            ReportTemplateRowBundle ap = reportTemplateController.generatePaymentReportByBillTypes(
+                    PaymentMethod.PatientDeposit,
+                    inwardBillTypes,
+                    fromDate,
+                    toDate,
+                    institution,
+                    department,
+                    site);
+
+            if (ap != null) {
+                ap.setName("Patient Deposit Utilization for Inpatient Bills");
+                ap.setBundleType("inwardPatientDepositPayments");
+                return ap;
+            } else {
+                // Return empty bundle if result is null
+                ReportTemplateRowBundle emptyBundle = new ReportTemplateRowBundle();
+                emptyBundle.setName("Patient Deposit Utilization for Inpatient Bills");
+                emptyBundle.setBundleType("inwardPatientDepositPayments");
+                return emptyBundle;
+            }
+        } catch (Exception e) {
+            // Log error and return empty bundle on any exception
+            System.err.println("Error generating inpatient patient deposit payments report: " + e.getMessage());
+            e.printStackTrace();
+            ReportTemplateRowBundle emptyBundle = new ReportTemplateRowBundle();
+            emptyBundle.setName("Patient Deposit Utilization for Inpatient Bills (Error)");
+            emptyBundle.setBundleType("inwardPatientDepositPayments");
             return emptyBundle;
         }
     }
