@@ -37,6 +37,7 @@
                     </tr>
                     <tr>
                         <th>Bill No</th>
+                        <th>BHT</th>
                         <th>Date &amp; Time</th>
                         <th>Patient</th>
                         <th>Department</th>
@@ -47,6 +48,7 @@
                     <ui:repeat value="#{cc.attrs.bundle.reportTemplateRows}" var="row">
                         <tr class="#{row.payment ne null ? 'table-primary' : 'table-light'}">
                             <td>#{row.payment.bill.deptId}</td>
+                            <td>#{row.payment.bill.patientEncounter.bhtNo}</td>
                             <td>
                                 <h:outputText value="#{row.payment.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
