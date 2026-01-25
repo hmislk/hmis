@@ -3581,7 +3581,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     private void clearBillValues() {
         setPatient(null);
-        setReferredBy(null);
+//        setReferredBy(null);  // Commented out to preserve doctor selection across bills
         payments = null;
 //        setReferredByInstitution(null);
         setReferralId(null);
@@ -3621,7 +3621,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     private void clearBillValuesForMember() {
         setPatient(null);
-        setReferredBy(null);
+//        setReferredBy(null);  // Commented out to preserve doctor selection across bills
 //        setReferredByInstitution(null);
         setReferralId(null);
         setSessionDate(null);
@@ -5192,6 +5192,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         this.itemLight = itemLight;
         if (itemLight != null) {
             getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
+            // Initialize quantity to 1 when item is selected
+            if (currentBillItemQty == null) {
+                currentBillItemQty = 1.0;
+            }
         }
     }
 

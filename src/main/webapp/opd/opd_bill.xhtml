@@ -858,7 +858,10 @@
                                                     <f:facet name="header">
                                                         <h:outputText value="Qty" />
                                                     </f:facet>
-                                                    <h:outputText value="#{bi.billItem.qty}" class="mx-1 text-end"  ></h:outputText>
+                                                    <h:outputText
+                                                        id="txtBillItemQty"
+                                                        value="#{bi.billItem.qty}" 
+                                                        class="mx-1 text-end"  ></h:outputText>
                                                 </p:column>
                                                 
                                                 <p:column  width="10em" >
