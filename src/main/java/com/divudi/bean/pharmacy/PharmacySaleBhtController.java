@@ -1679,6 +1679,10 @@ public class PharmacySaleBhtController implements Serializable {
 
         long validationTime = System.currentTimeMillis();
 
+        // PERFORMANCE FIX: Set stock on billItem before checkItemBatch to prevent NPE
+        billItem.getPharmaceuticalBillItem().setStock(stockEntity);
+        billItem.getPharmaceuticalBillItem().setItemBatch(stockEntity.getItemBatch());
+
         if (checkItemBatch()) {
             errorMessage = "Already added this item batch";
             JsfUtil.addErrorMessage("Already added this item batch");
@@ -1698,8 +1702,7 @@ public class PharmacySaleBhtController implements Serializable {
 //        }
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - Math.abs(qty));
         billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
-        billItem.getPharmaceuticalBillItem().setStock(stockEntity);
-        billItem.getPharmaceuticalBillItem().setItemBatch(stockEntity.getItemBatch());
+        // Stock and ItemBatch already set earlier before checkItemBatch()
 
         //Bill Item
         billItem.setItem(stockEntity.getItemBatch().getItem());
@@ -1708,7 +1711,7 @@ public class PharmacySaleBhtController implements Serializable {
         //pharmaceutical Bill Item
         billItem.getPharmaceuticalBillItem().setDoe(stockEntity.getItemBatch().getDateOfExpire());
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
-        billItem.getPharmaceuticalBillItem().setItemBatch(stockEntity.getItemBatch());
+        // ItemBatch already set earlier before checkItemBatch()
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
 
