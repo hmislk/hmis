@@ -386,8 +386,6 @@ public class InwardReportDashboardController implements Serializable{
         List<BillTypeAtomic> btas = fetchBillTypeAtomicForOpdRevenue();
         opdRevenueDashboardDtos = billService.fetchOpdRevenueDashboardDTOs(getFromDate(), getToDate(), institution, site, department, loggedUser, btas, null, null);
 
-        System.out.println("Results returned: " + (opdRevenueDashboardDtos != null ? opdRevenueDashboardDtos.size() : 0));
-
         opdRevenueBundle = new IncomeBundle(opdRevenueDashboardDtos);
         opdRevenueBundle.generatePaymentDetailsForOpdRevenue(selectionTypeOpdRevenue);
         setOpdRevenueChart();
@@ -399,9 +397,7 @@ public class InwardReportDashboardController implements Serializable{
         List<BillTypeAtomic> btas = fetchBillTypeAtomicForOpdRevenue();
         
         discountDashboard = billService.fetchBillDiscounts(getFromDate(), getToDate(), discountDept, btas);
-
-        System.out.println("Results returned: " + (discountDashboard != null ? discountDashboard.size() : 0));
-
+        
         discountBundle = new IncomeBundle(discountDashboard);
         discountBundle.generateDiscountDetailsForDashboard();
         
