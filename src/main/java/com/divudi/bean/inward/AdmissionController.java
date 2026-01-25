@@ -42,6 +42,8 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.RoomFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import com.divudi.core.data.AppointmentStatus;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -83,6 +85,7 @@ import org.primefaces.event.TabChangeEvent;
 public class AdmissionController implements Serializable, ControllerWithPatient {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger logger = Logger.getLogger(AdmissionController.class.getName());
     @Inject
     SessionController sessionController;
     @Inject
@@ -192,9 +195,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         try {
             pa.setRetired(true);
             clinicalFindingValueFacade.edit(pa);
-            patientAllergies.remove(pa);
+            getPatientAllergies().remove(pa);
             JsfUtil.addSuccessMessage("Allergy removed successfully");
         } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to remove patient allergy with ID: " + (pa != null ? pa.getId() : "null"), e);
             JsfUtil.addErrorMessage("Failed to remove allergy: " + e.getMessage());
         }
     }
@@ -1628,7 +1632,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setInstitution(sessionController.getInstitution());
             getCurrent().setDepartment(sessionController.getDepartment());
             getFacade().create(getCurrent());
-            JsfUtil.addSuccessMessage("Patient Admitted Succesfully");
+            JsfUtil.addSuccessMessage("Patient admitted successfully with BHT No: " + getCurrent().getBhtNo());
         }
 
         if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
@@ -1742,7 +1746,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setInstitution(sessionController.getInstitution());
             getCurrent().setDepartment(sessionController.getDepartment());
             getFacade().create(getCurrent());
-            JsfUtil.addSuccessMessage("Patient Admitted Succesfully");
+            JsfUtil.addSuccessMessage("Patient admitted successfully with BHT No: " + getCurrent().getBhtNo());
         }
 
         if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
