@@ -111,6 +111,9 @@ public class PharmacySaleBhtController implements Serializable {
     @PostConstruct
     public void init() {
         registerPageMetadata();
+        // Ensure clean state when page is accessed
+        clearBillItem();
+        makeNull();
     }
 
     /**
@@ -321,6 +324,10 @@ public class PharmacySaleBhtController implements Serializable {
         qty = null;
         stock = null;
         stockDto = null;
+        // Clear DTO-related fields
+        selectedStockDto = null;
+        selectedStockId = null;
+        lastAutocompleteResults = null;
         activeIndex = 0;
         billPreview = false;
         replaceableStocks = null;
@@ -2353,6 +2360,10 @@ public class PharmacySaleBhtController implements Serializable {
         qty = null;
         stock = null;
         stockDto = null;
+        // Clear DTO-related fields
+        selectedStockDto = null;
+        selectedStockId = null;
+        lastAutocompleteResults = null;
     }
 
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
