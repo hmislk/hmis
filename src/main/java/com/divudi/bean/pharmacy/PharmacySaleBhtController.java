@@ -590,6 +590,7 @@ public class PharmacySaleBhtController implements Serializable {
 
     /**
      * Handles stock selection from autocomplete component
+     * Sets up billItem with selected stock and calculates rates/values
      * @param event SelectEvent containing the selected StockDTO
      */
     public void handleStockSelect(SelectEvent event) {
@@ -597,6 +598,30 @@ public class PharmacySaleBhtController implements Serializable {
         this.selectedStockDto = selectedDto;
         this.selectedStockId = selectedDto != null ? selectedDto.getId() : null;
         this.stock = null; // Clear cached entity to force lazy loading
+
+        // Set up billItem with selected stock (similar to original handleSelect)
+        if (selectedDto != null) {
+            // Ensure billItem and pharmaceutical bill item exist
+            if (getBillItem() == null) {
+                setBillItem(new BillItem());
+            }
+            if (getBillItem().getPharmaceuticalBillItem() == null) {
+                getBillItem().setPharmaceuticalBillItem(new PharmaceuticalBillItem());
+            }
+
+            // Get the full stock entity for calculations
+            Stock stockEntity = getStock(); // This will lazy load using selectedStockId
+
+            if (stockEntity != null) {
+                // Set stock and item details on billItem
+                getBillItem().getPharmaceuticalBillItem().setStock(stockEntity);
+                getBillItem().getPharmaceuticalBillItem().setItemBatch(stockEntity.getItemBatch());
+                getBillItem().setItem(stockEntity.getItemBatch().getItem());
+
+                // Calculate rates and values (this populates rate, marginRate, netValue, etc.)
+                calculateRates(getBillItem());
+            }
+        }
     }
 
     public void setReplaceableStocks(List<Stock> replaceableStocks) {

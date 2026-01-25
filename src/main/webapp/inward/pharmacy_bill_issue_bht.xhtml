@@ -300,13 +300,8 @@
                                                     </h:outputLabel>
                                                 </p:column>
                                                 <p:ajax
-                                                    event="itemSelect"
-                                                    process="acStockWithoutTotalStock"
-                                                    listener="#{pharmacySaleBhtController.handleSelect}"
-                                                    update="txtRate focusQty txtValue" ></p:ajax>
-                                                <p:ajax
                                                     event="blur"
-                                                    listener="#{pharmacySaleBhtController.handleSelect}"
+                                                    listener="#{pharmacySaleBhtController.handleStockSelect}"
                                                     update="txtRate txtValue"
                                                     process="acStockWithoutTotalStock"
                                                     />
