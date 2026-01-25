@@ -1936,7 +1936,9 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void calculateBillItem() {
-        if (stock == null) {
+        // Use lazy loading getStock() method which handles both direct stock and DTO-based stock
+        Stock stockEntity = getStock();
+        if (stockEntity == null) {
             return;
         }
         if (getPreBill() == null) {
@@ -1949,7 +1951,7 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         if (getBillItem().getPharmaceuticalBillItem().getStock() == null) {
-            getBillItem().getPharmaceuticalBillItem().setStock(stock);
+            getBillItem().getPharmaceuticalBillItem().setStock(stockEntity);
         }
         if (getQty() == null) {
             qty = 0.0;
@@ -1992,10 +1994,14 @@ public class PharmacySaleBhtController implements Serializable {
         if (getBillItem().getPharmaceuticalBillItem() == null) {
             return;
         }
-        if (stock == null) {
+
+        // Use lazy loading getStock() method which handles both direct stock and DTO-based stock
+        Stock stockEntity = getStock();
+        if (stockEntity == null) {
             return;
         }
-        getBillItem().getPharmaceuticalBillItem().setStock(stock);
+
+        getBillItem().getPharmaceuticalBillItem().setStock(stockEntity);
         if (getBillItem().getPharmaceuticalBillItem().getStock() == null) {
             return;
         }

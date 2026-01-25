@@ -28,7 +28,7 @@
                                 <div>
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                         <p:commandButton
-                                            value="Back to WorkBench"
+                                            value="Nursing WorkBench"
                                             action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                             ajax="false"
                                             class="ui-button-operating-theatre"
@@ -194,7 +194,7 @@
 
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                     <p:commandButton 
-                                        value="Back to WorkBench" 
+                                        value="Nursing WorkBench" 
                                         action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
                                         ajax="false"
                                         class="ui-button-operating-theatre"
@@ -301,7 +301,7 @@
                                                 </p:column>
                                                 <p:ajax
                                                     event="blur"
-                                                    listener="#{pharmacySaleBhtController.handleStockSelect}"
+                                                    listener="#{pharmacySaleBhtController.handleSelect}"
                                                     update="txtRate txtValue"
                                                     process="acStockWithoutTotalStock"
                                                     />
@@ -522,7 +522,7 @@
 
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                         <p:commandButton 
-                                            value="Back to WorkBench" 
+                                            value="Nursing WorkBench" 
                                             action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
                                             ajax="false"
                                             class="ui-button-operating-theatre"
