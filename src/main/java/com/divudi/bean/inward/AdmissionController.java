@@ -1632,7 +1632,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setInstitution(sessionController.getInstitution());
             getCurrent().setDepartment(sessionController.getDepartment());
             getFacade().create(getCurrent());
-            JsfUtil.addSuccessMessage("Patient Admitted Succesfully");
+            JsfUtil.addSuccessMessage("Patient admitted successfully with BHT No: " + getCurrent().getBhtNo());
         }
 
         if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
@@ -1746,7 +1746,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setInstitution(sessionController.getInstitution());
             getCurrent().setDepartment(sessionController.getDepartment());
             getFacade().create(getCurrent());
-            JsfUtil.addSuccessMessage("Patient Admitted Succesfully");
+            JsfUtil.addSuccessMessage("Patient admitted successfully with BHT No: " + getCurrent().getBhtNo());
         }
 
         if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
