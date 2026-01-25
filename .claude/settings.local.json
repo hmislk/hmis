@@ -59,7 +59,8 @@
       "Bash(claude --version)",
       "Bash(PATH=\"/home/buddhika/.local/bin:$PATH\")",
       "Bash(export PATH=\"/home/buddhika/.local/bin:$PATH\")",
-      "Bash(git show:*)"
+      "Bash(git show:*)",
+      "Bash(wc:*)"
     ]
   }
 }
