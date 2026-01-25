@@ -117,7 +117,7 @@
                                     <p:outputLabel value="Admit to Room" class="m-2"/>
                                 </div>
                                 <div>
-                                    <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                         <div class="d-flex gap-2" style="float: right">
                                             <p:commandButton
                                                 ajax="false"

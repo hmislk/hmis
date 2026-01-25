@@ -21,7 +21,7 @@
                             <p:outputLabel value="Inpatient Dashboard" class="mt-2 mx-3"/>
                         </div>
                         <div>
-                            <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                            <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                 <div class="d-flex gap-2">
                                     <p:commandButton 
                                         value="Back to Search Admission" 

@@ -129,7 +129,7 @@
                                         class="ui-button-success">
                                     </p:commandButton>
 
-                                    <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
 
                                         <p:commandButton 
                                             ajax="false" 

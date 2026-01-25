@@ -158,7 +158,7 @@
                                     actionListener="#{pharmacySaleBhtController.resetAll}" >
                                 </p:commandButton>
 
-                                <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                     <div class="d-flex gap-2">
                                         <p:commandButton
                                             ajax="false"
@@ -481,7 +481,7 @@
                                         actionListener="#{pharmacySaleBhtController.resetAll}"  >
                                     </p:commandButton>
 
-                                    <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                         <div class="d-flex gap-2">
                                             <p:commandButton
                                                 ajax="false"

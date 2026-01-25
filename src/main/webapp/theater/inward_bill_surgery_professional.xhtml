@@ -20,7 +20,7 @@
                                 <h:outputLabel value="Add Professional Fee" class="mx-2"></h:outputLabel>
                             </div>
                             <div>
-                                <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                     <p:commandButton
                                         ajax="false"
                                         icon="fa-solid fa-address-card"
@@ -98,7 +98,7 @@
                             actionListener="#{inwardProfessionalBillController.makeNull()}" >
                                 </p:commandButton>
 
-                                <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                     <div class="d-flex gap-2">
                                         <p:commandButton
                                             ajax="false"
