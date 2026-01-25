@@ -59,6 +59,7 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemBatchFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
@@ -200,6 +201,8 @@ public class PharmacySaleBhtController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     ItemFacade itemFacade;
+    @EJB
+    ItemBatchFacade itemBatchFacade;
     @EJB
     StockFacade stockFacade;
     @EJB
@@ -601,33 +604,74 @@ public class PharmacySaleBhtController implements Serializable {
      * @param event SelectEvent containing the selected StockDTO
      */
     public void handleStockSelect(SelectEvent event) {
-        StockDTO selectedDto = (StockDTO) event.getObject();
-        this.selectedStockDto = selectedDto;
-        this.selectedStockId = selectedDto != null ? selectedDto.getId() : null;
-        this.stock = null; // Clear cached entity to force lazy loading
+        long startTime = System.currentTimeMillis();
+        System.out.println("=== STOCK SELECTION PERFORMANCE DEBUG (Start: " + startTime + ") ===");
 
-        // Set up billItem with selected stock (similar to original handleSelect)
-        if (selectedDto != null) {
-            // Ensure billItem and pharmaceutical bill item exist
-            if (getBillItem() == null) {
-                setBillItem(new BillItem());
+        try {
+            StockDTO selectedDto = (StockDTO) event.getObject();
+            long dtoTime = System.currentTimeMillis();
+            System.out.println("1. DTO extraction: " + (dtoTime - startTime) + "ms - Selected: " +
+                (selectedDto != null ? selectedDto.getItemName() : "null"));
+
+            this.selectedStockDto = selectedDto;
+            this.selectedStockId = selectedDto != null ? selectedDto.getId() : null;
+            this.stock = null; // Clear cached entity to force lazy loading
+
+            long assignmentTime = System.currentTimeMillis();
+            System.out.println("2. Assignment complete: " + (assignmentTime - dtoTime) + "ms");
+
+            // PHASE 2: DTO-FIRST PATTERN - Use DTO data directly, avoid heavy entity loading
+            if (selectedDto != null) {
+                // Ensure billItem and pharmaceutical bill item exist
+                if (getBillItem() == null) {
+                    setBillItem(new BillItem());
+                }
+                if (getBillItem().getPharmaceuticalBillItem() == null) {
+                    getBillItem().setPharmaceuticalBillItem(new PharmaceuticalBillItem());
+                }
+
+                long billItemSetupTime = System.currentTimeMillis();
+                System.out.println("3. BillItem setup: " + (billItemSetupTime - assignmentTime) + "ms");
+
+                // OPTIMIZATION: Use EntityManager.getReference() instead of heavy entity loading
+                System.out.println("4. Setting up entity references (no database loading)...");
+
+                // Set up lightweight entity references using DTO data
+                if (selectedDto.getId() != null) {
+                    Stock stockReference = getStockFacade().getReference(selectedDto.getId());
+                    getBillItem().getPharmaceuticalBillItem().setStock(stockReference);
+                }
+                if (selectedDto.getItemBatchId() != null) {
+                    ItemBatch itemBatchReference = getItemBatchFacade().getReference(selectedDto.getItemBatchId());
+                    getBillItem().getPharmaceuticalBillItem().setItemBatch(itemBatchReference);
+                }
+                if (selectedDto.getItemId() != null) {
+                    Item itemReference = getItemFacade().getReference(selectedDto.getItemId());
+                    getBillItem().setItem(itemReference);
+                }
+
+                long referenceTime = System.currentTimeMillis();
+                System.out.println("5. Entity references set: " + (referenceTime - billItemSetupTime) + "ms");
+
+                // OPTIMIZATION: Calculate rates using DTO data instead of entity data
+                System.out.println("6. Starting DTO-based rate calculation...");
+                calculateRatesFromDto(getBillItem(), selectedDto);
+                long calculateTime = System.currentTimeMillis();
+                System.out.println("7. DTO-based rate calculation complete: " + (calculateTime - referenceTime) + "ms");
             }
-            if (getBillItem().getPharmaceuticalBillItem() == null) {
-                getBillItem().setPharmaceuticalBillItem(new PharmaceuticalBillItem());
+
+            long endTime = System.currentTimeMillis();
+            long totalTime = endTime - startTime;
+            System.out.println("=== TOTAL STOCK SELECTION TIME: " + totalTime + "ms ===");
+
+            if (totalTime > 5000) {
+                System.err.println("!!! CRITICAL PERFORMANCE ISSUE: Stock selection took " + totalTime + "ms !!!");
             }
 
-            // Get the full stock entity for calculations
-            Stock stockEntity = getStock(); // This will lazy load using selectedStockId
-
-            if (stockEntity != null) {
-                // Set stock and item details on billItem
-                getBillItem().getPharmaceuticalBillItem().setStock(stockEntity);
-                getBillItem().getPharmaceuticalBillItem().setItemBatch(stockEntity.getItemBatch());
-                getBillItem().setItem(stockEntity.getItemBatch().getItem());
-
-                // Calculate rates and values (this populates rate, marginRate, netValue, etc.)
-                calculateRates(getBillItem());
-            }
+        } catch (Exception e) {
+            long errorTime = System.currentTimeMillis();
+            System.err.println("ERROR in handleStockSelect after " + (errorTime - startTime) + "ms: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -2023,6 +2067,7 @@ public class PharmacySaleBhtController implements Serializable {
         if (getBillItem().getPharmaceuticalBillItem().getStock().getItemBatch().getItem() == null) {
             return;
         }
+
         getBillItem().setItem(getBillItem().getPharmaceuticalBillItem().getStock().getItemBatch().getItem());
         calculateRates(getBillItem());
     }
@@ -2045,15 +2090,24 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void calculateRates(BillItem bi) {
+        long calcStartTime = System.currentTimeMillis();
+        System.out.println(">>> calculateRates START");
+
         if (bi == null) {
+            System.out.println(">>> calculateRates: BillItem is null");
             return;
         }
         if (bi.getPharmaceuticalBillItem() == null) {
+            System.out.println(">>> calculateRates: PharmaceuticalBillItem is null");
             return;
         }
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
+            System.out.println(">>> calculateRates: Stock is null");
             return;
         }
+
+        long validationTime = System.currentTimeMillis();
+        System.out.println(">>> calculateRates: Validation complete: " + (validationTime - calcStartTime) + "ms");
 
         double originalRate;
         double estimatedValueBeforeAddingMarginToCalculateMatrix;
@@ -2120,6 +2174,112 @@ public class PharmacySaleBhtController implements Serializable {
         bi.setAdjustedValue(netValue); // Assuming AdjustedValue is the same as NetValue here
         bi.setDiscount(0); // Explicitly set to 0 for clarity
 
+        long calcEndTime = System.currentTimeMillis();
+        long totalCalcTime = calcEndTime - calcStartTime;
+        System.out.println(">>> calculateRates COMPLETE: " + totalCalcTime + "ms");
+
+        if (totalCalcTime > 1000) {
+            System.err.println("!!! calculateRates PERFORMANCE ISSUE: " + totalCalcTime + "ms !!!");
+        }
+    }
+
+    /**
+     * PHASE 2 OPTIMIZATION: Calculate rates using DTO data directly
+     * Avoids heavy entity loading that was causing 14+ second delays
+     */
+    public void calculateRatesFromDto(BillItem bi, StockDTO stockDto) {
+        long calcStartTime = System.currentTimeMillis();
+        System.out.println(">>> calculateRatesFromDto START (DTO-based)");
+
+        if (bi == null || stockDto == null) {
+            System.out.println(">>> calculateRatesFromDto: BillItem or StockDTO is null");
+            return;
+        }
+
+        long validationTime = System.currentTimeMillis();
+        System.out.println(">>> calculateRatesFromDto: Validation complete: " + (validationTime - calcStartTime) + "ms");
+
+        double originalRate;
+        double estimatedValueBeforeAddingMarginToCalculateMatrix;
+        double marginPercentage;
+        double marginRate;
+        double marginValue;
+        double quantity;
+        double grossValue;
+        double netValue;
+
+        // Use quantity from billItem (will be set when user enters qty, defaults to 1 for now)
+        quantity = bi.getQty() != null ? bi.getQty() : 1.0;
+
+        // OPTIMIZATION: Get rate directly from StockDTO instead of loading entities
+        originalRate = stockDto.getRate(); // This should be the retail rate from DTO
+        estimatedValueBeforeAddingMarginToCalculateMatrix = originalRate * quantity;
+
+        long rateExtractionTime = System.currentTimeMillis();
+        System.out.println(">>> calculateRatesFromDto: Rate extraction from DTO: " + (rateExtractionTime - validationTime) + "ms, Rate: " + originalRate);
+
+        // Get department for price matrix calculation (same logic as before)
+        Department matrixDept = null;
+        boolean matrixByAdmissionDepartment = configOptionApplicationController.getBooleanValueByKey("Price Matrix is calculated from Inpatient Department for " + sessionController.getDepartment().getName(), true);
+        boolean matrixByIssuingDepartment = configOptionApplicationController.getBooleanValueByKey("Price Matrix is calculated from Issuing Department for " + sessionController.getDepartment().getName(), true);
+
+        if (matrixByAdmissionDepartment) {
+            if (getPatientEncounter() == null) {
+                matrixDept = getSessionController().getDepartment();
+            } else if (getPatientEncounter().getCurrentPatientRoom() == null) {
+                matrixDept = getPatientEncounter().getDepartment();
+            } else if (getPatientEncounter().getCurrentPatientRoom() != null) {
+                if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() != null) {
+                    matrixDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+                }
+            }
+        } else if (matrixByIssuingDepartment) {
+            matrixDept = getSessionController().getDepartment();
+        } else {
+            matrixDept = getSessionController().getDepartment();
+        }
+
+        long matrixDeptTime = System.currentTimeMillis();
+        System.out.println(">>> calculateRatesFromDto: Matrix department setup: " + (matrixDeptTime - rateExtractionTime) + "ms");
+
+        // Calculate price matrix using same logic but with DTO-based rate
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(
+            bi, estimatedValueBeforeAddingMarginToCalculateMatrix, matrixDept,
+            getPatientEncounter() != null ? getPatientEncounter().getPaymentMethod() : null
+        );
+
+        long priceMatrixTime = System.currentTimeMillis();
+        System.out.println(">>> calculateRatesFromDto: Price matrix calculation: " + (priceMatrixTime - matrixDeptTime) + "ms");
+
+        if (priceMatrix != null) {
+            marginPercentage = priceMatrix.getMargin() / 100; // Normalize margin rate
+        } else {
+            marginPercentage = 0.0;
+        }
+
+        // Final calculations
+        marginRate = marginPercentage * originalRate;
+        marginValue = marginRate * quantity;
+        grossValue = originalRate * quantity;
+        netValue = grossValue + marginValue;
+
+        // Update BillItem with calculated values
+        bi.setRate(originalRate);
+        bi.setGrossValue(grossValue);
+        bi.setMarginValue(marginValue);
+        bi.setNetValue(netValue);
+        bi.setMarginRate(marginRate);
+        bi.setNetRate(originalRate + marginRate);
+        bi.setAdjustedValue(netValue);
+        bi.setDiscount(0);
+
+        long calcEndTime = System.currentTimeMillis();
+        long totalCalcTime = calcEndTime - calcStartTime;
+        System.out.println(">>> calculateRatesFromDto COMPLETE: " + totalCalcTime + "ms (DTO-based, no entity loading)");
+
+        if (totalCalcTime > 100) {
+            System.err.println("!!! calculateRatesFromDto PERFORMANCE CONCERN: " + totalCalcTime + "ms (should be <100ms)");
+        }
     }
 
     public List<Stock> completeAvailableStocksSelectedPharmacy(String qry) {
@@ -2414,6 +2574,14 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setItemFacade(ItemFacade itemFacade) {
         this.itemFacade = itemFacade;
+    }
+
+    public ItemBatchFacade getItemBatchFacade() {
+        return itemBatchFacade;
+    }
+
+    public void setItemBatchFacade(ItemBatchFacade itemBatchFacade) {
+        this.itemBatchFacade = itemBatchFacade;
     }
 
     public BillItem getEditingBillItem() {
