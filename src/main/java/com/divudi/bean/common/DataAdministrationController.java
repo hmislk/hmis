@@ -1811,10 +1811,11 @@ public class DataAdministrationController implements Serializable {
             JsfUtil.addSuccessMessage("Found " + billsToCorrect + " bills that need correction. Click 'Execute Correction' to proceed.");
 
         } catch (Exception e) {
-            String errorMsg = "Error checking bills for correction: " + e.getMessage();
+            String exceptionMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            String errorMsg = "Error checking bills for correction: " + exceptionMessage;
 
             // Provide specific guidance for table name issues
-            if (e.getMessage().contains("doesn't exist") || e.getMessage().contains("Table") || e.getMessage().contains("SQLSyntaxErrorException")) {
+            if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
                 errorMsg += ". This appears to be a database schema issue. Please check if the BILL and BILLITEM tables exist in your database.";
             }
 
@@ -1841,10 +1842,11 @@ public class DataAdministrationController implements Serializable {
             }
 
         } catch (Exception e) {
-            String errorMsg = "Error correcting historical bill fees: " + e.getMessage();
+            String exceptionMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            String errorMsg = "Error correcting historical bill fees: " + exceptionMessage;
 
             // Provide specific guidance for table name issues
-            if (e.getMessage().contains("doesn't exist") || e.getMessage().contains("Table") || e.getMessage().contains("SQLSyntaxErrorException")) {
+            if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
                 errorMsg += ". This appears to be a database schema issue. The correction failed due to table name case sensitivity or missing tables.";
             }
 
@@ -1876,10 +1878,11 @@ public class DataAdministrationController implements Serializable {
             }
 
         } catch (Exception e) {
-            String errorMsg = "Error checking bills in custom date range: " + e.getMessage();
+            String exceptionMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            String errorMsg = "Error checking bills in custom date range: " + exceptionMessage;
 
             // Provide specific guidance for database issues
-            if (e.getMessage().contains("doesn't exist") || e.getMessage().contains("Table") || e.getMessage().contains("SQLSyntaxErrorException")) {
+            if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
                 errorMsg += ". Database schema issue detected. Check table names and database connectivity.";
             }
 
@@ -1909,10 +1912,11 @@ public class DataAdministrationController implements Serializable {
             }
 
         } catch (Exception e) {
-            String errorMsg = "Error correcting bills in custom date range: " + e.getMessage();
+            String exceptionMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            String errorMsg = "Error correcting bills in custom date range: " + exceptionMessage;
 
             // Provide specific guidance for database issues
-            if (e.getMessage().contains("doesn't exist") || e.getMessage().contains("Table") || e.getMessage().contains("SQLSyntaxErrorException")) {
+            if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
                 errorMsg += ". Database execution failed due to schema issues. Verify table structure and permissions.";
             }
 
