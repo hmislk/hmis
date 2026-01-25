@@ -185,12 +185,18 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void removePatientAllergy(ClinicalFindingValue pa) {
-        if (currentPatientAllergy == null) {
+        if (pa == null) {
+            JsfUtil.addErrorMessage("Invalid allergy selection");
             return;
         }
-        pa.setRetired(true);
-        clinicalFindingValueFacade.edit(pa);
-        patientAllergies.remove(pa);
+        try {
+            pa.setRetired(true);
+            clinicalFindingValueFacade.edit(pa);
+            patientAllergies.remove(pa);
+            JsfUtil.addSuccessMessage("Allergy removed successfully");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to remove allergy: " + e.getMessage());
+        }
     }
 
     public void savePatientAllergies() {
