@@ -1008,6 +1008,15 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     private void savePreBillItemsFinallyRequest(List<BillItem> list) {
+        // Initialize bill items list if null
+        if (getPreBill().getBillItems() == null) {
+            getPreBill().setBillItems(new ArrayList<>());
+        }
+
+        // PERFORMANCE OPTIMIZATION: Apply batch processing to request settlement (matching main settlement)
+        List<BillItem> validItems = new ArrayList<>();
+
+        // Step 1: Save all bill items first (with validation)
         for (BillItem tbi : list) {
             if (onEdit(tbi)) {//If any issue in Stock Bill Item will not save & not include for total
                 continue;
@@ -1035,18 +1044,36 @@ public class PharmacySaleBhtController implements Serializable {
             tbi.getPharmaceuticalBillItem().setBillItem(tbi);
             getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
 
-//            double qtyL = tbi.getPharmaceuticalBillItem().getQtyInUnit() + tbi.getPharmaceuticalBillItem().getFreeQtyInUnit();
-//
-//            //Deduct Stock
-//            boolean returnFlag = getPharmacyBean().deductFromStock(tbi.getPharmaceuticalBillItem().getStock(),
-//                    Math.abs(qtyL), tbi.getPharmaceuticalBillItem(), getPreBill().getDepartment());
-//
-//            if (!returnFlag) {
-//                tbi.setTmpQty(0);
-//                getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
-//                getBillItemFacade().edit(tbi);
-//            }
             getPreBill().getBillItems().add(tbi);
+            validItems.add(tbi);
+        }
+
+        // Step 2: Batch validate stock availability before processing
+        if (!directIssueBatchService.validateBillForSettlement(getPreBill())) {
+            String errorMsg = "One or more items have insufficient stock for request settlement. Please refresh and try again.";
+            LOGGER.log(Level.SEVERE, "Batch stock validation failed during BHT request settlement for Bill ID: {0}",
+                    getPreBill().getId());
+            JsfUtil.addErrorMessage(errorMsg);
+            throw new RuntimeException(errorMsg);
+        }
+
+        // Step 3: Execute batch stock deduction (replaces individual deductFromStock calls)
+        try {
+            directIssueBatchService.batchStockDeduction(validItems);
+            LOGGER.log(Level.INFO, "Successfully processed batch stock deduction for {0} items in Request Bill ID: {1}",
+                    new Object[]{validItems.size(), getPreBill().getId()});
+        } catch (Exception e) {
+            String errorMsg = "Failed to process stock deductions for request settlement. " + e.getMessage();
+            LOGGER.log(Level.SEVERE, "Batch stock deduction failed during BHT request settlement: {0}", errorMsg);
+            LOGGER.log(Level.SEVERE, "Request Bill ID: {0}, Department: {1}, User: {2}",
+                    new Object[]{
+                        getPreBill().getId(),
+                        getPreBill().getDepartment() != null ? getPreBill().getDepartment().getName() : "unknown",
+                        getSessionController().getLoggedUser() != null
+                            ? getSessionController().getLoggedUser().getName() : "unknown"
+                    });
+            JsfUtil.addErrorMessage(errorMsg);
+            throw new RuntimeException(errorMsg);
         }
 
         // PERFORMANCE OPTIMIZATION: UserStock cleanup removed to match cashier workflow
@@ -1999,7 +2026,38 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void calculateBillItemListner(AjaxBehaviorEvent event) {
-        calculateBillItem();
+        // PERFORMANCE OPTIMIZATION: Use DTO-based calculation for quantity changes
+        if (selectedStockDto != null) {
+            calculateBillItemFromDto();
+        } else {
+            // Fallback to entity-based calculation if DTO not available
+            calculateBillItem();
+        }
+    }
+
+    /**
+     * DTO-based calculation for quantity changes - fast, no entity loading
+     */
+    public void calculateBillItemFromDto() {
+        if (selectedStockDto == null || getBillItem() == null || getQty() == null) {
+            return;
+        }
+
+        // Quick DTO-based calculation (no entity loading)
+        double rate = selectedStockDto.getRetailRate();
+        double quantity = getQty();
+        double grossValue = rate * quantity;
+
+        // Update BillItem with basic values for immediate display
+        getBillItem().setQty(quantity);
+        getBillItem().setRate(rate);
+        getBillItem().setGrossValue(grossValue);
+        getBillItem().setNetValue(grossValue); // Will be recalculated with margins in addBillItem
+        getBillItem().setMarginValue(0.0); // Simplified for quick display
+        getBillItem().setNetRate(rate);
+        getBillItem().setDiscount(0.0);
+
+        System.out.println(">>> DTO-based quantity calculation: Qty=" + quantity + ", Rate=" + rate + ", Value=" + grossValue);
     }
 
     public void calculateBillItem() {
