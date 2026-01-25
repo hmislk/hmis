@@ -8,6 +8,7 @@ package com.divudi.service.pharmacy;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.ejb.PharmacyBean;

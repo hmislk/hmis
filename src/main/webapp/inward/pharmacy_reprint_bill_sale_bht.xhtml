@@ -30,10 +30,11 @@
                                     <p:commandButton 
                                         ajax="false" 
                                         value="To Cancel" 
+                                        rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled eq true or pharmacyBillSearch.bill.patientEncounter.discharged eq true}" 
                                         class="ui-button-danger"
                                         icon="fa fa-ban"
-                                        action="#{pharmacyBillSearch.navigateToCancelPharmacyDirectIssueToInpatients}"
-                                        disabled="#{pharmacyBillSearch.bill.cancelled}"  >                           
+                                        action="#{pharmacyBillSearch.navigateToCancelPharmacyDirectIssueToInpatients}" >                           
                                     </p:commandButton>
                                     <p:commandButton 
                                         ajax="false" 
@@ -46,7 +47,7 @@
                                             target="#{bhtIssueReturnController.bill}"  />
                                     </p:commandButton>
 
-                                    <p:commandButton 
+<!--                                    <p:commandButton 
                                         ajax="false" 
                                         value="Reverse Bill" 
                                         class="ui-button-warning"
@@ -54,7 +55,7 @@
                                         action="#{pharmacyBillSearch.navigateToReversePharmacyDirectIssueToInpatients}"
                                         disabled="#{pharmacyBillSearch.bill.cancelled}"
                                         title="Create a reverse bill with negative quantities"  >                           
-                                    </p:commandButton>
+                                    </p:commandButton>-->
 
                                     <p:commandButton 
                                         ajax="false" 
