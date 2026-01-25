@@ -268,7 +268,7 @@
                                                     event="itemSelect"
                                                     listener="#{pharmacySaleBhtController.handleStockSelect}"
                                                     process="acStockWithoutTotalStock"
-                                                    update="txtRate txtValue" />
+                                                    update="txtRate txtValue focusQty" />
                                                 <p:column headerText="Item" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
                                                     <h:outputText value="#{i.itemName}"  style="width: 300px!important;">
                                                         &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}" />
@@ -374,7 +374,8 @@
                                             class="ui-button-success w-100"
                                             icon="fa-solid fa-plus"
                                             action="#{pharmacySaleBhtController.addBillItem}"
-                                            ajax="false"  ></p:commandButton>
+                                            process="@this txtQty acStock"
+                                            update="pBis acStock txtQty txtRate txtValue focusItem" />
                                     </div>
                                 </div>
                                 <p:focus id="focusQty" for="txtQty" ></p:focus>
