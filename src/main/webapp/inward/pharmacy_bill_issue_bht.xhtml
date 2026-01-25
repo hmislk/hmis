@@ -162,9 +162,16 @@
                                     <div class="d-flex gap-2">
                                         <p:commandButton
                                             ajax="false"
+                                            value="Patient Lookup"
+                                            icon="fa fa-search"
+                                            class="ui-button-warning"
+                                            action="#{patientController.navigateToSearchPatients()}" >
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false"
                                             icon="fa fa-user"
-                                            title="Navigate To Patient Profile"
-                                            class="ui-button-warning mx-2"
+                                            value="Patient Profile"
+                                            class="ui-button-success"
                                             action="#{patientController.navigateToOpdPatientProfile()}" >
                                             <f:setPropertyActionListener
                                                 value="#{pharmacySaleBhtController.patientEncounter.patient}"
@@ -174,8 +181,8 @@
                                         <p:commandButton
                                             ajax="false"
                                             icon="fa fa-id-card"
-                                            title="Navigate to Inpatient Profile"
-                                            class="ui-button-secondary mx-2"
+                                            value="Inpatient Profile"
+                                            class="ui-button-secondary"
                                             action="#{bhtSummeryController.navigateToInpatientProfile()}" >
                                             <f:setPropertyActionListener
                                                 value="#{pharmacySaleBhtController.patientEncounter}"
@@ -485,15 +492,17 @@
                                         <div class="d-flex gap-2">
                                             <p:commandButton
                                                 ajax="false"
+                                                value="Patient Lookup"
                                                 icon="fa fa-search"
-                                                class="ui-button-warning "
+                                                class="ui-button-warning"
                                                 action="#{patientController.navigateToSearchPatients()}">
                                             </p:commandButton>
 
                                             <p:commandButton
                                                 ajax="false"
                                                 icon="fa fa-user"
-                                                class="ui-button-warning"
+                                                value="Patient Profile"
+                                                class="ui-button-success"
                                                 action="#{patientController.navigateToOpdPatientProfile()}">
                                                 <f:setPropertyActionListener
                                                     value="#{pharmacySaleBhtController.patientEncounter.patient}"
@@ -505,7 +514,7 @@
                                                 ajax="false"
                                                 value="Inpatient Profile"
                                                 icon="fa fa-id-card"
-                                                class="ui-button-secondary "
+                                                class="ui-button-secondary"
                                                 action="#{bhtSummeryController.navigateToInpatientProfile()}">
                                                 <f:setPropertyActionListener
                                                     value="#{pharmacySaleBhtController.printBill.patientEncounter}"
