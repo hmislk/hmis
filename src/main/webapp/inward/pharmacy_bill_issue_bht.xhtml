@@ -183,10 +183,10 @@
                                             icon="fa fa-id-card"
                                             value="Inpatient Profile"
                                             class="ui-button-secondary"
-                                            action="#{bhtSummeryController.navigateToInpatientProfile()}" >
+                                            action="#{admissionController.navigateToAdmissionProfilePage}" >
                                             <f:setPropertyActionListener
                                                 value="#{pharmacySaleBhtController.patientEncounter}"
-                                                target="#{bhtSummeryController.patientEncounter}" >
+                                                target="#{admissionController.current}" >
                                             </f:setPropertyActionListener>
                                         </p:commandButton>
                                     </div>
@@ -517,10 +517,10 @@
                                                 value="Inpatient Profile"
                                                 icon="fa fa-id-card"
                                                 class="ui-button-secondary"
-                                                action="#{bhtSummeryController.navigateToInpatientProfile()}">
+                                                action="#{admissionController.navigateToAdmissionProfilePage}">
                                                 <f:setPropertyActionListener
                                                     value="#{pharmacySaleBhtController.printBill.patientEncounter}"
-                                                    target="#{bhtSummeryController.patientEncounter}" >
+                                                    target="#{admissionController.current}" >
                                                 </f:setPropertyActionListener>
                                             </p:commandButton>
                                         </div>

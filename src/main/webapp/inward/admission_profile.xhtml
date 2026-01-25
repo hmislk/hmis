@@ -20,9 +20,8 @@
                             <h:outputText styleClass="fa fa-id-card"/>
                             <p:outputLabel value="Inpatient Dashboard" class="mt-2 mx-3"/>
                         </div>
-                        <div>
-                            <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
-                                <div class="d-flex gap-2">
+                        <div> <div class="d-flex gap-2">
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                     <p:commandButton 
                                         value="Back to Search Admission" 
                                         action="#{admissionController.navigateToSearchAdmissions()}"
@@ -30,18 +29,17 @@
                                         class="ui-button-warning"
                                         icon="fa fa-arrow-left">
                                     </p:commandButton>
-                                </div>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
-                                <p:commandButton 
-                                    value="Nursing WorkBench" 
-                                    action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
-                                    ajax="false"
-                                    class="ui-button-operating-theatre"
-                                    icon="fa fa-arrow-left">
-                                </p:commandButton>
-                            </h:panelGroup>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                    <p:commandButton 
+                                        value="Nursing WorkBench" 
+                                        action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                        ajax="false"
+                                        class="ui-button-operating-theatre"
+                                        icon="fa fa-arrow-left">
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </div>
                         </div>
                     </div>
 
@@ -528,7 +526,7 @@
                                 </p:commandButton>
                             </div>
                         </p:panel>
-                        
+
                     </div>
                 </div>
             </p:panel>
