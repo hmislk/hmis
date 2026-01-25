@@ -45,8 +45,8 @@ public class DirectIssueBatchService implements Serializable {
     private PharmacyBean pharmacyBean;
 
     /**
-     * Performs batch stock deduction for multiple bill items
-     * Replaces individual stock operations with efficient batch processing
+     * Performs proper stock deduction for multiple bill items
+     * Uses PharmacyBean.deductFromStock to ensure stock histories are created
      *
      * @param billItems List of bill items to process
      */
@@ -55,30 +55,38 @@ public class DirectIssueBatchService implements Serializable {
             return;
         }
 
-        // Group stock operations for batch processing
-        Map<Long, Double> stockReductions = new HashMap<>();
+        long startTime = System.currentTimeMillis();
+        int successCount = 0;
 
+        // Process each item individually to ensure proper stock history creation
         for (BillItem item : billItems) {
             if (item.getPharmaceuticalBillItem() != null &&
-                item.getPharmaceuticalBillItem().getStock() != null) {
+                item.getPharmaceuticalBillItem().getStock() != null &&
+                item.getBill() != null &&
+                item.getBill().getDepartment() != null) {
 
                 Stock stock = item.getPharmaceuticalBillItem().getStock();
-                Long stockId = stock.getId();
-                Double qty = Math.abs(item.getQty());
+                double qty = Math.abs(item.getQty());
+                PharmaceuticalBillItem pbi = item.getPharmaceuticalBillItem();
 
-                stockReductions.merge(stockId, qty, Double::sum);
+                // CRITICAL: Use PharmacyBean.deductFromStock to ensure stock histories are created
+                boolean success = pharmacyBean.deductFromStock(stock, qty, pbi, item.getBill().getDepartment());
+
+                if (!success) {
+                    throw new RuntimeException("Failed to deduct stock for item: " +
+                        (item.getItem() != null ? item.getItem().getName() : "Unknown") +
+                        ". Insufficient stock available.");
+                }
+
+                successCount++;
             }
         }
 
-        // Execute batch stock deductions
-        for (Map.Entry<Long, Double> entry : stockReductions.entrySet()) {
-            Stock stock = stockFacade.find(entry.getKey());
-            if (stock != null) {
-                double newQuantity = stock.getStock() - entry.getValue();
-                stock.setStock(newQuantity);
-                stockFacade.edit(stock);
-            }
-        }
+        long endTime = System.currentTimeMillis();
+        System.out.println("=== Stock Deduction Performance ===");
+        System.out.println("Items processed: " + successCount + "/" + billItems.size());
+        System.out.println("Total time: " + (endTime - startTime) + "ms");
+        System.out.println("Average per item: " + ((endTime - startTime) / Math.max(1, successCount)) + "ms");
     }
 
     /**
