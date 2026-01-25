@@ -22,7 +22,7 @@
 
                             <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                 <p:commandButton 
-                                    value="Back to WorkBench" 
+                                    value="Nursing WorkBench" 
                                     action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                     ajax="false"
                                     class="ui-button-operating-theatre"
@@ -109,7 +109,7 @@
                                 <p:outputLabel value="Admitted Patient Room" class="m-2"/>
                             </div>
                             <div>
-                                <h:panelGroup rendered="#{not webUserController.hasPrivilege('NursingWorkBench')}">
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                     <div class="d-flex gap-2" style="float: right">
                                         <p:commandButton
                                             ajax="false"
@@ -144,7 +144,7 @@
 
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                     <p:commandButton 
-                                        value="Back to WorkBench" 
+                                        value="Nursing WorkBench" 
                                         action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
                                         ajax="false"
                                         class="ui-button-operating-theatre"
