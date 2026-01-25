@@ -87,13 +87,17 @@
                                                         </div>
                                                     </p:column>
                                                     <p:column headerText="Room" style="padding: 8px; min-width: 150px;">
-                                                        <div class="d-flex align-items-center" rendered="#{apt2.currentPatientRoom ne null}">
-                                                            <i class="fa-solid fa-bed me-2 text-secondary"></i>
-                                                            <span>#{apt2.currentPatientRoom.roomFacilityCharge.name}</span>
-                                                        </div>
-                                                        <span class="text-muted" rendered="#{apt2.currentPatientRoom eq null}">
-                                                            <i class="fa-solid fa-question-circle me-1"></i>No room assigned
-                                                        </span>
+                                                        <h:panelGroup rendered="#{apt2.currentPatientRoom ne null}">
+                                                            <div class="d-flex align-items-center">
+                                                                <i class="fa-solid fa-bed me-2 text-secondary"></i>
+                                                                <span>#{apt2.currentPatientRoom.roomFacilityCharge.name}</span>
+                                                            </div>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{apt2.currentPatientRoom eq null}">
+                                                            <span class="text-muted">
+                                                                <i class="fa-solid fa-question-circle me-1"></i>No room assigned
+                                                            </span>
+                                                        </h:panelGroup>
                                                     </p:column>
                                                     <p:column headerText="Status" style="padding: 8px; min-width: 120px;">
                                                         <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{apt2.discharged}" />
