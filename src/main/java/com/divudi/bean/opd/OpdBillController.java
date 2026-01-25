@@ -837,7 +837,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public void reloadCurrentlyWorkingStaff() {
         List<WorkingTime> wts = workingTimeController.findCurrentlyActiveWorkingTimes();
         currentlyWorkingStaff = new ArrayList<>();
-        selectedCurrentlyWorkingStaff = null;
+//        selectedCurrentlyWorkingStaff = null;  // Commented out to preserve doctor selection across bills
         if (wts == null) {
             return;
         }
@@ -3611,7 +3611,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         setCashBalance(0.0);
 
         setStrTenderedValue("");
-        currentlyWorkingStaff = null;
+//        currentlyWorkingStaff = null;  // Commented out to preserve doctor list across bills
         fromOpdEncounter = false;
         opdEncounterComments = "";
         patientSearchTab = 0;

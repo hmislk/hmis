@@ -216,7 +216,7 @@ public class MiscellaneousStaffFeeController implements Serializable {
         billItem.setCreater(sessionController.getLoggedUser());
 
         // Set description
-        billItem.setDeptComment(feeDescription);
+        billItem.setDescreption(feeDescription);
 
         return billItem;
     }
