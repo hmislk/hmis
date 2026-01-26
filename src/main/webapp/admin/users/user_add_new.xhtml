@@ -176,19 +176,19 @@
                                         </p:selectOneMenu>
 
 
-                                        <p:outputLabel value="User Role" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>
+<!--                                        <p:outputLabel value="User Role" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>
                                         <p:selectOneMenu
                                             id="role"
                                             styleClass="w-100 mt-1 form-control"
                                             value="#{webUserController.webUserRole}"
                                             rendered="#{!webUserController.createOnlyUserForExsistingUser}">
-                                            <f:selectItem itemLabel="-- Select Role --" itemValue="" />
+                                            <f:selectItem itemLabel=" Select Role " itemValue="" />
                                             <f:selectItems value="#{webUserRoleController.items}"
                                                            var="role"
                                                            itemLabel="#{role.name}"
                                                            itemValue="#{role}" />
                                             <f:attribute name="selectedInstitution" value="#{webUserController.institution}" />
-                                        </p:selectOneMenu>
+                                        </p:selectOneMenu>-->
 
 
                                         <p:outputLabel for="txtUsername" value="User Name"></p:outputLabel>
