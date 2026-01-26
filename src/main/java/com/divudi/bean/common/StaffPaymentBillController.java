@@ -280,6 +280,7 @@ public class StaffPaymentBillController implements Serializable {
         btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         btcs.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
         btcs.add(BillTypeAtomic.CC_BILL);
+        btcs.add(BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
         String jpql;
         HashMap params = new HashMap();
         jpql = "select bf "
@@ -350,6 +351,7 @@ public class StaffPaymentBillController implements Serializable {
             btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             btcs.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
             btcs.add(BillTypeAtomic.CC_BILL);
+            btcs.add(BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
             String sql;
             HashMap h = new HashMap();
             sql = "select b from BillFee b where "
@@ -395,6 +397,7 @@ public class StaffPaymentBillController implements Serializable {
             btcs.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             btcs.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
             btcs.add(BillTypeAtomic.CC_BILL);
+            btcs.add(BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
             String jpql;
             HashMap params = new HashMap();
             jpql = "select bf from BillFee bf where "

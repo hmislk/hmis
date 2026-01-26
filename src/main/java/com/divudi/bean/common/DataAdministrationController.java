@@ -95,6 +95,7 @@ import java.sql.SQLSyntaxErrorException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1161,6 +1162,87 @@ public class DataAdministrationController implements Serializable {
         executionFeedback = out.toString();
     }
 
+    public void correctDirectIssueInwardMedicineCancellationStockValues() {
+        executionFeedback = "";
+        StringBuilder output = new StringBuilder();
+
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+
+            List<BillTypeAtomic> billTypesToCorrect = Arrays.asList(
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION
+            );
+
+            params.put("types", billTypesToCorrect);
+
+            StringBuilder jpql = new StringBuilder(
+                "SELECT b FROM Bill b WHERE b.retired = :ret AND b.billTypeAtomic IN :types"
+            );
+
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            List<Bill> billsToProcess = billFacade.findByJpql(
+                jpql.toString(),
+                params,
+                TemporalType.TIMESTAMP
+            );
+
+            if (billsToProcess == null || billsToProcess.isEmpty()) {
+                executionFeedback = "No Direct Issue Inward Medicine Cancellation bills found in the specified date range.";
+                return;
+            }
+
+            int billsProcessed = 0;
+            int billsCorrected = 0;
+
+            for (Bill bill : billsToProcess) {
+                if (bill == null || bill.getBillFinanceDetails() == null) {
+                    continue;
+                }
+
+                billsProcessed++;
+                boolean billWasCorrected = false;
+
+                BillFinanceDetails bfd = bill.getBillFinanceDetails();
+
+                // For cancellations, stock comes back IN = POSITIVE values
+                billWasCorrected = correctToPositive(bfd);
+
+                if (billWasCorrected) {
+                    billFacade.edit(bill);
+                    billsCorrected++;
+                }
+            }
+
+            output.append("Processed: ").append(billsProcessed).append(" bills\n");
+            output.append("Corrected: ").append(billsCorrected).append(" bills with incorrect signs\n");
+
+            if (fromDate != null || toDate != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                String fromStr = fromDate != null ? sdf.format(fromDate) : "beginning";
+                String toStr = toDate != null ? sdf.format(toDate) : "now";
+                output.append("Date range: ").append(fromStr).append(" to ").append(toStr);
+            }
+
+            executionFeedback = output.toString();
+
+            JsfUtil.addSuccessMessage("Correction completed: " + billsCorrected + " bills corrected");
+
+        } catch (Exception e) {
+            executionFeedback = "Error correcting Direct Issue Inward Medicine Cancellation stock values: " + e.getMessage();
+            JsfUtil.addErrorMessage("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private boolean isFinanceValueNegative(BillTypeAtomic bta) {
         switch (bta) {
             case PHARMACY_ISSUE:
@@ -1704,6 +1786,144 @@ public class DataAdministrationController implements Serializable {
 
         }
 
+    }
+
+    // OPD Billing Fee Aggregation Correction Methods (Issue: April 2025 - January 2026)
+
+    /**
+     * Corrects historical bill-level fee aggregation data affected by the
+     * April 2025 OPD billing bug (when fee aggregation method was commented out).
+     *
+     * This method calls the BillFacade to perform bulk data correction using native SQL.
+     * Covers the period from April 18, 2025 to January 22, 2026.
+     */
+    public void correctHistoricalOpdBillingFees() {
+        try {
+            // First do a dry run to see how many bills would be affected
+            int billsToCorrect = billFacade.correctOpdBillingBugData(true);
+
+            if (billsToCorrect == 0) {
+                JsfUtil.addSuccessMessage("No bills found that need fee aggregation correction.");
+                return;
+            }
+
+            // Show confirmation message
+            JsfUtil.addSuccessMessage("Found " + billsToCorrect + " bills that need correction. Click 'Execute Correction' to proceed.");
+
+        } catch (Exception e) {
+            String exceptionMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            String errorMsg = "Error checking bills for correction: " + exceptionMessage;
+
+            // Provide specific guidance for table name issues
+            if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
+                errorMsg += ". This appears to be a database schema issue. Please check if the BILL and BILLITEM tables exist in your database.";
+            }
+
+            JsfUtil.addErrorMessage(errorMsg);
+            System.err.println("OPD Billing Fee Correction Error: " + errorMsg);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Executes the actual correction of historical bill fee aggregation data.
+     * Should be called after correctHistoricalOpdBillingFees() to perform the actual update.
+     */
+    public void executeHistoricalOpdBillingFeesCorrection() {
+        try {
+            // Execute the actual correction
+            int correctedCount = billFacade.correctOpdBillingBugData(false);
+
+            if (correctedCount > 0) {
+                JsfUtil.addSuccessMessage("Successfully corrected fee aggregation for " + correctedCount + " bills.");
+                System.out.println("Historical OPD billing fee correction completed. Bills corrected: " + correctedCount);
+            } else {
+                JsfUtil.addSuccessMessage("No bills required correction.");
+            }
+
+        } catch (Exception e) {
+            String exceptionMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            String errorMsg = "Error correcting historical bill fees: " + exceptionMessage;
+
+            // Provide specific guidance for table name issues
+            if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
+                errorMsg += ". This appears to be a database schema issue. The correction failed due to table name case sensitivity or missing tables.";
+            }
+
+            JsfUtil.addErrorMessage(errorMsg);
+            System.err.println("OPD Billing Fee Correction Execution Error: " + errorMsg);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Custom date range correction for bill fee aggregation.
+     * Uses the fromDate and toDate from the admin page date controls.
+     */
+    public void correctCustomDateRangeBillingFees() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select both from date and to date.");
+            return;
+        }
+
+        try {
+            // First show what would be corrected (dry run)
+            int result = billFacade.correctHistoricalBillFeeAggregation(fromDate, toDate, true);
+
+            if (result > 0) {
+                JsfUtil.addSuccessMessage("Found " + result + " bills that would be corrected in the date range " +
+                    fromDate + " to " + toDate + ". Click 'Execute Custom Range Correction' to proceed.");
+            } else {
+                JsfUtil.addSuccessMessage("No bills found that need fee aggregation correction in the selected date range.");
+            }
+
+        } catch (Exception e) {
+            String exceptionMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            String errorMsg = "Error checking bills in custom date range: " + exceptionMessage;
+
+            // Provide specific guidance for database issues
+            if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
+                errorMsg += ". Database schema issue detected. Check table names and database connectivity.";
+            }
+
+            JsfUtil.addErrorMessage(errorMsg);
+            System.err.println("Custom Date Range Check Error: " + errorMsg);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Executes the custom date range correction for bill fee aggregation.
+     */
+    public void executeCustomDateRangeBillingFeesCorrection() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select both from date and to date.");
+            return;
+        }
+
+        try {
+            int result = billFacade.correctHistoricalBillFeeAggregation(fromDate, toDate, false);
+
+            if (result > 0) {
+                JsfUtil.addSuccessMessage("Successfully corrected fee aggregation for " + result + " bills in the date range " +
+                    fromDate + " to " + toDate + ".");
+            } else {
+                JsfUtil.addSuccessMessage("No bills required correction in the selected date range.");
+            }
+
+        } catch (Exception e) {
+            String exceptionMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            String errorMsg = "Error correcting bills in custom date range: " + exceptionMessage;
+
+            // Provide specific guidance for database issues
+            if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
+                errorMsg += ". Database execution failed due to schema issues. Verify table structure and permissions.";
+            }
+
+            JsfUtil.addErrorMessage(errorMsg);
+            System.err.println("Custom Date Range Correction Error: " + errorMsg);
+            e.printStackTrace();
+        }
     }
 
     public String navigateToCheckMissingFields() {
