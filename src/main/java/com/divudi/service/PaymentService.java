@@ -41,6 +41,58 @@ import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 /**
+ * Service class for handling payment operations including creation, validation, and balance updates.
+ *
+ * RECENT REFACTORING (2026-01-21):
+ * Issue #17132 - E-wallet refund using e-wallet payment mode
+ *
+ * CHANGES MADE:
+ * 1. Enhanced populatePaymentDetails() method to accept ComponentDetail parameter
+ * 2. Moved ComponentDetail field population from createPaymentFromComponentDetail to populatePaymentDetails
+ * 3. Centralized all payment field population logic in one method
+ *
+ * AFFECTED METHODS:
+ * - populatePaymentDetails(Payment, PaymentMethod, PaymentMethodData, ComponentDetail) - signature changed
+ * - createPaymentFromComponentDetail(...) - removed duplicate ComponentDetail field setting code
+ * - createPayment(...) - updated to pass null for ComponentDetail in single payment scenarios
+ *
+ * CONTROLLERS POTENTIALLY AFFECTED (uses createPayment methods):
+ * - PharmacySaleController
+ * - OpdBillController
+ * - BillController
+ * - ChannelBillController
+ * - Any controller that creates bills with payments
+ *
+ * ROLLBACK INSTRUCTIONS:
+ * If this refactoring causes payment creation issues in any controller:
+ *
+ * Step 1: Identify the commit hash of this change
+ *   git log --oneline --grep="17132" -n 5
+ *
+ * Step 2: Revert to the commit BEFORE this change
+ *   git revert <commit_hash>
+ *   OR
+ *   git reset --hard <previous_commit_hash>
+ *   git push origin <branch_name> --force (CAUTION: only if safe to force push)
+ *
+ * Step 3: Manual rollback (if git revert doesn't work):
+ *   a) Change populatePaymentDetails signature back to:
+ *      private boolean populatePaymentDetails(Payment payment, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData)
+ *   b) Remove lines 364-401 (ComponentDetail null check block from populatePaymentDetails)
+ *   c) Restore lines in createPaymentFromComponentDetail (after populatePaymentDetails call):
+ *      if (cd.getInstitution() != null) { payment.setBank(cd.getInstitution()); }
+ *      if (cd.getReferenceNo() != null && !cd.getReferenceNo().isEmpty()) { payment.setReferenceNo(cd.getReferenceNo()); }
+ *      if (cd.getNo() != null && !cd.getNo().isEmpty()) { payment.setChequeRefNo(cd.getNo()); }
+ *      if (cd.getDate() != null) { payment.setChequeDate(cd.getDate()); payment.setPaymentDate(cd.getDate()); }
+ *      if (cd.getComment() != null && !cd.getComment().isEmpty()) { payment.setComments(cd.getComment()); }
+ *      if (cd.getToStaff() != null) { payment.setToStaff(cd.getToStaff()); }
+ *   d) Update call sites to remove ComponentDetail parameter:
+ *      Line ~170: populatePaymentDetails(payment, pm, paymentMethodData)
+ *      Line ~194: populatePaymentDetails(payment, cd.getPaymentMethod(), cd.getPaymentMethodData())
+ *
+ * Step 4: Recompile and test
+ *   mvn clean compile
+ *   Test payment creation in affected modules
  *
  * @author Dr M H B Ariyaratne
  *
@@ -141,7 +193,7 @@ public class PaymentService {
         }
         return newPayments;
     }
-
+    
     private List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser) {
 
         CashBook cashbook = cashbookService.findAndSaveCashBookBySite(department.getSite(), department.getInstitution(), department);
@@ -166,7 +218,8 @@ public class PaymentService {
             payment.setCreatedAt(currentDate);
             payment.setCreater(webUser);
             payment.setPaymentMethod(pm);
-            if (!populatePaymentDetails(payment, pm, paymentMethodData)) {
+            // Single payment method: pass null for componentDetail parameter
+            if (!populatePaymentDetails(payment, pm, paymentMethodData, null)) {
                 LOGGER.log(Level.WARNING, "Skipping payment creation for bill {0} due to missing payment data for method {1}.",
                         new Object[]{bill != null ? bill.getId() : null, pm});
                 return payments;
@@ -188,16 +241,199 @@ public class PaymentService {
         payment.setCreatedAt(currentDate);
         payment.setCreater(webUser);
         payment.setPaymentMethod(cd.getPaymentMethod());
-        if (!populatePaymentDetails(payment, cd.getPaymentMethod(), cd.getPaymentMethodData())) {
+        // Multiple payment method: pass the ComponentDetail to populate fields from it
+        // The ComponentDetail fields are now handled inside populatePaymentDetails method
+        if (!populatePaymentDetails(payment, cd.getPaymentMethod(), cd.getPaymentMethodData(), cd)) {
             LOGGER.log(Level.WARNING,
                     "Skipping payment component due to missing payment data. Bill={0}, PaymentMethod={1}.",
                     new Object[]{bill != null ? bill.getId() : null, cd.getPaymentMethod()});
             return null;
         }
+
+        // REMOVED DUPLICATE CODE (2026-01-21):
+        // Previously, ComponentDetail fields were set here (lines 200-222 in old version).
+        // This logic has been moved to populatePaymentDetails method (lines 364-401)
+        // to centralize all payment field population in one place with proper null checks.
+        //
+        // ROLLBACK NOTE: If this refactoring causes issues, restore the following code block:
+        //   if (cd.getInstitution() != null) { payment.setBank(cd.getInstitution()); }
+        //   if (cd.getReferenceNo() != null && !cd.getReferenceNo().isEmpty()) { payment.setReferenceNo(...); }
+        //   if (cd.getNo() != null && !cd.getNo().isEmpty()) { payment.setChequeRefNo(...); }
+        //   if (cd.getDate() != null) { payment.setChequeDate(...); payment.setPaymentDate(...); }
+        //   if (cd.getComment() != null && !cd.getComment().isEmpty()) { payment.setComments(...); }
+        //   if (cd.getToStaff() != null) { payment.setToStaff(...); }
+        // And revert populatePaymentDetails to its old signature (without ComponentDetail parameter)
+
         return payment;
     }
+    
+    public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Institution institution, Department department, WebUser webUser) {
+        List<Payment> ps = new ArrayList<>();
 
-    private boolean populatePaymentDetails(Payment payment, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
+        if (pm == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                Payment p = new Payment();
+                p.setBill(bill);
+                p.setInstitution(institution);
+                p.setDepartment(department);
+                p.setCreatedAt(new Date());
+                p.setCreater(webUser);
+                p.setPaymentMethod(cd.getPaymentMethod());
+
+                switch (cd.getPaymentMethod()) {
+                    case Cash:
+                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCash().getComment());
+                        break;
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCreditCard().getComment());
+                        break;
+                    case Cheque:
+                        p.setBank(cd.getPaymentMethodData().getCheque().getInstitution());
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getCheque().getComment());
+                        break;
+                    case Slip:
+                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
+                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
+                        p.setComments(cd.getPaymentMethodData().getSlip().getComment());
+                        p.setReferenceNo(cd.getPaymentMethodData().getSlip().getReferenceNo());
+                        p.setPaymentDate(cd.getPaymentMethodData().getSlip().getDate());
+                        p.setChequeDate(cd.getPaymentMethodData().getSlip().getDate());
+                        break;
+                    case OnlineSettlement:
+                        p.setBank(cd.getPaymentMethodData().getOnlineSettlement().getInstitution());
+                        p.setPaidValue(cd.getPaymentMethodData().getOnlineSettlement().getTotalValue());
+                        p.setPaymentDate(cd.getPaymentMethodData().getOnlineSettlement().getDate());
+                        p.setReferenceNo(cd.getPaymentMethodData().getOnlineSettlement().getReferenceNo());
+                        p.setComments(cd.getPaymentMethodData().getOnlineSettlement().getComment());
+                        break;
+                    case Staff_Welfare:
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
+                        if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
+                            p.setToStaff(cd.getPaymentMethodData().getStaffWelfare().getToStaff());
+                            staffService.updateStaffWelfare(cd.getPaymentMethodData().getStaffWelfare().getToStaff(), cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
+                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+                        }
+                        break;
+                    case ewallet:
+                        p.setPolicyNo(cd.getPaymentMethodData().getEwallet().getReferralNo());
+                        p.setReferenceNo(cd.getPaymentMethodData().getEwallet().getReferenceNo());
+                        p.setCreditCompany(cd.getPaymentMethodData().getEwallet().getInstitution());
+                        p.setPaidValue(cd.getPaymentMethodData().getEwallet().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getEwallet().getComment());
+                        break;
+                    case PatientDeposit:
+                        double paidValue = cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                        PatientDeposit currentDeposit = cd.getPaymentMethodData().getPatient_deposit().getPatientDepost();
+                        p.setPaidValue(paidValue);
+                        patientDepositService.updateBalance(p, currentDeposit);
+                        JsfUtil.addSuccessMessage("Patient Deposit Balance Updated");
+                        break;
+
+                }
+
+                paymentFacade.create(p);
+                cashbookService.writeCashBookEntryAtPaymentCreation(p);
+                ps.add(p);
+            }
+        } else {
+            Payment p = new Payment();
+            p.setBill(bill);
+            p.setInstitution(institution);
+            p.setDepartment(department);
+            p.setCreatedAt(new Date());
+            p.setCreater(webUser);
+            p.setPaymentMethod(pm);
+            
+            switch (pm) {
+                case Cash:
+                    p.setPaidValue(bill.getNetTotal());
+                    p.setComments("");
+                    break;
+                case Card:
+                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    p.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
+                    p.setComments(paymentMethodData.getCreditCard().getComment());
+                    break;
+                case Cheque:
+                    p.setBank(paymentMethodData.getCheque().getInstitution());
+                    p.setChequeDate(paymentMethodData.getCheque().getDate());
+                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    p.setPaidValue(paymentMethodData.getCheque().getTotalValue());
+                    p.setComments(paymentMethodData.getCheque().getComment());
+                    break;
+                case Slip:
+                    p.setBank(paymentMethodData.getSlip().getInstitution());
+                    p.setPaidValue(paymentMethodData.getSlip().getTotalValue());
+                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
+                    p.setPaymentDate(paymentMethodData.getSlip().getDate());
+                    p.setChequeDate(paymentMethodData.getSlip().getDate());
+                    p.setComments(paymentMethodData.getSlip().getComment());
+                    p.setReferenceNo(paymentMethodData.getSlip().getReferenceNo());
+                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
+                    break;
+                case ewallet:
+                    p.setBank(paymentMethodData.getEwallet().getInstitution());
+                    p.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
+                    p.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
+                    p.setCreditCompany(paymentMethodData.getEwallet().getInstitution());
+                    p.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
+                    p.setComments(paymentMethodData.getEwallet().getComment());
+                    break;
+                case PatientDeposit:
+                    double paidValue = paymentMethodData.getPatient_deposit().getTotalValue();
+                    PatientDeposit currentDeposit = paymentMethodData.getPatient_deposit().getPatientDepost();
+                    p.setPaidValue(paidValue);
+                    patientDepositService.updateBalance(p, currentDeposit);
+                    break;
+                case OnlineSettlement:
+                    p.setBank(paymentMethodData.getOnlineSettlement().getInstitution());
+                    p.setPaidValue(paymentMethodData.getOnlineSettlement().getTotalValue());
+                    p.setPaymentDate(paymentMethodData.getOnlineSettlement().getDate());
+                    p.setReferenceNo(paymentMethodData.getOnlineSettlement().getReferenceNo());
+                    p.setComments(paymentMethodData.getOnlineSettlement().getComment());
+                    break;
+
+            }
+
+            paymentFacade.create(p);
+            cashbookService.writeCashBookEntryAtPaymentCreation(p);
+            ps.add(p);
+        }
+        return ps;
+    }
+
+    /**
+     * Populates payment details from PaymentMethodData and optionally from ComponentDetail.
+     *
+     * REFACTORING DATE: 2026-01-21
+     * ISSUE: #17132 - E-wallet refund using e-wallet payment mode
+     *
+     * This method was enhanced to accept ComponentDetail parameter to centralize payment field
+     * population logic. Previously, ComponentDetail fields were being set separately in
+     * createPaymentFromComponentDetail method, causing duplication.
+     *
+     * ROLLBACK INSTRUCTIONS (if needed):
+     * If this refactoring causes issues, revert to commit: [COMMIT_HASH_BEFORE_THIS_CHANGE]
+     * The previous version had signature:
+     *   private boolean populatePaymentDetails(Payment payment, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData)
+     * And ComponentDetail fields were set in createPaymentFromComponentDetail method (lines 198-222 of old version)
+     *
+     * @param payment The payment object to populate
+     * @param paymentMethod The payment method being used
+     * @param paymentMethodData The nested payment method data (may be incomplete in multiple payment scenarios)
+     * @param componentDetail The component detail object (used in multiple payment scenarios, null for single payments)
+     * @return true if payment details were populated successfully, false otherwise
+     */
+    private boolean populatePaymentDetails(Payment payment, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData, ComponentDetail componentDetail) {
         if (paymentMethodData == null) {
             return false;
         }
@@ -312,6 +548,44 @@ public class PaymentService {
             default:
                 break;
         }
+
+        // ENHANCEMENT: Populate/override with ComponentDetail fields if available
+        // This is used for Multiple Payment Methods where ComponentDetail contains the actual UI-entered data
+        // The nested PaymentMethodData might be empty/uninitialized in multiple payment scenarios
+        // For single payment methods, componentDetail will be null and this section is skipped
+        if (componentDetail != null) {
+            // Set bank/institution if provided in ComponentDetail
+            if (componentDetail.getInstitution() != null) {
+                payment.setBank(componentDetail.getInstitution());
+            }
+
+            // Set reference number if provided
+            if (componentDetail.getReferenceNo() != null && !componentDetail.getReferenceNo().isEmpty()) {
+                payment.setReferenceNo(componentDetail.getReferenceNo());
+            }
+
+            // Set cheque/reference number if provided
+            if (componentDetail.getNo() != null && !componentDetail.getNo().isEmpty()) {
+                payment.setChequeRefNo(componentDetail.getNo());
+            }
+
+            // Set dates if provided
+            if (componentDetail.getDate() != null) {
+                payment.setChequeDate(componentDetail.getDate());
+                payment.setPaymentDate(componentDetail.getDate());
+            }
+
+            // Set comments if provided
+            if (componentDetail.getComment() != null && !componentDetail.getComment().isEmpty()) {
+                payment.setComments(componentDetail.getComment());
+            }
+
+            // Set staff member if provided (for Staff/Staff_Welfare payment methods)
+            if (componentDetail.getToStaff() != null) {
+                payment.setToStaff(componentDetail.getToStaff());
+            }
+        }
+
         return true;
     }
 

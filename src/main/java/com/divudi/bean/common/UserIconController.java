@@ -327,6 +327,15 @@ public class UserIconController implements Serializable {
         fillDepartmentIcon();
     }
 
+    public void setDepartmentToLoggedUser() {
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            setDepartment(sessionController.getDepartment());
+            JsfUtil.addSuccessMessage("Department set to " + sessionController.getDepartment().getName());
+        } else {
+            JsfUtil.addErrorMessage("No department found for logged user");
+        }
+    }
+
     public List<Department> getDepartments() {
         return departments;
     }

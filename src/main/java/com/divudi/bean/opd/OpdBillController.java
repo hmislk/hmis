@@ -837,7 +837,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public void reloadCurrentlyWorkingStaff() {
         List<WorkingTime> wts = workingTimeController.findCurrentlyActiveWorkingTimes();
         currentlyWorkingStaff = new ArrayList<>();
-        selectedCurrentlyWorkingStaff = null;
+//        selectedCurrentlyWorkingStaff = null;  // Commented out to preserve doctor selection across bills
         if (wts == null) {
             return;
         }
@@ -2433,7 +2433,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         setPrintigBill();
         checkBillValues();
 
-        //billService.calculateBillBreakdownAsHospitalCcAndStaffTotalsByBillFees(getBills());
+        billService.calculateBillBreakdownAsHospitalCcAndStaffTotalsByBillFees(getBills());
         billService.createBillItemFeeBreakdownFromBills(getBills());
         boolean generateBarcodesForSampleTubesAtBilling = configOptionApplicationController.getBooleanValueByKey("Need to Generate Barcodes for Sample Tubes at OPD Billing Automatically", false);
         if (generateBarcodesForSampleTubesAtBilling) {
@@ -3581,7 +3581,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     private void clearBillValues() {
         setPatient(null);
-        setReferredBy(null);
+//        setReferredBy(null);  // Commented out to preserve doctor selection across bills
         payments = null;
 //        setReferredByInstitution(null);
         setReferralId(null);
@@ -3611,7 +3611,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         setCashBalance(0.0);
 
         setStrTenderedValue("");
-        currentlyWorkingStaff = null;
+//        currentlyWorkingStaff = null;  // Commented out to preserve doctor list across bills
         fromOpdEncounter = false;
         opdEncounterComments = "";
         patientSearchTab = 0;
@@ -3621,7 +3621,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     private void clearBillValuesForMember() {
         setPatient(null);
-        setReferredBy(null);
+//        setReferredBy(null);  // Commented out to preserve doctor selection across bills
 //        setReferredByInstitution(null);
         setReferralId(null);
         setSessionDate(null);
@@ -5192,6 +5192,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         this.itemLight = itemLight;
         if (itemLight != null) {
             getCurrentBillItem().setItem(itemController.findItem(itemLight.getId()));
+            // Initialize quantity to 1 when item is selected
+            if (currentBillItemQty == null) {
+                currentBillItemQty = 1.0;
+            }
         }
     }
 

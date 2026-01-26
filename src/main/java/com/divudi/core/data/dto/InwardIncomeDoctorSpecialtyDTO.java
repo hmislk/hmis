@@ -4,6 +4,7 @@
  */
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.Title;
 import com.divudi.core.entity.Staff;
 
 /**
@@ -13,6 +14,7 @@ import com.divudi.core.entity.Staff;
 public class InwardIncomeDoctorSpecialtyDTO {
     
     private Long staffId;
+    private Title doctorTitle; 
     private String doctorName;
     private String specialtyName;
     
@@ -34,9 +36,21 @@ public class InwardIncomeDoctorSpecialtyDTO {
         this.billTotal = 0.0;
     }
     
-    public InwardIncomeDoctorSpecialtyDTO(Long staffId, String doctorName, String specialtyName, Double docFee, Double hosFee, Long billId, Double billTotal) {
+    // constructor for doctor wise
+    public InwardIncomeDoctorSpecialtyDTO(Long staffId, Title doctorTitle, String doctorName, String specialtyName, Double docFee, Double hosFee, Long billId, Double billTotal) {
         this.staffId = staffId;
+        this.doctorTitle = (doctorTitle != null ? doctorTitle : Title.Dr);
         this.doctorName = doctorName;
+        this.specialtyName = specialtyName;
+        this.docFee = docFee;
+        this.hosFee = hosFee;
+        this.billId = billId;
+        this.billTotal = billTotal;
+    }
+    
+    // constructor for speciality wise
+    public InwardIncomeDoctorSpecialtyDTO(Long staffId, String specialtyName, Double docFee, Double hosFee, Long billId, Double billTotal) {
+        this.staffId = staffId;
         this.specialtyName = specialtyName;
         this.docFee = docFee;
         this.hosFee = hosFee;
@@ -56,6 +70,14 @@ public class InwardIncomeDoctorSpecialtyDTO {
 
     public void setStaffId(Long staffId) {
         this.staffId = staffId;
+    }
+    
+    public Title getDoctorTitle() {
+        return doctorTitle;
+    }
+    
+    public void setDoctorTitle(Title title) {
+        this.doctorTitle = title;
     }
 
     public String getDoctorName() {

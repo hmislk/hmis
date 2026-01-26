@@ -568,7 +568,7 @@ public class RequestController implements Serializable {
     }
 
     @FacesConverter(forClass = Request.class)
-    public static class AreaConverter implements Converter {
+    public static class RequestConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {

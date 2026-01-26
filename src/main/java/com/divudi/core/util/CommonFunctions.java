@@ -739,6 +739,12 @@ public class CommonFunctions {
         return cal.getTime();
     }
 
+    public static Date getDateMonthsAgo(int months) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MONTH, -months);
+        return calendar.getTime();
+    }
+
     public static Date getLastDayOfYear(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
