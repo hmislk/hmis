@@ -283,6 +283,7 @@ public enum BillTypeAtomic {
     // PROFESSIONAL PAYMENTS - OPD
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES("OPD Professional Payment bill", BillCategory.PAYMENTS, ServiceType.PROFESSIONAL_PAYMENT, BillFinanceType.CASH_OUT, CountedServiceType.OPD_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND, BillType.OpdProfessionalFeePayment),
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN("OPD Professional Payment bill - Return and Cancellation", BillCategory.PAYMENTS, ServiceType.PROFESSIONAL_PAYMENT, BillFinanceType.CASH_IN, CountedServiceType.OPD_PROFESSIONAL_PAYMENT_RETURN, PaymentCategory.NON_CREDIT_COLLECTION, BillType.OpdProfessionalFeePayment),
+    MISCELLANEOUS_STAFF_FEE_BILL("Miscellaneous Staff Fee Bill", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OTHER, PaymentCategory.NO_PAYMENT, BillType.PaymentBill),
     // PROFESSIONAL PAYMENTS - INWARD
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE("Inward Payment for Staff", BillCategory.PAYMENTS, ServiceType.INWARD, BillFinanceType.CASH_IN, CountedServiceType.INWARD_PROFESSIONAL_PAYMENT, PaymentCategory.NON_CREDIT_SPEND, BillType.InwardProfessional),
     PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN("Inward Payment for Staff - Return and Cancellation", BillCategory.PAYMENTS, ServiceType.INWARD, BillFinanceType.CASH_OUT, CountedServiceType.INWARD_PROFESSIONAL_PAYMENT_RETURN, PaymentCategory.NON_CREDIT_COLLECTION, BillType.InwardProfessional),

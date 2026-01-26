@@ -1,0 +1,162 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
+
+    <h:body>
+        <ui:composition template="/payments/pay_index.xhtml">
+            <ui:define name="admin">
+                <h:panelGroup id="panMiscFee" styleClass="alignTop">
+                    <p:panel header="Add Miscellaneous Staff Fee">
+                        <h:form id="formMiscFee">
+                            <p:growl id="growl" showDetail="true" sticky="false" life="3000"/>
+
+                            <p:panel header="Fee Entry Form" styleClass="mb-3">
+                                <h:panelGrid columns="2" cellpadding="10" styleClass="w-100">
+
+                                    <p:outputLabel value="Staff/Doctor:" for="acStaff"/>
+                                    <p:autoComplete
+                                        id="acStaff"
+                                        value="#{miscellaneousStaffFeeController.selectedStaff}"
+                                        completeMethod="#{miscellaneousStaffFeeController.completeStaff}"
+                                        var="s"
+                                        itemLabel="#{s.person.nameWithTitle}"
+                                        itemValue="#{s}"
+                                        forceSelection="true"
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        placeholder="Search staff by name..."
+                                        minQueryLength="2"
+                                        required="true"
+                                        requiredMessage="Please select a staff member">
+                                        <p:column>
+                                            <h:outputText value="#{s.person.nameWithTitle}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputText value="#{s.speciality.name}" rendered="#{s.speciality ne null}"/>
+                                        </p:column>
+                                    </p:autoComplete>
+
+                                    <p:outputLabel value="Amount:" for="txtAmount"/>
+                                    <p:inputNumber
+                                        id="txtAmount"
+                                        value="#{miscellaneousStaffFeeController.feeAmount}"
+                                        decimalPlaces="2"
+                                        minValue="0.01"
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        placeholder="0.00"
+                                        required="true"
+                                        requiredMessage="Please enter the fee amount">
+                                    </p:inputNumber>
+
+                                    <p:outputLabel value="Description/Reason:" for="txtDescription"/>
+                                    <p:inputTextarea
+                                        id="txtDescription"
+                                        value="#{miscellaneousStaffFeeController.feeDescription}"
+                                        rows="4"
+                                        cols="50"
+                                        class="w-100"
+                                        placeholder="Enter the reason for this fee (e.g., Meeting Allowance, Administrative Fee, Bonus, etc.)"
+                                        required="true"
+                                        requiredMessage="Please enter a description"
+                                        maxlength="500">
+                                    </p:inputTextarea>
+
+                                </h:panelGrid>
+
+                                <f:facet name="footer">
+                                    <p:commandButton
+                                        value="Save Fee"
+                                        action="#{miscellaneousStaffFeeController.saveNewMiscellaneousFee}"
+                                        update="formMiscFee:growl formMiscFee:tblRecentFees"
+                                        icon="fa fa-save"
+                                        styleClass="ui-button-success mx-2 my-2"/>
+
+                                    <p:commandButton
+                                        value="Clear Form"
+                                        action="#{miscellaneousStaffFeeController.clearForm}"
+                                        update="formMiscFee"
+                                        icon="fa fa-eraser"
+                                        styleClass="ui-button-secondary mx-2 my-2"/>
+                                </f:facet>
+                            </p:panel>
+
+                            <p:panel header="Recent Miscellaneous Fees" styleClass="mt-3">
+                                <p:commandButton
+                                    value="Refresh List"
+                                    action="#{miscellaneousStaffFeeController.loadRecentMiscellaneousFees}"
+                                    update="formMiscFee:tblRecentFees"
+                                    icon="fa fa-refresh"
+                                    styleClass="ui-button-info mx-2 my-2"/>
+
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Download as Excel"
+                                    icon="fa-solid fa-file-excel"
+                                    styleClass="ui-button-success mx-2 my-2">
+                                    <p:dataExporter type="xlsx" target="tblRecentFees" fileName="Miscellaneous_Staff_Fees"/>
+                                </p:commandButton>
+
+                                <p:dataTable
+                                    id="tblRecentFees"
+                                    value="#{miscellaneousStaffFeeController.recentMiscellaneousFees}"
+                                    var="bf"
+                                    paginator="true"
+                                    rows="10"
+                                    rowKey="#{bf.id}"
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                    rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
+                                    emptyMessage="No miscellaneous fees found"
+                                    class="w-100 m-1">
+
+                                    <p:column headerText="Bill ID" width="10%">
+                                        <h:outputText value="#{bf.bill.deptId}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Date Created" width="12%">
+                                        <h:outputText value="#{bf.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Staff/Doctor" width="15%">
+                                        <h:outputText value="#{bf.staff.person.nameWithTitle}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Speciality" width="12%">
+                                        <h:outputText value="#{bf.staff.speciality.name}" rendered="#{bf.staff.speciality ne null}"/>
+                                        <h:outputText value="-" rendered="#{bf.staff.speciality eq null}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Description" width="30%">
+                                        <h:outputText value="#{bf.bill.comments}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Amount" width="10%" styleClass="text-end">
+                                        <h:outputText value="#{bf.feeValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Status" width="11%">
+                                        <p:badge value="Paid" severity="success" rendered="#{bf.paidValue gt 0}"/>
+                                        <p:badge value="Unpaid" severity="warning" rendered="#{bf.paidValue eq 0}"/>
+                                    </p:column>
+
+                                </p:dataTable>
+                            </p:panel>
+
+                        </h:form>
+                    </p:panel>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
