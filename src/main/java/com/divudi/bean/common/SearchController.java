@@ -16506,6 +16506,11 @@ public class SearchController implements Serializable {
             // Use getTotal() directly - see comment above for OPD credit company collection
             collectionForTheDay += getSafeTotal(inwardCreditCompanyCollection);
 
+            // Generate Inward Deposit Collection and add to the main bundle
+            ReportTemplateRowBundle inwardDepositCollection = generateInwardDepositCollection();
+            bundle.getBundles().add(inwardDepositCollection);
+            collectionForTheDay += getSafeTotal(inwardDepositCollection);
+
             // NOTE: Pharmacy Credit Company Payment Collection is NOT generated separately here
             // because pharmacy credit company bill types are already included in the OPD credit
             // company collection above (generateCreditCompanyCollectionForOpd() includes both
@@ -16545,7 +16550,17 @@ public class SearchController implements Serializable {
             double collectionBeforeDeduction = collectionForTheDay;
             double deductionAmount = Math.abs(getSafeTotal(pharmacyPatientDepositPayments));
             collectionForTheDay -= deductionAmount;
-            
+
+
+            // Inpatient Patient Deposit Payments - bills paid using deposits (deducted from collection for the day)
+            ReportTemplateRowBundle inwardPatientDepositPayments = generateInwardPatientDepositPayments();
+            inwardPatientDepositPayments.calculateTotalByPayments();
+            // Fix sign for display - invert the sign to show utilization as positive
+            double inwardDepositTotal = inwardPatientDepositPayments.getTotal();
+            inwardPatientDepositPayments.setTotal(-inwardDepositTotal);
+            bundle.getBundles().add(inwardPatientDepositPayments);
+            collectionForTheDay -= Math.abs(getSafeTotal(inwardPatientDepositPayments));
+
             // Final collection for the day
             ReportTemplateRowBundle collectionForTheDayBundle = new ReportTemplateRowBundle();
             collectionForTheDayBundle.setName("Collection for the day");
@@ -19193,6 +19208,53 @@ public class SearchController implements Serializable {
         return depositCollection;
     }
 
+    public ReportTemplateRowBundle generateInwardDepositCollection() {
+        ReportTemplateRowBundle depositCollection = new ReportTemplateRowBundle();
+
+        // Query bills for inward deposit receipts
+        List<BillTypeAtomic> inwardDepositBillTypes = new ArrayList<>();
+        inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT);
+        inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+        inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+        inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
+
+        String jpql = "select b "
+                + " from Bill b "
+                + " left join fetch b.patient patient "
+                + " left join fetch patient.person "
+                + " where b.retired = :br "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :btas ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("br", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("btas", inwardDepositBillTypes);
+
+        if (department != null) {
+            jpql += " and b.department = :dep ";
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql += " and b.department.institution = :ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += " and b.department.site = :site ";
+            m.put("site", site);
+        }
+
+        List<Bill> bills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        billToBundleForPatientDeposits(depositCollection, bills);
+        depositCollection.setName("Inward Deposit Collection");
+        depositCollection.setBundleType("inwardDepositPayments");
+        depositCollection.setDescription("Inward Deposit Receipts, Cancellations, and Refunds");
+
+        return depositCollection;
+    }
+
     public ReportTemplateRowBundle generatePharmacyCollection() {
         ReportTemplateRowBundle pb;
         //TODO: Use a List of Bill Type Atomics instead of calling the findByServiceTypeAndPaymentCategory
@@ -19761,6 +19823,48 @@ public class SearchController implements Serializable {
             ReportTemplateRowBundle emptyBundle = new ReportTemplateRowBundle();
             emptyBundle.setName("Patient Deposit Utilization for Pharmacy Bills (Error)");
             emptyBundle.setBundleType("pharmacyPatientDepositPayments");
+            return emptyBundle;
+        }
+    }
+
+    public ReportTemplateRowBundle generateInwardPatientDepositPayments() {
+        try {
+            // Get specific inward deposit bill types only
+            List<BillTypeAtomic> inwardDepositBillTypes = Arrays.asList(
+                BillTypeAtomic.INWARD_DEPOSIT,
+                BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION,
+                BillTypeAtomic.INWARD_DEPOSIT_REFUND,
+                BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION
+            );
+
+            // Use payment report method with bill type filtering
+            ReportTemplateRowBundle ap = reportTemplateController.generatePaymentReportByBillTypes(
+                    PaymentMethod.PatientDeposit,
+                    inwardDepositBillTypes,
+                    fromDate,
+                    toDate,
+                    institution,
+                    department,
+                    site);
+
+            if (ap != null) {
+                ap.setName("Patient Deposit Utilization for Inward Payments");
+                ap.setBundleType("inwardPatientDepositPayments");
+                return ap;
+            } else {
+                // Return empty bundle if result is null
+                ReportTemplateRowBundle emptyBundle = new ReportTemplateRowBundle();
+                emptyBundle.setName("Patient Deposit Utilization for Inward Payments");
+                emptyBundle.setBundleType("inwardPatientDepositPayments");
+                return emptyBundle;
+            }
+        } catch (Exception e) {
+            // Log error and return empty bundle on any exception
+            System.err.println("Error generating inward patient deposit payments report: " + e.getMessage());
+            e.printStackTrace();
+            ReportTemplateRowBundle emptyBundle = new ReportTemplateRowBundle();
+            emptyBundle.setName("Patient Deposit Utilization for Inward Payments (Error)");
+            emptyBundle.setBundleType("inwardPatientDepositPayments");
             return emptyBundle;
         }
     }

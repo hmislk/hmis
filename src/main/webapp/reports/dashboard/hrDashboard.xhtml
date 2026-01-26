@@ -51,8 +51,29 @@
                             />
                                 </p:panelGrid>
                                 <p:spacer width="40"/>
-                                                             <!--Command Buttons-->
-                            <div class="d-flex align-items-center my-4">
+                                
+                            <!--Command Buttons-->
+                            <h:panelGroup>
+                                <div class="d-flex gap-4 align-items-center">
+                                    <p:commandButton 
+                                        class="ui-button-info mx-1 p-1"
+                                        ajax="false"
+                                        value="Leave From Approval" />
+                                    
+                                    <p:commandButton 
+                                        class="ui-button-info mx-1 p-1"
+                                        ajax="false"
+                                        value="Additional Forms Approval" />
+                                    
+                                    <p:commandButton 
+                                        class="ui-button-info mx-1 p-1"
+                                        ajax="false"
+                                        value="Gate Pass Approval" />
+                                    
+                                </div>
+                            </h:panelGroup>                           
+                                                             
+                            <div class="d-flex align-items-center my-2">
 
                                     <p:commandButton 
                                         class="ui-button-warning mx-1"
@@ -62,14 +83,14 @@
                             </div>
                             </p:panel>
                             <p:spacer width="20"/>
-                            <p:panel class="w-100">
+                            <!-- <p:panel class="w-100">
                                  <f:facet name="header">
                                     <h:outputLabel value="HR Analysis Chart" styleClass="fa-bed"   class="mx-4 text-center fs-2 text-uppercase"/>
                                 </f:facet>
-                                <p:panel>
+                                <p:panel> -->
                                    <!--Chart Must be Include There-->
-                                </p:panel>
-                            </p:panel>
+                                <!-- </p:panel>
+                            </p:panel> -->
 
 
                         </h:panelGroup>

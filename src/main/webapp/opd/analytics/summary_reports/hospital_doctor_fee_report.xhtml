@@ -276,31 +276,32 @@
                             </p:selectOneMenu>
 
                         </h:panelGrid>
+                        <h:panelGroup class="d-flex gap-3 my-3">
+                            <p:commandButton
+                                value="Process"
+                                ajax="false"
+                                action="#{opdReportController.generateHospitalDoctorFeeReport()}"
+                                styleClass="ui-button-success m-1"
+                                icon="pi pi-cog">
+                            </p:commandButton>
 
-                        <p:commandButton
-                            value="Process"
-                            ajax="false"
-                            action="#{opdReportController.generateHospitalDoctorFeeReport()}"
-                            styleClass="ui-button-success m-1"
-                            icon="pi pi-cog">
-                        </p:commandButton>
+                            <p:commandButton
+                                value="Download Excel"
+                                ajax="false"
+                                action="#{opdReportController.downloadHospitalDoctorFeeExcel()}"
+                                styleClass="ui-button-info m-1"
+                                icon="pi pi-download"
+                                rendered="#{opdReportController.hospitalDoctorFeeReportDtos != null and not empty opdReportController.hospitalDoctorFeeReportDtos}">
+                            </p:commandButton>
 
-                        <p:commandButton
-                            value="Download Excel"
-                            ajax="false"
-                            action="#{opdReportController.downloadHospitalDoctorFeeExcel()}"
-                            styleClass="ui-button-info m-1"
-                            icon="pi pi-download"
-                            rendered="#{opdReportController.hospitalDoctorFeeReportDtos != null and not empty opdReportController.hospitalDoctorFeeReportDtos}">
-                        </p:commandButton>
-
-                        <p:button
-                            value="Print"
-                            outcome="hospital_doctor_fee_report_print"
-                            styleClass="ui-button-warning m-1"
-                            icon="pi pi-print"
-                            rendered="#{opdReportController.hospitalDoctorFeeReportDtos != null and not empty opdReportController.hospitalDoctorFeeReportDtos}">
-                        </p:button>
+                            <p:commandButton
+                                value="To Print"
+                                action="hospital_doctor_fee_report_print?faces-redirect=true"
+                                styleClass="ui-button-warning m-1"
+                                icon="pi pi-print"
+                                rendered="#{opdReportController.hospitalDoctorFeeReportDtos != null and not empty opdReportController.hospitalDoctorFeeReportDtos}">
+                            </p:commandButton>
+                        </h:panelGroup>
 
                         <!-- Display grouped data by payment method -->
                         <h:panelGroup rendered="#{opdReportController.hospitalDoctorFeeReportDtos != null and not empty opdReportController.hospitalDoctorFeeReportDtos}">
@@ -410,8 +411,8 @@
                                                             <td>#{dto.doctorName}</td>
                                                             <td>
                                                                 <span class="badge badge-#{dto.billTypeAtomic.name().contains('CANCELLATION') ? 'warning' :
-                                                                                          dto.billTypeAtomic.name().contains('REFUND') ? 'danger' : 'success'}">
-                                                                    #{dto.transactionTypeLabel}
+                                                                                           dto.billTypeAtomic.name().contains('REFUND') ? 'danger' : 'success'}">
+                                                                      #{dto.transactionTypeLabel}
                                                                 </span>
                                                             </td>
                                                             <td class="text-end">

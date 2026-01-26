@@ -7,11 +7,13 @@ import org.joda.time.Period;
 import org.joda.time.PeriodType;
 
 import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
 
 public class InwardAdmissionDemographicDataDTO {
 
     // referring consultant data
     private Long id;
+    private Title doctorTitle;
     private String doctorName;
     private String specialityName;
 
@@ -40,11 +42,12 @@ public class InwardAdmissionDemographicDataDTO {
     private int totalCount;
 
     // Constructor for processing data
-    public InwardAdmissionDemographicDataDTO(String specialityName, String doctorName) {
+    public InwardAdmissionDemographicDataDTO(String specialityName, Title doctorTitle,String doctorName) {
         this.specialityName = specialityName;
         
         if (doctorName != null) {
             this.doctorName = doctorName;
+            this.doctorTitle = (doctorTitle != null ? doctorTitle : Title.Dr);
         }
         
         this.maleCount = 0;
@@ -65,15 +68,16 @@ public class InwardAdmissionDemographicDataDTO {
     }
 
     // Constructor for fetching data from database (Doctor Wise)
-    public InwardAdmissionDemographicDataDTO(Long id, String doctorName, String specialityName, Date dob, Sex sex) {
+    public InwardAdmissionDemographicDataDTO(Long id, Title doctorTitle, String doctorName, String specialityName, Date dob, Sex sex) {
         this.id = id;
+        this.doctorTitle = (doctorTitle != null ? doctorTitle : Title.Dr);
         this.doctorName = doctorName;
         this.specialityName = specialityName;
         this.patientSex = (sex != null ? sex : Sex.Unknown);
         calShortAgeFromDob(dob);
     }
     
-    // Constructor for fetching data from database (Doctor Wise)
+    // Constructor for fetching data from database (Speciality Wise)
     public InwardAdmissionDemographicDataDTO(Long id, String specialityName, Date dob, Sex sex) {
         this.id = id;
         this.specialityName = specialityName;
@@ -151,6 +155,14 @@ public class InwardAdmissionDemographicDataDTO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+    
+    public Title getDoctorTitle() {
+        return doctorTitle;
+    }
+    
+    public void setDoctorTitle(Title title) {
+        this.doctorTitle = title;
     }
 
     public String getDoctorName() {
