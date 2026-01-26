@@ -156,6 +156,216 @@ public class BillFacade extends AbstractFacade<Bill> {
     }
 
     /**
+     * Corrects pharmacy disbursement bill signs using native SQL for performance.
+     * This is the optimized version of DataAdministrationController.correctPharmacyDisbursementSigns().
+     *
+     * Applies correct signs to:
+     * - BillFinanceDetails: totalPurchaseValue, totalRetailSaleValue, totalCostValue, etc.
+     * - PharmaceuticalBillItem: purchaseValue, retailValue, costValue
+     *
+     * Sign conventions:
+     * - NEGATIVE for stock-out: PHARMACY_ISSUE, PHARMACY_DIRECT_ISSUE, PHARMACY_DISPOSAL_ISSUE, PHARMACY_RECEIVE_CANCELLED
+     * - POSITIVE for stock-in/reversals: PHARMACY_ISSUE_CANCELLED, PHARMACY_ISSUE_RETURN, PHARMACY_DIRECT_ISSUE_CANCELLED,
+     *   PHARMACY_DISPOSAL_ISSUE_CANCELLED, PHARMACY_DISPOSAL_ISSUE_RETURN, PHARMACY_RECEIVE, PHARMACY_RECEIVE_PRE
+     *
+     * @param fromDate Start date for correction (inclusive), null for all time
+     * @param toDate End date for correction (inclusive), null for all time
+     * @param dryRun If true, only counts affected records without updating
+     * @return Summary of corrections applied
+     * @throws Exception If correction fails
+     */
+    public String correctPharmacyDisbursementSignsNative(Date fromDate, Date toDate, boolean dryRun) throws Exception {
+        StringBuilder result = new StringBuilder();
+
+        // Detect correct table name case
+        String[] tableNames = detectTableNameCase();
+        String billTable = tableNames[0];
+        String billItemTable = tableNames[1];
+        String bfdTable = billTable.equals("BILL") ? "BILLFINANCEDETAILS" : "billfinancedetails";
+        String pbiTable = billTable.equals("BILL") ? "PHARMACEUTICALBILLITEM" : "pharmaceuticalbillitem";
+
+        // Build date filter clause
+        String dateFilter = "";
+        if (fromDate != null) {
+            dateFilter += " AND b.CREATEDAT >= ?";
+        }
+        if (toDate != null) {
+            dateFilter += " AND b.CREATEDAT <= ?";
+        }
+
+        // Types that should have NEGATIVE finance values (stock out)
+        String negativeTypes = "'PHARMACY_ISSUE', 'PHARMACY_DIRECT_ISSUE', 'PHARMACY_DISPOSAL_ISSUE', 'PHARMACY_RECEIVE_CANCELLED'";
+
+        // Types that should have POSITIVE finance values (stock in / reversals)
+        String positiveTypes = "'PHARMACY_ISSUE_CANCELLED', 'PHARMACY_ISSUE_RETURN', 'PHARMACY_DIRECT_ISSUE_CANCELLED', " +
+                              "'PHARMACY_DISPOSAL_ISSUE_CANCELLED', 'PHARMACY_DISPOSAL_ISSUE_RETURN', 'PHARMACY_RECEIVE', 'PHARMACY_RECEIVE_PRE'";
+
+        try {
+            // ============================================================
+            // 1. Count bills that need correction
+            // ============================================================
+            String countSql =
+                "SELECT " +
+                "  SUM(CASE WHEN b.BILLTYPEATOMIC IN (" + negativeTypes + ") AND bfd.TOTALPURCHASEVALUE > 0 THEN 1 ELSE 0 END) as neg_wrong, " +
+                "  SUM(CASE WHEN b.BILLTYPEATOMIC IN (" + positiveTypes + ") AND bfd.TOTALPURCHASEVALUE < 0 THEN 1 ELSE 0 END) as pos_wrong " +
+                "FROM " + billTable + " b " +
+                "JOIN " + bfdTable + " bfd ON b.BILLFINANCEDETAILS_ID = bfd.ID " +
+                "WHERE b.RETIRED = 0 " +
+                "AND b.BILLTYPEATOMIC IN (" + negativeTypes + ", " + positiveTypes + ")" +
+                dateFilter;
+
+            javax.persistence.Query countQuery = getEntityManager().createNativeQuery(countSql);
+            int paramIndex = 1;
+            if (fromDate != null) {
+                countQuery.setParameter(paramIndex++, fromDate);
+            }
+            if (toDate != null) {
+                countQuery.setParameter(paramIndex++, toDate);
+            }
+
+            Object[] countResult = (Object[]) countQuery.getSingleResult();
+            int negWrong = countResult[0] != null ? ((Number) countResult[0]).intValue() : 0;
+            int posWrong = countResult[1] != null ? ((Number) countResult[1]).intValue() : 0;
+            int totalWrong = negWrong + posWrong;
+
+            result.append("Bills needing sign correction:\n");
+            result.append("  - Should be NEGATIVE but are positive: ").append(negWrong).append("\n");
+            result.append("  - Should be POSITIVE but are negative: ").append(posWrong).append("\n");
+            result.append("  - Total: ").append(totalWrong).append("\n\n");
+
+            if (totalWrong == 0) {
+                result.append("No bills need correction.\n");
+                return result.toString();
+            }
+
+            if (dryRun) {
+                result.append("DRY RUN: No changes made.\n");
+                return result.toString();
+            }
+
+            // ============================================================
+            // 2. Correct BillFinanceDetails for NEGATIVE types (stock out)
+            // ============================================================
+            String updateBfdNegativeSql =
+                "UPDATE " + bfdTable + " bfd " +
+                "JOIN " + billTable + " b ON b.BILLFINANCEDETAILS_ID = bfd.ID " +
+                "SET " +
+                "  bfd.TOTALPURCHASEVALUE = -ABS(bfd.TOTALPURCHASEVALUE), " +
+                "  bfd.TOTALRETAILSALEVALUE = -ABS(bfd.TOTALRETAILSALEVALUE), " +
+                "  bfd.TOTALCOSTVALUE = -ABS(bfd.TOTALCOSTVALUE), " +
+                "  bfd.TOTALWHOLESALEVALUE = -ABS(bfd.TOTALWHOLESALEVALUE), " +
+                "  bfd.TOTALOFFREEITEMVALUES = -ABS(bfd.TOTALOFFREEITEMVALUES) " +
+                "WHERE b.RETIRED = 0 " +
+                "AND b.BILLTYPEATOMIC IN (" + negativeTypes + ") " +
+                "AND (bfd.TOTALPURCHASEVALUE > 0 OR bfd.TOTALRETAILSALEVALUE > 0 OR bfd.TOTALCOSTVALUE > 0)" +
+                dateFilter;
+
+            javax.persistence.Query updateBfdNegQuery = getEntityManager().createNativeQuery(updateBfdNegativeSql);
+            paramIndex = 1;
+            if (fromDate != null) {
+                updateBfdNegQuery.setParameter(paramIndex++, fromDate);
+            }
+            if (toDate != null) {
+                updateBfdNegQuery.setParameter(paramIndex++, toDate);
+            }
+            int bfdNegUpdated = updateBfdNegQuery.executeUpdate();
+            result.append("BillFinanceDetails corrected to NEGATIVE: ").append(bfdNegUpdated).append("\n");
+
+            // ============================================================
+            // 3. Correct BillFinanceDetails for POSITIVE types (stock in/reversals)
+            // ============================================================
+            String updateBfdPositiveSql =
+                "UPDATE " + bfdTable + " bfd " +
+                "JOIN " + billTable + " b ON b.BILLFINANCEDETAILS_ID = bfd.ID " +
+                "SET " +
+                "  bfd.TOTALPURCHASEVALUE = ABS(bfd.TOTALPURCHASEVALUE), " +
+                "  bfd.TOTALRETAILSALEVALUE = ABS(bfd.TOTALRETAILSALEVALUE), " +
+                "  bfd.TOTALCOSTVALUE = ABS(bfd.TOTALCOSTVALUE), " +
+                "  bfd.TOTALWHOLESALEVALUE = ABS(bfd.TOTALWHOLESALEVALUE), " +
+                "  bfd.TOTALOFFREEITEMVALUES = ABS(bfd.TOTALOFFREEITEMVALUES) " +
+                "WHERE b.RETIRED = 0 " +
+                "AND b.BILLTYPEATOMIC IN (" + positiveTypes + ") " +
+                "AND (bfd.TOTALPURCHASEVALUE < 0 OR bfd.TOTALRETAILSALEVALUE < 0 OR bfd.TOTALCOSTVALUE < 0)" +
+                dateFilter;
+
+            javax.persistence.Query updateBfdPosQuery = getEntityManager().createNativeQuery(updateBfdPositiveSql);
+            paramIndex = 1;
+            if (fromDate != null) {
+                updateBfdPosQuery.setParameter(paramIndex++, fromDate);
+            }
+            if (toDate != null) {
+                updateBfdPosQuery.setParameter(paramIndex++, toDate);
+            }
+            int bfdPosUpdated = updateBfdPosQuery.executeUpdate();
+            result.append("BillFinanceDetails corrected to POSITIVE: ").append(bfdPosUpdated).append("\n");
+
+            // ============================================================
+            // 4. Correct PharmaceuticalBillItem for NEGATIVE types
+            // ============================================================
+            String updatePbiNegativeSql =
+                "UPDATE " + pbiTable + " pbi " +
+                "JOIN " + billItemTable + " bi ON bi.PHARMACEUTICALBILLITEM_ID = pbi.ID " +
+                "JOIN " + billTable + " b ON bi.BILL_ID = b.ID " +
+                "SET " +
+                "  pbi.PURCHASEVALUE = -ABS(pbi.PURCHASEVALUE), " +
+                "  pbi.RETAILVALUE = -ABS(pbi.RETAILVALUE), " +
+                "  pbi.COSTVALUE = -ABS(pbi.COSTVALUE) " +
+                "WHERE b.RETIRED = 0 " +
+                "AND b.BILLTYPEATOMIC IN (" + negativeTypes + ") " +
+                "AND (pbi.PURCHASEVALUE > 0 OR pbi.RETAILVALUE > 0 OR pbi.COSTVALUE > 0)" +
+                dateFilter;
+
+            javax.persistence.Query updatePbiNegQuery = getEntityManager().createNativeQuery(updatePbiNegativeSql);
+            paramIndex = 1;
+            if (fromDate != null) {
+                updatePbiNegQuery.setParameter(paramIndex++, fromDate);
+            }
+            if (toDate != null) {
+                updatePbiNegQuery.setParameter(paramIndex++, toDate);
+            }
+            int pbiNegUpdated = updatePbiNegQuery.executeUpdate();
+            result.append("PharmaceuticalBillItem corrected to NEGATIVE: ").append(pbiNegUpdated).append("\n");
+
+            // ============================================================
+            // 5. Correct PharmaceuticalBillItem for POSITIVE types
+            // ============================================================
+            String updatePbiPositiveSql =
+                "UPDATE " + pbiTable + " pbi " +
+                "JOIN " + billItemTable + " bi ON bi.PHARMACEUTICALBILLITEM_ID = pbi.ID " +
+                "JOIN " + billTable + " b ON bi.BILL_ID = b.ID " +
+                "SET " +
+                "  pbi.PURCHASEVALUE = ABS(pbi.PURCHASEVALUE), " +
+                "  pbi.RETAILVALUE = ABS(pbi.RETAILVALUE), " +
+                "  pbi.COSTVALUE = ABS(pbi.COSTVALUE) " +
+                "WHERE b.RETIRED = 0 " +
+                "AND b.BILLTYPEATOMIC IN (" + positiveTypes + ") " +
+                "AND (pbi.PURCHASEVALUE < 0 OR pbi.RETAILVALUE < 0 OR pbi.COSTVALUE < 0)" +
+                dateFilter;
+
+            javax.persistence.Query updatePbiPosQuery = getEntityManager().createNativeQuery(updatePbiPositiveSql);
+            paramIndex = 1;
+            if (fromDate != null) {
+                updatePbiPosQuery.setParameter(paramIndex++, fromDate);
+            }
+            if (toDate != null) {
+                updatePbiPosQuery.setParameter(paramIndex++, toDate);
+            }
+            int pbiPosUpdated = updatePbiPosQuery.executeUpdate();
+            result.append("PharmaceuticalBillItem corrected to POSITIVE: ").append(pbiPosUpdated).append("\n");
+
+            result.append("\nCorrection completed successfully.\n");
+
+        } catch (Exception e) {
+            result.append("ERROR: ").append(e.getMessage()).append("\n");
+            System.err.println("Error in correctPharmacyDisbursementSignsNative: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+
+        return result.toString();
+    }
+
+    /**
      * Detects the correct table name case (uppercase vs lowercase) for the current database.
      * Some database instances use BILL/BILLITEM while others use bill/billitem.
      *
