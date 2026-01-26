@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSF/JSFManagedBean.java to edit this template
- */
 package com.divudi.bean.common;
 
 import com.divudi.bean.common.UserPrivilageController.PrivilegeHolder;
@@ -43,14 +39,17 @@ import javax.inject.Named;
 public class WebUserRoleUserController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @Inject
-    private SessionController sessionController;
-    @Inject
-    private UserPrivilageController userPrivilageController;
+    
     @EJB
     private WebUserRoleUserFacade facade;
     @EJB
     private DepartmentFacade departmentFacade;
+    
+    @Inject
+    private SessionController sessionController;
+    @Inject
+    private UserPrivilageController userPrivilageController;
+    
     private WebUserRoleUser current;
     private WebUserRole webUserRole;
     private List<WebUser> users = null;
@@ -84,6 +83,7 @@ public class WebUserRoleUserController implements Serializable {
         params.put("role", webUserRole);
         params.put("user", webUser);
         WebUserRoleUser roleUser = getFacade().findFirstByJpql(jpql, params);
+
         if (roleUser == null) {
             roleUser = new WebUserRoleUser();
             roleUser.setDepartment(department);
@@ -93,13 +93,42 @@ public class WebUserRoleUserController implements Serializable {
         } else {
             roleUser.setRetired(false);
         }
-        List<WebUserRolePrivilege> rolePrivileges = userPrivilageController.fetchUserPrivileges(webUserRole);
+        
+        updatePrivilegesToUserRole(webUserRole,webUser,department);
+        
+        clear();
+        loadWebUserRoles();
+    }
+    
+    public void clear(){
+        webUserRole = null;
+        department = null;
+    }
+    
+    public void updatePrivilegesToUserRole(WebUserRole userRole, WebUser user, Department department){
+        List<WebUserRolePrivilege> rolePrivileges = userPrivilageController.fetchUserPrivileges(userRole);
+        
         for(WebUserRolePrivilege wurp:rolePrivileges){
             Privileges p = wurp.getPrivilege();
-            userPrivilageController.addUserPrivilege(p, webUser, department);
+            userPrivilageController.addUserPrivilege(p, user, department);
         }
     }
+    
+    public void loadWebUserRoles(){
+        roleUsers = new ArrayList<>();
+        
+        String jpql = "select ru "
+                + " from WebUserRoleUser ru "
+                + " where ru.retired=:ret "
+                + " and ru.webUser=:user "
+                + " order by ru.id desc ";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("user", webUser);
 
+        roleUsers = getFacade().findByJpqlWithoutCache(jpql, params);
+
+    }
 
     public void addUsers() {
         if (current == null) {
@@ -217,18 +246,25 @@ public class WebUserRoleUserController implements Serializable {
         }
     }
 
-    public void removeUser() {
-        if (current != null) {
-            current.setRetired(true);
-            Date d = new Date();
-            current.setRetiredAt(d);
-            current.setRetirer(sessionController.getLoggedUser());
-            save(current);
+    public void removeUser(WebUserRoleUser roleUser) {
+        if(roleUser == null){
+            JsfUtil.addErrorMessage("Error in UserRole");
+                return;
+        }
+        
+        WebUserRoleUser user = facade.findWithoutCache(roleUser.getId());
+        
+        if (user != null) {
+            user.setRetired(true);
+            user.setRetiredAt(new Date());
+            roleUser.setRetirer(sessionController.getLoggedUser());
+            save(user);
             JsfUtil.addSuccessMessage("Removed Successfully");
         } else {
             JsfUtil.addSuccessMessage("Nothing to Remove");
         }
-        fillRoleUsers();
+        loadWebUserRoles();
+        clear();
     }
 
     public WebUserRoleUserController() {
