@@ -46,6 +46,7 @@ public enum CategoryType {
     SERVICE_SUB_CATEGORY("Service Sub Category"),
     SESSION_NUMBER_GENERATOR("Session Number Generator"),
     SPECIALITY("Speciality"),
+    SURGERY_TYPE("Surgery Type"),
     VOCABULARY("Vocabulary");
 
     private final String label;

@@ -580,6 +580,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     }
 
+//  Same Method in PaymentService { createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Institution institution, Department department, WebUser webUser) }
     private List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (pm == PaymentMethod.MultiplePaymentMethods) {
@@ -648,7 +649,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                         patientDepositService.updateBalance(p, currentDeposit);
                         JsfUtil.addSuccessMessage("Patient Deposit Balance Updated");
                         break;
-
                 }
 
                 paymentFacade.create(p);
@@ -713,7 +713,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                     p.setReferenceNo(paymentMethodData.getOnlineSettlement().getReferenceNo());
                     p.setComments(paymentMethodData.getOnlineSettlement().getComment());
                     break;
-
             }
 
             paymentFacade.create(p);

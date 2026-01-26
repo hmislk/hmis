@@ -3,276 +3,376 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:p="http://primefaces.org/ui">
-
-    <h:head>
-        <h:outputStylesheet>
-            .printTable {
-                border-collapse: collapse;
-                font-size: 11px !important;
-                width: 100%;
-            }
-            .printTable th, .printTable td {
-                border: 1px solid black;
-                padding: 4px 6px;
-            }
-            .printTable th {
-                background-color: #f2f2f2;
-                font-weight: bold;
-            }
-            .text-end {
-                text-align: right;
-            }
-            .text-center {
-                text-align: center;
-            }
-            .font-weight-bold {
-                font-weight: bold;
-            }
-            .payment-method-header {
-                background-color: #6c757d !important;
-                color: white !important;
-                font-weight: bold;
-            }
-            .category-header {
-                background-color: #e9ecef !important;
-                font-weight: 500;
-                padding-left: 20px !important;
-            }
-            .category-subtotal {
-                background-color: #bee5eb !important;
-                font-weight: bold;
-            }
-            .payment-method-total {
-                background-color: #fff3cd !important;
-                font-weight: bold;
-            }
-            .grand-total {
-                background-color: #d4edda !important;
-                font-weight: bold;
-                font-size: 12px !important;
-            }
-            .data-row td:first-child {
-                padding-left: 30px !important;
-            }
-            .report-header {
-                text-align: center;
-                margin-bottom: 15px;
-            }
-            .report-header h2 {
-                margin: 5px 0;
-            }
-            .report-header p {
-                margin: 3px 0;
-                color: #666;
-            }
-            .screenOnly {
-                display: none;
-            }
-            @media screen {
-                .screenOnly {
-                    display: inline-block;
-                }
-            }
-            @media print {
-                .screenOnly {
-                    display: none !important;
-                }
-                body {
-                    margin: 0;
-                    padding: 10px;
-                }
-            }
-        </h:outputStylesheet>
-    </h:head>
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/resources/template/template_contents_only.xhtml">
+        <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form>
-                    <p:commandButton
-                        value="Print"
-                        onclick="window.print();"
-                        class="screenOnly ui-button-warning m-1"
-                        icon="pi pi-print"/>
 
-                    <p:button
-                        value="Back to Report"
-                        outcome="hospital_doctor_fee_report"
-                        class="screenOnly ui-button-secondary m-1"
-                        icon="pi pi-arrow-left"/>
+                <h:form >
+                    <p:panel styleClass="w-100">
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Hospital Fee &amp; Doctor Fee Report Print" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false" 
+                                        value="Print">
+                                        <p:printer target="reportView" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back to Report" 
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="/opd/analytics/summary_reports/hospital_doctor_fee_report?faces-redirect=true" >
+                                    </p:commandButton>
+                                </div>
 
-                    <div class="report-header">
-                        <h2>
-                            <h:outputText value="#{sessionController.institution.name}" />
-                        </h2>
-                        <h3>Hospital Fee &amp; Doctor Fee Report</h3>
-                        <p>
-                            From: <h:outputText value="#{opdReportController.fromDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </h:outputText>
-                            &nbsp;&nbsp;|&nbsp;&nbsp;
-                            To: <h:outputText value="#{opdReportController.toDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </h:outputText>
-                        </p>
-                        <p>
-                            <h:outputText value="User: #{opdReportController.webUser.webUserPerson.name}" rendered="#{opdReportController.webUser != null}" />
-                            <h:outputText value=" | " rendered="#{opdReportController.webUser != null and opdReportController.institution != null}" />
-                            <h:outputText value="Institution: #{opdReportController.institution.name}" rendered="#{opdReportController.institution != null}" />
-                            <h:outputText value=" | " rendered="#{opdReportController.institution != null and opdReportController.department != null}" />
-                            <h:outputText value="Department: #{opdReportController.department.name}" rendered="#{opdReportController.department != null}" />
-                        </p>
-                    </div>
+                            </div>
+                        </f:facet>
 
-                    <h:panelGroup rendered="#{opdReportController.hospitalDoctorFeeReportDtos != null and not empty opdReportController.hospitalDoctorFeeReportDtos}">
+                        <style>
 
-                        <table class="printTable">
-                            <thead>
-                                <tr>
-                                    <th style="width: 100px;">Bill Number</th>
-                                    <th style="width: 160px;">Patient Name</th>
-                                    <th style="width: 140px;">Doctor Name</th>
-                                    <th style="width: 70px;">Bill Type</th>
-                                    <th style="width: 90px;" class="text-end">Hospital Fee</th>
-                                    <th style="width: 90px;" class="text-end">Doctor Fee</th>
-                                    <th style="width: 90px;" class="text-end">Net Total</th>
-                                    <th style="width: 80px;">Bill Date</th>
-                                    <th style="width: 90px;">Payment Method</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <ui:repeat value="#{opdReportController.hospitalDoctorFeeBundle.nestedPaymentMethodGroups.entrySet()}"
-                                           var="paymentEntry">
+                            @media screen{
+                                .paper{
+                                    position: static !important;
+                                    width: 210mm!important;
+                                    zoom: 1.7;
+                                }
 
-                                    <tr class="payment-method-header">
-                                        <td colspan="9">
-                                            #{paymentEntry.key.label} Payment Method
-                                        </td>
-                                    </tr>
+                                table {
+                                    border-collapse: collapse;
+                                    width: 100%;
+                                    font-size: 12px!important;
+                                    margin-top: 1mm!important;
+                                }
 
-                                    <ui:repeat value="#{paymentEntry.value.entrySet()}" var="categoryEntry">
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
 
-                                        <tr class="category-header">
-                                            <td colspan="9">
-                                                #{categoryEntry.key == 'BILL' ? 'Normal Bills' :
-                                                  categoryEntry.key == 'CANCELLATION' ? 'Cancellations' : 'Returns'}
-                                                (#{categoryEntry.value.size()} records)
-                                            </td>
-                                        </tr>
+                                .header{
+                                    font-size: 16px!important;
+                                }
 
-                                        <ui:repeat value="#{categoryEntry.value}" var="dto">
-                                            <tr class="data-row">
-                                                <td>#{dto.deptId}</td>
-                                                <td>#{dto.patientName}</td>
-                                                <td>#{dto.doctorName}</td>
-                                                <td>#{dto.transactionTypeLabel}</td>
-                                                <td class="text-end">
-                                                    <h:outputText value="#{dto.hospitalFee}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputText>
-                                                </td>
-                                                <td class="text-end">
-                                                    <h:outputText value="#{dto.doctorFee}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputText>
-                                                </td>
-                                                <td class="text-end">
-                                                    <h:outputText value="#{dto.netTotal}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputText>
-                                                </td>
-                                                <td>
-                                                    <h:outputText value="#{dto.billDate}">
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                                    </h:outputText>
-                                                </td>
-                                                <td>#{dto.paymentMethod.label}</td>
+                                tfoot{
+                                    font-weight: 700!important;
+                                    font-size: 10px!important;
+                                }
+                            }
+
+                            @media print {
+                                @page {
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 9pt;
+                                    }
+                                }
+
+                                body {
+                                    counter-reset: page;
+                                }
+
+                                .paper{
+                                    position: static !important;
+                                    width: 210mm!important;
+                                    size: A4 portrait!important;
+
+                                }
+
+                                .header{
+                                    line-height: 1.2;
+                                    margin: 0mm!important;
+                                    font-size: 10px!important;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 99.9%;
+                                    font-size: 12px!important;
+                                    margin-top: 1mm!important;
+                                }
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+                                th {
+
+                                }
+                                .grand-total{
+                                    font-weight: 700!important;
+                                    font-size: 11px!important;
+                                }
+
+                                .paymetRow,
+                                .catRow,
+                                table tr {
+                                    -webkit-print-color-adjust: exact !important;
+                                    print-color-adjust: exact !important;
+                                    color-adjust: exact !important;
+                                }
+
+                                .paymetRow {
+                                    background-color: #9DB2BF !important;
+                                }
+
+                                .catRow {
+                                    background-color: #DDE6ED !important;
+                                }
+                            }
+                        </style>
+
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header" >
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 22px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;">
+                                        <h:outputText value="Hospital Fee &amp; Doctor Fee Report"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center mt-2" style=" font-size: 12px;">
+                                        <div class="d-flex gap-3">
+                                            <h:outputText value="From Date" style="width: 5em!important; font-weight: 600;"/>
+                                            <h:outputText value="#{opdReportController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputText>
+                                        </div>
+                                        <h:outputText value="" style="width: 15mm!important;"/>
+                                        <div class="d-flex gap-3">
+                                            <h:outputText value="To Date" style="width: 4em!important; font-weight: 600;"/>
+                                            <h:outputText value="#{opdReportController.toDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputText>
+                                        </div>
+                                        <div></div>
+                                    </div>
+
+                                </div>
+                                
+                                <h:outputText value="Payment Summary" style="font-size: 14px; font-weight: 700;"/>
+                                <div class="mb-2">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 90mm; font-weight: 700;">
+                                                    <h:outputText value="Payment Method" style="margin-left: 2mm;"/>
+                                                </th>
+                                                <th style="width: 40mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Hospital Fee Total" style="margin-right: 2mm;"/>
+                                                </th>
+                                                <th style="width: 40mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Doctor Fee Total" style="margin-right: 2mm;"/>
+                                                </th>
+                                                <th style="width: 40mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Net Total" style="margin-right: 2mm;"/>
+                                                </th>
                                             </tr>
-                                        </ui:repeat>
+                                        </thead>
 
-                                        <tr class="category-subtotal">
-                                            <td colspan="4" class="text-end">
-                                                #{categoryEntry.key == 'BILL' ? 'Normal Bills' :
-                                                  categoryEntry.key == 'CANCELLATION' ? 'Cancellations' : 'Returns'} Subtotal:
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getBillCategorySubtotal(paymentEntry.key, categoryEntry.key, 'HOSPITAL')}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getBillCategorySubtotal(paymentEntry.key, categoryEntry.key, 'DOCTOR')}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputText>
-                                            </td>
-                                            <td class="text-end">
-                                                <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getBillCategorySubtotal(paymentEntry.key, categoryEntry.key, 'NET')}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputText>
-                                            </td>
-                                            <td colspan="2"></td>
-                                        </tr>
+                                        <tbody>
+                                            <ui:repeat value="#{opdReportController.hospitalDoctorFeeBundle.paymentMethodGroups.entrySet()}" var="entry">
+                                                <tr>
+                                                <td style=" text-align: left;">
+                                                    <h:outputText value="#{entry.key.label}" style="margin-left: 2mm;"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getHospitalFeeSubtotalForPaymentMethod(entry.key)}" style="margin-right: 2mm;">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getDoctorFeeSubtotalForPaymentMethod(entry.key)}" style="margin-right: 2mm;">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end" >
+                                                    <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getSubtotalForPaymentMethod(entry.key)}" style="margin-right: 2mm;">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                    </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                    </table>
+                                </div>
 
-                                    </ui:repeat>
+                                <h:outputText value="Payment Details" style="font-size: 14px; font-weight: 700;"/>
+                                <div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 32mm; font-weight: 700;">
+                                                    <h:outputText value="Bill No" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="width: 25mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Bill Time" style="margin-left: 1mm;"/>
+                                                </th>
+                                                <th style="width: 50mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Patient Name" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style="width: 40mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Doctor Name" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style="width: 14mm; font-weight: 700; text-align: left;">
+                                                    <h:outputText value="Type" style="margin-left:  1mm;"/>
+                                                </th>
+                                                <th style="width: 16mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Hos. Fee" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 16mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Doc. Fee" style="margin-right: 1mm;"/>
+                                                </th>
+                                                <th style="width: 20mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Net Total" style="margin-right: 1mm;"/>
+                                                </th>
 
-                                    <tr class="payment-method-total">
-                                        <td colspan="4" class="text-end">
-                                            #{paymentEntry.key.label} Total:
-                                        </td>
-                                        <td class="text-end">
-                                            <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getHospitalFeeSubtotalForPaymentMethod(paymentEntry.key)}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </td>
-                                        <td class="text-end">
-                                            <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getDoctorFeeSubtotalForPaymentMethod(paymentEntry.key)}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </td>
-                                        <td class="text-end">
-                                            <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getSubtotalForPaymentMethod(paymentEntry.key)}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputText>
-                                        </td>
-                                        <td colspan="2"></td>
-                                    </tr>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat value="#{opdReportController.hospitalDoctorFeeBundle.nestedPaymentMethodGroups.entrySet()}" var="paymentEntry">
+                                                <tr class="payment-method-header paymetRow" style="text-align: left; background-color: #9DB2BF;">
+                                                    <td colspan="8" style=" text-align: left;">
+                                                        <h:outputText value="#{paymentEntry.key.label} Payment Method" style="margin-left: 1mm; font-weight: 500;"/>
+                                                    </td>
+                                                </tr>
 
-                                </ui:repeat>
-                            </tbody>
-                            <tfoot>
-                                <tr class="grand-total">
-                                    <td colspan="4" class="text-end">
-                                        GRAND TOTAL:
-                                    </td>
-                                    <td class="text-end">
-                                        <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.grandHospitalFeeTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </td>
-                                    <td class="text-end">
-                                        <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.grandDoctorFeeTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </td>
-                                    <td class="text-end">
-                                        <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.grandTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </td>
-                                    <td colspan="2"></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </h:panelGroup>
+                                                <ui:repeat value="#{paymentEntry.value.entrySet()}" var="categoryEntry">
 
-                    <h:panelGroup rendered="#{opdReportController.hospitalDoctorFeeReportDtos == null or empty opdReportController.hospitalDoctorFeeReportDtos}">
-                        <p>No data found for the selected criteria. Please go back and process the report first.</p>
-                    </h:panelGroup>
+                                                    <tr class="category-header catRow" style="text-align: left; background-color: #DDE6ED;">
+                                                        <td colspan="8">
+                                                            <h:outputText value=" #{categoryEntry.key == 'BILL' ? 'Normal Bills' :
+                                                                                    categoryEntry.key == 'CANCELLATION' ? 'Cancellations' : 'Returns'}
+                                                                          (#{categoryEntry.value.size()} records)" style="margin-left: 1mm;"/>
 
+                                                        </td>
+                                                    </tr>
+
+                                                    <ui:repeat value="#{categoryEntry.value}" var="dto">
+                                                        <tr class="data-row">
+                                                            <td style=" text-align: left;">
+                                                                <h:outputText value="#{dto.deptId}" style="margin-left: 1mm;"/>
+                                                            </td>
+                                                            <td style=" text-align: left;">
+                                                                <h:outputText value="#{dto.billDate}" style="margin-left: 1mm;">
+                                                                    <f:convertDateTime pattern="dd/MM HH:mm" />
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td style=" text-align: left;">
+                                                                <h:outputText value="#{dto.patientName}" style="margin-left: 1mm;"/>
+                                                            </td>
+                                                            <td style=" text-align: left;">
+                                                                <h:outputText value="#{dto.doctorName}" style="margin-left: 1mm;"/>
+                                                            </td>
+                                                            <td style=" text-align: left;">
+                                                                <h:outputText value="#{dto.transactionTypeLabel}" style="margin-left: 1mm;"/>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{dto.hospitalFee}" style="margin-right: 1mm;">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{dto.doctorFee}" style="margin-right: 1mm;">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end" >
+                                                                <h:outputText value="#{dto.netTotal}" style="margin-right: 1mm;">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputText>
+                                                            </td>
+                                                        </tr>
+                                                    </ui:repeat>
+
+                                                    <tr class="category-subtotal">
+                                                        <td colspan="5" class="text-end">
+                                                            <h:outputText value="#{categoryEntry.key == 'BILL' ? 'Normal Bills' :
+                                                                                   categoryEntry.key == 'CANCELLATION' ? 'Cancellations' : 'Returns'} Subtotal " style="margin-right: 2mm;"/>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getBillCategorySubtotal(paymentEntry.key, categoryEntry.key, 'HOSPITAL')}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getBillCategorySubtotal(paymentEntry.key, categoryEntry.key, 'DOCTOR')}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getBillCategorySubtotal(paymentEntry.key, categoryEntry.key, 'NET')}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </ui:repeat>
+
+                                                <tr class="payment-method-total">
+                                                    <td colspan="5" class="text-end">
+                                                        <h:outputText value="#{paymentEntry.key.label} Total" style="margin-right: 2mm;"/>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getHospitalFeeSubtotalForPaymentMethod(paymentEntry.key)}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getDoctorFeeSubtotalForPaymentMethod(paymentEntry.key)}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.getSubtotalForPaymentMethod(paymentEntry.key)}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+                                            </ui:repeat>
+
+                                            <tr class="grand-total">
+                                                <td colspan="5" class="text-end">
+                                                    <h:outputText value="GRAND TOTAL" style="margin-right: 2mm;"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.grandHospitalFeeTotal}" style="margin-right: 1mm;">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.grandDoctorFeeTotal}" style="margin-right: 1mm;">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{opdReportController.hospitalDoctorFeeBundle.grandTotal}" style="margin-right: 1mm;">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+
+                                    </table>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
                 </h:form>
             </ui:define>
         </ui:composition>
+
     </h:body>
 </html>

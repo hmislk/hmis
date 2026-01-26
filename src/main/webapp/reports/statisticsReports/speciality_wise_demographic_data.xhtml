@@ -481,7 +481,10 @@
                                     </p:columnGroup>
 
                                     <p:column><h:outputText value="#{n+1}"/></p:column>
-                                    <p:column><h:outputText value="#{var.doctorName}" /></p:column>
+                                    <p:column>
+                                        <h:outputText value="#{var.doctorTitle.label}" />
+                                        <h:outputText value="#{var.doctorName}" />
+                                    </p:column>
                                     <p:column><h:outputText value="#{var.specialityName}" /></p:column>
                                     <p:column><h:outputText value="#{var.totalCount}" /></p:column>
                                     <p:column><h:outputText value="#{var.maleCount}" /></p:column>
