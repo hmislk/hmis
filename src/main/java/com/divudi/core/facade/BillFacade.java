@@ -304,7 +304,7 @@ public class BillFacade extends AbstractFacade<Bill> {
             // ============================================================
             String updatePbiNegativeSql =
                 "UPDATE " + pbiTable + " pbi " +
-                "JOIN " + billItemTable + " bi ON bi.PHARMACEUTICALBILLITEM_ID = pbi.ID " +
+                "JOIN " + billItemTable + " bi ON pbi.BILLITEM_ID = bi.ID " +
                 "JOIN " + billTable + " b ON bi.BILL_ID = b.ID " +
                 "SET " +
                 "  pbi.PURCHASEVALUE = -ABS(pbi.PURCHASEVALUE), " +
@@ -331,7 +331,7 @@ public class BillFacade extends AbstractFacade<Bill> {
             // ============================================================
             String updatePbiPositiveSql =
                 "UPDATE " + pbiTable + " pbi " +
-                "JOIN " + billItemTable + " bi ON bi.PHARMACEUTICALBILLITEM_ID = pbi.ID " +
+                "JOIN " + billItemTable + " bi ON pbi.BILLITEM_ID = bi.ID " +
                 "JOIN " + billTable + " b ON bi.BILL_ID = b.ID " +
                 "SET " +
                 "  pbi.PURCHASEVALUE = ABS(pbi.PURCHASEVALUE), " +
