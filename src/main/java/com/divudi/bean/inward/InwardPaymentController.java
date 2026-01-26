@@ -8,10 +8,10 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
-import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PatientDepositController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
@@ -31,13 +31,13 @@ import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.PatientEncounter;
-import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.Person;
-import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.BilledBillFacade;
+import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -60,6 +60,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
 
     private static final long serialVersionUID = 1L;
 
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -72,7 +73,13 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     PaymentService paymentService;
     @EJB
     CashTransactionBean cashTransactionBean;
-
+    @EJB
+    PatientDepositService patientDepositService;
+    @EJB
+    PatientFacade patientFacade;
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private InwardBeanController inwardBean;
     @Inject
@@ -85,7 +92,9 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private PaymentSchemeController paymentSchemeController;
-
+    // </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="Variables">
     private BilledBill current;
     private boolean printPreview;
     private double due;
@@ -95,12 +104,13 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     private double remainAmount;
     private double total;
     private Patient patient;
+    private PaymentMethodData paymentMethodData;
+    
+    // </editor-fold>
 
     public PaymentMethod[] getPaymentMethods() {
         return PaymentMethod.values();
     }
-
-    private PaymentMethodData paymentMethodData;
 
     public void bhtListener() {
         if (current.getPatientEncounter() == null) {
@@ -108,6 +118,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             return;
         }
         due = getFinalBillDue();
+        patient = current.getPatientEncounter().getPatient();
+        paymentMethod = null;
         paymentMethodData = new PaymentMethodData();
 
     }
@@ -155,32 +167,350 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             return true;
         }
 
-        if (getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Select Payment Method");
+        if (paymentMethod == null) {
+            JsfUtil.addErrorMessage("Please Select a Payment Method");
             return true;
         }
 
-        if (getPaymentMethod() == PaymentMethod.Cash && getTotal() == 0.0) {
-            JsfUtil.addErrorMessage("Please enter paying amount");
+        if (checkErrorsInPaymentMethod(paymentMethod, paymentMethodData)) {
             return true;
         }
-        if (getPaymentSchemeController().checkPaymentMethodError(getPaymentMethod(), paymentMethodData)) {
-            return true;
-        }
-
-//        if (due != 0) {
-//
-//            if ((due < getCurrent().getTotal())) {
-//                double different = Math.abs((due - getCurrent().getTotal()));
-//
-//                if (different > 0.1) {
-//                    JsfUtil.addErrorMessage("U cant recieve payment thenn due");
-//                    return true;
-//                }
-//            }
-//        }
+        
         return false;
 
+    }
+    
+    private boolean checkErrorsInPaymentMethod(PaymentMethod method, PaymentMethodData methodData) {
+        if (method == null) {
+            JsfUtil.addErrorMessage("Please Select a Payment Method");
+            return true;
+        }
+        double amountToCheck = 0.0;
+
+        if (method == PaymentMethod.Cash) {
+            amountToCheck = getCurrent().getTotal();
+            if (amountToCheck <= 0.0) {
+                JsfUtil.addErrorMessage("Please enter a payment amount");
+                return true;
+            }
+        } else {
+            if (methodData == null) {
+                JsfUtil.addErrorMessage("Error in Payment Data.");
+                return true;
+            }
+
+            switch (method) {
+                case Card:
+                    if (methodData.getCreditCard() == null) {
+                        JsfUtil.addErrorMessage("Error in card payment Details");
+                        return true;
+                    } else {
+                        if (methodData.getCreditCard().getTotalValue() <= 0.0) {
+                            JsfUtil.addErrorMessage("Please enter the card payment amount");
+                            return true;
+                        }
+                        if (methodData.getCreditCard().getInstitution() == null || methodData.getCreditCard().getNo() == null) {
+                            JsfUtil.addErrorMessage("Please Fill Credit Card Number and Bank.");
+                            return true;
+                        }
+                        amountToCheck = methodData.getCreditCard().getTotalValue();
+                    }
+                    break;
+
+                case Cheque:
+                    if (methodData.getCheque() == null) {
+                        JsfUtil.addErrorMessage("Error in Cheque payment Details");
+                        return true;
+                    } else {
+                        if (methodData.getCheque().getTotalValue() <= 0.0) {
+                            JsfUtil.addErrorMessage("Please enter the cheque payment amount");
+                            return true;
+                        }
+                        if (methodData.getCheque().getInstitution() == null || methodData.getCheque().getNo() == null || methodData.getCheque().getDate() == null) {
+                            JsfUtil.addErrorMessage("Please select Cheque Number, Bank and Cheque Date.");
+                            return true;
+                        }
+                        amountToCheck = methodData.getCheque().getTotalValue();
+                    }
+                    break;
+
+                case Slip:
+                    if (methodData.getSlip() == null) {
+                        JsfUtil.addErrorMessage("Error in Slip payment Details");
+                        return true;
+                    } else {
+                        if (methodData.getSlip().getTotalValue() <= 0.0) {
+                            JsfUtil.addErrorMessage("Please enter the slip payment details");
+                            return true;
+                        }
+                        if (methodData.getSlip().getInstitution() == null || methodData.getSlip().getDate() == null) {
+                            JsfUtil.addErrorMessage("Please Fill Bank and Slip Date.");
+                            return true;
+                        }
+                        amountToCheck = methodData.getSlip().getTotalValue();
+                    }
+                    break;
+
+                case ewallet:
+                    if (methodData.getEwallet() == null) {
+                        JsfUtil.addErrorMessage("Error in eWallet payment Details");
+                        return true;
+                    } else {
+                        if (methodData.getEwallet().getTotalValue() <= 0.0) {
+                            JsfUtil.addErrorMessage("Please enter the eWallet payment Amount");
+                            return true;
+                        }
+                        if (methodData.getEwallet().getInstitution() == null || ((methodData.getEwallet().getReferenceNo() == null || methodData.getEwallet().getReferenceNo().trim().isEmpty()) && (methodData.getEwallet().getNo() == null || methodData.getEwallet().getNo().trim().isEmpty()))) {
+                            JsfUtil.addErrorMessage("Please Fill eWallet Reference Number and Bank.");
+                            return true;
+                        }
+                        amountToCheck = methodData.getEwallet().getTotalValue();
+                    }
+                    break;
+
+                case PatientDeposit:
+                    if (methodData.getPatient_deposit() == null) {
+                        JsfUtil.addErrorMessage("Error in Patient Deposit Details");
+                        return true;
+                    } else {
+                        double creditLimitAbsolute = Math.abs(patient.getCreditLimit());
+                        PatientDeposit pd = methodData.getPatient_deposit().getPatientDepost();
+
+                        double availableForPurchase = pd.getBalance() + creditLimitAbsolute;
+                        double payhingThisTimeValue;
+
+                        if (methodData.getPatient_deposit().getTotalValue() <= 0.0) {
+                            JsfUtil.addErrorMessage("Please enter the Patient Deposit payment Amount");
+                            return true;
+                        } else {
+                            payhingThisTimeValue = methodData.getPatient_deposit().getTotalValue();
+                            if (payhingThisTimeValue > availableForPurchase) {
+                                JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                                return true;
+                            }
+                            amountToCheck = methodData.getPatient_deposit().getTotalValue();
+                        }
+                    }
+                    break;
+
+                case OnlineSettlement:
+                    if (methodData.getOnlineSettlement() == null) {
+                        JsfUtil.addErrorMessage("Error in Online Settlement Details");
+                        return true;
+                    } else {
+                        if (methodData.getOnlineSettlement().getTotalValue() <= 0.0) {
+                            JsfUtil.addErrorMessage("Please enter the Online Settlement payment Amount");
+                            return true;
+                        }
+                        if (methodData.getOnlineSettlement().getInstitution() == null || methodData.getOnlineSettlement().getReferenceNo() == null || methodData.getOnlineSettlement().getReferenceNo().trim().isEmpty() || methodData.getOnlineSettlement().getDate() == null) {
+                            JsfUtil.addErrorMessage("Please Fill Online Settlement Reference Number, Date and Bank.");
+                            return true;
+                        }
+                        amountToCheck = methodData.getOnlineSettlement().getTotalValue();
+                    }
+                    break;
+
+                case MultiplePaymentMethods:
+                    if (methodData.getPaymentMethodMultiple() == null || methodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null || methodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+                        JsfUtil.addErrorMessage("Please configure payment amounts");
+                        return true;
+                    }
+
+                    List<ComponentDetail> paymentDetailsList = methodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+
+                    if (paymentDetailsList.isEmpty()) {
+                        JsfUtil.addErrorMessage("Please select the first payment method.");
+                        return true;
+                    }
+
+                    if (paymentDetailsList.size() == 1) {
+                        JsfUtil.addErrorMessage("You can't use only one payment method.");
+                        return true;
+                    }
+
+                    // Calculate total from all components
+                    double multipleTotal = 0.0;
+                    int componentCount = 0;
+                    for (ComponentDetail cd : paymentDetailsList) {
+                        componentCount++;
+                        if (cd != null && cd.getPaymentMethodData() != null) {
+                            // Check based on payment method type in the component
+                            Double checkAmount = 0.0;
+                            switch (cd.getPaymentMethod()) {
+                                case Cash:
+                                    if (cd.getPaymentMethodData().getCash() == null) {
+                                        JsfUtil.addErrorMessage("Please enter the amount to be paid from Cash.");
+                                        return true;
+                                    } else {
+                                        checkAmount = cd.getPaymentMethodData().getCash().getTotalValue();
+
+                                        if (checkAmount <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter a cash amount");
+                                            return true;
+                                        }
+                                        multipleTotal += checkAmount;
+                                    }
+                                    break;
+
+                                case Card:
+                                    if (cd.getPaymentMethodData().getCreditCard() == null) {
+                                        JsfUtil.addErrorMessage("Error in card payment Details");
+                                        return true;
+                                    } else {
+                                        checkAmount = cd.getPaymentMethodData().getCreditCard().getTotalValue();
+
+                                        if (checkAmount <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter the amount to be paid from Card.");
+                                            return true;
+                                        }
+                                        if (cd.getPaymentMethodData().getCreditCard().getTotalValue() <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter card payment amount");
+                                            return true;
+                                        }
+                                        if (cd.getPaymentMethodData().getCreditCard().getInstitution() == null || cd.getPaymentMethodData().getCreditCard().getNo() == null) {
+                                            JsfUtil.addErrorMessage("Please Fill Credit Card Number and Bank.");
+                                            return true;
+                                        }
+                                        multipleTotal += checkAmount;
+                                    }
+                                    break;
+
+                                case Cheque:
+                                    if (cd.getPaymentMethodData().getCheque() == null) {
+                                        JsfUtil.addErrorMessage("Error in Cheque payment Details");
+                                        return true;
+                                    } else {
+                                        checkAmount = cd.getPaymentMethodData().getCheque().getTotalValue();
+
+                                        if (checkAmount <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter the amount to be paid from Cheque.");
+                                            return true;
+                                        }
+                                        if (cd.getPaymentMethodData().getCheque().getInstitution() == null || cd.getPaymentMethodData().getCheque().getNo() == null || cd.getPaymentMethodData().getCheque().getDate() == null) {
+                                            JsfUtil.addErrorMessage("Please select Cheque Number, Bank and Cheque Date.");
+                                            return true;
+                                        }
+
+                                        multipleTotal += checkAmount;
+                                    }
+                                    break;
+
+                                case Slip:
+                                    if (cd.getPaymentMethodData().getSlip() == null) {
+                                        JsfUtil.addErrorMessage("Error in Slip payment Details");
+                                        return true;
+                                    } else {
+                                        checkAmount = cd.getPaymentMethodData().getSlip().getTotalValue();
+
+                                        if (checkAmount <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter the amount to be paid from Back Slip.");
+                                            return true;
+                                        }
+                                        if (cd.getPaymentMethodData().getSlip().getInstitution() == null || cd.getPaymentMethodData().getSlip().getDate() == null) {
+                                            JsfUtil.addErrorMessage("Please Fill Bank and Slip Date.");
+                                            return true;
+                                        }
+                                        multipleTotal += checkAmount;
+                                    }
+                                    break;
+                                case OnlineSettlement:
+                                    if (cd.getPaymentMethodData().getOnlineSettlement() == null) {
+                                        JsfUtil.addErrorMessage("Error in Online Settlement Details");
+                                        return true;
+                                    } else {
+                                        checkAmount = cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+
+                                        if (checkAmount <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter the amount to be paid from Online Settlement.");
+                                            return true;
+                                        }
+                                        if (cd.getPaymentMethodData().getOnlineSettlement().getInstitution() == null || cd.getPaymentMethodData().getOnlineSettlement().getReferenceNo() == null || cd.getPaymentMethodData().getOnlineSettlement().getReferenceNo().trim().isEmpty() || cd.getPaymentMethodData().getOnlineSettlement().getDate() == null) {
+                                            JsfUtil.addErrorMessage("Please Fill Online Settlement Reference Number, Date and Bank.");
+                                            return true;
+                                        }
+                                        multipleTotal += checkAmount;
+                                    }
+                                    break;
+                                case Staff_Welfare:
+                                    if (cd.getPaymentMethodData().getStaffWelfare() == null) {
+                                        JsfUtil.addErrorMessage("Error in Staff Welfare Details");
+                                        return true;
+                                    } else {
+                                        checkAmount = cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+
+                                        if (checkAmount <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter the amount to be paid from Staff Welfare.");
+                                            return true;
+                                        }
+                                        if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() == null) {
+                                            JsfUtil.addErrorMessage("Please Fill Welfare Staff Name");
+                                            return true;
+                                        }
+                                        multipleTotal += checkAmount;
+                                    }
+                                    break;
+
+                                case ewallet:
+                                    if (cd.getPaymentMethodData().getEwallet() == null) {
+                                        JsfUtil.addErrorMessage("Error in eWallet payment Details");
+                                        return true;
+                                    } else {
+                                        checkAmount = cd.getPaymentMethodData().getEwallet().getTotalValue();
+
+                                        if (checkAmount <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter the amount to be paid from eWallet.");
+                                            return true;
+                                        }
+                                        if (cd.getPaymentMethodData().getEwallet().getInstitution() == null || ((cd.getPaymentMethodData().getEwallet().getReferenceNo() == null || cd.getPaymentMethodData().getEwallet().getReferenceNo().trim().isEmpty()) && (cd.getPaymentMethodData().getEwallet().getNo() == null || cd.getPaymentMethodData().getEwallet().getNo().trim().isEmpty()))) {
+                                            JsfUtil.addErrorMessage("Please Fill eWallet Reference Number and Bank.");
+                                            return true;
+                                        }
+                                        multipleTotal += checkAmount;
+                                    }
+                                    break;
+                                case PatientDeposit:
+                                    if (cd.getPaymentMethodData().getPatient_deposit() == null) {
+                                        JsfUtil.addErrorMessage("Error in Patient Deposit Details");
+                                        return true;
+                                    } else {
+                                        double currentPatientCreditLimitAbsolute = Math.abs(patient.getCreditLimit());
+                                        PatientDeposit currentPatientDeposit = cd.getPaymentMethodData().getPatient_deposit().getPatientDepost();
+
+                                        double maximumAmount = currentPatientDeposit.getBalance() + currentPatientCreditLimitAbsolute;
+                                        double payhingThisTimeAmount = cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+
+                                        if (payhingThisTimeAmount <= 0.0) {
+                                            JsfUtil.addErrorMessage("Please enter the amount to be paid from Patient Deposit.");
+                                            return true;
+                                        }
+                                        if (payhingThisTimeAmount > maximumAmount) {
+                                            JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                                            return true;
+                                        }
+                                        multipleTotal += payhingThisTimeAmount;
+                                    }
+                                    break;
+                                default:
+                                    System.out.println("[DEBUG] Processing default/unknown payment method: " + method);
+                            }
+                        }
+                    }
+
+                    if (multipleTotal <= 0.0) {
+                        JsfUtil.addErrorMessage("Please enter valid payment amounts");
+                        return true;
+                    }
+                    amountToCheck = multipleTotal;
+                    break;
+                default:
+                    System.out.println("[DEBUG] Processing default/unknown payment method: " + method);
+            }
+        }
+
+        getCurrent().setTotal(amountToCheck);
+        getCurrent().setNetTotal(amountToCheck);
+
+        return false;
     }
 
     public CashTransactionBean getCashTransactionBean() {
@@ -192,9 +522,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     }
 
     public String fillDataForInpatientsDepositBill(String template, Bill bill) {
-        //System.out.println("fillDataForInpatientsDepositBill");
         if (isInvalidInwardDepositBill(template, bill)) {
-            //System.out.println("Not Valid = " + bill);
             return "";
         }
 
@@ -278,7 +606,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 || bill.getPatientEncounter().getPatient() == null
                 || bill.getPatientEncounter().getPatient().getPerson() == null;
     }
-
+    
     public void pay() {
         if (errorCheck()) {
             return;
@@ -296,8 +624,13 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         saveBill();
         saveBillItem();
 
-        List<Payment> payments = paymentService.createPayment(current, paymentMethodData);
-        paymentService.updateBalances(payments);
+        paymentService.createPayment(
+                current,
+                current.getPaymentMethod(), 
+                paymentMethodData, 
+                sessionController.getInstitution(), 
+                sessionController.getDepartment(),
+                sessionController.getLoggedUser());
 
         getBillBean().updateInwardDipositList(getCurrent().getPatientEncounter(), getCurrent());
 
@@ -308,10 +641,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 getInwardBean().updateCreditDetail(getCurrent().getPatientEncounter(), getCurrent().getPatientEncounter().getFinalBill().getNetTotal());
             }
         }
-
-        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
-        getSessionController().setLoggedUser(wb);
         JsfUtil.addSuccessMessage("Payment Bill Saved");
+        paymentMethod = null;
         printPreview = true;
     }
 
@@ -335,7 +666,51 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
 
         return curr;
     }
+    
+    public void updatePaymentData() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No current bill available");
+            return;
+        }
+       
+        PaymentMethod pm = getPaymentMethod();
+        
+        if (pm != null) {
+            if (pm == PaymentMethod.PatientDeposit) {
 
+                if (patient == null) {
+                    JsfUtil.addErrorMessage("No Patient is selected. Can't proceed with Patient Deposits");
+                    return;
+                }
+                if (patient.getId() == null) {
+                    JsfUtil.addErrorMessage("No Patient is selected. Can't proceed with Patient Deposits");
+                    return ;
+                    
+                } else {
+                    patient = patientFacade.find(patient.getId());
+
+                    if (patient == null) {
+                        JsfUtil.addErrorMessage("Patient not found in system");
+                        return;
+                    }
+
+                    if (paymentMethodData == null) {
+                        paymentMethodData = new PaymentMethodData();
+                    }
+
+                    paymentMethodData.getPatient_deposit().setPatient(patient);
+                    if (!patient.getHasAnAccount()) {
+                        JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
+                        return;
+                    }
+                    PatientDeposit pd = patientDepositService.getDepositOfThePatient(patient, sessionController.getDepartment());
+                    paymentMethodData.getPatient_deposit().setPatientDepost(pd);
+                }
+            }
+        }
+    }
+
+    
     public void changePaymentMethodChange() {
         if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().clear();
@@ -410,8 +785,6 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     }
 
     private void saveBill() {
-        getBillBean().setPaymentMethodData(getCurrent(), getPaymentMethod(), getPaymentMethodData());
-
         getCurrent().setInstitution(getSessionController().getInstitution());
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setBillType(BillType.InwardPaymentBill);
@@ -419,14 +792,9 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         getCurrent().setPaymentMethod(paymentMethod);
         getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
         getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
-
-//        getCurrent().setForwardReferenceBill(getCurrent().getPatientEncounter().getFinalBill());
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());
 
-        double dbl = Math.abs(getTotal());
-        getCurrent().setTotal(dbl);
-        getCurrent().setNetTotal(dbl);
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
         getCurrent().setComments(comment);
@@ -453,16 +821,14 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
 
     @Override
     public double calculatRemainForMultiplePaymentTotal() {
-
-        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
-            double multiplePaymentMethodTotalValue = 0.0;
+        double multiplePaymentMethodTotalValue = 0.0;
+        if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
 
             if (paymentMethodData != null && paymentMethodData.getPaymentMethodMultiple() != null && paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null) {
                 for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                     if (cd == null || cd.getPaymentMethodData() == null) {
                         continue;
                     }
-
                     multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
                     multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
                     multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
@@ -474,17 +840,18 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                     multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
                 }
             }
-            total = multiplePaymentMethodTotalValue;
-            return total;
+            getCurrent().setTotal(multiplePaymentMethodTotalValue);
+            getCurrent().setNetTotal(multiplePaymentMethodTotalValue);
+
         }
-        return total;
+        return multiplePaymentMethodTotalValue;
     }
 
     @Override
     public void recieveRemainAmountAutomatically() {
         calculatRemainForMultiplePaymentTotal();
-        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
-            // Guard against empty component list
+        if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+
             if (paymentMethodData == null
                     || paymentMethodData.getPaymentMethodMultiple() == null
                     || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null
@@ -494,6 +861,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
 
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
             ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+
             switch (pm.getPaymentMethod()) {
                 case Cash:
                     // Only set if user hasn't already entered a value
@@ -526,62 +894,49 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                     }
                     break;
                 case PatientDeposit:
-                    Patient p = (getCurrent() != null && getCurrent().getPatientEncounter() != null) ? getCurrent().getPatientEncounter().getPatient() : null;
+                    Patient p = patientFacade.find(patient.getId());
 
                     if (p == null) {
                         break;
                     } else {
                         pm.getPaymentMethodData().getPatient_deposit().setPatient(p);
-                        PatientDeposit pd = patientDepositController.checkDepositOfThePatient(p, sessionController.getDepartment());
+                        PatientDeposit pd = patientDepositService.getDepositOfThePatient(p, sessionController.getDepartment());
 
                         if (pd != null) {
                             pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
-
-                            // Only set if user hasn't already entered a value
-                            if (pm.getPaymentMethodData().getPatient_deposit().getTotalValue() == 0.0) {
-                                if (remainAmount >= pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance()) {
-                                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance());
-                                } else {
-                                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
-                                }
-                            }
+                            pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
                         }
-
                     }
-
                     break;
                 case Credit:
                     // Only set if user hasn't already entered a value
                     if (pm.getPaymentMethodData().getCredit().getTotalValue() == 0.0) {
-                        pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+                        pm.getPaymentMethodData().getCredit().setTotalValue(0.0);
                     }
                     break;
                 case Staff:
                     // Only set if user hasn't already entered a value
                     if (pm.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0) {
-                        pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+                        pm.getPaymentMethodData().getStaffCredit().setTotalValue(0.0);
                     }
                     break;
                 case Staff_Welfare:
                     // Only set if user hasn't already entered a value
                     if (pm.getPaymentMethodData().getStaffWelfare().getTotalValue() == 0.0) {
-                        pm.getPaymentMethodData().getStaffWelfare().setTotalValue(remainAmount);
+                        pm.getPaymentMethodData().getStaffWelfare().setTotalValue(0.0);
                     }
                     break;
                 case OnlineSettlement:
                     // Only set if user hasn't already entered a value
                     if (pm.getPaymentMethodData().getOnlineSettlement().getTotalValue() == 0.0) {
-                        pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
+                        pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(0.0);
                     }
                     break;
                 default:
                     throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());
             }
-
         }
-
         listnerForPaymentMethodChange();
-
     }
 
     @Override

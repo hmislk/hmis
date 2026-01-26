@@ -347,32 +347,6 @@ public class InwardReportController implements Serializable {
     }
     
     public void processSpecialtyDoctorWiseIncomeReport() {
-        if (byDoctor) {
-            processDoctorWiseIncomeReport();
-        } else {
-            processSpecialtyWiseIncomeReport();
-        }
-    }
-
-    public void calculateTotalValuesSpcDocIncome(Map<Long, InwardIncomeDoctorSpecialtyDTO> m) {
-        Double docChargeTotal = 0.0;
-        Double hospitalChargeTotal = 0.0;
-        Double totalCharge = 0.0;
-
-        for (Map.Entry<Long, InwardIncomeDoctorSpecialtyDTO> entry : m.entrySet()) {
-            getSpcDocIncomeBillList().add(entry.getValue());
-            docChargeTotal += entry.getValue().getDocFee();
-            hospitalChargeTotal += entry.getValue().getHosFee();
-            totalCharge += entry.getValue().getBillTotal();
-        }
-
-        totalValuesSpcDocIncome = new InwardIncomeDoctorSpecialtyDTO();
-        totalValuesSpcDocIncome.setDocFeeTotal(docChargeTotal);
-        totalValuesSpcDocIncome.setHosFeeTotal(hospitalChargeTotal);
-        totalValuesSpcDocIncome.setTotalCharge(totalCharge);
-    }
-    
-    public void processSpecialtyWiseIncomeReport() {
         spcDocIncomeBillList = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
@@ -382,23 +356,36 @@ public class InwardReportController implements Serializable {
         btas.add(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
-
-        jpql.append(" Select new com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO(")
-                .append(" bf.staff.speciality.id, ")
+        
+        if (byDoctor) {
+            jpql.append(" Select new com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO(")
+                .append(" bf.staff.id, ")
+                .append(" bf.staff.person.title,")
                 .append(" coalesce(bf.staff.person.name, 'N/A'), ")
                 .append(" coalesce(bf.staff.speciality.name, 'N/A'), ")
                 .append(" coalesce(bf.feeValue, 0.0), ")
                 .append(" coalesce(bf.billItem.hospitalFee, 0.0), ")
                 .append(" bf.bill.id, ")
                 .append(" bf.bill.netTotal ")
-                .append(") ")
-                .append(" from BillFee bf")
-                .append(" Where bf.retired = false ")
-                .append(" And bf.bill.retired=false ")
-                .append(" And bf.billItem.retired=false ")
-                .append(" And bf.bill.billTypeAtomic in :btas ")
-                .append(" And (type(bf.staff) = :doctorClass OR type(bf.staff) = :consultantClass) ")
-                .append(" AND bf.bill.createdAt BETWEEN :fromDate AND :toDate ");
+                .append(") ");
+        } else {
+            jpql.append(" Select new com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO(")
+                .append(" bf.staff.speciality.id, ")
+                .append(" coalesce(bf.staff.speciality.name, 'N/A'), ")
+                .append(" coalesce(bf.feeValue, 0.0), ")
+                .append(" coalesce(bf.billItem.hospitalFee, 0.0), ")
+                .append(" bf.bill.id, ")
+                .append(" bf.bill.netTotal ")
+                .append(") ");
+        }
+        
+        jpql.append(" from BillFee bf")
+            .append(" Where bf.retired = false ")
+            .append(" And bf.bill.retired=false ")
+            .append(" And bf.billItem.retired=false ")
+            .append(" And bf.bill.billTypeAtomic in :btas ")
+            .append(" And (type(bf.staff) = :doctorClass OR type(bf.staff) = :consultantClass) ")
+            .append(" AND bf.bill.createdAt BETWEEN :fromDate AND :toDate ");
 
         params.put("btas", btas);
         params.put("fromDate", fromYearStartDate);
@@ -419,6 +406,39 @@ public class InwardReportController implements Serializable {
         jpql.append(" ORDER BY bf.staff.speciality.name, bf.staff.person.name ");
         
         List<InwardIncomeDoctorSpecialtyDTO> rawList = (List<InwardIncomeDoctorSpecialtyDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        
+        if (byDoctor) {
+            processDoctorWiseIncomeReport(rawList);
+        } else {
+            processSpecialtyWiseIncomeReport(rawList);
+        }
+    }
+
+    public void calculateTotalValuesSpcDocIncome(Map<Long, InwardIncomeDoctorSpecialtyDTO> m) {
+        Double docChargeTotal = 0.0;
+        Double hospitalChargeTotal = 0.0;
+        Double totalCharge = 0.0;
+
+        for (Map.Entry<Long, InwardIncomeDoctorSpecialtyDTO> entry : m.entrySet()) {
+            if (entry.getValue().getBillTotal() == 0.0) {
+                continue;
+            }
+            getSpcDocIncomeBillList().add(entry.getValue());
+            docChargeTotal += entry.getValue().getDocFee();
+            hospitalChargeTotal += entry.getValue().getHosFee();
+            totalCharge += entry.getValue().getBillTotal();
+        }
+
+        totalValuesSpcDocIncome = new InwardIncomeDoctorSpecialtyDTO();
+        totalValuesSpcDocIncome.setDocFeeTotal(docChargeTotal);
+        totalValuesSpcDocIncome.setHosFeeTotal(hospitalChargeTotal);
+        totalValuesSpcDocIncome.setTotalCharge(totalCharge);
+    }
+    
+    public void processSpecialtyWiseIncomeReport(List<InwardIncomeDoctorSpecialtyDTO> rawList) {
+        if (rawList == null || rawList.isEmpty()) {
+            return;
+        }
         
         Map<Long, InwardIncomeDoctorSpecialtyDTO> specialtyMap = new LinkedHashMap<>();
         Map<Long, Set<Long>> spacialtyBill = new LinkedHashMap<>();
@@ -451,53 +471,10 @@ public class InwardReportController implements Serializable {
 
     }
     
-    public void processDoctorWiseIncomeReport() {
-        spcDocIncomeBillList = new ArrayList<>();
-        Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder();
-        
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL);
-        btas.add(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
-        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-        btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
-
-        jpql.append(" Select new com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO(")
-                .append(" bf.staff.id, ")
-                .append(" coalesce(bf.staff.person.name, 'N/A'), ")
-                .append(" coalesce(bf.staff.speciality.name, 'N/A'), ")
-                .append(" coalesce(bf.feeValue, 0.0), ")
-                .append(" coalesce(bf.billItem.hospitalFee, 0.0), ")
-                .append(" bf.bill.id, ")
-                .append(" bf.bill.netTotal ")
-                .append(") ")
-                .append(" from BillFee bf")
-                .append(" Where bf.retired = false ")
-                .append(" And bf.bill.retired=false ")
-                .append(" And bf.billItem.retired=false ")
-                .append(" And bf.bill.billTypeAtomic in :btas ")
-                .append(" And (type(bf.staff) = :doctorClass OR type(bf.staff) = :consultantClass) ")
-                .append(" AND bf.bill.createdAt BETWEEN :fromDate AND :toDate ");
-
-        params.put("btas", btas);
-        params.put("fromDate", fromYearStartDate);
-        params.put("toDate", toYearEndDate);
-        params.put("doctorClass", Doctor.class);
-        params.put("consultantClass", Consultant.class);
-
-        if (currentSpeciality != null) {
-            jpql.append(" AND bf.staff.speciality = :spe ");
-            params.put("spe", currentSpeciality);
-        }
-        
-        if (currentDoctor != null) {
-            jpql.append(" and bf.staff.id=:staffid ");
-            params.put("staffid", currentDoctor.getId());
-        }
-
-        jpql.append(" ORDER BY bf.staff.speciality.name, bf.staff.person.name ");
-        
-        List<InwardIncomeDoctorSpecialtyDTO> rawList = (List<InwardIncomeDoctorSpecialtyDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+    public void processDoctorWiseIncomeReport(List<InwardIncomeDoctorSpecialtyDTO> rawList) {
+        if (rawList == null || rawList.isEmpty()) {
+            return;
+        }     
         
         Map<Long, InwardIncomeDoctorSpecialtyDTO> doctorMap = new LinkedHashMap<>();
         Map<Long, Set<Long>> doctorBill = new LinkedHashMap<>();
@@ -511,6 +488,7 @@ public class InwardReportController implements Serializable {
             InwardIncomeDoctorSpecialtyDTO currentDoc = doctorMap.computeIfAbsent(sId, k -> {
                 InwardIncomeDoctorSpecialtyDTO doc = new InwardIncomeDoctorSpecialtyDTO();
                 doc.setStaffId(dto.getStaffId());
+                doc.setDoctorTitle(dto.getDoctorTitle());
                 doc.setDoctorName(dto.getDoctorName());
                 doc.setSpecialtyName(dto.getSpecialtyName());
                 
@@ -533,11 +511,13 @@ public class InwardReportController implements Serializable {
     public void processSpecialtyDoctorDemographicDataReport() {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
+        demographicDataList = null;
         
         if (byDoctor) {
             jpql.append(" Select new com.divudi.core.data.dto.InwardAdmissionDemographicDataDTO(")
                 .append(" rc.id, ")
-                .append(" coalesce(rcp.name, 'N/A'),")
+                .append(" rcp.title, ")
+                .append(" coalesce(rcp.name, 'N/A'), ")
                 .append(" coalesce(rcs.name, 'N/A'), ")
                 .append(" pp.dob, ")
                 .append(" pp.sex ")
@@ -600,7 +580,7 @@ public class InwardReportController implements Serializable {
     }
 
     public void processDemographicDataSpecialtyWiseReport(List<InwardAdmissionDemographicDataDTO> rawList) {
-        if (rawList == null) {
+        if (rawList == null || rawList.isEmpty()) {
             return;
         }
         
@@ -612,7 +592,7 @@ public class InwardReportController implements Serializable {
             }
             
             InwardAdmissionDemographicDataDTO currentSpc = specialtyList.computeIfAbsent(dto.getId(), k -> {
-                    InwardAdmissionDemographicDataDTO newDto = new InwardAdmissionDemographicDataDTO(dto.getSpecialityName(), null);
+                    InwardAdmissionDemographicDataDTO newDto = new InwardAdmissionDemographicDataDTO(dto.getSpecialityName(), null, null);
                     return newDto;
                 }
             );
@@ -630,7 +610,7 @@ public class InwardReportController implements Serializable {
     }
     
     public void processDemographicDataDoctorWiseReport(List<InwardAdmissionDemographicDataDTO> rawList) {
-        if (rawList == null) {
+        if (rawList == null || rawList.isEmpty()) {
             return;
         }
         
@@ -642,7 +622,7 @@ public class InwardReportController implements Serializable {
             }
             
             InwardAdmissionDemographicDataDTO currentSpc = doctorList.computeIfAbsent(dto.getId(), k -> {
-                    InwardAdmissionDemographicDataDTO newDto = new InwardAdmissionDemographicDataDTO(dto.getSpecialityName(), dto.getDoctorName());
+                    InwardAdmissionDemographicDataDTO newDto = new InwardAdmissionDemographicDataDTO(dto.getSpecialityName(), dto.getDoctorTitle(), dto.getDoctorName());
                     return newDto;
                 }
             );

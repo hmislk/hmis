@@ -1043,133 +1043,38 @@ public class IncomeBundle implements Serializable {
         populateSummaryRow();
     }
     
-    public void generatePaymentDetailsForOpdRevenue(String select) {
-        Map<Object, IncomeRow> grouped = new LinkedHashMap<>();
-        
-        if (select.equals("Department Wise")) {
-            for (IncomeRow r : getRows()) {
-                Bill b = r.getBill();
-
-                if (b == null || b.getToDepartment() == null) {
-                    continue;
-                }
-
-                r.setGrossTotal(b.getTotal());
-                r.setNetTotal(b.getNetTotal());
-
-                DepartmentType st = b.getToDepartment().getDepartmentType();
-                String dept;
-                
-                if (st == null) {
-                    dept = b.getToDepartment().getName();
-                } else {
-                    dept = st.toString();
-                }
-                
-                IncomeRow groupRow = grouped.computeIfAbsent(dept, k -> {
-                    IncomeRow ir = new IncomeRow();
-                    ir.setDepartment(b.getToDepartment());
-                    ir.setRowType(k.toString());
-                    return ir;
-                });
-
-                groupRow.setNetTotal(groupRow.getNetTotal() + r.getNetTotal());
-                groupRow.setGrossTotal(groupRow.getGrossTotal() + r.getGrossTotal());
-
-            }
-            getRows().clear();
-            grouped.values().stream()
-                .sorted(Comparator.comparing(IncomeRow::getRowType, 
-                        Comparator.nullsLast(Comparator.naturalOrder())))
-                .forEachOrdered(getRows()::add);
-        } else if (select.equals("Institution Wise")) {
-            for (IncomeRow r : getRows()) {
-                Bill b = r.getBill();
-
-                if (b == null || b.getInstitution()== null) {
-                    continue;
-                }
-
-                r.setGrossTotal(b.getTotal());
-                r.setNetTotal(b.getNetTotal());
-
-                Institution inst = b.getInstitution();
-                IncomeRow groupRow = grouped.computeIfAbsent(inst, k -> {
-                    IncomeRow ir = new IncomeRow();
-                    ir.setInstitution((Institution)k);
-                    ir.setRowType(((Institution)k).getName());
-                    return ir;
-                });
-
-                groupRow.setNetTotal(groupRow.getNetTotal() + r.getNetTotal());
-                groupRow.setGrossTotal(groupRow.getGrossTotal() + r.getGrossTotal());
-
-            }
-            getRows().clear();
-            grouped.values().stream()
-                .sorted(Comparator.comparing(IncomeRow::getInstitution, 
-                        Comparator.nullsLast(Comparator.comparing(Institution::getName))))
-                .forEachOrdered(getRows()::add);
-        } else if (select.equals("Site Wise")) {
-            for (IncomeRow r : getRows()) {
-                Bill b = r.getBill();
-
-                if (b == null || b.getToDepartment() == null) {
-                    continue;
-                }
-
-                r.setGrossTotal(b.getTotal());
-                r.setNetTotal(b.getNetTotal());
-
-                Institution site = b.getToDepartment().getSite();
-                if (site == null) {
-                    continue;
-                }
-                IncomeRow groupRow = grouped.computeIfAbsent(site, k -> {
-                    IncomeRow ir = new IncomeRow();
-                    ir.setSite((Institution)k);
-                    ir.setRowType(((Institution)k).getName());
-                    return ir;
-                });
-
-                groupRow.setNetTotal(groupRow.getNetTotal() + r.getNetTotal());
-                groupRow.setGrossTotal(groupRow.getGrossTotal() + r.getGrossTotal());
-
-            }
-            getRows().clear();
-            grouped.values().stream()
-                .sorted(Comparator.comparing(IncomeRow::getSite, 
-                        Comparator.nullsLast(Comparator.comparing(Institution::getName))))
-                .forEachOrdered(getRows()::add);
-        }
-        
-        populateSummaryRow();
-    }
-    
     public void generateDiscountDetailsForDashboard() {
         Map<Object, IncomeRow> grouped = new LinkedHashMap<>();
         
         for (IncomeRow r : getRows()) {
             Bill b = r.getBill();
             
-            if(b == null || b.getToDepartment() == null) {
+            if(b == null || (b.getDepartment() == null && b.getToDepartment() == null)) {
                 continue;
             }
             
             r.setDiscount(b.getDiscount());
             
-            DepartmentType st = b.getToDepartment().getDepartmentType();
+            DepartmentType st;
             String dept;
-                
-            if (st == null) {
-                dept = b.getToDepartment().getName();
+            if (b.getToDepartment() != null) {
+                st = b.getToDepartment().getDepartmentType();
+                if (st == null) {
+                    dept = b.getToDepartment().getName();
+                } else {
+                    dept = st.toString();
+                }
             } else {
-                dept = st.toString();
+                st = b.getDepartment().getDepartmentType();
+                if (st == null) {
+                    dept = b.getDepartment().getName();
+                } else {
+                    dept = st.toString();
+                }
             }
                 
             IncomeRow groupRow = grouped.computeIfAbsent(dept, k -> {
                 IncomeRow ir = new IncomeRow();
-                ir.setDepartment(b.getToDepartment());
                 ir.setRowType(k.toString());
                 return ir;
             });
@@ -1177,6 +1082,7 @@ public class IncomeBundle implements Serializable {
         }
         getRows().clear();
         grouped.values().stream()
+                .filter(row -> row.getDiscount() != 0.0)
                 .sorted(Comparator.comparing(IncomeRow::getRowType, 
                         Comparator.nullsLast(Comparator.naturalOrder())))
                 .forEachOrdered(getRows()::add);
