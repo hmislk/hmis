@@ -1992,10 +1992,7 @@ public class BillService {
             Institution institution,
             Institution site,
             Department department,
-            WebUser webUser,
-            List<BillTypeAtomic> billTypeAtomics,
-            AdmissionType admissionType,
-            PaymentScheme paymentScheme) {
+            List<BillTypeAtomic> billTypeAtomics) {
 
         if (fromDate == null || toDate == null) {
             throw new IllegalArgumentException("fromDate and toDate cannot be null");
@@ -2005,13 +2002,13 @@ public class BillService {
         }
 
         String jpql = "select new com.divudi.core.data.dto.OpdRevenueDashboardDTO("
-                + " b.id, b.deptId, b.billTypeAtomic, b.createdAt, "
-                + " coalesce(b.netTotal,0.0), coalesce(b.total,0.0), "
-                + " b.department, b.institution, b.toDepartment) "
-                + " from Bill b "
-                + " where b.retired=:ret "
-                + " and b.billTypeAtomic in :billTypesAtomics "
-                + " and b.createdAt between :fromDate and :toDate";
+                + " bi.bill.id, "
+                + " coalesce(bi.netValue,0.0), "
+                + " bi.item.category.name, bi.item.category.id) "
+                + " from BillItem bi "
+                + " where bi.bill.retired=:ret "
+                + " and bi.bill.billTypeAtomic in :billTypesAtomics "
+                + " and bi.bill.createdAt between :fromDate and :toDate";
 
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
@@ -2020,33 +2017,19 @@ public class BillService {
         params.put("toDate", toDate);
 
         if (institution != null) {
-            jpql += " and b.institution=:ins";
+            jpql += " and bi.bill.toInstitution=:ins";
             params.put("ins", institution);
         }
-        if (webUser != null) {
-            jpql += " and b.creater=:user";
-            params.put("user", webUser);
-        }
         if (department != null) {
-            jpql += " and b.toDepartment=:dep";
+            jpql += " and bi.bill.toDepartment=:dep";
             params.put("dep", department);
         }
         if (site != null) {
-            jpql += " and b.toDepartment.site=:site";
+            jpql += " and bi.bill.toDepartment.site=:site";
             params.put("site", site);
         }
-        if (admissionType != null) {
-            jpql += " and b.patientEncounter.admissionType=:admissionType";
-            params.put("admissionType", admissionType);
-        }
-        if (paymentScheme != null) {
-            jpql += " and b.paymentScheme=:paymentScheme";
-            params.put("paymentScheme", paymentScheme);
-        }
 
-        jpql += " order by b.createdAt desc";
-        // Debug logging
-        // Debug logging
+        jpql += " order by bi.bill.createdAt desc";
 
         return (List<OpdRevenueDashboardDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -2064,8 +2047,10 @@ public class BillService {
         }
 
         String jpql = "Select new com.divudi.core.data.dto.OpdRevenueDashboardDTO("
-                + " b.id, b.deptId, b.billTypeAtomic, coalesce(b.discount, 0.0), b.toDepartment) "
+                + " b.id, b.deptId, b.billTypeAtomic, coalesce(b.discount, 0.0), d, td) "
                 + " from Bill b"
+                + " left join b.toDepartment td"
+                + " left join b.department d"
                 + " where b.retired=:ret "
                 + " and b.billTypeAtomic in :billTypesAtomics "
                 + " and b.createdAt between :fromDate and :toDate";
@@ -2077,13 +2062,11 @@ public class BillService {
         params.put("toDate", toDate);
         
         if (department != null) {
-            jpql += " and b.toDepartment=:dep";
+            jpql += " and (td= :dep or (td is null and d= :dep))";
             params.put("dep", department);
         }
 
         jpql += " order by b.createdAt desc";
-        // Debug logging
-        // Debug logging
 
         return (List<OpdRevenueDashboardDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
