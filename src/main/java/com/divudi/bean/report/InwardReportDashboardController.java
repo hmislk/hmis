@@ -430,10 +430,9 @@ public class InwardReportDashboardController implements Serializable{
             if (entry.getValue().getTotal() == 0) {
                 continue;
             }
-            
+
             opdRevenueDashboardDtos.add(entry.getValue());
         }
-
         setOpdRevenueChart();
         
     }
@@ -443,7 +442,6 @@ public class InwardReportDashboardController implements Serializable{
         List<BillTypeAtomic> btas = getOpdAndPharmacyIncomeBillTypes();
         
         discountDashboard = billService.fetchBillDiscounts(getFromDate(), getToDate(), discountDept, btas);
-
         discountBundle = new IncomeBundle(discountDashboard);
         discountBundle.generateDiscountDetailsForDashboard();
         
