@@ -135,12 +135,6 @@ public class MiscellaneousStaffFeeController implements Serializable {
             return;
         }
 
-        // Validation - Ensure all items are for the same staff member
-        if (!tempPaymentItems.isEmpty()) {
-            JsfUtil.addErrorMessage("Cannot change staff member. All payment items in a bill must be for the same staff member. Click 'Cancel All' to start a new bill for a different staff member.");
-            return;
-        }
-
         if (selectedPaymentCategory == null) {
             JsfUtil.addErrorMessage("Please select a payment category");
             return;
