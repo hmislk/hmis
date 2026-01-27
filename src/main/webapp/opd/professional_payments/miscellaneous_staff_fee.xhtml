@@ -46,9 +46,11 @@
                                                 <h:outputText value="#{s.speciality.name}" rendered="#{s.speciality ne null}"/>
                                             </p:column>
                                         </p:autoComplete>
-                                        <small class="text-muted" style="display: block; margin-top: 5px;" rendered="#{not empty miscellaneousStaffFeeController.tempPaymentItems}">
-                                            <i class="fa fa-info-circle"></i> Staff locked. All items must be for the same staff member. Click "Cancel All" to change staff.
-                                        </small>
+                                        <ui:fragment rendered="#{not empty miscellaneousStaffFeeController.tempPaymentItems}">
+                                            <small class="text-muted" style="display: block; margin-top: 5px;">
+                                                <i class="fa fa-info-circle"></i> Staff locked. All items must be for the same staff member. Click "Cancel All" to change staff.
+                                            </small>
+                                        </ui:fragment>
                                     </h:panelGroup>
 
                                     <p:outputLabel value="Payment Category:" for="cmbPaymentCategory"/>
@@ -325,9 +327,7 @@
                                                             icon="fas fa-save"
                                                             styleClass="ui-button-success"
                                                             ajax="false"
-                                                            action="#{pharmacyConfigController.saveMiscStaffFeeConfig}"
-                                                            update="formMiscFee:printArea miscStaffFeeConfigMessages"
-                                                            oncomplete="PF('miscStaffFeeConfigDialog').hide();" />
+                                                            action="#{pharmacyConfigController.saveMiscStaffFeeConfig}" />
                                                         <p:commandButton
                                                             value="Cancel"
                                                             icon="fas fa-times"
