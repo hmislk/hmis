@@ -156,7 +156,7 @@
                                             <p:commandButton
                                                 value="Finalize Bill"
                                                 action="#{miscellaneousStaffFeeController.finalizeBill}"
-                                                update="formMiscFee tblRecentFees"
+                                                update="formMiscFee"
                                                 process="@this"
                                                 icon="fa fa-check-circle"
                                                 styleClass="ui-button-warning mx-2 my-2"
@@ -187,77 +187,6 @@
                                 <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check"/>
                                 <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times"/>
                             </p:confirmDialog>
-
-                            <p:panel header="Recent Miscellaneous Fees" styleClass="mt-3">
-                                <p:commandButton
-                                    value="Refresh List"
-                                    action="#{miscellaneousStaffFeeController.loadRecentMiscellaneousFees}"
-                                    update="formMiscFee:tblRecentFees"
-                                    icon="fa fa-refresh"
-                                    styleClass="ui-button-info mx-2 my-2"/>
-
-                                <p:commandButton
-                                    ajax="false"
-                                    value="Download as Excel"
-                                    icon="fa-solid fa-file-excel"
-                                    styleClass="ui-button-success mx-2 my-2">
-                                    <p:dataExporter type="xlsx" target="tblRecentFees" fileName="Miscellaneous_Staff_Fees"/>
-                                </p:commandButton>
-
-                                <p:dataTable
-                                    id="tblRecentFees"
-                                    value="#{miscellaneousStaffFeeController.recentMiscellaneousFees}"
-                                    var="bf"
-                                    paginator="true"
-                                    rows="10"
-                                    rowKey="#{bf.id}"
-                                    paginatorPosition="bottom"
-                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                    rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
-                                    emptyMessage="No miscellaneous fees found"
-                                    class="w-100 m-1">
-
-                                    <p:column headerText="Bill ID" width="10%">
-                                        <h:outputText value="#{bf.bill.deptId}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Date Created" width="12%">
-                                        <h:outputText value="#{bf.createdAt}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
-                                        </h:outputText>
-                                    </p:column>
-
-                                    <p:column headerText="Staff/Doctor" width="13%">
-                                        <h:outputText value="#{bf.staff.person.nameWithTitle}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Speciality" width="10%">
-                                        <h:outputText value="#{bf.staff.speciality.name}" rendered="#{bf.staff.speciality ne null}"/>
-                                        <h:outputText value="-" rendered="#{bf.staff.speciality eq null}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Payment Category" width="12%">
-                                        <h:outputText value="#{bf.billItem.item.name}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Description" width="25%">
-                                        <h:outputText value="#{bf.bill.comments}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Amount" width="10%" styleClass="text-end">
-                                        <h:outputText value="#{bf.feeValue}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </p:column>
-
-                                    <p:column headerText="Status" width="11%">
-                                        <p:badge value="Paid" severity="success" rendered="#{bf.paidValue gt 0}"/>
-                                        <p:badge value="Unpaid" severity="warning" rendered="#{bf.paidValue eq 0}"/>
-                                    </p:column>
-
-                                </p:dataTable>
-                            </p:panel>
 
                         </h:form>
                     </p:panel>

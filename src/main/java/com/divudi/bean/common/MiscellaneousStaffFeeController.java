@@ -70,8 +70,14 @@ public class MiscellaneousStaffFeeController implements Serializable {
     private List<TempPaymentItem> tempPaymentItems;
     private double totalAmount;
 
-    // Data lists
-    private List<BillFee> recentMiscellaneousFees;
+    // Data lists for reports
+    private List<BillFee> filteredMiscellaneousFees;
+    private List<Bill> filteredMiscellaneousBills;
+
+    // Report filter fields
+    private Date fromDate;
+    private Date toDate;
+    private Staff filterStaff;
 
     /**
      * Inner class to hold temporary payment items before bill finalization
@@ -228,7 +234,6 @@ public class MiscellaneousStaffFeeController implements Serializable {
             // Success
             JsfUtil.addSuccessMessage("Bill finalized successfully with " + tempPaymentItems.size() + " payment item(s) for " + selectedStaff.getPerson().getNameWithTitle());
             clearForm();
-            loadRecentMiscellaneousFees();
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error finalizing bill: " + e.getMessage());
@@ -367,21 +372,103 @@ public class MiscellaneousStaffFeeController implements Serializable {
     }
 
     /**
-     * Loads recent miscellaneous fees for display
+     * Filters miscellaneous fees based on date range and staff
      */
-    public void loadRecentMiscellaneousFees() {
-        String jpql = "SELECT bf FROM BillFee bf "
-                + "WHERE bf.retired = :ret "
-                + "AND bf.bill.billTypeAtomic = :bta "
-                + "AND bf.bill.department = :dept "
-                + "ORDER BY bf.createdAt DESC";
+    public void filterMiscellaneousFees() {
+        // Validation
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select both From Date and To Date");
+            return;
+        }
+        if (fromDate.after(toDate)) {
+            JsfUtil.addErrorMessage("From Date cannot be after To Date");
+            return;
+        }
+
+        StringBuilder jpql = new StringBuilder("SELECT bf FROM BillFee bf ")
+                .append("WHERE bf.retired = :ret ")
+                .append("AND bf.bill.billTypeAtomic = :bta ")
+                .append("AND bf.bill.department = :dept ")
+                .append("AND bf.createdAt BETWEEN :fromDate AND :toDate ");
 
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("bta", BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
         params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
 
-        recentMiscellaneousFees = billFeeFacade.findByJpql(jpql, params, 100);
+        if (filterStaff != null) {
+            jpql.append("AND bf.staff = :staff ");
+            params.put("staff", filterStaff);
+        }
+
+        jpql.append("ORDER BY bf.createdAt DESC");
+
+        filteredMiscellaneousFees = billFeeFacade.findByJpql(jpql.toString(), params);
+        JsfUtil.addSuccessMessage("Found " + filteredMiscellaneousFees.size() + " fee record(s)");
+    }
+
+    /**
+     * Filters miscellaneous bills based on date range and staff
+     */
+    public void filterMiscellaneousBills() {
+        // Validation
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select both From Date and To Date");
+            return;
+        }
+        if (fromDate.after(toDate)) {
+            JsfUtil.addErrorMessage("From Date cannot be after To Date");
+            return;
+        }
+
+        StringBuilder jpql = new StringBuilder("SELECT b FROM Bill b ")
+                .append("WHERE b.retired = :ret ")
+                .append("AND b.billTypeAtomic = :bta ")
+                .append("AND b.department = :dept ")
+                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bta", BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
+        params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (filterStaff != null) {
+            jpql.append("AND b.staff = :staff ");
+            params.put("staff", filterStaff);
+        }
+
+        jpql.append("ORDER BY b.createdAt DESC");
+
+        filteredMiscellaneousBills = billFacade.findByJpql(jpql.toString(), params);
+        JsfUtil.addSuccessMessage("Found " + filteredMiscellaneousBills.size() + " bill(s)");
+    }
+
+    /**
+     * Navigation methods for reports
+     */
+    public String navigateToMiscellaneousFeeReport() {
+        clearReportFilters();
+        return "/opd/professional_payments/miscellaneous_fee_report?faces-redirect=true";
+    }
+
+    public String navigateToMiscellaneousBillReport() {
+        clearReportFilters();
+        return "/opd/professional_payments/miscellaneous_bill_report?faces-redirect=true";
+    }
+
+    /**
+     * Clears report filter fields
+     */
+    public void clearReportFilters() {
+        fromDate = null;
+        toDate = null;
+        filterStaff = null;
+        filteredMiscellaneousFees = null;
+        filteredMiscellaneousBills = null;
     }
 
     /**
@@ -481,14 +568,43 @@ public class MiscellaneousStaffFeeController implements Serializable {
         this.feeDescription = feeDescription;
     }
 
-    public List<BillFee> getRecentMiscellaneousFees() {
-        if (recentMiscellaneousFees == null) {
-            loadRecentMiscellaneousFees();
-        }
-        return recentMiscellaneousFees;
+    public List<BillFee> getFilteredMiscellaneousFees() {
+        return filteredMiscellaneousFees;
     }
 
-    public void setRecentMiscellaneousFees(List<BillFee> recentMiscellaneousFees) {
-        this.recentMiscellaneousFees = recentMiscellaneousFees;
+    public void setFilteredMiscellaneousFees(List<BillFee> filteredMiscellaneousFees) {
+        this.filteredMiscellaneousFees = filteredMiscellaneousFees;
+    }
+
+    public List<Bill> getFilteredMiscellaneousBills() {
+        return filteredMiscellaneousBills;
+    }
+
+    public void setFilteredMiscellaneousBills(List<Bill> filteredMiscellaneousBills) {
+        this.filteredMiscellaneousBills = filteredMiscellaneousBills;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Staff getFilterStaff() {
+        return filterStaff;
+    }
+
+    public void setFilterStaff(Staff filterStaff) {
+        this.filterStaff = filterStaff;
     }
 }

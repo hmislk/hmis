@@ -40,6 +40,20 @@
                                             <p:commandButton
                                                 styleClass="w-100 ui-button-info ui-button-outlined"
                                                 ajax="false"
+                                                value="Miscellaneous Fee Report" title="Report of miscellaneous fees with filters"
+                                                action="#{miscellaneousStaffFeeController.navigateToMiscellaneousFeeReport()}"
+                                                icon="fa fa-file-alt"
+                                                rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
+                                            <p:commandButton
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false"
+                                                value="Miscellaneous Bill Report" title="Report of miscellaneous bills with filters"
+                                                action="#{miscellaneousStaffFeeController.navigateToMiscellaneousBillReport()}"
+                                                icon="fa fa-file-invoice"
+                                                rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
+                                            <p:commandButton
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false"
                                                 action="#{billSearch.navigateToViewOpdProfessionalPaymentsDue()}"
                                                 actionListener="#{searchController.makeListNull}"
                                                 value="Search Outstanding Professinal Payments" title="Search Outstanding Professinal Payments"
