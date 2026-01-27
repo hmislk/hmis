@@ -418,7 +418,7 @@ public class MiscellaneousStaffFeeController implements Serializable {
 
         jpql.append("ORDER BY bf.createdAt DESC");
 
-        filteredMiscellaneousFees = billFeeFacade.findByJpql(jpql.toString(), params);
+        filteredMiscellaneousFees = billFeeFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
         JsfUtil.addSuccessMessage("Found " + filteredMiscellaneousFees.size() + " fee record(s)");
     }
 
