@@ -551,7 +551,7 @@ public class BillService {
         }
         return billFacade.findWithoutCache(bill.getId());
     }
-    
+
     public Bill reloadBill(Long billId) {
         if (billId == null) {
             return null;
@@ -612,15 +612,19 @@ public class BillService {
     }
 
     /**
-     * Fetches bill type atomics for OPD finance operations, now including all pharmacy credit bills
-     * as part of the credit consolidation initiative where pharmacy credit bills are managed
-     * alongside OPD credit bills under the unified OPD Credit Settle bill type.
-     * This includes pharmacy retail sales, wholesale sales, and sales settled at cashier.
+     * Fetches bill type atomics for OPD finance operations, now including all
+     * pharmacy credit bills as part of the credit consolidation initiative
+     * where pharmacy credit bills are managed alongside OPD credit bills under
+     * the unified OPD Credit Settle bill type. This includes pharmacy retail
+     * sales, wholesale sales, and sales settled at cashier.
      *
-     * <p><strong>Important:</strong> This method returns atomics for ORIGINAL BILLS that can have
-     * outstanding balances (used by OPD Due Search, OPD Due Age queries), NOT settlement record atomics.
-     * Settlement records (PAYMENT_RECEIVED bills) are queried separately by
-     * {@code listBillsOpdCreditCompanySettle()} for "OPD Done Search" functionality.
+     * <p>
+     * <strong>Important:</strong> This method returns atomics for ORIGINAL
+     * BILLS that can have outstanding balances (used by OPD Due Search, OPD Due
+     * Age queries), NOT settlement record atomics. Settlement records
+     * (PAYMENT_RECEIVED bills) are queried separately by
+     * {@code listBillsOpdCreditCompanySettle()} for "OPD Done Search"
+     * functionality.
      */
     public List<BillTypeAtomic> fetchBillTypeAtomicsForOpdFinance() {
         List<BillTypeAtomic> btas = new ArrayList<>();
@@ -795,6 +799,7 @@ public class BillService {
             }
         }
     }
+
     public List<Payment> fetchBillPaymentsFromBillId(Long billId) {
         List<Payment> fetchingBillComponents;
         String jpql;
@@ -807,7 +812,6 @@ public class BillService {
         fetchingBillComponents = paymentFacade.findByJpql(jpql, params);
         return fetchingBillComponents;
     }
-    
 
     public List<Payment> fetchBillPayments(Bill bill) {
         List<Payment> fetchingBillComponents;
@@ -1092,7 +1096,7 @@ public class BillService {
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
     }
-    
+
     public List<BillLight> fetchBillDtos(Date fromDate,
             Date toDate,
             Institution institution,
@@ -1103,9 +1107,7 @@ public class BillService {
             PaymentScheme paymentScheme) {
         return fetchBillDtos(fromDate, toDate, institution, site, department, null, billTypeAtomics, admissionType, paymentScheme);
     }
-    
-    
-    
+
     public List<BillLight> fetchBillDtos(
             Date fromDate,
             Date toDate,
@@ -1129,7 +1131,7 @@ public class BillService {
         params.put("billTypesAtomics", billTypeAtomics);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
-        
+
         if (institution != null) {
             jpql += " and b.institution=:ins ";
             params.put("ins", institution);
@@ -1157,10 +1159,9 @@ public class BillService {
         if (paymentScheme != null) {
             jpql += " and b.paymentScheme=:paymentScheme ";
             params.put("paymentScheme", paymentScheme);
-        }else{
+        } else {
             jpql += " and b.paymentScheme is null";
         }
-        
 
         jpql += " order by b.createdAt desc  ";
         List<BillLight> fetchedBills = (List<BillLight>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
@@ -1168,8 +1169,9 @@ public class BillService {
     }
 
     /**
-     * Fetches BillLight objects with comprehensive financial details including stock values.
-     * Used for pharmacy reports that require cost, purchase, and retail sale values.
+     * Fetches BillLight objects with comprehensive financial details including
+     * stock values. Used for pharmacy reports that require cost, purchase, and
+     * retail sale values.
      */
     public List<BillLight> fetchBillLightsWithFinanceDetails(
             Date fromDate,
@@ -1315,7 +1317,6 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt desc ";
-
 
         List<BillLight> fetchedBills = null;
         try {
@@ -1539,9 +1540,7 @@ public class BillService {
 
         jpql += " order by b.createdAt desc  ";
 
-
         List<PharmacyIncomeBillDTO> results = (List<PharmacyIncomeBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-
 
         if (results != null && !results.isEmpty()) {
             for (int i = 0; i < Math.min(5, results.size()); i++) {
@@ -1619,10 +1618,10 @@ public class BillService {
                 + " coalesce(b.invoiceNumber,''), "
                 + " b.createdAt, "
                 + " b.billDate, "
-                + " coalesce(b.toInstitution.name,''), "  // ✅ SAFE: Using COALESCE with direct property
-                + " b.toInstitution.id, "                 // ✅ SAFE: Left join handles null
-                + " coalesce(b.department.name,''), "     // ✅ SAFE: Using COALESCE with direct property
-                + " b.department.id, "                    // ✅ SAFE: Left join handles null
+                + " coalesce(b.toInstitution.name,''), " // ✅ SAFE: Using COALESCE with direct property
+                + " b.toInstitution.id, " // ✅ SAFE: Left join handles null
+                + " coalesce(b.department.name,''), " // ✅ SAFE: Using COALESCE with direct property
+                + " b.department.id, " // ✅ SAFE: Left join handles null
                 + " coalesce(b.creater.webUserPerson.name,''), " // ⚠️ POTENTIAL ISSUE: Nested relationship
                 + " coalesce(b.comments,''), "
                 + " coalesce(b.paymentMethod,''), "
@@ -1634,10 +1633,10 @@ public class BillService {
                 + " coalesce(bfd.totalRetailSaleValue,0.0) ) "
                 + " from Bill b "
                 + " left join b.billFinanceDetails bfd "
-                + " left join b.toInstitution "           // ✅ Explicit LEFT JOIN for safety
-                + " left join b.department "              // ✅ Explicit LEFT JOIN for safety
-                + " left join b.creater "                 // ✅ Explicit LEFT JOIN for safety
-                + " left join b.creater.webUserPerson "   // ✅ Explicit LEFT JOIN for nested relationship
+                + " left join b.toInstitution " // ✅ Explicit LEFT JOIN for safety
+                + " left join b.department " // ✅ Explicit LEFT JOIN for safety
+                + " left join b.creater " // ✅ Explicit LEFT JOIN for safety
+                + " left join b.creater.webUserPerson " // ✅ Explicit LEFT JOIN for nested relationship
                 + " where b.retired=:ret "
                 + " and b.billTypeAtomic = :billTypeAtomic "
                 + " and b.createdAt between :fromDate and :toDate ";
@@ -1670,8 +1669,8 @@ public class BillService {
         jpql += " order by b.createdAt desc, b.id desc ";
 
         try {
-            List<PharmacyReturnWithoutTrasingBillDTO> results =
-                (List<PharmacyReturnWithoutTrasingBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+            List<PharmacyReturnWithoutTrasingBillDTO> results
+                    = (List<PharmacyReturnWithoutTrasingBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
             return results != null ? results : new ArrayList<>();
 
@@ -1736,14 +1735,14 @@ public class BillService {
                 + " b.id, "
                 + " coalesce(b.deptId,''), "
                 + " b.createdAt, "
-                + " coalesce(b.toInstitution.name,''), "  // Direct property access with COALESCE
+                + " coalesce(b.toInstitution.name,''), " // Direct property access with COALESCE
                 + " coalesce(b.paymentMethod,''), "
-                + " coalesce(item.id,0), "                // Handle null item
+                + " coalesce(item.id,0), " // Handle null item
                 + " coalesce(item.name,''), "
                 + " coalesce(item.code,''), "
                 + " coalesce(item.barcode,''), "
                 + " coalesce(batch.batchNo,''), "
-                + " batch.dateOfExpire, "                 // May be null from LEFT JOIN
+                + " batch.dateOfExpire, " // May be null from LEFT JOIN
                 + " coalesce(bi.qty,0.0), "
                 + " coalesce(pbi.qtyInUnit,0.0), "
                 + " coalesce(bifd.costRate,0.0), "
@@ -1754,13 +1753,13 @@ public class BillService {
                 + " coalesce(bifd.valueAtRetailRate,0.0), "
                 + " coalesce(bi.netValue,0.0) ) "
                 + " from Bill b "
-                + " join b.billItems bi "                 // INNER JOIN - must have bill items
+                + " join b.billItems bi " // INNER JOIN - must have bill items
                 + " left join bi.billItemFinanceDetails bifd "
                 + " left join bi.pharmaceuticalBillItem pbi "
                 + " left join pbi.stock stock "
                 + " left join stock.itemBatch batch "
                 + " left join batch.item item "
-                + " left join b.toInstitution "           // Explicit LEFT JOIN
+                + " left join b.toInstitution " // Explicit LEFT JOIN
                 + " where b.retired = false and bi.retired = false "
                 + " and b.billTypeAtomic = :billTypeAtomic "
                 + " and b.createdAt between :fromDate and :toDate ";
@@ -1792,8 +1791,8 @@ public class BillService {
         jpql += " order by b.createdAt desc, b.id desc, bi.searialNo ";
 
         try {
-            List<PharmacyReturnWithoutTrasingBillItemDTO> results =
-                (List<PharmacyReturnWithoutTrasingBillItemDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+            List<PharmacyReturnWithoutTrasingBillItemDTO> results
+                    = (List<PharmacyReturnWithoutTrasingBillItemDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
             return results != null ? results : new ArrayList<>();
 
@@ -1923,9 +1922,9 @@ public class BillService {
         // Enhanced query with LEFT JOINs to handle null associations safely
         String jpql = "select new com.divudi.core.data.dto.HospitalDoctorFeeReportDTO("
                 + " b.id, "
-                + " b.deptId, "  // Bill Number
-                + " coalesce(p.name, 'N/A'), "  // Patient name from LEFT JOIN
-                + " coalesce(fs.name, 'N/A'), "  // Doctor name from fromStaff only
+                + " b.deptId, " // Bill Number
+                + " coalesce(p.name, 'N/A'), " // Patient name from LEFT JOIN
+                + " coalesce(fs.name, 'N/A'), " // Doctor name from fromStaff only
                 + " coalesce(b.totalHospitalFee,0.0), coalesce(b.totalStaffFee,0.0), "
                 + " coalesce(b.netTotal,0.0), b.createdAt, b.paymentMethod, b.billTypeAtomic ) "
                 + " from Bill b "
@@ -2033,7 +2032,7 @@ public class BillService {
 
         return (List<OpdRevenueDashboardDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
-    
+
     public List<OpdRevenueDashboardDTO> fetchBillDiscounts(Date fromDate,
             Date toDate,
             Department department,
@@ -2060,7 +2059,7 @@ public class BillService {
         params.put("billTypesAtomics", billTypeAtomics);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
-        
+
         if (department != null) {
             jpql += " and (td= :dep or (td is null and d= :dep))";
             params.put("dep", department);
@@ -2405,11 +2404,11 @@ public class BillService {
 
         // Updated to use new constructor with IDs for navigation support
         String jpql = "select new com.divudi.core.data.dto.OpdSaleSummaryDTO("
-                + " bi.item.category.id,"  // Category ID for navigation
-                + " coalesce(bi.item.category.name, 'No Category'),"  // Category name for display
-                + " bi.item.id,"  // Item ID for navigation
-                + " coalesce(bi.item.name, 'No Item'),"  // Item name for display
-                + " sum(case when b.billClassType in (:cancel, :refund) then -1 else 1 end),"  // Count
+                + " bi.item.category.id," // Category ID for navigation
+                + " coalesce(bi.item.category.name, 'No Category')," // Category name for display
+                + " bi.item.id," // Item ID for navigation
+                + " coalesce(bi.item.name, 'No Item')," // Item name for display
+                + " sum(case when b.billClassType in (:cancel, :refund) then -1 else 1 end)," // Count
                 + " sum(case when b.billClassType in (:cancel, :refund) then -bi.hospitalFee else bi.hospitalFee end),"
                 + " sum(case when b.billClassType in (:cancel, :refund) then -bi.staffFee else bi.staffFee end),"
                 + " sum(case when b.billClassType in (:cancel, :refund) then -bi.grossValue else bi.grossValue end),"
@@ -3392,7 +3391,7 @@ public class BillService {
         params.put("bb", batchBill);
         return patientInvestigationFacade.findByJpql(jpql, params);
     }
-    
+
     public List<PatientInvestigation> fetchPatientInvestigationsOfBatchBill(Bill batchBill, PatientInvestigationStatus status) {
         if (batchBill == null) {
             return new ArrayList<>();
@@ -3409,7 +3408,7 @@ public class BillService {
         params.put("st", status);
         return patientInvestigationFacade.findByJpql(jpql, params);
     }
-    
+
     public List<PatientInvestigation> fetchPatientInvestigations(Bill bill, PatientInvestigationStatus status) {
         String jpql;
         HashMap<String, Object> params = new HashMap<>();
@@ -3561,7 +3560,6 @@ public class BillService {
             Double purchaseRatePerUnit = bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate();
             Double costRatePerUnit = bi.getPharmaceuticalBillItem().getItemBatch().getCostRate();
 
-
             double billItemRetailValue = 0;
             double billItemPurchaseValue = 0;
             double billItemCostValue = 0;
@@ -3584,10 +3582,10 @@ public class BillService {
      * Creates BillItemFinanceDetails for each bill item and BillFinanceDetails
      * for the bill in inpatient direct issue bills.
      *
-     * Rate sources:
-     * - Costing values (valueAtCostRate, valueAtPurchaseRate, valueAtRetailRate):
-     *   From pharmaItem.getStock().getItemBatch() for accurate stock valuation
-     * - Rates and net values: From pharmaItem.getXxxRate() which includes margins
+     * Rate sources: - Costing values (valueAtCostRate, valueAtPurchaseRate,
+     * valueAtRetailRate): From pharmaItem.getStock().getItemBatch() for
+     * accurate stock valuation - Rates and net values: From
+     * pharmaItem.getXxxRate() which includes margins
      *
      * Values are NEGATIVE because stock leaves the pharmacy (issue to patient).
      * No discounts or taxes are applied in inpatient issues.
@@ -3728,15 +3726,17 @@ public class BillService {
     }
 
     /**
-     * Creates and populates BillItemFinanceDetails and BillFinanceDetails for Inpatient Direct Issue Return Bills.
-     * This method handles stock returns where items are being returned TO the pharmacy FROM inpatient units.
+     * Creates and populates BillItemFinanceDetails and BillFinanceDetails for
+     * Inpatient Direct Issue Return Bills. This method handles stock returns
+     * where items are being returned TO the pharmacy FROM inpatient units.
      *
-     * Key Sign Conventions for Returns:
-     * - Rates (costRate, purchaseRate, retailRate): POSITIVE (unit prices never change)
-     * - Quantities (quantity, freeQuantity): POSITIVE (stock coming back IN to pharmacy)
-     * - Value Fields (valueAtCostRate, valueAtRetailRate): POSITIVE (stock valuation)
-     * - Cost Fields (lineCost, totalCost): POSITIVE (cost value recovered with returning stock)
-     * - Financial Totals (grossTotal, netTotal): NEGATIVE (refunds to patient)
+     * Key Sign Conventions for Returns: - Rates (costRate, purchaseRate,
+     * retailRate): POSITIVE (unit prices never change) - Quantities (quantity,
+     * freeQuantity): POSITIVE (stock coming back IN to pharmacy) - Value Fields
+     * (valueAtCostRate, valueAtRetailRate): POSITIVE (stock valuation) - Cost
+     * Fields (lineCost, totalCost): POSITIVE (cost value recovered with
+     * returning stock) - Financial Totals (grossTotal, netTotal): NEGATIVE
+     * (refunds to patient)
      *
      * @param bill The inpatient direct issue return bill to process
      */
@@ -3808,14 +3808,8 @@ public class BillService {
                 if (batchCostRate != null && batchCostRate > 0) {
                     costRate = BigDecimal.valueOf(batchCostRate);
                 }
-
-                // Get other rates from batch if available
-                if (itemBatch.getRetailsaleRate() != null && itemBatch.getRetailsaleRate() > 0) {
-                    retailRate = BigDecimal.valueOf(itemBatch.getRetailsaleRate());
-                }
-                if (itemBatch.getPurcahseRate() != null && itemBatch.getPurcahseRate() > 0) {
-                    purchaseRate = BigDecimal.valueOf(itemBatch.getPurcahseRate());
-                }
+                retailRate = BigDecimal.valueOf(itemBatch.getRetailsaleRate());
+                purchaseRate = BigDecimal.valueOf(itemBatch.getPurcahseRate());
             }
 
             // Rates - always positive (unit prices)
@@ -3897,9 +3891,11 @@ public class BillService {
     }
 
     /**
-     * Creates and populates BillItemFinanceDetails and BillFinanceDetails for OPD and pharmacy retail sale bills.
-     * This method handles correction of historical bills that have incorrect (positive) stock values.
-     * For outgoing stock (sales), values are made negative to reflect stock reduction.
+     * Creates and populates BillItemFinanceDetails and BillFinanceDetails for
+     * OPD and pharmacy retail sale bills. This method handles correction of
+     * historical bills that have incorrect (positive) stock values. For
+     * outgoing stock (sales), values are made negative to reflect stock
+     * reduction.
      *
      * @param bill The OPD or pharmacy retail sale bill to process
      */
@@ -3989,8 +3985,8 @@ public class BillService {
     }
 
     private boolean isPharmacyRetailSale(BillTypeAtomic billType) {
-        return billType == BillTypeAtomic.PHARMACY_RETAIL_SALE ||
-               billType == BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
+        return billType == BillTypeAtomic.PHARMACY_RETAIL_SALE
+                || billType == BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER;
     }
 
     private void processPharmaceuticalBillItemForCorrection(BillItem billItem, BillItemFinanceDetails bifd) {
