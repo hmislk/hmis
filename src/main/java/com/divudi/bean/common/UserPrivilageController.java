@@ -1178,8 +1178,8 @@ public class UserPrivilageController implements Serializable {
         return list;
     }
     
-    public void clesrUserAllDepartmentPrivileges(WebUser wu, Department dept){
-        for(WebUserPrivilege wup : loadUserPrivileges(wu,department)){
+    public void clearUserAllDepartmentPrivileges(WebUser wu, Department dept){
+        for(WebUserPrivilege wup : loadUserPrivileges(wu,dept)){
             wup.setRetired(true);
             getFacade().edit(wup);
         }

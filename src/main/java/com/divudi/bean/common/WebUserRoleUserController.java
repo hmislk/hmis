@@ -124,15 +124,15 @@ public class WebUserRoleUserController implements Serializable {
         WebUser user = roleUser.getWebUser();
         Department dept = roleUser.getDepartment();
         
-        // Clesr All Privillages
-        userPrivilageController.clesrUserAllDepartmentPrivileges(user,dept);
+        // Clesr All Privileges
+        userPrivilageController.clearUserAllDepartmentPrivileges(user,dept);
         // Add Role Privillage
         updatePrivilegesToUserRole(roleUser.getWebUserRole(),user, dept);
         
         JsfUtil.addSuccessMessage("Reset "+ roleUser.getWebUserRole().getName() +" UserRole Privileges for " + dept.getName());
     }
     
-    public void clesrUserRolePrivileges(WebUserRoleUser roleUser){
+    public void clearUserRolePrivileges(WebUserRoleUser roleUser){
         List<WebUserRolePrivilege> rolePrivileges = userPrivilageController.fetchUserPrivileges(roleUser.getWebUserRole());
         if (rolePrivileges == null || rolePrivileges.isEmpty()) {
             return;
@@ -298,7 +298,7 @@ public class WebUserRoleUserController implements Serializable {
         WebUserRoleUser user = facade.findWithoutCache(roleUser.getId());
         
         if (user != null) {
-            clesrUserRolePrivileges(user);
+            clearUserRolePrivileges(user);
             user.setRetired(true);
             user.setRetiredAt(new Date());
             roleUser.setRetirer(sessionController.getLoggedUser());
