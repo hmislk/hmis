@@ -130,7 +130,7 @@
             <div style="margin-top: 20px; text-align: center; font-size: 7pt; color: #666; border-top: 1px solid #ddd; padding-top: 8px;">
                 <p style="margin: 2px 0;">This is a computer-generated document.</p>
                 <p style="margin: 2px 0;">Printed by: #{sessionController.loggedUser.name} on
-                    <h:outputText value="#{sessionController.applicationPreference.applicationDate}">
+                    <h:outputText value="#{sessionController.currentDate}">
                         <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
                     </h:outputText>
                 </p>

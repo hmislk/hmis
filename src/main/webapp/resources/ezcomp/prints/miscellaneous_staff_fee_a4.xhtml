@@ -130,7 +130,7 @@
             <div style="margin-top: 30px; text-align: center; font-size: 9pt; color: #666; border-top: 1px solid #ddd; padding-top: 10px;">
                 <p>This is a computer-generated document. No signature required.</p>
                 <p>Printed by: #{sessionController.loggedUser.name} on
-                    <h:outputText value="#{sessionController.applicationPreference.applicationDate}">
+                    <h:outputText value="#{sessionController.currentDate}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                     </h:outputText>
                 </p>
