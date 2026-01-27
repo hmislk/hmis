@@ -451,24 +451,46 @@ public class MiscellaneousStaffFeeController implements Serializable {
      * Navigation methods for reports
      */
     public String navigateToMiscellaneousFeeReport() {
-        clearReportFilters();
+        initializeReportDates();
         return "/opd/professional_payments/miscellaneous_fee_report?faces-redirect=true";
     }
 
     public String navigateToMiscellaneousBillReport() {
-        clearReportFilters();
+        initializeReportDates();
         return "/opd/professional_payments/miscellaneous_bill_report?faces-redirect=true";
+    }
+
+    /**
+     * Initializes report dates to start and end of current day
+     */
+    private void initializeReportDates() {
+        Calendar cal = Calendar.getInstance();
+
+        // Set fromDate to start of day (00:00:00)
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        fromDate = cal.getTime();
+
+        // Set toDate to end of day (23:59:59)
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        toDate = cal.getTime();
+
+        // Clear other filters
+        filterStaff = null;
+        filteredMiscellaneousFees = null;
+        filteredMiscellaneousBills = null;
     }
 
     /**
      * Clears report filter fields
      */
     public void clearReportFilters() {
-        fromDate = null;
-        toDate = null;
-        filterStaff = null;
-        filteredMiscellaneousFees = null;
-        filteredMiscellaneousBills = null;
+        initializeReportDates();
     }
 
     /**
