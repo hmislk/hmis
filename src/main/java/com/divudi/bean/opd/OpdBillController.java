@@ -3335,6 +3335,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
 
         }
+
+        if (configOptionApplicationController.getBooleanValueByKey("OPD Bill - Show the Doctor Details", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Marking doctor is mandatory for OPD Billing.", false)) {
+                if (selectedCurrentlyWorkingStaff == null) {
+                    JsfUtil.addErrorMessage("Marking Doctor is Missing.");
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
