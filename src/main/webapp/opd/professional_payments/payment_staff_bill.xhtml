@@ -9,8 +9,8 @@
       >
 
     <h:body>
-        <ui:composition template="/payments/pay_index.xhtml">
-            <ui:define name="admin">
+        <ui:composition template="/opd/opd_doctor_payment_index.xhtml">
+            <ui:define name="opdPaymentContent">
                 <h:panelGroup id="panbilledit" rendered="#{!staffPaymentBillController.printPreview}" styleClass="alignTop" >
                     <p:panel header="OPD Professional Payment" >
                         <h:form>
