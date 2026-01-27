@@ -41,6 +41,21 @@
                                         </p:column>
                                     </p:autoComplete>
 
+                                    <p:outputLabel value="Payment Category:" for="cmbPaymentCategory"/>
+                                    <p:selectOneMenu
+                                        id="cmbPaymentCategory"
+                                        value="#{miscellaneousStaffFeeController.selectedPaymentCategory}"
+                                        class="w-100"
+                                        filter="true"
+                                        filterMatchMode="contains">
+                                        <f:selectItem itemLabel="Select Payment Category (Optional)" itemValue="#{null}" noSelectionOption="true"/>
+                                        <f:selectItems
+                                            value="#{paymentItemController.items}"
+                                            var="pc"
+                                            itemLabel="#{pc.name}"
+                                            itemValue="#{pc}"/>
+                                    </p:selectOneMenu>
+
                                     <p:outputLabel value="Amount:" for="txtAmount"/>
                                     <p:inputNumber
                                         id="txtAmount"
@@ -126,16 +141,20 @@
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Staff/Doctor" width="15%">
+                                    <p:column headerText="Staff/Doctor" width="13%">
                                         <h:outputText value="#{bf.staff.person.nameWithTitle}"/>
                                     </p:column>
 
-                                    <p:column headerText="Speciality" width="12%">
+                                    <p:column headerText="Speciality" width="10%">
                                         <h:outputText value="#{bf.staff.speciality.name}" rendered="#{bf.staff.speciality ne null}"/>
                                         <h:outputText value="-" rendered="#{bf.staff.speciality eq null}"/>
                                     </p:column>
 
-                                    <p:column headerText="Description" width="30%">
+                                    <p:column headerText="Payment Category" width="12%">
+                                        <h:outputText value="#{bf.billItem.item.name}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Description" width="25%">
                                         <h:outputText value="#{bf.bill.comments}"/>
                                     </p:column>
 

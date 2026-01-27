@@ -8,6 +8,7 @@ import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PaymentItem;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
@@ -56,9 +57,12 @@ public class MiscellaneousStaffFeeController implements Serializable {
     private SessionController sessionController;
     @Inject
     private ItemController itemController;
+    @Inject
+    private PaymentItemController paymentItemController;
 
     // Form fields
     private Staff selectedStaff;
+    private PaymentItem selectedPaymentCategory;
     private double feeAmount;
     private String feeDescription;
 
@@ -95,15 +99,20 @@ public class MiscellaneousStaffFeeController implements Serializable {
         }
 
         try {
-            // Step 1: Create or get the miscellaneous fee Item
-            Item miscFeeItem = findOrCreateMiscellaneousFeeItem();
+            // Step 1: Determine which item to use (PaymentCategory or default)
+            Item feeItem;
+            if (selectedPaymentCategory != null) {
+                feeItem = selectedPaymentCategory;
+            } else {
+                feeItem = findOrCreateMiscellaneousFeeItem();
+            }
 
             // Step 2: Create the Bill
             BilledBill miscBill = createMiscellaneousBill();
             billFacade.create(miscBill);
 
             // Step 3: Create the BillItem
-            BillItem billItem = createBillItem(miscBill, miscFeeItem);
+            BillItem billItem = createBillItem(miscBill, feeItem);
             billItemFacade.create(billItem);
 
             // Step 4: Create the BillFee
@@ -297,6 +306,7 @@ public class MiscellaneousStaffFeeController implements Serializable {
      */
     public void clearForm() {
         selectedStaff = null;
+        selectedPaymentCategory = null;
         feeAmount = 0.0;
         feeDescription = null;
     }
@@ -309,6 +319,14 @@ public class MiscellaneousStaffFeeController implements Serializable {
 
     public void setSelectedStaff(Staff selectedStaff) {
         this.selectedStaff = selectedStaff;
+    }
+
+    public PaymentItem getSelectedPaymentCategory() {
+        return selectedPaymentCategory;
+    }
+
+    public void setSelectedPaymentCategory(PaymentItem selectedPaymentCategory) {
+        this.selectedPaymentCategory = selectedPaymentCategory;
     }
 
     public double getFeeAmount() {
