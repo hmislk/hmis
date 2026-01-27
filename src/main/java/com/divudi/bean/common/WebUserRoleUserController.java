@@ -96,7 +96,7 @@ public class WebUserRoleUserController implements Serializable {
             getFacade().create(roleUser);
         } else {
             roleUser.setRetired(false);
-            getFacade().create(roleUser);
+            getFacade().edit(roleUser);
         }
         
         updatePrivilegesToUserRole(webUserRole,webUser,department);
