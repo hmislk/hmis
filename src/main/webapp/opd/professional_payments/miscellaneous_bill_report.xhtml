@@ -21,9 +21,8 @@
                                     <p:calendar
                                         id="dtFromDate"
                                         value="#{miscellaneousStaffFeeController.fromDate}"
-                                        pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                         class="w-100"
-                                        showButtonPanel="true"
                                         required="true"
                                         requiredMessage="Please select from date">
                                     </p:calendar>
@@ -32,7 +31,7 @@
                                     <p:calendar
                                         id="dtToDate"
                                         value="#{miscellaneousStaffFeeController.toDate}"
-                                        pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                         class="w-100"
                                         showButtonPanel="true"
                                         required="true"
@@ -69,17 +68,16 @@
 
                                 <f:facet name="footer">
                                     <p:commandButton
+                                        ajax="false"
                                         value="Search"
                                         action="#{miscellaneousStaffFeeController.filterMiscellaneousBills}"
-                                        update="formBillReport:panelResults formBillReport:growl"
-                                        process="@form"
                                         icon="fa fa-search"
                                         styleClass="ui-button-success mx-2 my-2"/>
 
                                     <p:commandButton
                                         value="Clear"
+                                        ajax="false"
                                         action="#{miscellaneousStaffFeeController.clearReportFilters}"
-                                        update="formBillReport"
                                         icon="fa fa-eraser"
                                         styleClass="ui-button-secondary mx-2 my-2"
                                         process="@this"/>
@@ -148,7 +146,7 @@
                                         <f:facet name="footer">
                                             <div class="text-end fw-bold">
                                                 Total Bills: #{miscellaneousStaffFeeController.filteredMiscellaneousBills.size()} |
-                                                Grand Total: <h:outputText value="#{miscellaneousStaffFeeController.filteredMiscellaneousBills.stream().mapToDouble(b -> b.netTotal).sum()}">
+                                                Grand Total: <h:outputText value="#{miscellaneousStaffFeeController.filteredBillsGrandTotal}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </div>

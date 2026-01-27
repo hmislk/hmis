@@ -15,7 +15,6 @@ import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.StaffFacade;
-import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.BillNumberGenerator;
 import java.io.Serializable;
@@ -29,10 +28,12 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
- * Controller for managing miscellaneous staff fees that are not related to patient bills.
- * These fees can include administrative fees, bonuses, allowances, meeting fees, etc.
+ * Controller for managing miscellaneous staff fees that are not related to
+ * patient bills. These fees can include administrative fees, bonuses,
+ * allowances, meeting fees, etc.
  *
  * @author HMIS Development Team
  */
@@ -87,6 +88,7 @@ public class MiscellaneousStaffFeeController implements Serializable {
      * Inner class to hold temporary payment items before bill finalization
      */
     public static class TempPaymentItem implements Serializable {
+
         private PaymentItem paymentCategory;
         private double amount;
         private String description;
@@ -197,9 +199,9 @@ public class MiscellaneousStaffFeeController implements Serializable {
     }
 
     /**
-     * Finalizes and saves the bill with all payment items.
-     * Creates the complete Bill → BillItems → BillFees chain.
-     * After successful creation, navigates to print preview.
+     * Finalizes and saves the bill with all payment items. Creates the complete
+     * Bill → BillItems → BillFees chain. After successful creation, navigates
+     * to print preview.
      */
     public void finalizeBill() {
         // Validation
@@ -252,7 +254,8 @@ public class MiscellaneousStaffFeeController implements Serializable {
     }
 
     /**
-     * Finds existing miscellaneous fee item or creates a new one if it doesn't exist
+     * Finds existing miscellaneous fee item or creates a new one if it doesn't
+     * exist
      */
     private Item findOrCreateMiscellaneousFeeItem() {
         // Try to find existing item
@@ -299,8 +302,8 @@ public class MiscellaneousStaffFeeController implements Serializable {
 
         // Generate bill number using yearly numbering
         String billNumber = billNumberBean.departmentBillNumberGeneratorYearly(
-            sessionController.getDepartment(),
-            BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL
+                sessionController.getDepartment(),
+                BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL
         );
         bill.setDeptId(billNumber);
         bill.setInsId(billNumber);
@@ -453,7 +456,7 @@ public class MiscellaneousStaffFeeController implements Serializable {
 
         jpql.append("ORDER BY b.createdAt DESC");
 
-        filteredMiscellaneousBills = billFacade.findByJpql(jpql.toString(), params);
+        filteredMiscellaneousBills = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
         JsfUtil.addSuccessMessage("Found " + filteredMiscellaneousBills.size() + " bill(s)");
     }
 
@@ -557,7 +560,8 @@ public class MiscellaneousStaffFeeController implements Serializable {
     }
 
     /**
-     * Clears only the current payment item entry (keeps staff and existing items)
+     * Clears only the current payment item entry (keeps staff and existing
+     * items)
      */
     public void clearCurrentEntry() {
         selectedPaymentCategory = null;
@@ -566,7 +570,6 @@ public class MiscellaneousStaffFeeController implements Serializable {
     }
 
     // Getters and Setters
-
     public List<TempPaymentItem> getTempPaymentItems() {
         if (tempPaymentItems == null) {
             tempPaymentItems = new ArrayList<>();
@@ -672,5 +675,21 @@ public class MiscellaneousStaffFeeController implements Serializable {
 
     public void setCurrentBill(Bill currentBill) {
         this.currentBill = currentBill;
+    }
+
+    /**
+     * Calculates the grand total of all filtered miscellaneous bills
+     *
+     * @return sum of netTotal values
+     */
+    public double getFilteredBillsGrandTotal() {
+        if (filteredMiscellaneousBills == null || filteredMiscellaneousBills.isEmpty()) {
+            return 0.0;
+        }
+        double grandTotal = 0.0;
+        for (Bill bill : filteredMiscellaneousBills) {
+            grandTotal += bill.getNetTotal();
+        }
+        return grandTotal;
     }
 }
