@@ -12,6 +12,7 @@ import com.divudi.core.entity.WebUserRole;
 import com.divudi.core.entity.WebUserRolePrivilege;
 import com.divudi.core.entity.WebUserRoleUser;
 import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.WebUserPrivilegeFacade;
 import com.divudi.core.facade.WebUserRoleUserFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -45,6 +46,8 @@ public class WebUserRoleUserController implements Serializable {
     private WebUserRoleUserFacade facade;
     @EJB
     private DepartmentFacade departmentFacade;
+    @EJB
+    private WebUserPrivilegeFacade webUserPrivilegeFacade;
     
     @Inject
     private SessionController sessionController;
@@ -122,12 +125,35 @@ public class WebUserRoleUserController implements Serializable {
         
         // Clesr All Privillages
         userPrivilageController.clesrUserAllDepartmentPrivileges(user,dept);
-        
         // Add Role Privillage
         updatePrivilegesToUserRole(roleUser.getWebUserRole(),user, dept);
         
         JsfUtil.addSuccessMessage("Reset "+ roleUser.getWebUserRole().getName() +" UserRole Privileges for " + dept.getName());
-        
+    }
+    
+    public void clesrUserRolePrivileges(WebUserRoleUser roleUser){
+        List<WebUserRolePrivilege> rolePrivileges = userPrivilageController.fetchUserPrivileges(roleUser.getWebUserRole());
+        if (rolePrivileges == null || rolePrivileges.isEmpty()) {
+            return;
+        }
+
+        Set<Privileges> rolePrivilegeSet = new HashSet<>();
+        for (WebUserRolePrivilege wurp : rolePrivileges) {
+            if (wurp.getPrivilege() != null) {
+                rolePrivilegeSet.add(wurp.getPrivilege());
+            }
+        }
+
+        List<WebUserPrivilege> userPrivileges = userPrivilageController.loadUserPrivileges(roleUser.getWebUser(), roleUser.getDepartment());
+
+        for (WebUserPrivilege wup : userPrivileges) {
+            if (wup.getPrivilege() != null && rolePrivilegeSet.contains(wup.getPrivilege())) {
+                wup.setRetired(true);
+                wup.setRetiredAt(new Date());
+                wup.setRetirer(sessionController.getLoggedUser());
+                webUserPrivilegeFacade.edit(wup);
+            }
+        }
     }
     
     public void loadWebUserRoles(){
@@ -271,6 +297,7 @@ public class WebUserRoleUserController implements Serializable {
         WebUserRoleUser user = facade.findWithoutCache(roleUser.getId());
         
         if (user != null) {
+            clesrUserRolePrivileges(user);
             user.setRetired(true);
             user.setRetiredAt(new Date());
             roleUser.setRetirer(sessionController.getLoggedUser());
