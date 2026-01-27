@@ -3728,6 +3728,175 @@ public class BillService {
     }
 
     /**
+     * Creates and populates BillItemFinanceDetails and BillFinanceDetails for Inpatient Direct Issue Return Bills.
+     * This method handles stock returns where items are being returned TO the pharmacy FROM inpatient units.
+     *
+     * Key Sign Conventions for Returns:
+     * - Rates (costRate, purchaseRate, retailRate): POSITIVE (unit prices never change)
+     * - Quantities (quantity, freeQuantity): POSITIVE (stock coming back IN to pharmacy)
+     * - Value Fields (valueAtCostRate, valueAtRetailRate): POSITIVE (stock valuation)
+     * - Cost Fields (lineCost, totalCost): POSITIVE (cost value recovered with returning stock)
+     * - Financial Totals (grossTotal, netTotal): NEGATIVE (refunds to patient)
+     *
+     * @param bill The inpatient direct issue return bill to process
+     */
+    public void createBillFinancialDetailsForInpatientDirectIssueReturnBill(Bill bill) {
+        // Validate bill exists
+        if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+            return;
+        }
+
+        // Validate bill type
+        BillTypeAtomic bta = bill.getBillTypeAtomic();
+        if (bta != BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                && bta != BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN) {
+            return;
+        }
+
+        // Get or create BFD
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails();
+            bfd.setBill(bill);
+            bill.setBillFinanceDetails(bfd);
+        }
+
+        // Initialize accumulator variables
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+        BigDecimal totalWholesaleValue = BigDecimal.ZERO;
+        BigDecimal totalQuantity = BigDecimal.ZERO;
+        BigDecimal totalFreeQuantity = BigDecimal.ZERO;
+
+        // Process each bill item
+        for (BillItem billItem : bill.getBillItems()) {
+            // Skip retired items
+            if (billItem.isRetired()) {
+                continue;
+            }
+
+            // Get pharmaceutical bill item
+            PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
+            if (pharmaItem == null || pharmaItem.getItemBatch() == null) {
+                continue;
+            }
+
+            // Get or create BIFD
+            BillItemFinanceDetails bifd = billItem.getBillItemFinanceDetails();
+            if (bifd == null) {
+                bifd = new BillItemFinanceDetails();
+                bifd.setBillItem(billItem);
+                billItem.setBillItemFinanceDetails(bifd);
+            }
+
+            // Extract quantities (POSITIVE for returns - stock coming back IN)
+            BigDecimal qty = BigDecimal.valueOf(billItem.getQty()); // POSITIVE
+            BigDecimal freeQty = BigDecimal.valueOf(pharmaItem.getFreeQty()); // POSITIVE
+            BigDecimal totalQty = qty.add(freeQty); // POSITIVE
+
+            // Get rates from pharmaceutical bill item
+            BigDecimal retailRate = BigDecimal.valueOf(pharmaItem.getRetailRate());
+            BigDecimal purchaseRate = BigDecimal.valueOf(pharmaItem.getPurchaseRate());
+            BigDecimal wholesaleRate = BigDecimal.valueOf(pharmaItem.getWholesaleRate());
+
+            // Get cost rate from item batch (preferred) or fallback to purchase rate
+            BigDecimal costRate = purchaseRate;
+            ItemBatch itemBatch = pharmaItem.getItemBatch();
+            if (itemBatch != null) {
+                Double batchCostRate = itemBatch.getCostRate();
+                if (batchCostRate != null && batchCostRate > 0) {
+                    costRate = BigDecimal.valueOf(batchCostRate);
+                }
+
+                // Get other rates from batch if available
+                if (itemBatch.getRetailsaleRate() != null && itemBatch.getRetailsaleRate() > 0) {
+                    retailRate = BigDecimal.valueOf(itemBatch.getRetailsaleRate());
+                }
+                if (itemBatch.getPurcahseRate() != null && itemBatch.getPurcahseRate() > 0) {
+                    purchaseRate = BigDecimal.valueOf(itemBatch.getPurcahseRate());
+                }
+            }
+
+            // Rates - always positive (unit prices)
+            bifd.setLineNetRate(BigDecimal.valueOf(Math.abs(billItem.getNetRate())));
+            bifd.setLineGrossRate(BigDecimal.valueOf(Math.abs(billItem.getRate())));
+            bifd.setGrossRate(BigDecimal.valueOf(Math.abs(billItem.getRate())));
+            bifd.setLineCostRate(costRate.abs());
+            bifd.setCostRate(costRate.abs());
+            bifd.setTotalCostRate(costRate.abs());
+            bifd.setPurchaseRate(purchaseRate.abs());
+            bifd.setRetailSaleRate(retailRate.abs());
+            bifd.setWholesaleRate(wholesaleRate.abs());
+
+            // Quantities - POSITIVE (stock coming back IN to pharmacy)
+            bifd.setQuantity(qty); // POSITIVE
+            bifd.setQuantityByUnits(qty); // POSITIVE
+            bifd.setFreeQuantity(freeQty); // POSITIVE
+            bifd.setTotalQuantity(totalQty); // POSITIVE
+
+            // Values - POSITIVE (stock valuation)
+            // THIS IS THE KEY FIX - quantities are already positive for returns
+            bifd.setValueAtCostRate(costRate.multiply(totalQty)); // POSITIVE
+            bifd.setValueAtPurchaseRate(purchaseRate.multiply(totalQty)); // POSITIVE
+            bifd.setValueAtRetailRate(retailRate.multiply(totalQty)); // POSITIVE
+            bifd.setValueAtWholesaleRate(wholesaleRate.multiply(totalQty)); // POSITIVE
+
+            // Costs - POSITIVE (cost value recovered with returning stock)
+            BigDecimal lineCost = costRate.multiply(qty); // POSITIVE
+            bifd.setLineCost(lineCost);
+            bifd.setBillCost(BigDecimal.ZERO);
+            bifd.setTotalCost(lineCost);
+
+            // Financial totals - negative (refunds)
+            bifd.setGrossTotal(BigDecimal.valueOf(billItem.getGrossValue())); // NEGATIVE
+            bifd.setLineGrossTotal(bifd.getGrossTotal());
+            bifd.setLineNetTotal(BigDecimal.valueOf(billItem.getNetValue())); // NEGATIVE
+            bifd.setNetTotal(bifd.getLineNetTotal());
+
+            // Update pharmaceutical bill item with positive valuations
+            pharmaItem.setCostRate(costRate.doubleValue());
+            pharmaItem.setCostValue(costRate.multiply(qty).doubleValue());
+            pharmaItem.setPurchaseRate(purchaseRate.doubleValue());
+            pharmaItem.setPurchaseValue(purchaseRate.multiply(qty).doubleValue());
+            pharmaItem.setRetailRate(retailRate.doubleValue());
+            pharmaItem.setRetailValue(retailRate.multiply(qty).doubleValue());
+
+            // Accumulate for BFD (all POSITIVE for returns)
+            totalCostValue = totalCostValue.add(costRate.multiply(totalQty));
+            totalPurchaseValue = totalPurchaseValue.add(purchaseRate.multiply(totalQty));
+            totalRetailSaleValue = totalRetailSaleValue.add(retailRate.multiply(totalQty));
+            totalWholesaleValue = totalWholesaleValue.add(wholesaleRate.multiply(totalQty));
+            totalQuantity = totalQuantity.add(totalQty); // POSITIVE
+            totalFreeQuantity = totalFreeQuantity.add(freeQty); // POSITIVE
+
+            // Save bill item (cascades to BIFD and PharmaceuticalBillItem)
+            if (billItem.getId() != null && billItem.getId() != 0) {
+                billItemFacade.edit(billItem);
+            }
+        }
+
+        // Set BFD values
+        bfd.setNetTotal(BigDecimal.valueOf(bill.getNetTotal())); // NEGATIVE (refund)
+        bfd.setGrossTotal(BigDecimal.valueOf(bill.getTotal())); // NEGATIVE (refund)
+
+        // Set stock value totals - POSITIVE (stock valuation)
+        bfd.setTotalCostValue(totalCostValue); // POSITIVE
+        bfd.setTotalPurchaseValue(totalPurchaseValue); // POSITIVE
+        bfd.setTotalRetailSaleValue(totalRetailSaleValue); // POSITIVE
+        bfd.setTotalWholesaleValue(totalWholesaleValue); // POSITIVE
+
+        // Set quantity totals - POSITIVE (stock coming back in)
+        bfd.setTotalQuantity(totalQuantity); // POSITIVE
+        bfd.setTotalFreeQuantity(totalFreeQuantity); // POSITIVE
+
+        // Save bill (cascades to BFD)
+        if (bill.getId() != null && bill.getId() != 0) {
+            billFacade.edit(bill);
+        }
+    }
+
+    /**
      * Creates and populates BillItemFinanceDetails and BillFinanceDetails for OPD and pharmacy retail sale bills.
      * This method handles correction of historical bills that have incorrect (positive) stock values.
      * For outgoing stock (sales), values are made negative to reflect stock reduction.
