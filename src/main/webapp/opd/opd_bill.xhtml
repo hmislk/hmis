@@ -36,14 +36,13 @@
                                         update="@all"
                                         action="#{bookingControllerViewScope.navigateToChannelBookingFromMenuByDate()}"
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Navigation Button To Channel Booking By Date From OPD Billing')}"/>
-                                    <p:commandButton 
+                                    <p:commandButton
                                         id="btnNewOpdBill"
-                                        value="New OPD Bill" 
+                                        value="New OPD Bill"
                                         class="ui-button-primary m-1"
                                         icon="fa fa-plus"
                                         action="#{opdBillController.navigateToNewOpdBill()}"
-                                        process="btnNewOpdBill"
-                                        update="@all">
+                                        ajax="false">
                                     </p:commandButton>
                                 </div>
                             </div>
