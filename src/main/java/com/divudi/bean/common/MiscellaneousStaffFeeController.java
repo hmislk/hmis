@@ -79,6 +79,10 @@ public class MiscellaneousStaffFeeController implements Serializable {
     private Date toDate;
     private Staff filterStaff;
 
+    // Print preview fields
+    private boolean printPreview;
+    private Bill currentBill;
+
     /**
      * Inner class to hold temporary payment items before bill finalization
      */
@@ -195,6 +199,7 @@ public class MiscellaneousStaffFeeController implements Serializable {
     /**
      * Finalizes and saves the bill with all payment items.
      * Creates the complete Bill → BillItems → BillFees chain.
+     * After successful creation, navigates to print preview.
      */
     public void finalizeBill() {
         // Validation
@@ -231,9 +236,14 @@ public class MiscellaneousStaffFeeController implements Serializable {
                 billFeeFacade.create(billFee);
             }
 
-            // Success
-            JsfUtil.addSuccessMessage("Bill finalized successfully with " + tempPaymentItems.size() + " payment item(s) for " + selectedStaff.getPerson().getNameWithTitle());
-            clearForm();
+            // Success - Set up print preview
+            currentBill = miscBill;
+            printPreview = true;
+            JsfUtil.addSuccessMessage("Bill finalized successfully. Bill No: " + miscBill.getDeptId());
+
+            // Clear temporary items but keep the bill for printing
+            tempPaymentItems = null;
+            totalAmount = 0.0;
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error finalizing bill: " + e.getMessage());
@@ -529,6 +539,24 @@ public class MiscellaneousStaffFeeController implements Serializable {
     }
 
     /**
+     * Navigates back to the form from print preview
+     */
+    public void backToForm() {
+        printPreview = false;
+        currentBill = null;
+        clearForm();
+    }
+
+    /**
+     * Creates a new bill entry
+     */
+    public void createNew() {
+        printPreview = false;
+        currentBill = null;
+        clearForm();
+    }
+
+    /**
      * Clears only the current payment item entry (keeps staff and existing items)
      */
     public void clearCurrentEntry() {
@@ -628,5 +656,21 @@ public class MiscellaneousStaffFeeController implements Serializable {
 
     public void setFilterStaff(Staff filterStaff) {
         this.filterStaff = filterStaff;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
+    }
+
+    public Bill getCurrentBill() {
+        return currentBill;
+    }
+
+    public void setCurrentBill(Bill currentBill) {
+        this.currentBill = currentBill;
     }
 }

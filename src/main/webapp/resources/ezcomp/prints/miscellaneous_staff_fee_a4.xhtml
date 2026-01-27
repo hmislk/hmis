@@ -1,0 +1,139 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" required="true"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <div class="receipt-container" style="width: 210mm; padding: 20mm; font-family: Arial, sans-serif;">
+            <!-- Header -->
+            <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px;">
+                <h2 style="margin: 0; font-size: 24pt; color: #333;">
+                    #{sessionController.institution.name}
+                </h2>
+                <p style="margin: 5px 0; font-size: 11pt;">
+                    #{sessionController.institution.address}
+                </p>
+                <p style="margin: 5px 0; font-size: 11pt;">
+                    Tel: #{sessionController.institution.phone}
+                </p>
+                <h3 style="margin: 15px 0 5px 0; font-size: 16pt; font-weight: bold;">
+                    MISCELLANEOUS STAFF FEE VOUCHER
+                </h3>
+            </div>
+
+            <!-- Bill Information -->
+            <div style="margin-bottom: 20px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 11pt;">
+                    <tr>
+                        <td style="padding: 5px; width: 50%;"><strong>Bill No:</strong> #{cc.attrs.bill.deptId}</td>
+                        <td style="padding: 5px; width: 50%; text-align: right;">
+                            <strong>Date:</strong>
+                            <h:outputText value="#{cc.attrs.bill.billDate}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;" colspan="2">
+                            <strong>Staff/Doctor:</strong> #{cc.attrs.bill.staff.person.nameWithTitle}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;" colspan="2">
+                            <strong>Department:</strong> #{cc.attrs.bill.department.name}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Payment Items -->
+            <div style="margin-bottom: 20px;">
+                <h:panelGroup rendered="#{not empty cc.attrs.bill.billItems}">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 10pt;">
+                        <thead>
+                            <tr style="background-color: #f0f0f0; border-top: 2px solid #333; border-bottom: 2px solid #333;">
+                                <th style="padding: 8px; text-align: left; width: 5%;">No.</th>
+                                <th style="padding: 8px; text-align: left; width: 35%;">Payment Category</th>
+                                <th style="padding: 8px; text-align: left; width: 45%;">Description</th>
+                                <th style="padding: 8px; text-align: right; width: 15%;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="item" varStatus="status">
+                                <tr style="border-bottom: 1px solid #ddd;">
+                                    <td style="padding: 8px;">#{status.index + 1}</td>
+                                    <td style="padding: 8px;">#{item.item.name}</td>
+                                    <td style="padding: 8px;">#{item.descreption}</td>
+                                    <td style="padding: 8px; text-align: right;">
+                                        <h:outputText value="#{item.grossValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                        </tbody>
+                        <tfoot>
+                            <tr style="border-top: 2px solid #333; font-weight: bold; background-color: #f0f0f0;">
+                                <td colspan="3" style="padding: 10px; text-align: right;">Total Amount:</td>
+                                <td style="padding: 10px; text-align: right; font-size: 12pt;">
+                                    <h:outputText value="#{cc.attrs.bill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </h:panelGroup>
+            </div>
+
+            <!-- Comments -->
+            <h:panelGroup rendered="#{not empty cc.attrs.bill.comments}">
+                <div style="margin-bottom: 20px; padding: 10px; background-color: #f9f9f9; border-left: 3px solid #333;">
+                    <strong>Notes:</strong> #{cc.attrs.bill.comments}
+                </div>
+            </h:panelGroup>
+
+            <!-- Signatures -->
+            <div style="margin-top: 40px;">
+                <table style="width: 100%; font-size: 10pt;">
+                    <tr>
+                        <td style="width: 33%; text-align: center; vertical-align: bottom;">
+                            <div style="border-top: 1px solid #333; padding-top: 5px; margin-top: 60px;">
+                                Prepared By
+                            </div>
+                        </td>
+                        <td style="width: 34%; text-align: center; vertical-align: bottom;">
+                            <div style="border-top: 1px solid #333; padding-top: 5px; margin-top: 60px;">
+                                Verified By
+                            </div>
+                        </td>
+                        <td style="width: 33%; text-align: center; vertical-align: bottom;">
+                            <div style="border-top: 1px solid #333; padding-top: 5px; margin-top: 60px;">
+                                Authorized By
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Footer -->
+            <div style="margin-top: 30px; text-align: center; font-size: 9pt; color: #666; border-top: 1px solid #ddd; padding-top: 10px;">
+                <p>This is a computer-generated document. No signature required.</p>
+                <p>Printed by: #{sessionController.loggedUser.name} on
+                    <h:outputText value="#{sessionController.applicationPreference.applicationDate}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                    </h:outputText>
+                </p>
+            </div>
+        </div>
+    </cc:implementation>
+</html>

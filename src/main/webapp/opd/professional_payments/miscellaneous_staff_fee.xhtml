@@ -5,15 +5,19 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ezp="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
       >
 
     <h:body>
         <ui:composition template="/payments/pay_index.xhtml">
             <ui:define name="admin">
                 <h:panelGroup id="panMiscFee" styleClass="alignTop">
-                    <p:panel header="Add Miscellaneous Staff Fee">
-                        <h:form id="formMiscFee">
-                            <p:growl id="growl" showDetail="true" sticky="false" life="3000"/>
+                    <h:form id="formMiscFee">
+                        <p:growl id="growl" showDetail="true" sticky="false" life="3000"/>
+
+                        <!-- Entry Form Section - Visible when NOT in print preview -->
+                        <h:panelGroup rendered="#{not miscellaneousStaffFeeController.printPreview}">
+                            <p:panel header="Add Miscellaneous Staff Fee">
 
                             <p:panel header="Fee Entry Form" styleClass="mb-3">
                                 <h:panelGrid columns="2" cellpadding="10" styleClass="w-100">
@@ -187,9 +191,159 @@
                                 <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check"/>
                                 <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times"/>
                             </p:confirmDialog>
+                            </p:panel>
+                        </h:panelGroup>
 
-                        </h:form>
-                    </p:panel>
+                        <!-- Print Preview Section - Visible when in print preview -->
+                        <h:panelGroup rendered="#{miscellaneousStaffFeeController.printPreview}">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <h:outputText value="Bill Preview - #{miscellaneousStaffFeeController.currentBill.deptId}"
+                                                          style="font-size: 1.2em; font-weight: bold;"/>
+                                        </div>
+                                        <div>
+                                            <p:commandButton
+                                                value="Print"
+                                                ajax="false"
+                                                icon="fas fa-print"
+                                                styleClass="ui-button-info mx-2">
+                                                <p:printer target="printArea" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                                value="Settings"
+                                                icon="fas fa-cog"
+                                                styleClass="ui-button-secondary mx-1"
+                                                type="button"
+                                                onclick="PF('miscStaffFeeConfigDialog').show();" />
+
+                                            <p:commandButton
+                                                value="New Bill"
+                                                ajax="true"
+                                                update="formMiscFee"
+                                                icon="fas fa-plus"
+                                                action="#{miscellaneousStaffFeeController.createNew}"
+                                                styleClass="ui-button-success mx-2" />
+
+                                            <p:commandButton
+                                                value="Back"
+                                                ajax="true"
+                                                update="formMiscFee"
+                                                icon="fas fa-arrow-left"
+                                                action="#{miscellaneousStaffFeeController.backToForm}"
+                                                styleClass="ui-button-secondary mx-2" />
+                                        </div>
+                                    </div>
+                                </f:facet>
+
+                                <!-- Print Area with conditional rendering based on paper type settings -->
+                                <h:panelGroup id="printArea">
+                                    <!-- A4 Format -->
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Miscellaneous Staff Fee Bill is A4 Paper', true)}">
+                                        <ezp:miscellaneous_staff_fee_a4 bill="#{miscellaneousStaffFeeController.currentBill}"/>
+                                    </h:panelGroup>
+
+                                    <!-- Five Five (5.5 Inch) Format -->
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Miscellaneous Staff Fee Bill is Five Five Paper', false)}">
+                                        <ezp:miscellaneous_staff_fee_fivefive bill="#{miscellaneousStaffFeeController.currentBill}"/>
+                                    </h:panelGroup>
+
+                                    <!-- POS Format -->
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Miscellaneous Staff Fee Bill is POS Paper', false)}">
+                                        <ezp:miscellaneous_staff_fee_pos bill="#{miscellaneousStaffFeeController.currentBill}"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </p:panel>
+                        </h:panelGroup>
+
+                        <!-- Configuration Dialog for Printer Settings -->
+                        <p:dialog id="miscStaffFeeConfigDialog"
+                                  header="Miscellaneous Staff Fee Printer Configuration"
+                                  widgetVar="miscStaffFeeConfigDialog"
+                                  modal="true"
+                                  width="600"
+                                  height="400"
+                                  resizable="true"
+                                  maximizable="true"
+                                  closeOnEscape="true">
+
+                            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="miscStaffFeeConfigForm" />
+
+                            <h:form id="miscStaffFeeConfigForm">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="card config-section">
+                                            <div class="card-header">
+                                                <h6><i class="fas fa-file-alt"></i> Paper Format Settings</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox
+                                                        id="miscStaffFeeA4"
+                                                        value="#{pharmacyConfigController.miscStaffFeeA4Paper}" />
+                                                    <h:outputLabel for="miscStaffFeeA4" value="A4 Paper Format" styleClass="ms-2" />
+                                                    <small class="form-text text-muted d-block">Standard A4 size format with full details and signature sections (210mm x 297mm)</small>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox
+                                                        id="miscStaffFeeFiveFive"
+                                                        value="#{pharmacyConfigController.miscStaffFeeFiveFivePaper}" />
+                                                    <h:outputLabel for="miscStaffFeeFiveFive" value="Five Inch (5.5&quot;) Paper Format" styleClass="ms-2" />
+                                                    <small class="form-text text-muted d-block">Medium-sized format suitable for receipts and vouchers (140mm width)</small>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox
+                                                        id="miscStaffFeePos"
+                                                        value="#{pharmacyConfigController.miscStaffFeePosPaper}" />
+                                                    <h:outputLabel for="miscStaffFeePos" value="POS Paper Format" styleClass="ms-2" />
+                                                    <small class="form-text text-muted d-block">Compact thermal receipt format for POS printers (80mm width)</small>
+                                                </div>
+
+                                                <div class="alert alert-info mt-3" role="alert">
+                                                    <i class="fas fa-info-circle"></i>
+                                                    <strong>Note:</strong> You can enable multiple formats. The system will display all selected formats for printing.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-4">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <p:messages id="miscStaffFeeConfigMessages" showDetail="true" closable="true" />
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="d-flex gap-2">
+                                                        <p:commandButton
+                                                            value="Apply &amp; Close"
+                                                            icon="fas fa-save"
+                                                            styleClass="ui-button-success"
+                                                            ajax="false"
+                                                            action="#{pharmacyConfigController.saveMiscStaffFeeConfig}"
+                                                            update="formMiscFee:printArea miscStaffFeeConfigMessages"
+                                                            oncomplete="PF('miscStaffFeeConfigDialog').hide();" />
+                                                        <p:commandButton
+                                                            value="Cancel"
+                                                            icon="fas fa-times"
+                                                            styleClass="ui-button-secondary"
+                                                            onclick="PF('miscStaffFeeConfigDialog').hide(); return false;"
+                                                            type="button" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </h:form>
+                        </p:dialog>
+
+                    </h:form>
                 </h:panelGroup>
             </ui:define>
         </ui:composition>
