@@ -3791,8 +3791,8 @@ public class BillService {
             }
 
             // Extract quantities (POSITIVE for returns - stock coming back IN)
-            BigDecimal qty = BigDecimal.valueOf(billItem.getQty()); // POSITIVE
-            BigDecimal freeQty = BigDecimal.valueOf(pharmaItem.getFreeQty()); // POSITIVE
+            BigDecimal qty = BigDecimal.valueOf(billItem.getQty()).abs(); // POSITIVE
+            BigDecimal freeQty = BigDecimal.valueOf(pharmaItem.getFreeQty()).abs(); // POSITIVE
             BigDecimal totalQty = qty.add(freeQty); // POSITIVE
 
             // Get rates from pharmaceutical bill item
@@ -3808,8 +3808,14 @@ public class BillService {
                 if (batchCostRate != null && batchCostRate > 0) {
                     costRate = BigDecimal.valueOf(batchCostRate);
                 }
-                retailRate = BigDecimal.valueOf(itemBatch.getRetailsaleRate());
-                purchaseRate = BigDecimal.valueOf(itemBatch.getPurcahseRate());
+
+                // Get other rates from batch if available (primitive double, so no null check needed)
+                if (itemBatch.getRetailsaleRate() > 0) {
+                    retailRate = BigDecimal.valueOf(itemBatch.getRetailsaleRate());
+                }
+                if (itemBatch.getPurcahseRate() > 0) {
+                    purchaseRate = BigDecimal.valueOf(itemBatch.getPurcahseRate());
+                }
             }
 
             // Rates - always positive (unit prices)
