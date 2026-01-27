@@ -307,12 +307,13 @@
                                         ajax="false"
                                         value="New Payment" 
                                         action="#{staffPaymentBillController.newPayment}" 
-                                        oncomplete="location.reload(true);"
-                                        />
+                                        oncomplete="location.reload(true);">
+                                    </p:commandButton>
                                     <p:commandButton 
                                         value="Print" 
                                         class="ui-button-info" 
                                         icon="fas fa-print" 
+                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill: Print individually.', false)}"
                                         ajax="false" 
                                         action="#" >
                                         <p:printer target="gpBillPreview" ></p:printer>
@@ -322,22 +323,46 @@
 
                         </f:facet>
 
-                        <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
-                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is A4 paper', true)}">
-                                <bi:A4PaperPamentOPDDoctor controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                        <h:panelGroup id="gpBillPreview" >
+
+                            <h:panelGroup class="mb-4" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is A4 paper', true)}">
+                                <h:panelGroup class="d-flex justify-content-center">
+                                    <p:commandButton 
+                                        value="Print A4 Paper" 
+                                        class="ui-button-info mb-3 " 
+                                        icon="fas fa-print" 
+                                        ajax="false" 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill: Print individually.', false)}"
+                                        action="#" >
+                                        <p:printer target="A4Paper" ></p:printer>
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                <h:panelGroup id="A4Paper" class="d-flex justify-content-center">
+                                    <bi:A4PaperPamentOPDDoctor controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                                </h:panelGroup>
                             </h:panelGroup>
-                            
+
                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is five five paper.')}">
-                                <bi:staff_payment_five_five_paper_with_headings controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" />
+                                <h:panelGroup class="d-flex justify-content-center">
+                                    <p:commandButton 
+                                        value="Print 5x5 Paper" 
+                                        class="ui-button-info mb-3 mt-4" 
+                                        icon="fas fa-print"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill: Print individually.', false)}"
+                                        ajax="false" 
+                                        action="#" >
+                                        <p:printer target="fivefivePaper" ></p:printer>
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                <h:panelGroup id="fivefivePaper">
+                                    <bi:staff_payment_five_five_paper_with_headings  controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" />
+                                </h:panelGroup>
                             </h:panelGroup>
                             
                         </h:panelGroup>
-
                     </p:panel>
                 </h:form>
             </ui:define>
-
         </ui:composition>
-
     </h:body>
 </html>
