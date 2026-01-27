@@ -1162,6 +1162,38 @@ public class DataAdministrationController implements Serializable {
         executionFeedback = out.toString();
     }
 
+    /**
+     * Fast native SQL version of correctPharmacyDisbursementSigns().
+     * Uses bulk UPDATE statements instead of loading each entity individually.
+     * Supports date range filtering via fromDate and toDate.
+     */
+    public void correctPharmacyDisbursementSignsNative() {
+        executionFeedback = "";
+        try {
+            String result = billFacade.correctPharmacyDisbursementSignsNative(fromDate, toDate, false);
+            executionFeedback = result;
+            JsfUtil.addSuccessMessage("Sign correction completed. Check feedback for details.");
+        } catch (Exception e) {
+            executionFeedback = "Error: " + e.getMessage();
+            JsfUtil.addErrorMessage("Error correcting signs: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Dry-run version to preview what would be corrected without making changes.
+     */
+    public void previewPharmacyDisbursementSignsCorrection() {
+        executionFeedback = "";
+        try {
+            String result = billFacade.correctPharmacyDisbursementSignsNative(fromDate, toDate, true);
+            executionFeedback = result;
+            JsfUtil.addSuccessMessage("Preview complete. Check feedback for details.");
+        } catch (Exception e) {
+            executionFeedback = "Error: " + e.getMessage();
+            JsfUtil.addErrorMessage("Error previewing: " + e.getMessage());
+        }
+    }
+
     public void correctDirectIssueInwardMedicineCancellationStockValues() {
         executionFeedback = "";
         StringBuilder output = new StringBuilder();
