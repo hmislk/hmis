@@ -53,9 +53,7 @@
                                         value="#{miscellaneousStaffFeeController.selectedPaymentCategory}"
                                         class="w-100"
                                         filter="true"
-                                        filterMatchMode="contains"
-                                        required="true"
-                                        requiredMessage="Please select a payment category">
+                                        filterMatchMode="contains">
                                         <f:selectItem itemLabel="Select Payment Category" itemValue="#{null}" noSelectionOption="true"/>
                                         <f:selectItems
                                             value="#{paymentItemController.items}"
@@ -85,8 +83,6 @@
                                         cols="50"
                                         class="w-100"
                                         placeholder="Enter the reason for this payment item"
-                                        required="true"
-                                        requiredMessage="Please enter a description"
                                         maxlength="500">
                                     </p:inputTextarea>
 
@@ -161,6 +157,7 @@
                                                 value="Finalize Bill"
                                                 action="#{miscellaneousStaffFeeController.finalizeBill}"
                                                 update="formMiscFee tblRecentFees"
+                                                process="@this"
                                                 icon="fa fa-check-circle"
                                                 styleClass="ui-button-warning mx-2 my-2"
                                                 disabled="#{empty miscellaneousStaffFeeController.tempPaymentItems}">
