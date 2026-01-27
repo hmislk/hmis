@@ -129,7 +129,18 @@ public class MiscellaneousStaffFeeController implements Serializable {
      * Adds a payment item to the temporary list
      */
     public void addPaymentItem() {
-        // Validation
+        // Validation - Staff must be selected
+        if (selectedStaff == null) {
+            JsfUtil.addErrorMessage("Please select a staff member first");
+            return;
+        }
+
+        // Validation - Ensure all items are for the same staff member
+        if (!tempPaymentItems.isEmpty()) {
+            JsfUtil.addErrorMessage("Cannot change staff member. All payment items in a bill must be for the same staff member. Click 'Cancel All' to start a new bill for a different staff member.");
+            return;
+        }
+
         if (selectedPaymentCategory == null) {
             JsfUtil.addErrorMessage("Please select a payment category");
             return;
