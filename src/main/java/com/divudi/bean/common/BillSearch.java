@@ -1763,6 +1763,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         refundingBill.setNetTotal(billNetTotal);
         refundingBill.setTotal(billNetTotal);
         refundingBill.setDiscount(0);
+        refundingBill.setTotalHospitalFee(billHospitalTotal);
+        refundingBill.setTotalStaffFee(billStaffTotal);
 
         return true;
     }
@@ -8143,12 +8145,20 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                         cd.setNo(payment.getReferenceNo());
                         cd.setReferenceNo(payment.getReferenceNo());
                         cd.setDate(payment.getPaymentDate());
-                        cd.setInstitution(payment.getBank());
+
+                        // Get bank/institution from payment
+                        // For backward compatibility: try bank first, then creditCompany (used for ewallet in older records)
+                        Institution bankOrInstitution = payment.getBank();
+                        if (bankOrInstitution == null) {
+                            bankOrInstitution = payment.getCreditCompany();
+                        }
+                        cd.setInstitution(bankOrInstitution);
 
                         originalPaymentDetails.add(cd);
                         System.out.println("  Stored: " + payment.getPaymentMethod() +
                                          ", Amount: " + payment.getPaidValue() +
-                                         ", Ref: " + payment.getReferenceNo());
+                                         ", Ref: " + payment.getReferenceNo() +
+                                         ", Bank/Institution: " + (bankOrInstitution != null ? bankOrInstitution.getName() : "null"));
                     }
                 }
 

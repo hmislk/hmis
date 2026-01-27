@@ -934,30 +934,30 @@ public class QuickBookReportController implements Serializable {
             departmentsToProcess = Arrays.asList(department);
         } else {
             // Get all approved departments, optionally filtered by site
-            departmentsToProcess = getApprovedDepartments(approvedBillTypes, getInstitution(), site, CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate));
+            departmentsToProcess = getApprovedDepartments(approvedBillTypes, getInstitution(), site, fromDate, toDate);
         }
 
         // Get bills for each department
         for (Department d : departmentsToProcess) {
 
             // Get approved GRNs (not pending/pre-approval)
-            billsBilled.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_GRN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsBilled.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_GRN, d, getInstitution(), fromDate, toDate));
 
             // Get approved Direct Purchases
-            billsDirectPurchase.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsDirectPurchase.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, d, getInstitution(), fromDate, toDate));
 
-            // Get approved GRN Returns
-            billsReturn.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_GRN_RETURN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            // Get approved GRN Returns (uses RefundBill class, so query with Bill parent)
+            billsReturn.addAll(getApprovedBills(new Bill(), BillTypeAtomic.PHARMACY_GRN_RETURN, d, getInstitution(), fromDate, toDate));
 
-            // Get approved Direct Purchase Returns
-            billsDirectPurchaseReturn.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            // Get approved Direct Purchase Returns (uses RefundBill class, so query with Bill parent)
+            billsDirectPurchaseReturn.addAll(getApprovedBills(new Bill(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND, d, getInstitution(), fromDate, toDate));
 
-            // Get approved Returns without tracing receipts
-            billsReturnP.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            // Get approved Returns without tracing receipts (uses PreBill class, so query with Bill parent)
+            billsReturnP.addAll(getApprovedBills(new Bill(), BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING, d, getInstitution(), fromDate, toDate));
 
             // Get cancelled bills (if needed for QB reporting)
-            billsCanceled.addAll(getApprovedBills(new CancelledBill(), BillTypeAtomic.PHARMACY_GRN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
-            billsReturnCancel.addAll(getApprovedBills(new CancelledBill(), BillTypeAtomic.PHARMACY_GRN_RETURN, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
+            billsCanceled.addAll(getApprovedBills(new CancelledBill(), BillTypeAtomic.PHARMACY_GRN, d, getInstitution(), fromDate, toDate));
+            billsReturnCancel.addAll(getApprovedBills(new CancelledBill(), BillTypeAtomic.PHARMACY_GRN_RETURN, d, getInstitution(), fromDate, toDate));
         }
 
         // Aggregate all approved bills for processing
@@ -1009,10 +1009,10 @@ public class QuickBookReportController implements Serializable {
             // Determine TRNSTYPE based on transaction type
             String trnsType = isReturnTransaction ? "Bill Refund" : "Bill";
 
-            // Calculate inventory value (TOTAL without expenses) - stored as negative for GRN
-            // For GRN: b.getTotal() is negative (e.g., -10750), we need positive for SPL
-            // For Returns: b.getTotal() is positive (e.g., 10750), we need negative for SPL
-            double inventoryValue = Math.abs(b.getTotal());
+            // Calculate inventory value (NET TOTAL without expenses) - stored as negative for GRN
+            // For GRN: b.getNetTotal() is negative (e.g., -10750), we need positive for SPL
+            // For Returns: b.getNetTotal() is positive (e.g., 10750), we need negative for SPL
+            double inventoryValue = Math.abs(b.getNetTotal());
             double splInventoryAmount = isReturnTransaction ? (0 - inventoryValue) : inventoryValue;
 
             // Store inventory SPL for later addition (after expenses)
@@ -1033,7 +1033,10 @@ public class QuickBookReportController implements Serializable {
                     String expenseAccount = bi.getItem().getPrintName() != null ? bi.getItem().getPrintName() : "OTHER MATERIAL & SERVICE COST:Other";
                     // Expenses are stored as positive, for returns we negate them
                     double expenseSplAmount = isReturnTransaction ? (0 - bi.getNetValue()) : bi.getNetValue();
-                    qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), expenseAccount, "", "", "", expenseSplAmount, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
+                    // Prepend expense item code to docNum
+                    String expenseItemCode = bi.getItem() != null && bi.getItem().getCode() != null ? bi.getItem().getCode() : "";
+                    String docNumWithExpenseCode = expenseItemCode.isEmpty() ? b.getInvoiceNumber() : expenseItemCode + " " + b.getInvoiceNumber();
+                    qbf = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate), expenseAccount, "", "", "", expenseSplAmount, docNumWithExpenseCode, b.getDeptId(), b.getDepartment().getName(), b.getDeptId(), "", "", "", "", "");
                     expensesConsideredTotal += bi.getNetValue();
                     qbfs.add(qbf);
                 }
@@ -3585,8 +3588,7 @@ public class QuickBookReportController implements Serializable {
         String sql;
         Map<String, Object> temMap = new HashMap<>();
 
-        sql = "SELECT b FROM Bill b WHERE type(b)=:bill"
-                + " and b.retired=false "
+        sql = "SELECT b FROM Bill b WHERE b.retired=false "
                 + " and b.billTypeAtomic = :bta "
                 + " and b.department=:d "
                 + " and b.institution=:ins "
@@ -3596,7 +3598,6 @@ public class QuickBookReportController implements Serializable {
 
         temMap.put("fromDate", fd);
         temMap.put("toDate", td);
-        temMap.put("bill", billClass.getClass());
         temMap.put("bta", billTypeAtomic);
         temMap.put("d", dep);
         temMap.put("ins", ins);
