@@ -53,7 +53,7 @@
                                 </f:selectItems>
                             </p:selectOneMenu>
                         </h:panelGroup>
-                        
+
                         <p:outputLabel  value="Role" ></p:outputLabel>
                         <p:selectOneMenu
                             class="w-100"
@@ -67,17 +67,16 @@
                         </p:selectOneMenu>
 
                     </p:panelGrid>
-
-                    <div class="d-flex justify-content-end">
-                        <p:commandButton
-                            value="Add User and Role Privileges to Department"
-                            icon="fa fa-plus"
-                            class="ui-button-success"
-                            action="#{webUserRoleUserController.addUsersToDepartmentRoleWithPrivileges}"
-                            ajax="false">
-                        </p:commandButton>
-                    </div>
                     
+                    <div class="d-flex justify-content-end">
+                            <p:commandButton
+                                value="Add Role Privileges to Department"
+                                icon="fa fa-plus"
+                                class="ui-button-success"
+                                action="#{webUserRoleUserController.addUsersToDepartmentRoleWithPrivileges}"
+                                ajax="false">
+                            </p:commandButton>
+                        </div>
 
                 </p:panel>
 
@@ -87,23 +86,36 @@
                     value="#{webUserRoleUserController.roleUsers}"
                     rowKey="#{user.id}"
                     id="tbl">
+                    
                     <p:column headerText="User" style="padding: 10px; width:150px;">
                         <h:outputText value="#{user.webUser.name}" />
                     </p:column>
+                    
                     <p:column headerText="Institution" style="padding: 10px; ">
                         <h:outputText value="#{user.department.institution.name}" />
                     </p:column>
+                    
                     <p:column headerText="Department" style="padding: 10px; ">
                         <h:outputText value="#{user.department.name}" />
                     </p:column>
-                    <p:column headerText="Role" style="padding: 10px; width: 200px;">
+                    
+                    <p:column headerText="Role" class="text-center" style="padding: 10px; width: 180px;">
                         <div class="card p-2">
                             <h:outputText value="#{user.webUserRole.name}" class="d-flex justify-content-center" style="font-weight: 700;"/>
                         </div>
                     </p:column>
-
-                    <p:column headerText="Actions" style="align-items: center; padding: 10px; width: 60px; " >
-                        <h:panelGroup id="combinedActions" class="d-flex justify-content-end">
+                    
+                    <p:column headerText="Actions" class="text-center" style=" padding: 10px; width: 200px; " >
+                        <h:panelGroup id="combinedActions" class="d-flex justify-content-center gap-2">
+                            <p:commandButton
+                                value="Reset Privilege"
+                                icon="fa fa-refresh"
+                                class="ui-button-secondary"
+                                action="#{webUserRoleUserController.resetRolePrivileges(user)}"
+                                onclick="if (!confirm('Are you sure you want to Reset Privileges?'))
+                                                                return false;"
+                                ajax="false">
+                            </p:commandButton>
                             <p:commandButton
                                 id="remove"
                                 title="Remove User Role"
@@ -114,6 +126,7 @@
                             </p:commandButton>
                         </h:panelGroup>
                     </p:column>
+                    
                 </p:dataTable>
             </ui:define>
         </ui:composition>
