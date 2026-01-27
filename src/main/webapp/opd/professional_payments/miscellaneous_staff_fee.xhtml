@@ -47,8 +47,10 @@
                                         value="#{miscellaneousStaffFeeController.selectedPaymentCategory}"
                                         class="w-100"
                                         filter="true"
-                                        filterMatchMode="contains">
-                                        <f:selectItem itemLabel="Select Payment Category (Optional)" itemValue="#{null}" noSelectionOption="true"/>
+                                        filterMatchMode="contains"
+                                        required="true"
+                                        requiredMessage="Please select a payment category">
+                                        <f:selectItem itemLabel="Select Payment Category" itemValue="#{null}" noSelectionOption="true"/>
                                         <f:selectItems
                                             value="#{paymentItemController.items}"
                                             var="pc"
@@ -73,10 +75,10 @@
                                     <p:inputTextarea
                                         id="txtDescription"
                                         value="#{miscellaneousStaffFeeController.feeDescription}"
-                                        rows="4"
+                                        rows="3"
                                         cols="50"
                                         class="w-100"
-                                        placeholder="Enter the reason for this fee (e.g., Meeting Allowance, Administrative Fee, Bonus, etc.)"
+                                        placeholder="Enter the reason for this payment item"
                                         required="true"
                                         requiredMessage="Please enter a description"
                                         maxlength="500">
@@ -86,20 +88,89 @@
 
                                 <f:facet name="footer">
                                     <p:commandButton
-                                        value="Save Fee"
-                                        action="#{miscellaneousStaffFeeController.saveNewMiscellaneousFee}"
-                                        update="formMiscFee:growl formMiscFee:tblRecentFees"
-                                        icon="fa fa-save"
+                                        value="Add Payment Item"
+                                        action="#{miscellaneousStaffFeeController.addPaymentItem}"
+                                        update="formMiscFee:growl formMiscFee:panelPaymentItems formMiscFee:cmbPaymentCategory formMiscFee:txtAmount formMiscFee:txtDescription"
+                                        icon="fa fa-plus"
                                         styleClass="ui-button-success mx-2 my-2"/>
 
                                     <p:commandButton
-                                        value="Clear Form"
-                                        action="#{miscellaneousStaffFeeController.clearForm}"
-                                        update="formMiscFee"
+                                        value="Clear Entry"
+                                        action="#{miscellaneousStaffFeeController.clearCurrentEntry}"
+                                        update="formMiscFee:cmbPaymentCategory formMiscFee:txtAmount formMiscFee:txtDescription"
                                         icon="fa fa-eraser"
-                                        styleClass="ui-button-secondary mx-2 my-2"/>
+                                        styleClass="ui-button-secondary mx-2 my-2"
+                                        process="@this"/>
                                 </f:facet>
                             </p:panel>
+
+                            <!-- Payment Items Summary Panel -->
+                            <p:panel id="panelPaymentItems" header="Payment Items to be Processed" styleClass="mb-3" rendered="#{not empty miscellaneousStaffFeeController.tempPaymentItems}">
+                                <p:dataTable
+                                    value="#{miscellaneousStaffFeeController.tempPaymentItems}"
+                                    var="item"
+                                    emptyMessage="No payment items added yet"
+                                    class="w-100">
+
+                                    <p:column headerText="Payment Category" width="25%">
+                                        <h:outputText value="#{item.paymentCategory.name}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Amount" width="15%" styleClass="text-end">
+                                        <h:outputText value="#{item.amount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Description" width="50%">
+                                        <h:outputText value="#{item.description}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Action" width="10%" styleClass="text-center">
+                                        <p:commandButton
+                                            icon="fa fa-trash"
+                                            styleClass="ui-button-danger"
+                                            action="#{miscellaneousStaffFeeController.removePaymentItem(item)}"
+                                            update="formMiscFee:panelPaymentItems formMiscFee:growl"
+                                            process="@this">
+                                            <p:confirm header="Confirmation" message="Remove this payment item?" icon="pi pi-exclamation-triangle"/>
+                                        </p:commandButton>
+                                    </p:column>
+
+                                    <f:facet name="footer">
+                                        <div class="text-end fw-bold">
+                                            Total Amount: <h:outputText value="#{miscellaneousStaffFeeController.totalAmount}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </div>
+                                    </f:facet>
+                                </p:dataTable>
+
+                                <f:facet name="footer">
+                                    <p:commandButton
+                                        value="Finalize Bill"
+                                        action="#{miscellaneousStaffFeeController.finalizeBill}"
+                                        update="formMiscFee tblRecentFees"
+                                        icon="fa fa-check-circle"
+                                        styleClass="ui-button-warning mx-2 my-2"
+                                        disabled="#{empty miscellaneousStaffFeeController.tempPaymentItems}"/>
+
+                                    <p:commandButton
+                                        value="Cancel All"
+                                        action="#{miscellaneousStaffFeeController.clearForm}"
+                                        update="formMiscFee"
+                                        icon="fa fa-times"
+                                        styleClass="ui-button-danger mx-2 my-2"
+                                        process="@this">
+                                        <p:confirm header="Confirmation" message="Cancel all payment items?" icon="pi pi-exclamation-triangle"/>
+                                    </p:commandButton>
+                                </f:facet>
+                            </p:panel>
+
+                            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
+                                <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check"/>
+                                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times"/>
+                            </p:confirmDialog>
 
                             <p:panel header="Recent Miscellaneous Fees" styleClass="mt-3">
                                 <p:commandButton

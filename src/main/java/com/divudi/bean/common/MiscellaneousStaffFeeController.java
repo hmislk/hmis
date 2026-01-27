@@ -66,8 +66,54 @@ public class MiscellaneousStaffFeeController implements Serializable {
     private double feeAmount;
     private String feeDescription;
 
+    // Temporary storage for building multi-item bill
+    private List<TempPaymentItem> tempPaymentItems;
+    private double totalAmount;
+
     // Data lists
     private List<BillFee> recentMiscellaneousFees;
+
+    /**
+     * Inner class to hold temporary payment items before bill finalization
+     */
+    public static class TempPaymentItem implements Serializable {
+        private PaymentItem paymentCategory;
+        private double amount;
+        private String description;
+
+        public TempPaymentItem() {
+        }
+
+        public TempPaymentItem(PaymentItem paymentCategory, double amount, String description) {
+            this.paymentCategory = paymentCategory;
+            this.amount = amount;
+            this.description = description;
+        }
+
+        public PaymentItem getPaymentCategory() {
+            return paymentCategory;
+        }
+
+        public void setPaymentCategory(PaymentItem paymentCategory) {
+            this.paymentCategory = paymentCategory;
+        }
+
+        public double getAmount() {
+            return amount;
+        }
+
+        public void setAmount(double amount) {
+            this.amount = amount;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+    }
 
     // Constants
     private static final String MISCELLANEOUS_FEE_ITEM_NAME = "Miscellaneous Staff Fee";
@@ -80,13 +126,12 @@ public class MiscellaneousStaffFeeController implements Serializable {
     }
 
     /**
-     * Saves a new miscellaneous fee for a staff member.
-     * Creates the complete Bill → BillItem → BillFee chain.
+     * Adds a payment item to the temporary list
      */
-    public void saveNewMiscellaneousFee() {
+    public void addPaymentItem() {
         // Validation
-        if (selectedStaff == null) {
-            JsfUtil.addErrorMessage("Please select a staff member");
+        if (selectedPaymentCategory == null) {
+            JsfUtil.addErrorMessage("Please select a payment category");
             return;
         }
         if (feeAmount <= 0) {
@@ -94,38 +139,94 @@ public class MiscellaneousStaffFeeController implements Serializable {
             return;
         }
         if (feeDescription == null || feeDescription.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please enter a description for this fee");
+            JsfUtil.addErrorMessage("Please enter a description for this payment");
+            return;
+        }
+
+        // Add to temporary list
+        TempPaymentItem tempItem = new TempPaymentItem(selectedPaymentCategory, feeAmount, feeDescription);
+        getTempPaymentItems().add(tempItem);
+
+        // Update total
+        calculateTotal();
+
+        // Clear current entry fields (but keep staff selected)
+        selectedPaymentCategory = null;
+        feeAmount = 0.0;
+        feeDescription = null;
+
+        JsfUtil.addSuccessMessage("Payment item added. Total: " + String.format("%.2f", totalAmount));
+    }
+
+    /**
+     * Removes a payment item from the temporary list
+     */
+    public void removePaymentItem(TempPaymentItem item) {
+        if (tempPaymentItems != null) {
+            tempPaymentItems.remove(item);
+            calculateTotal();
+            JsfUtil.addSuccessMessage("Payment item removed");
+        }
+    }
+
+    /**
+     * Calculates the total amount from temporary payment items
+     */
+    private void calculateTotal() {
+        totalAmount = 0.0;
+        if (tempPaymentItems != null) {
+            for (TempPaymentItem item : tempPaymentItems) {
+                totalAmount += item.getAmount();
+            }
+        }
+    }
+
+    /**
+     * Finalizes and saves the bill with all payment items.
+     * Creates the complete Bill → BillItems → BillFees chain.
+     */
+    public void finalizeBill() {
+        // Validation
+        if (selectedStaff == null) {
+            JsfUtil.addErrorMessage("Please select a staff member");
+            return;
+        }
+        if (tempPaymentItems == null || tempPaymentItems.isEmpty()) {
+            JsfUtil.addErrorMessage("Please add at least one payment item");
             return;
         }
 
         try {
-            // Step 1: Determine which item to use (PaymentCategory or default)
-            Item feeItem;
-            if (selectedPaymentCategory != null) {
-                feeItem = selectedPaymentCategory;
-            } else {
-                feeItem = findOrCreateMiscellaneousFeeItem();
-            }
-
-            // Step 2: Create the Bill
+            // Step 1: Create the Bill
             BilledBill miscBill = createMiscellaneousBill();
             billFacade.create(miscBill);
 
-            // Step 3: Create the BillItem
-            BillItem billItem = createBillItem(miscBill, feeItem);
-            billItemFacade.create(billItem);
+            // Step 2: Create BillItems and BillFees for each temporary payment item
+            for (TempPaymentItem tempItem : tempPaymentItems) {
+                // Determine which item to use
+                Item feeItem;
+                if (tempItem.getPaymentCategory() != null) {
+                    feeItem = tempItem.getPaymentCategory();
+                } else {
+                    feeItem = findOrCreateMiscellaneousFeeItem();
+                }
 
-            // Step 4: Create the BillFee
-            BillFee billFee = createBillFee(miscBill, billItem);
-            billFeeFacade.create(billFee);
+                // Create the BillItem
+                BillItem billItem = createBillItem(miscBill, feeItem, tempItem.getAmount(), tempItem.getDescription());
+                billItemFacade.create(billItem);
+
+                // Create the BillFee
+                BillFee billFee = createBillFee(miscBill, billItem, tempItem.getAmount());
+                billFeeFacade.create(billFee);
+            }
 
             // Success
-            JsfUtil.addSuccessMessage("Miscellaneous fee added successfully for " + selectedStaff.getPerson().getNameWithTitle());
+            JsfUtil.addSuccessMessage("Bill finalized successfully with " + tempPaymentItems.size() + " payment item(s) for " + selectedStaff.getPerson().getNameWithTitle());
             clearForm();
             loadRecentMiscellaneousFees();
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage("Error saving miscellaneous fee: " + e.getMessage());
+            JsfUtil.addErrorMessage("Error finalizing bill: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -187,12 +288,12 @@ public class MiscellaneousStaffFeeController implements Serializable {
         // Set staff and financial values
         bill.setStaff(selectedStaff);
         bill.setToStaff(selectedStaff);
-        bill.setTotal(feeAmount);
-        bill.setNetTotal(feeAmount);
-        bill.setGrantTotal(feeAmount);
+        bill.setTotal(totalAmount);
+        bill.setNetTotal(totalAmount);
+        bill.setGrantTotal(totalAmount);
 
-        // Set description/comments
-        bill.setComments(feeDescription);
+        // Set description/comments (summary of items)
+        bill.setComments("Miscellaneous fee with " + tempPaymentItems.size() + " item(s)");
 
         // Set flags
         bill.setCancelled(false);
@@ -205,27 +306,27 @@ public class MiscellaneousStaffFeeController implements Serializable {
     /**
      * Creates a bill item for the miscellaneous fee
      */
-    private BillItem createBillItem(Bill bill, Item item) {
+    private BillItem createBillItem(Bill bill, Item item, double amount, String description) {
         BillItem billItem = new BillItem();
         billItem.setBill(bill);
         billItem.setItem(item);
 
         // Set financial values
-        billItem.setGrossValue(feeAmount);
-        billItem.setNetValue(feeAmount);
-        billItem.setRate(feeAmount);
+        billItem.setGrossValue(amount);
+        billItem.setNetValue(amount);
+        billItem.setRate(amount);
         billItem.setQty(1.0);
         billItem.setDiscount(0.0);
 
         // Set staff fee
-        billItem.setStaffFee(feeAmount);
+        billItem.setStaffFee(amount);
 
         // Set audit fields
         billItem.setCreatedAt(Calendar.getInstance().getTime());
         billItem.setCreater(sessionController.getLoggedUser());
 
         // Set description
-        billItem.setDescreption(feeDescription);
+        billItem.setDescreption(description);
 
         return billItem;
     }
@@ -233,15 +334,15 @@ public class MiscellaneousStaffFeeController implements Serializable {
     /**
      * Creates a bill fee for the staff member
      */
-    private BillFee createBillFee(Bill bill, BillItem billItem) {
+    private BillFee createBillFee(Bill bill, BillItem billItem, double amount) {
         BillFee billFee = new BillFee();
         billFee.setBill(bill);
         billFee.setBillItem(billItem);
         billFee.setStaff(selectedStaff);
 
         // Set fee values (unpaid initially)
-        billFee.setFeeValue(feeAmount);
-        billFee.setFeeGrossValue(feeAmount);
+        billFee.setFeeValue(amount);
+        billFee.setFeeGrossValue(amount);
         billFee.setPaidValue(0.0);  // Unpaid
         billFee.setSettleValue(0.0);
 
@@ -302,16 +403,46 @@ public class MiscellaneousStaffFeeController implements Serializable {
     }
 
     /**
-     * Clears the form fields
+     * Clears the form fields and temporary items
      */
     public void clearForm() {
         selectedStaff = null;
         selectedPaymentCategory = null;
         feeAmount = 0.0;
         feeDescription = null;
+        tempPaymentItems = null;
+        totalAmount = 0.0;
+    }
+
+    /**
+     * Clears only the current payment item entry (keeps staff and existing items)
+     */
+    public void clearCurrentEntry() {
+        selectedPaymentCategory = null;
+        feeAmount = 0.0;
+        feeDescription = null;
     }
 
     // Getters and Setters
+
+    public List<TempPaymentItem> getTempPaymentItems() {
+        if (tempPaymentItems == null) {
+            tempPaymentItems = new ArrayList<>();
+        }
+        return tempPaymentItems;
+    }
+
+    public void setTempPaymentItems(List<TempPaymentItem> tempPaymentItems) {
+        this.tempPaymentItems = tempPaymentItems;
+    }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
 
     public Staff getSelectedStaff() {
         return selectedStaff;
