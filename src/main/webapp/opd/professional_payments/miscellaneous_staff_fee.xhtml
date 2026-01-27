@@ -105,7 +105,8 @@
                             </p:panel>
 
                             <!-- Payment Items Summary Panel -->
-                            <p:panel id="panelPaymentItems" header="Payment Items to be Processed" styleClass="mb-3" rendered="#{not empty miscellaneousStaffFeeController.tempPaymentItems}">
+                            <h:panelGroup id="panelPaymentItems">
+                            <p:panel header="Payment Items to be Processed" styleClass="mb-3" rendered="#{not empty miscellaneousStaffFeeController.tempPaymentItems}">
                                 <p:dataTable
                                     value="#{miscellaneousStaffFeeController.tempPaymentItems}"
                                     var="item"
@@ -166,6 +167,7 @@
                                     </p:commandButton>
                                 </f:facet>
                             </p:panel>
+                            </h:panelGroup>
 
                             <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
                                 <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check"/>
