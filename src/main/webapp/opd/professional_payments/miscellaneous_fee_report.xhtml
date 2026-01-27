@@ -21,9 +21,8 @@
                                     <p:calendar
                                         id="dtFromDate"
                                         value="#{miscellaneousStaffFeeController.fromDate}"
-                                        pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                         class="w-100"
-                                        showButtonPanel="true"
                                         required="true"
                                         requiredMessage="Please select from date">
                                     </p:calendar>
@@ -32,9 +31,8 @@
                                     <p:calendar
                                         id="dtToDate"
                                         value="#{miscellaneousStaffFeeController.toDate}"
-                                        pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                         class="w-100"
-                                        showButtonPanel="true"
                                         required="true"
                                         requiredMessage="Please select to date">
                                     </p:calendar>
