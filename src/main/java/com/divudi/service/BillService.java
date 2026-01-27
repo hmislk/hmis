@@ -3796,6 +3796,8 @@ public class BillService {
             BigDecimal totalQty = qty.add(freeQty); // POSITIVE
 
             // Get rates from pharmaceutical bill item
+            // These rates come from the original issue bill (copied via tmp.copy(i) in controller)
+            // and correctly preserve the rates that were charged to the patient
             BigDecimal retailRate = BigDecimal.valueOf(pharmaItem.getRetailRate());
             BigDecimal purchaseRate = BigDecimal.valueOf(pharmaItem.getPurchaseRate());
             BigDecimal wholesaleRate = BigDecimal.valueOf(pharmaItem.getWholesaleRate());
@@ -3809,16 +3811,14 @@ public class BillService {
                     costRate = BigDecimal.valueOf(batchCostRate);
                 }
 
-                // Get other rates from batch if available (primitive double, so no null check needed)
-                if (itemBatch.getRetailsaleRate() > 0) {
-                    retailRate = BigDecimal.valueOf(itemBatch.getRetailsaleRate());
-                }
-                if (itemBatch.getPurcahseRate() > 0) {
-                    purchaseRate = BigDecimal.valueOf(itemBatch.getPurcahseRate());
-                }
+                // NOTE: We intentionally do NOT override retailRate/purchaseRate from batch here
+                // because pharmaItem rates come from the original issue bill and correctly
+                // represent what was charged. Batch rates may have changed since the issue.
+                // Only costRate is taken from batch for accurate cost accounting.
             }
 
             // Rates - always positive (unit prices)
+            // lineNetRate includes margin/service charge from original bill
             bifd.setLineNetRate(BigDecimal.valueOf(Math.abs(billItem.getNetRate())));
             bifd.setLineGrossRate(BigDecimal.valueOf(Math.abs(billItem.getRate())));
             bifd.setGrossRate(BigDecimal.valueOf(Math.abs(billItem.getRate())));
