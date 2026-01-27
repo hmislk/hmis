@@ -300,7 +300,7 @@ public class CollectingCentreController implements Serializable {
         String jpql = "SELECT ah FROM AgentHistory ah "
                 + "WHERE ah.retired = :ret "
                 + "AND ah.agency = :agency "
-                + "ORDER BY ah.id DESC";
+                + "ORDER BY ah.createdAt DESC, ah.id DESC";
 
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
