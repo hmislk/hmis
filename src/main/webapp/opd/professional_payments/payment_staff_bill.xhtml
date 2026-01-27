@@ -313,7 +313,7 @@
                                         value="Print" 
                                         class="ui-button-info" 
                                         icon="fas fa-print" 
-                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill: Print individually.', false)}"
+                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill: Print separately.', false)}"
                                         ajax="false" 
                                         action="#" >
                                         <p:printer target="gpBillPreview" ></p:printer>
@@ -332,7 +332,7 @@
                                         class="ui-button-info mb-3 " 
                                         icon="fas fa-print" 
                                         ajax="false" 
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill: Print individually.', false)}"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill: Print separately.', false)}"
                                         action="#" >
                                         <p:printer target="A4Paper" ></p:printer>
                                     </p:commandButton>
@@ -348,7 +348,7 @@
                                         value="Print 5x5 Paper" 
                                         class="ui-button-info mb-3 mt-4" 
                                         icon="fas fa-print"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill: Print individually.', false)}"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill: Print separately.', false)}"
                                         ajax="false" 
                                         action="#" >
                                         <p:printer target="fivefivePaper" ></p:printer>
