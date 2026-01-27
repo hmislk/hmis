@@ -1155,6 +1155,36 @@ public class UserPrivilageController implements Serializable {
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
         privilegesLoaded = true;
     }
+    
+    public List<WebUserPrivilege> loadUserPrivileges(WebUser wu, Department dept){
+        List<WebUserPrivilege> list = new ArrayList<>();
+        
+        if (wu == null) {
+            return list;
+        }
+        if (dept == null) {
+            return list;
+        }
+        String jpql = "SELECT i "
+                + " FROM WebUserPrivilege i "
+                + " where i.webUser=:wu "
+                + " and i.department=:dep";
+        Map m = new HashMap();
+        m.put("wu", wu);
+        m.put("dep", dept);
+        
+        list =  getEjbFacade().findByJpqlWithoutCache(jpql, m);
+        
+        return list;
+    }
+    
+    public void clesrUserAllDepartmentPrivileges(WebUser wu, Department dept){
+        for(WebUserPrivilege wup : loadUserPrivileges(wu,department)){
+            wup.setRetired(true);
+            getFacade().edit(wup);
+        }
+    }
+    
 
     public WebUserPrivilege addUserPrivilege(Privileges prv, WebUser wu, Department dept) {
         if (prv == null) {

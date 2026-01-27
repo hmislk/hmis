@@ -7,6 +7,7 @@ import com.divudi.core.data.Privileges;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.WebUserPrivilege;
 import com.divudi.core.entity.WebUserRole;
 import com.divudi.core.entity.WebUserRolePrivilege;
 import com.divudi.core.entity.WebUserRoleUser;
@@ -112,6 +113,21 @@ public class WebUserRoleUserController implements Serializable {
             Privileges p = wurp.getPrivilege();
             userPrivilageController.addUserPrivilege(p, user, department);
         }
+    }
+    
+    public void resetRolePrivileges(WebUserRoleUser roleUser){
+        
+        WebUser user = roleUser.getWebUser();
+        Department dept = roleUser.getDepartment();
+        
+        // Clesr All Privillages
+        userPrivilageController.clesrUserAllDepartmentPrivileges(user,dept);
+        
+        // Add Role Privillage
+        updatePrivilegesToUserRole(roleUser.getWebUserRole(),user, dept);
+        
+        JsfUtil.addSuccessMessage("Reset "+ roleUser.getWebUserRole().getName() +" UserRole Privileges for " + dept.getName());
+        
     }
     
     public void loadWebUserRoles(){
