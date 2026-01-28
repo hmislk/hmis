@@ -80,15 +80,15 @@
                                                         value="Searched Patient Details" 
                                                         class="mx-2"
                                                         ></h:outputText>
-                                                    <h:panelGroup rendered="true" id="edit" >
-                                                        <p:selectBooleanButton 
-                                                            value="#{opdBillController.patientDetailsEditable}" 
-                                                            offIcon="pi pi-pencil" 
-                                                            onIcon="pi pi-eye"                                 
+                                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdEditPatientDetails')}" id="edit" >
+                                                        <p:selectBooleanButton
+                                                            value="#{opdBillController.patientDetailsEditable}"
+                                                            offIcon="pi pi-pencil"
+                                                            onIcon="pi pi-eye"
                                                             class="mx-2"
                                                             >
-                                                            <p:ajax 
-                                                                process="@this" 
+                                                            <p:ajax
+                                                                process="@this"
                                                                 update="viewPatient editPatient btnDone edit" />
                                                         </p:selectBooleanButton>
                                                         <p:commandButton 
