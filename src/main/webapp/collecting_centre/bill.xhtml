@@ -78,8 +78,8 @@
                     </f:facet>
                     <div class="row">
                         <div class="col-6" >
-                            <common:patient_details 
-                                editable="true"
+                            <common:patient_details
+                                editable="#{webUserController.hasPrivilege('OpdEditPatientDetails')}"
                                 controller="#{collectingCentreBillController}"/>
 
                             <h:panelGroup id="panelIx" >
