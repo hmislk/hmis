@@ -248,8 +248,8 @@
                                     class="ui-button-primary mx-1"
                                     icon="fas fa-print"
                                     ajax="false"
-                                    value="Print All">
-                                    <p:printer target="specialityTb"/>
+                                    action="speciality_wise_demographic_data_print?faces-redirect=true"
+                                    value="To Print">
                                 </p:commandButton>
 
                                 <p:commandButton 
@@ -262,17 +262,6 @@
                                         target="specialityTb" 
                                         fileName="Speciality_wise_demographic_data.xlsx"/>
                                 </p:commandButton>    
-
-                                <p:commandButton 
-                                    class="ui-button-danger mx-1"
-                                    icon="fas fa-file-pdf"
-                                    ajax="false"
-                                    value="PDF">
-                                    <p:dataExporter 
-                                        type="pdf" 
-                                        target="specialityTb" 
-                                        fileName="Speciality_wise_demographic_data.pdf"/>
-                                </p:commandButton>
 
                             </div>
                             
@@ -379,8 +368,8 @@
                                     class="ui-button-primary mx-1"
                                     icon="fas fa-print"
                                     ajax="false"
-                                    value="Print All">
-                                    <p:printer target="doctorTb"/>
+                                    action="speciality_wise_demographic_data_print?faces-redirect=true"
+                                    value="To Print">
                                 </p:commandButton>
 
                                 <p:commandButton 
@@ -393,18 +382,6 @@
                                         target="doctorTb"
                                         fileName="Doctor_wise_demographic_data.xlsx"/>
                                 </p:commandButton>
-
-                                <p:commandButton 
-                                    class="ui-button-danger mx-1"
-                                    icon="fas fa-file-pdf"
-                                    ajax="false"
-                                    value="PDF">
-                                    <p:dataExporter
-                                        type="pdf"
-                                        target="doctorTb"
-                                        fileName="Doctor_wise_demographic_data.pdf"/>
-                                </p:commandButton>
-
                             </div>
                             
                             <p:panel header="Type: Doctor wise" styleClass="m-3" >
