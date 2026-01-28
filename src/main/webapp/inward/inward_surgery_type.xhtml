@@ -108,7 +108,7 @@
 
                                 <h:outputText value="Created by" ></h:outputText>
                                 <p:outputLabel value=" : " style="width: 35px; text-align: center; " ></p:outputLabel>
-                                <p:inputText class="m-2 w-100" value="#{empty surgeryTypeController.current.creater ? sessionController.loggedUser.name : surgeryTypeController.current.creater.name}"  />
+                                <p:inputText class="m-2 w-100" value="#{empty surgeryTypeController.current.creater ? sessionController.loggedUser.name : surgeryTypeController.current.creater.name}" readonly="true" />
 
                             </h:panelGrid>
                         </p:panel>
