@@ -94,8 +94,8 @@ public class LaboratoryManagementController implements Serializable {
     LaboratoryCommonController laboratoryCommonController;
     @Inject
     LabTestHistoryController labTestHistoryController;
-
     // </editor-fold>
+
     // <editor-fold defaultstate="collapsed" desc="Variables">
     private ListingEntity listingEntity;
 
@@ -141,8 +141,8 @@ public class LaboratoryManagementController implements Serializable {
     private Priority priority;
 
     private Staff reportHandoverStaff;
-
     // </editor-fold>
+
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToLaboratoryManagementDashboard() {
         activeIndex = 1;
@@ -620,8 +620,8 @@ public class LaboratoryManagementController implements Serializable {
 
         return "/lab/lab_test_history?faces-redirect=true";
     }
-
     // </editor-fold>
+
     // <editor-fold defaultstate="collapsed" desc="Function">
     public void makeNull() {
         this.bills = null;
@@ -2394,7 +2394,7 @@ public class LaboratoryManagementController implements Serializable {
 
     public List<PatientReportLight> patientReports(Long patientInvestigationId) {
         String jpql = "SELECT new com.divudi.core.data.PatientReportLight("
-                + " r.id, r.approved, r.printed, r.reportType, r.qrCodeContentsLink)"
+                + " r.id, r.approved, r.printComplete, r.handoverComplete, r.reportType, r.qrCodeContentsLink)"
                 + " from PatientReport r "
                 + " where r.patientInvestigation.id=:piId"
                 + " and r.retired = :ret ";
@@ -2517,17 +2517,28 @@ public class LaboratoryManagementController implements Serializable {
             JsfUtil.addErrorMessage("Error in Report ID");
             return;
         }
+        
+        PatientReport currentReport = patientReportFacade.findWithoutCache(reportID);
+        
+        if (currentReport == null) {
+            JsfUtil.addErrorMessage("Report not found");
+            return;
+        }
+        
+        if(!currentReport.getPrintComplete()){
+            currentReport.setPrintComplete(true);
+            patientReportFacade.edit(currentReport);
+            System.out.println("Update First Report Print.");
+        }
 
-        PatientReport currenrReport = patientReportFacade.findWithoutCache(reportID);
-
-        if (currenrReport.getApproved()) {
+        if (currentReport.getApproved()) {
             if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                 if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of printing lab reports.", false)) {
-                    labTestHistoryController.addReportPrintHistory(currenrReport.getPatientInvestigation(), currenrReport);
-                    System.out.println("Successfully Add Report Print History");
+                    labTestHistoryController.addReportPrintHistory(currentReport.getPatientInvestigation(), currentReport);
+                    System.out.println("Add Printing History");
                 }
             }
-        }
+        } 
     }
 
     public void addIssueHistory() {
@@ -2535,6 +2546,12 @@ public class LaboratoryManagementController implements Serializable {
         if (pt == null) {
             JsfUtil.addErrorMessage("Error in Report ID");
             return;
+        }
+        
+        if(!pt.getHandoverComplete()){
+            pt.setHandoverComplete(true);
+            patientReportFacade.edit(pt);
+            System.out.println("Update First Report Issue.");
         }
 
         addReportIssueHistory(pt.getId(), reportHandoverStaff);
@@ -2548,7 +2565,7 @@ public class LaboratoryManagementController implements Serializable {
             JsfUtil.addErrorMessage("Error in Report ID");
             return;
         }
-        
+
         PatientReport currenrReport = patientReportFacade.findWithoutCache(reportID);
         Bill reportBill = currenrReport.getPatientInvestigation().getBillItem().getBill();
 
@@ -2927,8 +2944,8 @@ public class LaboratoryManagementController implements Serializable {
             }
         }
     }
-
     // </editor-fold>
+
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public ListingEntity getListingEntity() {
         return listingEntity;
@@ -3280,7 +3297,6 @@ public class LaboratoryManagementController implements Serializable {
         this.labReportReceivingStaff = labReportReceivingStaff;
     }
 
-// </editor-fold>
     public Staff getReportHandoverStaff() {
         return reportHandoverStaff;
     }
@@ -3288,4 +3304,6 @@ public class LaboratoryManagementController implements Serializable {
     public void setReportHandoverStaff(Staff reportHandoverStaff) {
         this.reportHandoverStaff = reportHandoverStaff;
     }
+    // </editor-fold>
+
 }
