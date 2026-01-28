@@ -425,21 +425,58 @@
                                     </tr>
 
                                     <tr>
-                                        <td><strong>Correct Signs for Pharmacy Disposal/Transfer Bills</strong></td>
+                                        <td><strong>Correct Signs for Pharmacy Disposal/Transfer Bills (Legacy - Slow)</strong></td>
                                         <td>
                                             Corrects negative/positive signs for Bill totals, BillItem values, BillFinanceDetails and BillItemFinanceDetails, and Pharmaceutical Bill Item values according to the Bill Type. Uses absolute values and applies only the sign without changing magnitudes or other attributes. Applies to Pharmacy Issue/Direct Issue/Disposal Issue and corresponding Returns/Cancellations, and Receive/Receive Pre/Receive Cancelled.
+                                            <br/>
+                                            <span class="text-warning"><strong>Warning:</strong> This method is slow and may timeout for large datasets. Use the Fast Native SQL version below instead.</span>
                                         </td>
                                         <td>
-                                            <p:commandButton 
+                                            <p:commandButton
                                                 action="#{dataAdministrationController.correctPharmacyDisbursementSigns()}"
                                                 ajax="false"
-                                                value="Correct Signs for Disposal/Transfer"
-                                                styleClass="ui-button-warning m-1"
+                                                value="Correct Signs (Legacy)"
+                                                styleClass="ui-button-secondary m-1"
                                                 icon="pi pi-wrench"
                                                 rendered="#{webUserController.hasPrivilege('Admin')}" />
                                         </td>
                                         <td>
                                             #{dataAdministrationController.executionFeedback}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Correct Signs for Pharmacy Disposal/Transfer Bills (Fast Native SQL)</strong></td>
+                                        <td>
+                                            <strong>Recommended:</strong> Fast bulk correction using native SQL.
+                                            Corrects BillFinanceDetails (totalPurchaseValue, totalRetailSaleValue, totalCostValue) and
+                                            PharmaceuticalBillItem (purchaseValue, retailValue, costValue) signs.
+                                            <br/>
+                                            <strong>Sign conventions:</strong>
+                                            <ul class="mb-0 small">
+                                                <li>NEGATIVE: PHARMACY_ISSUE, PHARMACY_DIRECT_ISSUE, PHARMACY_DISPOSAL_ISSUE, PHARMACY_RECEIVE_CANCELLED</li>
+                                                <li>POSITIVE: Issue Cancelled/Return, Disposal Cancelled/Return, Receive, Receive Pre</li>
+                                            </ul>
+                                            <strong>Use date range to limit scope (optional).</strong>
+                                        </td>
+                                        <td>
+                                            <p:commandButton
+                                                action="#{dataAdministrationController.previewPharmacyDisbursementSignsCorrection()}"
+                                                ajax="false"
+                                                value="Preview"
+                                                styleClass="ui-button-info m-1"
+                                                icon="pi pi-eye"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}" />
+                                            <p:commandButton
+                                                action="#{dataAdministrationController.correctPharmacyDisbursementSignsNative()}"
+                                                ajax="false"
+                                                value="Correct Signs (Fast)"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-bolt"
+                                                onclick="return confirm('This will correct signs for pharmacy disbursement bills. Proceed?');"
+                                                rendered="#{webUserController.hasPrivilege('Admin')}" />
+                                        </td>
+                                        <td>
+                                            <pre style="white-space: pre-wrap; font-size: 0.85em;">#{dataAdministrationController.executionFeedback}</pre>
                                         </td>
                                     </tr>
                                     <tr>

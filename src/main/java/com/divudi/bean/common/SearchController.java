@@ -419,6 +419,7 @@ public class SearchController implements Serializable {
     private double billCount;
     private Token token;
     private int managePaymentIndex = -1;
+    private int manageOpdPaymentIndex = -1;
     private int manageCreditCompanyPaymentIndex = -1;
 
     private double hosTotal;
@@ -2515,6 +2516,14 @@ public class SearchController implements Serializable {
 
     public void setManagePaymentIndex(int managePaymentIndex) {
         this.managePaymentIndex = managePaymentIndex;
+    }
+
+    public int getManageOpdPaymentIndex() {
+        return manageOpdPaymentIndex;
+    }
+
+    public void setManageOpdPaymentIndex(int manageOpdPaymentIndex) {
+        this.manageOpdPaymentIndex = manageOpdPaymentIndex;
     }
 
     public ReportTemplateType getReportTemplateType() {
