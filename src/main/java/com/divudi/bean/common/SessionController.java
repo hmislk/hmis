@@ -470,7 +470,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         // Step 1: Check department-specific configuration (existing behavior)
         String departmentSpecificKey = "Allow " + itemTypeName + " Items In Pharmacy Transactions for " + getDepartment().getName();
-        Boolean departmentSpecificValue = configOptionApplicationController.getBooleanValueByKey(departmentSpecificKey, null);
+        Boolean departmentSpecificValue = configOptionApplicationController.getBooleanValueByKey(departmentSpecificKey, true);
         if (departmentSpecificValue != null) {
             return departmentSpecificValue;
         }
@@ -478,7 +478,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         // Step 2: Check department-type-based configuration (new)
         if (getDepartment().getDepartmentType() != null) {
             String departmentTypeKey = "Allow " + itemTypeName + " Items In Pharmacy Transactions for " + getDepartment().getDepartmentType().name() + " Departments";
-            Boolean departmentTypeValue = configOptionApplicationController.getBooleanValueByKey(departmentTypeKey, null);
+            Boolean departmentTypeValue = configOptionApplicationController.getBooleanValueByKey(departmentTypeKey, true);
             if (departmentTypeValue != null) {
                 return departmentTypeValue;
             }
