@@ -49,18 +49,15 @@
                 <div class="" style=" text-align: center;font-weight: bold;font-size: 13pt">
                     <h:outputLabel value="PAYMENT VOUCHER" />
                     <h:panelGroup>
-                        <br/>
                         <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.dup eq true}" />
                     </h:panelGroup>
                     <h:panelGroup>
-                        <br/>
                         <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
                     </h:panelGroup>
                 </div>
 
                 <div class="billline">
                     <hr/>
-                    <br/>
                 </div>
 
                 <div class="billDetailsFiveFive" >
@@ -127,9 +124,7 @@
                     </table>
                 </div>
                 <div class="billline">
-                    <br/>
                     <hr/>
-                    <br/>
                 </div>
                 <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide the details on the OPD Doctor Payment Bill',false)}">
                     <div class="billDetailsFiveFive" >
@@ -181,15 +176,12 @@
                     </div>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide the details on the OPD Doctor Payment Bill',false)}">
-
                     <div class="billline">
-                        <br/>
                         <hr/>
-                        <br/>
                     </div>
                 </h:panelGroup>
 
-                <div  >
+                <div>
 
                     <table style="width: 100%;">
 
@@ -239,13 +231,10 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
-
-
                     </table>
                 </div>
 
                 <div class="billline">
-                    <br/>
                     <hr/>
                 </div>
 
