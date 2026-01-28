@@ -6,6 +6,7 @@ package com.divudi.core.data.dto;
 
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
@@ -25,12 +26,15 @@ public class OpdRevenueDashboardDTO implements Serializable{
     private Double netTotal;
     private Double total;
     private Double discount;
-    private Double margin;
-    private Double serviceCharge;
-    private PaymentScheme paymentScheme;
     private Department department;
     private Department toDepartment;
     private Institution institution;
+    
+    // OPD revenue item category wise
+    private String serviceCategoryName;
+    private Long serviceCategoryId;
+//    private String serviceName;
+//    private Long serivceId;
     
     public OpdRevenueDashboardDTO() {
         
@@ -50,12 +54,20 @@ public class OpdRevenueDashboardDTO implements Serializable{
         this.toDepartment = toDepartment;
     }
     
+    public OpdRevenueDashboardDTO(Long billId, Double total, String serviceCategoryName, Long serviceCategoryID) {
+        this.billId = billId;
+        this.total = total;
+        this.serviceCategoryName = serviceCategoryName;
+        this.serviceCategoryId = serviceCategoryID;
+    }
+    
     // constructor used for dashboard discount department wise
-    public OpdRevenueDashboardDTO(Long billId, String deptId, BillTypeAtomic billTypeAtomic, Double discount,Department toDepartment) {
+    public OpdRevenueDashboardDTO(Long billId, String deptId, BillTypeAtomic billTypeAtomic, Double discount, Department department,Department toDepartment) {
         this.billId = billId;
         this.deptId = deptId;
         this.billTypeAtomic = billTypeAtomic;
         this.discount = discount;
+        this.department = department;
         this.toDepartment = toDepartment;
     }
     
@@ -115,30 +127,6 @@ public class OpdRevenueDashboardDTO implements Serializable{
         this.discount = discount;
     }
 
-    public Double getMargin() {
-        return margin;
-    }
-
-    public void setMargin(Double margin) {
-        this.margin = margin;
-    }
-
-    public Double getServiceCharge() {
-        return serviceCharge;
-    }
-
-    public void setServiceCharge(Double serviceCharge) {
-        this.serviceCharge = serviceCharge;
-    }
-
-    public PaymentScheme getPaymentScheme() {
-        return paymentScheme;
-    }
-
-    public void setPaymentScheme(PaymentScheme paymentScheme) {
-        this.paymentScheme = paymentScheme;
-    }
-
     public Department getDepartment() {
         return department;
     }
@@ -162,5 +150,37 @@ public class OpdRevenueDashboardDTO implements Serializable{
     public void setToDepartment(Department toDepartment) {
         this.toDepartment= toDepartment;
     }
+    
+    public String getServiceCategoryName() {
+        return serviceCategoryName;
+    }
+
+    public void setServiceCategoryName(String serviceCategoryName) {
+        this.serviceCategoryName = serviceCategoryName;
+    }
+
+    public Long getServiceCategoryId() {
+        return serviceCategoryId;
+    }
+
+    public void setServiceCategoryId(Long serviceCategoryId) {
+        this.serviceCategoryId = serviceCategoryId;
+    }
+    
+//    public String getServiceName() {
+//        return serviceName;
+//    }
+//
+//    public void setServiceName(String serviceName) {
+//        this.serviceName = serviceName;
+//    }
+//
+//    public Long getSerivceId() {
+//        return serivceId;
+//    }
+//
+//    public void setSerivceId(Long serivceId) {
+//        this.serivceId = serivceId;
+//    }
             
 }
