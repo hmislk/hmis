@@ -3713,6 +3713,10 @@ public class SearchController implements Serializable {
         }
 
     }
+    
+    public void clearSearchKeywords(){
+        searchKeyword = null;
+    }
 
     // DELETED: populateReferenceBillFields() method - no longer needed
     // All data now fetched in single optimized query using LEFT JOINs
