@@ -3715,8 +3715,8 @@ public class SearchController implements Serializable {
             
             if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().isEmpty()) {
                 System.out.println("bill no search");
-                jpql4 += " AND b.deptId = :billNo or paymentBill.deptId like :billNo ";
-                params.put("billNO", "%" + searchKeyword.getBillNo() + "%");
+                jpql4 += " AND (b.deptId like :billNo or paymentBill.deptId like :billNo) ";
+                params.put("billNo", "%" + searchKeyword.getBillNo() + "%");
             }
 
             if (searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().isEmpty()) {
@@ -3733,7 +3733,7 @@ public class SearchController implements Serializable {
 
                     Long phoneNoLong = Long.valueOf(phoneNo);
 
-                    jpql4 += " AND p.patientPhoneNumber = :mobile or p.patientMobileNumber = :mobile";
+                    jpql4 += " AND (p.patientPhoneNumber = :mobile or p.patientMobileNumber = :mobile) ";
                     params.put("mobile", phoneNoLong);
 
                 }catch(NumberFormatException e){
@@ -3744,7 +3744,7 @@ public class SearchController implements Serializable {
 
             if (searchKeyword.getDepartment() != null && !searchKeyword.getDepartment().isEmpty()) {
                 System.out.println("dept name search");
-                jpql4 += " AND LOWER(b.department.name)like :deptName";
+                jpql4 += " AND LOWER(b.department.name)like :deptName ";
                 params.put("deptName", "%" + searchKeyword.getDepartment().toLowerCase() + "%");
             }
 
@@ -3756,7 +3756,7 @@ public class SearchController implements Serializable {
                 try {
                     double totalAsDouble = Double.valueOf(total);
 
-                    jpql4 += " AND b.total = :total";
+                    jpql4 += " AND b.total = :total ";
                     params.put("total", totalAsDouble);
 
                 } catch (NumberFormatException e) {
@@ -3773,7 +3773,7 @@ public class SearchController implements Serializable {
                 try {
                     double netTotalAsDouble = Double.valueOf(netTotal);
 
-                    jpql4 += " AND b.netTotal = :netTotal";
+                    jpql4 += " AND b.netTotal = :netTotal ";
                     params.put("netTotal", netTotalAsDouble);
 
                 } catch (NumberFormatException e) {
