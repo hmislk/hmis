@@ -86,7 +86,7 @@
                             }
                             
                         </style>
-                        <h:panelGroup rendered="#{!inwardReportController.byDoctor}">
+                        <h:panelGroup rendered="#{!inwardReportController.demographicGeneratedByDoctor}">
                             <p:panel header="Speciality/Doctor wise Demographic Data Report Print" styleClass="my-2" >
                                 <f:facet name="header">
                                     <div class="d-flex justify-content-between">
@@ -231,7 +231,7 @@
                             </h:panelGroup>
                         </h:panelGroup>
                         
-                    <h:panelGroup rendered="#{inwardReportController.byDoctor}">
+                    <h:panelGroup rendered="#{inwardReportController.demographicGeneratedByDoctor}">
                         <p:panel header="Speciality/Doctor wise Demographic Data Report Print" styleClass="my-2" >
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between">
