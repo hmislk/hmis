@@ -145,7 +145,7 @@ public class LabTestHistoryController implements Serializable {
     }
     
     public void addBypassBarcodeGeneratAndReportCreateHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
-        addNewHistory(TestHistoryType.BYPASS_BARCODE_GENERAT_AND_REPORT_CREATED, null, null, patientInvestigation, null, null, null, null, null, null, null, null, null);
+        addNewHistory(TestHistoryType.BYPASS_BARCODE_GENERAT_AND_REPORT_CREATED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null, null, null);
     }
 
     // </editor-fold>
@@ -439,6 +439,7 @@ public class LabTestHistoryController implements Serializable {
 //  All Report Data (All in One)
     public List<LabTestHistoryLight> getAllPatientReportHistorys(PatientReport report) {
         List<TestHistoryType> types = new ArrayList<>();
+        types.add(TestHistoryType.BYPASS_BARCODE_GENERAT_AND_REPORT_CREATED);
         types.add(TestHistoryType.RESULT_RECEIVED_FROM_ANALYZER);
         types.add(TestHistoryType.REPORT_CREATED);
         types.add(TestHistoryType.DATA_ENTERED);
