@@ -2339,9 +2339,10 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         qty = qty.abs();
         freeQty = freeQty.abs();
 
-        // For Direct Purchase returns, line total = (quantity + free quantity) × rate
+        // For Direct Purchase returns, line total = quantity × rate (free items have no financial value)
+        // Total quantity (qty + freeQty) is still tracked for stock movement purposes
         BigDecimal totalQty = qty.add(freeQty);
-        BigDecimal lineTotal = totalQty.multiply(rate);
+        BigDecimal lineTotal = qty.multiply(rate);  // Only paid quantity contributes to financial return value
         // DEBUG: Log the calculation
 
         // Set total quantity (in packs for AMPP, in units for AMP) - make negative for returns (stock moving out)
