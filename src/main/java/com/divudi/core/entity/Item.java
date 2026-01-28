@@ -87,6 +87,8 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     @ManyToOne
     Category category;
     @ManyToOne
+    private Category surgeryType;
+    @ManyToOne
     private Category financialCategory;
     Double total = 0.0;
     private Double totalForForeigner = 0.0;
@@ -306,7 +308,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     @Column(nullable = false)
     private boolean consumptionAllowed = true;
-    
+
     private boolean allowedForBillingPriority;
 
     public double getVatPercentage() {
@@ -1665,6 +1667,14 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setAllowedForBillingPriority(boolean allowedForBillingPriority) {
         this.allowedForBillingPriority = allowedForBillingPriority;
+    }
+
+    public Category getSurgeryType() {
+        return surgeryType;
+    }
+
+    public void setSurgeryType(Category surgeryType) {
+        this.surgeryType = surgeryType;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

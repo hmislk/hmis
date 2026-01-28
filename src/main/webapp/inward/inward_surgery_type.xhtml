@@ -51,7 +51,7 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group">                                            
-                                    
+
                                     <p:selectOneListbox  
                                         id="lstSelect"  
                                         value="#{surgeryTypeController.current}" 
@@ -96,9 +96,19 @@
                                 <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
                                 <p:inputText class="mx-2 w-100" autocomplete="off" id="txtName" required="true" requiredMessage="Name is required" value="#{surgeryTypeController.current.name}"  ></p:inputText>
 
-                                <h:outputText id="user" value="Created by" ></h:outputText>
+                                <h:outputText id="lblDes" value="Description" ></h:outputText>
                                 <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
-                                <p:inputText class="m-2 w-100" value="#{empty surgeryTypeController.current.creater ? sessionController.loggedUser.name : surgeryTypeController.current.creater.name}" readonly="true" />
+                                <p:inputTextarea id="txtDes" value="#{surgeryTypeController.current.description}" class=" w-100 m-2"  />
+
+                            </h:panelGrid>
+
+                            <hr/>
+
+                            <h:panelGrid columns="3" class="w-100">
+
+                                <h:outputText value="Created by" ></h:outputText>
+                                <p:outputLabel value=" : " style="width: 35px; text-align: center; " ></p:outputLabel>
+                                <p:inputText class="m-2 w-100" value="#{empty surgeryTypeController.current.creater ? sessionController.loggedUser.name : surgeryTypeController.current.creater.name}"  />
 
                             </h:panelGrid>
                         </p:panel>
