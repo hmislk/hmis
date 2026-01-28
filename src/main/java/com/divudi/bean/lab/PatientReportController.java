@@ -45,8 +45,10 @@ import com.divudi.core.data.UploadType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Upload;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.lab.PatientReportGroup;
 import com.divudi.core.entity.lab.PatientSample;
@@ -449,7 +451,7 @@ public class PatientReportController implements Serializable {
         m.put("ret", false);
         return getFacade().findByJpql(j, m);
     }
-    
+
     public List<PatientReport> allPatientReports(PatientInvestigation pi) {
         String j = "select r from PatientReport r "
                 + " where r.patientInvestigation=:pi ";
@@ -477,7 +479,7 @@ public class PatientReportController implements Serializable {
         m.put("ret", false);
         return getFacade().findByJpql(j, m);
     }
-    
+
     public List<PatientReport> approvedPatientReportList(Investigation i) {
         String j = "select r from PatientReport r "
                 + " where r.patientInvestigation.investigation=:ins"
@@ -1290,9 +1292,9 @@ public class PatientReportController implements Serializable {
             }
             System.out.println("Report Removed");
         }
-        
+
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-            labTestHistoryController.addReportRemoveHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport,comment);
+            labTestHistoryController.addReportRemoveHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport, comment);
         }
 
         getFacade().edit(currentPatientReport);
@@ -2477,25 +2479,40 @@ public class PatientReportController implements Serializable {
     }
 
     public void printPatientReport() {
-        //////System.out.println("going to save as printed");
         if (currentPatientReport == null) {
             JsfUtil.addErrorMessage("Nothing to approve");
             return;
         }
+
+        if (currentPtIx == null) {
+            JsfUtil.addErrorMessage("Patient investigation not found");
+            return;
+        }
+        
+        Date printingTime = new Date();
+
         currentPtIx.setPrinted(true);
-        currentPtIx.setPrintingAt(Calendar.getInstance().getTime());
-        currentPtIx.setPrintingUser(getSessionController().getLoggedUser());
-        currentPtIx.setPrintingDepartment(getSessionController().getDepartment());
+        currentPtIx.setPrintingAt(printingTime);
+        currentPtIx.setPrintingUser(sessionController.getLoggedUser());
+        currentPtIx.setPrintingDepartment(sessionController.getDepartment());
         currentPtIx.setPrinted(true);
         getPiFacade().edit(currentPtIx);
-
+        
         currentPatientReport.setPrinted(Boolean.TRUE);
-        currentPatientReport.setPrintingAt(Calendar.getInstance().getTime());
-        currentPatientReport.setPrintingDepartment(getSessionController().getLoggedUser().getDepartment());
-        currentPatientReport.setPrintingInstitution(getSessionController().getLoggedUser().getInstitution());
-        currentPatientReport.setPrintingUser(getSessionController().getLoggedUser());
+        currentPatientReport.setPrintingAt(printingTime);
+        currentPatientReport.setPrintingDepartment(sessionController.getDepartment());
+        currentPatientReport.setPrintingInstitution(sessionController.getInstitution());
+        currentPatientReport.setPrintingUser(sessionController.getLoggedUser());
+        
         getFacade().edit(currentPatientReport);
 
+        laboratoryManagementController.addReportPrintHistory(currentPatientReport.getId());
+        
+    }
+    
+    public void reportExport() {
+        System.out.println("Start reportExport()");
+        laboratoryManagementController.addReportExportHistory(currentPatientReport.getId());
     }
 
     public void printPatientLabReport() {
@@ -3007,7 +3024,7 @@ public class PatientReportController implements Serializable {
         laboratoryManagementController.setReportHandoverStaff(null);
         return navigateToCreatedPatientReport(pi);
     }
-    
+
     @Inject
     LaboratoryManagementController laboratoryManagementController;
 
