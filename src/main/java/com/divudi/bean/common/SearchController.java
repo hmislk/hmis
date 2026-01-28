@@ -3712,8 +3712,32 @@ public class SearchController implements Serializable {
                           "AND (b.retired = false OR b.retired IS NULL) " +
                           "AND b.department.id = :deptid ";
 
+            jpql4 = checkSearchKeywordForSearch(jpql4, params);
             
-            if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().isEmpty()) {
+            jpql4 += " ORDER BY b.createdAt DESC";
+
+            cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()
+                    .findLightsByJpql(jpql4, params, TemporalType.TIMESTAMP);
+            System.out.println("DEBUG STEP 4: SUCCESS! Retrieved " + cashierPreBillSearchDtos.size() + " DTOs with ALL fields");
+            System.out.println("DEBUG: Query optimization complete - using single query with LEFT JOINs");
+
+        } catch (Exception e) {
+            System.out.println("DEBUG STEP 4: FAILED! Keeping STEP 3 data (limited fields)");
+            e.printStackTrace();
+            // Keep the data from step 3
+            return;
+        }
+
+        System.out.println("DEBUG: All steps completed successfully!");
+    }
+
+    // DELETED: populateReferenceBillFields() method - no longer needed
+    // All data now fetched in single optimized query using LEFT JOINs
+    // This eliminates N+1 query problem (was causing 1000+ queries for 100 records)
+    
+    private String checkSearchKeywordForSearch(String jpql4, Map<String, Object> params){
+    
+        if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().isEmpty()) {
                 System.out.println("bill no search");
                 jpql4 += " AND (b.deptId like :billNo or paymentBill.deptId like :billNo) ";
                 params.put("billNo", "%" + searchKeyword.getBillNo() + "%");
@@ -3781,27 +3805,10 @@ public class SearchController implements Serializable {
                 }
 
             }
-
-            jpql4 += " ORDER BY b.createdAt DESC";
-
-            cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()
-                    .findLightsByJpql(jpql4, params, TemporalType.TIMESTAMP);
-            System.out.println("DEBUG STEP 4: SUCCESS! Retrieved " + cashierPreBillSearchDtos.size() + " DTOs with ALL fields");
-            System.out.println("DEBUG: Query optimization complete - using single query with LEFT JOINs");
-
-        } catch (Exception e) {
-            System.out.println("DEBUG STEP 4: FAILED! Keeping STEP 3 data (limited fields)");
-            e.printStackTrace();
-            // Keep the data from step 3
-            return;
-        }
-
-        System.out.println("DEBUG: All steps completed successfully!");
+            
+            return jpql4;
+        
     }
-
-    // DELETED: populateReferenceBillFields() method - no longer needed
-    // All data now fetched in single optimized query using LEFT JOINs
-    // This eliminates N+1 query problem (was causing 1000+ queries for 100 records)
 
     public void listPharmacyIssue() {
         Map<String, Object> m = new HashMap<>();
