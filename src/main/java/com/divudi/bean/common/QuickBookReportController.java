@@ -194,7 +194,6 @@ public class QuickBookReportController implements Serializable {
 
         List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-
         return tmp;
 
     }
@@ -223,7 +222,6 @@ public class QuickBookReportController implements Serializable {
 
         List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-
         return tmp;
 
     }
@@ -249,7 +247,6 @@ public class QuickBookReportController implements Serializable {
         m.put("typ", Investigation.class);
 
         List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-
 
         return tmp;
 
@@ -518,11 +515,11 @@ public class QuickBookReportController implements Serializable {
             }
         }
 
-
     }
 
     /**
      * Validates a bill for QuickBooks export
+     *
      * @param bill The bill to validate
      * @throws RuntimeException if bill is invalid for QB export
      */
@@ -532,33 +529,35 @@ public class QuickBookReportController implements Serializable {
         }
 
         if (bill.getNetTotal() == 0) {
-            throw new RuntimeException("Bill has zero total. Bill ID: " + bill.getId() +
-                ". Please check if this bill was properly processed.");
+            throw new RuntimeException("Bill has zero total. Bill ID: " + bill.getId()
+                    + ". Please check if this bill was properly processed.");
         }
 
         if (bill.getDepartment() == null) {
-            throw new RuntimeException("Bill missing department. Bill ID: " + bill.getId() +
-                ". Please assign a department to this bill before exporting to QuickBooks.");
+            throw new RuntimeException("Bill missing department. Bill ID: " + bill.getId()
+                    + ". Please assign a department to this bill before exporting to QuickBooks.");
         }
 
         if (bill.getFromInstitution() == null && bill.getPaymentMethod() != PaymentMethod.Cash) {
-            throw new RuntimeException("Bill missing supplier institution. Bill ID: " + bill.getId() +
-                ". Please assign a supplier or mark as Cash payment.");
+            throw new RuntimeException("Bill missing supplier institution. Bill ID: " + bill.getId()
+                    + ". Please assign a supplier or mark as Cash payment.");
         }
 
         if (bill.getInvoiceNumber() == null || bill.getInvoiceNumber().trim().isEmpty()) {
-            throw new RuntimeException("Bill missing invoice number. Bill ID: " + bill.getId() +
-                ". Please enter an invoice number for this bill.");
+            throw new RuntimeException("Bill missing invoice number. Bill ID: " + bill.getId()
+                    + ". Please enter an invoice number for this bill.");
         }
 
         if (bill.getDeptId() == null || bill.getDeptId().trim().isEmpty()) {
-            throw new RuntimeException("Bill missing GRN/Department ID. Bill ID: " + bill.getId() +
-                ". Please ensure this bill has a proper GRN number.");
+            throw new RuntimeException("Bill missing GRN/Department ID. Bill ID: " + bill.getId()
+                    + ". Please ensure this bill has a proper GRN number.");
         }
     }
 
     /**
-     * Validates that a QB transaction balances (TRNS amount equals sum of SPL amounts)
+     * Validates that a QB transaction balances (TRNS amount equals sum of SPL
+     * amounts)
+     *
      * @param trnsAmount The TRNS line amount (should be negative for purchases)
      * @param splAmounts List of SPL line amounts (should be positive)
      * @param billId Bill ID for error reporting
@@ -570,27 +569,28 @@ public class QuickBookReportController implements Serializable {
 
         if (Math.abs(Math.abs(trnsAmount) - splTotal) > tolerance) {
             throw new RuntimeException(String.format(
-                "Transaction out of balance for Bill %s. TRNS amount: %.2f, SPL total: %.2f. " +
-                "Difference: %.2f. Please check expense calculations.",
-                billId, trnsAmount, splTotal, Math.abs(Math.abs(trnsAmount) - splTotal)
+                    "Transaction out of balance for Bill %s. TRNS amount: %.2f, SPL total: %.2f. "
+                    + "Difference: %.2f. Please check expense calculations.",
+                    billId, trnsAmount, splTotal, Math.abs(Math.abs(trnsAmount) - splTotal)
             ));
         }
     }
 
     /**
      * Validates that expense items have proper mapping to QB accounts
+     *
      * @param expenseItem The expense item to validate
      * @param billId Bill ID for error reporting
      */
     private void validateExpenseMapping(Item expenseItem, String billId) {
         if (expenseItem == null) {
-            throw new RuntimeException("Expense item is null for Bill " + billId +
-                ". Please check bill expense data integrity.");
+            throw new RuntimeException("Expense item is null for Bill " + billId
+                    + ". Please check bill expense data integrity.");
         }
 
         if (expenseItem.getName() == null || expenseItem.getName().trim().isEmpty()) {
-            throw new RuntimeException("Expense item missing name for Bill " + billId +
-                ". Item ID: " + expenseItem.getId() + ". Please set a proper expense type name.");
+            throw new RuntimeException("Expense item missing name for Bill " + billId
+                    + ". Item ID: " + expenseItem.getId() + ". Please set a proper expense type name.");
         }
 
         if (expenseItem.getPrintName() == null || expenseItem.getPrintName().trim().isEmpty()) {
@@ -598,8 +598,8 @@ public class QuickBookReportController implements Serializable {
     }
 
     /**
-     * NOTE: This mapping function is no longer used.
-     * Team will configure expense accounts directly in Item.printName to match QB requirements.
+     * NOTE: This mapping function is no longer used. Team will configure
+     * expense accounts directly in Item.printName to match QB requirements.
      * Keeping for reference only.
      */
     /*
@@ -635,8 +635,7 @@ public class QuickBookReportController implements Serializable {
                 return "OTHER MATERIAL & SERVICE COST:Other";
         }
     }
-    */
-
+     */
     public void createQBFormatPharmacyGRNAndPurchaseBills() {
         List<Bill> bills = new ArrayList<>();
         List<Bill> billsBilled = new ArrayList<>();
@@ -896,14 +895,15 @@ public class QuickBookReportController implements Serializable {
     }
 
     /**
-     * Enhanced QB format method that includes fallback logic for expense totals.
-     * This method handles cases where expenses are stored as totals in BILL table
-     * rather than as individual BILLITEM records.
+     * Enhanced QB format method that includes fallback logic for expense
+     * totals. This method handles cases where expenses are stored as totals in
+     * BILL table rather than as individual BILLITEM records.
      */
     /**
-     * Enhanced QB format method for approved pharmacy transactions filtered by approval date.
-     * This method includes only approved GRN, Direct Purchase, GRN Return, Direct Purchase Return,
-     * and Return without tracing receipts, filtered by approval date instead of creation date.
+     * Enhanced QB format method for approved pharmacy transactions filtered by
+     * approval date. This method includes only approved GRN, Direct Purchase,
+     * GRN Return, Direct Purchase Return, and Return without tracing receipts,
+     * filtered by approval date instead of creation date.
      */
     public void createQBFormatPharmacyGRNAndPurchaseBillsWithExpenses() {
         List<Bill> bills = new ArrayList<>();
@@ -920,11 +920,11 @@ public class QuickBookReportController implements Serializable {
 
         // Define the approved bill types to include
         List<BillTypeAtomic> approvedBillTypes = Arrays.asList(
-            BillTypeAtomic.PHARMACY_GRN,                    // Approved GRN (not GRN_PRE)
-            BillTypeAtomic.PHARMACY_GRN_RETURN,             // GRN Return
-            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,        // Direct Purchase
-            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND, // Direct Purchase Return
-            BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING // Return without tracing receipts
+                BillTypeAtomic.PHARMACY_GRN, // Approved GRN (not GRN_PRE)
+                BillTypeAtomic.PHARMACY_GRN_RETURN, // GRN Return
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, // Direct Purchase
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND, // Direct Purchase Return
+                BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING // Return without tracing receipts
         );
 
         // Determine which departments to process based on filter selections
@@ -939,46 +939,9 @@ public class QuickBookReportController implements Serializable {
 
         // Get bills for each department
         for (Department d : departmentsToProcess) {
-
-            // Get approved GRNs (not pending/pre-approval)
-            billsBilled.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_GRN, d, getInstitution(), fromDate, toDate));
-
-            // Get approved Direct Purchases
-            billsDirectPurchase.addAll(getApprovedBills(new BilledBill(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, d, getInstitution(), fromDate, toDate));
-
-            // Get approved GRN Returns (uses RefundBill class, so query with Bill parent)
-            billsReturn.addAll(getApprovedBills(new Bill(), BillTypeAtomic.PHARMACY_GRN_RETURN, d, getInstitution(), fromDate, toDate));
-
-            // Get approved Direct Purchase Returns (uses RefundBill class, so query with Bill parent)
-            billsDirectPurchaseReturn.addAll(getApprovedBills(new Bill(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND, d, getInstitution(), fromDate, toDate));
-
-            // Get approved Returns without tracing receipts (uses PreBill class, so query with Bill parent)
-            billsReturnP.addAll(getApprovedBills(new Bill(), BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING, d, getInstitution(), fromDate, toDate));
-
-            // Get cancelled bills (if needed for QB reporting)
-            billsCanceled.addAll(getApprovedBills(new CancelledBill(), BillTypeAtomic.PHARMACY_GRN, d, getInstitution(), fromDate, toDate));
-            billsReturnCancel.addAll(getApprovedBills(new CancelledBill(), BillTypeAtomic.PHARMACY_GRN_RETURN, d, getInstitution(), fromDate, toDate));
+            bills.addAll(getApprovedBills(approvedBillTypes, d,fromDate, toDate
+            ));
         }
-
-        // Aggregate all approved bills for processing
-        System.out.println("billsBilled (Approved GRNs).size() = " + billsBilled.size());
-        bills.addAll(billsBilled);
-
-        System.out.println("billsDirectPurchase.size() = " + billsDirectPurchase.size());
-        bills.addAll(billsDirectPurchase);
-
-        System.out.println("billsReturn (GRN Returns).size() = " + billsReturn.size());
-        bills.addAll(billsReturn);
-
-        System.out.println("billsDirectPurchaseReturn.size() = " + billsDirectPurchaseReturn.size());
-        bills.addAll(billsDirectPurchaseReturn);
-
-        System.out.println("billsReturnP (Returns without tracing).size() = " + billsReturnP.size());
-        bills.addAll(billsReturnP);
-
-        // Add cancelled bills if needed
-        bills.addAll(billsCanceled);
-        bills.addAll(billsReturnCancel);
 
         System.out.println("Total approved bills.size() = " + bills.size());
 
@@ -990,9 +953,9 @@ public class QuickBookReportController implements Serializable {
 
             // Add bill type detection for return transactions
             BillTypeAtomic billType = b.getBillTypeAtomic();
-            boolean isReturnTransaction = (billType == BillTypeAtomic.PHARMACY_GRN_RETURN ||
-                                           billType == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND ||
-                                           billType == BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+            boolean isReturnTransaction = (billType == BillTypeAtomic.PHARMACY_GRN_RETURN
+                    || billType == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND
+                    || billType == BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
 
             QuickBookFormat qbf = new QuickBookFormat();
 
@@ -1000,8 +963,8 @@ public class QuickBookReportController implements Serializable {
             Date approvalDate = b.getApproveAt() != null ? b.getApproveAt() : b.getCreatedAt();
 
             // For memo, prefer invoice date, then approval date, then creation date
-            Date memoDate = b.getInvoiceDate() != null ? b.getInvoiceDate() :
-                           (b.getApproveAt() != null ? b.getApproveAt() : b.getCreatedAt());
+            Date memoDate = b.getInvoiceDate() != null ? b.getInvoiceDate()
+                    : (b.getApproveAt() != null ? b.getApproveAt() : b.getCreatedAt());
 
             String supplierName = b.getFromInstitution() != null ? b.getFromInstitution().getChequePrintingName() : "";
             String memoText = b.getPaymentMethod().toString() + " / " + sdf.format(memoDate) + " / " + supplierName;
@@ -1013,12 +976,6 @@ public class QuickBookReportController implements Serializable {
             // For GRN: b.getNetTotal() is negative (e.g., -10750), we need positive for SPL
             // For Returns: b.getNetTotal() is positive (e.g., 10750), we need negative for SPL
             double inventoryValue = Math.abs(b.getNetTotal());
-            double splInventoryAmount = isReturnTransaction ? (0 - inventoryValue) : inventoryValue;
-
-            // Store inventory SPL for later addition (after expenses)
-            QuickBookFormat inventorySpl = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate),
-                "INVENTORIES:" + b.getDepartment().getName(), "", "", "", splInventoryAmount,
-                b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), memoText, "", "", "", "", "");
 
             System.out.println("b.getApproveAt() = " + b.getApproveAt());
             System.out.println("b.getInvoiceDate() = " + b.getInvoiceDate());
@@ -1050,6 +1007,15 @@ public class QuickBookReportController implements Serializable {
                 qbfs.add(qbf);
             }
 
+            // Create inventory SPL after expense processing with correct calculation
+            // Deduct expenses considered for costing from inventory value
+            double inventoryAfterExpenses = inventoryValue - expensesConsideredTotal;
+            double splInventoryAmount = isReturnTransaction ? (0 - inventoryAfterExpenses) : inventoryAfterExpenses;
+
+            QuickBookFormat inventorySpl = new QuickBookFormat("SPL", trnsType, sdf.format(approvalDate),
+                    "INVENTORIES:" + b.getDepartment().getName(), "", "", "", splInventoryAmount,
+                    b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), memoText, "", "", "", "", "");
+
             // Add inventory SPL as the last SPL (before ENDTRNS)
             qbfs.add(inventorySpl);
 
@@ -1060,7 +1026,7 @@ public class QuickBookReportController implements Serializable {
             if (isReturnTransaction) {
                 transAmount = inventoryValue + expensesConsideredTotal; // Positive for returns (includes expenses to balance)
             } else {
-                transAmount = 0 - (inventoryValue + expensesConsideredTotal); // Negative for GRN
+                transAmount = 0 - inventoryValue; // Negative for GRN (net total only)
             }
 
             // Calculate total SPL amounts for balance validation
@@ -1072,10 +1038,10 @@ public class QuickBookReportController implements Serializable {
             // Validate accounting equation: TRANS + sum(SPLs) should equal 0
             double balance = transAmount + totalSplAmount;
             if (Math.abs(balance) > 0.01) {
-                System.err.println("WARNING: QB entry does not balance for bill " + b.getDeptId() +
-                                  " (Type: " + billType + ", Return: " + isReturnTransaction + ")" +
-                                  " - TRANS: " + transAmount + ", SPL Total: " + totalSplAmount +
-                                  ", Balance: " + balance);
+                System.err.println("WARNING: QB entry does not balance for bill " + b.getDeptId()
+                        + " (Type: " + billType + ", Return: " + isReturnTransaction + ")"
+                        + " - TRANS: " + transAmount + ", SPL Total: " + totalSplAmount
+                        + ", Balance: " + balance);
             }
 
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
@@ -1094,7 +1060,6 @@ public class QuickBookReportController implements Serializable {
         // Process cancelled bills, returns, and return cancels (following same pattern as original method)
         // For brevity, I'm focusing on the main bill processing logic
         // The other sections (cancelled, return, return cancelled) would follow the same pattern
-
         System.out.println("bills.size() = " + bills.size());
     }
 
@@ -1229,14 +1194,14 @@ public class QuickBookReportController implements Serializable {
             // Validate transaction balance before completing
             try {
                 List<Double> splAmounts = qbfs.stream()
-                    .mapToDouble(format -> format.getAmount())
-                    .boxed()
-                    .collect(java.util.stream.Collectors.toList());
+                        .mapToDouble(format -> format.getAmount())
+                        .boxed()
+                        .collect(java.util.stream.Collectors.toList());
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 // Log the error but continue processing
-                
+
             }
 
             qbf = new QuickBookFormat();
@@ -1350,14 +1315,14 @@ public class QuickBookReportController implements Serializable {
             // Validate transaction balance before completing
             try {
                 List<Double> splAmounts = qbfs.stream()
-                    .mapToDouble(format -> format.getAmount())
-                    .boxed()
-                    .collect(java.util.stream.Collectors.toList());
+                        .mapToDouble(format -> format.getAmount())
+                        .boxed()
+                        .collect(java.util.stream.Collectors.toList());
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 // Log the error but continue processing
-                
+
             }
 
             qbf = new QuickBookFormat();
@@ -1472,14 +1437,14 @@ public class QuickBookReportController implements Serializable {
             // Validate transaction balance before completing
             try {
                 List<Double> splAmounts = qbfs.stream()
-                    .mapToDouble(format -> format.getAmount())
-                    .boxed()
-                    .collect(java.util.stream.Collectors.toList());
+                        .mapToDouble(format -> format.getAmount())
+                        .boxed()
+                        .collect(java.util.stream.Collectors.toList());
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 // Log the error but continue processing
-                
+
             }
 
             qbf = new QuickBookFormat();
@@ -1596,14 +1561,14 @@ public class QuickBookReportController implements Serializable {
             // Validate transaction balance before completing
             try {
                 List<Double> splAmounts = qbfs.stream()
-                    .mapToDouble(format -> format.getAmount())
-                    .boxed()
-                    .collect(java.util.stream.Collectors.toList());
+                        .mapToDouble(format -> format.getAmount())
+                        .boxed()
+                        .collect(java.util.stream.Collectors.toList());
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 // Log the error but continue processing
-                
+
             }
 
             qbf = new QuickBookFormat();
@@ -1750,14 +1715,14 @@ public class QuickBookReportController implements Serializable {
             // Validate transaction balance before completing
             try {
                 List<Double> splAmounts = qbfs.stream()
-                    .mapToDouble(format -> format.getAmount())
-                    .boxed()
-                    .collect(java.util.stream.Collectors.toList());
+                        .mapToDouble(format -> format.getAmount())
+                        .boxed()
+                        .collect(java.util.stream.Collectors.toList());
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 // Log the error but continue processing
-                
+
             }
 
             qbf = new QuickBookFormat();
@@ -1873,14 +1838,14 @@ public class QuickBookReportController implements Serializable {
             // Validate transaction balance before completing
             try {
                 List<Double> splAmounts = qbfs.stream()
-                    .mapToDouble(format -> format.getAmount())
-                    .boxed()
-                    .collect(java.util.stream.Collectors.toList());
+                        .mapToDouble(format -> format.getAmount())
+                        .boxed()
+                        .collect(java.util.stream.Collectors.toList());
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 // Log the error but continue processing
-                
+
             }
 
             qbf = new QuickBookFormat();
@@ -1998,14 +1963,14 @@ public class QuickBookReportController implements Serializable {
             // Validate transaction balance before completing
             try {
                 List<Double> splAmounts = qbfs.stream()
-                    .mapToDouble(format -> format.getAmount())
-                    .boxed()
-                    .collect(java.util.stream.Collectors.toList());
+                        .mapToDouble(format -> format.getAmount())
+                        .boxed()
+                        .collect(java.util.stream.Collectors.toList());
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 // Log the error but continue processing
-                
+
             }
 
             qbf = new QuickBookFormat();
@@ -2123,14 +2088,14 @@ public class QuickBookReportController implements Serializable {
             // Validate transaction balance before completing
             try {
                 List<Double> splAmounts = qbfs.stream()
-                    .mapToDouble(format -> format.getAmount())
-                    .boxed()
-                    .collect(java.util.stream.Collectors.toList());
+                        .mapToDouble(format -> format.getAmount())
+                        .boxed()
+                        .collect(java.util.stream.Collectors.toList());
                 // Note: Inventory amount is already included in qbfs, no need to add again
                 validateTransactionBalance(0 - grantTot, splAmounts, b.getDeptId());
             } catch (RuntimeException e) {
                 // Log the error but continue processing
-                
+
             }
 
             qbf = new QuickBookFormat();
@@ -3573,11 +3538,13 @@ public class QuickBookReportController implements Serializable {
     }
 
     /**
-     * Enhanced method to get approved bills filtered by approval date instead of creation date.
-     * This method ensures only completed/approved bills are included in QB reports.
+     * Enhanced method to get approved bills filtered by approval date instead
+     * of creation date. This method ensures only completed/approved bills are
+     * included in QB reports.
      *
      * @param billClass - Bill class (BilledBill, CancelledBill)
-     * @param billTypeAtomic - BillTypeAtomic enum for precise bill type filtering
+     * @param billTypeAtomic - BillTypeAtomic enum for precise bill type
+     * filtering
      * @param dep - Department filter
      * @param ins - Institution filter
      * @param fd - From approval date
@@ -3592,8 +3559,8 @@ public class QuickBookReportController implements Serializable {
                 + " and b.billTypeAtomic = :bta "
                 + " and b.department=:d "
                 + " and b.institution=:ins "
-                + " and b.completed = true "  // Only approved/completed bills
-                + " and b.approveAt between :fromDate and :toDate "  // Filter by approval date
+                + " and b.completed = true " // Only approved/completed bills
+                + " and b.approveAt between :fromDate and :toDate " // Filter by approval date
                 + " order by b.approveAt, b.id ";
 
         temMap.put("fromDate", fd);
@@ -3605,12 +3572,32 @@ public class QuickBookReportController implements Serializable {
         return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
+    public List<Bill> getApprovedBills(List<BillTypeAtomic> billTypeAtomics, Department dep, Date fd, Date td) {
+        String sql;
+        Map<String, Object> temMap = new HashMap<>();
+
+        sql = "SELECT b FROM Bill b WHERE b.retired=false "
+                + " and b.billTypeAtomic in :btas "
+                + " and b.department=:d "
+                + " and b.completed = true " // Only approved/completed bills
+                + " and b.approveAt between :fromDate and :toDate " // Filter by approval date
+                + " order by b.approveAt, b.id ";
+
+        temMap.put("fromDate", fd);
+        temMap.put("toDate", td);
+        temMap.put("btas", billTypeAtomics);
+        temMap.put("d", dep);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
     /**
-     * Enhanced method to get departments that have approved bills within approval date range.
+     * Enhanced method to get departments that have approved bills within
+     * approval date range.
      *
      * @param billTypeAtomics - List of BillTypeAtomic values
      * @param ins - Institution filter
-     * @param siteFilter - Site filter (filters by bill.department.site), can be null
+     * @param siteFilter - Site filter (filters by bill.department.site), can be
+     * null
      * @param fd - From approval date
      * @param td - To approval date
      * @return List of departments with approved bills
@@ -3630,7 +3617,7 @@ public class QuickBookReportController implements Serializable {
             temMap.put("site", siteFilter);
         }
 
-        sql += " and b.approveAt between :fromDate and :toDate "  // Filter by approval date
+        sql += " and b.approveAt between :fromDate and :toDate " // Filter by approval date
                 + " order by b.department.name ";
 
         temMap.put("fromDate", fd);
@@ -3698,7 +3685,6 @@ public class QuickBookReportController implements Serializable {
         m.put("billType", BillType.InwardFinalBill);
 
         pes = getPatientEncounterFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-
 
         return pes;
     }

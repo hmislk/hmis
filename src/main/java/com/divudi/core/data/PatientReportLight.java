@@ -13,6 +13,8 @@ public class PatientReportLight {
     private boolean printed;
     private ReportType reportType;
     private String qrCodeContentsLink;
+    private Boolean handoverComplete;
+    private Boolean printComplete;
 
     public PatientReportLight() {
     }
@@ -25,6 +27,15 @@ public class PatientReportLight {
         this.id = id;
         this.approved = approved;
         this.printed = printed;
+        this.reportType = reportType;
+        this.qrCodeContentsLink = qrCodeContentsLink;
+    }
+    
+    public PatientReportLight(Long id, boolean approved, Boolean printComplete, Boolean handoverComplete, ReportType reportType, String qrCodeContentsLink) {
+        this.id = id;
+        this.approved = approved;
+        this.printComplete = printComplete;
+        this.handoverComplete = handoverComplete;
         this.reportType = reportType;
         this.qrCodeContentsLink = qrCodeContentsLink;
     }
@@ -107,6 +118,22 @@ public class PatientReportLight {
 
     public void setPrinted(boolean printed) {
         this.printed = printed;
+    }
+
+    public Boolean getHandoverComplete() {
+        return handoverComplete;
+    }
+
+    public void setHandoverComplete(Boolean handoverComplete) {
+        this.handoverComplete = handoverComplete;
+    }
+
+    public Boolean getPrintComplete() {
+        return printComplete;
+    }
+
+    public void setPrintComplete(Boolean printComplete) {
+        this.printComplete = printComplete;
     }
 
 }
