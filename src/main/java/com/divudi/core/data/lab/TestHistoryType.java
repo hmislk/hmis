@@ -31,6 +31,7 @@ public enum TestHistoryType {
     SAMPLE_REJECTED,
     SAMPLE_RECEIVED,
     SAMPLE_TRANSFERRED,
+    BYPASS_BARCODE_GENERAT_AND_REPORT_CREATED,
     SAMPLE_PUT_TO_ANALYZER,
     RESULT_RECEIVED_FROM_ANALYZER,
     REPORT_CREATED,
@@ -107,6 +108,8 @@ public enum TestHistoryType {
                 return "Sample Put to Analyzer";
             case RESULT_RECEIVED_FROM_ANALYZER:
                 return "Result Received from Analyzer";
+            case BYPASS_BARCODE_GENERAT_AND_REPORT_CREATED:
+                return "Sample Process and Report Created";
             case REPORT_CREATED:
                 return "Report Created";
             case DATA_ENTERED:
