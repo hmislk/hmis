@@ -245,11 +245,11 @@
                             action="#{workingTimeController.navigateToListWorkTimes()}" 
                             icon="fa fa-search"
                             rendered="#{webUserController.hasPrivilege('Opd')}"></p:menuitem>
-                        <p:menuitem 
-                            ajax="false" 
-                            value="Pay" 
-                            action="#{workingTimeController.navigateToPay()}" 
-                            icon="fa fa-search"
+                        <p:menuitem
+                            ajax="false"
+                            value="Pay"
+                            action="/opd/opd_doctor_payment_index?faces-redirect=true"
+                            icon="fa fa-money-bill-wave"
                             rendered="#{webUserController.hasPrivilege('Opd')}"></p:menuitem>
 
                     </p:submenu>

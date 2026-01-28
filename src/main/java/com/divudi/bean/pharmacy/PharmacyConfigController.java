@@ -172,6 +172,11 @@ public class PharmacyConfigController implements Serializable {
     private boolean fundTransferReceiveA4Paper;
     private boolean fundTransferReceiveA4PrintedPaper;
 
+    // Miscellaneous Staff Fee Settings
+    private boolean miscStaffFeePosPaper;
+    private boolean miscStaffFeeFiveFivePaper;
+    private boolean miscStaffFeeA4Paper;
+
     public PharmacyConfigController() {
     }
     
@@ -326,6 +331,11 @@ public class PharmacyConfigController implements Serializable {
         fundTransferReceiveFiveFivePrintedPaper = configOptionController.getBooleanValueByKey("Fund Transfer Bill is 5x5 Printed Paper", false);
         fundTransferReceiveA4Paper = configOptionController.getBooleanValueByKey("Fund Transfer Bill is A4 Paper", false);
         fundTransferReceiveA4PrintedPaper = configOptionController.getBooleanValueByKey("Fund Transfer Bill is A4 Printed Paper", false);
+
+        // Miscellaneous Staff Fee Settings
+        miscStaffFeePosPaper = configOptionController.getBooleanValueByKey("Miscellaneous Staff Fee Bill is POS Paper", false);
+        miscStaffFeeFiveFivePaper = configOptionController.getBooleanValueByKey("Miscellaneous Staff Fee Bill is Five Five Paper", true);
+        miscStaffFeeA4Paper = configOptionController.getBooleanValueByKey("Miscellaneous Staff Fee Bill is A4 Paper", true);
 
     }
 
@@ -754,6 +764,26 @@ public class PharmacyConfigController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving Fund Transfer Receive configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Miscellaneous Staff Fee Bill configuration changes specifically
+     */
+    public void saveMiscStaffFeeConfig() {
+        try {
+            // Miscellaneous Staff Fee Settings
+            configOptionController.setBooleanValueByKey("Miscellaneous Staff Fee Bill is POS Paper", miscStaffFeePosPaper);
+            configOptionController.setBooleanValueByKey("Miscellaneous Staff Fee Bill is Five Five Paper", miscStaffFeeFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Miscellaneous Staff Fee Bill is A4 Paper", miscStaffFeeA4Paper);
+
+            JsfUtil.addSuccessMessage("Miscellaneous Staff Fee configuration saved successfully");
+
+            // Reload current values to ensure consistency
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Miscellaneous Staff Fee configuration: " + e.getMessage());
         }
     }
 
@@ -1561,6 +1591,30 @@ public class PharmacyConfigController implements Serializable {
 
     public void setFundTransferReceiveA4PrintedPaper(boolean fundTransferReceiveA4PrintedPaper) {
         this.fundTransferReceiveA4PrintedPaper = fundTransferReceiveA4PrintedPaper;
+    }
+
+    public boolean isMiscStaffFeePosPaper() {
+        return miscStaffFeePosPaper;
+    }
+
+    public void setMiscStaffFeePosPaper(boolean miscStaffFeePosPaper) {
+        this.miscStaffFeePosPaper = miscStaffFeePosPaper;
+    }
+
+    public boolean isMiscStaffFeeFiveFivePaper() {
+        return miscStaffFeeFiveFivePaper;
+    }
+
+    public void setMiscStaffFeeFiveFivePaper(boolean miscStaffFeeFiveFivePaper) {
+        this.miscStaffFeeFiveFivePaper = miscStaffFeeFiveFivePaper;
+    }
+
+    public boolean isMiscStaffFeeA4Paper() {
+        return miscStaffFeeA4Paper;
+    }
+
+    public void setMiscStaffFeeA4Paper(boolean miscStaffFeeA4Paper) {
+        this.miscStaffFeeA4Paper = miscStaffFeeA4Paper;
     }
 
 }

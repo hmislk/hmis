@@ -4,6 +4,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body >
         <ui:composition template="/admin/users/index.xhtml">
@@ -14,7 +15,7 @@
                         <h:outputText value="View Users" class="mx-2"/>
                     </f:facet>
                     <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers') and !sessionController.firstLogin }" >
-                        <h:outputText value="You are NOT authorized"/>
+                        <na:not_authorize />
                     </h:panelGroup>
                     <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
                         <h:form  >
