@@ -32,6 +32,19 @@
                                 <div class="d-flex justify-content-between">
                                     <h:outputText value="Report View" class="mt-2"/>
                                     <div class="d-flex gap-2">
+
+                                        <p:remoteCommand 
+                                            name="recordExportHistory"
+                                            actionListener="#{patientReportController.reportExport()}"
+                                            async="true">
+                                        </p:remoteCommand>
+
+                                        <p:remoteCommand 
+                                            name="recordPrintHistory"
+                                            actionListener="#{patientReportController.printPatientReport()}"
+                                            async="true" >
+                                        </p:remoteCommand>
+
                                         <p:commandButton 
                                             value="Export PDF" 
                                             class="ui-button-channelling" 
@@ -41,14 +54,16 @@
                                             type="button"  
                                             ajax="false">
                                         </p:commandButton>
+                                        
                                         <p:commandButton
                                             class="ui-button-info"
                                             icon="fas fa-print"
                                             ajax="false"
-                                            value="Print"
-                                            actionListener="#{patientReportController.printPatientReport()}">
+                                            onclick="recordPrintHistory();"
+                                            value="Print">
                                             <p:printer target="divPrint" />
                                         </p:commandButton>
+                                        
                                         <p:commandButton
                                             value="Back to Report Search"
                                             action="#{laboratoryManagementController.navigateToBackFormPatientReportPrintView()}"
@@ -56,6 +71,7 @@
                                             class="ui-button-secondary"
                                             ajax="false">
                                         </p:commandButton>
+                                        
                                     </div>
                                 </div>
                             </f:facet>
@@ -88,6 +104,7 @@
                                                 action="#{laboratoryManagementController.addIssueHistory()}">
                                             </p:commandButton>
                                         </h:panelGroup>
+                                        
                                         <p:commandButton 
                                             ajax="false"
                                             value="Handover to Patient" 
@@ -97,6 +114,7 @@
                                             class="ui-button-stores" 
                                             action="#{laboratoryManagementController.addIssueHistory()}">
                                         </p:commandButton>
+                                        
                                     </div>
                                 </div>
                             </h:panelGroup>
@@ -126,6 +144,8 @@
                                 <script>
                                     function downloadPdf() {
                                         console.log("Downloading PDF...");
+                                        recordExportHistory();
+                                        console.log("Add History to Downloading PDF ...");
                                         const element = document.getElementById('pdf');
                                         element.classList.remove('print-only');
 
