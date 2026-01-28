@@ -12,6 +12,7 @@ import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
@@ -199,6 +200,21 @@ public class PurchaseOrderRequestController implements Serializable {
         if (getCurrentBillItem().getItem() == null) {
             JsfUtil.addErrorMessage("Please select and item from the list");
             return;
+        }
+
+        // Auto-set department type if not already set
+        if (getCurrentBill().getDepartmentType() == null) {
+            // Auto-set to Pharmacy department type as this is a pharmacy purchase order
+            getCurrentBill().setDepartmentType(DepartmentType.Pharmacy);
+        }
+
+        // Validate that the item is compatible with the selected department type
+        if (getCurrentBill().getDepartmentType() != null) {
+            List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+            if (allowedTypes == null || !allowedTypes.contains(getCurrentBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + getCurrentBill().getDepartmentType().getLabel());
+                return;
+            }
         }
 
         // Check for duplicate items if configuration is enabled
@@ -764,7 +780,41 @@ public class PurchaseOrderRequestController implements Serializable {
                 + " order by c.item.name";
         hm.put("ins", getCurrentBill().getToInstitution());
         lst = itemFacade.findByJpql(sql, hm, 200);
+
+        // Filter by department type if set
+        if (getCurrentBill().getDepartmentType() != null && lst != null) {
+            lst = filterItemsByDepartmentType(lst, getCurrentBill().getDepartmentType());
+        }
+
         return lst;
+    }
+
+    private List<Item> filterItemsByDepartmentType(List<Item> items, DepartmentType departmentType) {
+        if (items == null || departmentType == null) {
+            return items;
+        }
+
+        // Check if the department type is allowed for pharmacy transactions
+        List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+        if (allowedTypes == null || !allowedTypes.contains(departmentType)) {
+            return new ArrayList<>(); // Return empty list if department type not allowed
+        }
+
+        // For now, return all items if department type is allowed
+        // Additional item-specific filtering can be added here if needed
+        return items;
+    }
+
+    public List<Item> completeItemForSelectedDepartmentType(String query) {
+        // Get items from the ItemController
+        List<Item> allItems = itemController.completeAmpAndAmppItemForLoggedDepartment(query);
+
+        // Filter by department type if set
+        if (getCurrentBill().getDepartmentType() != null && allItems != null) {
+            return filterItemsByDepartmentType(allItems, getCurrentBill().getDepartmentType());
+        }
+
+        return allItems;
     }
 
     public void finalizeRequest() {

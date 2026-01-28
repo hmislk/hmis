@@ -192,6 +192,22 @@
                             </div>
                             <div class="col-3">
                                 <p:panel header="Purchase Order" id="po">
+                                    <p:outputLabel value="Department Type"
+                                                   class="form-label"
+                                                   for="selDepartmentType"></p:outputLabel>
+                                    <p:selectOneMenu
+                                        id="selDepartmentType"
+                                        value="#{purchaseOrderRequestController.currentBill.departmentType}"
+                                        class="w-100"
+                                        disabled="#{not empty purchaseOrderRequestController.billItems and purchaseOrderRequestController.billItems.size() > 0}">
+                                        <f:selectItem itemLabel="Select Department Type" itemValue="#{null}"/>
+                                        <f:selectItems value="#{sessionController.availableDepartmentTypesForPharmacyTransactions}"
+                                                      var="dt"
+                                                      itemLabel="#{dt.label}"
+                                                      itemValue="#{dt}"/>
+                                        <p:ajax process="@this" update="po exDItem exItem" event="change"/>
+                                    </p:selectOneMenu>
+
                                     <p:outputLabel value="Supplier"
                                                    class="form-label"
                                                    for="acSupplier"></p:outputLabel>
@@ -344,7 +360,7 @@
                                         for="exItem" 
                                         class="form-label w-100"
                                         value="Select Any Item and Add" ></p:outputLabel>
-                                    <p:autoComplete 
+                                    <p:autoComplete
                                         id="exItem"
                                         value="#{purchaseOrderRequestController.currentBillItem.item}"
                                         forceSelection="true"
@@ -353,7 +369,7 @@
                                         scrollHeight="600"
                                         minQueryLength="#{configOptionApplicationController.getShortTextValueByKey('Minimum Number of Characters to Search for Item','4')}"
                                         inputStyleClass="w-100"
-                                        completeMethod="#{itemController.completeAmpAndAmppItemForLoggedDepartment}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                        completeMethod="#{purchaseOrderRequestController.completeItemForSelectedDepartmentType}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                         <p:column headerText="ID" rendered="#{webUserController.hasPrivilege('Developers')}" >
                                             <h:outputLabel value="#{vt.id}"></h:outputLabel>
                                         </p:column>
