@@ -3701,8 +3701,79 @@ public class SearchController implements Serializable {
                           "AND b.institution.id = :insId " +
                           "AND b.createdAt BETWEEN :fromDate AND :toDate " +
                           "AND (b.retired = false OR b.retired IS NULL) " +
-                          "AND b.department.id = :deptid " +
-                          "ORDER BY b.createdAt DESC";
+                          "AND b.department.id = :deptid ";
+
+            
+            if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().isEmpty()) {
+                System.out.println("bill no search");
+                jpql4 += " AND b.deptId = :billNo or paymentBill.deptId like :billNo ";
+                params.put("billNO", "%" + searchKeyword.getBillNo() + "%");
+            }
+
+            if (searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().isEmpty()) {
+                System.out.println("patient name search");
+                jpql4 += " AND LOWER(patientPerson.name) like :name ";
+                params.put("name", "%" + searchKeyword.getPatientName().toLowerCase() + "%");
+            }
+
+            if (searchKeyword.getPatientPhone() != null && !searchKeyword.getPatientPhone().isEmpty()) {
+                System.out.println("patient phone search");
+
+                try {
+                    String phoneNo = searchKeyword.getPatientPhone();
+
+                    Long phoneNoLong = Long.valueOf(phoneNo);
+
+                    jpql4 += " AND p.patientPhoneNumber = :mobile or p.patientMobileNumber = :mobile";
+                    params.put("mobile", phoneNoLong);
+
+                }catch(NumberFormatException e){
+                    JsfUtil.addErrorMessage("Phone number search key word is not valid");
+                }
+
+            }
+
+            if (searchKeyword.getDepartment() != null && !searchKeyword.getDepartment().isEmpty()) {
+                System.out.println("dept name search");
+                jpql4 += " AND LOWER(b.department.name)like :deptName";
+                params.put("deptName", "%" + searchKeyword.getDepartment().toLowerCase() + "%");
+            }
+
+            if (searchKeyword.getTotal() != null && !searchKeyword.getTotal().isEmpty()) {
+                System.out.println("total search");
+
+                String total = searchKeyword.getTotal();
+
+                try {
+                    double totalAsDouble = Double.valueOf(total);
+
+                    jpql4 += " AND b.total = :total";
+                    params.put("total", totalAsDouble);
+
+                } catch (NumberFormatException e) {
+                    JsfUtil.addErrorMessage("Total Search Keyword is invalid");
+                }
+
+            }
+
+            if (searchKeyword.getNetTotal() != null && !searchKeyword.getNetTotal().isEmpty()) {
+                System.out.println("total search");
+
+                String netTotal = searchKeyword.getNetTotal();
+
+                try {
+                    double netTotalAsDouble = Double.valueOf(netTotal);
+
+                    jpql4 += " AND b.netTotal = :netTotal";
+                    params.put("netTotal", netTotalAsDouble);
+
+                } catch (NumberFormatException e) {
+                    JsfUtil.addErrorMessage("Net Total Search Keyword is invalid");
+                }
+
+            }
+
+            jpql4 += " ORDER BY b.createdAt DESC";
 
             cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()
                     .findLightsByJpql(jpql4, params, TemporalType.TIMESTAMP);
