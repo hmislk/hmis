@@ -5,41 +5,68 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ezp="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
       >
 
     <h:body>
-        <ui:composition template="/payments/pay_index.xhtml">
-            <ui:define name="admin">
+        <ui:composition template="/opd/opd_doctor_payment_index.xhtml">
+            <ui:define name="opdPaymentContent">
                 <h:panelGroup id="panMiscFee" styleClass="alignTop">
-                    <p:panel header="Add Miscellaneous Staff Fee">
-                        <h:form id="formMiscFee">
-                            <p:growl id="growl" showDetail="true" sticky="false" life="3000"/>
+                    <h:form id="formMiscFee">
+                        <p:growl id="growl" showDetail="true" sticky="false" life="3000"/>
+
+                        <!-- Entry Form Section - Visible when NOT in print preview -->
+                        <h:panelGroup rendered="#{not miscellaneousStaffFeeController.printPreview}">
+                            <p:panel header="Add Miscellaneous Staff Fee">
 
                             <p:panel header="Fee Entry Form" styleClass="mb-3">
                                 <h:panelGrid columns="2" cellpadding="10" styleClass="w-100">
 
                                     <p:outputLabel value="Staff/Doctor:" for="acStaff"/>
-                                    <p:autoComplete
-                                        id="acStaff"
-                                        value="#{miscellaneousStaffFeeController.selectedStaff}"
-                                        completeMethod="#{miscellaneousStaffFeeController.completeStaff}"
-                                        var="s"
-                                        itemLabel="#{s.person.nameWithTitle}"
-                                        itemValue="#{s}"
-                                        forceSelection="true"
+                                    <h:panelGroup>
+                                        <p:autoComplete
+                                            id="acStaff"
+                                            value="#{miscellaneousStaffFeeController.selectedStaff}"
+                                            completeMethod="#{miscellaneousStaffFeeController.completeStaff}"
+                                            var="s"
+                                            itemLabel="#{s.person.nameWithTitle}"
+                                            itemValue="#{s}"
+                                            forceSelection="true"
+                                            class="w-100"
+                                            inputStyleClass="w-100"
+                                            placeholder="Search staff by name..."
+                                            minQueryLength="2"
+                                            required="true"
+                                            requiredMessage="Please select a staff member"
+                                            disabled="#{not empty miscellaneousStaffFeeController.tempPaymentItems}">
+                                            <p:column>
+                                                <h:outputText value="#{s.person.nameWithTitle}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <h:outputText value="#{s.speciality.name}" rendered="#{s.speciality ne null}"/>
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <ui:fragment rendered="#{not empty miscellaneousStaffFeeController.tempPaymentItems}">
+                                            <small class="text-muted" style="display: block; margin-top: 5px;">
+                                                <i class="fa fa-info-circle"></i> Staff locked. All items must be for the same staff member. Click "Cancel All" to change staff.
+                                            </small>
+                                        </ui:fragment>
+                                    </h:panelGroup>
+
+                                    <p:outputLabel value="Payment Category:" for="cmbPaymentCategory"/>
+                                    <p:selectOneMenu
+                                        id="cmbPaymentCategory"
+                                        value="#{miscellaneousStaffFeeController.selectedPaymentCategory}"
                                         class="w-100"
-                                        inputStyleClass="w-100"
-                                        placeholder="Search staff by name..."
-                                        minQueryLength="2"
-                                        required="true"
-                                        requiredMessage="Please select a staff member">
-                                        <p:column>
-                                            <h:outputText value="#{s.person.nameWithTitle}"/>
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputText value="#{s.speciality.name}" rendered="#{s.speciality ne null}"/>
-                                        </p:column>
-                                    </p:autoComplete>
+                                        filter="true"
+                                        filterMatchMode="contains">
+                                        <f:selectItem itemLabel="Select Payment Category" itemValue="#{null}" noSelectionOption="true"/>
+                                        <f:selectItems
+                                            value="#{paymentItemController.items}"
+                                            var="pc"
+                                            itemLabel="#{pc.name}"
+                                            itemValue="#{pc}"/>
+                                    </p:selectOneMenu>
 
                                     <p:outputLabel value="Amount:" for="txtAmount"/>
                                     <p:inputNumber
@@ -58,12 +85,10 @@
                                     <p:inputTextarea
                                         id="txtDescription"
                                         value="#{miscellaneousStaffFeeController.feeDescription}"
-                                        rows="4"
+                                        rows="3"
                                         cols="50"
                                         class="w-100"
-                                        placeholder="Enter the reason for this fee (e.g., Meeting Allowance, Administrative Fee, Bonus, etc.)"
-                                        required="true"
-                                        requiredMessage="Please enter a description"
+                                        placeholder="Enter the reason for this payment item"
                                         maxlength="500">
                                     </p:inputTextarea>
 
@@ -71,90 +96,254 @@
 
                                 <f:facet name="footer">
                                     <p:commandButton
-                                        value="Save Fee"
-                                        action="#{miscellaneousStaffFeeController.saveNewMiscellaneousFee}"
-                                        update="formMiscFee:growl formMiscFee:tblRecentFees"
-                                        icon="fa fa-save"
+                                        value="Add Payment Item"
+                                        action="#{miscellaneousStaffFeeController.addPaymentItem}"
+                                        update="formMiscFee:growl formMiscFee:panelPaymentItems formMiscFee:acStaff formMiscFee:cmbPaymentCategory formMiscFee:txtAmount formMiscFee:txtDescription"
+                                        icon="fa fa-plus"
                                         styleClass="ui-button-success mx-2 my-2"/>
 
                                     <p:commandButton
-                                        value="Clear Form"
-                                        action="#{miscellaneousStaffFeeController.clearForm}"
-                                        update="formMiscFee"
+                                        value="Clear Entry"
+                                        action="#{miscellaneousStaffFeeController.clearCurrentEntry}"
+                                        update="formMiscFee:cmbPaymentCategory formMiscFee:txtAmount formMiscFee:txtDescription"
                                         icon="fa fa-eraser"
-                                        styleClass="ui-button-secondary mx-2 my-2"/>
+                                        styleClass="ui-button-secondary mx-2 my-2"
+                                        process="@this"/>
                                 </f:facet>
                             </p:panel>
 
-                            <p:panel header="Recent Miscellaneous Fees" styleClass="mt-3">
-                                <p:commandButton
-                                    value="Refresh List"
-                                    action="#{miscellaneousStaffFeeController.loadRecentMiscellaneousFees}"
-                                    update="formMiscFee:tblRecentFees"
-                                    icon="fa fa-refresh"
-                                    styleClass="ui-button-info mx-2 my-2"/>
-
-                                <p:commandButton
-                                    ajax="false"
-                                    value="Download as Excel"
-                                    icon="fa-solid fa-file-excel"
-                                    styleClass="ui-button-success mx-2 my-2">
-                                    <p:dataExporter type="xlsx" target="tblRecentFees" fileName="Miscellaneous_Staff_Fees"/>
-                                </p:commandButton>
-
+                            <!-- Finalize Bill Section - Always Visible -->
+                            <h:panelGroup id="panelPaymentItems">
+                            <p:panel header="Payment Items to be Processed" styleClass="mb-3">
                                 <p:dataTable
-                                    id="tblRecentFees"
-                                    value="#{miscellaneousStaffFeeController.recentMiscellaneousFees}"
-                                    var="bf"
-                                    paginator="true"
-                                    rows="10"
-                                    rowKey="#{bf.id}"
-                                    paginatorPosition="bottom"
-                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                    rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
-                                    emptyMessage="No miscellaneous fees found"
-                                    class="w-100 m-1">
+                                    id="tblPaymentItems"
+                                    value="#{miscellaneousStaffFeeController.tempPaymentItems}"
+                                    var="item"
+                                    emptyMessage="No payment items added yet. Please add payment items above."
+                                    class="w-100">
 
-                                    <p:column headerText="Bill ID" width="10%">
-                                        <h:outputText value="#{bf.bill.deptId}"/>
+                                    <p:column headerText="Payment Category" width="25%">
+                                        <h:outputText value="#{item.paymentCategory.name}"/>
                                     </p:column>
 
-                                    <p:column headerText="Date Created" width="12%">
-                                        <h:outputText value="#{bf.createdAt}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
-                                        </h:outputText>
-                                    </p:column>
-
-                                    <p:column headerText="Staff/Doctor" width="15%">
-                                        <h:outputText value="#{bf.staff.person.nameWithTitle}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Speciality" width="12%">
-                                        <h:outputText value="#{bf.staff.speciality.name}" rendered="#{bf.staff.speciality ne null}"/>
-                                        <h:outputText value="-" rendered="#{bf.staff.speciality eq null}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Description" width="30%">
-                                        <h:outputText value="#{bf.bill.comments}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Amount" width="10%" styleClass="text-end">
-                                        <h:outputText value="#{bf.feeValue}">
+                                    <p:column headerText="Amount" width="15%" styleClass="text-end">
+                                        <h:outputText value="#{item.amount}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Status" width="11%">
-                                        <p:badge value="Paid" severity="success" rendered="#{bf.paidValue gt 0}"/>
-                                        <p:badge value="Unpaid" severity="warning" rendered="#{bf.paidValue eq 0}"/>
+                                    <p:column headerText="Description" width="50%">
+                                        <h:outputText value="#{item.description}"/>
                                     </p:column>
 
-                                </p:dataTable>
-                            </p:panel>
+                                    <p:column headerText="Action" width="10%" styleClass="text-center">
+                                        <p:commandButton
+                                            icon="fa fa-trash"
+                                            styleClass="ui-button-danger"
+                                            action="#{miscellaneousStaffFeeController.removePaymentItem(item)}"
+                                            update="formMiscFee:panelPaymentItems formMiscFee:growl"
+                                            process="@this">
+                                            <p:confirm header="Confirmation" message="Remove this payment item?" icon="pi pi-exclamation-triangle"/>
+                                        </p:commandButton>
+                                    </p:column>
 
-                        </h:form>
-                    </p:panel>
+                                    <f:facet name="footer">
+                                        <div class="text-end fw-bold">
+                                            Total Amount: <h:outputText value="#{miscellaneousStaffFeeController.totalAmount}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </div>
+                                    </f:facet>
+                                </p:dataTable>
+
+                                <f:facet name="footer">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <p:commandButton
+                                                value="Finalize Bill"
+                                                action="#{miscellaneousStaffFeeController.finalizeBill}"
+                                                update="formMiscFee"
+                                                process="@this"
+                                                icon="fa fa-check-circle"
+                                                styleClass="ui-button-warning mx-2 my-2"
+                                                disabled="#{empty miscellaneousStaffFeeController.tempPaymentItems}">
+                                                <p:confirm header="Confirmation" message="Create bill with all payment items?" icon="pi pi-exclamation-triangle"/>
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                value="Cancel All"
+                                                action="#{miscellaneousStaffFeeController.clearForm}"
+                                                update="formMiscFee"
+                                                icon="fa fa-times"
+                                                styleClass="ui-button-danger mx-2 my-2"
+                                                process="@this"
+                                                disabled="#{empty miscellaneousStaffFeeController.tempPaymentItems}">
+                                                <p:confirm header="Confirmation" message="Cancel all payment items?" icon="pi pi-exclamation-triangle"/>
+                                            </p:commandButton>
+                                        </div>
+                                        <div class="text-muted" style="#{empty miscellaneousStaffFeeController.tempPaymentItems ? '' : 'display:none;'}">
+                                            <i class="fa fa-arrow-up"></i> Add payment items above, then click "Finalize Bill" to create the bill
+                                        </div>
+                                    </div>
+                                </f:facet>
+                            </p:panel>
+                            </h:panelGroup>
+
+                            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
+                                <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check"/>
+                                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times"/>
+                            </p:confirmDialog>
+                            </p:panel>
+                        </h:panelGroup>
+
+                        <!-- Print Preview Section - Visible when in print preview -->
+                        <h:panelGroup rendered="#{miscellaneousStaffFeeController.printPreview}">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <h:outputText value="Bill Preview - #{miscellaneousStaffFeeController.currentBill.deptId}"
+                                                          style="font-size: 1.2em; font-weight: bold;"/>
+                                        </div>
+                                        <div>
+                                            <p:commandButton
+                                                value="Print"
+                                                ajax="false"
+                                                icon="fas fa-print"
+                                                styleClass="ui-button-info mx-2">
+                                                <p:printer target="printArea" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                                value="Settings"
+                                                icon="fas fa-cog"
+                                                styleClass="ui-button-secondary mx-1"
+                                                type="button"
+                                                onclick="PF('miscStaffFeeConfigDialog').show();" />
+
+                                            <p:commandButton
+                                                value="New Bill"
+                                                ajax="true"
+                                                update="formMiscFee"
+                                                icon="fas fa-plus"
+                                                action="#{miscellaneousStaffFeeController.createNew}"
+                                                styleClass="ui-button-success mx-2" />
+
+                                            <p:commandButton
+                                                value="Back"
+                                                ajax="true"
+                                                update="formMiscFee"
+                                                icon="fas fa-arrow-left"
+                                                action="#{miscellaneousStaffFeeController.backToForm}"
+                                                styleClass="ui-button-secondary mx-2" />
+                                        </div>
+                                    </div>
+                                </f:facet>
+
+                                <!-- Print Area with conditional rendering based on paper type settings -->
+                                <h:panelGroup id="printArea">
+                                    <!-- A4 Format -->
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Miscellaneous Staff Fee Bill is A4 Paper', true)}">
+                                        <ezp:miscellaneous_staff_fee_a4 bill="#{miscellaneousStaffFeeController.currentBill}"/>
+                                    </h:panelGroup>
+
+                                    <!-- Five Five (5.5 Inch) Format -->
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Miscellaneous Staff Fee Bill is Five Five Paper', false)}">
+                                        <ezp:miscellaneous_staff_fee_fivefive bill="#{miscellaneousStaffFeeController.currentBill}"/>
+                                    </h:panelGroup>
+
+                                    <!-- POS Format -->
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Miscellaneous Staff Fee Bill is POS Paper', false)}">
+                                        <ezp:miscellaneous_staff_fee_pos bill="#{miscellaneousStaffFeeController.currentBill}"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </p:panel>
+                        </h:panelGroup>
+
+                        <!-- Configuration Dialog for Printer Settings -->
+                        <p:dialog id="miscStaffFeeConfigDialog"
+                                  header="Miscellaneous Staff Fee Printer Configuration"
+                                  widgetVar="miscStaffFeeConfigDialog"
+                                  modal="true"
+                                  width="600"
+                                  height="400"
+                                  resizable="true"
+                                  maximizable="true"
+                                  closeOnEscape="true">
+
+                            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="miscStaffFeeConfigForm" />
+
+                            <h:form id="miscStaffFeeConfigForm">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="card config-section">
+                                            <div class="card-header">
+                                                <h6><i class="fas fa-file-alt"></i> Paper Format Settings</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox
+                                                        id="miscStaffFeeA4"
+                                                        value="#{pharmacyConfigController.miscStaffFeeA4Paper}" />
+                                                    <h:outputLabel for="miscStaffFeeA4" value="A4 Paper Format" styleClass="ms-2" />
+                                                    <small class="form-text text-muted d-block">Standard A4 size format with full details and signature sections (210mm x 297mm)</small>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox
+                                                        id="miscStaffFeeFiveFive"
+                                                        value="#{pharmacyConfigController.miscStaffFeeFiveFivePaper}" />
+                                                    <h:outputLabel for="miscStaffFeeFiveFive" value="Five Inch (5.5&quot;) Paper Format" styleClass="ms-2" />
+                                                    <small class="form-text text-muted d-block">Medium-sized format suitable for receipts and vouchers (140mm width)</small>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox
+                                                        id="miscStaffFeePos"
+                                                        value="#{pharmacyConfigController.miscStaffFeePosPaper}" />
+                                                    <h:outputLabel for="miscStaffFeePos" value="POS Paper Format" styleClass="ms-2" />
+                                                    <small class="form-text text-muted d-block">Compact thermal receipt format for POS printers (80mm width)</small>
+                                                </div>
+
+                                                <div class="alert alert-info mt-3" role="alert">
+                                                    <i class="fas fa-info-circle"></i>
+                                                    <strong>Note:</strong> You can enable multiple formats. The system will display all selected formats for printing.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-4">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <p:messages id="miscStaffFeeConfigMessages" showDetail="true" closable="true" />
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="d-flex gap-2">
+                                                        <p:commandButton
+                                                            value="Apply &amp; Close"
+                                                            icon="fas fa-save"
+                                                            styleClass="ui-button-success"
+                                                            ajax="false"
+                                                            action="#{pharmacyConfigController.saveMiscStaffFeeConfig}" />
+                                                        <p:commandButton
+                                                            value="Cancel"
+                                                            icon="fas fa-times"
+                                                            styleClass="ui-button-secondary"
+                                                            onclick="PF('miscStaffFeeConfigDialog').hide(); return false;"
+                                                            type="button" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </h:form>
+                        </p:dialog>
+
+                    </h:form>
                 </h:panelGroup>
             </ui:define>
         </ui:composition>
