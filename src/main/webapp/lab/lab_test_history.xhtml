@@ -75,6 +75,10 @@
                                                             <span class="sample-value">#{patientInvestigationController.getPatientSample()}</span>
                                                         </div>
                                                         <div class="sample-row">
+                                                            <span class="sample-label">Bill No : </span>
+                                                            <span class="sample-investigation">#{patientInvestigationController.current.billItem.bill.deptId}</span>
+                                                        </div>
+                                                        <div class="sample-row">
                                                             <span class="sample-label">Investigation : </span>
                                                             <span class="sample-investigation">#{patientInvestigationController.current.billItem.item.name}</span>
                                                         </div>
