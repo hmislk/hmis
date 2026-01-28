@@ -3,6 +3,7 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.lab.TestHistoryType;
+import static com.divudi.core.data.lab.TestHistoryType.BYPASS_BARCODE_GENERAT_AND_REPORT_CREATED;
 import com.divudi.core.entity.AppEmail;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
@@ -141,6 +142,10 @@ public class LabTestHistoryController implements Serializable {
 
     public void addSampleReCollectRequestHistory(PatientInvestigation patientInvestigation, PatientSample patientSample) {
         addNewHistory(TestHistoryType.SAMPLE_RECOLLECT_REQUEST, null, null, patientInvestigation, null, patientSample, null, null, null, null, null, null, null);
+    }
+    
+    public void addBypassBarcodeGeneratAndReportCreateHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
+        addNewHistory(TestHistoryType.BYPASS_BARCODE_GENERAT_AND_REPORT_CREATED, null, null, patientInvestigation, null, null, null, null, null, null, null, null, null);
     }
 
     // </editor-fold>
@@ -431,58 +436,27 @@ public class LabTestHistoryController implements Serializable {
     }
     
     
-    
-//  1. Result recive form Analyzer
-    public List<LabTestHistoryLight> getAnalyzerResulRereciveHistorys(PatientReport report) {
+//  All Report Data (All in One)
+    public List<LabTestHistoryLight> getAllPatientReportHistorys(PatientReport report) {
         List<TestHistoryType> types = new ArrayList<>();
         types.add(TestHistoryType.RESULT_RECEIVED_FROM_ANALYZER);
-        return getReportLabTestHistorys(report,types);
-    }
-    
-//  2. Reports (Create / Data Enters / Calculate / Approvel / Approvel Cancel )
-    public List<LabTestHistoryLight> getReportHistorys(PatientReport report) {
-        List<TestHistoryType> types = new ArrayList<>();
         types.add(TestHistoryType.REPORT_CREATED);
         types.add(TestHistoryType.DATA_ENTERED);
         types.add(TestHistoryType.REPORT_CALCULATED);
         types.add(TestHistoryType.REPORT_APPROVED);
         types.add(TestHistoryType.REPORT_APPROVED_CANCEL);
         types.add(TestHistoryType.REPORT_REMOVE);
-        return getReportLabTestHistorys(report,types);
-    }
-    
-//  3. Reports View 
-    public List<LabTestHistoryLight> getReportViewHistorys(PatientReport report) {
-        List<TestHistoryType> types = new ArrayList<>();
         types.add(TestHistoryType.REPORT_VIEWED);
-        return getReportLabTestHistorys(report,types);
-    }
-    
-//  4. Reports Send 
-    public List<LabTestHistoryLight> getReportSendHistorys(PatientReport report) {
-        List<TestHistoryType> types = new ArrayList<>();
         types.add(TestHistoryType.SENT_SMS_AUTO);
         types.add(TestHistoryType.SENT_SMS_MANUAL);
         types.add(TestHistoryType.SENT_EMAIL);
-        return getReportLabTestHistorys(report,types);
-    }
-    
-//  5. Reports Print and Export
-    public List<LabTestHistoryLight> getPrintAndExportHistorys(PatientReport report) {
-        List<TestHistoryType> types = new ArrayList<>();
         types.add(TestHistoryType.REPORT_PRINTED);
         types.add(TestHistoryType.REPORT_EXPORT_AS_PDF);
-        return getReportLabTestHistorys(report,types);
-    }
-    
-//  6. Reports Issue
-    public List<LabTestHistoryLight> getReportIssueHistorys(PatientReport report) {
-        List<TestHistoryType> types = new ArrayList<>();
         types.add(TestHistoryType.REPORT_ISSUE_STAFF);
         types.add(TestHistoryType.REPORT_ISSUE_PATIENT);
+        
         return getReportLabTestHistorys(report,types);
     }
-    
     
     
     
