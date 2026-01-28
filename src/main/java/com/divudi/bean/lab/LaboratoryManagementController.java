@@ -385,7 +385,6 @@ public class LaboratoryManagementController implements Serializable {
                 selectedItems.add(pi);
             }
         }
-        System.out.println("tempSelectedDTOItems = " + tempSelectedDTOItems.size());
     }
 
     public void navigateToInvestigationsFromSelectedBill(Bill bill) {
@@ -891,12 +890,8 @@ public class LaboratoryManagementController implements Serializable {
 
             params.put("ret", false);
 
-            System.out.println("params = " + params);
-            System.out.println("jpql = " + jpql);
-
             patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
-            System.out.println("patientSamples = " + patientSamples);
             selectAll = false;
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientSamples", sessionController.getLoggedUser());
     }
@@ -1010,14 +1005,9 @@ public class LaboratoryManagementController implements Serializable {
 
             params.put("ret", false);
 
-            System.out.println("params = " + params);
-            System.out.println("jpql = " + jpql);
-
             sampleDtos = (List<SampleDTO>) patientSampleFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
 
             selectAll = false;
-
-            System.out.println("sampleDtos = " + sampleDtos);
 
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientSampleDTOs", sessionController.getLoggedUser());
     }
@@ -2360,10 +2350,7 @@ public class LaboratoryManagementController implements Serializable {
             params.put("ret", false);
 
             investigationDTO = (List<PatientInvestigationDTO>) patientInvestigationFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
-            System.out.println("jpql = " + jpql);
-            System.out.println("params = " + params);
-            System.out.println("investigationDTO = " + investigationDTO);
-
+ 
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientInvestigationsDTOWithoutSampleId", sessionController.getLoggedUser());
     }
 
@@ -2506,7 +2493,6 @@ public class LaboratoryManagementController implements Serializable {
             if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                 if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of viewing lab reports.", false)) {
                     labTestHistoryController.addReportViewHistory(currenrReport.getPatientInvestigation(), currenrReport);
-                    System.out.println("Successfully Add View Report History");
                 }
             }
         }
@@ -2528,14 +2514,12 @@ public class LaboratoryManagementController implements Serializable {
         if(!currentReport.getPrintComplete()){
             currentReport.setPrintComplete(true);
             patientReportFacade.edit(currentReport);
-            System.out.println("Update First Report Print.");
         }
 
         if (currentReport.getApproved()) {
             if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                 if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of printing lab reports.", false)) {
                     labTestHistoryController.addReportPrintHistory(currentReport.getPatientInvestigation(), currentReport);
-                    System.out.println("Add Printing History");
                 }
             }
         } 
@@ -2551,7 +2535,6 @@ public class LaboratoryManagementController implements Serializable {
         if(!pt.getHandoverComplete()){
             pt.setHandoverComplete(true);
             patientReportFacade.edit(pt);
-            System.out.println("Update First Report Issue.");
         }
 
         addReportIssueHistory(pt.getId(), reportHandoverStaff);
@@ -2584,7 +2567,6 @@ public class LaboratoryManagementController implements Serializable {
                     } else {
                         labTestHistoryController.addReportIssueToPatientHistory(currenrReport.getPatientInvestigation(), currenrReport);
                     }
-                    System.out.println("Successfully Add Report Issue History");
                 }
             }
         }
@@ -2602,7 +2584,6 @@ public class LaboratoryManagementController implements Serializable {
             if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                 if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of issuing lab reports.", false)) {
                     labTestHistoryController.addExportPDFReportHistory(currenrReport.getPatientInvestigation(), currenrReport);
-                    System.out.println("Successfully Add Report Export History");
                 }
             }
         }
@@ -2632,9 +2613,6 @@ public class LaboratoryManagementController implements Serializable {
             } else {
                 searchPendingAndApprovedPatientReportsDTO();
             }
-            System.out.println("-------------------------------------------------------------- ");
-            System.out.println("investigationDTO = " + investigationDTO);
-            System.out.println("investigationDTO = " + investigationDTO.size());
             listingEntity = ListingEntity.PATIENT_REPORTS;
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientReportsDTO", sessionController.getLoggedUser());
 
@@ -2669,7 +2647,6 @@ public class LaboratoryManagementController implements Serializable {
                 }
             }
             setInvestigationDTO(processingList);
-            System.out.println("investigationDTO = " + investigationDTO);
             listingEntity = ListingEntity.PATIENT_REPORTS;
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchProcessingPatientReportsDTO", sessionController.getLoggedUser());
     }
@@ -2915,10 +2892,6 @@ public class LaboratoryManagementController implements Serializable {
                     investigationDTO.add(prDTO);
                 }
             }
-            System.out.println("jpql = " + jpql);
-            System.out.println("params = " + params);
-            System.out.println("investigationDTO = " + investigationDTO);
-
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPendingAndApprovedPatientReportsDTO", sessionController.getLoggedUser());
     }
 
