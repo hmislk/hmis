@@ -173,16 +173,22 @@
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>
                                                     </td>
-                                                    <td>
-                                                        <h:outputLabel rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value Column',false)}" value="#{i.netTotal}">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                    </td>
-                                                    <td>
-                                                        <h:outputLabel rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value(Sale) Column',false)}" value="#{i.saleValue}">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>
-                                                    </td>
+                                                    <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value Column',false)}">
+                                                        <td>
+                                                            <h:outputLabel value="#{i.netTotal}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </td>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value(Sale) Column',false)}">
+                                                        <td>
+                                                            <h:outputLabel value="#{i.saleValue}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </td>
+                                                    </h:panelGroup>
+
                                                     <td style="text-align: right;">
                                                         <h:outputLabel value="#{i.supplierName}"/>
                                                     </td>
