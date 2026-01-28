@@ -3554,7 +3554,6 @@ public class SearchController implements Serializable {
      * entire entity relationships.
      */
     public void createPharmacyTableReDto() {
-        System.out.println("DEBUG: Starting createPharmacyTableReDto");
         cashierPreBillSearchDtos = null;
 
         // Set parameters first
@@ -3565,11 +3564,8 @@ public class SearchController implements Serializable {
         params.put("toDate", getToDate());
         params.put("deptid", getSessionController().getDepartment().getId());
 
-        System.out.println("DEBUG: Parameters set - billType: " + params.get("billTypeAtomic"));
-
         // STEP 1: Try minimal query - just IDs
         try {
-            System.out.println("DEBUG STEP 1: Trying minimal query (IDs only)");
             String jpql1 = "SELECT b.id FROM PreBill b " +
                           "WHERE b.billTypeAtomic = :billTypeAtomic " +
                           "AND b.institution.id = :insId " +
@@ -3579,16 +3575,13 @@ public class SearchController implements Serializable {
                           "ORDER BY b.createdAt DESC";
 
             List<Long> ids = (List<Long>) getBillFacade().findLightsByJpql(jpql1, params, TemporalType.TIMESTAMP);
-            System.out.println("DEBUG STEP 1: SUCCESS! Found " + ids.size() + " records");
 
             if (ids.isEmpty()) {
-                System.out.println("DEBUG: No records found with current filters");
                 cashierPreBillSearchDtos = new ArrayList<>();
                 return;
             }
 
         } catch (Exception e) {
-            System.out.println("DEBUG STEP 1: FAILED!");
             e.printStackTrace();
             cashierPreBillSearchDtos = new ArrayList<>();
             return;
@@ -3613,10 +3606,8 @@ public class SearchController implements Serializable {
 
             cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()
                     .findLightsByJpql(jpql2, params, TemporalType.TIMESTAMP);
-            System.out.println("DEBUG STEP 2: SUCCESS! Retrieved " + cashierPreBillSearchDtos.size() + " DTOs");
 
         } catch (Exception e) {
-            System.out.println("DEBUG STEP 2: FAILED!");
             e.printStackTrace();
             cashierPreBillSearchDtos = new ArrayList<>();
             return;
@@ -3624,7 +3615,6 @@ public class SearchController implements Serializable {
 
         // STEP 3: Try adding patient name with LEFT JOIN
         try {
-            System.out.println("DEBUG STEP 3: Adding patient name (with LEFT JOIN)");
             String jpql3 = "SELECT new com.divudi.core.data.dto.PharmacyCashierPreBillSearchDTO(" +
                           "b.id, b.deptId, b.department.name, b.createdAt, " +
                           "b.refunded, b.cancelled, " +
@@ -3643,17 +3633,14 @@ public class SearchController implements Serializable {
 
             cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()
                     .findLightsByJpql(jpql3, params, TemporalType.TIMESTAMP);
-            System.out.println("DEBUG STEP 3: SUCCESS! Retrieved " + cashierPreBillSearchDtos.size() + " DTOs with patient names");
 
         } catch (Exception e) {
-            System.out.println("DEBUG STEP 3: FAILED! Keeping STEP 2 data");
             e.printStackTrace();
             return;
         }
 
         // STEP 4: Try using full DTO constructor with all needed fields (except reference bill fields)
         try {
-            System.out.println("DEBUG STEP 4: Using full DTO constructor with all UI-needed fields");
             String jpql4 = "SELECT new com.divudi.core.data.dto.PharmacyCashierPreBillSearchDTO(" +
                           "b.id, " +                                              // 1
                           "b.deptId, " +                                          // 2
@@ -3718,17 +3705,13 @@ public class SearchController implements Serializable {
 
             cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()
                     .findLightsByJpql(jpql4, params, TemporalType.TIMESTAMP);
-            System.out.println("DEBUG STEP 4: SUCCESS! Retrieved " + cashierPreBillSearchDtos.size() + " DTOs with ALL fields");
-            System.out.println("DEBUG: Query optimization complete - using single query with LEFT JOINs");
 
         } catch (Exception e) {
-            System.out.println("DEBUG STEP 4: FAILED! Keeping STEP 3 data (limited fields)");
             e.printStackTrace();
             // Keep the data from step 3
             return;
         }
 
-        System.out.println("DEBUG: All steps completed successfully!");
     }
 
     // DELETED: populateReferenceBillFields() method - no longer needed
