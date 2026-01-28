@@ -108,6 +108,18 @@
 
                                         <div class="d-flex gap-2">
 
+                                            <p:remoteCommand 
+                                                name="recordExportHistory"
+                                                actionListener="#{patientReportController.reportExport()}"
+                                                async="true">
+                                            </p:remoteCommand>
+
+                                            <p:remoteCommand 
+                                                name="recordPrintHistory"
+                                                actionListener="#{patientReportController.printPatientReport()}"
+                                                async="true">
+                                            </p:remoteCommand>
+
                                             <p:commandButton 
                                                 value="Export PDF" 
                                                 class="ui-button-channelling" 
@@ -124,7 +136,7 @@
                                                 class="mx-1 ui-button-info"
                                                 rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}"
                                                 value="Print" 
-                                                onclick="#{patientReportController.printPatientReport()}"
+                                                onclick="recordPrintHistory();"
                                                 disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}">
                                                 <p:printer target="divPrint" />
                                             </p:commandButton>
@@ -819,6 +831,8 @@
                                 <script>
                                                     function downloadPdf() {
                                                         console.log("Downloading PDF...");
+                                                        recordExportHistory();
+                                                        console.log("Add History to Downloading PDF ...");
                                                         const element = document.getElementById('pdf');
                                                         element.classList.remove('print-only');
 
