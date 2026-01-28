@@ -3723,6 +3723,10 @@ public class SearchController implements Serializable {
     // This eliminates N+1 query problem (was causing 1000+ queries for 100 records)
     
     private String checkSearchKeywordForSearch(String jpql4, Map<String, Object> params){
+        
+        if(searchKeyword == null){
+            return jpql4;
+        }
     
         if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().isEmpty()) {
             jpql4 += " AND (b.deptId like :billNo or paymentBill.deptId like :billNo) ";
@@ -3751,7 +3755,7 @@ public class SearchController implements Serializable {
         }
 
         if (searchKeyword.getDepartment() != null && !searchKeyword.getDepartment().isEmpty()) {
-            jpql4 += " AND LOWER(b.department.name)like :deptName ";
+            jpql4 += " AND LOWER(b.department.name) like :deptName ";
             params.put("deptName", "%" + searchKeyword.getDepartment().toLowerCase() + "%");
         }
 
