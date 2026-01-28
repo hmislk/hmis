@@ -449,6 +449,14 @@ public class PatientReportController implements Serializable {
         m.put("ret", false);
         return getFacade().findByJpql(j, m);
     }
+    
+    public List<PatientReport> allPatientReports(PatientInvestigation pi) {
+        String j = "select r from PatientReport r "
+                + " where r.patientInvestigation=:pi ";
+        Map m = new HashMap();
+        m.put("pi", pi);
+        return getFacade().findByJpql(j, m);
+    }
 
     public List<PatientReport> allPatientReportsInBill(Bill bill) {
         String j = "select r from PatientReport r "
@@ -1280,7 +1288,11 @@ public class PatientReportController implements Serializable {
                 currentReportUpload.setRetirer(sessionController.getLoggedUser());
                 uploadFacade.create(currentReportUpload);
             }
-            System.out.println("Upload Report Removed");
+            System.out.println("Report Removed");
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addReportRemoveHistory(currentPatientReport.getPatientInvestigation(), currentPatientReport,comment);
         }
 
         getFacade().edit(currentPatientReport);
@@ -2992,9 +3004,12 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Error in Patient Investigation");
             return "";
         }
-
+        laboratoryManagementController.setReportHandoverStaff(null);
         return navigateToCreatedPatientReport(pi);
     }
+    
+    @Inject
+    LaboratoryManagementController laboratoryManagementController;
 
     public String navigateToUploadNewPatientReport(PatientInvestigation pi) {
         if (pi == null) {

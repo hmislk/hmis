@@ -18,8 +18,8 @@
             </style>
 
             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Displaying the message provided to system users',false)}" style="background-color: #{configOptionApplicationController.getColorValueByKey('Message background color')}">
-                <div class="d-flex justify-content-center" style="background-color: #{configOptionApplicationController.getColorValueByKey('Message background color')}; font-weight: 700; font-size: 18px;">
-                    <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Message to system users')}"></h:outputText>
+                <div class="d-flex justify-content-center shadow-4 p-2" style="background-color: #{configOptionApplicationController.getColorValueByKey('Message background color')}; font-weight: 700; font-size: 18px;">
+                    <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Message to system users')}" style="font-weight: 700; font-size: 24px;"></h:outputText>
                 </div>
             </h:panelGroup>
 
