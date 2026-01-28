@@ -1145,7 +1145,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         prepereToAdmitNewPatient();
 //        getItems();
