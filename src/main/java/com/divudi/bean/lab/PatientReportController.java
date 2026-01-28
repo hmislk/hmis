@@ -1043,7 +1043,6 @@ public class PatientReportController implements Serializable {
 
         if (pr != null && ii != null) {
             for (PatientReportItemValue v : pr.getPatientReportItemValues()) {
-
                 if (v.getInvestigationItem().equals(ii)) {
                     iv = v;
                 } else {
