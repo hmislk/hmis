@@ -393,6 +393,40 @@
                                         </p:badge>
 
                                     </div>
+                                    
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{!dpr.printComplete}"
+                                            title="Not Print"
+                                            name="print_pending.png" 
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{dpr.printComplete}"
+                                            name="print_done.png"
+                                            title="Report Printed"
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{!dpr.handoverComplete}"
+                                            title="Not Issue"
+                                            name="handover_pending.png" 
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{dpr.handoverComplete}"
+                                            name="handover_done.png" 
+                                            title="Report Issued."
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+                                    </div>
 
                                 </div>
                             </ui:repeat>
