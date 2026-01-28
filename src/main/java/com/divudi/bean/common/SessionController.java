@@ -443,20 +443,87 @@ public class SessionController implements Serializable, HttpSessionListener {
             return;
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Allow Pharmacy Items In Pharmacy Transactions for " + getDepartment().getName(), true)) {
-            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Pharmacy);
+        // Enhanced logic with backwards compatibility and smart defaults
+        for (DepartmentType depType : DepartmentType.values()) {
+            if (isDepartmentTypeAllowedForPharmacyTransactions(depType)) {
+                availableDepartmentTypesForPharmacyTransactions.add(depType);
+            }
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Allow Lab Items In Pharmacy Transactions for " + getDepartment().getName(), false)) {
-            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Lab);
+    }
+
+    /**
+     * Determines if a department type is allowed for pharmacy transactions.
+     * Uses hierarchical configuration checking:
+     * 1. Department-specific config (backwards compatibility)
+     * 2. Department-type-based config
+     * 3. Smart defaults: Pharmacy=true, Store=true, Others=false
+     */
+    private boolean isDepartmentTypeAllowedForPharmacyTransactions(DepartmentType departmentType) {
+        if (departmentType == null || getDepartment() == null) {
+            return false;
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Allow Store Items In Pharmacy Transactions for " + getDepartment().getName(), false)) {
-            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Store);
+
+        String itemTypeName = getItemTypeNameForDepartmentType(departmentType);
+        if (itemTypeName == null) {
+            return false;
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Allow Etu Items In Pharmacy Transactions for " + getDepartment().getName(), false)) {
-            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Etu);
+
+        // Step 1: Check department-specific configuration (existing behavior)
+        String departmentSpecificKey = "Allow " + itemTypeName + " Items In Pharmacy Transactions for " + getDepartment().getName();
+        Boolean departmentSpecificValue = configOptionApplicationController.getBooleanValueByKey(departmentSpecificKey, null);
+        if (departmentSpecificValue != null) {
+            return departmentSpecificValue;
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Allow Theatre Items In Pharmacy Transactions for " + getDepartment().getName(), false)) {
-            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Theatre);
+
+        // Step 2: Check department-type-based configuration (new)
+        if (getDepartment().getDepartmentType() != null) {
+            String departmentTypeKey = "Allow " + itemTypeName + " Items In Pharmacy Transactions for " + getDepartment().getDepartmentType().name() + " Departments";
+            Boolean departmentTypeValue = configOptionApplicationController.getBooleanValueByKey(departmentTypeKey, null);
+            if (departmentTypeValue != null) {
+                return departmentTypeValue;
+            }
+        }
+
+        // Step 3: Apply smart defaults based on department type
+        return getSmartDefaultForDepartmentType(departmentType);
+    }
+
+    /**
+     * Returns the item type name for configuration keys based on department type.
+     */
+    private String getItemTypeNameForDepartmentType(DepartmentType departmentType) {
+        switch (departmentType) {
+            case Pharmacy:
+                return "Pharmacy";
+            case Lab:
+                return "Lab";
+            case Store:
+                return "Store";
+            case Etu:
+                return "Etu";
+            case Theatre:
+                return "Theatre";
+            default:
+                return null; // Unknown department types are not allowed
+        }
+    }
+
+    /**
+     * Provides smart defaults for department types:
+     * - Pharmacy: true (pharmacy items should be available in pharmacy transactions)
+     * - Store: true (store items commonly used in pharmacy)
+     * - Others (Lab, Etu, Theatre): false (special permission required)
+     */
+    private boolean getSmartDefaultForDepartmentType(DepartmentType departmentType) {
+        switch (departmentType) {
+            case Pharmacy:
+            case Store:
+                return true;
+            case Lab:
+            case Etu:
+            case Theatre:
+            default:
+                return false;
         }
     }
     
