@@ -40,6 +40,7 @@
                             
                             @media print {
                                 @page {
+                                    size: A4 landscape!important;
                                     @bottom-right {
                                         content: "Page " counter(page) " of " counter(pages);
                                         font-family: Arial, sans-serif;
@@ -54,8 +55,6 @@
                                 .paper {
                                     position: static !important;
                                     width: 297mm!important;
-                                    size: A4 landscape!important;
-                                    
                                 }
                                 
                                 .header{
