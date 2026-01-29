@@ -52,6 +52,14 @@ public class FavouriteController implements Serializable {
     private List<Item> availableItems;
     private boolean itemadd = false;
 
+    // Transient fields for age input in years/months/days format
+    private Integer fromYears = 0;
+    private Integer fromMonths = 0;
+    private Integer fromDaysComponent = 0;
+    private Integer toYears = 0;
+    private Integer toMonths = 0;
+    private Integer toDaysComponent = 0;
+
     /**
      * Methods
      */
@@ -69,6 +77,86 @@ public class FavouriteController implements Serializable {
 
     public String navigateToEmrIndex(){
         return "/emr/admin/index?faces-redirect=true";
+    }
+
+    // ========================================
+    // AGE CALCULATION AND DECOMPOSITION METHODS
+    // ========================================
+
+    /**
+     * Calculates total days from fromYears, fromMonths, and fromDaysComponent
+     * and sets it on the current PrescriptionTemplate.fromDays
+     */
+    public void calculateFromDays() {
+        if (current != null) {
+            int years = fromYears != null ? fromYears : 0;
+            int months = fromMonths != null ? fromMonths : 0;
+            int days = fromDaysComponent != null ? fromDaysComponent : 0;
+            double totalDays = (years * 365.0) + (months * 30.0) + days;
+            current.setFromDays(totalDays);
+        }
+    }
+
+    /**
+     * Calculates total days from toYears, toMonths, and toDaysComponent
+     * and sets it on the current PrescriptionTemplate.toDays
+     */
+    public void calculateToDays() {
+        if (current != null) {
+            int years = toYears != null ? toYears : 0;
+            int months = toMonths != null ? toMonths : 0;
+            int days = toDaysComponent != null ? toDaysComponent : 0;
+            double totalDays = (years * 365.0) + (months * 30.0) + days;
+            current.setToDays(totalDays);
+        }
+    }
+
+    /**
+     * Decomposes current.fromDays into years, months, and days components.
+     * Prioritizes years, then months, then remaining days.
+     */
+    public void decomposeFromDays() {
+        if (current != null && current.getFromDays() != null) {
+            int totalDays = current.getFromDays().intValue();
+            fromYears = totalDays / 365;
+            int remaining = totalDays % 365;
+            fromMonths = remaining / 30;
+            fromDaysComponent = remaining % 30;
+        } else {
+            fromYears = 0;
+            fromMonths = 0;
+            fromDaysComponent = 0;
+        }
+    }
+
+    /**
+     * Decomposes current.toDays into years, months, and days components.
+     * Prioritizes years, then months, then remaining days.
+     */
+    public void decomposeToDays() {
+        if (current != null && current.getToDays() != null) {
+            int totalDays = current.getToDays().intValue();
+            toYears = totalDays / 365;
+            int remaining = totalDays % 365;
+            toMonths = remaining / 30;
+            toDaysComponent = remaining % 30;
+        } else {
+            toYears = 0;
+            toMonths = 0;
+            toDaysComponent = 0;
+        }
+    }
+
+    /**
+     * Initializes all age component fields to zero for new entries.
+     */
+    private void initializeAgeFields() {
+        fromYears = 0;
+        fromMonths = 0;
+        fromDaysComponent = 0;
+        toYears = 0;
+        toMonths = 0;
+        toDaysComponent = 0;
     }
 
     public void fillFavouriteDisgnosis() {
@@ -192,6 +280,9 @@ public class FavouriteController implements Serializable {
         current.setItem(item);
         current.setType(PrescriptionTemplateType.FavouriteMedicine);
 
+        // Initialize age component fields to zero
+        initializeAgeFields();
+
         availableDoseUnits = new ArrayList<>();
         availableItems = new ArrayList<>();
         switch (item.getMedicineType()) {
@@ -279,6 +370,10 @@ public class FavouriteController implements Serializable {
         }
         current = editingTemplate;
         item = editingTemplate.getForItem();
+
+        // Decompose stored days into years/months/days components for editing
+        decomposeFromDays();
+        decomposeToDays();
 
         // Populate available units based on medicine type
         prepareAvailableUnitsForEdit();
@@ -573,6 +668,55 @@ public class FavouriteController implements Serializable {
 
     public void setItemadd(boolean itemadd) {
         this.itemadd = itemadd;
+    }
+
+    // Getters and Setters for age component fields
+    public Integer getFromYears() {
+        return fromYears;
+    }
+
+    public void setFromYears(Integer fromYears) {
+        this.fromYears = fromYears;
+    }
+
+    public Integer getFromMonths() {
+        return fromMonths;
+    }
+
+    public void setFromMonths(Integer fromMonths) {
+        this.fromMonths = fromMonths;
+    }
+
+    public Integer getFromDaysComponent() {
+        return fromDaysComponent;
+    }
+
+    public void setFromDaysComponent(Integer fromDaysComponent) {
+        this.fromDaysComponent = fromDaysComponent;
+    }
+
+    public Integer getToYears() {
+        return toYears;
+    }
+
+    public void setToYears(Integer toYears) {
+        this.toYears = toYears;
+    }
+
+    public Integer getToMonths() {
+        return toMonths;
+    }
+
+    public void setToMonths(Integer toMonths) {
+        this.toMonths = toMonths;
+    }
+
+    public Integer getToDaysComponent() {
+        return toDaysComponent;
+    }
+
+    public void setToDaysComponent(Integer toDaysComponent) {
+        this.toDaysComponent = toDaysComponent;
     }
 
     /**
