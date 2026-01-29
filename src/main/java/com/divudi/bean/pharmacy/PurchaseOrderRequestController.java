@@ -202,14 +202,29 @@ public class PurchaseOrderRequestController implements Serializable {
             return;
         }
 
-        // Auto-set department type if not already set
+        // Auto-set department type if not already set (use the item's department type)
         if (getCurrentBill().getDepartmentType() == null) {
-            // Auto-set to Pharmacy department type as this is a pharmacy purchase order
-            getCurrentBill().setDepartmentType(DepartmentType.Pharmacy);
+            if (getCurrentBillItem().getItem().getDepartmentType() != null) {
+                getCurrentBill().setDepartmentType(getCurrentBillItem().getItem().getDepartmentType());
+            } else {
+                // Fallback to Pharmacy if item has no department type
+                getCurrentBill().setDepartmentType(DepartmentType.Pharmacy);
+            }
         }
 
-        // Validate that the item is compatible with the selected department type
+        // Validate that the item's department type matches the bill's department type
         if (getCurrentBill().getDepartmentType() != null) {
+            DepartmentType itemDepartmentType = getCurrentBillItem().getItem().getDepartmentType();
+
+            // Check if item's department type matches bill's department type
+            if (itemDepartmentType != null && !itemDepartmentType.equals(getCurrentBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                        + "Bill is set for " + getCurrentBill().getDepartmentType().getLabel()
+                        + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
+                return;
+            }
+
+            // Verify department type is allowed for pharmacy transactions
             List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
             if (allowedTypes == null || !allowedTypes.contains(getCurrentBill().getDepartmentType())) {
                 JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + getCurrentBill().getDepartmentType().getLabel());
@@ -222,8 +237,8 @@ public class PurchaseOrderRequestController implements Serializable {
             Item selectedItem = getCurrentBillItem().getItem();
             for (BillItem existingItem : getBillItems()) {
                 if (existingItem != null && !existingItem.isRetired()
-                    && existingItem.getItem() != null
-                    && existingItem.getItem().equals(selectedItem)) {
+                        && existingItem.getItem() != null
+                        && existingItem.getItem().equals(selectedItem)) {
                     JsfUtil.addErrorMessage("This item has already been added to the purchase order. Please update the quantity of the existing item instead of adding it again.");
                     return;
                 }
@@ -235,9 +250,9 @@ public class PurchaseOrderRequestController implements Serializable {
         // PERFORMANCE: Fetch last purchase and retail rates (replaces 9-second individual calls!)
         Long itemId = getCurrentBillItem().getItem().getId();
         getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(
-            fetchLastPurchaseRateForItem(itemId));
+                fetchLastPurchaseRateForItem(itemId));
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(
-            fetchLastRetailRateForItem(itemId));
+                fetchLastRetailRateForItem(itemId));
 
         if (getCurrentBillItem().getItem() instanceof Ampp) {
             BigDecimal unitsPerPack = BigDecimal.valueOf(getCurrentBillItem().getItem().getDblValue());
@@ -500,8 +515,8 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     /**
-     * PERFORMANCE OPTIMIZATION: Get last retail rate for a single item
-     * Replaces pharmacyBean.getLastRetailRate() call
+     * PERFORMANCE OPTIMIZATION: Get last retail rate for a single item Replaces
+     * pharmacyBean.getLastRetailRate() call
      */
     private Double fetchLastRetailRateForItem(Long itemId) {
         if (itemId == null) {
@@ -645,8 +660,8 @@ public class PurchaseOrderRequestController implements Serializable {
                 boolean isDuplicate = false;
                 for (BillItem existingItem : getBillItems()) {
                     if (existingItem != null && !existingItem.isRetired()
-                        && existingItem.getItem() != null
-                        && existingItem.getItem().equals(i)) {
+                            && existingItem.getItem() != null
+                            && existingItem.getItem().equals(i)) {
                         isDuplicate = true;
                         skippedCount++;
                         break;
@@ -807,7 +822,12 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public List<Item> completeItemForSelectedDepartmentType(String query) {
         // Get items from the ItemController
-        List<Item> allItems = itemController.completeAmpAndAmppItemForLoggedDepartment(query);
+        List<Item> allItems;
+        if (getCurrentBill().getDepartmentType() == null) {
+            allItems = itemController.completeAmpAndAmppItemForLoggedDepartment(query);
+        } else {
+            allItems = itemController.completeAmpAndAmppItemForLoggedDepartment(query, getCurrentBill().getDepartmentType());
+        }
 
         // Filter by department type if set
         if (getCurrentBill().getDepartmentType() != null && allItems != null) {
@@ -820,6 +840,10 @@ public class PurchaseOrderRequestController implements Serializable {
     public void finalizeRequest() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+        if (getCurrentBill().getToInstitution() == null) {
+            JsfUtil.addErrorMessage("Please selectr a supplier");
             return;
         }
         if (getCurrentBill().isChecked()) {
