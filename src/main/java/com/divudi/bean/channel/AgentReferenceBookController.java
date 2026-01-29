@@ -407,11 +407,11 @@ public class AgentReferenceBookController implements Serializable {
 
     public void bulkDeleteChannelBooks() {
         if (selectedList == null) {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
             return;
         }
         if (selectedList.isEmpty()) {
-            JsfUtil.addSuccessMessage("Nothing to Delete(Empty)");
+            JsfUtil.addErrorMessage("Nothing to Delete(Empty)");
             return;
         }
         for (AgentReferenceBook rb : selectedList) {

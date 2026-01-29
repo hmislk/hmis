@@ -1356,7 +1356,7 @@ public class OnlineBookingAgentController implements Serializable {
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
             current = null;
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
     }
 
