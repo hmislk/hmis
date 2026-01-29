@@ -2894,15 +2894,21 @@ public class SearchController implements Serializable {
 
         Map m = new HashMap();
         m.put("bt", billType);
-        m.put("billedClass", PreBill.class);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("ins", getSessionController().getInstitution());
+        
+        List<BillTypeAtomic> bta = new ArrayList<>();
+        bta.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL);
+        bta.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
+        
+        m.put("bta", bta);
+        
         String sql;
 
         sql = "Select b from RefundBill b where  b.retired=false "
                 + " and b.institution=:ins and "
-                + " (b.billedBill is null  or type(b.billedBill)=:billedClass ) "
+                + " b.billTypeAtomic in :bta "
                 + " and b.createdAt between :fd and :td"
                 + " and b.billType=:bt ";
 
