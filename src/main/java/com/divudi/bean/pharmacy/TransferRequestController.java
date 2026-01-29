@@ -156,7 +156,31 @@ public class TransferRequestController implements Serializable {
     ItemController itemController;
     
     public List<Item> completeAmpAmppVmpVmppItemsForRequestingDepartment(String query) {
-        return itemController.completeAmpAmppVmpVmppItemsForRequestingDepartment(query, toDepartment);
+        // If no department type is set, show all available items for this department
+        if (getBill().getDepartmentType() == null) {
+            return itemController.completeAmpAmppVmpVmppItemsForRequestingDepartment(query, toDepartment);
+        } else {
+            // If department type is set, filter items by that department type only
+            List<Item> allItems = itemController.completeAmpAmppVmpVmppItemsForRequestingDepartment(query, toDepartment);
+            return filterItemsByDepartmentType(allItems, getBill().getDepartmentType());
+        }
+    }
+
+    private List<Item> filterItemsByDepartmentType(List<Item> items, DepartmentType departmentType) {
+        if (items == null || departmentType == null) {
+            return items;
+        }
+
+        return items.stream()
+                .filter(item -> {
+                    DepartmentType itemDeptType = item.getDepartmentType();
+                    // Treat items without department type as Pharmacy
+                    if (itemDeptType == null) {
+                        itemDeptType = DepartmentType.Pharmacy;
+                    }
+                    return itemDeptType.equals(departmentType);
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public String fillHeaderDataOfTransferRequest(String s, Bill b) {
@@ -245,6 +269,23 @@ public class TransferRequestController implements Serializable {
 
     public void addItem() {
         if (errorCheck()) {
+            currentBillItem = null;
+            return;
+        }
+
+        // Auto-set department type on first item addition
+        if (getBill().getDepartmentType() == null) {
+            DepartmentType itemDeptType = getCurrentBillItem().getItem().getDepartmentType();
+            if (itemDeptType != null) {
+                getBill().setDepartmentType(itemDeptType);
+            } else {
+                // Default to Pharmacy type for items without department type
+                getBill().setDepartmentType(DepartmentType.Pharmacy);
+            }
+        }
+
+        // Validate item department type matches bill department type
+        if (!validateItemDepartmentType(getCurrentBillItem().getItem())) {
             currentBillItem = null;
             return;
         }
@@ -628,6 +669,8 @@ public class TransferRequestController implements Serializable {
         calculateBillTotalsFromItemsForTransferRequests(getTransferRequestBillPre(), billItems);
         LOGGER.log(Level.FINE, "Editing transfer request with {0} items", billItems.size());
         setToDepartment(getTransferRequestBillPre().getToDepartment());
+        // Set the bill to the loaded bill so getBill() returns the existing bill with its department type
+        bill = transferRequestBillPre;
         return "/pharmacy/pharmacy_transfer_request?faces-redirect=true";
     }
     
@@ -737,6 +780,7 @@ public class TransferRequestController implements Serializable {
         getTransferRequestBillPre().setFromDepartment(sessionController.getDepartment());
         getTransferRequestBillPre().setToDepartment(toDepartment);
         getTransferRequestBillPre().setToInstitution(toDepartment.getInstitution());
+
         return "/pharmacy/pharmacy_transfer_request";
     }
 
@@ -1330,6 +1374,44 @@ public class TransferRequestController implements Serializable {
         bfd.setLineGrossTotal(lineGrossTotalSum);
         bfd.setNetTotal(netTotal);
         bfd.setLineNetTotal(lineNetTotalSum);
+    }
+
+
+    private boolean validateItemDepartmentType(Item item) {
+        if (getBill().getDepartmentType() == null) return true;
+
+        DepartmentType itemDeptType = item.getDepartmentType();
+        DepartmentType billDeptType = getBill().getDepartmentType();
+
+        // For items without department type, treat as Pharmacy
+        if (itemDeptType == null) {
+            itemDeptType = DepartmentType.Pharmacy;
+        }
+
+        // Check if item type matches bill type
+        if (!itemDeptType.equals(billDeptType)) {
+            JsfUtil.addErrorMessage("Cannot add items from different department types. " +
+                "Transfer is set for " + billDeptType.getLabel() +
+                " items, but you are trying to add a " + itemDeptType.getLabel() + " item.");
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean isDepartmentTypeLocked() {
+        return billItems != null && !billItems.isEmpty();
+    }
+
+    public void changeDepartmentType() {
+        // Reset items if department type is changed manually
+        if (billItems != null && !billItems.isEmpty()) {
+            JsfUtil.addErrorMessage("Cannot change department type when items are already added");
+            return;
+        }
+
+        // Clear existing items and reset
+        billItems = new ArrayList<>();
     }
 
     private BigDecimal determineTransferRate(Item item) {

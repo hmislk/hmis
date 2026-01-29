@@ -139,28 +139,12 @@
                                     <h:outputLabel value="Add Items" class="mx-4" />
                                 </f:facet>
 
-                                <!-- Available Department Types Information Panel -->
-                                <h:panelGroup id="departmentTypesInfo" rendered="#{not empty transferRequestController.availableDepartmentTypesForDisplay}">
-                                    <div class="row mb-3">
-                                        <div class="col-12">
-                                            <div class="alert alert-info py-2">
-                                                <small class="text-muted">
-                                                    <i class="fas fa-info-circle me-2"></i>
-                                                    <strong>Available Item Types for #{transferRequestController.toDepartment.name}:</strong>
-                                                    <ui:repeat value="#{transferRequestController.availableDepartmentTypesForDisplay}" var="deptType" varStatus="status">
-                                                        <span class="badge bg-primary me-1">#{deptType}</span>
-                                                    </ui:repeat>
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </h:panelGroup>
 
                                 <div class="row">
                                     <div class="col-8">
-                                        <p:outputLabel value="Item" for="items"/>
+                                        <p:outputLabel value="Item" for="itemAutoComplete"/>
                                         <p:autoComplete
-                                            id="items"
+                                            id="itemAutoComplete"
                                             value="#{transferRequestController.currentBillItem.item}"
                                             forceSelection="true"
                                             class="w-100"
@@ -190,7 +174,7 @@
                                             </p:column>
                                             <p:ajax event="itemSelect"
                                                     listener="#{transferRequestController.populateRatesOnItemSelect}"
-                                                    update="txtLineCostRate txtLineGrossRate txtLineNetValue requestTotals focusQty"/>
+                                                    update="txtLineCostRate txtLineGrossRate txtLineNetValue requestTotals focusQty selDepartmentType"/>
                                         </p:autoComplete>
                                     </div>
                                     <div class="col-1">
@@ -232,7 +216,7 @@
                                     </div>
                                 </div>
                                 <p:focus id="focusQty" for="txtQty" ></p:focus>
-                                <p:focus id="focusItem" for="items" ></p:focus>
+                                <p:focus id="focusItem" for="itemAutoComplete" ></p:focus>
                             </p:panel>
                             <p:panel class="my-2">
                                 <f:facet name="header" >
@@ -313,6 +297,21 @@
                                     <h:outputLabel styleClass="fas fa-list" />
                                     <h:outputLabel value="Request Details" class="mx-4" />
                                 </f:facet>
+
+                                <!-- Available Department Types Information -->
+                                <h:panelGroup id="departmentTypesInfo" rendered="#{not empty transferRequestController.availableDepartmentTypesForDisplay}">
+                                    <div class="alert alert-info py-2 mb-3">
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <strong>Available Item Types:</strong>
+                                            <br/>
+                                            <ui:repeat value="#{transferRequestController.availableDepartmentTypesForDisplay}" var="deptType" varStatus="status">
+                                                <span class="badge bg-primary me-1">#{deptType}</span>
+                                            </ui:repeat>
+                                        </small>
+                                    </div>
+                                </h:panelGroup>
+
                                 <h:panelGrid columns="3" class="w-100">
                                     <h:outputLabel value="Request From" />
                                     <h:outputLabel value=": &nbsp;"/>
@@ -323,6 +322,32 @@
                                     <h:outputLabel value=": &nbsp;"/>
                                     <h:outputLabel class="w-100 text-end" value="#{transferRequestController.toDepartment.name}">
                                     </h:outputLabel>
+
+                                    <!-- Department Type Selection -->
+                                    <h:outputLabel value="Department Type" rendered="#{transferRequestController.toDepartment != null}"/>
+                                    <h:outputLabel value=": &nbsp;" rendered="#{transferRequestController.toDepartment != null}"/>
+                                    <h:panelGroup rendered="#{transferRequestController.toDepartment != null}" class="w-100">
+                                        <p:selectOneMenu id="selDepartmentType"
+                                                         value="#{transferRequestController.bill.departmentType}"
+                                                         class="w-100"
+                                                         disabled="#{transferRequestController.departmentTypeLocked}">
+                                            <f:selectItem itemLabel="Select Department Type" itemValue="#{null}"/>
+                                            <f:selectItems value="#{sessionController.availableDepartmentTypesForPharmacyTransactions}"
+                                                           var="dt"
+                                                           itemLabel="#{dt.label}"
+                                                           itemValue="#{dt}"/>
+                                            <p:ajax process="@this"
+                                                    update="departmentTypesInfo requestTotals itemAutoComplete"
+                                                    event="change"
+                                                    listener="#{transferRequestController.changeDepartmentType}"/>
+                                        </p:selectOneMenu>
+                                        <h:panelGroup rendered="#{transferRequestController.departmentTypeLocked}">
+                                            <small class="text-muted d-block">
+                                                <i class="fas fa-lock me-1"></i>
+                                                Locked - items added
+                                            </small>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
 
                                     <h:outputLabel value="Approximate Request Value" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}" />
                                     <h:outputLabel value=": &nbsp;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Stock Request - Show Rate and Value', false) and webUserController.hasPrivilege('StockRequestViewRates')}"/>
