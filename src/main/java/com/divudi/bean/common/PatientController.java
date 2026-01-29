@@ -58,12 +58,17 @@ import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.SpecificPatientStatus;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.facade.AuditEventFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.MembershipService;
+import com.divudi.service.AuditService;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -102,6 +107,7 @@ import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.BarcodeImageHandler;
 import org.apache.commons.lang3.StringUtils;
+import static org.apache.commons.logging.LogFactory.objectId;
 import org.primefaces.context.PrimeRequestContext;
 import org.primefaces.event.CaptureEvent;
 import org.primefaces.event.FileUploadEvent;
@@ -147,6 +153,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private PatientInvestigationFacade patientInvestigationFacade;
     @EJB
     MembershipService membershipService;
+    @EJB
+    private AuditEventFacade auditEventFacade;
+    @EJB 
+    AuditService auditService;
     /**
      *
      * Controllers
@@ -280,6 +290,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private boolean reGenerateePhn;
     private PaymentMethod paymentMethod;
     private String blacklistComment;
+    private Long objectId;
     
     public boolean isBlackListStatus() {
         return blackListStatus;
@@ -3160,7 +3171,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            JsfUtil.addErrorMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -3178,7 +3189,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            JsfUtil.addErrorMessage("Nothing to Delete");
+            JsfUtil.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -3307,7 +3318,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         return "/opd/patient?faces-redirect=true";
     }
-
+    public AuditEventFacade getAuditEventFacade(){
+        return auditEventFacade;
+    }
     public boolean saveSelected(Patient p) {
         if (p == null) {
             JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
@@ -3385,7 +3398,107 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().editAndFlush(p);    // Immediate flush to database
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
         }
+       
+       
+        createAuditEventPatientSaved(p);
         return true;
+    }
+    public void createAuditEventPatientSaved(Patient patient){
+         try {
+        Object before = null;
+        
+        // If this is an edit (patient already has an ID), get the previous state
+        if (patient.getId() != null) {
+            String jpql = "SELECT a FROM AuditEvent a WHERE a.objectId = :objectId AND a.entityType = :entityType ORDER BY a.eventDataTime DESC";
+            Map<String, Object> params = new HashMap<>();
+            params.put("objectId", patient.getId());
+            params.put("entityType", "Patient");
+            
+            try {
+                List<AuditEvent> previousAudits = getAuditEventFacade().findByJpql(jpql, params, 1);
+                if (previousAudits != null && !previousAudits.isEmpty()) {
+                    AuditEvent lastEvent = previousAudits.get(0);
+                    // The "after" from the last save becomes "before" for this save
+                    String afterJson=lastEvent.getAfterJson();
+                    Gson gson=new Gson();
+                    before = gson.fromJson(afterJson,new TypeToken<Map<String,Object>>(){}.getType());
+//                    before = lastEvent.getAfterJson();
+                }
+            } catch (Exception e) {
+                // Log the error but don't fail the audit
+                System.err.println("Error retrieving previous audit state: " + e.getMessage());
+            }
+        }
+        
+        // Build the current state (after)
+        Map<String, Object> after = new HashMap<>();
+        after.put("patientId", patient.getId());
+        after.put("phn", patient.getPhn());
+        after.put("code", patient.getCode());
+        
+        // Add person information if available
+        if (patient.getPerson() != null) {
+            Map<String, Object> personMap = new HashMap<>();
+            personMap.put("id", patient.getPerson().getId());
+            personMap.put("name", patient.getPerson().getName());
+            
+            // Format date safely
+            if (patient.getPerson().getDob() != null) {
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                personMap.put("dob", sdf.format(patient.getPerson().getDob()));
+            } else {
+                personMap.put("dob", null);
+            }
+            
+            personMap.put("sex", patient.getPerson().getSex() != null ? 
+                patient.getPerson().getSex().toString() : null);
+            personMap.put("nic", patient.getPerson().getNic());
+            personMap.put("phone", patient.getPerson().getPhone());
+            personMap.put("mobile", patient.getPerson().getMobile());
+            personMap.put("address", patient.getPerson().getAddress());
+            personMap.put("email", patient.getPerson().getEmail());
+            
+            after.put("person", personMap);
+        }
+        
+        // Add creation details
+        if (patient.getCreatedAt() != null) {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            after.put("createdAt", sdf.format(patient.getCreatedAt()));
+        } else {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            after.put("createdAt", sdf.format(new Date()));
+        }
+        
+        // Get creator name safely
+        String createdBy = "system";
+        if (patient.getCreater() != null && patient.getCreater().getWebUserPerson() != null) {
+            createdBy = patient.getCreater().getWebUserPerson().getName();
+        } else if (sessionController != null && sessionController.getLoggedUser() != null && 
+                   sessionController.getLoggedUser().getWebUserPerson() != null) {
+            createdBy = sessionController.getLoggedUser().getWebUserPerson().getName();
+        }
+        after.put("createdBy", createdBy);
+        
+        // Determine event trigger
+        String eventTrigger = (before == null) ? "Create patient" : "Update patient";
+        
+        // Log the audit
+        Long objectId = patient.getId();
+        auditService.logAudit(
+            before, 
+            after, 
+            sessionController.getLoggedUser(), 
+            "Patient", 
+            eventTrigger, 
+            objectId
+        );
+        
+    } catch (Exception e) {
+        // Don't let audit failures break the patient save operation
+        System.err.println("Error creating audit event: " + e.getMessage());
+        e.printStackTrace();
+    }
     }
 
     public List<Patient> findPatientUsingPhnNumber(String phn) {
