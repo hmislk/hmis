@@ -778,6 +778,10 @@ public class PurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage("Cannot save a finalized bill");
             return false;
         }
+        if (getCurrentBill().getToInstitution()==null) {
+            JsfUtil.addErrorMessage("Please select a supplier");
+            return false;
+        }
         saveBill();
         saveBillComponent();
         return true;
