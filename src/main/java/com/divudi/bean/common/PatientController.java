@@ -3160,7 +3160,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -3178,7 +3178,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

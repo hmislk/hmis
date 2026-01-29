@@ -1895,6 +1895,17 @@ public class PharmacyBillSearch implements Serializable {
             ph.copy(originalBillItem.getPharmaceuticalBillItem());
             ph.invertValue(originalBillItem.getPharmaceuticalBillItem());
 
+            // ROBUSTNESS FIX for Issue #18041: Explicitly calculate stock values as NEGATIVE
+            // Following the proven pattern from DirectPurchaseReturnWorkflowController (lines 2410-2412)
+            double totalQtyInUnits = Math.abs(ph.getQty() + ph.getFreeQty());
+            double purchaseRatePerUnit = ph.getPurchaseRate();
+            double costRatePerUnit = ph.getCostRate();
+            double retailRatePerUnit = ph.getRetailRate();
+
+            ph.setPurchaseValue(-Math.abs(totalQtyInUnits * purchaseRatePerUnit));
+            ph.setCostValue(-Math.abs(totalQtyInUnits * costRatePerUnit));
+            ph.setRetailValue(-Math.abs(totalQtyInUnits * retailRatePerUnit));
+
 //            getPharmaceuticalBillItemFacade().create(ph);
             newlyCreatedBillItemForCancelBill.setPharmaceuticalBillItem(ph);
 
@@ -3429,6 +3440,7 @@ public class PharmacyBillSearch implements Serializable {
 
             pharmacyCancelBillItemsReduceStock(cb, p);
             calculateCancelledDirectPurchaseFinancials(cb, getBill());
+            getBillFacade().edit(cb);  // CRITICAL FIX for Issue #18041: Save CancelledBill to persist BFD with negative stock valuations
 
 //            //   List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findByJpql("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
 //            for (BillItem bi : getBill().getBillItems()) {
