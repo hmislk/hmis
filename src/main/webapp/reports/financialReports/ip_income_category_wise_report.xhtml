@@ -160,7 +160,7 @@
                                 onIcon="pi pi-check" 
                                 offIcon="pi pi-times"
                                 />
-                           
+
 
                             <p:spacer width="20"></p:spacer>
 
@@ -383,6 +383,117 @@
 
                                 </p:dataTable>
 
+                                <p:panel header="Profit Matrix" styleClass="my-2">
+                                    <p:dataTable
+                                        id="tbPmtx"
+                                        var="var"
+                                        value=""
+                                        styleClass="table-sm">
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Cash" />
+                                            </f:facet>
+                                            <h:outputText value="150241.41">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Credit" />
+                                            </f:facet>
+                                            <h:outputText value="40178">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Total" />
+                                            </f:facet>
+                                            <h:outputText value="190419.41">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>                                           
+                                        </p:column>
+
+                                    </p:dataTable>
+
+                                </p:panel>
+
+                                <p:panel header="Bill Discount" styleClass="my-2">
+
+                                    <p:dataTable
+                                        id="tbBdsct"
+                                        var="var"
+                                        value=""
+                                        styleClass="table-sm">
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Invoice No." />
+                                            </f:facet>
+                                            <h:outputText value="INV-RH-23005042">
+                                            </h:outputText>
+                                            <f:facet name="footer">
+                                                <h:outputText value="Total Bill Discount">
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Bill Discount" />
+                                            </f:facet>
+                                            <h:outputText value="1500">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer">
+                                                <h:outputText value="1500">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                    </p:dataTable>
+
+                                </p:panel>
+
+                                <p:panel header="Summary Details" styleClass="my-2">
+
+                                    <table class="table table-bordered table-sm mb-3">
+
+                                        <tr>
+                                            <th class="w-50">Total Patient Pay</th>
+                                            <td class="w-50 text-end">
+                                                <h:outputText value="3,079,547.40">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <th class="w-40">Total Sponsor Pay</th>
+                                            <td class="w-30 text-end">
+                                                <h:outputText value="732,920.34">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <th class="w-40">Net Amount</th>
+                                            <td class="w-30 text-end">
+                                                <h:outputText value="3,812,467.74">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+
+                                    </table>
+
+                                </p:panel>
+
                             </p:panel>
 
                             <p:panel header="Type : Detail" styleClass="my-3">
@@ -557,11 +668,118 @@
                                         </f:facet>
                                     </p:column>
 
-
-
                                 </p:dataTable>
+                                
+                                      <p:panel header="Profit Matrix" styleClass="my-2">
+                                    <p:dataTable
+                                        id="tbPmtx2"
+                                        var="var"
+                                        value=""
+                                        styleClass="table-sm">
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Cash" />
+                                            </f:facet>
+                                            <h:outputText value="150241.41">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
 
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Credit" />
+                                            </f:facet>
+                                            <h:outputText value="40178">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
 
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Total" />
+                                            </f:facet>
+                                            <h:outputText value="190419.41">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>                                           
+                                        </p:column>
+
+                                    </p:dataTable>
+
+                                </p:panel>
+
+                                <p:panel header="Bill Discount" styleClass="my-2">
+
+                                    <p:dataTable
+                                        id="tbBdsct2"
+                                        var="var"
+                                        value=""
+                                        styleClass="table-sm">
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Invoice No." />
+                                            </f:facet>
+                                            <h:outputText value="INV-RH-23005042">
+                                            </h:outputText>
+                                            <f:facet name="footer">
+                                                <h:outputText value="Total Bill Discount">
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Bill Discount" />
+                                            </f:facet>
+                                            <h:outputText value="1500">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer">
+                                                <h:outputText value="1500">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                    </p:dataTable>
+
+                                </p:panel>
+
+                                <p:panel header="Summary Details" styleClass="my-2">
+
+                                    <table class="table table-bordered table-sm mb-3">
+
+                                        <tr>
+                                            <th class="w-50">Total Patient Pay</th>
+                                            <td class="w-50 text-end">
+                                                <h:outputText value="3,079,547.40">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <th class="w-40">Total Sponsor Pay</th>
+                                            <td class="w-30 text-end">
+                                                <h:outputText value="732,920.34">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <th class="w-40">Net Amount</th>
+                                            <td class="w-30 text-end">
+                                                <h:outputText value="3,812,467.74">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+
+                                    </table>
+
+                                </p:panel>
 
                             </p:panel>
 
