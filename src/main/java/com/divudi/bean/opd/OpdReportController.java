@@ -630,17 +630,17 @@ public class OpdReportController implements Serializable {
     public void generateBillItemReport() {
         reportTimerController.trackReportExecution(() -> {
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            // OPD Bills - SAME AS Hospital Doctor Fee Report
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            billTypeAtomics.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-            billTypeAtomics.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-            billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-            billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+
+            // Inward Service Bills - SAME AS Hospital Doctor Fee Report
             billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
             billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
 
             billItemReportDtos = billService.fetchBillItemReportDTOs(
