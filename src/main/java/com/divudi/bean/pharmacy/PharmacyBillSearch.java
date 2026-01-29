@@ -313,6 +313,12 @@ public class PharmacyBillSearch implements Serializable {
         }
         return "/pharmacy/pharmacy_reprint_bill_sale?faces-redirect=true";
     }
+    
+    public String navigatePharmacyReturnRetailBill() {
+        searchController.createReturnSaleBills();
+        
+        return "/pharmacy/pharmacy_search_return_bill_pre.xhtml?faces-redirect=true";
+    }
 
     public String navigateToViewPharmacyRetailCancellationBill() {
         if (bill == null) {
