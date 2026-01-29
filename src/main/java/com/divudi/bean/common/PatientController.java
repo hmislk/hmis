@@ -107,7 +107,6 @@ import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.BarcodeImageHandler;
 import org.apache.commons.lang3.StringUtils;
-import static org.apache.commons.logging.LogFactory.objectId;
 import org.primefaces.context.PrimeRequestContext;
 import org.primefaces.event.CaptureEvent;
 import org.primefaces.event.FileUploadEvent;
@@ -3171,7 +3170,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+             JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -3189,7 +3188,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+             JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
