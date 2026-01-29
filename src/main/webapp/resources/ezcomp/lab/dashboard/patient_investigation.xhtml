@@ -175,7 +175,7 @@
                         </p:selectOneMenu>
                     </h:panelGroup>
                 </h:panelGrid>
-                
+
                 <h:panelGrid columns="1" class="w-100">
                     <h:outputLabel class="w-100" value="Priority"/>
                     <h:panelGroup id="gppriority">
@@ -190,7 +190,7 @@
                         </p:selectOneMenu>
                     </h:panelGroup>
                 </h:panelGrid>
-                
+
                 <h:panelGrid columns="1" class="w-100">
                     <h:outputLabel class="w-100" value=""/>
                     <p:commandButton 
@@ -215,10 +215,11 @@
                 paginatorPosition="bottom"
                 rows="15"
                 rowIndexVar="i"
+                
                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                 rowsPerPageTemplate="15,50,100"
                 style="table-layout: fixed; width: 100%;">
-                
+
                 <p:column headerText="#" style="width: 2em; vertical-align: top;">
                     <h:outputLabel value="#{i+1}"/>
                 </p:column>
@@ -334,108 +335,66 @@
                 </p:column>
 
                 <!-- Actions Column -->
-                <p:column headerText="Actions" style="width: 280px; vertical-align: top;">
-                    <h:panelGroup rendered="#{pi.billCanceled ne true and pi.itemRefunded ne true}">
-                        <div class="d-flex gap-2">
-                            <p:commandButton 
-                                icon="fa fa-file-text"
-                                value="New Report" 
-                                id="btnNewReport"
-                                rendered="#{webUserController.hasPrivilege('LabDataentry')}"
-                                disabled="#{!pi.sampleAccepted}" 
-                                action="#{patientReportController.navigateToCreatedPatientReport(pi.investigationId)}"
-                                class="ui-button-danger"
-                                onclick="if (!confirm('Are you sure you want to create a new patient report?'))
-                                            return false;"
-                                ajax="false">
-                            </p:commandButton>
-                            <!--   <p:commandButton 
-                                                            icon="fa fa-file-text"
-                                                            value="Upload Report" 
-                                                            id="btnNewUpload"
-                                                            rendered="#{patientInvestigation.billItem.item.canUploadPatinrtReport and webUserController.hasPrivilege('LabDataentry')}"
-                                                            disabled="#{patientInvestigation.sampleSentAt eq null}"
-                                                            action="#{patientReportController.navigateToUploadNewPatientReport(patientInvestigation)}"
-                                                            class="ui-button-warning"
-                                                            onclick="if (!confirm('Are you sure you want to upload a new patient report ?'))
-                                                                                            return false;"
-                                                            ajax="false">
-                                                        </p:commandButton>-->
-                            <p:commandButton 
-                                icon="fa fa-file-text"
-                                value="Reports" 
-                                class="ui-button-success"
-                                ajax="false" 
-                                rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardReportSearch'))}"
-                                action="#{laboratoryManagementController.navigateToPatientReportsFromSelectedInvestigation(pi)}" >
-                            </p:commandButton>
-                        </div>
+                <p:column headerText="Actions" style="width: 300px; vertical-align: top;">
+                    <div  class="d-flex gap-2">
+                        <h:panelGroup rendered="#{pi.billCanceled ne true and pi.itemRefunded ne true}">
+                            <div class="d-flex gap-2">
+                                <p:commandButton 
+                                    icon="fa fa-file-text"
+                                    value="New Report" 
+                                    id="btnNewReport"
+                                    rendered="#{webUserController.hasPrivilege('LabDataentry')}"
+                                    disabled="#{!pi.sampleAccepted}" 
+                                    action="#{patientReportController.navigateToCreatedPatientReport(pi.investigationId)}"
+                                    class="ui-button-danger"
+                                    onclick="if (!confirm('Are you sure you want to create a new patient report?'))
+                                                return false;"
+                                    ajax="false">
+                                </p:commandButton>
 
-                    </h:panelGroup>
+                                <p:commandButton 
+                                    icon="fa fa-file-text"
+                                    value="Reports" 
+                                    class="ui-button-success"
+                                    ajax="false" 
+                                    rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardReportSearch'))}"
+                                    action="#{laboratoryManagementController.navigateToPatientReportsFromSelectedInvestigation(pi)}" >
+                                </p:commandButton>
 
-                    <h:panelGroup rendered="#{pi.billCanceled}" class="d-flex justify-content-center mt-2">
-                        <p:badge 
-                            value="Bill Cancel" 
-                            severity="info"
-                            size="large"
-                            style="width: 200px;"
-                            styleClass="ui-badge-danger" >
-                        </p:badge>
-                    </h:panelGroup>
 
-                    <h:panelGroup rendered="#{pi.itemRefunded}">
-                        <p:badge 
-                            value="Item Refunded" 
-                            severity="info"
-                            size="large"
-                            style="width: 200px;"
-                            styleClass="ui-badge-warning" >
-                        </p:badge>
-<!--                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Creating a new laboratory patient report for a refunded BillItem.',true)}">
-                    <div class="d-flex gap-2">
+                            </div>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{pi.billCanceled}" class="d-flex justify-content-center mt-2">
+                            <p:badge 
+                                value="Bill Cancel" 
+                                severity="info"
+                                size="large"
+                                style="width: 200px;"
+                                styleClass="ui-badge-danger" >
+                            </p:badge>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{pi.itemRefunded}">
+                            <p:badge 
+                                value="Item Refunded" 
+                                severity="info"
+                                size="large"
+                                style="width: 200px;"
+                                styleClass="ui-badge-warning" >
+                            </p:badge>
+                        </h:panelGroup>
 
                         <p:commandButton 
-                            icon="fa fa-file-text"
-                            value="New Report" 
-                            id="btnNewReportForRefund"
-                            rendered="#{webUserController.hasPrivilege('LabDataentry')}"
-                            disabled="#{!patientInvestigation.sampleAccepted}" 
-                            action="#{patientReportController.navigateToCreatedPatientReport(patientInvestigation)}"
-                            class="ui-button-danger"
-                            onclick="if (!confirm('Are you sure you want to create a new patient report?'))
-                                                            return false;"
-                            ajax="false">
-                        </p:commandButton>
-                        <p:commandButton 
-                            icon="fa fa-file-text"
-                            value="Report Upload" 
-                            id="btnNewUploadForRefund"
-                            rendered="#{patientInvestigation.billItem.item.canUploadPatinrtReport and webUserController.hasPrivilege('LabDataentry')}"
-                            disabled="#{patientInvestigation.sampleSentAt eq null}"
-                            action="#{patientReportController.navigateToUploadNewPatientReport(patientInvestigation)}"
-                            class="ui-button-warning"
-                            onclick="if (!confirm('Are you sure you want to upload a new patient report?'))
-                                                            return false;"
-                            ajax="false">
-                        </p:commandButton>
-                        <p:commandButton 
-                            icon="fa fa-file-text"
-                            value="Reports" 
-                            rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardReportSearch'))}"
-                            class="ui-button-success"
+                            icon="fa fa-history"
+                            title="History" 
+                            class="ui-button-secondary"
                             ajax="false" 
-                            action="#{laboratoryManagementController.navigateToPatientReportsFromSelectedInvestigation(patientInvestigation)}">
+                            rendered="#{webUserController.hasPrivilege('AccessLabTestHistory')}"
+                            action="#{laboratoryManagementController.navigateToTestHistory(pi.investigationId)}" >
                         </p:commandButton>
                     </div>
 
-                </h:panelGroup>
-
-                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Creating a new laboratory patient report for a refunded BillItem.',true)}">
-                    <div class="d-flex justify-content-center mt-2">
-                        
-                    </div>
-                </h:panelGroup>-->
-                    </h:panelGroup>
                 </p:column>
             </p:dataTable>
         </h:panelGroup>
