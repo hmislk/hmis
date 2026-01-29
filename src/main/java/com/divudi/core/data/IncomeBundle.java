@@ -1078,8 +1078,23 @@ public class IncomeBundle implements Serializable {
                 ir.setRowType(k.toString());
                 return ir;
             });
-            groupRow.setDiscount(groupRow.getDiscount() + r.getDiscount());
+            if (b.getBillTypeAtomic() != null) {
+                switch (b.getBillTypeAtomic().getBillCategory()) {
+                    case REFUND:
+                        groupRow.setDiscount(groupRow.getDiscount() + (-(Math.abs(r.getDiscount()))));
+                        break;
+                    case CANCELLATION:
+                        groupRow.setDiscount(groupRow.getDiscount() + (-(Math.abs(r.getDiscount()))));
+                        break;
+                    case BILL:
+                        groupRow.setDiscount(groupRow.getDiscount() + (Math.abs(r.getDiscount())));
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
+        
         getRows().clear();
         grouped.values().stream()
                 .filter(row -> row.getDiscount() != 0.0)
@@ -1087,7 +1102,12 @@ public class IncomeBundle implements Serializable {
                         Comparator.nullsLast(Comparator.naturalOrder())))
                 .forEachOrdered(getRows()::add);
         
-        populateSummaryRow();
+        double sumOfDiscount = 0.0;
+        for (IncomeRow r : rows) {
+            sumOfDiscount += r.getDiscount();
+        }
+        
+        getSummaryRow().setDiscount(sumOfDiscount);
     }
 
     @Deprecated

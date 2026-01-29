@@ -147,6 +147,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     @Inject
     MembershipSchemeController membershipSchemeController;
     @Inject
+    WebUserController webUserController;
+    @Inject
     private BillController billController;
     @Inject
     private SessionController sessionController;
@@ -3335,6 +3337,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
 
         }
+
+        if (configOptionApplicationController.getBooleanValueByKey("OPD Bill - Show the Doctor Details", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Marking doctor is mandatory for OPD Billing.", false)) {
+                if (selectedCurrentlyWorkingStaff == null) {
+                    JsfUtil.addErrorMessage("Marking Doctor is Missing.");
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -5206,6 +5217,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     @Override
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        // Allow editing for new patients (id is null), or if user has the privilege for existing patients
+        if (patientDetailsEditable && patient != null && patient.getId() != null && !webUserController.hasPrivilege("OpdEditPatientDetails")) {
+            JsfUtil.addErrorMessage("You don't have permission to edit patient details");
+            this.patientDetailsEditable = false;
+            return;
+        }
         this.patientDetailsEditable = patientDetailsEditable;
     }
 

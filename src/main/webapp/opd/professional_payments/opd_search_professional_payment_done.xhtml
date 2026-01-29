@@ -8,8 +8,8 @@
       >
 
     <h:body>
-        <ui:composition template="/payments/pay_index.xhtml">
-            <ui:define name="admin">
+        <ui:composition template="/opd/opd_doctor_payment_index.xhtml">
+            <ui:define name="opdPaymentContent">
                 <h:form>
                     <p:panel header="OPD Search Professional Payments Done" >
                         <f:facet name="header">
@@ -19,7 +19,7 @@
                                 icon="fas fa-arrow-left"
                                 class="ui-button-warning" 
                                 style="float: right;" 
-                                action="/payments/pay_index?faces-redirect=true" ajax="false"/>     
+                                action="/opd/opd_doctor_payment_index?faces-redirect=true" ajax="false"/>     
                         </f:facet>
                         <div class="row">
                             <div class="col-2">
