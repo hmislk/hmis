@@ -3397,8 +3397,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().editAndFlush(p);    // Immediate flush to database
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
         }
-       
-       
         createAuditEventPatientSaved(p);
         return true;
     }
