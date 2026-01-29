@@ -1863,7 +1863,7 @@ public class ItemController implements Serializable {
         }
         JsfUtil.addSuccessMessage("All Unmarked for Rates visible during Inward Billing");
     }
-    
+
     public void markSelectedItemsToAllowPriorityMarkingWhenBilling() {
         if (selectedList == null || selectedList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing is selected");
@@ -1875,7 +1875,7 @@ public class ItemController implements Serializable {
         }
         JsfUtil.addSuccessMessage("All Items Marked for Allowed Priority for Billing");
     }
-    
+
     public void unMarkSelectedItemsToAllowPriorityMarkingWhenBilling() {
         if (selectedList == null || selectedList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing is selected");
@@ -2642,13 +2642,17 @@ public class ItemController implements Serializable {
 
         return suggestions;
     }
-    
+
     public List<Item> completeAmpAndAmppItemForLoggedDepartment(String query, DepartmentType departmentType) {
         List<Item> suggestions;
         String sql;
         HashMap tmpMap = new HashMap();
         List<DepartmentType> lstDepartmentTypes = new ArrayList<>();
-        lstDepartmentTypes.add(departmentType);
+        if (departmentType != null) {
+            lstDepartmentTypes.add(departmentType);
+        } else {
+            lstDepartmentTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+        }
 
         if (query == null) {
             suggestions = new ArrayList<>();
