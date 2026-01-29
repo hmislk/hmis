@@ -7,6 +7,7 @@ package com.divudi.core.entity;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_GRN_RETURN;
 import com.divudi.core.data.IdentifiableWithNameOrCode;
 import com.divudi.core.data.PaymentMethod;
@@ -146,6 +147,8 @@ public class Bill implements Serializable, RetirableEntity {
     private BillTypeAtomic billTypeAtomic;
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
+    @Enumerated(EnumType.STRING)
+    private DepartmentType departmentType;
     @ManyToOne(fetch = FetchType.LAZY)
     private BillItem singleBillItem;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -1324,6 +1327,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public DepartmentType getDepartmentType() {
+        return departmentType;
+    }
+
+    public void setDepartmentType(DepartmentType departmentType) {
+        this.departmentType = departmentType;
     }
 
     public Item getBillPackege() {

@@ -38,6 +38,14 @@
                                                 styleClass="w-100 ui-button-primary"
                                                 style="text-align: left"
                                                 action="#{pharmacySummaryReportController.navigateToPharmacyIncomeReport()}"/>
+                                            
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Income Report')}" 
+                                                value="Income Summary Category"
+                                                ajax="false"
+                                                styleClass="w-100 ui-button-primary"
+                                                style="text-align: left"
+                                                action="/pharmacy/reports/summary_reports/pharmacy_income_summary_category?faces-redirect=true"/>
 
                                             <p:commandButton 
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Income and Cost')}" 
