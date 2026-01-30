@@ -2027,14 +2027,18 @@ public class BillService {
                 + " LEFT JOIN fromStaff.person fs "
                 + " where b.retired=:ret "
                 + " and bi.retired=false "               // Filter non-retired BillItems
-                + " and b.billTypeAtomic in :billTypesAtomics "
                 + " and b.createdAt between :fromDate and :toDate";
 
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
-        params.put("billTypesAtomics", billTypeAtomics);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
+
+        // Only add billTypeAtomics filter if the list is non-null and non-empty
+        if (billTypeAtomics != null && !billTypeAtomics.isEmpty()) {
+            jpql += " and b.billTypeAtomic in :billTypesAtomics";
+            params.put("billTypesAtomics", billTypeAtomics);
+        }
 
         // Add filters one by one with debugging
         if (institution != null) {
