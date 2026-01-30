@@ -8755,7 +8755,7 @@ public class DataUploadController implements Serializable {
 
         // Set the downloading filetemplateForPharmacyItemImport
         templateForPharmacyItemImportWithoutStock = DefaultStreamedContent.builder()
-                .name("template_for_pharmacy_item_import_with_stock.xlsx")
+                .name("template_for_pharmacy_item_import_without_stock.xlsx")
                 .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 .stream(() -> inputStream)
                 .build();
