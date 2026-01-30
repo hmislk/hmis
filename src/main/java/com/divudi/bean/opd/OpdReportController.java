@@ -58,7 +58,9 @@ import com.divudi.service.StockHistoryService;
 import com.divudi.core.data.dto.LabDailySummaryDTO;
 import com.divudi.core.data.dto.OpdIncomeReportDTO;
 import com.divudi.core.data.dto.HospitalDoctorFeeReportDTO;
+import com.divudi.core.data.dto.BillItemReportDTO;
 import com.divudi.core.data.HospitalDoctorFeeBundle;
+import com.divudi.core.data.BillItemReportBundle;
 import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.reports.CommonReports;
 import com.divudi.core.data.reports.LaboratoryReport;
@@ -234,6 +236,9 @@ public class OpdReportController implements Serializable {
     private List<HospitalDoctorFeeReportDTO> hospitalDoctorFeeReportDtos;
     private HospitalDoctorFeeBundle hospitalDoctorFeeBundle;
 
+    private List<BillItemReportDTO> billItemReportDtos;
+    private BillItemReportBundle billItemReportBundle;
+
     private DailyStockBalanceReport dailyStockBalanceReport;
 
     private StreamedContent downloadingExcel;
@@ -293,6 +298,10 @@ public class OpdReportController implements Serializable {
 
     public String navigateToHospitalDoctorFeeReport() {
         return "/opd/analytics/summary_reports/hospital_doctor_fee_report.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToBillItemReport() {
+        return "/opd/analytics/summary_reports/bill_item_report.xhtml?faces-redirect=true";
     }
 
 // </editor-fold>
@@ -616,6 +625,31 @@ public class OpdReportController implements Serializable {
 
             hospitalDoctorFeeBundle = new HospitalDoctorFeeBundle(hospitalDoctorFeeReportDtos);
         }, CommonReports.LAB_REPORTS, "OpdReportController.generateHospitalDoctorFeeReport", sessionController.getLoggedUser());
+    }
+
+    public void generateBillItemReport() {
+        reportTimerController.trackReportExecution(() -> {
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            // OPD Bills - SAME AS Hospital Doctor Fee Report
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+
+            // Inward Service Bills - SAME AS Hospital Doctor Fee Report
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+
+            billItemReportDtos = billService.fetchBillItemReportDTOs(
+                    fromDate, toDate, institution, site, department, webUser,
+                    billTypeAtomics, admissionType, paymentScheme);
+
+            billItemReportBundle = new BillItemReportBundle(billItemReportDtos);
+        }, CommonReports.OPD_REPORTS, "OpdReportController.generateBillItemReport",
+           sessionController.getLoggedUser());
     }
 
     public void downloadHospitalDoctorFeeExcel() {
@@ -2788,6 +2822,22 @@ public class OpdReportController implements Serializable {
 
     public void setHospitalDoctorFeeBundle(HospitalDoctorFeeBundle hospitalDoctorFeeBundle) {
         this.hospitalDoctorFeeBundle = hospitalDoctorFeeBundle;
+    }
+
+    public List<BillItemReportDTO> getBillItemReportDtos() {
+        return billItemReportDtos;
+    }
+
+    public void setBillItemReportDtos(List<BillItemReportDTO> billItemReportDtos) {
+        this.billItemReportDtos = billItemReportDtos;
+    }
+
+    public BillItemReportBundle getBillItemReportBundle() {
+        return billItemReportBundle;
+    }
+
+    public void setBillItemReportBundle(BillItemReportBundle billItemReportBundle) {
+        this.billItemReportBundle = billItemReportBundle;
     }
 
 }
