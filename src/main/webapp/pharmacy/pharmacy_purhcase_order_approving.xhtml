@@ -180,6 +180,14 @@
                                         <p:ajax process="@this" update="po" event="change" />
                                         <p:ajax process="@this" update="duration" event="itemSelect" />
                                     </p:selectOneMenu>
+                                    
+                                    <p:outputLabel value="Department Type"
+                                                   class="form-label"></p:outputLabel>
+                                    <p:outputLabel
+                                        id="selDepartmentType"
+                                        value="#{purchaseOrderController.aprovedBill.departmentType}"
+                                        class="w-100" >
+                                    </p:outputLabel>
 
                                     <h:panelGroup rendered="#{purchaseOrderController.aprovedBill.paymentMethod eq 'Credit'}" id="duration">
                                         <div class="d-flex mb-3">
