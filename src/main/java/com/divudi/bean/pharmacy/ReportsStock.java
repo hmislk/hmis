@@ -86,6 +86,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     private List<ReportViewType> reportViewTypes;
     private Category category;
     private DepartmentType departmentType;
+    private List<DepartmentType> selectedDepartmentTypes;
     List<Stock> stocks;
     List<StockDTO> stockDtos;
     double stockSaleValue;
@@ -277,9 +278,9 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
                 m.put("ins", institution);
             }
 
-            if (departmentType != null) {
-                jpql.append(" and s.itemBatch.item.departmentType=:dt");
-                m.put("dt", departmentType);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append(" and s.itemBatch.item.departmentType IN :departmentTypes");
+                m.put("departmentTypes", selectedDepartmentTypes);
             }
 
             stockDtos = (List<StockDTO>) stockFacade.findLightsByJpql(jpql.toString(), m);
@@ -1558,6 +1559,26 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void setDepartmentType(DepartmentType departmentType) {
         this.departmentType = departmentType;
+    }
+
+    public List<DepartmentType> getSelectedDepartmentTypes() {
+        if (selectedDepartmentTypes == null) {
+            selectedDepartmentTypes = new ArrayList<>();
+        }
+        return selectedDepartmentTypes;
+    }
+
+    public void setSelectedDepartmentTypes(List<DepartmentType> selectedDepartmentTypes) {
+        this.selectedDepartmentTypes = selectedDepartmentTypes;
+    }
+
+    public List<DepartmentType> getAvailableDepartmentTypes() {
+        return Arrays.asList(
+            DepartmentType.Pharmacy,
+            DepartmentType.Store,
+            DepartmentType.Lab,
+            DepartmentType.Kitchen
+        );
     }
 
     @Override
