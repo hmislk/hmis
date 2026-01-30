@@ -2004,23 +2004,6 @@ public class BillService {
             throw new IllegalArgumentException("fromDate cannot be after toDate");
         }
 
-        // DEBUG: Log all input parameters
-        System.out.println("=== DEBUG Bill Item Report Query ===");
-        System.out.println("fromDate: " + fromDate);
-        System.out.println("toDate: " + toDate);
-        System.out.println("institution: " + (institution != null ? institution.getName() : "NULL"));
-        System.out.println("site: " + (site != null ? site.getName() : "NULL"));
-        System.out.println("department: " + (department != null ? department.getName() : "NULL"));
-        System.out.println("webUser: " + (webUser != null ? webUser.getName() : "NULL"));
-        System.out.println("admissionType: " + (admissionType != null ? admissionType.getName() : "NULL"));
-        System.out.println("paymentScheme: " + (paymentScheme != null ? paymentScheme.getName() : "NULL"));
-        System.out.println("billTypeAtomics count: " + (billTypeAtomics != null ? billTypeAtomics.size() : 0));
-        if (billTypeAtomics != null) {
-            for (BillTypeAtomic bta : billTypeAtomics) {
-                System.out.println("  - " + bta);
-            }
-        }
-
         // Query with LEFT JOINs to fetch bill items with item names
         String jpql = "select new com.divudi.core.data.dto.BillItemReportDTO("
                 + " b.id, "                              // billId
@@ -2057,42 +2040,31 @@ public class BillService {
         if (institution != null) {
             jpql += " and b.institution=:ins";
             params.put("ins", institution);
-            System.out.println("Adding institution filter: " + institution.getName());
         }
         if (webUser != null) {
             jpql += " and b.creater=:user";
             params.put("user", webUser);
-            System.out.println("Adding user filter: " + webUser.getName());
         }
         if (department != null) {
             jpql += " and b.department=:dep";
             params.put("dep", department);
-            System.out.println("Adding department filter: " + department.getName());
         }
         if (site != null) {
             jpql += " and b.department.site=:site";
             params.put("site", site);
-            System.out.println("Adding site filter: " + site.getName());
         }
         if (admissionType != null) {
             jpql += " and b.patientEncounter.admissionType=:admissionType";
             params.put("admissionType", admissionType);
-            System.out.println("Adding admissionType filter: " + admissionType.getName());
         }
         if (paymentScheme != null) {
             jpql += " and b.paymentScheme=:paymentScheme";
             params.put("paymentScheme", paymentScheme);
-            System.out.println("Adding paymentScheme filter: " + paymentScheme.getName());
         }
 
         jpql += " order by b.createdAt desc, bi.id";
 
-        System.out.println("Final JPQL: " + jpql);
-        System.out.println("Parameters: " + params);
-
         List<BillItemReportDTO> results = (List<BillItemReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("Query returned: " + (results != null ? results.size() : 0) + " results");
-        System.out.println("=== END DEBUG ===");
 
         return results;
     }
