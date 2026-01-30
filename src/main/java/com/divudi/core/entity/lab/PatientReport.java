@@ -178,6 +178,9 @@ public class PatientReport implements Serializable, RetirableEntity {
     
     private Boolean requiresImmediateDoctorReview;
     
+    private Boolean handoverComplete = false;
+    private Boolean printComplete = false;
+    
     public PatientReport() {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
@@ -874,6 +877,22 @@ public class PatientReport implements Serializable, RetirableEntity {
 
     public void setRequiresImmediateDoctorReview(Boolean requiresImmediateDoctorReview) {
         this.requiresImmediateDoctorReview = requiresImmediateDoctorReview;
+    }
+
+    public Boolean getHandoverComplete() {
+        return handoverComplete;
+    }
+
+    public void setHandoverComplete(Boolean handoverComplete) {
+        this.handoverComplete = handoverComplete;
+    }
+
+    public Boolean getPrintComplete() {
+        return printComplete;
+    }
+
+    public void setPrintComplete(Boolean printComplete) {
+        this.printComplete = printComplete;
     }
     
     

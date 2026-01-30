@@ -9,14 +9,14 @@
 
     <h:body>
 
-        <ui:composition template="/payments/pay_index.xhtml">
+        <ui:composition template="/opd/opd_doctor_payment_index.xhtml">
 
-            <ui:define name="admin">
+            <ui:define name="opdPaymentContent">
                 <h:form>
                     <p:panel header="OPD Payments Due Search" >
                         <f:facet name="header">
                             <h:outputLabel value="OPD Payments Due Search"/>
-                            <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>
+                            <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/opd/opd_doctor_payment_index?faces-redirect=true" ajax="false"/>
 
                         </f:facet>
 

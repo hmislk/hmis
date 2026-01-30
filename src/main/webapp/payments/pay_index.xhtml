@@ -24,26 +24,46 @@
                                     <p:ajax process="@this"/>
                                     <p:tab title="Professional Payments - OPD">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton  
+                                            <p:commandButton
                                                 styleClass="w-100 ui-button-info ui-button-outlined"
-                                                ajax="false" 
+                                                ajax="false"
                                                 value="Initiate Professional Payments" title="Initiate Professional Payments"
-                                                action="#{staffPaymentBillController.navigateToViewOpdPayProfessionalPayments()}" 
+                                                action="#{staffPaymentBillController.navigateToViewOpdPayProfessionalPayments()}"
                                                 icon="fa fa-money-bill-wave"
                                                 rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
-                                            <p:commandButton  
+                                            <p:button
+                                                styleClass="w-100 ui-button-success ui-button-outlined"
+                                                value="Add Miscellaneous Staff Fee" title="Add Miscellaneous Staff Fee"
+                                                outcome="/opd/professional_payments/miscellaneous_staff_fee"
+                                                icon="fa fa-plus"
+                                                rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
+                                            <p:commandButton
                                                 styleClass="w-100 ui-button-info ui-button-outlined"
-                                                ajax="false" 
-                                                action="#{billSearch.navigateToViewOpdProfessionalPaymentsDue()}" 
-                                                actionListener="#{searchController.makeListNull}" 
-                                                value="Search Outstanding Professinal Payments" title="Search Outstanding Professinal Payments" 
+                                                ajax="false"
+                                                value="Miscellaneous Fee Report" title="Report of miscellaneous fees with filters"
+                                                action="#{miscellaneousStaffFeeController.navigateToMiscellaneousFeeReport()}"
+                                                icon="fa fa-file-alt"
+                                                rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
+                                            <p:commandButton
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false"
+                                                value="Miscellaneous Bill Report" title="Report of miscellaneous bills with filters"
+                                                action="#{miscellaneousStaffFeeController.navigateToMiscellaneousBillReport()}"
+                                                icon="fa fa-file-invoice"
+                                                rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
+                                            <p:commandButton
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false"
+                                                action="#{billSearch.navigateToViewOpdProfessionalPaymentsDue()}"
+                                                actionListener="#{searchController.makeListNull}"
+                                                value="Search Outstanding Professinal Payments" title="Search Outstanding Professinal Payments"
                                                 icon="fa fa-search-dollar"
                                                 rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
-                                            <p:commandButton  
-                                                styleClass="w-100 ui-button-info ui-button-outlined" 
-                                                ajax="false" 
-                                                value="List Completed Professional Payments" title="List Completed Professional Payments" 
-                                                action="#{billSearch.navigateToViewOpdProfessionalPaymentsDoneByUser()}" 
+                                            <p:commandButton
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false"
+                                                value="List Completed Professional Payments" title="List Completed Professional Payments"
+                                                action="#{billSearch.navigateToViewOpdProfessionalPaymentsDoneByUser()}"
                                                 actionListener="#{searchController.makeListNull}"
                                                 icon="fa fa-check-circle"
                                                 rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}"/>

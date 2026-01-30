@@ -95,6 +95,7 @@ import java.sql.SQLSyntaxErrorException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1161,6 +1162,119 @@ public class DataAdministrationController implements Serializable {
         executionFeedback = out.toString();
     }
 
+    /**
+     * Fast native SQL version of correctPharmacyDisbursementSigns().
+     * Uses bulk UPDATE statements instead of loading each entity individually.
+     * Supports date range filtering via fromDate and toDate.
+     */
+    public void correctPharmacyDisbursementSignsNative() {
+        executionFeedback = "";
+        try {
+            String result = billFacade.correctPharmacyDisbursementSignsNative(fromDate, toDate, false);
+            executionFeedback = result;
+            JsfUtil.addSuccessMessage("Sign correction completed. Check feedback for details.");
+        } catch (Exception e) {
+            executionFeedback = "Error: " + e.getMessage();
+            JsfUtil.addErrorMessage("Error correcting signs: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Dry-run version to preview what would be corrected without making changes.
+     */
+    public void previewPharmacyDisbursementSignsCorrection() {
+        executionFeedback = "";
+        try {
+            String result = billFacade.correctPharmacyDisbursementSignsNative(fromDate, toDate, true);
+            executionFeedback = result;
+            JsfUtil.addSuccessMessage("Preview complete. Check feedback for details.");
+        } catch (Exception e) {
+            executionFeedback = "Error: " + e.getMessage();
+            JsfUtil.addErrorMessage("Error previewing: " + e.getMessage());
+        }
+    }
+
+    public void correctDirectIssueInwardMedicineCancellationStockValues() {
+        executionFeedback = "";
+        StringBuilder output = new StringBuilder();
+
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("ret", false);
+
+            List<BillTypeAtomic> billTypesToCorrect = Arrays.asList(
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION
+            );
+
+            params.put("types", billTypesToCorrect);
+
+            StringBuilder jpql = new StringBuilder(
+                "SELECT b FROM Bill b WHERE b.retired = :ret AND b.billTypeAtomic IN :types"
+            );
+
+            if (fromDate != null) {
+                jpql.append(" AND b.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+            }
+            if (toDate != null) {
+                jpql.append(" AND b.createdAt <= :toDate");
+                params.put("toDate", toDate);
+            }
+
+            List<Bill> billsToProcess = billFacade.findByJpql(
+                jpql.toString(),
+                params,
+                TemporalType.TIMESTAMP
+            );
+
+            if (billsToProcess == null || billsToProcess.isEmpty()) {
+                executionFeedback = "No Direct Issue Inward Medicine Cancellation bills found in the specified date range.";
+                return;
+            }
+
+            int billsProcessed = 0;
+            int billsCorrected = 0;
+
+            for (Bill bill : billsToProcess) {
+                if (bill == null || bill.getBillFinanceDetails() == null) {
+                    continue;
+                }
+
+                billsProcessed++;
+                boolean billWasCorrected = false;
+
+                BillFinanceDetails bfd = bill.getBillFinanceDetails();
+
+                // For cancellations, stock comes back IN = POSITIVE values
+                billWasCorrected = correctToPositive(bfd);
+
+                if (billWasCorrected) {
+                    billFacade.edit(bill);
+                    billsCorrected++;
+                }
+            }
+
+            output.append("Processed: ").append(billsProcessed).append(" bills\n");
+            output.append("Corrected: ").append(billsCorrected).append(" bills with incorrect signs\n");
+
+            if (fromDate != null || toDate != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                String fromStr = fromDate != null ? sdf.format(fromDate) : "beginning";
+                String toStr = toDate != null ? sdf.format(toDate) : "now";
+                output.append("Date range: ").append(fromStr).append(" to ").append(toStr);
+            }
+
+            executionFeedback = output.toString();
+
+            JsfUtil.addSuccessMessage("Correction completed: " + billsCorrected + " bills corrected");
+
+        } catch (Exception e) {
+            executionFeedback = "Error correcting Direct Issue Inward Medicine Cancellation stock values: " + e.getMessage();
+            JsfUtil.addErrorMessage("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private boolean isFinanceValueNegative(BillTypeAtomic bta) {
         switch (bta) {
             case PHARMACY_ISSUE:
@@ -1729,10 +1843,11 @@ public class DataAdministrationController implements Serializable {
             JsfUtil.addSuccessMessage("Found " + billsToCorrect + " bills that need correction. Click 'Execute Correction' to proceed.");
 
         } catch (Exception e) {
-            String errorMsg = "Error checking bills for correction: " + e.getMessage();
+            String exceptionMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            String errorMsg = "Error checking bills for correction: " + exceptionMessage;
 
             // Provide specific guidance for table name issues
-            if (e.getMessage().contains("doesn't exist") || e.getMessage().contains("Table") || e.getMessage().contains("SQLSyntaxErrorException")) {
+            if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
                 errorMsg += ". This appears to be a database schema issue. Please check if the BILL and BILLITEM tables exist in your database.";
             }
 
@@ -1759,10 +1874,11 @@ public class DataAdministrationController implements Serializable {
             }
 
         } catch (Exception e) {
-            String errorMsg = "Error correcting historical bill fees: " + e.getMessage();
+            String exceptionMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            String errorMsg = "Error correcting historical bill fees: " + exceptionMessage;
 
             // Provide specific guidance for table name issues
-            if (e.getMessage().contains("doesn't exist") || e.getMessage().contains("Table") || e.getMessage().contains("SQLSyntaxErrorException")) {
+            if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
                 errorMsg += ". This appears to be a database schema issue. The correction failed due to table name case sensitivity or missing tables.";
             }
 
@@ -1794,10 +1910,11 @@ public class DataAdministrationController implements Serializable {
             }
 
         } catch (Exception e) {
-            String errorMsg = "Error checking bills in custom date range: " + e.getMessage();
+            String exceptionMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            String errorMsg = "Error checking bills in custom date range: " + exceptionMessage;
 
             // Provide specific guidance for database issues
-            if (e.getMessage().contains("doesn't exist") || e.getMessage().contains("Table") || e.getMessage().contains("SQLSyntaxErrorException")) {
+            if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
                 errorMsg += ". Database schema issue detected. Check table names and database connectivity.";
             }
 
@@ -1827,10 +1944,11 @@ public class DataAdministrationController implements Serializable {
             }
 
         } catch (Exception e) {
-            String errorMsg = "Error correcting bills in custom date range: " + e.getMessage();
+            String exceptionMessage = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            String errorMsg = "Error correcting bills in custom date range: " + exceptionMessage;
 
             // Provide specific guidance for database issues
-            if (e.getMessage().contains("doesn't exist") || e.getMessage().contains("Table") || e.getMessage().contains("SQLSyntaxErrorException")) {
+            if (exceptionMessage.contains("doesn't exist") || exceptionMessage.contains("Table") || exceptionMessage.contains("SQLSyntaxErrorException")) {
                 errorMsg += ". Database execution failed due to schema issues. Verify table structure and permissions.";
             }
 

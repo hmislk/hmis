@@ -315,7 +315,7 @@ public class PaymentSchemeController implements Serializable {
             getFacade().edit(paymentScheme);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
