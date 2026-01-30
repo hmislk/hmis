@@ -15,7 +15,7 @@
                             <h:outputText value="This report shows stocks at the end of the selected date. If you want to view the current stock, please use this report instead: "/>
                             <h:link outcome="/pharmacy/pharmacy_report_department_stock_by_batch_dto" value="Stock Report by Batch" title="Open Stock Report by Batch" />
                         </h:panelGroup>
-                        <h:panelGrid columns="11" class="w-100">
+                        <h:panelGrid columns="8" class="w-100">
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
                                 <p:outputLabel value="Date"  class="m-3">
@@ -65,23 +65,25 @@
                                 <h:outputText styleClass="fa fa-building mr-2"/>
                                 <p:outputLabel value="Department Type" for="departmentTypeFilter" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectCheckboxMenu
-                                id="departmentTypeFilter"
-                                value="#{pharmacyReportController.selectedDepartmentTypes}"
-                                label="Select Department Types"
-                                class="w-100"
-                                filter="true"
-                                filterMatchMode="contains"
-                                showHeader="true"
-                                scrollHeight="200">
-                                <f:selectItems
-                                    value="#{pharmacyReportController.availableDepartmentTypes}"
-                                    var="depType"
-                                    itemLabel="#{depType.label}"
-                                    itemValue="#{depType}"/>
-                            </p:selectCheckboxMenu>
-                            <p:spacer width="20"/>
-                            <p:spacer width="20"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <p:selectCheckboxMenu
+                                    id="departmentTypeFilter"
+                                    value="#{pharmacyReportController.selectedDepartmentTypes}"
+                                    label="Select Department Types"
+                                    class="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    showHeader="true"
+                                    scrollHeight="200"
+                                    title="Select one or more department types to filter results. Leave empty to include all departments.">
+                                    <f:selectItems
+                                        value="#{pharmacyReportController.availableDepartmentTypes}"
+                                        var="depType"
+                                        itemLabel="#{depType.label}"
+                                        itemValue="#{depType}"/>
+                                </p:selectCheckboxMenu>
+                                <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all departments." position="top"/>
+                            </h:panelGroup>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2"/>
