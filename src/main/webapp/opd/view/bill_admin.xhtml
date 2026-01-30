@@ -56,7 +56,10 @@
                                                 <h:outputLabel value="Bill Number:" />
                                                 <h:outputText value="#{billSearch.viewingBill.deptId}" />
                                                 <h:outputLabel value="Bill Type:" />
-                                                <h:outputText value="#{billSearch.viewingBill.billTypeAtomic}" />
+
+                                                <p:selectOneMenu class="w-100" style="width: 150px"  filterMatchMode="contains" filter="true" id="group" value="#{billSearch.viewingBill.billTypeAtomic}">
+                                                    <f:selectItems class="w-50" value="#{enumController.billTypesAtomic}"/>
+                                                </p:selectOneMenu>
 
                                                 <h:outputLabel value="Total:" />
                                                 <h:outputText value="#{billSearch.viewingBill.total}">

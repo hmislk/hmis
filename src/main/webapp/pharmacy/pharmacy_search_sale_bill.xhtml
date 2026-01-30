@@ -67,21 +67,33 @@
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,15"
                                     >
-<!--                                    <f:facet name="header" >
-                                        <h:outputLabel value="Total :"/>
-                                        <h:outputLabel value="#{searchController.netTotal}" class="mx-2">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </f:facet>-->
+                                    <!--                                    <f:facet name="header" >
+                                                                            <h:outputLabel value="Total :"/>
+                                                                            <h:outputLabel value="#{searchController.netTotal}" class="mx-2">
+                                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                                            </h:outputLabel>
+                                                                        </f:facet>-->
 
-                                    <p:column headerText="Bill No" >
+                                    <p:column headerText="Bill No" width="8em">
                                         <p:commandLink 
                                             id="billNo" 
                                             ajax="false" 
+                                            style="font-weight: bold"
+                                            title="View Sale Bill"
                                             value="#{bill.deptId}" 
                                             disabled="#{bill.referenceBill eq null}"
                                             action="#{pharmacyBillSearch.navigatePharmacyReprintRetailBill()}">
                                             <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>  
+                                        </p:commandLink>
+                                        <p:commandLink
+                                            ajax="false"
+                                            action="#{pharmacyBillSearch.navigatePharmacyReturnRetailBill}"
+                                            title="View Refund Bills"
+                                            rendered="#{bill.returnPreBills ne null}"
+                                            > 
+                                          
+                                            <p:badge rendered="#{bill.returnPreBills ne null}" value="Refunded" severity="warning"></p:badge>
+                                            <f:setPropertyActionListener value="#{bill.deptId}" target="#{searchController.searchKeyword.refBillNo}"/> 
                                         </p:commandLink>
                                     </p:column>
 
@@ -181,7 +193,7 @@
                                         </h:panelGroup>                               
                                     </p:column>                      
 
-                                    <p:column headerText="Client" >
+                                    <p:column headerText="Client" style="font-weight: bold" width="8em" filterMatchMode="contains" filterBy="#{bill.patient.person.nameWithTitle}">
                                         <h:outputLabel value="#{bill.patient.person.nameWithTitle}" />
                                         <h:outputLabel value="#{bill.toStaff.person.nameWithTitle}" />
                                         <h:outputLabel value="#{bill.toDepartment.name}" />
