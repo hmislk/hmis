@@ -985,6 +985,11 @@ public class TransferRequestController implements Serializable {
      * Resets department type to null if it's no longer valid.
      */
     public void handleToDepartmentChange() {
+        // Guard against null toDepartment
+        if (toDepartment == null) {
+            return;
+        }
+
         // Reset department type if it's no longer valid for the intersection
         if (bill != null && bill.getDepartmentType() != null) {
             List<DepartmentType> validTypes = getAvailableDepartmentTypesForTransfer();
