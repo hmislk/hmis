@@ -2036,13 +2036,14 @@ public class BillService {
                 + " b.paymentMethod, "                   // Payment method
                 + " b.billTypeAtomic ) "                 // Bill type atomic
                 + " from Bill b "
-                + " LEFT JOIN b.billItems bi "           // Join to BillItem
+                + " JOIN b.billItems bi "                // Join to BillItem (inner join)
                 + " LEFT JOIN bi.item i "                // Join to Item for item name
                 + " LEFT JOIN b.patient pt "
                 + " LEFT JOIN pt.person p "
                 + " LEFT JOIN b.fromStaff fromStaff "
                 + " LEFT JOIN fromStaff.person fs "
                 + " where b.retired=:ret "
+                + " and bi.retired=false "               // Filter non-retired BillItems
                 + " and b.billTypeAtomic in :billTypesAtomics "
                 + " and b.createdAt between :fromDate and :toDate";
 
