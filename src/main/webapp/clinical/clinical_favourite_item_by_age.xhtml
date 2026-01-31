@@ -185,57 +185,79 @@
                                 <h:outputText value="" styleClass="d-block mt-3" />
 
                                 <!-- Age Range Section -->
-                                <p:outputLabel value="From Age (Days):" for="fromDays" styleClass="font-weight-bold" />
+                                <p:outputLabel value="From Age:" styleClass="font-weight-bold" />
                                 <h:panelGroup>
-                                    <p:inputText id="fromDays" value="#{favouriteController.current.fromDays}"
-                                                 styleClass="w-100 mb-1" placeholder="Enter age in days">
-                                        <p:ajax event="keyup" update="fromAgeDisplay" />
-                                        <p:ajax event="blur" update="fromAgeDisplay" />
-                                    </p:inputText>
-                                    <h:panelGroup id="fromAgeDisplay" layout="block" styleClass="text-muted small mt-1">
-                                        <i class="fas fa-info-circle"></i>
-                                        <h:outputText value=" Approximately: " />
-                                        <h:outputText value="#{favouriteController.current.fromDays / 365}"
-                                                      rendered="#{favouriteController.current.fromDays >= 365}">
-                                            <f:convertNumber pattern="0.0" />
+                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2" style="gap: 0.5rem;">
+                                        <h:panelGroup>
+                                            <p:inputNumber id="fromYears" value="#{favouriteController.fromYears}"
+                                                           styleClass="w-100" placeholder="0" minValue="0" maxValue="120"
+                                                           decimalPlaces="0" inputStyle="width: 60px; text-align: center;">
+                                                <p:ajax event="change" listener="#{favouriteController.calculateFromDays()}" update="fromTotalDays" />
+                                            </p:inputNumber>
+                                            <h:outputText value=" Years" styleClass="text-muted small ml-1" />
+                                        </h:panelGroup>
+                                        <h:panelGroup>
+                                            <p:inputNumber id="fromMonths" value="#{favouriteController.fromMonths}"
+                                                           styleClass="w-100" placeholder="0" minValue="0" maxValue="11"
+                                                           decimalPlaces="0" inputStyle="width: 60px; text-align: center;">
+                                                <p:ajax event="change" listener="#{favouriteController.calculateFromDays()}" update="fromTotalDays" />
+                                            </p:inputNumber>
+                                            <h:outputText value=" Months" styleClass="text-muted small ml-1" />
+                                        </h:panelGroup>
+                                        <h:panelGroup>
+                                            <p:inputNumber id="fromDaysComp" value="#{favouriteController.fromDaysComponent}"
+                                                           styleClass="w-100" placeholder="0" minValue="0" maxValue="29"
+                                                           decimalPlaces="0" inputStyle="width: 60px; text-align: center;">
+                                                <p:ajax event="change" listener="#{favouriteController.calculateFromDays()}" update="fromTotalDays" />
+                                            </p:inputNumber>
+                                            <h:outputText value=" Days" styleClass="text-muted small ml-1" />
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                    <h:panelGroup id="fromTotalDays" layout="block" styleClass="text-info small mt-1">
+                                        <i class="fas fa-calculator"></i>
+                                        <h:outputText value=" Total: " />
+                                        <h:outputText value="#{favouriteController.current.fromDays}" styleClass="font-weight-bold">
+                                            <f:convertNumber pattern="0" />
                                         </h:outputText>
-                                        <h:outputText value=" years"
-                                                      rendered="#{favouriteController.current.fromDays >= 365}" />
-                                        <h:outputText value="#{favouriteController.current.fromDays / 30}"
-                                                      rendered="#{favouriteController.current.fromDays >= 30 and favouriteController.current.fromDays &lt; 365}">
-                                            <f:convertNumber pattern="0.0" />
-                                        </h:outputText>
-                                        <h:outputText value=" months"
-                                                      rendered="#{favouriteController.current.fromDays >= 30 and favouriteController.current.fromDays &lt; 365}" />
-                                        <h:outputText value="#{favouriteController.current.fromDays} days"
-                                                      rendered="#{favouriteController.current.fromDays &lt; 30 and favouriteController.current.fromDays > 0}" />
+                                        <h:outputText value=" days" />
                                     </h:panelGroup>
                                 </h:panelGroup>
 
-                                <p:outputLabel value="To Age (Days):" for="toDays" styleClass="font-weight-bold" />
+                                <p:outputLabel value="To Age:" styleClass="font-weight-bold" />
                                 <h:panelGroup>
-                                    <p:inputText id="toDays" value="#{favouriteController.current.toDays}"
-                                                 styleClass="w-100 mb-1" placeholder="Enter age in days">
-                                        <p:ajax event="keyup" update="toAgeDisplay" />
-                                        <p:ajax event="blur" update="toAgeDisplay" />
-                                    </p:inputText>
-                                    <h:panelGroup id="toAgeDisplay" layout="block" styleClass="text-muted small mt-1">
-                                        <i class="fas fa-info-circle"></i>
-                                        <h:outputText value=" Approximately: " />
-                                        <h:outputText value="#{favouriteController.current.toDays / 365}"
-                                                      rendered="#{favouriteController.current.toDays >= 365}">
-                                            <f:convertNumber pattern="0.0" />
+                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2" style="gap: 0.5rem;">
+                                        <h:panelGroup>
+                                            <p:inputNumber id="toYears" value="#{favouriteController.toYears}"
+                                                           styleClass="w-100" placeholder="0" minValue="0" maxValue="120"
+                                                           decimalPlaces="0" inputStyle="width: 60px; text-align: center;">
+                                                <p:ajax event="change" listener="#{favouriteController.calculateToDays()}" update="toTotalDays" />
+                                            </p:inputNumber>
+                                            <h:outputText value=" Years" styleClass="text-muted small ml-1" />
+                                        </h:panelGroup>
+                                        <h:panelGroup>
+                                            <p:inputNumber id="toMonths" value="#{favouriteController.toMonths}"
+                                                           styleClass="w-100" placeholder="0" minValue="0" maxValue="11"
+                                                           decimalPlaces="0" inputStyle="width: 60px; text-align: center;">
+                                                <p:ajax event="change" listener="#{favouriteController.calculateToDays()}" update="toTotalDays" />
+                                            </p:inputNumber>
+                                            <h:outputText value=" Months" styleClass="text-muted small ml-1" />
+                                        </h:panelGroup>
+                                        <h:panelGroup>
+                                            <p:inputNumber id="toDaysComp" value="#{favouriteController.toDaysComponent}"
+                                                           styleClass="w-100" placeholder="0" minValue="0" maxValue="29"
+                                                           decimalPlaces="0" inputStyle="width: 60px; text-align: center;">
+                                                <p:ajax event="change" listener="#{favouriteController.calculateToDays()}" update="toTotalDays" />
+                                            </p:inputNumber>
+                                            <h:outputText value=" Days" styleClass="text-muted small ml-1" />
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                    <h:panelGroup id="toTotalDays" layout="block" styleClass="text-info small mt-1">
+                                        <i class="fas fa-calculator"></i>
+                                        <h:outputText value=" Total: " />
+                                        <h:outputText value="#{favouriteController.current.toDays}" styleClass="font-weight-bold">
+                                            <f:convertNumber pattern="0" />
                                         </h:outputText>
-                                        <h:outputText value=" years"
-                                                      rendered="#{favouriteController.current.toDays >= 365}" />
-                                        <h:outputText value="#{favouriteController.current.toDays / 30}"
-                                                      rendered="#{favouriteController.current.toDays >= 30 and favouriteController.current.toDays &lt; 365}">
-                                            <f:convertNumber pattern="0.0" />
-                                        </h:outputText>
-                                        <h:outputText value=" months"
-                                                      rendered="#{favouriteController.current.toDays >= 30 and favouriteController.current.toDays &lt; 365}" />
-                                        <h:outputText value="#{favouriteController.current.toDays} days"
-                                                      rendered="#{favouriteController.current.toDays &lt; 30 and favouriteController.current.toDays > 0}" />
+                                        <h:outputText value=" days" />
                                     </h:panelGroup>
                                 </h:panelGroup>
 
@@ -392,57 +414,79 @@
                                 <h:outputText value="" styleClass="d-block mt-3" />
 
                                 <!-- Age Range Section -->
-                                <p:outputLabel value="From Age (Days):" for="fromDaysEdit" styleClass="font-weight-bold" />
+                                <p:outputLabel value="From Age:" styleClass="font-weight-bold" />
                                 <h:panelGroup>
-                                    <p:inputText id="fromDaysEdit" value="#{favouriteController.current.fromDays}"
-                                                 styleClass="w-100 mb-1" placeholder="Enter age in days">
-                                        <p:ajax event="keyup" update="fromAgeDisplayEdit" />
-                                        <p:ajax event="blur" update="fromAgeDisplayEdit" />
-                                    </p:inputText>
-                                    <h:panelGroup id="fromAgeDisplayEdit" layout="block" styleClass="text-muted small mt-1">
-                                        <i class="fas fa-info-circle"></i>
-                                        <h:outputText value=" Approximately: " />
-                                        <h:outputText value="#{favouriteController.current.fromDays / 365}"
-                                                      rendered="#{favouriteController.current.fromDays >= 365}">
-                                            <f:convertNumber pattern="0.0" />
+                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2" style="gap: 0.5rem;">
+                                        <h:panelGroup>
+                                            <p:inputNumber id="fromYearsEdit" value="#{favouriteController.fromYears}"
+                                                           styleClass="w-100" placeholder="0" minValue="0" maxValue="120"
+                                                           decimalPlaces="0" inputStyle="width: 60px; text-align: center;">
+                                                <p:ajax event="change" listener="#{favouriteController.calculateFromDays()}" update="fromTotalDaysEdit" />
+                                            </p:inputNumber>
+                                            <h:outputText value=" Years" styleClass="text-muted small ml-1" />
+                                        </h:panelGroup>
+                                        <h:panelGroup>
+                                            <p:inputNumber id="fromMonthsEdit" value="#{favouriteController.fromMonths}"
+                                                           styleClass="w-100" placeholder="0" minValue="0" maxValue="11"
+                                                           decimalPlaces="0" inputStyle="width: 60px; text-align: center;">
+                                                <p:ajax event="change" listener="#{favouriteController.calculateFromDays()}" update="fromTotalDaysEdit" />
+                                            </p:inputNumber>
+                                            <h:outputText value=" Months" styleClass="text-muted small ml-1" />
+                                        </h:panelGroup>
+                                        <h:panelGroup>
+                                            <p:inputNumber id="fromDaysCompEdit" value="#{favouriteController.fromDaysComponent}"
+                                                           styleClass="w-100" placeholder="0" minValue="0" maxValue="29"
+                                                           decimalPlaces="0" inputStyle="width: 60px; text-align: center;">
+                                                <p:ajax event="change" listener="#{favouriteController.calculateFromDays()}" update="fromTotalDaysEdit" />
+                                            </p:inputNumber>
+                                            <h:outputText value=" Days" styleClass="text-muted small ml-1" />
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                    <h:panelGroup id="fromTotalDaysEdit" layout="block" styleClass="text-info small mt-1">
+                                        <i class="fas fa-calculator"></i>
+                                        <h:outputText value=" Total: " />
+                                        <h:outputText value="#{favouriteController.current.fromDays}" styleClass="font-weight-bold">
+                                            <f:convertNumber pattern="0" />
                                         </h:outputText>
-                                        <h:outputText value=" years"
-                                                      rendered="#{favouriteController.current.fromDays >= 365}" />
-                                        <h:outputText value="#{favouriteController.current.fromDays / 30}"
-                                                      rendered="#{favouriteController.current.fromDays >= 30 and favouriteController.current.fromDays &lt; 365}">
-                                            <f:convertNumber pattern="0.0" />
-                                        </h:outputText>
-                                        <h:outputText value=" months"
-                                                      rendered="#{favouriteController.current.fromDays >= 30 and favouriteController.current.fromDays &lt; 365}" />
-                                        <h:outputText value="#{favouriteController.current.fromDays} days"
-                                                      rendered="#{favouriteController.current.fromDays &lt; 30 and favouriteController.current.fromDays > 0}" />
+                                        <h:outputText value=" days" />
                                     </h:panelGroup>
                                 </h:panelGroup>
 
-                                <p:outputLabel value="To Age (Days):" for="toDaysEdit" styleClass="font-weight-bold" />
+                                <p:outputLabel value="To Age:" styleClass="font-weight-bold" />
                                 <h:panelGroup>
-                                    <p:inputText id="toDaysEdit" value="#{favouriteController.current.toDays}"
-                                                 styleClass="w-100 mb-1" placeholder="Enter age in days">
-                                        <p:ajax event="keyup" update="toAgeDisplayEdit" />
-                                        <p:ajax event="blur" update="toAgeDisplayEdit" />
-                                    </p:inputText>
-                                    <h:panelGroup id="toAgeDisplayEdit" layout="block" styleClass="text-muted small mt-1">
-                                        <i class="fas fa-info-circle"></i>
-                                        <h:outputText value=" Approximately: " />
-                                        <h:outputText value="#{favouriteController.current.toDays / 365}"
-                                                      rendered="#{favouriteController.current.toDays >= 365}">
-                                            <f:convertNumber pattern="0.0" />
+                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2" style="gap: 0.5rem;">
+                                        <h:panelGroup>
+                                            <p:inputNumber id="toYearsEdit" value="#{favouriteController.toYears}"
+                                                           styleClass="w-100" placeholder="0" minValue="0" maxValue="120"
+                                                           decimalPlaces="0" inputStyle="width: 60px; text-align: center;">
+                                                <p:ajax event="change" listener="#{favouriteController.calculateToDays()}" update="toTotalDaysEdit" />
+                                            </p:inputNumber>
+                                            <h:outputText value=" Years" styleClass="text-muted small ml-1" />
+                                        </h:panelGroup>
+                                        <h:panelGroup>
+                                            <p:inputNumber id="toMonthsEdit" value="#{favouriteController.toMonths}"
+                                                           styleClass="w-100" placeholder="0" minValue="0" maxValue="11"
+                                                           decimalPlaces="0" inputStyle="width: 60px; text-align: center;">
+                                                <p:ajax event="change" listener="#{favouriteController.calculateToDays()}" update="toTotalDaysEdit" />
+                                            </p:inputNumber>
+                                            <h:outputText value=" Months" styleClass="text-muted small ml-1" />
+                                        </h:panelGroup>
+                                        <h:panelGroup>
+                                            <p:inputNumber id="toDaysCompEdit" value="#{favouriteController.toDaysComponent}"
+                                                           styleClass="w-100" placeholder="0" minValue="0" maxValue="29"
+                                                           decimalPlaces="0" inputStyle="width: 60px; text-align: center;">
+                                                <p:ajax event="change" listener="#{favouriteController.calculateToDays()}" update="toTotalDaysEdit" />
+                                            </p:inputNumber>
+                                            <h:outputText value=" Days" styleClass="text-muted small ml-1" />
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                    <h:panelGroup id="toTotalDaysEdit" layout="block" styleClass="text-info small mt-1">
+                                        <i class="fas fa-calculator"></i>
+                                        <h:outputText value=" Total: " />
+                                        <h:outputText value="#{favouriteController.current.toDays}" styleClass="font-weight-bold">
+                                            <f:convertNumber pattern="0" />
                                         </h:outputText>
-                                        <h:outputText value=" years"
-                                                      rendered="#{favouriteController.current.toDays >= 365}" />
-                                        <h:outputText value="#{favouriteController.current.toDays / 30}"
-                                                      rendered="#{favouriteController.current.toDays >= 30 and favouriteController.current.toDays &lt; 365}">
-                                            <f:convertNumber pattern="0.0" />
-                                        </h:outputText>
-                                        <h:outputText value=" months"
-                                                      rendered="#{favouriteController.current.toDays >= 30 and favouriteController.current.toDays &lt; 365}" />
-                                        <h:outputText value="#{favouriteController.current.toDays} days"
-                                                      rendered="#{favouriteController.current.toDays &lt; 30 and favouriteController.current.toDays > 0}" />
+                                        <h:outputText value=" days" />
                                     </h:panelGroup>
                                 </h:panelGroup>
 
