@@ -12,6 +12,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.ControllerWithPatient;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.PatientDepositController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
@@ -25,6 +26,7 @@ import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BooleanMessage;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
@@ -165,6 +167,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     PharmacySaleController2 pharmacySaleController2;
     @Inject
     PharmacySaleController3 pharmacySaleController3;
+    @Inject
+    private ItemController itemController;
     @EJB
     private ConfigOptionFacade configOptionFacade;
     @EJB
@@ -1836,6 +1840,33 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     }
 
     /**
+     * Autocomplete method for stocks filtered by department type
+     */
+    public List<StockDTO> completeAvailableStockOptimizedDtoFilteredByDepartmentType(String qry) {
+        List<StockDTO> allResults = completeAvailableStockOptimizedDto(qry);
+
+        // If no department type set, return all results
+        if (getPreBill() == null || getPreBill().getDepartmentType() == null) {
+            return allResults;
+        }
+
+        DepartmentType filterType = getPreBill().getDepartmentType();
+
+        // Filter results by department type
+        List<StockDTO> filteredResults = new ArrayList<>();
+        for (StockDTO dto : allResults) {
+            if (dto.getItemId() != null) {
+                Item item = itemFacade.find(dto.getItemId());
+                if (item != null && filterType.equals(item.getDepartmentType())) {
+                    filteredResults.add(dto);
+                }
+            }
+        }
+
+        return filteredResults;
+    }
+
+    /**
      * Inner class to hold search configuration for caching
      */
     private static class SearchConfig {
@@ -2402,6 +2433,39 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 String allergyMsg = pharmacyService.getAllergyMessageForPatient(patient, billItem, allergyListOfPatient);
                 if (!allergyMsg.isEmpty()) {
                     JsfUtil.addErrorMessage(allergyMsg);
+                    return;
+                }
+            }
+        }
+
+        // Department type validation for PreBill-based billing
+        if (getStockDto() != null && getStockDto().getItemId() != null) {
+            Item selectedItem = itemFacade.find(getStockDto().getItemId());
+
+            // Auto-set department type if not already set (first item)
+            if (getPreBill().getDepartmentType() == null) {
+                if (selectedItem.getDepartmentType() != null) {
+                    getPreBill().setDepartmentType(selectedItem.getDepartmentType());
+                } else {
+                    getPreBill().setDepartmentType(DepartmentType.Pharmacy);
+                }
+            }
+
+            // Validate item's department type matches PreBill's department type
+            if (getPreBill().getDepartmentType() != null) {
+                DepartmentType itemDepartmentType = selectedItem.getDepartmentType();
+
+                if (itemDepartmentType != null && !itemDepartmentType.equals(getPreBill().getDepartmentType())) {
+                    JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                            + "Bill is set for " + getPreBill().getDepartmentType().getLabel()
+                            + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
+                    return;
+                }
+
+                // Verify department type is allowed
+                List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+                if (allowedTypes == null || !allowedTypes.contains(getPreBill().getDepartmentType())) {
+                    JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + getPreBill().getDepartmentType().getLabel());
                     return;
                 }
             }
@@ -3068,6 +3132,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         getSaleBill().copy(getPreBill());
         getSaleBill().copyValue(getPreBill());
 
+        // Copy department type from PreBill to Bill
+        if (getPreBill().getDepartmentType() != null) {
+            getSaleBill().setDepartmentType(getPreBill().getDepartmentType());
+        }
+
         getSaleBill().setBillType(BillType.PharmacySale);
         getSaleBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE);
 
@@ -3578,6 +3647,20 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
             return null;
         }
+
+        // Validate department type consistency before settlement
+        if (getPreBill().getDepartmentType() != null && !getPreBill().getBillItems().isEmpty()) {
+            for (BillItem bi : getPreBill().getBillItems()) {
+                if (bi.getItem() != null && bi.getItem().getDepartmentType() != null) {
+                    if (!bi.getItem().getDepartmentType().equals(getPreBill().getDepartmentType())) {
+                        billSettlingStarted = false;
+                        JsfUtil.addErrorMessage("Inconsistent department types detected. All items must belong to the same department type.");
+                        return null;
+                    }
+                }
+            }
+        }
+
         // Pharmacy Sale Validation - Patient and Patient Details
         boolean patientRequired = configOptionApplicationController.getBooleanValueByKey("Patient is required in Pharmacy Retail Sale", false);
         boolean patientRequiredForPharmacySale = patientRequired; // Keep for backward compatibility with code below
@@ -4867,6 +4950,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         //userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
         getPreBill().getBillItems().remove(b.getSearialNo());
 
+        // Clear department type if all items are removed
+        if (getPreBill().getBillItems().isEmpty()) {
+            getPreBill().setDepartmentType(null);
+        }
+
         calculateBillItemsAndBillTotalsOfPreBill();
     }
 
@@ -4883,6 +4971,11 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             //userStockController.removeUserStock(billItem.getTransUserStock(), getSessionController().getLoggedUser());
             getPreBill().getBillItems().remove(billItem);
             iterator.remove();
+        }
+
+        // Clear department type if all items are removed
+        if (getPreBill().getBillItems().isEmpty()) {
+            getPreBill().setDepartmentType(null);
         }
 
         calculateBillItemsAndBillTotalsOfPreBill();
