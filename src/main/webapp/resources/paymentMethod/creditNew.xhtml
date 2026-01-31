@@ -27,7 +27,9 @@
                 placeholder="Company (Type at least 4 letters to search)"
                 itemLabel="#{ix.name}"
                 itemValue="#{ix}"
-                size="10"  >
+                size="10"
+                required="true"
+                requiredMessage="Credit Company is required"  >
 
                 <f:ajax
                     event="itemSelect"
@@ -40,21 +42,27 @@
                 id="polNo"
                 style="width: 100px;"
                 value="#{cc.attrs.paymentMethodData.credit.referralNo}"
-                placeholder="Policy NO" >
+                placeholder="Policy NO"
+                required="true"
+                requiredMessage="Policy NO is required" >
             </p:inputText>
 
             <p:inputText
                 id="refNo"
                 style="width: 100px;"
                 value="#{cc.attrs.paymentMethodData.credit.referenceNo}"
-                placeholder="Reference NO" >
+                placeholder="Reference NO"
+                required="true"
+                requiredMessage="Reference NO is required" >
             </p:inputText>
 
             <p:inputText
                 id="memo"
                 style="width: 300px;"
                 value="#{cc.attrs.paymentMethodData.credit.comment}"
-                placeholder="Memo" >
+                placeholder="Memo"
+                required="true"
+                requiredMessage="Memo is required" >
             </p:inputText>
 
             <p:commandLink

@@ -38,7 +38,13 @@
                                             <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Reported Institution" action="report_lab_by_reported_institution?faces-redirect=true"/>
                                             <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Reported Department" action="report_lab_by_reported_department?faces-redirect=true"/>
 
-                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="OPD Bill Items For Credit Companies" action="#{searchController.toCreateBillItemListForCreditCompany()}"/>
+                                            <p:commandButton 
+                                                actionListener="#{laborataryReportController.resetAllFiltersExceptDateRange()}" 
+                                                ajax="false" 
+                                                class="w-100 ui-button-success mt-1"
+                                                value="OPD Bill Items For Credit Companies" 
+                                                action="#{laborataryReportController.navigateToBillItemListForCreditCompany()}">
+                                            </p:commandButton>
                                         </div>
                                     </h:form>
                                 </p:tab>

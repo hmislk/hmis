@@ -40,16 +40,24 @@
 
                                     </p:datePicker>
                                     <p:spacer height="10" width="5" ></p:spacer>
-                                    <p:commandButton class="ui-button-warning" icon="fas fa-search" ajax="false" action="#{searchController.createInwardProBills()}" value="Search"  />
+                                    <p:commandButton 
+                                        class="ui-button-warning" 
+                                        icon="fas fa-search" 
+                                        ajax="false" 
+                                        action="#{searchController.createInwardProBills()}" 
+                                        value="Search"  />
                                     <p:spacer height="10" width="5" ></p:spacer>
+                                    
                                     <h:outputLabel value="Bill No"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                     <h:outputLabel value="BHT No"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
                                     <h:outputLabel value="Patient Name"/>
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                                    <h:outputLabel value="MRN / PHN No"/>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="w-100"/>
                                     <h:outputLabel value="Patient Phone"/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
                                     <h:outputLabel value="Net Total"/>
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
 

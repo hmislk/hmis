@@ -1156,6 +1156,22 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         }
     }
 
+    @Override
+    public boolean isLastPaymentEntry(ComponentDetail cd) {
+        if (cd == null ||
+            paymentMethodData == null ||
+            paymentMethodData.getPaymentMethodMultiple() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            return false;
+        }
+
+        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        int lastIndex = details.size() - 1;
+        int currentIndex = details.indexOf(cd);
+        return currentIndex != -1 && currentIndex == lastIndex;
+    }
+
     public BilledBill createIndividualBilledBillFormIndividualPreBill(Bill preBill) {
         setPreBill(preBill);
 //        if (errorCheckForSaleBill()) {
@@ -1762,7 +1778,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     public List<Payment> createPaymentsForCancellationsforOPDBill(Bill bill, PaymentMethod pm) {
         System.out.println("createPaymentsForCancellationsforOPDBill");
         System.out.println("bill = " + bill);
-        System.out.println("pm = " + pm);
         List<Payment> ps = new ArrayList<>();
         if (pm == null) {
             Bill originalIndividualBill = bill.getBilledBill();

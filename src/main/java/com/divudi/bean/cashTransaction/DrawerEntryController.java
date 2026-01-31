@@ -114,7 +114,6 @@ public class DrawerEntryController implements Serializable {
 
         // Assign to the class field
         userDrawerEntry = result;
-        System.out.println("userDrawerEntry = " + userDrawerEntry);
     }
 
     public void findAllUsersDrawerDetails() {
@@ -146,7 +145,6 @@ public class DrawerEntryController implements Serializable {
 
         // Assign to the class field
         userDrawerEntry = result;
-        System.out.println("userDrawerEntry = " + userDrawerEntry);
     }
 
     public String navigateToMyDrawerEntry() {

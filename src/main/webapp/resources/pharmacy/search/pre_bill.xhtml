@@ -22,32 +22,32 @@
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
         </h:panelGrid>
-        <p:dataTable rowIndexVar="i"  value="#{searchController.bills}" var="bill" >
+        <p:dataTable 
+            id="tblBills"
+            rowIndexVar="i"  
+            value="#{searchController.bills}" 
+            var="bill"
+            paginator="true"
+            rows="10"
+            paginatorPosition="bottom"
+            paginatorTemplate="{FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+            rowsPerPageTemplate="10,25,50,100" >
             <f:facet name="header">
                 <h:outputLabel value="PRE BILL SEARCH"/>
             </f:facet>
 
             <p:column headerText="BILL NO"  >
-                <h:commandLink action="pharmacy_reprint_bill_pre" value="#{bill.deptId}">
-                    <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+                <h:outputLabel value="#{bill.deptId}"/>
             </p:column>    
 
             <p:column headerText="Retired " >
-                <h:commandLink action="pharmacy_reprint_bill_pre" value="#{bill.retired}">
-                    <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+                <h:outputLabel value="#{bill.retired}"/>
             </p:column>    
 
             <p:column headerText="Billed At"  >
-                <h:commandLink action="pharmacy_reprint_bill_pre" >
-                    <h:outputLabel value="#{bill.createdAt}" >
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                    </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+                <h:outputLabel value="#{bill.createdAt}" >
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                </h:outputLabel>
                 <br/>
                 <h:panelGroup rendered="#{bill.cancelled}" >
                     <h:outputLabel style="color: red;" value="Cancelled at " />
@@ -63,37 +63,24 @@
                 </h:panelGroup>
             </p:column>                 
             <p:column headerText="Billed By" >
-                <h:commandLink action="pharmacy_reprint_bill_pre" >
-                    <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
-                    </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+                <h:outputLabel value="#{bill.creater.webUserPerson.name}"/>
                 <br/>
                 <h:panelGroup rendered="#{bill.cancelled}" >
                     <h:outputLabel style="color: red;" value="Cancelled By " />
-                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
-                    </h:outputLabel>
+                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}"/>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{bill.refunded}" >
                     <h:outputLabel style="color: red;" value="Refunded By " />
-                    <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
-
-                    </h:outputLabel>
+                    <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}"/>
                 </h:panelGroup>
             </p:column>       
             <p:column headerText="Payment Method">
-                <h:commandLink action="pharmacy_reprint_bill_pre" >
-                    <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+                <h:outputLabel value="#{bill.paymentMethod}"/>
             </p:column>                               
             <p:column headerText="Net Value" style="text-align: right;" sortBy="#{bill.netTotal}" >
-                <h:commandLink action="pharmacy_reprint_bill_pre" >
-                    <h:outputLabel value="#{bill.netTotal}" >
-                        <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+                <h:outputLabel value="#{bill.netTotal}" >
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
             </p:column>
 
             <p:column headerText="Comments" >
@@ -101,6 +88,47 @@
                 </h:outputLabel>
                 <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
                 </h:outputLabel>
+            </p:column>
+
+            <p:column id="colActions" headerText="Actions">
+                <div class="btn-group-vertical" role="group" style="width: 100%;">
+                    <p:commandButton 
+                        value="Pre Bill" 
+                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(bill.id)}"
+                        styleClass="ui-button-success btn-sm"
+                        icon="fa fa-eye"
+                        style="margin-bottom: 2px;">
+                    </p:commandButton>
+                    
+                    <p:commandButton 
+                        value="Paid Bill" 
+                        rendered="#{bill.referenceBill ne null}"
+                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(bill.referenceBill.id)}"
+                        styleClass="ui-button-info btn-sm"
+                        icon="fa fa-check-circle"
+                        style="margin-bottom: 2px;">
+                    </p:commandButton>
+
+                    <p:commandButton 
+                        value="Cancelled" 
+                        action="pharmacy_reprint_bill_pre?faces-redirect=true" 
+                        styleClass="ui-button-danger btn-sm"
+                        icon="fa fa-times-circle"
+                        rendered="#{bill.cancelled}"
+                        style="margin-bottom: 2px;">
+                        <f:setPropertyActionListener value="#{bill.cancelledBill}" target="#{pharmacyBillSearch.bill}"/>
+                    </p:commandButton>
+
+                    <p:commandButton 
+                        value="Refunded" 
+                        action="pharmacy_reprint_bill_pre?faces-redirect=true" 
+                        styleClass="ui-button-warning btn-sm"
+                        icon="fa fa-undo"
+                        rendered="#{bill.refunded}"
+                        style="margin-bottom: 2px;">
+                        <f:setPropertyActionListener value="#{bill.refundedBill}" target="#{pharmacyBillSearch.bill}"/>
+                    </p:commandButton>
+                </div>
             </p:column>
         </p:dataTable>
     </cc:implementation>

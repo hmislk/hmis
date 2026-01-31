@@ -12,8 +12,11 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Search Interim Bills" style="height: 100vh" >
-                        <div class="d-flex">
-                            <h:panelGrid columns="1">
+
+
+
+                        <div class="d-flex gap-3">
+                            <div class="col-2">
                                 <h:outputLabel value="From Date"/>
                                 <p:datePicker
                                     value="#{searchController.fromDate}"
@@ -43,24 +46,27 @@
                                     icon="fa-solid fa-search"
                                     ajax="false"
                                     action="#{searchController.createInwardIntrimBills()}"
-                                    value="Search"  />
-
-
+                                    value="Search"  >
+                                </p:commandButton>
+                                
+                                <hr/>
 
                                 <h:outputLabel value="Bill No"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100" />
                                 <h:outputLabel value="BHT No"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" class="w-100"/>
                                 <h:outputLabel value="Patient Name"/>
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="w-100"/>
+                                <h:outputLabel value="MRN / PHN No"/>
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="w-100"/>
                                 <h:outputLabel value="Patient Phone"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" class="w-100"/>
                                 <h:outputLabel value="Total"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" class="w-100"/>
                                 <h:outputLabel value="Net Total"/>
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-                            </h:panelGrid>
-                            <div class="p-1">
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}" class="w-100"/>
+                            </div>
+                            <div class="col-10 ">
                                 <p:dataTable
                                     id="tblBills"
                                     value="#{searchController.bills}"
@@ -130,6 +136,7 @@
                                     </p:column>
                                 </p:dataTable>
                             </div>
+
                         </div>
 
                     </p:panel>

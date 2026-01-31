@@ -100,11 +100,6 @@
                                             maxResults="10"
                                             minQueryLength="3"
                                             >
-                                            <p:ajax
-                                                event="itemSelect"
-                                                process="acAmp"
-                                                listener="#{pharmacyAdjustmentController.fillAmpStocks}"
-                                                update="tblStocks" />
                                             <p:column headerText="Item"  style="padding: 3px;" >
                                                 <h:outputText value="#{amp.name}" />
                                             </p:column>
@@ -290,8 +285,13 @@
                                     <h:outputLabel value="Comment" />
                                     <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"/>
 
-                                    <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false"  class="mt-2 ui-button-warning" icon="fa-solid fa-sliders"
-                                                     action="#{pharmacyAdjustmentController.adjustStockForDepartment()}" />
+                                    <p:commandButton 
+                                        id="btnAdjust"
+                                        value="Make Adjustment" 
+                                        ajax="false" 
+                                        class="mt-2 ui-button-warning" 
+                                        icon="fa-solid fa-sliders"
+                                        action="#{pharmacyAdjustmentController.adjustStockForDepartment()}" />
                                     <p:defaultCommand target="btnAdjust"/>
                                 </p:panel>
                             </div>
@@ -299,7 +299,7 @@
 
                     </p:panel>
 
-                    <p:panel rendered="#{pharmacyAdjustmentController.printPreview}">
+                    <p:panel id="printSection" rendered="#{pharmacyAdjustmentController.printPreview}">
                         <div class="d-flex gap-2 m-2">
                             <p:commandButton
                                 ajax="false"
@@ -317,7 +317,7 @@
                         </div>
 
                         <h:panelGroup id="print">
-                            <ph:adjustmentBill  bill="#{pharmacyAdjustmentController.deptAdjustmentPreBill}" />
+                            <ph:adjustmentBill id="adjustmentBill"  bill="#{pharmacyAdjustmentController.deptAdjustmentPreBill}" />
                         </h:panelGroup>
 
                     </p:panel>

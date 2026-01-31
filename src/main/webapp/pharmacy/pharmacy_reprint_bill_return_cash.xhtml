@@ -26,6 +26,7 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton 
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Cancellation of Pharmacy Refunds Allowed',false)}"
                                 ajax="false" 
                                 value="Cancel"
                                 icon="fa fa-cancel"

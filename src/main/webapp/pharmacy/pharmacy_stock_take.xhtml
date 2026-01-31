@@ -5,57 +5,169 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-    <h:head />
+    <h:head>
+        <title>Pharmacy Stock Take</title>
+    </h:head>
     <h:body>
         <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
             <ui:define name="subcontent">
-                <div class="container-fluid">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2>Pharmacy Stock Take</h2>
-                        </div>
-                        <div class="card-body">
-                            <h:form>
-                                <p:panel header="Filters" styleClass="mb-3">
-                                    <p:panelGrid columns="2" styleClass="w-100" layout="tabular">
-                                        <h:outputLabel for="ins" value="Institution"/>
-                                        <p:selectOneMenu id="ins" class="w-100 " value="#{pharmacyStockTakeController.institution}" filter="true">
-                                            <f:selectItem itemLabel="Select Institution" itemValue="#{null}"/>
-                                            <f:selectItems value="#{sessionController.loggableInstitutions}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
-                                            <p:ajax process="@this" update="cmbDept"/>
+                <h:form>
+                    <p:growl id="growl" life="3000" />
+
+                    <p:panel header="Pharmacy Stock Take" styleClass="mb-3">
+                        <!-- Location Selection Section -->
+                        <div class="mb-4">
+                            <h:outputText value="Location Selection" styleClass="fw-bold d-block mb-3" />
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <p:outputLabel for="ins" value="Institution" styleClass="d-block mb-2"/>
+                                    <p:selectOneMenu id="ins"
+                                                     styleClass="w-100"
+                                                     value="#{pharmacyStockTakeController.institution}"
+                                                     filter="true"
+                                                     filterMatchMode="contains">
+                                        <f:selectItem itemLabel="Select Institution" itemValue="#{null}"/>
+                                        <f:selectItems value="#{sessionController.loggableInstitutions}"
+                                                      var="ins"
+                                                      itemLabel="#{ins.name}"
+                                                      itemValue="#{ins}"/>
+                                        <p:ajax process="@this" update="cmbDept"/>
+                                    </p:selectOneMenu>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <p:outputLabel for="site" value="Site" styleClass="d-block mb-2"/>
+                                    <p:selectOneMenu id="site"
+                                                     styleClass="w-100"
+                                                     value="#{pharmacyStockTakeController.site}"
+                                                     filter="true"
+                                                     filterMatchMode="contains">
+                                        <f:selectItem itemLabel="Select Site" itemValue="#{null}"/>
+                                        <f:selectItems value="#{institutionController.sites}"
+                                                      var="site"
+                                                      itemLabel="#{site.name}"
+                                                      itemValue="#{site}"/>
+                                        <p:ajax process="@this" update="cmbDept"/>
+                                    </p:selectOneMenu>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <p:outputLabel for="dept" value="Department" styleClass="d-block mb-2"/>
+                                    <h:panelGroup id="cmbDept">
+                                        <!-- Component 1: Without Institution and Site -->
+                                        <p:autoComplete
+                                            id="dept"
+                                            rendered="#{pharmacyStockTakeController.institution eq null and pharmacyStockTakeController.site eq null}"
+                                            styleClass="w-100"
+                                            value="#{pharmacyStockTakeController.department}"
+                                            completeMethod="#{departmentController.completeDepartments}"
+                                            var="d"
+                                            itemLabel="#{d.name}"
+                                            itemValue="#{d}"
+                                            forceSelection="true">
+                                            <f:ajax event="itemSelect" execute="@this" render="cmbDept"/>
+                                        </p:autoComplete>
+
+                                        <!-- Component 2: With Site Only -->
+                                        <p:selectOneMenu
+                                            rendered="#{pharmacyStockTakeController.institution eq null and pharmacyStockTakeController.site ne null}"
+                                            styleClass="w-100"
+                                            value="#{pharmacyStockTakeController.department}"
+                                            filterMatchMode="contains"
+                                            filter="true">
+                                            <f:selectItem itemLabel="Select Department" itemValue="#{null}"/>
+                                            <f:selectItems
+                                                value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyStockTakeController.site)}"
+                                                var="d"
+                                                itemLabel="#{d.name}"
+                                                itemValue="#{d}" />
                                         </p:selectOneMenu>
 
-                                        <h:outputLabel value="Department"/>
-                                        <h:panelGroup id="cmbDept">
-                                            <p:selectOneMenu
-                                                styleClass="w-100 form-control"
-                                                value="#{pharmacyStockTakeController.department}"
-                                                filterMatchMode="contains"
-                                                filter="true">
-                                                <f:selectItem itemLabel="Select Department" itemValue="#{null}"/>
-                                                <f:selectItems 
-                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyStockTakeController.institution)}"
-                                                    var="d"
-                                                    itemLabel="#{d.name}"
-                                                    itemValue="#{d}" />
-                                            </p:selectOneMenu>
-                                        </h:panelGroup>
+                                        <!-- Component 3: With Institution Only -->
+                                        <p:selectOneMenu
+                                            rendered="#{pharmacyStockTakeController.institution ne null and pharmacyStockTakeController.site eq null}"
+                                            styleClass="w-100"
+                                            value="#{pharmacyStockTakeController.department}"
+                                            filterMatchMode="contains"
+                                            filter="true">
+                                            <f:selectItem itemLabel="Select Department" itemValue="#{null}"/>
+                                            <f:selectItems
+                                                value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyStockTakeController.institution)}"
+                                                var="d"
+                                                itemLabel="#{d.name}"
+                                                itemValue="#{d}" />
+                                        </p:selectOneMenu>
 
-                                        <p:spacer ></p:spacer>
-                                        <p:commandButton 
-                                            value="Generate Stock Count Bill" 
-                                            action="#{pharmacyStockTakeController.generateStockCountBill}" 
-                                            ajax="false"
-                                            icon="fa fa-calculator"/>
-
-                                    </p:panelGrid>
-                                </p:panel>
-
-
-                            </h:form>
+                                        <!-- Component 4: With Both Institution and Site -->
+                                        <p:selectOneMenu
+                                            rendered="#{pharmacyStockTakeController.institution ne null and pharmacyStockTakeController.site ne null}"
+                                            styleClass="w-100"
+                                            value="#{pharmacyStockTakeController.department}"
+                                            filterMatchMode="contains"
+                                            filter="true">
+                                            <f:selectItem itemLabel="Select Department" itemValue="#{null}"/>
+                                            <f:selectItems
+                                                value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyStockTakeController.institution, pharmacyStockTakeController.site)}"
+                                                var="d"
+                                                itemLabel="#{d.name}"
+                                                itemValue="#{d}" />
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
+
+                        <p:divider />
+
+                        <!-- Stock Configuration Section -->
+                        <div class="mb-4">
+                            <h:outputText value="Stock Configuration" styleClass="fw-bold d-block mb-3" />
+                            <div class="row g-3 align-items-center">
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <p:selectBooleanCheckbox id="includeZeroStock"
+                                                                 value="#{pharmacyStockTakeController.includeZeroStockBatches}">
+                                            <p:ajax update="zeroStockLimit"/>
+                                        </p:selectBooleanCheckbox>
+                                        <p:outputLabel for="includeZeroStock"
+                                                      value="Include Zero Stock Batches"
+                                                      title="Include batches with zero stock in the stock take"/>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <p:outputLabel for="zeroStockLimit"
+                                                  value="Zero Stock Batch Limit per Item"
+                                                  styleClass="d-block mb-2"
+                                                  title="Maximum number of zero stock batches to include per item"/>
+                                    <h:panelGroup id="zeroStockLimit">
+                                        <p:spinner value="#{pharmacyStockTakeController.zeroStockBatchLimit}"
+                                                  min="1"
+                                                  max="50"
+                                                  disabled="#{!pharmacyStockTakeController.includeZeroStockBatches}"
+                                                  styleClass="w-100"
+                                                  title="Enter a value between 1 and 50"/>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p:divider />
+
+                        <!-- Action Section -->
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <p:commandButton
+                                value="Generate Stock Taking Initial Stock Counts"
+                                action="#{pharmacyStockTakeController.generateStockCountBillAsync}"
+                                ajax="false"
+                                icon="fas fa-rocket"
+                                iconPos="left"
+                                styleClass="ui-button-success"
+                                style="min-width: 250px;"
+                                title="Generate stock count bill asynchronously - recommended for large departments"/>
+                        </div>
+                    </p:panel>
+                </h:form>
             </ui:define>
         </ui:composition>
     </h:body>

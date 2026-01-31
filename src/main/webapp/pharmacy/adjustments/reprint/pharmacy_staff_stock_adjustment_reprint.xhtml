@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <span>
+                                    <i class="fas fa-user-tag text-warning me-2"></i>
+                                    Staff Stock Adjustment Receipt
+                                </span>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Back to Search"
+                                        ajax="false"
+                                        action="/pharmacy/adjustments/pharmacy_search_adjustment_bill_item?faces-redirect=true"
+                                        styleClass="ui-button-secondary"
+                                        icon="fas fa-arrow-left"/>
+                                    <p:commandButton
+                                        value="Print"
+                                        styleClass="ui-button-info"
+                                        icon="fas fa-print"
+                                        ajax="false">
+                                        <p:printer target="printArea"/>
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <h:panelGroup id="printArea">
+                            <ph:adjustmentBill_staff_stock bill="#{billSearch.bill}" />
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

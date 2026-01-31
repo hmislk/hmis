@@ -49,6 +49,8 @@
                             <h:panelGrid id="gpDetail" columns="2" class="w-100">
                                 <h:outputText id="lblName" value="Name" ></h:outputText>
                                 <p:inputText autocomplete="off" id="txtName" value="#{dealerController.current.name}" class="w-100" ></p:inputText>
+                                <h:outputText id="lblQBSupplier" value="QB Supplier Name" ></h:outputText>
+                                <p:inputText autocomplete="off" id="txtQBSupplier" value="#{dealerController.current.qbSupplierName}" class="w-100" ></p:inputText>
                                 <h:outputText id="lblInsCode" value="Institution Code" ></h:outputText>
                                 <p:inputText autocomplete="off" id="txtInsCode" value="#{dealerController.current.code}" class="w-100" ></p:inputText>
                                 <h:outputText id="lblCode" value="Code" ></h:outputText>
@@ -57,10 +59,26 @@
                                 <p:inputText autocomplete="off"  value="#{dealerController.current.address}" class="w-100" ></p:inputText>
                                 <h:outputText  value="Phone" ></h:outputText>
                                 <p:inputText autocomplete="off"  value="#{dealerController.current.phone}" class="w-100" ></p:inputText>
+                                <h:outputText id="lblMobileNo" value="Mobile No" ></h:outputText>
+                                <p:inputText autocomplete="off" id="txtMobileNo" value="#{dealerController.current.mobile}" class="w-100" ></p:inputText>
                                 <h:outputText  value="Email" ></h:outputText>
                                 <p:inputText autocomplete="off"  value="#{dealerController.current.email}" class="w-100" ></p:inputText>
+                                <h:outputText id="lblWebSite" value="Website" ></h:outputText>
+                                <p:inputText autocomplete="off" id="txtWebSite" value="#{dealerController.current.web}" class="w-100" ></p:inputText>
                                 <h:outputText  value="Fax" ></h:outputText>
                                 <p:inputText autocomplete="off"  value="#{dealerController.current.fax}" class="w-100" ></p:inputText>
+                                <h:outputText id="lblContactPerson" value="Contact Person Name" ></h:outputText>
+                                <p:inputText autocomplete="off" id="txtContactPerson" value="#{dealerController.current.contactPersonName}" class="w-100" ></p:inputText>
+                                <h:outputText id="lblPaymentCompany" value="Payment Company Name" ></h:outputText>
+                                <p:inputText autocomplete="off" id="txtPaymentCompany" value="#{dealerController.current.paymentCompanyName}" class="w-100" ></p:inputText>
+                                <h:outputText id="lblBank" value="Bank Name" ></h:outputText>
+                                <p:inputText autocomplete="off" id="txtBank" value="#{dealerController.current.bankName}" class="w-100" ></p:inputText>
+                                <h:outputText id="lblBranchname" value="Branch Name" ></h:outputText>
+                                <p:inputText autocomplete="off" id="txtBranchName" value="#{dealerController.current.branchName}" class="w-100" ></p:inputText>
+                                <h:outputText id="lblAcctNo" value="Account No" ></h:outputText>
+                                <p:inputText autocomplete="off" id="txtAcctNo" value="#{dealerController.current.accountNo}" class="w-100" ></p:inputText>
+                                <h:outputText id="lblLegalCompany" value="Legal Company" ></h:outputText>
+                                <p:inputText autocomplete="off" id="txtLegalCompany" value="#{dealerController.current.legalCompany}" class="w-100" ></p:inputText>
                                 <h:outputText value="Status" />
                                 <p:selectOneMenu value="#{dealerController.current.inactive}" class="w-100">
                                     <f:selectItem itemLabel="Active" itemValue="#{false}" />

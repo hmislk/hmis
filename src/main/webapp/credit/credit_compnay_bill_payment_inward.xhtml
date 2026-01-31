@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/payments/pay_index.xhtml"
+                template="/payments/credit_company_pay_index.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -219,10 +219,16 @@
                                                     <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup 
-                                                    id="slip" 
+                                                <h:panelGroup
+                                                    id="slip"
                                                     rendered="#{cashRecieveBillController.current.paymentMethod eq 'Slip'}">
                                                     <pa:slipDetailsAsOnlyPayment paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup
+                                                    id="ewallet"
+                                                    rendered="#{cashRecieveBillController.current.paymentMethod eq 'ewallet'}">
+                                                    <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
                                                 </h:panelGroup>
                                             </h:panelGroup>
                                         </div>
@@ -307,10 +313,10 @@
                             class="ui-button-success m-1">
                         </p:commandButton>
 
-                        <p:commandButton 
-                            value="To Cancel Bill" 
-                            disabled="#{cashRecieveBillController.current.cancelled eq true or cashRecieveBillController.current.refunded eq true}"
-                            ajax="false" 
+                        <p:commandButton
+                            value="To Cancel Bill"
+                            disabled="#{cashRecieveBillController.current.cancelled eq true or cashRecieveBillController.current.refunded eq true or cashRecieveBillController.currentBillACancellationBill}"
+                            ajax="false"
                             action="inpatient_credit_company_bill_cancel"
                             icon="pi pi-times"
                             styleClass="ui-button-danger m-1">
@@ -327,6 +333,7 @@
                     </div>
                     <p:outputLabel class="w-100 text-center bg-danger text-white m-1 p-1" value="This Bill is Cancelled" rendered="#{cashRecieveBillController.current.cancelled eq true}" ></p:outputLabel>
                     <p:outputLabel class="w-100 text-center bg-danger text-white m-1 p-1" value="This Bill is Refunded" rendered="#{cashRecieveBillController.current.refunded eq true}" ></p:outputLabel>
+                    <p:outputLabel class="w-100 text-center bg-warning text-dark m-1 p-1" value="This is a Cancellation Bill - Cannot be Cancelled" rendered="#{cashRecieveBillController.currentBillACancellationBill}" ></p:outputLabel>
 
                     <h:panelGroup id="prints" class="align-center">
 

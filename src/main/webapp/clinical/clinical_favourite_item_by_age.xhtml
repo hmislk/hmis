@@ -20,137 +20,603 @@
                             </h:outputText>
                         </f:facet>
 
-                        <h:panelGrid columns="4" >
-                            <p:outputLabel value="Select Medicine" ></p:outputLabel>
+                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-3 p-3" style="gap: 1rem; flex-wrap: wrap;">
 
-                            <p:autoComplete id="acItem" 
-                                            value="#{favouriteController.item}" 
-                                            forceSelection="true" class="mx-4 w-100" inputStyleClass="w-100"
-                                            completeMethod="#{itemController.completeMedicine}" 
-                                            var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                                <p:column headerText="Item" >
-                                    <h:outputLabel value="#{vt.name}"></h:outputLabel>
-                                </p:column>
-                                <p:ajax event="itemSelect" process="@this" update="tab" />
-                            </p:autoComplete>
-                            
-                            <p:commandButton value="Add New"
-                                             class="ui-button-success mx-4" icon="fas fa-plus"
-                                             onclick="PF('dlg2').show();"
-                                             action="#{favouriteController.prepareAddingFavouriteItem()}" >
-                            </p:commandButton>
-                        </h:panelGrid>
-                        <p:dialog header="Add Favourite Medicine" widgetVar="dlg2" modal="true" height="50%" width="30%">
-                            <h:panelGrid id="tab" columns="3" class="w-75" >
-                                <h:outputText value="Selected Medicine" ></h:outputText>
-                                <h:outputText value=":" ></h:outputText>
-                                <h:outputText class="mx-4 w-75" value="#{favouriteController.item.name}" ></h:outputText>
-                                <h:outputText value="From Age" ></h:outputText>
-                                <h:outputText value=":" ></h:outputText>
-                                <p:inputText class="mx-4 w-75" value="#{favouriteController.current.fromDays}" ></p:inputText>
-                                <h:outputText value="To Age" ></h:outputText>
-                                <h:outputText value=":" ></h:outputText>
-                                <p:inputText class="mx-4 w-75" value="#{favouriteController.current.toDays}" ></p:inputText>
-                                <h:outputText value="Category" ></h:outputText>
-                                <h:outputText value=":" ></h:outputText>
-                                <p:selectOneMenu  class="mx-4 w-75" autoWidth="false"  
-                                                  value="#{favouriteController.current.category}" >
-                                    <f:selectItem itemLabel="Select Category" ></f:selectItem>
-                                    <f:selectItems  value="#{pharmaceuticalItemCategoryController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                            <!-- Medicine Selection Section -->
+                            <h:panelGroup layout="block" styleClass="flex-fill" style="min-width: 300px; max-width: 600px;">
+                                <p:outputLabel value="Select Medicine" styleClass="d-block mb-2 font-weight-bold"></p:outputLabel>
+                                <p:autoComplete id="acItem"
+                                                value="#{favouriteController.item}"
+                                                forceSelection="true"
+                                                styleClass="w-100"
+                                                inputStyleClass="w-100"
+                                                completeMethod="#{itemController.completeMedicineByTypePriority}"
+                                                var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                    <p:column headerText="Item" >
+                                        <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                                    </p:column>
+                                    <p:ajax event="itemSelect" process="@this" update="tab"
+                                            listener="#{favouriteController.onItemSelected}" />
+                                </p:autoComplete>
+                            </h:panelGroup>
+
+                            <!-- Action Buttons Section -->
+                            <h:panelGroup layout="block" styleClass="d-flex" style="gap: 0.75rem; align-items: flex-end;">
+                                <p:commandButton value="Add New"
+                                                 styleClass="ui-button-success"
+                                                 icon="fas fa-plus"
+                                                 process="@this"
+                                                 update="dlgFavioriteMedicines"
+                                                 oncomplete="PF('dlg2').show()"
+                                                 action="#{favouriteController.prepareAddingFavouriteItem()}" >
+                                </p:commandButton>
+
+                                <p:commandButton value="Fill"
+                                                 styleClass="ui-button-info"
+                                                 icon="fas fa-fill-drip"
+                                                 action="#{favouriteController.fillFavouriteMedicines()}"
+                                                 update="favouriteTable">
+                                    <f:setPropertyActionListener target="#{favouriteController.item}" value="#{favouriteController.item}" />
+                                </p:commandButton>
+                            </h:panelGroup>
+
+                        </h:panelGroup>
+                        <p:dialog
+                            id="dlgFavioriteMedicines"
+                            header="Add Favourite Medicine" widgetVar="dlg2" modal="true" width="600px" responsive="true">
+                            <h:panelGrid id="tab" columns="2" styleClass="w-100 p-3" columnClasses="p-2,p-2">
+
+                                <!-- Medicine Information Section -->
+                                <p:outputLabel value="Selected Medicine:" styleClass="font-weight-bold" />
+                                <h:outputText value="#{favouriteController.item.name}" styleClass="text-primary font-weight-bold" />
+
+                                <!-- AMP/VMP Information Section -->
+                                <h:panelGroup rendered="#{favouriteController.selectedItemAmpOrVmp}">
+                                    <p:outputLabel value="Medicine Type:" styleClass="font-weight-bold" />
+
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{favouriteController.selectedItemAmpOrVmp}">
+                                    <h:panelGroup styleClass="bg-info text-white p-2 rounded w-100">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        <h:outputText value="#{favouriteController.item.medicineType}" styleClass="font-weight-bold" />
+                                        <h:outputText value=" - Properties are read-only (taken from medicine definition)" styleClass="small" />
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
+
+                                <!-- Age Range Section -->
+                                <p:outputLabel value="From Age (Days):" for="fromDays" styleClass="font-weight-bold" />
+                                <h:panelGroup>
+                                    <p:inputText id="fromDays" value="#{favouriteController.current.fromDays}"
+                                                 styleClass="w-100 mb-1" placeholder="Enter age in days">
+                                        <p:ajax event="keyup" update="fromAgeDisplay" />
+                                        <p:ajax event="blur" update="fromAgeDisplay" />
+                                    </p:inputText>
+                                    <h:panelGroup id="fromAgeDisplay" layout="block" styleClass="text-muted small mt-1">
+                                        <i class="fas fa-info-circle"></i>
+                                        <h:outputText value=" Approximately: " />
+                                        <h:outputText value="#{favouriteController.current.fromDays / 365}"
+                                                      rendered="#{favouriteController.current.fromDays >= 365}">
+                                            <f:convertNumber pattern="0.0" />
+                                        </h:outputText>
+                                        <h:outputText value=" years"
+                                                      rendered="#{favouriteController.current.fromDays >= 365}" />
+                                        <h:outputText value="#{favouriteController.current.fromDays / 30}"
+                                                      rendered="#{favouriteController.current.fromDays >= 30 and favouriteController.current.fromDays &lt; 365}">
+                                            <f:convertNumber pattern="0.0" />
+                                        </h:outputText>
+                                        <h:outputText value=" months"
+                                                      rendered="#{favouriteController.current.fromDays >= 30 and favouriteController.current.fromDays &lt; 365}" />
+                                        <h:outputText value="#{favouriteController.current.fromDays} days"
+                                                      rendered="#{favouriteController.current.fromDays &lt; 30 and favouriteController.current.fromDays > 0}" />
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <p:outputLabel value="To Age (Days):" for="toDays" styleClass="font-weight-bold" />
+                                <h:panelGroup>
+                                    <p:inputText id="toDays" value="#{favouriteController.current.toDays}"
+                                                 styleClass="w-100 mb-1" placeholder="Enter age in days">
+                                        <p:ajax event="keyup" update="toAgeDisplay" />
+                                        <p:ajax event="blur" update="toAgeDisplay" />
+                                    </p:inputText>
+                                    <h:panelGroup id="toAgeDisplay" layout="block" styleClass="text-muted small mt-1">
+                                        <i class="fas fa-info-circle"></i>
+                                        <h:outputText value=" Approximately: " />
+                                        <h:outputText value="#{favouriteController.current.toDays / 365}"
+                                                      rendered="#{favouriteController.current.toDays >= 365}">
+                                            <f:convertNumber pattern="0.0" />
+                                        </h:outputText>
+                                        <h:outputText value=" years"
+                                                      rendered="#{favouriteController.current.toDays >= 365}" />
+                                        <h:outputText value="#{favouriteController.current.toDays / 30}"
+                                                      rendered="#{favouriteController.current.toDays >= 30 and favouriteController.current.toDays &lt; 365}">
+                                            <f:convertNumber pattern="0.0" />
+                                        </h:outputText>
+                                        <h:outputText value=" months"
+                                                      rendered="#{favouriteController.current.toDays >= 30 and favouriteController.current.toDays &lt; 365}" />
+                                        <h:outputText value="#{favouriteController.current.toDays} days"
+                                                      rendered="#{favouriteController.current.toDays &lt; 30 and favouriteController.current.toDays > 0}" />
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
+
+                                <!-- Category Section -->
+                                <p:outputLabel value="Medicine Category:" for="category" styleClass="font-weight-bold" />
+                                <h:panelGroup>
+                                    <!-- Read-only display for AMP/VMP -->
+                                    <h:outputText value="#{favouriteController.current.category.name}"
+                                                  styleClass="w-100 form-control-plaintext text-muted"
+                                                  rendered="#{favouriteController.selectedItemAmpOrVmp and favouriteController.current.category != null}" />
+                                    <h:outputText value="Not specified from selected medicine"
+                                                  styleClass="w-100 form-control-plaintext text-muted font-italic"
+                                                  rendered="#{favouriteController.selectedItemAmpOrVmp and favouriteController.current.category == null}" />
+
+                                    <!-- Editable dropdown for other types -->
+                                    <p:selectOneMenu id="category" value="#{favouriteController.current.category}"
+                                                     styleClass="w-100" autoWidth="false"
+                                                     rendered="#{not favouriteController.selectedItemAmpOrVmp}">
+                                        <f:selectItem itemLabel="Select Category" />
+                                        <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
+                                                       var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
+
+                                <!-- Dosage Section -->
+                                <p:outputLabel value="Dose:" for="dose" styleClass="font-weight-bold" />
+                                <p:inputText id="dose" value="#{favouriteController.current.dose}"
+                                             styleClass="w-100" placeholder="Enter dose amount" />
+
+                                <p:outputLabel value="Dose Unit:" for="doseUnit" styleClass="font-weight-bold" />
+                                <h:panelGroup>
+                                    <!-- Read-only display for AMP/VMP -->
+                                    <h:outputText value="#{favouriteController.current.doseUnit.name}"
+                                                  styleClass="w-100 form-control-plaintext text-muted"
+                                                  rendered="#{favouriteController.selectedItemAmpOrVmp and favouriteController.current.doseUnit != null}" />
+                                    <h:outputText value="Not specified from selected medicine"
+                                                  styleClass="w-100 form-control-plaintext text-muted font-italic"
+                                                  rendered="#{favouriteController.selectedItemAmpOrVmp and favouriteController.current.doseUnit == null}" />
+
+                                    <!-- Editable dropdown for other types -->
+                                    <p:selectOneMenu id="doseUnit" value="#{favouriteController.current.doseUnit}"
+                                                     styleClass="w-100" autoWidth="false"
+                                                     rendered="#{not favouriteController.selectedItemAmpOrVmp}">
+                                        <f:selectItem itemLabel="Select Dose Unit" />
+                                        <f:selectItems value="#{measurementUnitController.items}"
+                                                       var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
+
+                                <!-- Frequency Section -->
+                                <p:outputLabel value="Frequency:" for="frequency" styleClass="font-weight-bold" />
+                                <p:selectOneMenu id="frequency" value="#{favouriteController.current.frequencyUnit}"
+                                                 styleClass="w-100" autoWidth="false">
+                                    <f:selectItem itemLabel="Select Frequency" />
+                                    <f:selectItems value="#{measurementUnitController.frequencyUnits}"
+                                                   var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
                                 </p:selectOneMenu>
-                                <h:outputText value="Dose" ></h:outputText>
-                                <h:outputText value=":" ></h:outputText>
-                                <p:inputText class="mx-4 w-75" value="#{favouriteController.current.dose}" ></p:inputText>
-                                <h:outputText value="Dose Unit" ></h:outputText>
-                                <h:outputText value=":" ></h:outputText>
-                                <p:selectOneMenu  class="mx-4 w-75" autoWidth="false" value="#{favouriteController.current.doseUnit}" >
-                                    <f:selectItem itemLabel="Select Dose Unit" ></f:selectItem>
-                                    <f:selectItems value="#{measurementUnitController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
+
+                                <!-- Duration Section -->
+                                <p:outputLabel value="Duration:" for="duration" styleClass="font-weight-bold" />
+                                <p:inputText id="duration" value="#{favouriteController.current.duration}"
+                                             styleClass="w-100" placeholder="Enter duration" />
+
+                                <p:outputLabel value="Duration Unit:" for="durationUnit" styleClass="font-weight-bold" />
+                                <p:selectOneMenu id="durationUnit" value="#{favouriteController.current.durationUnit}"
+                                                 styleClass="w-100" autoWidth="false">
+                                    <f:selectItem itemLabel="Select Duration Unit" />
+                                    <f:selectItems value="#{measurementUnitController.durationUnits}"
+                                                   var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
                                 </p:selectOneMenu>
-                                <h:outputText value="Frequency" ></h:outputText>
-                                <h:outputText value=":" ></h:outputText>
-                                <p:selectOneMenu    
-                                    value="#{favouriteController.current.frequencyUnit}" class="mx-4 w-75" >
-                                    <f:selectItem itemLabel="Select Frequency" ></f:selectItem>
-                                    <f:selectItems  value="#{frequencyUnitController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                </p:selectOneMenu>
-                                <h:outputText value="Duration" ></h:outputText>
-                                <h:outputText value=":" ></h:outputText>
-                                <p:inputText  class="mx-4 w-75" value="#{favouriteController.current.duration}" ></p:inputText>
-                                <h:outputText value="Duration Unit" ></h:outputText>
-                                <h:outputText value=":" ></h:outputText>
-                                <p:inputText class="mx-4 w-75" value="#{favouriteController.current.durationUnit}" ></p:inputText>
+
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
+
+                                <!-- Issue Quantity Section -->
+                                <p:outputLabel value="Issue Quantity:" for="issueQty" styleClass="font-weight-bold" />
+                                <p:inputText id="issueQty" value="#{favouriteController.current.issue}"
+                                             styleClass="w-100" placeholder="Enter quantity to issue" />
+
+                                <p:outputLabel value="Issue Unit:" for="issueUnit" styleClass="font-weight-bold" />
+                                <h:panelGroup>
+                                    <!-- Read-only display for AMP/VMP -->
+                                    <h:outputText value="#{favouriteController.current.issueUnit.name}"
+                                                  styleClass="w-100 form-control-plaintext text-muted"
+                                                  rendered="#{favouriteController.selectedItemAmpOrVmp and favouriteController.current.issueUnit != null}" />
+                                    <h:outputText value="Not specified from selected medicine"
+                                                  styleClass="w-100 form-control-plaintext text-muted font-italic"
+                                                  rendered="#{favouriteController.selectedItemAmpOrVmp and favouriteController.current.issueUnit == null}" />
+
+                                    <!-- Editable dropdown for other types -->
+                                    <p:selectOneMenu id="issueUnit" value="#{favouriteController.current.issueUnit}"
+                                                     styleClass="w-100" autoWidth="false"
+                                                     rendered="#{not favouriteController.selectedItemAmpOrVmp}">
+                                        <f:selectItem itemLabel="Select Issue Unit" />
+                                        <f:selectItems value="#{measurementUnitController.issueUnits}"
+                                                       var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+
                             </h:panelGrid>
                             <f:facet name="footer">
-                                <p:commandButton class="ui-button-success" ajax="false" icon="fas fa-plus" value="Add Favourite" action="#{favouriteController.saveFavMedicine}" style="width: 10rem" />
+                                <p:commandButton styleClass="ui-button-success" ajax="false"
+                                                 icon="fas fa-save" value="Save Favourite Medicine"
+                                                 action="#{favouriteController.saveFavMedicine}" />
+                                <p:commandButton styleClass="ui-button-secondary ml-2"
+                                                 icon="fas fa-times" value="Cancel"
+                                                 onclick="PF('dlg2').hide(); return false;" />
                             </f:facet>
                         </p:dialog>
 
+                        <!-- Edit Dialog -->
+                        <p:dialog
+                            id="dlgEditFavioriteMedicines"
+                            header="Edit Favourite Medicine" widgetVar="dlgEdit" modal="true" width="600px" responsive="true"
+                            styleClass="edit-dialog">
+                            <h:panelGrid id="tabEdit" columns="2" styleClass="w-100 p-3" columnClasses="p-2,p-2">
 
+                                <!-- Medicine Information Section -->
+                                <p:outputLabel value="Selected Medicine:" styleClass="font-weight-bold" />
+                                <h:outputText value="#{favouriteController.current.forItem.name}" styleClass="text-primary font-weight-bold" />
 
-                        <p:dataTable value="#{favouriteController.items}" var="fi" >
+                                <!-- AMP/VMP Information Section -->
+                                <h:panelGroup rendered="#{favouriteController.selectedItemAmpOrVmp}">
+                                    <p:outputLabel value="Medicine Type:" styleClass="font-weight-bold" />
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{favouriteController.selectedItemAmpOrVmp}">
+                                    <h:panelGroup styleClass="bg-info text-white p-2 rounded w-100">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        <h:outputText value="#{favouriteController.current.forItem.medicineType}" styleClass="font-weight-bold" />
+                                        <h:outputText value=" - Properties are read-only (taken from medicine definition)" styleClass="small" />
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
+
+                                <!-- Age Range Section -->
+                                <p:outputLabel value="From Age (Days):" for="fromDaysEdit" styleClass="font-weight-bold" />
+                                <h:panelGroup>
+                                    <p:inputText id="fromDaysEdit" value="#{favouriteController.current.fromDays}"
+                                                 styleClass="w-100 mb-1" placeholder="Enter age in days">
+                                        <p:ajax event="keyup" update="fromAgeDisplayEdit" />
+                                        <p:ajax event="blur" update="fromAgeDisplayEdit" />
+                                    </p:inputText>
+                                    <h:panelGroup id="fromAgeDisplayEdit" layout="block" styleClass="text-muted small mt-1">
+                                        <i class="fas fa-info-circle"></i>
+                                        <h:outputText value=" Approximately: " />
+                                        <h:outputText value="#{favouriteController.current.fromDays / 365}"
+                                                      rendered="#{favouriteController.current.fromDays >= 365}">
+                                            <f:convertNumber pattern="0.0" />
+                                        </h:outputText>
+                                        <h:outputText value=" years"
+                                                      rendered="#{favouriteController.current.fromDays >= 365}" />
+                                        <h:outputText value="#{favouriteController.current.fromDays / 30}"
+                                                      rendered="#{favouriteController.current.fromDays >= 30 and favouriteController.current.fromDays &lt; 365}">
+                                            <f:convertNumber pattern="0.0" />
+                                        </h:outputText>
+                                        <h:outputText value=" months"
+                                                      rendered="#{favouriteController.current.fromDays >= 30 and favouriteController.current.fromDays &lt; 365}" />
+                                        <h:outputText value="#{favouriteController.current.fromDays} days"
+                                                      rendered="#{favouriteController.current.fromDays &lt; 30 and favouriteController.current.fromDays > 0}" />
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <p:outputLabel value="To Age (Days):" for="toDaysEdit" styleClass="font-weight-bold" />
+                                <h:panelGroup>
+                                    <p:inputText id="toDaysEdit" value="#{favouriteController.current.toDays}"
+                                                 styleClass="w-100 mb-1" placeholder="Enter age in days">
+                                        <p:ajax event="keyup" update="toAgeDisplayEdit" />
+                                        <p:ajax event="blur" update="toAgeDisplayEdit" />
+                                    </p:inputText>
+                                    <h:panelGroup id="toAgeDisplayEdit" layout="block" styleClass="text-muted small mt-1">
+                                        <i class="fas fa-info-circle"></i>
+                                        <h:outputText value=" Approximately: " />
+                                        <h:outputText value="#{favouriteController.current.toDays / 365}"
+                                                      rendered="#{favouriteController.current.toDays >= 365}">
+                                            <f:convertNumber pattern="0.0" />
+                                        </h:outputText>
+                                        <h:outputText value=" years"
+                                                      rendered="#{favouriteController.current.toDays >= 365}" />
+                                        <h:outputText value="#{favouriteController.current.toDays / 30}"
+                                                      rendered="#{favouriteController.current.toDays >= 30 and favouriteController.current.toDays &lt; 365}">
+                                            <f:convertNumber pattern="0.0" />
+                                        </h:outputText>
+                                        <h:outputText value=" months"
+                                                      rendered="#{favouriteController.current.toDays >= 30 and favouriteController.current.toDays &lt; 365}" />
+                                        <h:outputText value="#{favouriteController.current.toDays} days"
+                                                      rendered="#{favouriteController.current.toDays &lt; 30 and favouriteController.current.toDays > 0}" />
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
+
+                                <!-- Category Section -->
+                                <p:outputLabel value="Medicine Category:" for="categoryEdit" styleClass="font-weight-bold" />
+                                <h:panelGroup>
+                                    <!-- Read-only display for AMP/VMP -->
+                                    <h:outputText value="#{favouriteController.current.category.name}"
+                                                  styleClass="w-100 form-control-plaintext text-muted"
+                                                  rendered="#{favouriteController.selectedItemAmpOrVmp and favouriteController.current.category != null}" />
+                                    <h:outputText value="Not specified from selected medicine"
+                                                  styleClass="w-100 form-control-plaintext text-muted font-italic"
+                                                  rendered="#{favouriteController.selectedItemAmpOrVmp and favouriteController.current.category == null}" />
+
+                                    <!-- Editable dropdown for other types -->
+                                    <p:selectOneMenu id="categoryEdit" value="#{favouriteController.current.category}"
+                                                     styleClass="w-100" autoWidth="false"
+                                                     rendered="#{not favouriteController.selectedItemAmpOrVmp}">
+                                        <f:selectItem itemLabel="Select Category" />
+                                        <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
+                                                       var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
+
+                                <!-- Dosage Section -->
+                                <p:outputLabel value="Dose:" for="doseEdit" styleClass="font-weight-bold" />
+                                <p:inputText id="doseEdit" value="#{favouriteController.current.dose}"
+                                             styleClass="w-100" placeholder="Enter dose amount" />
+
+                                <p:outputLabel value="Dose Unit:" for="doseUnitEdit" styleClass="font-weight-bold" />
+                                <h:panelGroup>
+                                    <!-- Read-only display for AMP/VMP -->
+                                    <h:outputText value="#{favouriteController.current.doseUnit.name}"
+                                                  styleClass="w-100 form-control-plaintext text-muted"
+                                                  rendered="#{favouriteController.selectedItemAmpOrVmp and favouriteController.current.doseUnit != null}" />
+                                    <h:outputText value="Not specified from selected medicine"
+                                                  styleClass="w-100 form-control-plaintext text-muted font-italic"
+                                                  rendered="#{favouriteController.selectedItemAmpOrVmp and favouriteController.current.doseUnit == null}" />
+
+                                    <!-- Editable dropdown for other types -->
+                                    <p:selectOneMenu id="doseUnitEdit" value="#{favouriteController.current.doseUnit}"
+                                                     styleClass="w-100" autoWidth="false"
+                                                     rendered="#{not favouriteController.selectedItemAmpOrVmp}">
+                                        <f:selectItem itemLabel="Select Dose Unit" />
+                                        <f:selectItems value="#{measurementUnitController.items}"
+                                                       var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
+
+                                <!-- Frequency Section -->
+                                <p:outputLabel value="Frequency:" for="frequencyEdit" styleClass="font-weight-bold" />
+                                <p:selectOneMenu id="frequencyEdit" value="#{favouriteController.current.frequencyUnit}"
+                                                 styleClass="w-100" autoWidth="false">
+                                    <f:selectItem itemLabel="Select Frequency" />
+                                    <f:selectItems value="#{measurementUnitController.frequencyUnits}"
+                                                   var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                </p:selectOneMenu>
+
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
+
+                                <!-- Duration Section -->
+                                <p:outputLabel value="Duration:" for="durationEdit" styleClass="font-weight-bold" />
+                                <p:inputText id="durationEdit" value="#{favouriteController.current.duration}"
+                                             styleClass="w-100" placeholder="Enter duration" />
+
+                                <p:outputLabel value="Duration Unit:" for="durationUnitEdit" styleClass="font-weight-bold" />
+                                <p:selectOneMenu id="durationUnitEdit" value="#{favouriteController.current.durationUnit}"
+                                                 styleClass="w-100" autoWidth="false">
+                                    <f:selectItem itemLabel="Select Duration Unit" />
+                                    <f:selectItems value="#{measurementUnitController.durationUnits}"
+                                                   var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                </p:selectOneMenu>
+
+                                <!-- Section Separator -->
+                                <h:outputText value="" styleClass="d-block mt-3" />
+                                <h:outputText value="" styleClass="d-block mt-3" />
+
+                                <!-- Issue Quantity Section -->
+                                <p:outputLabel value="Issue Quantity:" for="issueQtyEdit" styleClass="font-weight-bold" />
+                                <p:inputText id="issueQtyEdit" value="#{favouriteController.current.issue}"
+                                             styleClass="w-100" placeholder="Enter quantity to issue" />
+
+                                <p:outputLabel value="Issue Unit:" for="issueUnitEdit" styleClass="font-weight-bold" />
+                                <h:panelGroup>
+                                    <!-- Read-only display for AMP/VMP -->
+                                    <h:outputText value="#{favouriteController.current.issueUnit.name}"
+                                                  styleClass="w-100 form-control-plaintext text-muted"
+                                                  rendered="#{favouriteController.selectedItemAmpOrVmp and favouriteController.current.issueUnit != null}" />
+                                    <h:outputText value="Not specified from selected medicine"
+                                                  styleClass="w-100 form-control-plaintext text-muted font-italic"
+                                                  rendered="#{favouriteController.selectedItemAmpOrVmp and favouriteController.current.issueUnit == null}" />
+
+                                    <!-- Editable dropdown for other types -->
+                                    <p:selectOneMenu id="issueUnitEdit" value="#{favouriteController.current.issueUnit}"
+                                                     styleClass="w-100" autoWidth="false"
+                                                     rendered="#{not favouriteController.selectedItemAmpOrVmp}">
+                                        <f:selectItem itemLabel="Select Issue Unit" />
+                                        <f:selectItems value="#{measurementUnitController.issueUnits}"
+                                                       var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+
+                            </h:panelGrid>
+                            <f:facet name="footer">
+                                <p:commandButton styleClass="ui-button-warning"
+                                                 icon="fas fa-save" value="Update Favourite Medicine"
+                                                 action="#{favouriteController.updateFavMedicine}"
+                                                 update="favouriteTable"
+                                                 oncomplete="PF('dlgEdit').hide();" />
+                                <p:commandButton styleClass="ui-button-secondary ml-2"
+                                                 icon="fas fa-times" value="Cancel"
+                                                 onclick="PF('dlgEdit').hide(); return false;" />
+                            </f:facet>
+                        </p:dialog>
+
+                        <p:dataTable id="favouriteTable" value="#{favouriteController.items}" var="fi" styleClass="w-100" paginator="true" rows="10" sortBy="#{fi.createdAt}" sortOrder="ascending">
                             <p:column  >
                                 <f:facet name="header" >
+                                    <i class="fas fa-baby mr-1"></i>
                                     <h:outputText value="From Age" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.fromDays}" >
-                                    <f:convertNumber pattern="0.#" />
-                                </h:outputText>
+                                <h:panelGroup>
+                                    <h:outputText value="#{fi.fromDays}" styleClass="font-weight-bold">
+                                        <f:convertNumber pattern="0.#" />
+                                    </h:outputText>
+                                    <h:outputText value=" days" styleClass="text-muted" />
+                                    <h:outputText value=" (" styleClass="text-muted small"
+                                                  rendered="#{fi.fromDays >= 30}" />
+                                    <h:outputText value="#{fi.fromDays / 365}" styleClass="text-muted small"
+                                                  rendered="#{fi.fromDays >= 365}">
+                                        <f:convertNumber pattern="0.0" />
+                                    </h:outputText>
+                                    <h:outputText value=" yrs" styleClass="text-muted small"
+                                                  rendered="#{fi.fromDays >= 365}" />
+                                    <h:outputText value="#{fi.fromDays / 30}" styleClass="text-muted small"
+                                                  rendered="#{fi.fromDays >= 30 and fi.fromDays &lt; 365}">
+                                        <f:convertNumber pattern="0.0" />
+                                    </h:outputText>
+                                    <h:outputText value=" mos" styleClass="text-muted small"
+                                                  rendered="#{fi.fromDays >= 30 and fi.fromDays &lt; 365}" />
+                                    <h:outputText value=")" styleClass="text-muted small"
+                                                  rendered="#{fi.fromDays >= 30}" />
+                                </h:panelGroup>
                             </p:column>
                             <p:column  >
                                 <f:facet name="header" >
+                                    <i class="fas fa-child mr-1"></i>
                                     <h:outputText value="To Age" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.toDays}" >
-                                <f:convertNumber pattern="0.#" />
-                                </h:outputText>
+                                <h:panelGroup>
+                                    <h:outputText value="#{fi.toDays}" styleClass="font-weight-bold">
+                                        <f:convertNumber pattern="0.#" />
+                                    </h:outputText>
+                                    <h:outputText value=" days" styleClass="text-muted" />
+                                    <h:outputText value=" (" styleClass="text-muted small"
+                                                  rendered="#{fi.toDays >= 30}" />
+                                    <h:outputText value="#{fi.toDays / 365}" styleClass="text-muted small"
+                                                  rendered="#{fi.toDays >= 365}">
+                                        <f:convertNumber pattern="0.0" />
+                                    </h:outputText>
+                                    <h:outputText value=" yrs" styleClass="text-muted small"
+                                                  rendered="#{fi.toDays >= 365}" />
+                                    <h:outputText value="#{fi.toDays / 30}" styleClass="text-muted small"
+                                                  rendered="#{fi.toDays >= 30 and fi.toDays &lt; 365}">
+                                        <f:convertNumber pattern="0.0" />
+                                    </h:outputText>
+                                    <h:outputText value=" mos" styleClass="text-muted small"
+                                                  rendered="#{fi.toDays >= 30 and fi.toDays &lt; 365}" />
+                                    <h:outputText value=")" styleClass="text-muted small"
+                                                  rendered="#{fi.toDays >= 30}" />
+                                </h:panelGroup>
                             </p:column>
                             <p:column  >
                                 <f:facet name="header" >
+                                    <i class="fas fa-pills mr-1"></i>
                                     <h:outputText value="Medicine" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.item.name}" ></h:outputText>
+                                <h:outputText value="#{fi.item.name}" styleClass="font-weight-bold text-primary" ></h:outputText>
                             </p:column>
                             <p:column >
                                 <f:facet name="header" >
+                                    <i class="fas fa-tag mr-1"></i>
                                     <h:outputText value="Category" ></h:outputText>
                                 </f:facet>
                                 <h:outputText value="#{fi.category}" ></h:outputText>
                             </p:column>
                             <p:column >
                                 <f:facet name="header" >
-                                    <h:outputText value="Dose" ></h:outputText>
+                                    <i class="fas fa-prescription-bottle mr-1"></i>
+                                    <h:outputText value="Dosage" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.dose}" >
-                                 <f:convertNumber pattern="0.#" />
-                                </h:outputText>
+                                <h:panelGroup>
+                                    <h:outputText value="#{fi.dose}" >
+                                        <f:convertNumber pattern="0.#" />
+                                    </h:outputText>
+                                    <h:outputText value=" " />
+                                    <h:outputText value="#{fi.doseUnit.name}" styleClass="text-muted" />
+                                </h:panelGroup>
                             </p:column>
                             <p:column >
                                 <f:facet name="header" >
-                                    <h:outputText value="Dose Unit" ></h:outputText>
-                                </f:facet>
-                                <h:outputText value="#{fi.doseUnit.name}" ></h:outputText>
-                            </p:column>
-                            <p:column >
-                                <f:facet name="header" >
+                                    <i class="fas fa-clock mr-1"></i>
                                     <h:outputText value="Frequency" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.frequencyUnit}" ></h:outputText>
+                                <h:outputText value="#{fi.frequencyUnit.name}" ></h:outputText>
                             </p:column>
                             <p:column >
                                 <f:facet name="header" >
+                                    <i class="fas fa-calendar-alt mr-1"></i>
                                     <h:outputText value="Duration" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.duration}" >
-                                 <f:convertNumber pattern="0.#" />
-                                </h:outputText>
-                                
+                                <h:panelGroup>
+                                    <h:outputText value="#{fi.duration}" >
+                                        <f:convertNumber pattern="0.#" />
+                                    </h:outputText>
+                                    <h:outputText value=" " />
+                                    <h:outputText value="#{fi.durationUnit.name}" styleClass="text-muted" />
+                                </h:panelGroup>
                             </p:column>
                             <p:column >
                                 <f:facet name="header" >
-                                    <h:outputText value="Duration Unit" ></h:outputText>
+                                    <i class="fas fa-box mr-1"></i>
+                                    <h:outputText value="Issue Quantity" ></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{fi.durationUnit}" ></h:outputText>
+                                <h:panelGroup>
+                                    <h:outputText value="#{fi.issue}" >
+                                        <f:convertNumber pattern="0.#" />
+                                    </h:outputText>
+                                    <h:outputText value=" " />
+                                    <h:outputText value="#{fi.issueUnit.name}" styleClass="text-muted" />
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column style="width: 120px; text-align: center;">
+                                <f:facet name="header">
+                                    <i class="fas fa-cogs mr-1"></i>
+                                    <h:outputText value="Actions" />
+                                </f:facet>
+                                <h:panelGroup>
+                                    <p:commandButton icon="fas fa-edit"
+                                                     class="ui-button-warning mr-1"
+                                                     title="Edit"
+                                                     action="#{favouriteController.prepareEditFavouriteMedicine(fi)}"
+                                                     oncomplete="PF('dlgEdit').show();"
+                                                     update="@(.edit-dialog)" >
+                                        <f:setPropertyActionListener target="#{favouriteController.current}" value="#{fi}" />
+                                    </p:commandButton>
+
+                                    <p:commandButton icon="fas fa-trash"
+                                                     class="ui-button-danger"
+                                                     title="Delete"
+                                                     action="#{favouriteController.removeFavouriteMedicine(fi)}"
+                                                     update="favouriteTable"
+                                                     onclick="return confirm('Are you sure you want to delete this favourite medicine?');" >
+                                        <f:setPropertyActionListener target="#{favouriteController.current}" value="#{fi}" />
+                                    </p:commandButton>
+                                </h:panelGroup>
                             </p:column>
 
                         </p:dataTable>

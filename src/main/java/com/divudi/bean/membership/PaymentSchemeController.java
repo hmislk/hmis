@@ -142,7 +142,8 @@ public class PaymentSchemeController implements Serializable {
 
         if (paymentMethod == PaymentMethod.ewallet) {
             if (paymentMethodData.getEwallet().getInstitution() == null
-                    || paymentMethodData.getEwallet().getNo() == null) {
+                    || paymentMethodData.getEwallet().getReferenceNo() == null
+                    || paymentMethodData.getEwallet().getReferenceNo().trim().isEmpty()) {
                 JsfUtil.addErrorMessage("Please Fill eWallet Reference Number and Bank");
                 return true;
             }
@@ -314,7 +315,7 @@ public class PaymentSchemeController implements Serializable {
             getFacade().edit(paymentScheme);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

@@ -39,6 +39,8 @@ import com.divudi.core.light.common.PrescriptionSummaryReportRow;
 import com.divudi.service.BillAnalyticsService;
 import com.divudi.service.BillService;
 import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.dto.ReferringDoctorRevenueDetailDTO;
+import com.divudi.core.data.dto.ReferringDoctorRevenueSummaryDTO;
 
 import java.io.IOException;
 import javax.inject.Named;
@@ -168,6 +170,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
     private List<Bill> bills;
     private List<BillItem> billItems;
+    private List<ReferringDoctorRevenueDetailDTO> referringDoctorRevenueDetailDtos;
+    private List<ReferringDoctorRevenueSummaryDTO> referringDoctorRevenueSummaryDtos;
     private List<ItemCount> reportLabTestCounts;
     private List<CategoryCount> reportList;
     private List<Institution> collectionCenters;
@@ -1554,6 +1558,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/collectionCenterReports/cc_bill_item_list?faces-redirect=true";
     }
 
+    public String navigateToDashboard() {
+        setReportTemplateFileIndexName("/reports/index.xhtml");
+        return "/reports/dashboard/dashboard?faces-redirect=true";
+    }
+
     private Person person;
 
     public String navigateToPrescriptionListFromPrescriptionSummery(Long personId) {
@@ -2013,6 +2022,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 jpql += " and (ah.bill.insId = :inv or ah.bill.deptId = :inv) ";
                 m.put("inv", invoiceNumber);
             }
+            jpql += " order by ah.id ";
             agentHistories = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         }, CollectionCenterReport.COLLECTION_CENTER_STATEMENT_REPORT, sessionController.getLoggedUser());
     }
@@ -2811,6 +2821,28 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/managementReports/referring_doctor_wise_revenue?faces-redirect=true";
     }
 
+    public String navigateToReferringDoctorWiseRevenueDto() {
+        reportType = "Summary";
+        referringDoctorRevenueDetailDtos = null;
+        referringDoctorRevenueSummaryDtos = null;
+        return "/reports/managementReports/referring_doctor_wise_revenue_dto?faces-redirect=true";
+    }
+
+    public String navigateToOtRoomWiseSergeryCount() {
+
+        return "/reports/managementReports/ot_room_wise_surgery_count?faces-redirect=true";
+    }
+
+    public String navigateToRoomOccupancyReport() {
+        return "/reports/managementReports/room_occupancy_report?faces-redirect=true";
+
+    }
+
+    public String navigateToSugeryStatus() {
+        return "/reports/managementReports/surgery_status";
+
+    }
+
     public String navigateToReferringDoctorWiseRevenue() {
 
         return "/reports/managementReports/re?faces-redirect=true";
@@ -2826,9 +2858,44 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/managementReports/surgery_count_doctor_wise?faces-redirect=true";
     }
 
+    public String navigateToSurgeryCountTypeWise() {
+
+        return "/reports/managementReports/surgery_count_type?faces-redirect=true";
+    }
+
+    public String navigateToAdmissionCountConsultationWise() {
+
+        return "/reports/managementReports/admission_count_consultant_wise?faces-redirect=true";
+    }
+
+    public String navigateToAdmissionCountPaymentTypeWise() {
+
+        return "/reports/managementReports/admission_count_payment_type_wise?faces-redirect=true";
+    }
+
+    public String navigateToManagementHospitalCensusReport() {
+
+        return "/reports/managementReports/hospital_census?faces-redirect=true";
+    }
+
+    public String navigateToROOMOCCUPANCY() {
+
+        return "/reports/managementReports/ROOM_OCCUPANCY?faces-redirect=true";
+    }
+
     public String navigateToOpdWeeklyReport() {
 
         return "/reports/managementReports/opd_weekly?faces-redirect=true";
+    }
+
+    public String navigateToSpecialityDoctorWiseIncome() {
+
+        return "/reports/managementReports/specility_doctor_wise_income_report?faces-redirect=true";
+    }
+
+    public String navigateToSpecialityWiseDemograhicData() {
+
+        return "/reports/statisticsReports/speciality_wise_demographic_data?faces-redirect=true";
     }
 
     public String navigateToLeaveReport() {
@@ -2991,6 +3058,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/HRReports/online_form_status?faces-redirect=true";
     }
 
+    public String navigateToPatientJourney() {
+
+        return "/reports/stastistic_reports/patient_journey?faces-redirect=true";
+    }
+
     public String navigateToAdmissionDischargeReport() {
 
         return "/reports/inpatientReports/admission_discharge_report?faces-redirect=true";
@@ -3004,6 +3076,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     public String navigateToGrnReport() {
 
         return "/reports/inventoryReports/grn_report?faces-redirect=true";
+    }
+
+    public String navigateToGrnReturnVarianceReport() {
+
+        return "/reports/inventoryReports/grn_return_variance_report?faces-redirect=true";
     }
 
     public String navigateToSlowFastNoneMovement() {
@@ -3039,6 +3116,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     public String navigateToIpUnsettledInvoices() {
 
         return "/reports/inpatientReports/ip_unsettled_invoices?faces-redirect=true";
+    }
+
+    public String navigateToRoomChange() {
+
+        return "/reports/inpatientReports/room_change?faces-redirect=true";
     }
 
     public String navigateToconsumption() {
@@ -3082,6 +3164,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 return "/reports/inventoryReports/bht_issue?faces-redirect=true";
             case "Sale ":
                 return "/reports/inventoryReports/opd_sale?faces-redirect=true";
+            case "Add to Stock Bills":
+                return "/reports/inventoryReports/add_to_stock_bills?faces-redirect=true";
             case "Closing Stock":
             case "Opening Stock":
                 return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
@@ -3110,6 +3194,18 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     public String navigateToAdmissionCategoryWiseAdmission() {
 
         return "/reports/inpatientReports/admission_category_wise_admission?faces-redirect=true";
+    }
+
+    public String navigateToAdmissionReport() {
+        return "/reports/inpatientReports/ip_admission_report?faces-redirect=true";
+    }
+
+    public String navigateToIpServiceReport() {
+        return "/reports/inpatientReports/ip_service_report?faces-redirect=true";
+    }
+
+    public String navigateToHospitalCensusReport() {
+        return "/reports/inpatientReports/hospital_census_report?faces-redirect=true";
     }
 
     public String navigateToIncomeBillCountReport() {
@@ -3155,6 +3251,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/financialReports/cash_inward_excess_age?faces-redirect=true";
     }
 
+//    public String navigateToOutsideBillServiceReport(){
+//    
+//        return "/reports/financialReports/outside_bill_service_report?faces-redirect=true";
+//    }
     public String navigateToOutsidePayment() {
 
         return "/reports/financialReports/outside_payment?faces-redirect=true";
@@ -4351,6 +4451,311 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     @Override
     public void setAdmissionType(AdmissionType admissionType) {
         this.admissionType = admissionType;
+    }
+
+    // ==================== DTO-Based Referring Doctor Revenue Report Methods ====================
+    public void createReferringDoctorWiseRevenueReportDto() {
+        reportTimerController.trackReportExecution(() -> {
+            switch (reportType) {
+                case "Detail":
+                    createReferringDoctorWiseRevenueDetailedReportDto();
+                    break;
+                case "Summary":
+                    createReferringDoctorWiseRevenueSummaryReportDto();
+                    break;
+                default:
+                    createReferringDoctorWiseRevenueDetailedReportDto();
+            }
+        }, ManagementReports.REFERRING_DOCTOR_WISE_REVENUE_REPORT, sessionController.getLoggedUser());
+    }
+
+    public void createReferringDoctorWiseRevenueDetailedReportDto() {
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT NEW com.divudi.core.data.dto.ReferringDoctorRevenueDetailDTO(");
+        jpql.append("bi.id, ");
+        jpql.append("bi.bill.id, ");
+        jpql.append("bi.bill.deptId, ");
+        jpql.append("bi.bill.cancelled, ");
+        jpql.append("bi.refunded, ");
+        jpql.append("bi.bill.referredBy.person.name, ");
+        jpql.append("COALESCE(item.name, ''), ");
+        jpql.append("bi.bill.createdAt, ");
+        jpql.append("bi.collectingCentreFee, ");
+        jpql.append("bi.hospitalFee, ");
+        jpql.append("bi.staffFee, ");
+        jpql.append("bi.discount, ");
+        jpql.append("bi.netValue) ");
+        jpql.append("FROM BillItem bi ");
+        jpql.append("LEFT JOIN bi.item item ");
+        jpql.append("WHERE bi.retired = :ret ");
+        jpql.append("AND bi.bill.referredBy IS NOT NULL ");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+
+        if (institution != null) {
+            jpql.append("AND (bi.bill.institution = :ins OR bi.bill.toInstitution = :ins) ");
+            params.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql.append("AND bi.bill.department = :dep ");
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql.append("AND bi.bill.department.site = :site ");
+            params.put("site", site);
+        }
+
+        if (toInstitution != null) {
+            jpql.append("AND bi.bill.toInstitution = :toIns ");
+            params.put("toIns", toInstitution);
+        }
+
+        if (toDepartment != null) {
+            jpql.append("AND bi.bill.toDepartment = :toDep ");
+            params.put("toDep", toDepartment);
+        }
+
+        if (category != null) {
+            jpql.append("AND item.category = :cat ");
+            params.put("cat", category);
+        }
+
+        if (item != null) {
+            jpql.append("AND item = :item ");
+            params.put("item", item);
+        }
+
+        if (type != null && (type.equalsIgnoreCase("cc") || type.equalsIgnoreCase("ip"))) {
+            jpql.append("AND bi.bill.ipOpOrCc = :type ");
+            params.put("type", type);
+        }
+
+        if (type != null && type.equalsIgnoreCase("op")) {
+            jpql.append("AND (bi.bill.ipOpOrCc = :type OR bi.bill.ipOpOrCc IS NULL) ");
+            params.put("type", type);
+        }
+
+        if (type != null && type.equalsIgnoreCase("cc")) {
+            if (collectingCentre != null) {
+                jpql.append("AND bi.bill.collectingCentre = :cc ");
+                params.put("cc", collectingCentre);
+            }
+        } else {
+            collectingCentre = null;
+        }
+
+        if (doctor != null) {
+            jpql.append("AND bi.bill.referredBy = :doc ");
+            params.put("doc", doctor);
+        }
+
+        if (speciality != null) {
+            jpql.append("AND bi.bill.referredBy.speciality = :speci ");
+            params.put("speci", speciality);
+        }
+
+        jpql.append("AND bi.createdAt BETWEEN :fromDate AND :toDate ");
+        jpql.append("ORDER BY bi.bill.referredBy.person.name, bi.bill.createdAt ");
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+
+        referringDoctorRevenueDetailDtos = (List<ReferringDoctorRevenueDetailDTO>) billItemFacade
+                .findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        // Initialize totals
+        hospitalFeeTotal = 0.0;
+        ccFeeTotal = 0.0;
+        staffFeeTotal = 0.0;
+        grossFeeTotal = 0.0;
+        discountTotal = 0.0;
+        netTotal = 0.0;
+
+        if (referringDoctorRevenueDetailDtos != null) {
+            for (ReferringDoctorRevenueDetailDTO dto : referringDoctorRevenueDetailDtos) {
+                hospitalFeeTotal += dto.getHospitalFee() != null ? dto.getHospitalFee() : 0.0;
+                ccFeeTotal += dto.getCollectingCentreFee() != null ? dto.getCollectingCentreFee() : 0.0;
+                staffFeeTotal += dto.getStaffFee() != null ? dto.getStaffFee() : 0.0;
+                discountTotal += dto.getDiscount() != null ? dto.getDiscount() : 0.0;
+                netTotal += dto.getNetValue() != null ? dto.getNetValue() : 0.0;
+            }
+            grossFeeTotal = netTotal + discountTotal;
+        }
+    }
+
+    public void createReferringDoctorWiseRevenueSummaryReportDto() {
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT NEW com.divudi.core.data.dto.ReferringDoctorRevenueSummaryDTO(");
+        jpql.append("bi.bill.referredBy.id, ");
+        jpql.append("bi.bill.referredBy.person.name, ");
+        jpql.append("COALESCE(cc.name, ''), ");
+        jpql.append("COUNT(bi), ");
+        jpql.append("SUM(bi.hospitalFee), ");
+        jpql.append("SUM(bi.collectingCentreFee), ");
+        jpql.append("SUM(bi.staffFee), ");
+        jpql.append("SUM(bi.discount), ");
+        jpql.append("SUM(bi.netValue)) ");
+        jpql.append("FROM BillItem bi ");
+        jpql.append("LEFT JOIN bi.bill.collectingCentre cc ");
+        jpql.append("WHERE bi.retired = :ret ");
+        jpql.append("AND bi.bill.referredBy IS NOT NULL ");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+
+        if (institution != null) {
+            jpql.append("AND (bi.bill.institution = :ins OR bi.bill.toInstitution = :ins) ");
+            params.put("ins", institution);
+        }
+
+        if (department != null) {
+            jpql.append("AND bi.bill.department = :dep ");
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql.append("AND bi.bill.department.site = :site ");
+            params.put("site", site);
+        }
+
+        if (toInstitution != null) {
+            jpql.append("AND bi.bill.toInstitution = :toIns ");
+            params.put("toIns", toInstitution);
+        }
+
+        if (toDepartment != null) {
+            jpql.append("AND bi.bill.toDepartment = :toDep ");
+            params.put("toDep", toDepartment);
+        }
+
+        if (category != null) {
+            jpql.append("AND bi.item.category = :cat ");
+            params.put("cat", category);
+        }
+
+        if (item != null) {
+            jpql.append("AND bi.item = :item ");
+            params.put("item", item);
+        }
+
+        if (type != null && (type.equalsIgnoreCase("cc") || type.equalsIgnoreCase("ip"))) {
+            jpql.append("AND bi.bill.ipOpOrCc = :type ");
+            params.put("type", type);
+        }
+
+        if (type != null && type.equalsIgnoreCase("op")) {
+            jpql.append("AND (bi.bill.ipOpOrCc = :type OR bi.bill.ipOpOrCc IS NULL) ");
+            params.put("type", type);
+        }
+
+        if (type != null && type.equalsIgnoreCase("cc")) {
+            if (collectingCentre != null) {
+                jpql.append("AND cc = :cc ");
+                params.put("cc", collectingCentre);
+            }
+        } else {
+            collectingCentre = null;
+        }
+
+        if (doctor != null) {
+            jpql.append("AND bi.bill.referredBy = :doc ");
+            params.put("doc", doctor);
+        }
+
+        if (speciality != null) {
+            jpql.append("AND bi.bill.referredBy.speciality = :speci ");
+            params.put("speci", speciality);
+        }
+
+        jpql.append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
+        jpql.append("GROUP BY bi.bill.referredBy.id, bi.bill.referredBy.person.name, cc.name ");
+        jpql.append("ORDER BY bi.bill.referredBy.person.name ");
+
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        referringDoctorRevenueSummaryDtos = (List<ReferringDoctorRevenueSummaryDTO>) billItemFacade
+                .findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        // Initialize totals
+        totalCount = 0.0;
+        totalHosFee = 0.0;
+        totalCCFee = 0.0;
+        totalProFee = 0.0;
+        totalDiscount = 0.0;
+        totalNetTotal = 0.0;
+
+        if (referringDoctorRevenueSummaryDtos != null) {
+            for (ReferringDoctorRevenueSummaryDTO dto : referringDoctorRevenueSummaryDtos) {
+                totalCount += dto.getCount() != null ? dto.getCount() : 0L;
+                totalHosFee += dto.getHosFee() != null ? dto.getHosFee() : 0.0;
+                totalCCFee += dto.getCcFee() != null ? dto.getCcFee() : 0.0;
+                totalProFee += dto.getProFee() != null ? dto.getProFee() : 0.0;
+                totalDiscount += dto.getDiscount() != null ? dto.getDiscount() : 0.0;
+                totalNetTotal += dto.getNetTotal() != null ? dto.getNetTotal() : 0.0;
+            }
+        }
+    }
+
+    public List<ReferringDoctorRevenueDetailDTO> getReferringDoctorRevenueDetailDtos() {
+        return referringDoctorRevenueDetailDtos;
+    }
+
+    public void setReferringDoctorRevenueDetailDtos(List<ReferringDoctorRevenueDetailDTO> referringDoctorRevenueDetailDtos) {
+        this.referringDoctorRevenueDetailDtos = referringDoctorRevenueDetailDtos;
+    }
+
+    public List<ReferringDoctorRevenueSummaryDTO> getReferringDoctorRevenueSummaryDtos() {
+        return referringDoctorRevenueSummaryDtos;
+    }
+
+    public void setReferringDoctorRevenueSummaryDtos(List<ReferringDoctorRevenueSummaryDTO> referringDoctorRevenueSummaryDtos) {
+        this.referringDoctorRevenueSummaryDtos = referringDoctorRevenueSummaryDtos;
+    }
+
+    public String getReferringDoctorRevenueExportFileName() {
+        StringBuilder fileName = new StringBuilder("Referring_Doctor_Revenue");
+
+        // Add report type
+        if (reportType != null && !reportType.isEmpty()) {
+            fileName.append("_").append(reportType);
+        }
+
+        // Add date range
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+        if (fromDate != null) {
+            fileName.append("_").append(sdf.format(fromDate));
+        }
+        if (toDate != null) {
+            fileName.append("_to_").append(sdf.format(toDate));
+        }
+
+        // Add institution
+        if (institution != null && institution.getName() != null) {
+            fileName.append("_").append(sanitizeFileName(institution.getName()));
+        }
+
+        // Add site
+        if (site != null && site.getName() != null) {
+            fileName.append("_").append(sanitizeFileName(site.getName()));
+        }
+
+        // Add department
+        if (department != null && department.getName() != null) {
+            fileName.append("_").append(sanitizeFileName(department.getName()));
+        }
+
+        return fileName.toString();
+    }
+
+    private String sanitizeFileName(String name) {
+        if (name == null) {
+            return "";
+        }
+        // Remove or replace characters that are invalid in filenames
+        return name.replaceAll("[^a-zA-Z0-9\\-_]", "_").replaceAll("_+", "_");
     }
 
 }

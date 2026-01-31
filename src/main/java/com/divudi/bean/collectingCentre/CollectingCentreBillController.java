@@ -1000,7 +1000,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 labTestHistoryController.addBillingHistory(ptIx, sessionController.getDepartment());
             }
         } catch (Exception error) {
-            System.out.println("Error = " + error);
         }
 
     }
@@ -2563,7 +2562,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     @Override
     public void listnerForPaymentMethodChange() {
-        // ToDo: Add Logic
+        paymentMethod = PaymentMethod.Agent;
     }
 
     public String getExternalDoctor() {

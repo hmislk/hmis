@@ -160,7 +160,7 @@
                                 </p:column>
                                 <p:column headerText="Quick Links" >
                                     <p:commandButton 
-                                        action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(fm.patient, fm.family.membershipScheme.paymentScheme)}" 
+                                        action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(fm.patient, fm.family.membershipScheme.paymentScheme, fm.family)}"
                                         ajax="false"
                                         styleClass="ui-button-opd"
                                         rendered="#{webUserController.hasPrivilege('OpdBilling')}"
@@ -178,6 +178,7 @@
                                     </p:commandButton>
                                     <p:commandButton 
                                         ajax="false" 
+                                        id="btnNavigateToPharmacyRetailSale"
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy is available for Members',true)}"
                                         icon="fa fa-fw fa-prescription-bottle-alt" 
                                         class="m-1 ui-button-pharmacy"
@@ -186,6 +187,7 @@
                                         title="Pharmacy Retail Sale">
                                     </p:commandButton>
                                     <p:commandButton 
+                                        id="btnNavigateToPharmacyRetailSaleForCashier"
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy is available for Members',true)}"
                                         ajax="false" 
                                         icon="fa fa-fw fa-cash-register" 

@@ -196,59 +196,108 @@
                                             <h:outputLabel value="#{i.categoryName}"></h:outputLabel>
                                         </td>
                                         <td class="column_right">
-                                            <h:outputLabel value="#{i.cashValue}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
+                                            <h:panelGroup rendered="#{i.categoryName eq 'Collection'}">
+                                                <h:outputLabel value="-"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{i.categoryName ne 'Collection'}">
+                                                <h:outputLabel value="#{i.cashValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
                                         </td>
                                         <td class="column_right">
-                                            <h:outputLabel value="#{i.cardValue}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
+                                            <h:panelGroup rendered="#{i.categoryName eq 'Collection'}">
+                                                <h:outputLabel value="-"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{i.categoryName ne 'Collection'}">
+                                                <h:outputLabel value="#{i.cardValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
                                         </td>
                                         <td class="column_right">
-                                            <h:outputLabel value="#{i.agentValue}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
+                                            <h:panelGroup rendered="#{i.categoryName eq 'Collection'}">
+                                                <h:outputLabel value="-"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{i.categoryName ne 'Collection'}">
+                                                <h:outputLabel value="#{i.agentValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
                                         </td>
                                         <td class="column_right">
-                                            <h:outputLabel value="#{i.onlineSettlementValue}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
+                                            <h:panelGroup rendered="#{i.categoryName eq 'Collection'}">
+                                                <h:outputLabel value="-"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{i.categoryName ne 'Collection'}">
+                                                <h:outputLabel value="#{i.onlineSettlementValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
                                         </td>
                                         <td class="column_right">
-                                            <h:outputLabel value="#{i.creditValue}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
+                                            <h:panelGroup rendered="#{i.categoryName eq 'Collection'}">
+                                                <h:outputLabel value="-"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{i.categoryName ne 'Collection'}">
+                                                <h:outputLabel value="#{i.creditValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
                                         </td>
                                         <td class="column_right">
-                                            <h:outputLabel value="#{i.grossTotal}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
+                                            <h:panelGroup rendered="#{i.categoryName eq 'Collection'}">
+                                                <h:outputLabel value="-"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{i.categoryName ne 'Collection'}">
+                                                <h:outputLabel value="#{i.grossTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
                                         </td>
                                         <td class="column_right">
-                                            <h:outputLabel value="#{-i.totalBillsRefund}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
+                                            <h:panelGroup rendered="#{i.categoryName eq 'Collection'}">
+                                                <h:outputLabel value="-"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{i.categoryName ne 'Collection'}">
+                                                <h:outputLabel value="#{-i.totalBillsRefund}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
                                         </td>
                                         <td class="column_right">
-                                            <h:outputLabel value="#{-i.totalBillsCancel}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
+                                            <h:panelGroup rendered="#{i.categoryName eq 'Collection'}">
+                                                <h:outputLabel value="-"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{i.categoryName ne 'Collection'}">
+                                                <h:outputLabel value="#{-i.totalBillsCancel}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
                                         </td>
                                         <td class="column_right">
-                                            <h:outputLabel value="#{i.totalBillsDiscount}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
+                                            <h:panelGroup rendered="#{i.categoryName eq 'Collection'}">
+                                                <h:outputLabel value="-"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{i.categoryName ne 'Collection'}">
+                                                <h:outputLabel value="#{i.totalBillsDiscount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
                                         </td>
                                         <td class="column_right">
-                                            <h:outputLabel value="#{i.netTotal}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
+                                            <h:panelGroup rendered="#{i.categoryName eq 'Collection'}">
+                                                <h:outputLabel value="-"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{i.categoryName ne 'Collection'}">
+                                                <h:outputLabel value="#{i.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
                                         </td>
                                     </tr>
                                 </ui:repeat>
-
-
+                                
                             </tbody>
                         </table>
                     </div>

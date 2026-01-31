@@ -31,21 +31,21 @@
             </f:facet>
 
             <p:column headerText="GRN Return No" >
-                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" value="#{bill.deptId}">
+                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true" value="#{bill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyReturnwithouttresing.printBill}"/>
                     <f:setPropertyActionListener value="true" target="#{pharmacyReturnwithouttresing.billPreview}"/>
                 </h:commandLink>
-            </p:column> 
+            </p:column>
             <p:column headerText="Delaor Name" >
-                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" value="#{bill.toInstitution.name}">
+                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true" value="#{bill.toInstitution.name}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyReturnwithouttresing.printBill}"/>
                     <f:setPropertyActionListener value="true" target="#{pharmacyReturnwithouttresing.billPreview}"/>
                 </h:commandLink>
             </p:column>
             <p:column headerText="Billed At"  >
-                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" >
+                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true" >
                     <h:outputLabel value="#{bill.createdAt}" >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                     </h:outputLabel>
@@ -65,9 +65,9 @@
                         <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
                     </h:outputLabel>
                 </h:panelGroup>
-            </p:column>                 
+            </p:column>
             <p:column headerText="Billed By" >
-                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" >
+                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true" >
                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                     </h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyReturnwithouttresing.printBill}"/>
@@ -93,7 +93,7 @@
                 </h:commandLink>
             </p:column>                               -->
             <p:column headerText="Net Return Value" style="text-align: right;"  >
-                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" >
+                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true" >
                     <h:outputLabel value="#{bill.netTotal}" >
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
@@ -101,9 +101,9 @@
                     <f:setPropertyActionListener value="true" target="#{pharmacyReturnwithouttresing.billPreview}"/>
                 </h:commandLink>
             </p:column>
-            
+
             <p:column headerText="Retail Sale Value" style="text-align: right;"  >
-                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing" >
+                <h:commandLink action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true" >
                     <h:outputLabel value="#{bill.pharmacyBill.saleValue}" >
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>

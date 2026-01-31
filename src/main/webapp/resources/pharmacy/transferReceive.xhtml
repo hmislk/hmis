@@ -10,6 +10,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+        <cc:attribute name="duplicate" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -17,106 +18,101 @@
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
         <div>
 
-<!--            <table style="width: 100%; border-collapse: collapse; font-size: 10pt !important;">-->
-<!--                &lt;!&ndash; Institution Details &ndash;&gt;-->
-<!--                <tr>-->
-<!--                    <td colspan="2" style="text-align: center; font-weight: bold;">-->
-<!--                        <h:outputLabel value="#{cc.attrs.bill.creater.department.printingName}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                <tr>-->
-<!--                    <td colspan="2" style="text-align: center;">-->
-<!--                        <h:outputLabel value="#{cc.attrs.bill.creater.department.address}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                <tr>-->
-<!--                    <td colspan="2" style="text-align: center;">-->
-<!--                        <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1}"/>-->
-<!--                        <h:outputLabel value=" / " rendered="#{not empty cc.attrs.bill.creater.department.telephone2}"/>-->
-<!--                        <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone2}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                <tr>-->
-<!--                    <td colspan="2" style="text-align: center;">-->
-<!--                        <h:outputLabel value="Fax: #{cc.attrs.bill.creater.department.fax}"-->
-<!--                                       rendered="#{not empty cc.attrs.bill.creater.department.fax}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                <tr>-->
-<!--                    <td colspan="2" style="text-align: center;">-->
-<!--                        <h:outputLabel value="Email: #{cc.attrs.bill.creater.department.email}"-->
-<!--                                       rendered="#{not empty cc.attrs.bill.creater.department.email}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
+            <table style="width: 100%; border-collapse: collapse; font-size: 10pt !important;">
+                <!-- Institution Details -->
+                <tr>
+                    <td colspan="2" style="text-align: center; font-weight: bold;">
+                        <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <h:outputLabel value="#{cc.attrs.bill.creater.department.address}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1}" />
+                        <h:outputLabel value=" / " rendered="#{not empty cc.attrs.bill.creater.department.telephone2}" />
+                        <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone2}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <h:outputLabel value="Fax: #{cc.attrs.bill.creater.department.fax}" rendered="#{not empty cc.attrs.bill.creater.department.fax}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <h:outputLabel value="Email: #{cc.attrs.bill.creater.department.email}" rendered="#{not empty cc.attrs.bill.creater.department.email}" />
+                    </td>
+                </tr>
 
-<!--                &lt;!&ndash; Bill Heading &ndash;&gt;-->
-<!--                <tr>-->
-<!--                    <td colspan="2"-->
-<!--                        style="text-align: center; font-size: 1.2em; text-decoration: underline;font-weight: bold;">-->
-<!--                        <h:outputLabel value="Transfer Receive Note"/>-->
-<!--                        <h:outputLabel value="**Cancelled**" style="color: red;"-->
-<!--                                       rendered="#{cc.attrs.bill.billedBill.cancelled eq true}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                &lt;!&ndash; Bill Details &ndash;&gt;-->
-<!--                <tr>-->
-<!--                    <td style="width: 50%; padding: 1px;">-->
-<!--                        <h:outputLabel value="Location From: #{cc.attrs.bill.fromDepartment.name}"/>-->
-<!--                    </td>-->
-<!--                    <td style="width: 50%; padding: 1px;">-->
-<!--                        <h:outputLabel value="Location To: #{cc.attrs.bill.department.name}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                <tr>-->
-<!--                    <td style="padding: 1px;">-->
-<!--                        <h:outputLabel value="Received Person: #{cc.attrs.bill.creater.webUserPerson.name}"/>-->
-<!--                    </td>-->
-<!--                    <td style="padding: 1px;">-->
-<!--                        <h:outputLabel-->
-<!--                            value="Issued Person: #{cc.attrs.bill.backwardReferenceBill.creater.webUserPerson.name}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                <tr>-->
-<!--                    <td style="padding: 1px;">-->
-<!--                        <h:outputLabel value="Receive No: #{cc.attrs.bill.deptId}"/>-->
-<!--                    </td>-->
-<!--                    <td style="padding: 1px;">-->
-<!--                        <h:outputLabel value="Issue No: #{cc.attrs.bill.backwardReferenceBill.deptId}"/>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--                <tr>-->
-<!--                    <td style="padding: 1px;">-->
-<!--                        <h:panelGroup>-->
-<!--                            <h:outputLabel value="Received Time: &nbsp;"/>-->
-<!--                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">-->
-<!--                                <f:convertDateTime pattern="dd/MM/yy  &nbsp; hh:mm a"/>-->
-<!--                            </h:outputLabel>-->
-<!--                        </h:panelGroup>-->
-<!--                    </td>-->
-<!--                    <td style="padding: 1px;">-->
-<!--                        <h:panelGroup>-->
-<!--                            <h:outputLabel value="Issue Time: &nbsp;"/>-->
-<!--                            <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.createdAt}">-->
-<!--                                <f:convertDateTime pattern="dd/MM/yy  &nbsp; hh:mm a"/>-->
-<!--                            </h:outputLabel>-->
-<!--                        </h:panelGroup>-->
-<!--                    </td>-->
-<!--                </tr>-->
-<!--            </table>-->
+                <!-- Bill Heading -->
+                <tr>
+                    <td colspan="2" style="text-align: center; font-size: 1.2em; text-decoration: underline;font-weight: bold;">
+                        <h:outputLabel value="Transfer Receive Note" />
+                        <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                        <h:outputLabel value="**Cancelled**" style="color: red;" rendered="#{cc.attrs.bill.billedBill.cancelled eq true}" />
+                    </td>
+                </tr>
+                <!-- Bill Details -->
+                <tr>
+                    <td style="width: 50%; padding: 1px;">
+                        <h:outputLabel value="Location From : #{cc.attrs.bill.fromDepartment.name}" />
+                    </td>
+                    <td style="width: 50%; padding: 1px;">
+                        <h:outputLabel value="Location To : #{cc.attrs.bill.toDepartment.name}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 1px;">
+                        <h:outputLabel value="Issued Person : #{cc.attrs.bill.referenceBill.creater.webUserPerson.name} - #{cc.attrs.bill.referenceBill.creater.staff.code}" />
+                    </td>
+                    <td style="padding: 1px;">
+                        <h:outputLabel value="Received Person : #{cc.attrs.bill.creater.name} - #{cc.attrs.bill.creater.staff.code}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 1px;">
+                        <h:outputLabel value="Issued No : #{cc.attrs.bill.referenceBill.deptId}" />
+                    </td>
+                    <td style="padding: 1px;">
+                        <h:outputLabel value="Receive No : #{cc.attrs.bill.deptId}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 1px;">
+                        <h:panelGroup>
+                            <h:outputLabel value="Issued Date Time : &nbsp;" />
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}">
+                                <f:convertDateTime pattern="dd/MM/yy  hh:mm a" />
+                            </h:outputLabel>
+                        </h:panelGroup>
+                    </td>
+                    <td style="padding: 1px;">
+                        <h:panelGroup>
+                            <h:outputLabel value="Received Date Time : &nbsp;" />
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                                <f:convertDateTime pattern="dd/MM/yy  hh:mm a" />
+                            </h:outputLabel>
+                        </h:panelGroup>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 1px;">
+                        <h:outputLabel value="Transporter: #{cc.attrs.bill.referenceBill.toStaff.person.name}" />
+                    </td>
+                    <td></td>
+                </tr>
+            </table>
 
-            <div class="receipt-bill-details">
-                <h:outputText
-                        value="#{transferReceiveController.fillHeaderDataOfTransferReceiveNote(configOptionApplicationController.getLongTextValueByKey('Transfer Receive Note Header'), cc.attrs.bill)}"
-                        escape="false">
-                </h:outputText>
-            </div>
-
-            <div>
+            <div class="mt-2">
 
                 <p:dataTable
                     rowIndexVar="rowIndex"
                     styleClass="no-border-table compact-table"
-                    style="border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '10pt')}!Important; line-height: 1.1 !important;"
+                    style=" border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '10pt')}!Important; line-height: 1.1 !important;"
                     value="#{cc.attrs.bill.billItems}" sortBy="#{bip.searialNo}" var="bip">
 
                     <p:column
@@ -169,7 +165,7 @@
                         </h:outputLabel>
                     </p:column>
 
-                    
+
                     <p:column
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase Rate', false) and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
                         width="4em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">
@@ -180,7 +176,7 @@
                             <f:convertNumber pattern="#0.00"/>
                         </h:outputLabel>
                     </p:column>
-                    
+
                     <p:column
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase Value', false) and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}"
                         width="4em" class="text-end" style="margin: 0px; padding: 1px 2px; line-height: 1.1;">

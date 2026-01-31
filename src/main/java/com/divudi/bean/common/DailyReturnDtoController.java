@@ -670,13 +670,8 @@ public class DailyReturnDtoController implements Serializable {
                 if (bi.getPaymentMethod() != null && 
                     bi.getPaymentMethod().getPaymentType() == com.divudi.core.data.PaymentType.CREDIT) {
                     creditItemCount++;
-                    System.out.println("DEBUG Credit Item #" + creditItemCount + ": Category=" + bi.getCategoryName() + 
-                        ", Item=" + bi.getItemName() + ", Qty=" + bi.getQty() + 
-                        ", HospitalFee=" + bi.getHospitalFee() + ", ProfessionalFee=" + bi.getProfessionalFee() + 
-                        ", NetValue=" + bi.getNetValue() + ", BillClassType=" + bi.getBillClassType());
                 }
             }
-            System.out.println("DEBUG Credit: Total CREDIT items found: " + creditItemCount);
             for (BillItemDetailDTO bi : opdBillItemDtos) {
                 // Skip null payment method or NONE payment type
                 if (bi.getPaymentMethod() == null || 
@@ -734,9 +729,6 @@ public class DailyReturnDtoController implements Serializable {
                 // Use absolute quantity with modifier (like original getQtyAbsolute() * qtyModifier)
                 long quantity = (long) (Math.abs(bi.getQty()) * qtyModifier);
                 
-                System.out.println("DEBUG Credit: After processing - Item: " + bi.getItemName() + 
-                    ", OriginalQty: " + bi.getQty() + ", QtyModifier: " + qtyModifier + ", FinalQuantity: " + quantity +
-                    ", HospitalFee: " + hospitalFee + ", StaffFee: " + staffFee + ", NetValue: " + netValue);
                 
                 // Respect the professional fee checkbox like normal OPD collection
                 if (withProfessionalFee) {
@@ -752,13 +744,11 @@ public class DailyReturnDtoController implements Serializable {
                 
                 // Update individual row totals - respect the withProfessionalFee setting for row display
                 if (withProfessionalFee) {
-                    System.out.println("DEBUG Credit: With ProfFee - updating row with professionalFee = " + staffFee + ", netValue = " + netValue);
                     updateDtoRow(categoryRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
                     updateDtoRow(itemRow, quantity, grossValue, hospitalFee, discount, staffFee, netValue);
                 } else {
-                    // When professional fee is disabled, show 0.00 for professional fee in rows
-                    System.out.println("DEBUG Credit: Without ProfFee - updating row with professionalFee = 0.0, hospitalFee = " + hospitalFee);
-                    updateDtoRow(categoryRow, quantity, grossValue, hospitalFee, discount, 0.0, hospitalFee - discount);
+// When professional fee is disabled, show 0.00 for professional fee in rows
+                                        updateDtoRow(categoryRow, quantity, grossValue, hospitalFee, discount, 0.0, hospitalFee - discount);
                     updateDtoRow(itemRow, quantity, grossValue, hospitalFee, discount, 0.0, hospitalFee - discount);
                 }
             }
@@ -779,13 +769,11 @@ public class DailyReturnDtoController implements Serializable {
         }
         
         opdCreditBundle.setRows(allRows);
+        // Debug: Print all final rows
         
         // Debug: Print all final rows
         System.out.println("DEBUG Credit Final Rows: " + allRows.size() + " total rows");
         for (DailyReturnRowDTO row : allRows) {
-            System.out.println("DEBUG Credit Row: Category='" + row.getCategoryName() + "', Item='" + row.getItemName() + 
-                "', Count=" + row.getItemCount() + ", HospitalFee=" + row.getItemHospitalFee() + 
-                ", ProfessionalFee=" + row.getItemProfessionalFee() + ", NetTotal=" + row.getItemNetTotal());
         }
         
         // Use the grand totals (not sum of row totals)
@@ -800,9 +788,6 @@ public class DailyReturnDtoController implements Serializable {
         opdCreditBundle.setDiscount(totalDiscount);
         opdCreditBundle.setCount(totalQuantity);
         
-        System.out.println("DEBUG Credit Bundle Totals: Total=" + totalOpdServiceCollectionCredit + 
-            ", HospitalTotal=" + totalHospitalFee + ", StaffTotal=" + 
-            (withProfessionalFee ? totalStaffFee : 0.0) + ", Count=" + totalQuantity);
         
         return opdCreditBundle;
     }
@@ -826,7 +811,6 @@ public class DailyReturnDtoController implements Serializable {
         
         // Debug logging
         if (professionalFee != 0.0) {
-            System.out.println("DEBUG updateDtoRow: Adding professionalFee=" + professionalFee + " to row. New total: " + row.getItemProfessionalFee());
         }
     }
     
@@ -845,12 +829,10 @@ public class DailyReturnDtoController implements Serializable {
         if (ccBillDtos != null) {
             int processedCount = 0;
             for (DailyReturnDetailDTO bill : ccBillDtos) {
-                System.out.println("DEBUG: CC Bill - BillNumber: " + bill.getBillNumber() + ", NetTotal: " + bill.getNetTotal() + ", BillType: " + bill.getBillType() + ", Dept: " + bill.getDepartmentName());
                 
                 // Skip null payment method or NONE payment type
                 if (bill.getPaymentMethod() == null || 
                     bill.getPaymentMethod().getPaymentType() == com.divudi.core.data.PaymentType.NONE) {
-                    System.out.println("DEBUG: CC Bill - SKIPPED due to null/NONE payment method");
                     continue;
                 }
                 processedCount++;
@@ -883,7 +865,6 @@ public class DailyReturnDtoController implements Serializable {
                 totalCcCollection += netTotal;
                 totalCount++;
             }
-            System.out.println("DEBUG: CC Collection - processed " + processedCount + " Bills");
         }
         
         ccBundle.setRows(allRows);
@@ -894,7 +875,6 @@ public class DailyReturnDtoController implements Serializable {
         ccBundle.setDiscount(0.0); // No discounts for CC bills
         ccBundle.setCount(totalCount);
         
-        System.out.println("DEBUG: CC Collection - final totals: " + totalCcCollection + ", rows: " + allRows.size());
         
         return ccBundle;
     }
@@ -1035,7 +1015,6 @@ public class DailyReturnDtoController implements Serializable {
         if (cardPaymentDtos != null) {
             int processedCount = 0;
             for (PaymentDetailDTO payment : cardPaymentDtos) {
-                System.out.println("DEBUG: Card Payment - BillNumber: " + payment.getBillNumber() + ", PaidValue: " + payment.getPaidValue() + ", CardRef: " + payment.getCreditCardRefNo() + ", Bank: " + payment.getBankName());
                 
                 processedCount++;
                 
@@ -1066,7 +1045,6 @@ public class DailyReturnDtoController implements Serializable {
                 totalCardPayments += paidValue;
                 totalCount++;
             }
-            System.out.println("DEBUG: Card Payments - processed " + processedCount + " payments");
         }
         
         bundle.setReportTemplateRows(allRows);
@@ -1076,7 +1054,6 @@ public class DailyReturnDtoController implements Serializable {
         bundle.setDiscount(0.0);
         bundle.setCount(totalCount);
         
-        System.out.println("DEBUG: Card Payments - final totals: " + totalCardPayments + ", rows: " + allRows.size());
         
         return bundle;
     }

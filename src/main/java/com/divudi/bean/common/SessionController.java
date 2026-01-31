@@ -13,8 +13,10 @@ import com.divudi.bean.cashTransaction.DenominationController;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.channel.BookingController;
 import com.divudi.bean.collectingCentre.CourierController;
+import com.divudi.bean.lab.LaboratoryDoctorDashboardController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.Icon;
 import com.divudi.core.data.InstitutionType;
 import static com.divudi.core.data.LoginPage.CHANNELLING_QUEUE_PAGE;
 import static com.divudi.core.data.LoginPage.CHANNELLING_TV_DISPLAY;
@@ -160,7 +162,11 @@ public class SessionController implements Serializable, HttpSessionListener {
     private PharmacySaleController pharmacySaleController;
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
-    // </editor-fold>  
+    @Inject
+    private LaboratoryDoctorDashboardController laboratoryDoctorDashboardController;
+    @Inject
+    private UserSettingsController userSettingsController;
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
     private WebUser loggedUser = null;
@@ -437,22 +443,91 @@ public class SessionController implements Serializable, HttpSessionListener {
             return;
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Allow Pharmacy Items In Pharmacy Transactions for " + getDepartment().getName(), true)) {
-            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Pharmacy);
-        }
-        if (configOptionApplicationController.getBooleanValueByKey("Allow Lab Items In Pharmacy Transactions for " + getDepartment().getName(), false)) {
-            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Lab);
-        }
-        if (configOptionApplicationController.getBooleanValueByKey("Allow Store Items In Pharmacy Transactions for " + getDepartment().getName(), false)) {
-            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Store);
-        }
-        if (configOptionApplicationController.getBooleanValueByKey("Allow Etu Items In Pharmacy Transactions for " + getDepartment().getName(), false)) {
-            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Etu);
-        }
-        if (configOptionApplicationController.getBooleanValueByKey("Allow Theatre Items In Pharmacy Transactions for " + getDepartment().getName(), false)) {
-            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Theatre);
+        // Enhanced logic with backwards compatibility and smart defaults
+        for (DepartmentType depType : DepartmentType.values()) {
+            if (isDepartmentTypeAllowedForPharmacyTransactions(depType)) {
+                availableDepartmentTypesForPharmacyTransactions.add(depType);
+            }
         }
     }
+
+    /**
+     * Determines if a department type is allowed for pharmacy transactions.
+     * Uses hierarchical configuration checking:
+     * 1. Department-specific config (backwards compatibility)
+     * 2. Department-type-based config
+     * 3. Smart defaults: Pharmacy=true, Store=true, Others=false
+     */
+    private boolean isDepartmentTypeAllowedForPharmacyTransactions(DepartmentType departmentType) {
+        if (departmentType == null || getDepartment() == null) {
+            return false;
+        }
+
+        String itemTypeName = getItemTypeNameForDepartmentType(departmentType);
+        if (itemTypeName == null) {
+            return false;
+        }
+
+        // Step 1: Check department-specific configuration (existing behavior)
+        String departmentSpecificKey = "Allow " + itemTypeName + " Items In Pharmacy Transactions for " + getDepartment().getName();
+        Boolean departmentSpecificValue = configOptionApplicationController.getBooleanValueByKey(departmentSpecificKey, true);
+        if (departmentSpecificValue != null) {
+            return departmentSpecificValue;
+        }
+
+        // Step 2: Check department-type-based configuration (new)
+        if (getDepartment().getDepartmentType() != null) {
+            String departmentTypeKey = "Allow " + itemTypeName + " Items In Pharmacy Transactions for " + getDepartment().getDepartmentType().name() + " Departments";
+            Boolean departmentTypeValue = configOptionApplicationController.getBooleanValueByKey(departmentTypeKey, true);
+            if (departmentTypeValue != null) {
+                return departmentTypeValue;
+            }
+        }
+
+        // Step 3: Apply smart defaults based on department type
+        return getSmartDefaultForDepartmentType(departmentType);
+    }
+
+    /**
+     * Returns the item type name for configuration keys based on department type.
+     */
+    private String getItemTypeNameForDepartmentType(DepartmentType departmentType) {
+        switch (departmentType) {
+            case Pharmacy:
+                return "Pharmacy";
+            case Lab:
+                return "Lab";
+            case Store:
+                return "Store";
+            case Etu:
+                return "Etu";
+            case Theatre:
+                return "Theatre";
+            default:
+                return null; // Unknown department types are not allowed
+        }
+    }
+
+    /**
+     * Provides smart defaults for department types:
+     * - Pharmacy: true (pharmacy items should be available in pharmacy transactions)
+     * - Store: true (store items commonly used in pharmacy)
+     * - Others (Lab, Etu, Theatre): false (special permission required)
+     */
+    private boolean getSmartDefaultForDepartmentType(DepartmentType departmentType) {
+        switch (departmentType) {
+            case Pharmacy:
+            case Store:
+                return true;
+            case Lab:
+            case Etu:
+            case Theatre:
+            default:
+                return false;
+        }
+    }
+    
+    
 
     public void setAvailableDepartmentTypesForPharmacyTransactions(List<DepartmentType> availableDepartmentTypesForPharmacyTransactions) {
         this.availableDepartmentTypesForPharmacyTransactions = availableDepartmentTypesForPharmacyTransactions;
@@ -871,6 +946,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         if (department != null) {
             institution = department.getInstitution();
         }
+        // Clear cached department types when department changes
+        availableDepartmentTypesForPharmacyTransactions = null;
         this.department = department;
     }
 
@@ -941,7 +1018,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public String loginActionWithoutDepartment() {
-        System.out.println("DEBUG: loginActionWithoutDepartment() called for user: " + userName + " at " + new Date());
         long totalStartTime = System.currentTimeMillis();
         
         department = null;
@@ -949,13 +1025,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         boolean l = checkUsersWithoutDepartment();
         if (l) {
             if (department != null) {
-                System.out.println("DEBUG: Login successful with department pre-selected, total time: " + (System.currentTimeMillis() - totalStartTime) + "ms");
                 return selectDepartment();
             }
-            System.out.println("DEBUG: Login successful, redirecting to department selection, total time: " + (System.currentTimeMillis() - totalStartTime) + "ms");
             return "/index1.xhtml?faces-redirect=true";
         } else {
-            System.out.println("DEBUG: Login failed, total time: " + (System.currentTimeMillis() - totalStartTime) + "ms");
             JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
         }
@@ -1226,8 +1299,13 @@ public class SessionController implements Serializable, HttpSessionListener {
                     loggableInstitutions = fillLoggableInstitutions();
 
                     // Load recently used departments
-                    recentDepartments = fillRecentDepartmentsForUser(u);
+                    //recentDepartments = fillRecentDepartmentsForUser(u);
                     userIcons = userIconController.fillUserIcons(u, department);
+
+                    // Load user-specific UI settings (column visibility, preferences, etc.)
+                    // Performance-optimized: loads only current user's settings, cached in session
+                    userSettingsController.loadUserSettings();
+
                     setLogged(Boolean.TRUE);
                     setActivated(u.isActivated());
                     setRole(u.getRole());
@@ -1344,6 +1422,10 @@ public class SessionController implements Serializable, HttpSessionListener {
             loggableDepartments = fillLoggableDepts();
 //            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
             loggableInstitutions = fillLoggableInstitutions();
+
+            // Load user-specific UI settings
+            userSettingsController.loadUserSettings();
+
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
             setRole(u.getRole());
@@ -1410,7 +1492,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         
         long queryStartTime = System.currentTimeMillis();
         List<WebUser> allUsers = getFacede().findByJpql(jpql, m);
-        System.out.println("DEBUG: User lookup query took " + (System.currentTimeMillis() - queryStartTime) + "ms");
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 boolean passwordIsOk;
@@ -1466,6 +1547,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                         loggableDepartments = departmentController.fillAllItems();
                     }
 //                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
+//                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
                     System.out.println("DEBUG: Loading loggable institutions...");
                     long fillInstStartTime = System.currentTimeMillis();
                     loggableInstitutions = fillLoggableInstitutions();
@@ -1503,7 +1585,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                     if (departments.size() == 1) {
                         department = departments.get(0);
                     }
-                    System.out.println("DEBUG: checkUsersWithoutDepartment() completed in " + (System.currentTimeMillis() - startTime) + "ms");
                     return true;
                 }
             }
@@ -1552,6 +1633,9 @@ public class SessionController implements Serializable, HttpSessionListener {
             JsfUtil.addErrorMessage("No person");
             return "";
         }
+
+        // Clear cached department types to ensure they are refreshed for the new department
+        availableDepartmentTypesForPharmacyTransactions = null;
 
         System.out.println("DEBUG: Setting department and institution...");
         loggedUser.setDepartment(department);
@@ -1654,7 +1738,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         long navStartTime = System.currentTimeMillis();
         String result = navigateToLoginPageByUsersDefaultLoginPage();
         System.out.println("DEBUG: Navigation took " + (System.currentTimeMillis() - navStartTime) + "ms");
-        System.out.println("DEBUG: selectDepartment() completed in " + (System.currentTimeMillis() - selectDeptStartTime) + "ms");
         return result;
     }
 
@@ -1758,6 +1841,8 @@ public class SessionController implements Serializable, HttpSessionListener {
                 return tokenController.navigateToManagePharmacyTokensCalled();
             case COURIER_LANDING_PAGE:
                 return courierController.navigateToCourierIndex();
+            case LABORATORY_DOCTER_DASHBOARD:
+                return laboratoryDoctorDashboardController.navigateToDoctorDashboard();
             case HOME:
             default:
                 return "/home?faces-redirect=true";
@@ -1775,6 +1860,9 @@ public class SessionController implements Serializable, HttpSessionListener {
             loggedUser.setWebUserPerson(p);
             webUserFacade.edit(loggedUser);
         }
+
+        // Clear cached department types to ensure they are refreshed for the new department
+        availableDepartmentTypesForPharmacyTransactions = null;
 
         loggedUser.setDepartment(department);
         loggedUser.setInstitution(department.getInstitution());
@@ -2722,7 +2810,8 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public List<Department> getRecentDepartments() {
         if (recentDepartments == null) {
-            recentDepartments = fillRecentDepartmentsForUser(getLoggedUser());
+            recentDepartments = new ArrayList<>();
+            //recentDepartments = fillRecentDepartmentsForUser(getLoggedUser());
         }
         return recentDepartments;
     }
@@ -2769,6 +2858,28 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setEnforcedPasswordChange(boolean enforcedPasswordChange) {
         this.enforcedPasswordChange = enforcedPasswordChange;
+    }
+
+    /**
+     * Maps Icon enum values to their corresponding navigation actions/URLs.
+     * Used by user_icon_bar.xhtml to determine where each icon should navigate.
+     *
+     * @param icon The Icon enum value
+     * @return Navigation string for JSF (e.g., "/patient_deposit/index?faces-redirect=true")
+     */
+    public String getActionForIcon(Icon icon) {
+        if (icon == null) {
+            return null;
+        }
+
+        switch (icon) {
+            case Patient_Deposit_Management:
+                return "/patient_deposit/index?faces-redirect=true";
+
+            // Add other icon mappings here as needed
+            default:
+                return null;
+        }
     }
 
 }

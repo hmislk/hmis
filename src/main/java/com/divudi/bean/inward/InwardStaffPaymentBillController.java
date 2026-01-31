@@ -317,7 +317,8 @@ public class InwardStaffPaymentBillController implements Serializable {
                 + " and bf.bill.cancelled=false "
                 + " and bf.bill.createdAt between :fd and :td "
                 + " and (bf.feeValue - bf.paidValue) > 0 "
-                + " and bf.staff=:stf ";
+                + " and bf.staff=:stf "
+                + " order by bf.createdAt desc";
 
         h.put("fd", fromDate);
         h.put("td", toDate);
@@ -1591,7 +1592,7 @@ public class InwardStaffPaymentBillController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

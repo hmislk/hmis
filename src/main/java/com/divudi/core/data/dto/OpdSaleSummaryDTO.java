@@ -3,6 +3,7 @@ package com.divudi.core.data.dto;
 import java.io.Serializable;
 
 public class OpdSaleSummaryDTO implements Serializable {
+    // Display fields
     private String categoryName;
     private String itemName;
     private Long itemCount;
@@ -12,14 +13,38 @@ public class OpdSaleSummaryDTO implements Serializable {
     private Double discountAmount;
     private Double netTotal;
 
+    // Navigation fields - IDs for entity lookup
+    private Long categoryId;
+    private Long itemId;
+
     public OpdSaleSummaryDTO() {
     }
 
+    // CRITICAL: Keep existing constructor for backward compatibility
     public OpdSaleSummaryDTO(String categoryName, String itemName, Long itemCount,
                               Double hospitalFee, Double professionalFee,
                               Double grossAmount, Double discountAmount,
                               Double netTotal) {
         this.categoryName = categoryName;
+        this.itemName = itemName;
+        this.itemCount = itemCount;
+        this.hospitalFee = hospitalFee;
+        this.professionalFee = professionalFee;
+        this.grossAmount = grossAmount;
+        this.discountAmount = discountAmount;
+        this.netTotal = netTotal;
+    }
+
+    // NEW: Constructor with IDs for navigation support
+    public OpdSaleSummaryDTO(Long categoryId, String categoryName,
+                              Long itemId, String itemName,
+                              Long itemCount,
+                              Double hospitalFee, Double professionalFee,
+                              Double grossAmount, Double discountAmount,
+                              Double netTotal) {
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
+        this.itemId = itemId;
         this.itemName = itemName;
         this.itemCount = itemCount;
         this.hospitalFee = hospitalFee;
@@ -91,5 +116,21 @@ public class OpdSaleSummaryDTO implements Serializable {
 
     public void setNetTotal(Double netTotal) {
         this.netTotal = netTotal;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
     }
 }

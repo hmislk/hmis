@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel header="My Float Outs">
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <h:outputLabel value="From Date" class="fw-bold" />
+                                <p:datePicker
+                                    id="fromDate"
+                                    showTime="true"
+                                    value="#{financialTransactionController.myFloatOutsFromDate}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    class="w-100" />
+                            </div>
+                            <div class="col-md-3">
+                                <h:outputLabel value="To Date" class="fw-bold" />
+                                <p:datePicker
+                                    id="toDate"
+                                    showTime="true"
+                                    value="#{financialTransactionController.myFloatOutsToDate}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    class="w-100" />
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <p:commandButton
+                                    value="Search"
+                                    icon="pi pi-search"
+                                    action="#{financialTransactionController.fillMyFundTransferBillsOut()}"
+                                    update="tblMyFloatOuts"
+                                    class="ui-button-primary" />
+                            </div>
+                        </div>
+
+                        <p:dataTable
+                            id="tblMyFloatOuts"
+                            value="#{financialTransactionController.myFundTransferBillsOut}"
+                            var="bp"
+                            rowKey="#{bp.id}"
+                            emptyMessage="No float transfers found for the selected period"
+                            paginator="true"
+                            rows="20"
+                            paginatorPosition="bottom">
+
+                            <p:column headerText="Bill ID">
+                                <h:outputText value="#{bp.deptId}" />
+                            </p:column>
+
+                            <p:column headerText="Created At">
+                                <h:outputText value="#{bp.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="To User">
+                                <h:outputText value="#{bp.toWebUser.webUserPerson.nameWithTitle}" />
+                            </p:column>
+
+                            <p:column headerText="Amount" style="text-align: right;">
+                                <h:outputText value="#{bp.absoluteNetTotalTransient}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Accepted">
+                                <h:panelGroup rendered="#{bp.referenceBill ne null}">
+                                    <span class="badge bg-success">Yes</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bp.referenceBill eq null and not bp.cancelled}">
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bp.referenceBill eq null and bp.cancelled}">
+                                    <span class="badge bg-secondary">N/A</span>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Cancelled">
+                                <h:panelGroup rendered="#{bp.cancelled}">
+                                    <span class="badge bg-danger">Yes</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{not bp.cancelled}">
+                                    <span class="badge bg-light text-dark">No</span>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Actions" style="width: 200px;">
+                                <p:commandButton
+                                    value="View"
+                                    icon="pi pi-eye"
+                                    action="#{financialTransactionController.navigateToViewFundTransferBill(bp)}"
+                                    ajax="false"
+                                    class="ui-button-info ui-button-sm me-1" />
+
+                                <p:commandButton
+                                    value="Cancel"
+                                    icon="pi pi-times"
+                                    action="#{financialTransactionController.navigateToFundTransferBillCancel(bp)}"
+                                    ajax="false"
+                                    rendered="#{bp.referenceBill eq null and not bp.cancelled}"
+                                    class="ui-button-danger ui-button-sm" />
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

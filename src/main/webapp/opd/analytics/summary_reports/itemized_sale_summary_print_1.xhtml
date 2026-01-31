@@ -1,0 +1,268 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<h:body>
+    <ui:composition template="/resources/template/template.xhtml">
+        <ui:define name="content">
+
+            <h:form>
+                <p:panel header="Itemized Sales Summary Print" styleClass="w-100">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <h:outputText value="Itemized Sales Summary Print" class="mt-2"/>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    icon="fa-solid fa-print"
+                                    class="ui-button-info"
+                                    style="width: 150px"
+                                    ajax="false"
+                                    value="Print">
+                                    <p:printer target="reportView"/>
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Back"
+                                    style="width: 150px"
+                                    icon="fa fa-arrow-left"
+                                    class="ui-button-warning"
+                                    action="itemized_sale_summary?faces-redirect=true"/>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <style>
+                        @media screen {
+                            .paper{
+                                position: static !important;
+                                width: 297mm !important;
+                                zoom: 2.0;
+                            }
+
+                            table {
+                                border-collapse: collapse;
+                                width: 100%;
+                                font-size: 12px !important;
+                                margin-top: 1mm !important;
+                            }
+
+                            th, td {
+                                border: 1px solid #000;
+                                padding: 0px !important;
+                                margin: 2px !important;
+                                text-align: left;
+                            }
+
+                            .header{
+                                font-size: 16px !important;
+                            }
+
+                            tfoot{
+                                font-weight: 700 !important;
+                                font-size: 11px !important;
+                            }
+                        }
+
+                        @media print {
+                            @page {
+                                size: A4 landscape;
+                                margin: 8mm;
+                            }
+
+                            .paper{
+                                position: static !important;
+                                width: 297mm !important;
+                            }
+
+                            .header{
+                                line-height: 1.1;
+                                margin: 0mm !important;
+                                font-size: 13px !important;
+                            }
+
+                            table {
+                                border-collapse: collapse;
+                                width: 100%;
+                                font-size: 12px !important;
+                                margin-top: 1mm !important;
+                            }
+
+                            th, td {
+                                border: 1px solid #000;
+                                padding: 0px !important;
+                                text-align: left;
+                            }
+
+                            tfoot{
+                                font-weight: 700 !important;
+                                font-size: 11px !important;
+                            }
+                        }
+                    </style>
+
+                    <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                        <div class="paper">
+
+                            <!-- HEADER -->
+                            <div class="header">
+                                <div class="d-flex justify-content-center" style="font-weight: 700; font-size: 22px;">
+                                    <h:outputText value="#{sessionController.institution.name}"/>
+                                </div>
+
+                                <div class="d-flex justify-content-center" style="font-weight: 700; font-size: 18px;">
+                                    <h:outputText value="Itemized Sales Summary"/>
+                                </div>
+
+                                <div class="d-flex justify-content-center mt-2" style="font-size: 12px;">
+                                    <div class="d-flex gap-3">
+                                        <h:outputText value="From:" style="font-weight: 600;"/>
+                                        <h:outputText value="#{searchController.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                    </div>
+
+                                    <h:outputText value="" style="width: 15mm;"/>
+
+                                    <div class="d-flex gap-3">
+                                        <h:outputText value="To:" style="font-weight: 600;"/>
+                                        <h:outputText value="#{searchController.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputText>
+                                    </div>
+                                </div>
+
+                                <!-- FILTER LINE -->
+                                <div class="d-flex justify-content-between mt-2 w-100" style="font-size: 12px;">
+                                    <div class="d-flex gap-2">
+                                        <h:outputText value="Institution:" style="font-weight: 600;"/>
+                                        <h:outputText value="#{searchController.institution.name}" rendered="#{searchController.institution ne null}"/>
+                                        <h:outputText value="All" rendered="#{searchController.institution eq null}"/>
+                                    </div>
+
+                                    <div class="d-flex gap-2">
+                                        <h:outputText value="Department:" style="font-weight: 600;"/>
+                                        <h:outputText value="#{searchController.department.name}" rendered="#{searchController.department ne null}"/>
+                                        <h:outputText value="All" rendered="#{searchController.department eq null}"/>
+                                    </div>
+
+                                    <div class="d-flex gap-2">
+                                        <h:outputText value="Site:" style="font-weight: 600;"/>
+                                        <h:outputText value="#{searchController.site.name}" rendered="#{searchController.site ne null}"/>
+                                        <h:outputText value="All" rendered="#{searchController.site eq null}"/>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between mt-1 w-100" style="font-size: 12px;">
+                                    <div class="d-flex gap-2">
+                                        <h:outputText value="Category:" style="font-weight: 600;"/>
+                                        <h:outputText value="#{searchController.category.name}" rendered="#{searchController.category ne null}"/>
+                                        <h:outputText value="All" rendered="#{searchController.category eq null}"/>
+                                    </div>
+
+                                    <div class="d-flex gap-2">
+                                        <h:outputText value="Item:" style="font-weight: 600;"/>
+                                        <h:outputText value="#{searchController.item.name}" rendered="#{searchController.item ne null}"/>
+                                        <h:outputText value="All" rendered="#{searchController.item eq null}"/>
+                                    </div>
+
+                                    <div/>
+                                </div>
+                            </div>
+
+                            <!-- TABLE -->
+                            <div>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 8mm; font-weight: 700;">No</th>
+                                            <th style="width: 55mm; font-weight: 700;">Category</th>
+                                            <th style="width: 75mm; font-weight: 700;">Item / Service</th>
+                                            <th style="width: 18mm; font-weight: 700; text-align:right;">Count</th>
+                                            <th style="width: 25mm; font-weight: 700; text-align:right;">Hospital Fee</th>
+                                            <th style="width: 25mm; font-weight: 700; text-align:right;">Prof. Fee</th>
+                                            <th style="width: 25mm; font-weight: 700; text-align:right;">Gross</th>
+                                            <th style="width: 25mm; font-weight: 700; text-align:right;">Discount</th>
+                                            <th style="width: 25mm; font-weight: 700; text-align:right;">Net</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        <ui:repeat value="#{searchController.opdSaleSummaryDtos}" var="row" varStatus="i">
+                                            <tr>
+                                                <td><h:outputText value="#{i.index + 1}"/></td>
+
+                                                <td>
+                                                    <h:outputText value="#{row.categoryName}"/>
+                                                </td>
+
+                                                <td>
+                                                    <h:outputText value="#{row.itemName}"/>
+                                                </td>
+
+                                                <td style="text-align:right;">
+                                                    <h:outputText value="#{row.itemCount}">
+                                                        <f:convertNumber pattern="#,##0"/>
+                                                    </h:outputText>
+                                                </td>
+
+                                                <td style="text-align:right;">
+                                                    <h:outputText value="#{row.hospitalFee}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+
+                                                <td style="text-align:right;">
+                                                    <h:outputText value="#{row.professionalFee}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+
+                                                <td style="text-align:right;">
+                                                    <h:outputText value="#{row.grossAmount}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+
+                                                <td style="text-align:right;">
+                                                    <h:outputText value="#{row.discountAmount}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+
+                                                <td style="text-align:right;">
+                                                    <h:outputText value="#{row.netTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="8" style="text-align:right; font-weight:700;">Total</td>
+                                            <td style="text-align:right; font-weight:700;">
+                                                <h:outputText value="#{searchController.opdSaleSummaryTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                        </div>
+                    </h:panelGroup>
+
+                </p:panel>
+            </h:form>
+
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

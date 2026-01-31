@@ -7,6 +7,7 @@
 package com.divudi.core.facade;
 
 import com.divudi.core.entity.ConfigOption;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.security.PermitAll;
 import javax.ejb.Stateless;
@@ -40,11 +41,11 @@ public class ConfigOptionFacade extends AbstractFacade<ConfigOption> {
         }
         qry.setMaxResults(1);
         qry.setLockMode(javax.persistence.LockModeType.PESSIMISTIC_WRITE);
-        try {
-            return qry.getSingleResult();
-        } catch (javax.persistence.NoResultException ex) {
+        List<ConfigOption> results = qry.getResultList();
+        if (results.isEmpty()) {
             return null;
         }
+        return results.get(0);
     }
 
     @PermitAll

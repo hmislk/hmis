@@ -134,7 +134,6 @@ public class ProfessionalPaymentService {
         params.put("toDate", toDate);
         params.put("staff", staff);
 
-        System.out.println("params = " + params);
 
         Double sum = billFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
         return sum;

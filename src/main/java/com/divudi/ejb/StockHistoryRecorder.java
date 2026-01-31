@@ -65,6 +65,8 @@ public class StockHistoryRecorder {
     StaffFacade staffFacade;
     @EJB
     FingerPrintRecordFacade fingerPrintRecordFacade;
+    @EJB
+    PharmacyBean pharmacyBean;
 
 //    @SuppressWarnings("unused")
 //    @Schedule(minute = "1", second = "1", dayOfMonth = "*", month = "*", year = "*", hour = "1", persistent = false)
@@ -82,10 +84,26 @@ public class StockHistoryRecorder {
                         h.setFromDate(startTime);
                         h.setHistoryType(HistoryType.MonthlyRecord);
                         h.setDepartment(d);
+                        h.setInstitution(d.getInstitution());
                         h.setItem(amp);
+                        
                         h.setStockQty(getStockQty(amp, d));
                         h.setStockPurchaseValue(getStockPurchaseValue(amp, d));
                         h.setStockSaleValue(getStockRetailSaleValue(amp, d));
+                        h.setStockCostValue(getStockCostValue(amp, d));
+                        
+                        // Set stock quantities at different levels
+                        double itemStock = getStockQty(amp, d);
+                        double institutionStock = pharmacyBean.getItemStockQty(amp, d.getInstitution());
+                        double totalStock = pharmacyBean.getItemStockQty(amp);
+
+                        h.setItemStock(itemStock);
+                        h.setInstitutionItemStock(institutionStock);
+                        h.setTotalItemStock(totalStock);
+
+                        // Note: Purchase and cost rate values per batch cannot be calculated here
+                        // without itemBatch information. These would need to be aggregated
+                        // separately if needed for monthly records.
                         //SET DATE DATAS
                         h.setHxDate(Calendar.getInstance().get(Calendar.DATE));
                         h.setHxMonth(Calendar.getInstance().get(Calendar.MONTH));
@@ -236,6 +254,18 @@ public class StockHistoryRecorder {
         m.put("d", department);
         m.put("i", item);
         sql = "select sum(s.stock * s.itemBatch.purcahseRate) from Stock s where s.department=:d and s.itemBatch.item=:i";
+        return getStockFacade().findDoubleByJpql(sql, m);
+    }
+    
+    public double getStockCostValue(Item item, Department department) {
+        if (item instanceof Ampp) {
+            item = ((Ampp) item).getAmp();
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("d", department);
+        m.put("i", item);
+        sql = "select sum(s.stock * s.itemBatch.costRate) from Stock s where s.department=:d and s.itemBatch.item=:i";
         return getStockFacade().findDoubleByJpql(sql, m);
     }
 

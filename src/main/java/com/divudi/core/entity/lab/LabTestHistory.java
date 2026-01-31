@@ -1,6 +1,5 @@
 package com.divudi.core.entity.lab;
 
-import com.divudi.core.data.lab.Analyzer;
 import com.divudi.core.data.lab.TestHistoryType;
 import com.divudi.core.entity.AppEmail;
 import com.divudi.core.entity.Category;
@@ -79,6 +78,8 @@ public class LabTestHistory implements Serializable {
 
     @ManyToOne
     private Category analyzer;
+    
+    private String analyzerReceiveMessage;
     
     @ManyToOne(fetch = FetchType.LAZY)
     private Staff staff;
@@ -293,6 +294,14 @@ public class LabTestHistory implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public String getAnalyzerReceiveMessage() {
+        return analyzerReceiveMessage;
+    }
+
+    public void setAnalyzerReceiveMessage(String analyzerReceiveMessage) {
+        this.analyzerReceiveMessage = analyzerReceiveMessage;
     }
     
 }

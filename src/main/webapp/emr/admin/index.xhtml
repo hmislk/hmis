@@ -33,8 +33,13 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="Favourite Medicines By Age" action="#{favouriteController.navigateToFavoriteMedicineByAge()}"  ></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" value="Favourite Medicines By Weight" action="#{favouriteController.navigateToFavoriteMedicineByWeight()}"  ></p:commandButton>
-                                            <p:commandButton styleClass="linkButton" ajax="false" 
+                                            <p:commandButton styleClass="linkButton" ajax="false"
                                              value="Medicines" action="/clinical/clinical_favourite_item"  ></p:commandButton>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Favourite Diagnosis">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" ajax="false" value="Favourite Diagnosis By Age" action="#{favouriteController.toAddFavDig()}"  ></p:commandButton>
                                         </div>
                                     </p:tab>
                                     <p:tab title="Upload">

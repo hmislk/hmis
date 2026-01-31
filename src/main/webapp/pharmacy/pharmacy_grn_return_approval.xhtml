@@ -25,7 +25,11 @@
                                 <h:outputText value="#{r.deptId}" />
                             </p:column>
                             <p:column headerText="Approve">
-                                <p:commandButton value="Approve" action="#{grnReturnApprovalController.approveReturn(r)}" update="@form"/>
+                                <p:commandButton value="Approve"
+                                                 action="#{grnReturnApprovalController.approveReturn(r)}"
+                                                 update="@form"
+                                                 onclick="if (!confirm('Are you sure you want to approve this GRN return?'))
+                                                             return false;"/>
                             </p:column>
                         </p:dataTable>
                     </p:panel>

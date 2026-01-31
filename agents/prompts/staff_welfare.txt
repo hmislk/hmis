@@ -1,0 +1,13 @@
+OPD Billing Process allows users to Select Staff Welfare.
+When they select it, relavant details of staff appeare
+When the bill is settled, the welfare amount is utilized.
+The same functionality has to be added to pharmacy billing through cashier
+
+First we will identify how listing of staff is handled when staff welfare is selected as the payment method
+
+please follow opd page
+http://localhost:8080/rh/faces/opd/opd_bill_ac.xhtml
+
+then add those changes to retail sale for cashier
+http://localhost:8080/rh/faces/pharmacy/pharmacy_bill_retail_sale_for_cashier.xhtml
+

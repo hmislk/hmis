@@ -173,6 +173,13 @@
 
                         <div class="d-flex align-items-center mt-5">
                             <p:commandButton 
+                                class="ui-button-secondary mx-1" 
+                                icon="fas fa-arrow-left" 
+                                ajax="false" 
+                                value="Back"
+                                action="#{reportController.navigateToCostOfGoodsSold()}">
+                            </p:commandButton>
+                            <p:commandButton 
                                 class="ui-button-warning mx-1" 
                                 icon="fas fa-cogs" 
                                 ajax="false"  
@@ -221,7 +228,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Doc. No" sortBy="#{b.billDeptId}" width="8em">
+                            <p:column headerText="Bill Number" sortBy="#{b.billDeptId}" width="16em">
                                 <p:commandLink value="#{b.billDeptId}" action="#{billSearch.navigateToViewBillByAtomicBillType()}" ajax="false" styleClass="ui-button-info">
                                     <f:setPropertyActionListener value="#{b.bill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
@@ -237,8 +244,8 @@
                                     <p:column headerText="QTY" width="4em"/>
                                     <p:column headerText="COST RATE" width="6em"/>
                                     <p:column headerText="COST VALUE" width="6em"/>
-                                    <p:column headerText="RATE" width="6em"/>
-                                    <p:column headerText="VALUE" width="6em"/>
+                                    <p:column headerText="PURCHASE RATE" width="6em"/>
+                                    <p:column headerText="PURCHASE VALUE" width="6em"/>
                                     <p:column headerText="MRP" width="6em"/>
                                     <p:column headerText="MRP Value" width="6em"/>
                                     <p:column headerText="Net Total" width="6em"/>
@@ -276,6 +283,11 @@
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.qty * biObject.costRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
                                 </ui:repeat>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalCostValue}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="PURCHASE RATE">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
@@ -286,20 +298,25 @@
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.qty * biObject.purchaseRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/>   <br/>
                                 </ui:repeat>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             
-                            <p:column headerText="MRP" width="8em">
+                            <p:column headerText="MRP" width="8em" class="text-end">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.retailRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="MRP Value" width="8em">
+                            <p:column headerText="MRP Value" width="8em" class="text-end">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.qty * biObject.retailRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/>   <br/>
                                 </ui:repeat>
                             </p:column>
 
-                            <p:column headerText="Net Total" style="text-align: right;" width="6em">
+                            <p:column headerText="Net Total"  class="text-end" width="6em">
                                 <h:outputText value="#{b.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>

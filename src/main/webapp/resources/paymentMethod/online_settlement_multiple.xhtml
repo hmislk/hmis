@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="paymentMethodData" type="com.divudi.core.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="valueRequired" type="boolean" default="true"/>
+        <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithMultiplePayments" required="true"/>
+        <cc:attribute name="componentDetail" type="com.divudi.core.data.dataStructure.ComponentDetail" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <p:outputLabel for="txtVal" value="Amount:" styleClass="form-label mb-0" style="min-width: 80px;"/>
+                <p:inputText
+                    autocomplete="off"
+                    onfocus="this.select();"
+                    value="#{cc.attrs.paymentMethodData.onlineSettlement.totalValue}"
+                    id="txtVal"
+                    styleClass="form-control"
+                    style="width: 150px;"
+                    disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
+                    required="#{cc.attrs.componentDetail == null or cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
+                    requiredMessage="Amount is required">
+                    <p:ajax event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
+                    <f:convertNumber pattern="#,##0.00" />
+                </p:inputText>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <p:outputLabel for="bank" value="Bank:" styleClass="form-label mb-0"/>
+                <p:selectOneMenu
+                    id="bank"
+                    value="#{cc.attrs.paymentMethodData.onlineSettlement.institution}"
+                    styleClass="form-control"
+                    style="width: 180px;"
+                    required="true"
+                    requiredMessage="Bank is required">
+                    <f:selectItem itemLabel="Select Bank"/>
+                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                    <p:ajax process="@this" />
+                </p:selectOneMenu>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <p:outputLabel for="date" value="Date:" styleClass="form-label mb-0"/>
+                <p:calendar
+                    id="date"
+                    value="#{cc.attrs.paymentMethodData.onlineSettlement.date}"
+                    placeholder="Select date"
+                    pattern="#{sessionController.applicationPreference.longDateFormat}"
+                    styleClass="form-control"
+                    style="width: 150px;"
+                    required="true"
+                    requiredMessage="Date is required">
+                    <p:ajax process="@this" />
+                </p:calendar>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <p:outputLabel for="refNo" value="Ref No:" styleClass="form-label mb-0"/>
+                <p:inputText
+                    id="refNo"
+                    value="#{cc.attrs.paymentMethodData.onlineSettlement.referenceNo}"
+                    placeholder="Reference No"
+                    styleClass="form-control"
+                    style="width: 150px;"
+                    required="true"
+                    requiredMessage="Reference No is required">
+                    <p:ajax process="@this" />
+                </p:inputText>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 flex-grow-1">
+                <p:outputLabel for="comment" value="Comment:" styleClass="form-label mb-0"/>
+                <p:inputText
+                    id="comment"
+                    value="#{cc.attrs.paymentMethodData.onlineSettlement.comment}"
+                    placeholder="Comments"
+                    styleClass="form-control"
+                    required="true"
+                    requiredMessage="Comment is required">
+                    <p:ajax process="@this" />
+                </p:inputText>
+            </div>
+        </div>
+    </cc:implementation>
+</html>

@@ -17,7 +17,9 @@
         <div class="d-flex" >
             <div class="ui-inputgroup mx-1 my-1">
                 <p:inputText
-                    value="#{cc.attrs.paymentMethodData.credit.creditDuration}" style="width: 10em;">
+                    value="#{cc.attrs.paymentMethodData.credit.creditDuration}" style="width: 10em;"
+                    required="true"
+                    requiredMessage="Credit Duration is required">
                 </p:inputText>
                 <div class="ui-inputgroup-addon">Days</div>
             </div>

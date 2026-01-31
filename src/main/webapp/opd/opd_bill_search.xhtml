@@ -242,9 +242,9 @@
                                                 ajax="false"
                                                 id="cancelBillNo"
                                                 value="#{bill.cancelledBill.deptId}"
-                                                action="#{billSearch.navigateToCancelBillView()}"
+                                                action="#{opdBillCancellationController.navigateToCancelBillView()}"
                                                 rendered="#{bill.cancelled}" style="color: red">
-                                                <f:setPropertyActionListener value="#{bill.cancelledBill}" target="#{billSearch.bill}"/>
+                                                <f:setPropertyActionListener value="#{bill.cancelledBill}" target="#{opdBillCancellationController.bill}"/>
                                             </p:commandLink>
                                             <p:commandLink
                                                 id="RefundBillNo"
@@ -339,6 +339,9 @@
                                     </p:column>
 
                                     <p:column headerText="Remarks" >
+                                        <h:panelGroup rendered="#{bill.membershipScheme ne null}">
+                                            <p:badge value="#{bill.membershipScheme.name}" severity="success" styleClass="mr-2"></p:badge>
+                                        </h:panelGroup>
                                         <h:panelGroup id="remark">
                                             <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
                                             <p:badge rendered="#{bill.billTypeAtomic eq 'PACKAGE_OPD_BILL_WITH_PAYMENT'}" value="Package Bill"></p:badge>
@@ -372,6 +375,11 @@
                                                 </h:panelGroup>
                                             </h:panelGrid>
                                         </p:tooltip>
+                                        
+                                        <h:panelGroup rendered="#{bill.currentRequest ne null}">
+                                            <p:badge value="#{bill.currentRequest.status.label}" severity="warning" styleClass="mr-2"></p:badge>
+                                        </h:panelGroup>
+                                        
                                     </p:column>
 
                                     <p:column headerText="Gross Value" sortBy="#{bill.total}"

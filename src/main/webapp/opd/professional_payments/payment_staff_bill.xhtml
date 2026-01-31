@@ -9,8 +9,8 @@
       >
 
     <h:body>
-        <ui:composition template="/payments/pay_index.xhtml">
-            <ui:define name="admin">
+        <ui:composition template="/opd/opd_doctor_payment_index.xhtml">
+            <ui:define name="opdPaymentContent">
                 <h:panelGroup id="panbilledit" rendered="#{!staffPaymentBillController.printPreview}" styleClass="alignTop" >
                     <p:panel header="OPD Professional Payment" >
                         <h:form>
@@ -79,14 +79,20 @@
                                 icon="fa-solid fa-arrows-rotate"
                                 class="ui-button-warning" />
 
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Download as Excel" 
-                                styleClass="noPrintButton" 
+                            <p:commandButton
+                                ajax="false"
+                                value="Download as Excel"
+                                styleClass="noPrintButton"
                                 icon="fa-solid fa-file-excel"
                                 class="ui-button-success mx-2 my-2" >
                                 <p:dataExporter type="xlsx" target=":#{p:resolveFirstComponentWithId('tblFee',view).clientId}" fileName="Staff_Payment_Due_OPD"  />
                             </p:commandButton>
+
+                            <p:button
+                                value="Add Miscellaneous Fee"
+                                outcome="/opd/professional_payments/miscellaneous_staff_fee"
+                                icon="fa fa-plus"
+                                styleClass="ui-button-info mx-2 my-2" />
 
 
 
@@ -164,14 +170,22 @@
                                 <p:column headerText="Test" width="7em">
                                     <f:facet name="header">
                                         <h:outputLabel value="Test"/>
-                                    </f:facet>    
+                                    </f:facet>
                                     <h:outputLabel value="#{bf.billItem.item.name}" />
+                                </p:column>
+
+                                <p:column headerText="Description" width="10em">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Description"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bf.bill.comments}" rendered="#{bf.bill.comments ne null and bf.bill.comments ne ''}"/>
+                                    <h:outputLabel value="-" rendered="#{bf.bill.comments eq null or bf.bill.comments eq ''}"/>
                                 </p:column>
 
                                 <p:column headerText="Charge" width="5em;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Charge Type"/>
-                                    </f:facet>    
+                                    </f:facet>
                                     <h:outputLabel value="#{bf.fee.feeType}" />
                                 </p:column>
 
@@ -293,12 +307,13 @@
                                         ajax="false"
                                         value="New Payment" 
                                         action="#{staffPaymentBillController.newPayment}" 
-                                        oncomplete="location.reload(true);"
-                                        />
+                                        oncomplete="location.reload(true);">
+                                    </p:commandButton>
                                     <p:commandButton 
                                         value="Print" 
                                         class="ui-button-info" 
                                         icon="fas fa-print" 
+                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill: Print separately.', false)}"
                                         ajax="false" 
                                         action="#" >
                                         <p:printer target="gpBillPreview" ></p:printer>
@@ -308,22 +323,46 @@
 
                         </f:facet>
 
-                        <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
-                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is A4 paper', true)}">
-                                <bi:A4PaperPamentOPDDoctor controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                        <h:panelGroup id="gpBillPreview" >
+
+                            <h:panelGroup class="mb-4" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is A4 paper', true)}">
+                                <h:panelGroup class="d-flex justify-content-center">
+                                    <p:commandButton 
+                                        value="Print A4 Paper" 
+                                        class="ui-button-info mb-3 " 
+                                        icon="fas fa-print" 
+                                        ajax="false" 
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill: Print separately.', false)}"
+                                        action="#" >
+                                        <p:printer target="A4Paper" ></p:printer>
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                <h:panelGroup id="A4Paper" class="d-flex justify-content-center">
+                                    <bi:A4PaperPamentOPDDoctor controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                                </h:panelGroup>
                             </h:panelGroup>
-                            
+
                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is five five paper.')}">
-                                <bi:staff_payment_five_five_paper_with_headings controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" />
+                                <h:panelGroup class="d-flex justify-content-center">
+                                    <p:commandButton 
+                                        value="Print 5x5 Paper" 
+                                        class="ui-button-info mb-3 mt-4" 
+                                        icon="fas fa-print"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill: Print separately.', false)}"
+                                        ajax="false" 
+                                        action="#" >
+                                        <p:printer target="fivefivePaper" ></p:printer>
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                <h:panelGroup id="fivefivePaper">
+                                    <bi:staff_payment_five_five_paper_with_headings  controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" />
+                                </h:panelGroup>
                             </h:panelGroup>
                             
                         </h:panelGroup>
-
                     </p:panel>
                 </h:form>
             </ui:define>
-
         </ui:composition>
-
     </h:body>
 </html>

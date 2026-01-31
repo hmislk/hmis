@@ -147,6 +147,14 @@
                                             required="false"
                                             class="form-control"
                                             disabled="#{!amppController.editable}" ></h:inputTextarea>
+
+                                        <h:outputText value="Allow Fractions" />
+                                        <p:selectBooleanButton
+                                            value="#{amppController.current.allowFractions}"
+                                            onLabel="Yes"
+                                            offLabel="No"
+                                            class="w-100"
+                                            disabled="#{!amppController.editable}" />
                                     </p:panelGrid>
 
                                     <h:panelGroup layout="block" class="text-end">

@@ -437,7 +437,6 @@ public class OpdMemberShipDiscountController implements Serializable {
                         null);
                 p.setDiscountPercent(margin);
                 System.out.println("p = " + p);
-                System.out.println("margin = " + margin);
                 paymentSchemeDiscountFacade.edit(p);
             }
         }
@@ -462,7 +461,6 @@ public class OpdMemberShipDiscountController implements Serializable {
                         null);
                 p.setDiscountPercent(margin);
                 System.out.println("p = " + p);
-                System.out.println("margin = " + margin);
                 paymentSchemeDiscountFacade.edit(p);
             }
     }
@@ -725,7 +723,7 @@ public class OpdMemberShipDiscountController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         //    recreateModel();
 
@@ -743,7 +741,7 @@ public class OpdMemberShipDiscountController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         //    recreateModel();
 
@@ -800,7 +798,7 @@ public class OpdMemberShipDiscountController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         //    recreateModel();
 

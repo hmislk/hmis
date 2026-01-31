@@ -161,10 +161,11 @@
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperBatchBill'}" >
                                                 <prints:five_five_paper_with_headings_badge_bill_with_bill_items billController="#{opdBillController}" payments="#{opdBillController.payments}" duplicate="#{opdBillController.duplicatePrint}"/>                        
                                             </h:panelGroup>
+                                            
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom3'}" >
                                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Sale Bill is FiveFiveCustom3',false)}"> 
                                                     <ui:repeat value="#{opdBillController.bills}" var="bc3" >
-                                                        <ph:sale_bill_five_five_custom_3 bill="#{bc3}" duplicate="false"/>
+                                                        <ph:sale_bill_five_five_custom_3 bill="#{bc3}" duplicate="#{opdBillController.duplicatePrint}"/>
                                                     </ui:repeat>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('OPD Sale Bill is FiveFiveCustom3',false)}">
@@ -177,6 +178,12 @@
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
                                                 <ui:repeat value="#{opdBillController.bills}" var="ffb" >
                                                     <prints:five_eight_opd_bill bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" billCount="#{opdBillController.bills.size()}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                            
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom4'}" >
+                                                <ui:repeat value="#{opdBillController.bills}" var="ffb" >
+                                                    <prints:five_five_opd_bill_custom_4 bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" billCount="#{opdBillController.bills.size()}"/>                        
                                                 </ui:repeat>
                                             </h:panelGroup>
 
@@ -227,17 +234,26 @@
                                     <f:facet name="header">
                                         <div class="d-flex justify-content-between align-items-center w-100">
                                             <h:outputLabel value="Batch Bill Details" style="font-size: 18px; font-weight: 800;"/>
-                                            <div class="d-flex">
+                                            <div class="d-flex gap-3">
+                                                
+                                                <h:panelGroup rendered="#{opdBillController.batchBill.currentRequest ne null}">
+                                                    <p:badge 
+                                                        value="#{opdBillController.batchBill.currentRequest.requestType.displayName} Request - #{opdBillController.batchBill.currentRequest.status.label}" 
+                                                        severity="warning"
+                                                        styleClass="mr-2 mt-2">
+                                                    </p:badge>
+                                                </h:panelGroup>
+
                                                 <p:commandButton 
                                                     ajax="false" 
                                                     icon="fa fa-ban" 
                                                     value="To Cancel Batch Bill"
                                                     disabled="#{opdBillController.batchBill.cancelled or opdBillController.batchBill.refunded}"
-                                                    action="#{billController.navigateToCancelOpdBatchBill()}" 
-                                                    styleClass="m-1 ui-button-danger">
+                                                    action="#{opdBatchBillCancellationController.navigateToCancelOpdBatchBill()}" 
+                                                    styleClass="ui-button-danger">
                                                     <f:setPropertyActionListener 
                                                         value="#{opdBillController.batchBill}" 
-                                                        target="#{billController.batchBill}" />
+                                                        target="#{opdBatchBillCancellationController.batchBill}" />
                                                 </p:commandButton>
                                             </div>
                                         </div>
@@ -342,7 +358,7 @@
 
                                     </p:column>
                                 </p:dataTable>
-                                
+
                                 <p:dataTable
                                     rendered="#{billSearch.viewingPatientInvestigations.size() > 0}"
                                     value="#{billSearch.viewingPatientInvestigations}"
@@ -367,7 +383,7 @@
                                             action="#{patientInvestigationController.navigateToCreatePatientReportBypassingSampleProcess()}">
                                             <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"/>
                                         </p:commandButton>
-                                        
+
                                     </p:column>
                                 </p:dataTable>
 

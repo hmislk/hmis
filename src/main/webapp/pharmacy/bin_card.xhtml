@@ -144,7 +144,7 @@
 
                     <!-- Quantity In -->
                     <p:column headerText="Qty In" class="text-end">
-                        <h:outputText value="#{sh.tr/clansAbsoluteQtyPlusFreeQty}" 
+                        <h:outputText value="#{sh.transAbsoluteQtyPlusFreeQty}" 
                                       rendered="#{sh.transThisIsStockIn}"
                                       styleClass="#{sh.qty gt 0 ? 'text-success' : ''}">
                             <f:convertNumber pattern="#.#"/>

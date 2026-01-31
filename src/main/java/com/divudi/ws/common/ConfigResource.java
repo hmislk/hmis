@@ -52,7 +52,6 @@ public class ConfigResource {
         System.out.println("key = " + key);
         System.out.println("value = " + value);
         String apiKey = headers.getHeaderString("Config");
-        System.out.println("apiKey = " + apiKey);
         if (!apiKeyController.isValidKey(apiKey)) {
             return unauthorizedResponse();
         }

@@ -5,12 +5,14 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
@@ -22,7 +24,6 @@ import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Ampp;
-import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemFacade;
@@ -36,6 +37,7 @@ import com.divudi.core.entity.AppEmail;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -86,6 +88,8 @@ public class PurchaseOrderRequestController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     EnumController enumController;
+    @Inject
+    ConfigOptionController configOptionController;
 
     private Bill currentBill;
     private BillItem currentBillItem;
@@ -102,13 +106,18 @@ public class PurchaseOrderRequestController implements Serializable {
     @Inject
     NotificationController notificationController;
 
+    @EJB
+    BillService billService;
+
     private String emailRecipient;
 
     public void removeSelected() {
         if (selectedBillItems == null) {
             return;
         }
+        saveRequestWithoutMessage();
         for (BillItem b : selectedBillItems) {
+            b.setBill(null);
             b.setRetired(true);
             b.setRetirer(sessionController.getLoggedUser());
             b.setRetiredAt(new Date());
@@ -121,6 +130,9 @@ public class PurchaseOrderRequestController implements Serializable {
 
         getBillItems().removeAll(selectedBillItems);
         calculateBillTotals();
+        if (getCurrentBill().getId() != null) {
+            currentBill = billService.reloadBill(currentBill);
+        }
         selectedBillItems = null;
     }
 
@@ -190,9 +202,57 @@ public class PurchaseOrderRequestController implements Serializable {
             return;
         }
 
+        // Auto-set department type if not already set (use the item's department type)
+        if (getCurrentBill().getDepartmentType() == null) {
+            if (getCurrentBillItem().getItem().getDepartmentType() != null) {
+                getCurrentBill().setDepartmentType(getCurrentBillItem().getItem().getDepartmentType());
+            } else {
+                // Fallback to Pharmacy if item has no department type
+                getCurrentBill().setDepartmentType(DepartmentType.Pharmacy);
+            }
+        }
+
+        // Validate that the item's department type matches the bill's department type
+        if (getCurrentBill().getDepartmentType() != null) {
+            DepartmentType itemDepartmentType = getCurrentBillItem().getItem().getDepartmentType();
+
+            // Check if item's department type matches bill's department type
+            if (itemDepartmentType != null && !itemDepartmentType.equals(getCurrentBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                        + "Bill is set for " + getCurrentBill().getDepartmentType().getLabel()
+                        + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
+                return;
+            }
+
+            // Verify department type is allowed for pharmacy transactions
+            List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+            if (allowedTypes == null || !allowedTypes.contains(getCurrentBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + getCurrentBill().getDepartmentType().getLabel());
+                return;
+            }
+        }
+
+        // Check for duplicate items if configuration is enabled
+        if (configOptionApplicationController.getBooleanValueByKey("Prevent Duplicate Items in Purchase Orders", false)) {
+            Item selectedItem = getCurrentBillItem().getItem();
+            for (BillItem existingItem : getBillItems()) {
+                if (existingItem != null && !existingItem.isRetired()
+                        && existingItem.getItem() != null
+                        && existingItem.getItem().equals(selectedItem)) {
+                    JsfUtil.addErrorMessage("This item has already been added to the purchase order. Please update the quantity of the existing item instead of adding it again.");
+                    return;
+                }
+            }
+        }
+
         getCurrentBillItem().setSearialNo(getBillItems().size());
-        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(getPharmacyBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
-        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(getPharmacyBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+
+        // PERFORMANCE: Fetch last purchase and retail rates (replaces 9-second individual calls!)
+        Long itemId = getCurrentBillItem().getItem().getId();
+        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(
+                fetchLastPurchaseRateForItem(itemId));
+        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(
+                fetchLastRetailRateForItem(itemId));
 
         if (getCurrentBillItem().getItem() instanceof Ampp) {
             BigDecimal unitsPerPack = BigDecimal.valueOf(getCurrentBillItem().getItem().getDblValue());
@@ -215,14 +275,13 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void removeItem(BillItem bi) {
-        Bill currentBill = getCurrentBill();
         if (currentBill == null || bi == null) {
             return;
         }
-
+        saveRequestWithoutMessage();
         Date now = new Date();
-
         bi.setRetired(true);
+        bi.setBill(null);
         bi.setRetirer(sessionController.getLoggedUser());
         bi.setRetiredAt(now);
 
@@ -236,15 +295,9 @@ public class PurchaseOrderRequestController implements Serializable {
         if (bi.getId() != null) {
             billItemFacade.edit(bi);
         }
-
-        if (tmpPbi != null && tmpPbi.getId() != null) {
-            pharmaceuticalBillItemFacade.edit(tmpPbi);
-        }
-
         getBillItems().remove(bi);
-
+        currentBill = billService.reloadBill(currentBill);
         calculateBillTotals();
-
         currentBillItem = null;
     }
 
@@ -252,6 +305,30 @@ public class PurchaseOrderRequestController implements Serializable {
     private PharmacyController pharmacyController;
 
     public void onEdit(BillItem bi) {
+        // Validate integer-only quantity if configuration is enabled
+        if (configOptionController.getBooleanValueByKey("Pharmacy Purchase - Quantity Must Be Integer", true)) {
+            BigDecimal qty = bi.getBillItemFinanceDetails().getQuantity();
+            BigDecimal freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
+
+            // Check quantity for decimal values
+            if (qty != null && qty.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
+                bi.getBillItemFinanceDetails().setQuantity(BigDecimal.ZERO);
+                calculateLineValues(bi);
+                calculateBillTotals();
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for quantity. Decimal values are not allowed.");
+                return;
+            }
+
+            // Check free quantity for decimal values
+            if (freeQty != null && freeQty.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
+                bi.getBillItemFinanceDetails().setFreeQuantity(BigDecimal.ZERO);
+                calculateLineValues(bi);
+                calculateBillTotals();
+                JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for free quantity. Decimal values are not allowed.");
+                return;
+            }
+        }
+
         calculateLineValues(bi);
         calculateBillTotals();
     }
@@ -299,7 +376,7 @@ public class PurchaseOrderRequestController implements Serializable {
 
         lineBillItem.getBillItemFinanceDetails().setQuantity(bdQty);
         lineBillItem.getBillItemFinanceDetails().setFreeQuantity(bdFreeQty);
-        
+
         // Calculate quantity by units (for AMPP items)
         BigDecimal quantityByUnits;
         if (lineBillItem.getItem() instanceof Ampp) {
@@ -320,12 +397,12 @@ public class PurchaseOrderRequestController implements Serializable {
 
         lineBillItem.getBillItemFinanceDetails().setValueAtPurchaseRate(bdPurchaseValue);
         lineBillItem.getBillItemFinanceDetails().setValueAtRetailRate(bdRetailValue);
-        
+
         // Set costing values to zero (not relevant for purchase orders)
         lineBillItem.getBillItemFinanceDetails().setLineCost(BigDecimal.ZERO);
         lineBillItem.getBillItemFinanceDetails().setLineCostRate(BigDecimal.ZERO);
         lineBillItem.getBillItemFinanceDetails().setValueAtCostRate(BigDecimal.ZERO);
-        
+
         // Set audit fields for BillItemFinanceDetails
         if (lineBillItem.getBillItemFinanceDetails().getId() == null) {
             lineBillItem.getBillItemFinanceDetails().setCreatedAt(new Date());
@@ -365,12 +442,11 @@ public class PurchaseOrderRequestController implements Serializable {
             lineBillItem.getPharmaceuticalBillItem().setRetailRateInUnit(bdRetailRate.doubleValue());
             lineBillItem.getPharmaceuticalBillItem().setRetailValue(bdRetailValue.doubleValue());
         }
-        
-        
+
         lineBillItem.getPharmaceuticalBillItem().setCostRate(0.0); // Not relevant for purchase orders
         lineBillItem.getPharmaceuticalBillItem().setCostRatePack(0.0); // Not relevant for purchase orders  
         lineBillItem.getPharmaceuticalBillItem().setCostValue(0.0); // Not relevant for purchase orders
-        
+
         // Set audit fields for PharmaceuticalBillItem
         if (lineBillItem.getPharmaceuticalBillItem().getId() == null) {
             lineBillItem.getPharmaceuticalBillItem().setCreatedAt(new Date());
@@ -385,7 +461,7 @@ public class PurchaseOrderRequestController implements Serializable {
 
         lineBillItem.setNetValue(bdNetValue.doubleValue()); // User entered rate × user entered quantity
         lineBillItem.setGrossValue(bdGrossValue.doubleValue()); // Same as net value (no discount)
-        
+
         // Set audit fields for BillItem
         if (lineBillItem.getId() == null) {
             lineBillItem.setCreatedAt(new Date());
@@ -398,21 +474,94 @@ public class PurchaseOrderRequestController implements Serializable {
         getPharmacyController().fillItemDetails(bi.getItem());
     }
 
-    public void saveBill() {
-        if (getCurrentBill().getDeptId()==null||getCurrentBill().getDeptId().trim().equals("")) {
-            String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
-            getCurrentBill().setDeptId(deptId);
-            getCurrentBill().setInsId(deptId);
+    /**
+     * PERFORMANCE OPTIMIZATION: Get last purchase rate for a single item
+     * Replaces pharmacyBean.getLastPurchaseRate() call (9 seconds!)
+     */
+    private Double fetchLastPurchaseRateForItem(Long itemId) {
+        if (itemId == null) {
+            return 0.0;
         }
 
-        getCurrentBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
-        getCurrentBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-        getCurrentBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        getCurrentBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+        String jpql = "SELECT pbi.purchaseRate "
+                + "FROM PharmaceuticalBillItem pbi "
+                + "JOIN pbi.billItem bi "
+                + "WHERE bi.item.id = :itemId "
+                + "AND bi.retired = false "
+                + "AND pbi.purchaseRate > 0 "
+                + "AND bi.bill.department = :department "
+                + "AND bi.bill.billType IN :billTypes "
+                + "ORDER BY bi.bill.createdAt DESC";
 
-        getCurrentBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_PRE);
+        List<BillType> purchaseBillTypes = new ArrayList<>();
+        purchaseBillTypes.add(BillType.PharmacyGrnBill);
+        purchaseBillTypes.add(BillType.PharmacyPurchaseBill);
 
+        Map<String, Object> params = new HashMap<>();
+        params.put("itemId", itemId);
+        params.put("department", sessionController.getDepartment());
+        params.put("billTypes", purchaseBillTypes);
+
+        try {
+            @SuppressWarnings("unchecked")
+            List<Double> results = (List<Double>) itemFacade.findLightsByJpql(jpql, params, null, 1);
+            if (results != null && !results.isEmpty() && results.get(0) != null) {
+                return results.get(0);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to fetch last purchase rate for item " + itemId, e);
+        }
+        return 0.0;
+    }
+
+    /**
+     * PERFORMANCE OPTIMIZATION: Get last retail rate for a single item Replaces
+     * pharmacyBean.getLastRetailRate() call
+     */
+    private Double fetchLastRetailRateForItem(Long itemId) {
+        if (itemId == null) {
+            return 0.0;
+        }
+
+        String jpql = "SELECT pbi.retailRate "
+                + "FROM PharmaceuticalBillItem pbi "
+                + "JOIN pbi.billItem bi "
+                + "WHERE bi.item.id = :itemId "
+                + "AND bi.retired = false "
+                + "AND pbi.retailRate > 0 "
+                + "AND bi.bill.department = :department "
+                + "AND bi.bill.billType IN :billTypes "
+                + "ORDER BY bi.bill.createdAt DESC";
+
+        List<BillType> purchaseBillTypes = new ArrayList<>();
+        purchaseBillTypes.add(BillType.PharmacyGrnBill);
+        purchaseBillTypes.add(BillType.PharmacyPurchaseBill);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("itemId", itemId);
+        params.put("department", sessionController.getDepartment());
+        params.put("billTypes", purchaseBillTypes);
+
+        try {
+            @SuppressWarnings("unchecked")
+            List<Double> results = (List<Double>) itemFacade.findLightsByJpql(jpql, params, null, 1);
+            if (results != null && !results.isEmpty() && results.get(0) != null) {
+                return results.get(0);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to fetch last retail rate for item " + itemId, e);
+        }
+        return 0.0;
+    }
+
+    public void saveBill() {
         if (getCurrentBill().getId() == null) {
+            getCurrentBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_PRE);
+            getCurrentBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+            getCurrentBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+            getCurrentBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+            getCurrentBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+            createAndAssignBillNumber();
             getCurrentBill().setCreater(getSessionController().getLoggedUser());
             getCurrentBill().setCreatedAt(Calendar.getInstance().getTime());
             getBillFacade().create(getCurrentBill());
@@ -423,15 +572,72 @@ public class PurchaseOrderRequestController implements Serializable {
         }
     }
 
+    private void createAndAssignBillNumber() {
+        // Check if bill number suffix is configured, if not set default "POR" for Purchase Order Requests
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_PRE, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            // Set default suffix for Purchase Order Requests if not configured
+            configOptionApplicationController.setLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_ORDER_PRE, "POR");
+        }
+
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Department Code + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Department Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+        boolean billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount = configOptionApplicationController.getBooleanValueByKey("Institution Number Generation Strategy for Purchase Order Requests - Prefix + Institution Code + Year + Yearly Number and Yearly Number", false);
+
+        String billId = "";
+
+        if (billNumberGenerationStrategyForDepartmentIdIsPrefixDeptInsYearCount) {
+            if (getCurrentBill().getDeptId() == null || getCurrentBill().getDeptId().trim().equals("")) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+                getCurrentBill().setDeptId(billId);
+            }
+        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsDeptYearCount) {
+            if (getCurrentBill().getDeptId() == null || getCurrentBill().getDeptId().trim().equals("")) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+                getCurrentBill().setDeptId(billId);
+            }
+        } else if (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) {
+            if (getCurrentBill().getDeptId() == null || getCurrentBill().getDeptId().trim().equals("")) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+                getCurrentBill().setDeptId(billId);
+            }
+        } else {
+            //Keep Legacy Method intact without any changes
+            if (getCurrentBill().getDeptId() == null || getCurrentBill().getDeptId().trim().equals("")) {
+                billId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+                getCurrentBill().setDeptId(billId);
+            }
+        }
+
+        if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
+            if (getCurrentBill().getInsId() == null || getCurrentBill().getInsId().trim().equals("")) {
+                String insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+                getCurrentBill().setInsId(insId);
+            }
+        } else {
+            //Keep Legacy Method intact without any changes
+            if (getCurrentBill().getInsId() == null || getCurrentBill().getInsId().trim().equals("")) {
+                if (billId != null && !billId.trim().isEmpty()) {
+                    getCurrentBill().setInsId(billId);
+                }
+            }
+        }
+    }
+
     public void finalizeBill() {
         getCurrentBill().setEditedAt(new Date());
         getCurrentBill().setEditor(sessionController.getLoggedUser());
+        getCurrentBill().setChecked(true);
         getCurrentBill().setCheckeAt(new Date());
         getCurrentBill().setCheckedBy(sessionController.getLoggedUser());
         getCurrentBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER);
-        getBillFacade().edit(getCurrentBill());
+        if (currentBill.getId() == null) {
+            getBillFacade().create(getCurrentBill());
+        } else {
+            getBillFacade().edit(getCurrentBill());
+        }
         notificationController.createNotification(getCurrentBill());
-
     }
 
     public void generateBillComponentsForAllSupplierItems(List<Item> items) {
@@ -444,8 +650,28 @@ public class PurchaseOrderRequestController implements Serializable {
         }
 
         int serialStart = getBillItems().size();
+        boolean preventDuplicates = configOptionApplicationController.getBooleanValueByKey("Prevent Duplicate Items in Purchase Orders", false);
+        int skippedCount = 0;
 
+        // Create bill items and fetch rates individually (LIMIT 1 per item)
         for (Item i : items) {
+            // Check for duplicate items if configuration is enabled
+            if (preventDuplicates) {
+                boolean isDuplicate = false;
+                for (BillItem existingItem : getBillItems()) {
+                    if (existingItem != null && !existingItem.isRetired()
+                            && existingItem.getItem() != null
+                            && existingItem.getItem().equals(i)) {
+                        isDuplicate = true;
+                        skippedCount++;
+                        break;
+                    }
+                }
+                if (isDuplicate) {
+                    continue; // Skip this item as it already exists
+                }
+            }
+
             BillItem bi = new BillItem();
             bi.setItem(i);
 
@@ -454,10 +680,16 @@ public class PurchaseOrderRequestController implements Serializable {
             bi.setPharmaceuticalBillItem(tmp);
 
             bi.setSearialNo(serialStart++);
-            tmp.setPurchaseRate(getPharmacyBean().getLastPurchaseRate(i, getSessionController().getDepartment()));
-            tmp.setRetailRate(getPharmacyBean().getLastRetailRate(i, getSessionController().getDepartment()));
+
+            // PERFORMANCE: Fetch last rates individually (LIMIT 1 query per item)
+            tmp.setPurchaseRate(fetchLastPurchaseRateForItem(i.getId()));
+            tmp.setRetailRate(fetchLastRetailRateForItem(i.getId()));
 
             getBillItems().add(bi);
+        }
+
+        if (preventDuplicates && skippedCount > 0) {
+            JsfUtil.addErrorMessage(skippedCount + " duplicate item(s) were skipped. Items already in the purchase order were not added again.");
         }
 
         calculateBillTotals();
@@ -490,6 +722,8 @@ public class PurchaseOrderRequestController implements Serializable {
                 b.setRetireComments("Retired at Finalising PO");
             }
             totalBillItemsCount += totalUnits.doubleValue();
+            b.getPharmaceuticalBillItem().setRemainingQty(b.getPharmaceuticalBillItem().getQty());
+            b.getPharmaceuticalBillItem().setRemainingFreeQty(b.getPharmaceuticalBillItem().getFreeQty());
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
             } else {
@@ -533,17 +767,24 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void saveRequest() {
-        if (getCurrentBill().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Please select a payment method");
-            return;
+        boolean saved = saveRequestWithoutMessage();
+        if (saved) {
+            JsfUtil.addSuccessMessage("Request Saved");
         }
-        if (getBillItems() == null || getBillItems().isEmpty()) {
-            JsfUtil.addErrorMessage("Please add bill items");
-            return;
+    }
+
+    private boolean saveRequestWithoutMessage() {
+        if (getCurrentBill().isChecked()) {
+            JsfUtil.addErrorMessage("Cannot save a finalized bill");
+            return false;
+        }
+        if (getCurrentBill().getToInstitution()==null) {
+            JsfUtil.addErrorMessage("Please select a supplier");
+            return false;
         }
         saveBill();
         saveBillComponent();
-        JsfUtil.addSuccessMessage("Request Saved");
+        return true;
     }
 
     public List<Item> getDealorItems() {
@@ -558,12 +799,59 @@ public class PurchaseOrderRequestController implements Serializable {
                 + " order by c.item.name";
         hm.put("ins", getCurrentBill().getToInstitution());
         lst = itemFacade.findByJpql(sql, hm, 200);
+
+        // Filter by department type if set
+        if (getCurrentBill().getDepartmentType() != null && lst != null) {
+            lst = filterItemsByDepartmentType(lst, getCurrentBill().getDepartmentType());
+        }
+
         return lst;
+    }
+
+    private List<Item> filterItemsByDepartmentType(List<Item> items, DepartmentType departmentType) {
+        if (items == null || departmentType == null) {
+            return items;
+        }
+
+        // Check if the department type is allowed for pharmacy transactions
+        List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+        if (allowedTypes == null || !allowedTypes.contains(departmentType)) {
+            return new ArrayList<>(); // Return empty list if department type not allowed
+        }
+
+        // For now, return all items if department type is allowed
+        // Additional item-specific filtering can be added here if needed
+        return items;
+    }
+
+    public List<Item> completeItemForSelectedDepartmentType(String query) {
+        // Get items from the ItemController
+        List<Item> allItems;
+        if (getCurrentBill().getDepartmentType() == null) {
+            allItems = itemController.completeAmpAndAmppItemForLoggedDepartment(query);
+        } else {
+            allItems = itemController.completeAmpAndAmppItemForLoggedDepartment(query, getCurrentBill().getDepartmentType());
+        }
+
+        // Filter by department type if set
+        if (getCurrentBill().getDepartmentType() != null && allItems != null) {
+            return filterItemsByDepartmentType(allItems, getCurrentBill().getDepartmentType());
+        }
+
+        return allItems;
     }
 
     public void finalizeRequest() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+        if (getCurrentBill().getToInstitution() == null) {
+            JsfUtil.addErrorMessage("Please selectr a supplier");
+            return;
+        }
+        if (getCurrentBill().isChecked()) {
+            JsfUtil.addErrorMessage("Cannot finalize an already finalized bill");
             return;
         }
         if (getCurrentBill().getPaymentMethod() == null) {
@@ -578,19 +866,38 @@ public class PurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage("Please ensure each item has quantity and purchase price.");
             return;
         }
+        double recalculatedTotalBillItemsCount = calculateTotalBillItemsCount(billItems);
+        if (recalculatedTotalBillItemsCount == 0) {
+            JsfUtil.addErrorMessage("Please enter item quantities for the bill.");
+            return;
+        }
         if (currentBill.getId() == null) {
-            saveRequest();
+            saveRequestWithoutMessage();
         }
         finalizeBill();
         totalBillItemsCount = 0;
         finalizeBillComponent();
-        if (totalBillItemsCount == 0) {
-            JsfUtil.addErrorMessage("Please enter item quantities for the bill.");
-            return;
-        }
-
+        currentBill = billService.reloadBill(currentBill);
         JsfUtil.addSuccessMessage("Request successfully finalized.");
         printPreview = true;
+    }
+
+    private double calculateTotalBillItemsCount(List<BillItem> billItems) {
+        double total = 0d;
+        if (billItems == null) {
+            return total;
+        }
+        for (BillItem b : billItems) {
+            BigDecimal qUnits = (b.getBillItemFinanceDetails() != null && b.getBillItemFinanceDetails().getQuantityByUnits() != null)
+                    ? b.getBillItemFinanceDetails().getQuantityByUnits() : BigDecimal.ZERO;
+            BigDecimal fqUnits = (b.getBillItemFinanceDetails() != null && b.getBillItemFinanceDetails().getFreeQuantityByUnits() != null)
+                    ? b.getBillItemFinanceDetails().getFreeQuantityByUnits() : BigDecimal.ZERO;
+            BigDecimal totalUnits = qUnits.add(fqUnits);
+            if (totalUnits.compareTo(BigDecimal.ZERO) > 0) {
+                total += totalUnits.doubleValue();
+            }
+        }
+        return total;
     }
 
     public void prepareEmailDialog() {
@@ -793,9 +1100,9 @@ public class PurchaseOrderRequestController implements Serializable {
                 return false;
             }
             BigDecimal qtyUnits = fd.getQuantityByUnits() != null
-                ? fd.getQuantityByUnits() : BigDecimal.ZERO;
+                    ? fd.getQuantityByUnits() : BigDecimal.ZERO;
             BigDecimal freeUnits = fd.getFreeQuantityByUnits() != null
-                ? fd.getFreeQuantityByUnits() : BigDecimal.ZERO;
+                    ? fd.getFreeQuantityByUnits() : BigDecimal.ZERO;
             BigDecimal totalUnits = qtyUnits.add(freeUnits);
             // Require at least one atomic unit (e.g., tablet)
             if (totalUnits.compareTo(BigDecimal.ONE) < 0) {
@@ -954,44 +1261,16 @@ public class PurchaseOrderRequestController implements Serializable {
         }
     }
 
-    public BillItemFacade getBillItemFacade() {
+    private BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }
 
-    public void setBillItemFacade(BillItemFacade billItemFacade) {
-        this.billItemFacade = billItemFacade;
-    }
-
-    public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {
-        return pharmaceuticalBillItemFacade;
-    }
-
-    public void setPharmaceuticalBillItemFacade(PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade) {
-        this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
-    }
-
-    public PharmacyBean getPharmacyBean() {
+    private PharmacyBean getPharmacyBean() {
         return pharmacyBean;
     }
 
-    public void setPharmacyBean(PharmacyBean pharmacyBean) {
-        this.pharmacyBean = pharmacyBean;
-    }
-
-    public ItemsDistributorsFacade getItemsDistributorsFacade() {
-        return itemsDistributorsFacade;
-    }
-
-    public void setItemsDistributorsFacade(ItemsDistributorsFacade itemsDistributorsFacade) {
-        this.itemsDistributorsFacade = itemsDistributorsFacade;
-    }
-
-    public PharmacyController getPharmacyController() {
+    private PharmacyController getPharmacyController() {
         return pharmacyController;
-    }
-
-    public void setPharmacyController(PharmacyController pharmacyController) {
-        this.pharmacyController = pharmacyController;
     }
 
     public List<BillItem> getSelectedBillItems() {

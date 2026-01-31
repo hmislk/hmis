@@ -152,16 +152,16 @@ public class PharmacyCostingService {
 
         pbi.setRetailRate(rrPerUnit);
         pbi.setRetailRateInUnit(rrPerUnit);
-        pbi.setRetailRatePack(retailRate.doubleValue());
+        pbi.setRetailRatePack(BigDecimalUtil.valueOrZero(retailRate).doubleValue());
 
-        pbi.setRetailPackValue(retailValue.doubleValue());
-        pbi.setRetailValue(retailValue.doubleValue());
+        pbi.setRetailPackValue(BigDecimalUtil.valueOrZero(retailValue).doubleValue());
+        pbi.setRetailValue(BigDecimalUtil.valueOrZero(retailValue).doubleValue());
 
         pbi.setPurchaseRate(prPerUnit);
-        pbi.setPurchaseRatePack(lineGrossRate.doubleValue());
+        pbi.setPurchaseRatePack(BigDecimalUtil.valueOrZero(lineGrossRate).doubleValue());
 
-        pbi.setPurchaseRatePackValue(lineGrossTotal.doubleValue());
-        pbi.setPurchaseValue(lineGrossTotal.doubleValue());
+        pbi.setPurchaseRatePackValue(BigDecimalUtil.valueOrZero(lineGrossTotal).doubleValue());
+        pbi.setPurchaseValue(BigDecimalUtil.valueOrZero(lineGrossTotal).doubleValue());
     }
 
     
@@ -251,16 +251,16 @@ public class PharmacyCostingService {
 
         pbi.setRetailRate(rrPerUnit);
         pbi.setRetailRateInUnit(rrPerUnit);
-        pbi.setRetailRatePack(retailRate.doubleValue());
+        pbi.setRetailRatePack(BigDecimalUtil.valueOrZero(retailRate).doubleValue());
 
-        pbi.setRetailPackValue(retailValue.doubleValue());
-        pbi.setRetailValue(retailValue.doubleValue());
+        pbi.setRetailPackValue(BigDecimalUtil.valueOrZero(retailValue).doubleValue());
+        pbi.setRetailValue(BigDecimalUtil.valueOrZero(retailValue).doubleValue());
 
         pbi.setPurchaseRate(prPerUnit);
-        pbi.setPurchaseRatePack(lineGrossRate.doubleValue());
+        pbi.setPurchaseRatePack(BigDecimalUtil.valueOrZero(lineGrossRate).doubleValue());
 
-        pbi.setPurchaseRatePackValue(lineGrossTotal.doubleValue());
-        pbi.setPurchaseValue(lineGrossTotal.doubleValue());
+        pbi.setPurchaseRatePackValue(BigDecimalUtil.valueOrZero(lineGrossTotal).doubleValue());
+        pbi.setPurchaseValue(BigDecimalUtil.valueOrZero(lineGrossTotal).doubleValue());
     }
 
     
@@ -273,7 +273,6 @@ public class PharmacyCostingService {
      */
     public void distributeProportionalBillValuesToItems(List<BillItem> billItems, Bill bill) {
         if (bill == null) {
-            System.out.println("DEBUG: Bill is null, returning");
             return;
         }
 
@@ -288,6 +287,11 @@ public class PharmacyCostingService {
         
         if (bill.getBillExpenses() != null && !bill.getBillExpenses().isEmpty()) {
             for (com.divudi.core.entity.BillItem expense : bill.getBillExpenses()) {
+                // Skip retired expenses for consistency with other methods
+                if (expense.isRetired()) {
+                    continue;
+                }
+                
                 double expenseValue = expense.getNetValue();
                 boolean isConsidered = expense.isConsideredForCosting();
                 
@@ -324,9 +328,9 @@ public class PharmacyCostingService {
             }
             BigDecimal qty = BigDecimalUtil.valueOrZero(f.getQuantity());
             BigDecimal freeQty = BigDecimalUtil.valueOrZero(f.getFreeQuantity());
-            BigDecimal lineGrossRate = BigDecimalUtil.valueOrZero(f.getLineGrossRate());
-            // Use paid quantity only for proportional distribution basis
-            BigDecimal basis = lineGrossRate.multiply(qty);
+            BigDecimal lineNetTotal = BigDecimalUtil.valueOrZero(f.getLineNetTotal());
+            // Use line net total (after discounts) for proportional distribution basis
+            BigDecimal basis = lineNetTotal;
             
             itemBases.put(bi, basis);
             totalBasis = totalBasis.add(basis);
@@ -361,7 +365,7 @@ public class PharmacyCostingService {
             BigDecimal billTax = billTaxTotal.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
 
             System.out.println("DEBUG: Item: " + bi.getItem().getName() + 
-                             ", Basis: " + basis +
+                             ", Basis (LineNetTotal): " + basis +
                              ", Ratio: " + ratio + 
                              ", BillDiscount distributed: " + billDiscount +
                              ", BillExpense distributed: " + billExpense +
@@ -380,8 +384,6 @@ public class PharmacyCostingService {
             f.setTotalExpense(totalExpense);
             f.setTotalTax(totalTax);
             
-            System.out.println("DEBUG: Item: " + bi.getItem().getName() + 
-                             ", TotalExpense: " + totalExpense);
 
             BigDecimal quantity = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO);
             BigDecimal freeQty = Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO);
@@ -451,7 +453,6 @@ public class PharmacyCostingService {
         // After distribution, update bill-level totals by aggregating from distributed line items
         aggregateBillTotalsFromDistributedItems(bill, billItems);
         
-        System.out.println("=== DEBUG: distributeProportionalBillValuesToItems() END ===");
     }
     
     
@@ -461,11 +462,16 @@ public class PharmacyCostingService {
     /**
      * Aggregate bill totals from items after bill-level distribution has occurred.
      * This preserves line-level values while updating bill totals from distributed values.
+     * 
+     * Fixed: Now ensures that expenses "considered for costing" are properly reflected in bill totals.
+     * - Line items already contain distributed portions of expenses "considered for costing" in their netTotal
+     * - Bill total should include both: line items (with distributed expenses) + expenses "not considered for costing"
      */
     private void aggregateBillTotalsFromDistributedItems(Bill bill, List<BillItem> billItems) {
         BigDecimal totalNetTotal = BigDecimal.ZERO;
         BigDecimal totalGrossTotal = BigDecimal.ZERO;
         
+        // Sum up all line item totals (these already include distributed expenses "considered for costing")
         for (BillItem bi : billItems) {
             BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
             if (f != null) {
@@ -474,18 +480,21 @@ public class PharmacyCostingService {
             }
         }
         
-        // Add bill expenses not considered for costing (to avoid double-counting)
+        // Add expenses that are NOT considered for costing (these were not distributed to line items)
         if (bill.getBillExpenses() != null) {
             for (BillItem expense : bill.getBillExpenses()) {
-                if (!expense.isConsideredForCosting()) {
+                if (!expense.isRetired() && !expense.isConsideredForCosting()) {
                     BigDecimal expenseNetValue = Optional.ofNullable(BigDecimal.valueOf(expense.getNetValue())).orElse(BigDecimal.ZERO);
                     totalNetTotal = totalNetTotal.add(expenseNetValue);
                 }
             }
         }
         
-        bill.setNetTotal(totalNetTotal.doubleValue());
-        bill.setTotal(totalGrossTotal.doubleValue());
+        // Note: Expenses "considered for costing" are already included in line item netTotals
+        // from the distribution process, so they don't need to be added again here
+        
+        bill.setNetTotal(BigDecimalUtil.valueOrZero(totalNetTotal).doubleValue());
+        bill.setTotal(BigDecimalUtil.valueOrZero(totalGrossTotal).doubleValue());
     }
 
     public void addPharmaceuticalBillItemQuantitiesFromBillItemFinanceDetailQuantities(PharmaceuticalBillItem pbi, BillItemFinanceDetails bifd) {
@@ -506,10 +515,10 @@ public class PharmacyCostingService {
             upp = BigDecimal.ONE;
         }
 
-        pbi.setQty(qty.multiply(upp).doubleValue());
-        pbi.setFreeQty(freeQty.multiply(upp).doubleValue());
-        pbi.setQtyPacks(qty.doubleValue());
-        pbi.setFreeQtyPacks(freeQty.doubleValue());
+        pbi.setQty(BigDecimalUtil.valueOrZero(qty.multiply(upp)).doubleValue());
+        pbi.setFreeQty(BigDecimalUtil.valueOrZero(freeQty.multiply(upp)).doubleValue());
+        pbi.setQtyPacks(BigDecimalUtil.valueOrZero(qty).doubleValue());
+        pbi.setFreeQtyPacks(BigDecimalUtil.valueOrZero(freeQty).doubleValue());
 
         BigDecimal totalQty = Optional.ofNullable(bifd.getTotalQuantity()).orElse(BigDecimal.ZERO);
 
@@ -731,6 +740,7 @@ public class PharmacyCostingService {
                 totalTax = totalTax.add(Optional.ofNullable(f.getTotalTax()).orElse(BigDecimal.ZERO));
             }
         }
+        // Set legacy totals on Bill
 
         // Set legacy totals on Bill
         System.out.println("DEBUG: SERVICE - netTotal from line items: " + netTotal);
@@ -740,7 +750,10 @@ public class PharmacyCostingService {
         System.out.println("DEBUG: SERVICE - Bill expenses count: " + (bill.getBillExpenses() != null ? bill.getBillExpenses().size() : 0));
         if (bill.getBillExpenses() != null && !bill.getBillExpenses().isEmpty()) {
             for (com.divudi.core.entity.BillItem expense : bill.getBillExpenses()) {
-                System.out.println("DEBUG: SERVICE - Adding expense: " + expense.getItem().getName() + ", value: " + expense.getNetValue());
+                // Skip retired expenses for consistency
+                if (expense.isRetired()) {
+                    continue;
+                }
                 currentBillExpensesTotal += expense.getNetValue();
             }
         }
@@ -750,13 +763,12 @@ public class PharmacyCostingService {
         BigDecimal finalNetTotal = lineNetTotal.add(BigDecimal.valueOf(currentBillExpensesTotal));
         System.out.println("DEBUG: SERVICE - finalNetTotal (lineNetTotal + expenses): " + finalNetTotal);
         
-        bill.setTotal(lineGrossTotal.doubleValue());
-        bill.setNetTotal(finalNetTotal.doubleValue());
-        bill.setSaleValue(totalRetail.doubleValue());
+        bill.setTotal(BigDecimalUtil.valueOrZero(lineGrossTotal).doubleValue());
+        bill.setNetTotal(BigDecimalUtil.valueOrZero(finalNetTotal).doubleValue());
+        bill.setSaleValue(BigDecimalUtil.valueOrZero(totalRetail).doubleValue());
         
         System.out.println("DEBUG: SERVICE - Bill.netTotal set to: " + bill.getNetTotal());
         System.out.println("DEBUG: SERVICE - Bill.total set to: " + bill.getTotal());
-        System.out.println("DEBUG: SERVICE - Bill.saleValue set to: " + bill.getSaleValue());
 
         // Ensure BillFinanceDetails is present
         BillFinanceDetails bfd = bill.getBillFinanceDetails();
@@ -932,6 +944,7 @@ public class PharmacyCostingService {
                 totalTax = totalTax.add(Optional.ofNullable(f.getTotalTax()).orElse(BigDecimal.ZERO));
             }
         }
+        // Set legacy totals on Bill
 
         // Set legacy totals on Bill
         System.out.println("DEBUG: SERVICE - netTotal from line items: " + netTotal);
@@ -941,7 +954,10 @@ public class PharmacyCostingService {
         System.out.println("DEBUG: SERVICE - Bill expenses count: " + (bill.getBillExpenses() != null ? bill.getBillExpenses().size() : 0));
         if (bill.getBillExpenses() != null && !bill.getBillExpenses().isEmpty()) {
             for (com.divudi.core.entity.BillItem expense : bill.getBillExpenses()) {
-                System.out.println("DEBUG: SERVICE - Adding expense: " + expense.getItem().getName() + ", value: " + expense.getNetValue());
+                // Skip retired expenses for consistency
+                if (expense.isRetired()) {
+                    continue;
+                }
                 currentBillExpensesTotal += expense.getNetValue();
             }
         }
@@ -951,13 +967,12 @@ public class PharmacyCostingService {
         BigDecimal finalNetTotal = lineNetTotal.add(BigDecimal.valueOf(currentBillExpensesTotal));
         System.out.println("DEBUG: SERVICE - finalNetTotal (lineNetTotal + expenses): " + finalNetTotal);
         
-        bill.setTotal(lineGrossTotal.doubleValue());
-        bill.setNetTotal(finalNetTotal.doubleValue());
-        bill.setSaleValue(totalRetail.doubleValue());
+        bill.setTotal(BigDecimalUtil.valueOrZero(lineGrossTotal).doubleValue());
+        bill.setNetTotal(BigDecimalUtil.valueOrZero(finalNetTotal).doubleValue());
+        bill.setSaleValue(BigDecimalUtil.valueOrZero(totalRetail).doubleValue());
         
         System.out.println("DEBUG: SERVICE - Bill.netTotal set to: " + bill.getNetTotal());
         System.out.println("DEBUG: SERVICE - Bill.total set to: " + bill.getTotal());
-        System.out.println("DEBUG: SERVICE - Bill.saleValue set to: " + bill.getSaleValue());
 
         // Ensure BillFinanceDetails is present
         BillFinanceDetails bfd = bill.getBillFinanceDetails();
@@ -1101,9 +1116,9 @@ public class PharmacyCostingService {
             totalTax = totalTax.add(Optional.ofNullable(f.getTotalTax()).orElse(BigDecimal.ZERO));
         }
 
-        bill.setTotal(grossTotal.doubleValue());
-        bill.setNetTotal(netTotal.doubleValue());
-        bill.setSaleValue(totalRetail.doubleValue());
+        bill.setTotal(BigDecimalUtil.valueOrZero(grossTotal).doubleValue());
+        bill.setNetTotal(BigDecimalUtil.valueOrZero(netTotal).doubleValue());
+        bill.setSaleValue(BigDecimalUtil.valueOrZero(totalRetail).doubleValue());
 
         BillFinanceDetails bfd = bill.getBillFinanceDetails();
         if (bfd == null) {
@@ -1313,9 +1328,9 @@ public class PharmacyCostingService {
             totalTax = totalTax.add(Optional.ofNullable(f.getTotalTax()).orElse(BigDecimal.ZERO));
         }
 
-        bill.setTotal(grossTotal.doubleValue());
-        bill.setNetTotal(netTotal.doubleValue());
-        bill.setSaleValue(totalRetail.doubleValue());
+        bill.setTotal(BigDecimalUtil.valueOrZero(grossTotal).doubleValue());
+        bill.setNetTotal(BigDecimalUtil.valueOrZero(netTotal).doubleValue());
+        bill.setSaleValue(BigDecimalUtil.valueOrZero(totalRetail).doubleValue());
 
         BillFinanceDetails bfd = bill.getBillFinanceDetails();
         if (bfd == null) {

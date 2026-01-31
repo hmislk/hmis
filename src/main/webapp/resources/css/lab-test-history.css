@@ -28,11 +28,11 @@ body {
     min-height: 100vh;
     background-color: #f9fafb;
     padding: 1rem;
-    min-width: 70vw;
+    min-width: 100vw;
 }
 
 .main-wrapper {
-    max-width: 75vw;
+    max-width: 90vw;
     margin: 0 auto;
 }
 
@@ -181,7 +181,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    font-size: 0.875rem;
+    font-size: 1.0rem;
 }
 
 .sample-row {

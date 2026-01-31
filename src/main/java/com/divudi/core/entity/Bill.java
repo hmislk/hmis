@@ -7,6 +7,7 @@ package com.divudi.core.entity;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_GRN_RETURN;
 import com.divudi.core.data.IdentifiableWithNameOrCode;
 import com.divudi.core.data.PaymentMethod;
@@ -146,6 +147,8 @@ public class Bill implements Serializable, RetirableEntity {
     private BillTypeAtomic billTypeAtomic;
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
+    @Enumerated(EnumType.STRING)
+    private DepartmentType departmentType;
     @ManyToOne(fetch = FetchType.LAZY)
     private BillItem singleBillItem;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -157,6 +160,23 @@ public class Bill implements Serializable, RetirableEntity {
     private String referenceNumber; //referenceNumber
 
     //Values
+    /**
+     * IMPORTANT: Despite the name, this field stores the SERVICE CHARGE value
+     * for pharmacy bills. This is the PRIMARY field used for service charges.
+     *
+     * Data analysis (Dec 2024) shows:
+     * - 23,065 bills have margin != 0 with serviceCharge = 0
+     * - 7,476 bills have both fields with equal values
+     * - 0 bills have serviceCharge used independently
+     *
+     * Current usage:
+     * - Pharmacy reports use this field to display "Service Charge" column
+     * - PharmacyBundle.populateRowFromBill() maps this to serviceCharge in PharmacyRow
+     * - actualTotal is calculated as: total - margin
+     *
+     * @see #serviceCharge
+     * @see com.divudi.core.data.PharmacyBundle#populateRowFromBill
+     */
     private double margin;
 
     private double total;
@@ -176,6 +196,20 @@ public class Bill implements Serializable, RetirableEntity {
     private double settledAmountBySponsor;
     private double refundAmount;
     private double balance;
+    /**
+     * WARNING: This field is DEPRECATED for pharmacy billing - use 'margin' instead.
+     *
+     * Data analysis (Dec 2024) confirms:
+     * - This field is NEVER used independently (always 0 or equals margin)
+     * - When populated, it mirrors the 'margin' field value exactly
+     * - All pharmacy reports should use 'margin' for service charge values
+     *
+     * This naming confusion caused a bug in PharmacyBundle where actualTotal
+     * was incorrectly calculated using this field instead of margin.
+     *
+     * @see #margin
+     * @deprecated Use {@link #margin} for service charge values
+     */
     private double serviceCharge;
     private Double tax = 0.0;
     private Double cashPaid = 0.0;
@@ -185,6 +219,7 @@ public class Bill implements Serializable, RetirableEntity {
     private double performInstitutionFee;
     private double staffFee;
     private double billerFee;
+    // This is a known typo, can not correct it because of backword compatibility. Its grandTotal
     private double grantTotal;
     private double expenseTotal;
     private double expensesTotalConsideredForCosting;
@@ -203,6 +238,8 @@ public class Bill implements Serializable, RetirableEntity {
     private Institution collectingCentre;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution institution;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Institution site;
     @ManyToOne(fetch = FetchType.LAZY)
     private Institution fromInstitution;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -266,10 +303,13 @@ public class Bill implements Serializable, RetirableEntity {
     private WebUser editor;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
-    //Checking Property
+    //Checking Property == Finalized
+    private boolean checked = false;
     @ManyToOne(fetch = FetchType.LAZY)
     private WebUser checkedBy;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    // Legacy field name: intentionally named "checkeAt" (not "checkedAt") for backward compatibility
+    // This field is widely used across billing system - DO NOT rename to maintain database compatibility
     private Date checkeAt;
     //Retairing properties
     private boolean retired;
@@ -467,6 +507,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     @Transient
     private Institution transientSupplier;
+    
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Request currentRequest;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Patient chiefHouseHolder;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Family memberFamily;
 
     public Bill() {
         if (status == null) {
@@ -826,10 +874,14 @@ public class Bill implements Serializable, RetirableEntity {
         this.checkedBy = checkedBy;
     }
 
+    // Legacy method name: intentionally named "getCheckeAt" for backward compatibility
+    // DO NOT rename to "getCheckedAt" - widely used across billing system
     public Date getCheckeAt() {
         return checkeAt;
     }
 
+    // Legacy method name: intentionally named "setCheckeAt" for backward compatibility
+    // DO NOT rename to "setCheckedAt" - widely used across billing system
     public void setCheckeAt(Date checkeAt) {
         this.checkeAt = checkeAt;
     }
@@ -990,8 +1042,9 @@ public class Bill implements Serializable, RetirableEntity {
             pharmacyBill = bill.getPharmacyBill().cloneWithoutIdAndBill();
             pharmacyBill.setBill(this);
         }
-        if (bill.getBillFinanceDetails() != null) {
-            BillFinanceDetails clonedFinanceDetails = bill.getBillFinanceDetails().clone();
+        // Access field directly to avoid auto-creation
+        if (bill.billFinanceDetails != null) {
+            BillFinanceDetails clonedFinanceDetails = bill.billFinanceDetails.clone();
             clonedFinanceDetails.setBill(this);
             this.setBillFinanceDetails(clonedFinanceDetails);
         }
@@ -1015,8 +1068,9 @@ public class Bill implements Serializable, RetirableEntity {
         if (this.getPharmacyBill() != null && bill.getPharmacyBill() != null) {
             this.getPharmacyBill().copyValue(bill.getPharmacyBill());
         }
-        if (bill.getBillFinanceDetails() != null) {
-            BillFinanceDetails clonedFinanceDetails = bill.getBillFinanceDetails().clone();
+        // Access field directly to avoid auto-creation
+        if (bill.billFinanceDetails != null) {
+            BillFinanceDetails clonedFinanceDetails = bill.billFinanceDetails.clone();
             clonedFinanceDetails.setBill(this);
             this.setBillFinanceDetails(clonedFinanceDetails);
         }
@@ -1084,8 +1138,9 @@ public class Bill implements Serializable, RetirableEntity {
         netTotal = bill.getNetTotal();
         paidAmount = bill.getPaidAmount();
 
-        if (bill.getBillFinanceDetails() != null) {
-            BillFinanceDetails clonedFinanceDetails = bill.getBillFinanceDetails().clone();
+        // Access field directly to avoid auto-creation
+        if (bill.billFinanceDetails != null) {
+            BillFinanceDetails clonedFinanceDetails = bill.billFinanceDetails.clone();
             clonedFinanceDetails.setBill(this);
             this.setBillFinanceDetails(clonedFinanceDetails);
         }
@@ -1272,6 +1327,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public DepartmentType getDepartmentType() {
+        return departmentType;
+    }
+
+    public void setDepartmentType(DepartmentType departmentType) {
+        this.departmentType = departmentType;
     }
 
     public Item getBillPackege() {
@@ -3029,4 +3092,45 @@ public class Bill implements Serializable, RetirableEntity {
         }
         return transientSupplier;
     }
+
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Request getCurrentRequest() {
+        return currentRequest;
+    }
+
+    public void setCurrentRequest(Request currentRequest) {
+        this.currentRequest = currentRequest;
+    }
+
+    public Patient getChiefHouseHolder() {
+        return chiefHouseHolder;
+    }
+
+    public void setChiefHouseHolder(Patient chiefHouseHolder) {
+        this.chiefHouseHolder = chiefHouseHolder;
+    }
+
+    public Family getMemberFamily() {
+        return memberFamily;
+    }
+
+    public void setMemberFamily(Family memberFamily) {
+        this.memberFamily = memberFamily;
+    }
+
 }

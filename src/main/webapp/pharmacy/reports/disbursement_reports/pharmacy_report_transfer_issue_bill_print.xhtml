@@ -197,12 +197,12 @@
                                                 </h:panelGroup>
                                             </td>
                                             <td style="text-align: right;">
-                                                <h:outputLabel value="#{-i.netTotal}">
+                                                <h:outputLabel value="#{empty i.netTotal ? null : commonFunctionsProxy.abs(i.netTotal)}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </td>
                                             <td style="text-align: right;">
-                                                <h:outputLabel value="#{-i.saleValue}">
+                                                <h:outputLabel value="#{empty i.saleValue ? null : commonFunctionsProxy.abs(i.saleValue)}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </td>
@@ -215,12 +215,12 @@
                                             <h:outputText value="Total"/>
                                         </td>
                                         <td style="text-align: right;">
-                                            <h:outputLabel value="#{-reportsTransfer.netTotalValues}">
+                                            <h:outputLabel value="#{empty reportsTransfer.netTotalValues ? null : commonFunctionsProxy.abs(reportsTransfer.netTotalValues)}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </td>
                                         <td style="text-align: right;">
-                                            <h:outputLabel value="#{-reportsTransfer.totalsValue}">
+                                            <h:outputLabel value="#{empty reportsTransfer.totalsValue ? null : commonFunctionsProxy.abs(reportsTransfer.totalsValue)}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </td>

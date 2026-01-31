@@ -52,6 +52,7 @@
                 <tr>
                     <td colspan="2" style="text-align: center; font-size: 1.2em; text-decoration: underline;font-weight: bold;">
                         <h:outputLabel value="Transfer Issue Note" />
+                        <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
                         <h:outputLabel value="**Cancelled**" style="color: red;" rendered="#{cc.attrs.bill.billedBill.cancelled eq true}" />
                     </td>
                 </tr>

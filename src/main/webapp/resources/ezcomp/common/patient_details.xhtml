@@ -15,6 +15,7 @@
         <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithPatient"/>
         <cc:attribute name="focus" type="java.lang.Boolean"  />
         <cc:attribute name="ageListener" method-signature="void action()"/>
+        <cc:attribute name="additionalUpdateTargets" type="java.lang.String" default="" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -41,14 +42,14 @@
                                 class="mx-2"
                                 ></h:outputText>
                             <h:panelGroup rendered="#{cc.attrs.editable}" id="edit" >
-                                <p:selectBooleanButton 
-                                    value="#{cc.attrs.controller.patientDetailsEditable}" 
-                                    offIcon="pi pi-pencil" 
-                                    onIcon="pi pi-eye"                                 
+                                <p:selectBooleanButton
+                                    value="#{cc.attrs.controller.patientDetailsEditable}"
+                                    offIcon="pi pi-pencil"
+                                    onIcon="pi pi-eye"
                                     class="mx-2"
                                     >
-                                    <p:ajax 
-                                        process="@this" 
+                                    <p:ajax
+                                        process="@this"
                                         update="viewPatient editPatient btnDone edit" />
                                 </p:selectBooleanButton>
                                 <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(cc.attrs.controller.patient)}" rendered="#{cc.attrs.controller.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} " />
@@ -77,13 +78,13 @@
                                 class="form-control-sm mx-1"
                                 onfocus="this.select()" 
                                 />
-                            <p:commandButton 
+                            <p:commandButton
                                 id="btnSearchbyPhoneNo"
-                                icon="fa fa-search" 
+                                icon="fa fa-search"
                                 title="Quick Search from Phone Number"
-                                action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}" 
+                                action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}"
                                 process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                                update="ptImp selectPatient editPatient viewPatient"
+                                update="ptImp selectPatient editPatient viewPatient #{cc.attrs.additionalUpdateTargets}"
                                 styleClass="btn-sm mx-1">
                             </p:commandButton>
                             <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
@@ -113,11 +114,11 @@
                             #{ps.person.mobile}
                         </p:column>
                         <p:column>
-                            <p:commandButton 
-                                action="#{patientController.selectQuickOneFromQuickSearchPatient(cc.attrs.controller)}" 
+                            <p:commandButton
+                                action="#{patientController.selectQuickOneFromQuickSearchPatient(cc.attrs.controller)}"
                                 id="btnSelectPt"
                                 process="btnSelectPt tblPatients"
-                                update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId}"
+                                update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} #{cc.attrs.additionalUpdateTargets}"
                                 value="select">
                                 <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
                             </p:commandButton>
@@ -314,6 +315,24 @@
                                     </div>
                                 </div>
 
+                                <div class="row">
+                                    <div class="col-md-4 p-1">
+
+                                        <div class="input-group">
+                                            <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{cc.attrs.controller.patient.specificStatus}">
+                                                <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
+                                            </p:selectOneMenu>
+
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8 p-1">
+                                        <div class="input-group">
+                                            <p:inputText placeholder="Comment for Patient Specific Status" value="#{cc.attrs.controller.patient.specificStatusComment}" style="width: 100%;" class="form-control" />
+
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
                                 <p:tooltip for="txtNic" value="NIC / Passport No"  showDelay="0" hideDelay="0"></p:tooltip>
                                 <p:tooltip for="dpDob" value="Date Of Birth"  showDelay="0" hideDelay="0"></p:tooltip>
@@ -339,10 +358,24 @@
 
                 <h:panelGroup  rendered="#{not cc.attrs.controller.patientDetailsEditable}"  >
                     <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
-                        <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{cc.attrs.controller.patient ne null}" >
+                        <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{cc.attrs.controller.patient.id ne null}" >
+
                             <h:outputLabel value="Name " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.nameWithTitle}" />
+
+                            <h:panelGroup class="d-flex">
+
+                                <p:outputLabel class="ml-4" value="#{cc.attrs.controller.patient.person.nameWithTitle}" rendered="#{not empty cc.attrs.controller.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
+
+                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty cc.attrs.controller.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{cc.attrs.controller.patient.specificStatus}" severity="danger">
+                                    <p:outputLabel value="#{cc.attrs.controller.patient.person.nameWithTitle}" rendered="#{not empty cc.attrs.controller.patient.person.nameWithTitle}" />
+                                </p:badge> 
+
+                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system')}" style="transform: translate(110%, -40%);background-color: #{cc.attrs.controller.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{cc.attrs.controller.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+
+                                </p:badge>
+
+                            </h:panelGroup>
 
                             <h:outputLabel value="Gender " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
@@ -368,15 +401,15 @@
 
                             <h:outputLabel value="Email " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.email}" />
+                            <h:outputText value="#{empty cc.attrs.controller.patient.person.email ? 'N/A' : cc.attrs.controller.patient.person.email}" />
 
                             <h:outputLabel value="National ID No. " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.nic}" />
+                            <h:outputText value="#{empty cc.attrs.controller.patient.person.nic ? 'N/A' : cc.attrs.controller.patient.person.nic}" />
 
                             <h:outputLabel value="Address " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.address}" />
+                            <h:outputText value="#{empty cc.attrs.controller.patient.person.address ? 'N/A' : cc.attrs.controller.patient.person.address}" />
 
 
                             <h:outputLabel value="Patient Status " class="mx-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"/>
@@ -389,11 +422,15 @@
                                 </p:badge>
                             </h:panelGroup>
 
-                            <h:outputLabel value="Account Balance " class="mx-3" rendered="#{cc.attrs.controller.patient.hasAnAccount}"/>
+                            <h:outputLabel value="Account Balance (PD)" class="mx-3" rendered="#{cc.attrs.controller.patient.hasAnAccount}"/>
                             <h:outputLabel value=" : " class="mx-3" rendered="#{cc.attrs.controller.patient.hasAnAccount}"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.runningBalance}" rendered="#{cc.attrs.controller.patient.hasAnAccount}">
+
+                            <h:outputText value="#{patientDepositController.getPatientCurrentPatientDepositeTotal(cc.attrs.controller.patient, sessionController.loggedUser.department)}" rendered="#{cc.attrs.controller.patient.hasAnAccount}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
+<!--                            <h:outputText value="#{cc.attrs.controller.patient.runningBalance}" rendered="#{cc.attrs.controller.patient.hasAnAccount}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>-->
 
                             <h:outputLabel value="Area " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>

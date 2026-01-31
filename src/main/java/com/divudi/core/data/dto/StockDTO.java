@@ -9,6 +9,7 @@ public class StockDTO implements Serializable {
     private Long id;
     private Long stockId;
     private Long itemBatchId;
+    private Long itemId;
     private String itemName;
     private String code;
     private String genericName;
@@ -33,6 +34,12 @@ public class StockDTO implements Serializable {
     private Double beforeCostAdjustmentValue;
     // Field for total stock quantity across all departments (used in retail sale autocomplete)
     private Double totalStockQty;
+    // Whether the underlying Item allows fractional quantities
+    private Boolean allowFractions = false;
+    // Whether the underlying Item allows discounts (prevents database queries during rate calculation)
+    private Boolean discountAllowed = true;  // Default to true for safety
+    // Category ID for price matrix discount calculations
+    private Long categoryId;
 
     public StockDTO() {
     }
@@ -48,8 +55,16 @@ public class StockDTO implements Serializable {
         this.dateOfExpire = dateOfExpire;
     }
 
+    // Same as above, with allowFractions
+    public StockDTO(Long id, String itemName, String code, String genericName,
+                    Double retailRate, Double stockQty, Date dateOfExpire,
+                    Boolean allowFractions) {
+        this(id, itemName, code, genericName, retailRate, stockQty, dateOfExpire);
+        this.allowFractions = allowFractions;
+    }
+
     // Constructor for pharmacy adjustment with all fields
-    public StockDTO(Long id, String itemName, String code, Double retailRate, Double stockQty, 
+    public StockDTO(Long id, String itemName, String code, Double retailRate, Double stockQty,
                     Date dateOfExpire, String batchNo, Double purchaseRate, Double wholesaleRate) {
         this.id = id;
         this.itemName = itemName;
@@ -60,6 +75,14 @@ public class StockDTO implements Serializable {
         this.batchNo = batchNo;
         this.purchaseRate = purchaseRate;
         this.wholesaleRate = wholesaleRate;
+    }
+
+    // Same as above, with allowFractions
+    public StockDTO(Long id, String itemName, String code, Double retailRate, Double stockQty,
+                    Date dateOfExpire, String batchNo, Double purchaseRate, Double wholesaleRate,
+                    Boolean allowFractions) {
+        this(id, itemName, code, retailRate, stockQty, dateOfExpire, batchNo, purchaseRate, wholesaleRate);
+        this.allowFractions = allowFractions;
     }
 
     // Constructor for pharmacy adjustment with Stock ID and ItemBatch ID
@@ -77,6 +100,41 @@ public class StockDTO implements Serializable {
         this.batchNo = batchNo;
         this.purchaseRate = purchaseRate;
         this.wholesaleRate = wholesaleRate;
+    }
+
+    // Same as above, with allowFractions
+    public StockDTO(Long id, Long stockId, Long itemBatchId, String itemName, String code,
+                    Double retailRate, Double stockQty, Date dateOfExpire, String batchNo,
+                    Double purchaseRate, Double wholesaleRate, Boolean allowFractions) {
+        this(id, stockId, itemBatchId, itemName, code, retailRate, stockQty, dateOfExpire, batchNo, purchaseRate, wholesaleRate);
+        this.allowFractions = allowFractions;
+    }
+
+    // Constructor for pharmacy adjustment with Stock ID, ItemBatch ID and Cost Rate
+    public StockDTO(Long id, Long stockId, Long itemBatchId, String itemName, String code,
+                    Double retailRate, Double stockQty, Date dateOfExpire, String batchNo,
+                    Double purchaseRate, Double wholesaleRate, Double costRate) {
+        this.id = id;
+        this.stockId = stockId;
+        this.itemBatchId = itemBatchId;
+        this.itemName = itemName;
+        this.code = code;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.batchNo = batchNo;
+        this.purchaseRate = purchaseRate;
+        this.wholesaleRate = wholesaleRate;
+        this.costRate = costRate;
+    }
+
+    // Same as above, with allowFractions
+    public StockDTO(Long id, Long stockId, Long itemBatchId, String itemName, String code,
+                    Double retailRate, Double stockQty, Date dateOfExpire, String batchNo,
+                    Double purchaseRate, Double wholesaleRate, Double costRate,
+                    Boolean allowFractions) {
+        this(id, stockId, itemBatchId, itemName, code, retailRate, stockQty, dateOfExpire, batchNo, purchaseRate, wholesaleRate, costRate);
+        this.allowFractions = allowFractions;
     }
 
     // Constructor for department stock report by batch using DTO
@@ -107,12 +165,19 @@ public class StockDTO implements Serializable {
         this.retailRate = retailRate;
     }
 
-    // Constructor including field for retail rate adjustments
-    public StockDTO(Long id, Long stockId, Long itemBatchId, String itemName, String code,
-                    Double retailRate, Double stockQty, Date dateOfExpire, String batchNo,
-                    Double purchaseRate, Double wholesaleRate, Double beforeRetailAdjustmentValue) {
-        this(id, stockId, itemBatchId, itemName, code, retailRate, stockQty, dateOfExpire, batchNo, purchaseRate, wholesaleRate);
-        this.beforeRetailAdjustmentValue = beforeRetailAdjustmentValue;
+    // Constructor for stock count bill generation (optimized for performance)
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId,
+                    String categoryName, String itemName, String batchNo,
+                    Date dateOfExpire, Double stockQty, Double costRate) {
+        this.stockId = stockId;
+        this.itemBatchId = itemBatchId;
+        this.id = itemId;
+        this.categoryName = categoryName;
+        this.itemName = itemName;
+        this.batchNo = batchNo;
+        this.dateOfExpire = dateOfExpire;
+        this.stockQty = stockQty;
+        this.costRate = costRate;
     }
 
 
@@ -127,6 +192,85 @@ public class StockDTO implements Serializable {
         this.stockQty = stockQty;
         this.dateOfExpire = dateOfExpire;
         this.totalStockQty = totalStockQty;
+    }
+
+    // Same as above, with allowFractions
+    public StockDTO(Long id, String itemName, String code, String genericName,
+                    Double retailRate, Double stockQty, Date dateOfExpire, Double totalStockQty,
+                    Boolean allowFractions) {
+        this(id, itemName, code, genericName, retailRate, stockQty, dateOfExpire, totalStockQty);
+        this.allowFractions = allowFractions;
+    }
+
+    // Constructor for optimized retail sale autocomplete (includes itemBatchId and itemId for zero-query conversion)
+    public StockDTO(Long id, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, String batchNo, Double retailRate, Double stockQty,
+                    Date dateOfExpire, Boolean discountAllowed) {
+        this.id = id;
+        this.itemBatchId = itemBatchId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.batchNo = batchNo;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.discountAllowed = discountAllowed;
+    }
+
+    // Constructor for optimized retail sale autocomplete with category ID for price matrix discount calculation
+    public StockDTO(Long id, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, String batchNo, Double retailRate, Double stockQty,
+                    Date dateOfExpire, Boolean discountAllowed, Long categoryId) {
+        this.id = id;
+        this.itemBatchId = itemBatchId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.batchNo = batchNo;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.discountAllowed = discountAllowed;
+        this.categoryId = categoryId;
+    }
+
+    // Constructor for optimized retail sale autocomplete with costRate (for cashier sale)
+    public StockDTO(Long id, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, String batchNo, Double retailRate, Double stockQty,
+                    Date dateOfExpire, Boolean discountAllowed, Double costRate) {
+        this.id = id;
+        this.itemBatchId = itemBatchId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.batchNo = batchNo;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.discountAllowed = discountAllowed;
+        this.costRate = costRate;
+    }
+
+    // Constructor for optimized retail sale autocomplete with departmentType (for department type filtering)
+    public StockDTO(Long id, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, String batchNo, Double retailRate, Double stockQty,
+                    Date dateOfExpire, Boolean discountAllowed, DepartmentType departmentType) {
+        this.id = id;
+        this.itemBatchId = itemBatchId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.batchNo = batchNo;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.discountAllowed = discountAllowed;
+        this.departmentType = departmentType;
     }
 
     public Long getId() {
@@ -151,6 +295,14 @@ public class StockDTO implements Serializable {
 
     public void setItemBatchId(Long itemBatchId) {
         this.itemBatchId = itemBatchId;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
     }
 
     public String getItemName() {
@@ -241,6 +393,15 @@ public class StockDTO implements Serializable {
         this.costRate = costRate;
     }
 
+    // Prefer boolean accessor for EL friendliness
+    public boolean isAllowFractions() {
+        return allowFractions != null && allowFractions;
+    }
+
+    public void setAllowFractions(Boolean allowFractions) {
+        this.allowFractions = allowFractions;
+    }
+
     public Double getWholesaleRate() {
         return wholesaleRate;
     }
@@ -311,5 +472,26 @@ public class StockDTO implements Serializable {
 
     public void setTotalStockQty(Double totalStockQty) {
         this.totalStockQty = totalStockQty;
+    }
+
+    public Boolean getDiscountAllowed() {
+        return discountAllowed;
+    }
+
+    public void setDiscountAllowed(Boolean discountAllowed) {
+        this.discountAllowed = discountAllowed;
+    }
+
+    // Prefer boolean accessor for EL friendliness
+    public boolean isDiscountAllowed() {
+        return discountAllowed != null && discountAllowed;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 }
