@@ -2953,16 +2953,43 @@ public class PatientReportController implements Serializable {
     }
 
     public String navigateToCreatedPatientReport(Long patientInvestigationId) {
+        System.out.println("Start navigateToCreatedPatientReport(Long patientInvestigationId, String patientAge, String patientGender)");
         if (patientInvestigationId == null) {
             JsfUtil.addErrorMessage("Error in PatientInvestigation ID");
-            return null;
+            return "";
         }
+        
         PatientInvestigation pi = piFacade.findWithoutCache(patientInvestigationId);
 
         if (pi == null) {
             JsfUtil.addErrorMessage("Error in Patient Investigation");
             return "";
         }
+        
+        System.out.println("Patient Id = " + pi.getBillItem().getBill().getPatient().getId());
+        
+        Patient pt = patientFacade.findWithoutCache(pi.getBillItem().getBill().getPatient().getId());
+        
+        if(pt == null){
+            System.out.println("patient Null");
+            JsfUtil.addErrorMessage("Patient is Invalid");
+            return "";
+        }
+
+        if(pt.getPerson().getDob() == null){
+            System.out.println("patientAge Null= ");
+            JsfUtil.addErrorMessage("Patient Age is Invalid or Missing");
+            return "";
+        }
+        
+        if(pt.getPerson().getSex() == null){
+            System.out.println("patientGender Null= ");
+            JsfUtil.addErrorMessage("Patient Gender is Invalid or Missing");
+            return "";
+        }
+        
+        System.out.println("Patinet have no erros = " + pt.getPerson().getNameWithTitle() + " ("+ pt.getId() +") ");
+        
         laboratoryManagementController.setReportHandoverStaff(null);
         return navigateToCreatedPatientReport(pi);
     }
