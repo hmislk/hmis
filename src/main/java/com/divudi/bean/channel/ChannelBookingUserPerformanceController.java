@@ -98,24 +98,19 @@ public class ChannelBookingUserPerformanceController implements Serializable {
         userPerformanceList = new ArrayList<>();
 
         try {
-            String jpql = "SELECT new com.divudi.core.data.dto.ChannelBookingUserPerformanceDTO("
+            // Step 1: Get booking counts (bills created by each user)
+            String bookingJpql = "SELECT new com.divudi.core.data.dto.ChannelBookingUserPerformanceDTO("
                     + "b.creater.id, "
                     + "b.creater.name, "
                     + "b.creater.webUserPerson.name, "
                     + "COUNT(b.id), "
-                    + "SUM(CASE "
-                    + "    WHEN (b.paymentMethod <> com.divudi.core.data.PaymentMethod.OnCall "
-                    + "          OR b.settledAmountByPatient > 0 "
-                    + "          OR b.paid = true) "
-                    + "    THEN 1 ELSE 0 "
-                    + "END)"
+                    + "0L"
                     + ") "
                     + "FROM Bill b "
                     + "WHERE b.billTypeAtomic IN :billTypes "
                     + "AND b.createdAt BETWEEN :fromDate AND :toDate "
                     + "AND b.retired = false "
-                    + "GROUP BY b.creater.id, b.creater.name, b.creater.webUserPerson.name "
-                    + "ORDER BY b.creater.name";
+                    + "GROUP BY b.creater.id, b.creater.name, b.creater.webUserPerson.name";
 
             Map<String, Object> params = new HashMap<>();
             params.put("billTypes", Arrays.asList(
@@ -126,11 +121,60 @@ public class ChannelBookingUserPerformanceController implements Serializable {
             params.put("fromDate", fromDate);
             params.put("toDate", toDate);
 
-            userPerformanceList = (List<ChannelBookingUserPerformanceDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+            List<ChannelBookingUserPerformanceDTO> bookingList =
+                (List<ChannelBookingUserPerformanceDTO>) billFacade.findLightsByJpql(bookingJpql, params, TemporalType.TIMESTAMP);
 
-            if (userPerformanceList == null || userPerformanceList.isEmpty()) {
+            // Step 2: Get payment counts (payments accepted by each user)
+            String paymentJpql = "SELECT new com.divudi.core.data.dto.ChannelBookingUserPerformanceDTO("
+                    + "p.creater.id, "
+                    + "p.creater.name, "
+                    + "p.creater.webUserPerson.name, "
+                    + "0L, "
+                    + "COUNT(DISTINCT p.bill.id)"
+                    + ") "
+                    + "FROM Payment p "
+                    + "WHERE p.bill.billTypeAtomic IN :billTypes "
+                    + "AND p.createdAt BETWEEN :fromDate AND :toDate "
+                    + "AND p.retired = false "
+                    + "AND p.bill.retired = false "
+                    + "GROUP BY p.creater.id, p.creater.name, p.creater.webUserPerson.name";
+
+            List<ChannelBookingUserPerformanceDTO> paymentList =
+                (List<ChannelBookingUserPerformanceDTO>) billFacade.findLightsByJpql(paymentJpql, params, TemporalType.TIMESTAMP);
+
+            // Step 3: Merge the results
+            Map<Long, ChannelBookingUserPerformanceDTO> userMap = new HashMap<>();
+
+            // Add booking counts
+            if (bookingList != null) {
+                for (ChannelBookingUserPerformanceDTO dto : bookingList) {
+                    userMap.put(dto.getUserId(), dto);
+                }
+            }
+
+            // Add payment counts
+            if (paymentList != null) {
+                for (ChannelBookingUserPerformanceDTO dto : paymentList) {
+                    if (userMap.containsKey(dto.getUserId())) {
+                        // User exists, update payment count
+                        userMap.get(dto.getUserId()).setPaidBookings(dto.getPaidBookings());
+                    } else {
+                        // User only has payments, add them
+                        userMap.put(dto.getUserId(), dto);
+                    }
+                }
+            }
+
+            // Convert map to list and sort by user name
+            userPerformanceList = new ArrayList<>(userMap.values());
+            userPerformanceList.sort((a, b) -> {
+                String nameA = a.getUserPersonName() != null ? a.getUserPersonName() : a.getUserName();
+                String nameB = b.getUserPersonName() != null ? b.getUserPersonName() : b.getUserName();
+                return nameA.compareToIgnoreCase(nameB);
+            });
+
+            if (userPerformanceList.isEmpty()) {
                 JsfUtil.addErrorMessage("No data found for the selected date range");
-                userPerformanceList = new ArrayList<>();
             } else {
                 JsfUtil.addSuccessMessage("Report generated successfully with "
                         + userPerformanceList.size() + " user(s)");

@@ -119,20 +119,20 @@
                                     <h:outputText value="#{row.displayName}"/>
                                 </p:column>
 
-                                <!-- Total Bookings Column -->
-                                <p:column style="text-align: right; width: 150px;">
+                                <!-- Bookings Done Column -->
+                                <p:column style="text-align: right; width: 180px;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Total Bookings"/>
+                                        <h:outputLabel value="Number of Bookings Done"/>
                                     </f:facet>
                                     <h:outputText value="#{row.totalBookings}">
                                         <f:convertNumber pattern="#,##0"/>
                                     </h:outputText>
                                 </p:column>
 
-                                <!-- Paid Bookings Column -->
-                                <p:column style="text-align: right; width: 150px;">
+                                <!-- Payments Accepted Column -->
+                                <p:column style="text-align: right; width: 200px;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Paid Bookings"/>
+                                        <h:outputLabel value="Number of Payments Accepted"/>
                                     </f:facet>
                                     <h:outputText value="#{row.paidBookings}">
                                         <f:convertNumber pattern="#,##0"/>
