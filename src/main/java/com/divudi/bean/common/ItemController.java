@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -149,9 +150,6 @@ public class ItemController implements Serializable {
     @Inject
     StaffController staffController;
 
-    /**
-     * Properties
-     */
     private Institution site;
     private Institution collectionCentre;
     private Item current;
@@ -2140,8 +2138,24 @@ public class ItemController implements Serializable {
                     + " where c.retired=false ";
 
             if (departmentTypes != null) {
-                sql += " and c.departmentType in :deps ";
-                tmpMap.put("deps", Arrays.asList(departmentTypes));
+                // Handle NULL values properly in departmentTypes array
+                boolean hasNull = Arrays.asList(departmentTypes).contains(null);
+                List<DepartmentType> nonNullDepts = Arrays.stream(departmentTypes)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+                if (hasNull && !nonNullDepts.isEmpty()) {
+                    // Include both NULL and non-NULL department types
+                    sql += " and (c.departmentType IS NULL OR c.departmentType in :deps) ";
+                    tmpMap.put("deps", nonNullDepts);
+                } else if (hasNull) {
+                    // Only NULL department types
+                    sql += " and c.departmentType IS NULL ";
+                } else if (!nonNullDepts.isEmpty()) {
+                    // Only non-NULL department types
+                    sql += " and c.departmentType in :deps ";
+                    tmpMap.put("deps", nonNullDepts);
+                }
             }
 
             if (itemClasses != null) {
@@ -2310,6 +2324,38 @@ public class ItemController implements Serializable {
     public List<Item> completeMedicineByTypePriority(String query) {
         DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
         Class[] classes = new Class[]{Vtm.class, Atm.class, Vmp.class, Amp.class, Vmpp.class, Ampp.class};
+        return completeItem(query, classes, dts, 0, true);
+    }
+
+    /**
+     * Returns filtered medicine items based on selected types, sorted by type priority
+     */
+    public List<Item> completeMedicineByTypeWithFilter(String query, boolean includeVtm, boolean includeAtm, boolean includeVmp, boolean includeAmp) {
+        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
+
+        // Build classes array based on toggle states
+        List<Class> classList = new ArrayList<>();
+        if (includeVtm) {
+            classList.add(Vtm.class);
+        }
+        if (includeAtm) {
+            classList.add(Atm.class);
+        }
+        if (includeVmp) {
+            classList.add(Vmp.class);
+            classList.add(Vmpp.class); // Include VMPP with VMP
+        }
+        if (includeAmp) {
+            classList.add(Amp.class);
+            classList.add(Ampp.class); // Include AMPP with AMP
+        }
+
+        // If no types selected, return empty list
+        if (classList.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Class[] classes = classList.toArray(new Class[classList.size()]);
         return completeItem(query, classes, dts, 0, true);
     }
 

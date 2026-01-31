@@ -1,5 +1,6 @@
 package com.divudi.bean.clinical;
 
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.MeasurementUnitController;
 import com.divudi.bean.pharmacy.VmpController;
@@ -42,6 +43,8 @@ public class FavouriteController implements Serializable {
     MeasurementUnitController measurementUnitController;
     @Inject
     VmpController vmpController;
+    @Inject
+    ItemController itemController;
     /**
      * Properties
      */
@@ -51,6 +54,12 @@ public class FavouriteController implements Serializable {
     private List<MeasurementUnit> availableDoseUnits;
     private List<Item> availableItems;
     private boolean itemadd = false;
+
+    // Toggle buttons for medicine type filtering
+    private boolean includeVtm = true;
+    private boolean includeAtm = true;
+    private boolean includeVmp = true;
+    private boolean includeAmp = true;
 
     /**
      * Methods
@@ -784,6 +793,106 @@ public class FavouriteController implements Serializable {
         favouriteItemFacade.edit(removingTemplate);
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
         JsfUtil.addSuccessMessage("Favourite diagnosis removed successfully");
+    }
+
+    // ========================================
+    // MEDICINE TYPE TOGGLE GETTERS AND SETTERS
+    // ========================================
+
+    public boolean isIncludeVtm() {
+        return includeVtm;
+    }
+
+    public void setIncludeVtm(boolean includeVtm) {
+        this.includeVtm = includeVtm;
+    }
+
+    public boolean isIncludeAtm() {
+        return includeAtm;
+    }
+
+    public void setIncludeAtm(boolean includeAtm) {
+        this.includeAtm = includeAtm;
+    }
+
+    public boolean isIncludeVmp() {
+        return includeVmp;
+    }
+
+    public void setIncludeVmp(boolean includeVmp) {
+        this.includeVmp = includeVmp;
+    }
+
+    public boolean isIncludeAmp() {
+        return includeAmp;
+    }
+
+    public void setIncludeAmp(boolean includeAmp) {
+        this.includeAmp = includeAmp;
+    }
+
+    /**
+     * Autocomplete method that uses the toggle filters
+     */
+    public List<Item> completeMedicineWithTypeFilter(String query) {
+        // Check if at least one type is selected
+        if (!includeVtm && !includeAtm && !includeVmp && !includeAmp) {
+            // If no types are selected, show a message and return empty list
+            JsfUtil.addErrorMessage("Please select at least one medicine type to search");
+            return new ArrayList<>();
+        }
+        return itemController.completeMedicineByTypeWithFilter(query, includeVtm, includeAtm, includeVmp, includeAmp);
+    }
+
+    /**
+     * Selects all medicine types
+     */
+    public void selectAllMedicineTypes() {
+        includeVtm = true;
+        includeAtm = true;
+        includeVmp = true;
+        includeAmp = true;
+    }
+
+    /**
+     * Deselects all medicine types
+     */
+    public void deselectAllMedicineTypes() {
+        includeVtm = false;
+        includeAtm = false;
+        includeVmp = false;
+        includeAmp = false;
+    }
+
+    /**
+     * Gets the count of selected medicine types
+     */
+    public int getSelectedMedicineTypesCount() {
+        int count = 0;
+        if (includeVtm) count++;
+        if (includeAtm) count++;
+        if (includeVmp) count++;
+        if (includeAmp) count++;
+        return count;
+    }
+
+    /**
+     * Gets a descriptive text of selected medicine types
+     */
+    public String getSelectedMedicineTypesText() {
+        List<String> selected = new ArrayList<>();
+        if (includeVtm) selected.add("VTM");
+        if (includeAtm) selected.add("ATM");
+        if (includeVmp) selected.add("VMP");
+        if (includeAmp) selected.add("AMP");
+
+        if (selected.isEmpty()) {
+            return "No types selected";
+        } else if (selected.size() == 4) {
+            return "All types selected";
+        } else {
+            return String.join(", ", selected) + " selected";
+        }
     }
 
 }

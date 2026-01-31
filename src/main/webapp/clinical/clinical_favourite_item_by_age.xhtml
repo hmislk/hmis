@@ -24,13 +24,110 @@
 
                             <!-- Medicine Selection Section -->
                             <h:panelGroup layout="block" styleClass="flex-fill" style="min-width: 300px; max-width: 600px;">
-                                <p:outputLabel value="Select Medicine" styleClass="d-block mb-2 font-weight-bold"></p:outputLabel>
+
+                                <!-- Medicine Type Filter Toggle Buttons -->
+                                <h:panelGroup layout="block" styleClass="mb-3">
+                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                        <p:outputLabel value="Filter Medicine Types:" styleClass="font-weight-bold mr-2"></p:outputLabel>
+                                        <small class="text-muted mr-3">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            Toggle to include/exclude: VTM (Virtual Therapeutic Molecule), ATM (Actual Therapeutic Molecule), VMP (Virtual Medicinal Product), AMP (Actual Medicinal Product)
+                                        </small>
+                                        <h:panelGroup styleClass="ml-auto">
+                                            <p:commandButton value="Select All"
+                                                             action="#{favouriteController.selectAllMedicineTypes}"
+                                                             update="vtmToggle,atmToggle,vmpToggle,ampToggle,acItem,noTypesWarning,typeStatusText"
+                                                             styleClass="ui-button-sm ui-button-outlined mr-1"
+                                                             style="font-size: 0.8rem; padding: 0.25rem 0.5rem;" />
+                                            <p:commandButton value="Deselect All"
+                                                             action="#{favouriteController.deselectAllMedicineTypes}"
+                                                             update="vtmToggle,atmToggle,vmpToggle,ampToggle,acItem,noTypesWarning,typeStatusText"
+                                                             styleClass="ui-button-sm ui-button-outlined"
+                                                             style="font-size: 0.8rem; padding: 0.25rem 0.5rem;" />
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                    <h:panelGroup layout="block" styleClass="d-flex flex-wrap" style="gap: 0.75rem;">
+                                        <h:panelGroup>
+                                            <p:selectBooleanButton id="vtmToggle"
+                                                                   value="#{favouriteController.includeVtm}"
+                                                                   onLabel="VTM ✓"
+                                                                   offLabel="VTM ✗"
+                                                                   onIcon="fas fa-check"
+                                                                   offIcon="fas fa-times"
+                                                                   styleClass="ui-button-sm"
+                                                                   style="min-width: 80px;">
+                                                <p:ajax update="acItem,noTypesWarning,typeStatusText" event="change" />
+                                            </p:selectBooleanButton>
+                                            <small class="d-block text-center text-muted" style="font-size: 0.7rem; margin-top: 2px;">Generic</small>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup>
+                                            <p:selectBooleanButton id="atmToggle"
+                                                                   value="#{favouriteController.includeAtm}"
+                                                                   onLabel="ATM ✓"
+                                                                   offLabel="ATM ✗"
+                                                                   onIcon="fas fa-check"
+                                                                   offIcon="fas fa-times"
+                                                                   styleClass="ui-button-sm"
+                                                                   style="min-width: 80px;">
+                                                <p:ajax update="acItem,noTypesWarning,typeStatusText" event="change" />
+                                            </p:selectBooleanButton>
+                                            <small class="d-block text-center text-muted" style="font-size: 0.7rem; margin-top: 2px;">Branded</small>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup>
+                                            <p:selectBooleanButton id="vmpToggle"
+                                                                   value="#{favouriteController.includeVmp}"
+                                                                   onLabel="VMP ✓"
+                                                                   offLabel="VMP ✗"
+                                                                   onIcon="fas fa-check"
+                                                                   offIcon="fas fa-times"
+                                                                   styleClass="ui-button-sm"
+                                                                   style="min-width: 80px;">
+                                                <p:ajax update="acItem,noTypesWarning,typeStatusText" event="change" />
+                                            </p:selectBooleanButton>
+                                            <small class="d-block text-center text-muted" style="font-size: 0.7rem; margin-top: 2px;">Products</small>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup>
+                                            <p:selectBooleanButton id="ampToggle"
+                                                                   value="#{favouriteController.includeAmp}"
+                                                                   onLabel="AMP ✓"
+                                                                   offLabel="AMP ✗"
+                                                                   onIcon="fas fa-check"
+                                                                   offIcon="fas fa-times"
+                                                                   styleClass="ui-button-sm"
+                                                                   style="min-width: 80px;">
+                                                <p:ajax update="acItem,noTypesWarning,typeStatusText" event="change" />
+                                            </p:selectBooleanButton>
+                                            <small class="d-block text-center text-muted" style="font-size: 0.7rem; margin-top: 2px;">Specific</small>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <!-- Warning message when no types are selected -->
+                                <p:panel id="noTypesWarning"
+                                         styleClass="ui-panel-warning mb-2"
+                                         rendered="#{not favouriteController.includeVtm and not favouriteController.includeAtm and not favouriteController.includeVmp and not favouriteController.includeAmp}">
+                                    <h:panelGroup layout="block" styleClass="text-warning">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        <strong>No medicine types selected.</strong> Please select at least one type to search for medicines.
+                                    </h:panelGroup>
+                                </p:panel>
+
+                                <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                    <p:outputLabel value="Select Medicine" styleClass="font-weight-bold mr-2"></p:outputLabel>
+                                    <small id="typeStatusText" class="text-muted">
+                                        <i class="fas fa-filter mr-1"></i>
+                                        #{favouriteController.selectedMedicineTypesText}
+                                    </small>
+                                </h:panelGroup>
                                 <p:autoComplete id="acItem"
                                                 value="#{favouriteController.item}"
                                                 forceSelection="true"
                                                 styleClass="w-100"
                                                 inputStyleClass="w-100"
-                                                completeMethod="#{itemController.completeMedicineByTypePriority}"
+                                                completeMethod="#{favouriteController.completeMedicineWithTypeFilter}"
                                                 var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                     <p:column headerText="Item" >
                                         <h:outputLabel value="#{vt.name}"></h:outputLabel>
@@ -475,7 +572,7 @@
                             </f:facet>
                         </p:dialog>
 
-                        <p:dataTable id="favouriteTable" value="#{favouriteController.items}" var="fi" styleClass="w-100" paginator="true" rows="10" sortBy="#{fi.createdAt}" sortOrder="ascending">
+                        <p:dataTable id="favouriteTable" value="#{favouriteController.items}" var="fi" styleClass="w-100" paginator="true" rows="10" sortBy="#{fi.createdAt}" >
                             <p:column  >
                                 <f:facet name="header" >
                                     <i class="fas fa-baby mr-1"></i>
