@@ -2399,32 +2399,42 @@ public class PharmacySaleForCashierController2 implements Serializable, Controll
         if (getStockDto() != null && getStockDto().getItemId() != null) {
             Item selectedItem = itemFacade.find(getStockDto().getItemId());
 
-            // Auto-set department type if not already set (first item)
-            if (getPreBill().getDepartmentType() == null) {
-                if (selectedItem.getDepartmentType() != null) {
-                    getPreBill().setDepartmentType(selectedItem.getDepartmentType());
-                } else {
-                    getPreBill().setDepartmentType(DepartmentType.Pharmacy);
-                }
+            // Null-check for selected item
+            if (selectedItem == null) {
+                JsfUtil.addErrorMessage("Selected item not found. Please try again.");
+                return;
             }
 
-            // Validate item's department type matches PreBill's department type
-            if (getPreBill().getDepartmentType() != null) {
-                DepartmentType itemDepartmentType = selectedItem.getDepartmentType();
+            // Get item's department type (null defaults to Pharmacy)
+            DepartmentType itemDepartmentType = selectedItem.getDepartmentType();
+            if (itemDepartmentType == null) {
+                itemDepartmentType = DepartmentType.Pharmacy;
+            }
 
-                if (itemDepartmentType != null && !itemDepartmentType.equals(getPreBill().getDepartmentType())) {
+            // Get allowed department types
+            List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+            if (allowedTypes == null || allowedTypes.isEmpty()) {
+                JsfUtil.addErrorMessage("No department types are configured for pharmacy transactions.");
+                return;
+            }
+
+            // Validate item's department type is allowed
+            if (!allowedTypes.contains(itemDepartmentType)) {
+                JsfUtil.addErrorMessage("Items of type " + itemDepartmentType.getLabel() + " are not allowed for pharmacy transactions.");
+                return;
+            }
+
+            // If PreBill already has a department type set, validate item matches it
+            if (getPreBill().getDepartmentType() != null) {
+                if (!itemDepartmentType.equals(getPreBill().getDepartmentType())) {
                     JsfUtil.addErrorMessage("Cannot add items from different department types. "
                             + "Bill is set for " + getPreBill().getDepartmentType().getLabel()
                             + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
                     return;
                 }
-
-                // Verify department type is allowed
-                List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
-                if (allowedTypes == null || !allowedTypes.contains(getPreBill().getDepartmentType())) {
-                    JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + getPreBill().getDepartmentType().getLabel());
-                    return;
-                }
+            } else {
+                // First item: set department type on PreBill after all validations pass
+                getPreBill().setDepartmentType(itemDepartmentType);
             }
         }
 
