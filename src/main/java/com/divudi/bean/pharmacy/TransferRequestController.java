@@ -156,7 +156,31 @@ public class TransferRequestController implements Serializable {
     ItemController itemController;
     
     public List<Item> completeAmpAmppVmpVmppItemsForRequestingDepartment(String query) {
-        return itemController.completeAmpAmppVmpVmppItemsForRequestingDepartment(query, toDepartment);
+        // If no department type is set, show all available items for this department
+        if (getBill().getDepartmentType() == null) {
+            return itemController.completeAmpAmppVmpVmppItemsForRequestingDepartment(query, toDepartment);
+        } else {
+            // If department type is set, filter items by that department type only
+            List<Item> allItems = itemController.completeAmpAmppVmpVmppItemsForRequestingDepartment(query, toDepartment);
+            return filterItemsByDepartmentType(allItems, getBill().getDepartmentType());
+        }
+    }
+
+    private List<Item> filterItemsByDepartmentType(List<Item> items, DepartmentType departmentType) {
+        if (items == null || departmentType == null) {
+            return items;
+        }
+
+        return items.stream()
+                .filter(item -> {
+                    DepartmentType itemDeptType = item.getDepartmentType();
+                    // Treat items without department type as Pharmacy
+                    if (itemDeptType == null) {
+                        itemDeptType = DepartmentType.Pharmacy;
+                    }
+                    return itemDeptType.equals(departmentType);
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public String fillHeaderDataOfTransferRequest(String s, Bill b) {
@@ -245,6 +269,23 @@ public class TransferRequestController implements Serializable {
 
     public void addItem() {
         if (errorCheck()) {
+            currentBillItem = null;
+            return;
+        }
+
+        // Auto-set department type on first item addition
+        if (getBill().getDepartmentType() == null) {
+            DepartmentType itemDeptType = getCurrentBillItem().getItem().getDepartmentType();
+            if (itemDeptType != null) {
+                getBill().setDepartmentType(itemDeptType);
+            } else {
+                // Default to Pharmacy type for items without department type
+                getBill().setDepartmentType(DepartmentType.Pharmacy);
+            }
+        }
+
+        // Validate item department type matches bill department type
+        if (!validateItemDepartmentType(getCurrentBillItem().getItem())) {
             currentBillItem = null;
             return;
         }
@@ -523,6 +564,7 @@ public class TransferRequestController implements Serializable {
         getTransferRequestBillPre().setToInstitution(getToDepartment().getInstitution());
         getTransferRequestBillPre().setFromDepartment(getSessionController().getDepartment());
         getTransferRequestBillPre().setFromInstitution(getSessionController().getInstitution());
+        getTransferRequestBillPre().setDepartmentType(getBill().getDepartmentType());
         if (getToDepartment().equals(getTransferRequestBillPre().getFromDepartment())) {
             JsfUtil.addErrorMessage("You cant request from you own department.");
             return;
@@ -628,6 +670,8 @@ public class TransferRequestController implements Serializable {
         calculateBillTotalsFromItemsForTransferRequests(getTransferRequestBillPre(), billItems);
         LOGGER.log(Level.FINE, "Editing transfer request with {0} items", billItems.size());
         setToDepartment(getTransferRequestBillPre().getToDepartment());
+        // Set the bill to the loaded bill so getBill() returns the existing bill with its department type
+        bill = transferRequestBillPre;
         return "/pharmacy/pharmacy_transfer_request?faces-redirect=true";
     }
     
@@ -737,6 +781,7 @@ public class TransferRequestController implements Serializable {
         getTransferRequestBillPre().setFromDepartment(sessionController.getDepartment());
         getTransferRequestBillPre().setToDepartment(toDepartment);
         getTransferRequestBillPre().setToInstitution(toDepartment.getInstitution());
+
         return "/pharmacy/pharmacy_transfer_request";
     }
 
@@ -931,6 +976,31 @@ public class TransferRequestController implements Serializable {
 
     public void setToDepartment(Department toDepartment) {
         this.toDepartment = toDepartment;
+    }
+
+    /**
+     * Handles changes to the toDepartment selection.
+     * Validates that the current department type selection is still valid
+     * for the intersection of logged department and toDepartment.
+     * Resets department type to null if it's no longer valid.
+     */
+    public void handleToDepartmentChange() {
+        // Guard against null toDepartment
+        if (toDepartment == null) {
+            return;
+        }
+
+        // Reset department type if it's no longer valid for the intersection
+        if (bill != null && bill.getDepartmentType() != null) {
+            List<DepartmentType> validTypes = getAvailableDepartmentTypesForTransfer();
+
+            if (!validTypes.contains(bill.getDepartmentType())) {
+                // Current selection is no longer valid
+                bill.setDepartmentType(null);
+                JsfUtil.addErrorMessage("Department type reset. The previously selected department type is not supported by " +
+                    toDepartment.getName() + ". Please select a valid department type.");
+            }
+        }
     }
 
     private void updateFinancials(BillItemFinanceDetails fd) {
@@ -1332,6 +1402,44 @@ public class TransferRequestController implements Serializable {
         bfd.setLineNetTotal(lineNetTotalSum);
     }
 
+
+    private boolean validateItemDepartmentType(Item item) {
+        if (getBill().getDepartmentType() == null) return true;
+
+        DepartmentType itemDeptType = item.getDepartmentType();
+        DepartmentType billDeptType = getBill().getDepartmentType();
+
+        // For items without department type, treat as Pharmacy
+        if (itemDeptType == null) {
+            itemDeptType = DepartmentType.Pharmacy;
+        }
+
+        // Check if item type matches bill type
+        if (!itemDeptType.equals(billDeptType)) {
+            JsfUtil.addErrorMessage("Cannot add items from different department types. " +
+                "Transfer is set for " + billDeptType.getLabel() +
+                " items, but you are trying to add a " + itemDeptType.getLabel() + " item.");
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean isDepartmentTypeLocked() {
+        return billItems != null && !billItems.isEmpty();
+    }
+
+    public void changeDepartmentType() {
+        // Reset items if department type is changed manually
+        if (billItems != null && !billItems.isEmpty()) {
+            JsfUtil.addErrorMessage("Cannot change department type when items are already added");
+            return;
+        }
+
+        // Clear existing items and reset
+        billItems = new ArrayList<>();
+    }
+
     private BigDecimal determineTransferRate(Item item) {
         boolean byPurchase = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
         boolean byCost = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
@@ -1373,6 +1481,94 @@ public class TransferRequestController implements Serializable {
      * Get available department types for the current target department for display purposes
      * @return List of department type names that are enabled for pharmacy transactions
      */
+    /**
+     * Gets the intersection of department types supported by BOTH:
+     * 1. The logged user's department (from session)
+     * 2. The toDepartment (requesting department)
+     *
+     * This ensures users can only select department types that are valid
+     * for BOTH departments involved in the transfer.
+     *
+     * @return List of DepartmentType objects representing the intersection
+     */
+    public List<DepartmentType> getAvailableDepartmentTypesForTransfer() {
+        List<DepartmentType> intersection = new ArrayList<>();
+
+        if (toDepartment == null || sessionController.getDepartment() == null) {
+            return intersection;
+        }
+
+        // Get logged department's supported types
+        List<DepartmentType> loggedDeptTypes =
+            sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+
+        // Get toDepartment's supported types
+        List<DepartmentType> toDeptTypes =
+            getAvailableDepartmentTypesForToDepartment();
+
+        // Calculate intersection
+        for (DepartmentType dt : loggedDeptTypes) {
+            if (toDeptTypes.contains(dt)) {
+                intersection.add(dt);
+            }
+        }
+
+        return intersection;
+    }
+
+    /**
+     * Gets the department types supported by the toDepartment.
+     * Similar to SessionController logic but for the target department.
+     *
+     * @return List of DepartmentType objects supported by toDepartment
+     */
+    private List<DepartmentType> getAvailableDepartmentTypesForToDepartment() {
+        List<DepartmentType> types = new ArrayList<>();
+
+        if (toDepartment == null) {
+            return types;
+        }
+
+        // Check each department type
+        for (DepartmentType depType : DepartmentType.values()) {
+            if (isDepartmentTypeAllowedForToDepartment(depType)) {
+                types.add(depType);
+            }
+        }
+
+        return types;
+    }
+
+    /**
+     * Checks if a specific department type is allowed for toDepartment.
+     * Mirrors the logic in SessionController for consistency.
+     *
+     * @param departmentType The department type to check
+     * @return true if allowed, false otherwise
+     */
+    private boolean isDepartmentTypeAllowedForToDepartment(DepartmentType departmentType) {
+        if (toDepartment == null || departmentType == null) {
+            return false;
+        }
+
+        String configKey = "Allow " + departmentType.getLabel() +
+                           " Items In Pharmacy Transactions for " +
+                           toDepartment.getName();
+
+        // Default values (matching SessionController logic)
+        // Pharmacy and Store default to true, others default to false
+        boolean defaultValue = (departmentType == DepartmentType.Pharmacy ||
+                               departmentType == DepartmentType.Store);
+
+        return configOptionApplicationController.getBooleanValueByKey(configKey, defaultValue);
+    }
+
+    /**
+     * Get available department types for the current target department for display purposes.
+     * Now returns the intersection of logged department and toDepartment supported types.
+     *
+     * @return List of department type names that are enabled for pharmacy transactions
+     */
     public List<String> getAvailableDepartmentTypesForDisplay() {
         List<String> displayTypes = new ArrayList<>();
 
@@ -1380,30 +1576,57 @@ public class TransferRequestController implements Serializable {
             return displayTypes;
         }
 
-        // Check each department type configuration option
-        if (configOptionApplicationController.getBooleanValueByKey(
-            "Allow Pharmacy Items In Pharmacy Transactions for " + toDepartment.getName(), true)) {
-            displayTypes.add("Pharmacy");
+        // Get intersection of both departments' supported types
+        List<DepartmentType> intersection = getAvailableDepartmentTypesForTransfer();
+
+        // Convert to display strings
+        for (DepartmentType dt : intersection) {
+            displayTypes.add(dt.getLabel());
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey(
-            "Allow Lab Items In Pharmacy Transactions for " + toDepartment.getName(), false)) {
-            displayTypes.add("Lab");
+        return displayTypes;
+    }
+
+    /**
+     * Gets all department types supported by the logged department.
+     * Used for UI display to show what the logged dept supports.
+     *
+     * @return List of department type labels for display
+     */
+    public List<String> getLoggedDepartmentSupportedTypesForDisplay() {
+        List<String> displayTypes = new ArrayList<>();
+
+        if (sessionController.getDepartment() == null) {
+            return displayTypes;
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey(
-            "Allow Store Items In Pharmacy Transactions for " + toDepartment.getName(), false)) {
-            displayTypes.add("Store");
+        List<DepartmentType> loggedTypes =
+            sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+
+        for (DepartmentType dt : loggedTypes) {
+            displayTypes.add(dt.getLabel());
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey(
-            "Allow Etu Items In Pharmacy Transactions for " + toDepartment.getName(), false)) {
-            displayTypes.add("Emergency Treatment Unit (ETU)");
+        return displayTypes;
+    }
+
+    /**
+     * Gets all department types supported by the toDepartment.
+     * Used for UI display to show what the toDepartment supports.
+     *
+     * @return List of department type labels for display
+     */
+    public List<String> getToDepartmentSupportedTypesForDisplay() {
+        List<String> displayTypes = new ArrayList<>();
+
+        if (toDepartment == null) {
+            return displayTypes;
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey(
-            "Allow Theatre Items In Pharmacy Transactions for " + toDepartment.getName(), false)) {
-            displayTypes.add("Theatre");
+        List<DepartmentType> toTypes = getAvailableDepartmentTypesForToDepartment();
+
+        for (DepartmentType dt : toTypes) {
+            displayTypes.add(dt.getLabel());
         }
 
         return displayTypes;

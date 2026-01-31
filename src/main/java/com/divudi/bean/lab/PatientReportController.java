@@ -2955,14 +2955,33 @@ public class PatientReportController implements Serializable {
     public String navigateToCreatedPatientReport(Long patientInvestigationId) {
         if (patientInvestigationId == null) {
             JsfUtil.addErrorMessage("Error in PatientInvestigation ID");
-            return null;
+            return "";
         }
+        
         PatientInvestigation pi = piFacade.findWithoutCache(patientInvestigationId);
 
         if (pi == null) {
             JsfUtil.addErrorMessage("Error in Patient Investigation");
             return "";
         }
+        
+        Patient pt = patientFacade.findWithoutCache(pi.getBillItem().getBill().getPatient().getId());
+        
+        if(pt == null){
+            JsfUtil.addErrorMessage("Patient is Invalid");
+            return "";
+        }
+
+        if(pt.getPerson().getDob() == null){
+            JsfUtil.addErrorMessage("Patient Age is Invalid or Missing");
+            return "";
+        }
+        
+        if(pt.getPerson().getSex() == null){
+            JsfUtil.addErrorMessage("Patient Gender is Invalid or Missing");
+            return "";
+        }
+        
         laboratoryManagementController.setReportHandoverStaff(null);
         return navigateToCreatedPatientReport(pi);
     }
