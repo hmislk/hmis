@@ -1813,6 +1813,10 @@ public class PharmacySaleForCashierController3 implements Serializable, Controll
     /**
      * Autocomplete method for stocks filtered by department type
      */
+    /**
+     * Autocomplete method for stocks filtered by department type
+     * Note: Department type is now included in the StockDTO via JPQL, eliminating the N+1 query problem
+     */
     public List<StockDTO> completeAvailableStockOptimizedDtoFilteredByDepartmentType(String qry) {
         List<StockDTO> allResults = completeAvailableStockOptimizedDto(qry);
 
@@ -1823,14 +1827,12 @@ public class PharmacySaleForCashierController3 implements Serializable, Controll
 
         DepartmentType filterType = getPreBill().getDepartmentType();
 
-        // Filter results by department type
+        // Filter results by department type using DTO field (no database queries needed)
+        // Item.getDepartmentType() getter handles null by returning DepartmentType.Pharmacy
         List<StockDTO> filteredResults = new ArrayList<>();
         for (StockDTO dto : allResults) {
-            if (dto.getItemId() != null) {
-                Item item = itemFacade.find(dto.getItemId());
-                if (item != null && filterType.equals(item.getDepartmentType())) {
-                    filteredResults.add(dto);
-                }
+            if (dto.getDepartmentType() != null && filterType.equals(dto.getDepartmentType())) {
+                filteredResults.add(dto);
             }
         }
 
@@ -1934,7 +1936,8 @@ public class PharmacySaleForCashierController3 implements Serializable, Controll
             StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
                     .append("s.id, s.itemBatch.id, s.itemBatch.item.id, s.itemBatch.item.name, s.itemBatch.item.code, ")
                     .append("COALESCE(s.itemBatch.item.vmp.name, ''), s.itemBatch.batchNo, ")
-                    .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire, s.itemBatch.item.discountAllowed) ")
+                    .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire, s.itemBatch.item.discountAllowed, ")
+                    .append("s.itemBatch.item.departmentType) ")
                     .append("FROM Stock s ")
                     .append("WHERE s.stock > :stockMin ")
                     .append("AND s.department = :department ")
@@ -2031,7 +2034,8 @@ public class PharmacySaleForCashierController3 implements Serializable, Controll
             StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
                     .append("s.id, s.itemBatch.id, s.itemBatch.item.id, s.itemBatch.item.name, s.itemBatch.item.code, ")
                     .append("COALESCE(s.itemBatch.item.vmp.name, ''), s.itemBatch.batchNo, ")
-                    .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire, s.itemBatch.item.discountAllowed) ")
+                    .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire, s.itemBatch.item.discountAllowed, ")
+                    .append("s.itemBatch.item.departmentType) ")
                     .append("FROM Stock s ")
                     .append("WHERE s.stock > :stockMin ")
                     .append("AND s.department = :department ");
