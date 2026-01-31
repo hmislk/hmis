@@ -48,6 +48,9 @@
                             <div>
                                 <h:outputLabel styleClass="fas fa-arrow-right-arrow-left" />
                                 <h:outputLabel value="Transfer Request To #{transferRequestController.toDepartment} From #{sessionController.department}" class="mx-4" />
+                                <h:panelGroup rendered="#{transferRequestController.bill.departmentType != null}">
+                                    <h:outputLabel value=" | Department Type: #{transferRequestController.bill.departmentType.label}" class="text-info fw-bold" />
+                                </h:panelGroup>
                             </div>
                             <div>
                                 <p:commandButton
