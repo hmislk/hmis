@@ -25,6 +25,7 @@ import com.divudi.core.entity.lab.ItemForItem;
 import com.divudi.core.entity.lab.Machine;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.lab.Antibiotic;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.Atm;
@@ -2337,6 +2338,7 @@ public class ItemController implements Serializable {
         List<Class> classList = new ArrayList<>();
         if (includeVtm) {
             classList.add(Vtm.class);
+            classList.add(Antibiotic.class); // Include Antibiotic with VTM (Antibiotic extends Vtm)
         }
         if (includeAtm) {
             classList.add(Atm.class);
