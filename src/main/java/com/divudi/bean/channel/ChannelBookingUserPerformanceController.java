@@ -123,10 +123,10 @@ public class ChannelBookingUserPerformanceController implements Serializable {
                     BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT,
                     BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT
             ));
-            params.put("fromDate", fromDate, TemporalType.TIMESTAMP);
-            params.put("toDate", toDate, TemporalType.TIMESTAMP);
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
 
-            userPerformanceList = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+            userPerformanceList = (List<ChannelBookingUserPerformanceDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
             if (userPerformanceList == null || userPerformanceList.isEmpty()) {
                 JsfUtil.addErrorMessage("No data found for the selected date range");
