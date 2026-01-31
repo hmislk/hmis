@@ -5,11 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:bil="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
-      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-      xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
-      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
     <h:body>
@@ -677,6 +673,24 @@
                                                                                 class="w-100"/>
                                                                         </div>
                                                                     </div>
+                                                                    
+                                                                     <div class="row">
+                                                                        <div class="col-md-4 p-1">
+
+                                                                            <div class="input-group">
+                                                                                <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{pharmacyFastRetailSaleForCashierController.patient.specificStatus}">
+                                                                                    <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
+                                                                                </p:selectOneMenu>
+
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-md-8 p-1">
+                                                                            <div class="input-group">
+                                                                                <p:inputText placeholder="Comment for Patient Specific Status" value="#{pharmacyFastRetailSaleForCashierController.patient.specificStatusComment}" style="width: 100%;" class="form-control" />
+
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
 
                                                                     <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>
                                                                     <p:tooltip for="txtNic" value="NIC / Passport No"  showDelay="0" hideDelay="0"></p:tooltip>
@@ -703,9 +717,23 @@
                                                     <h:panelGroup  rendered="#{not pharmacyFastRetailSaleForCashierController.patientDetailsEditable}"  >
                                                         <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
                                                             <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{pharmacyFastRetailSaleForCashierController.patient ne null}" >
-                                                                <h:outputLabel value="Name " class="mx-3"/>
+                                                                
+                                                                 <h:outputLabel value="Name " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleForCashierController.patient.person.nameWithTitle}" />
+
+                                                                <h:panelGroup class="d-flex">
+
+                                                                    <p:outputLabel class="ml-4" value="#{pharmacyFastRetailSaleForCashierController.patient.person.nameWithTitle}" rendered="#{not empty pharmacyFastRetailSaleForCashierController.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
+
+                                                                    <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty pharmacyFastRetailSaleForCashierController.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{pharmacyFastRetailSaleForCashierController.patient.specificStatus}" severity="danger">
+                                                                        <p:outputLabel value="#{pharmacyFastRetailSaleForCashierController.patient.person.nameWithTitle}" rendered="#{not empty pharmacyFastRetailSaleForCashierController.patient.person.nameWithTitle}" />
+                                                                    </p:badge> 
+
+                                                                    <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system') and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for Pharmacy from the system', false)}" style="transform: translate(110%, -40%);background-color: #{pharmacyFastRetailSaleForCashierController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{pharmacyFastRetailSaleForCashierController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+
+                                                                    </p:badge>
+
+                                                                </h:panelGroup>
 
                                                                 <h:outputLabel value="Gender " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
@@ -731,19 +759,19 @@
 
                                                                 <h:outputLabel value="Email " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleForCashierController.patient.person.email}" />
+                                                                <h:outputText value="#{empty pharmacyFastRetailSaleForCashierController.patient.person.email ? 'N/A' : pharmacyFastRetailSaleForCashierController.patient.person.email}" />
 
                                                                 <h:outputLabel value="National ID No. " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleForCashierController.patient.person.nic}" />
+                                                                <h:outputText value="#{empty pharmacyFastRetailSaleForCashierController.patient.person.nic ? 'N/A' : pharmacyFastRetailSaleForCashierController.patient.person.nic}" />
 
                                                                 <h:outputLabel value="Address " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleForCashierController.patient.person.address}" />
+                                                                <h:outputText value="#{empty pharmacyFastRetailSaleForCashierController.patient.person.address ? 'N/A' : pharmacyFastRetailSaleForCashierController.patient.person.address}" />
 
                                                                 <h:outputLabel value="Area " class="mx-3"/>
                                                                 <h:outputLabel value=" : " class="mx-3"/>
-                                                                <h:outputText value="#{pharmacyFastRetailSaleForCashierController.patient.person.area.name}" />
+                                                                <h:outputText value="#{empty pharmacyFastRetailSaleForCashierController.patient.person.area.name ? 'N/A' : pharmacyFastRetailSaleForCashierController.patient.person.area.name}" />
 
                                                             </h:panelGrid>
                                                         </h:panelGroup>
@@ -802,7 +830,7 @@
 
                                                     </p:panel>
 
-                                                    <p:panel rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier')}">
+                                                    <p:panel rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
                                                         <f:facet name="header">
                                                             <h:outputText styleClass="fas fa-ticket-alt" />
                                                             <h:outputLabel value="Token Management" class="mx-4"></h:outputLabel>
@@ -919,7 +947,7 @@
                                         accesskey="a"
                                         id="btnPrintToken"
                                         value="Print Token"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                        rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                         ajax="false"
                                         icon="fa fa-print"
                                         class="ui-button-info m-1"
@@ -1004,7 +1032,7 @@
                             </div>
 
                             <h:panelGroup id="billAndTokenPrint">
-                                <h:panelGroup  rendered="#{pharmacyFastRetailSaleForCashierController.printBill ne null and (configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false))}"  id="TokenPreview" class="m-2">
+                                <h:panelGroup  rendered="#{pharmacyFastRetailSaleForCashierController.printBill ne null and configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"  id="TokenPreview" class="m-2">
                                     <h:panelGroup id="gpBillPreviewFiveFiveToken" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
                                         <div >
                                             <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
@@ -1013,7 +1041,7 @@
                                         </div>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="gpBillPreviewFiveFiveToken2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cahier Token Bill is Pos paper',false) or sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                    <h:panelGroup id="gpBillPreviewFiveFiveToken2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cashier Token Bill is Pos paper',false) or sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                         <div >
                                             <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
                                                 <phi:saleBillToken id="saleBillTokenPos" bill="#{pharmacyFastRetailSaleForCashierController.printBill}"></phi:saleBillToken>
@@ -1023,7 +1051,7 @@
                                 </h:panelGroup>
 
                                 <h:panelGroup styleClass="billPrint"   id="gpBillPreview">
-                                    <h:panelGroup id="gpBillPreviewPos" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' or configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cahier Bill is Pos paper',false)}">
+                                    <h:panelGroup id="gpBillPreviewPos" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' or configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cashier Bill is Pos paper',false)}">
                                         <div >
                                             <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
                                                 <phi:saleBill_for_Cashier bill="#{pharmacyFastRetailSaleForCashierController.printBill}"></phi:saleBill_for_Cashier>

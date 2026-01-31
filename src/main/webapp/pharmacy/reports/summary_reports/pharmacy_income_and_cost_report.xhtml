@@ -290,7 +290,7 @@
                             <p:column headerText="Cost Value" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
                                 <h:outputText
-                                        value="#{commonFunctionsProxy.abs(row.bill.billFinanceDetails.totalPurchaseValue)}">
+                                        value="#{commonFunctionsProxy.abs(row.bill.billFinanceDetails.totalCostValue)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -525,7 +525,7 @@
                             </p:column>
 
                             <p:column headerText="Cost Value" width="12em" class="text-end">
-                                <h:outputText value="#{row.purchaseValue}">
+                                <h:outputText value="#{row.totalCostValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">

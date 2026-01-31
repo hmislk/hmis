@@ -172,12 +172,28 @@
                         <f:selectItem itemValue="Approved" itemLabel="Approved"/>
                     </p:selectOneMenu>
                 </h:panelGrid>
-                <h:panelGrid columns="1" class="w-100"/>
+
                 <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value="Priority"/>
+                    <h:panelGroup id="gppriority">
+                        <p:selectOneMenu value="#{laboratoryManagementController.priority}" class="w-100" style="max-width: 100%">
+                            <f:selectItem itemLabel="Any"></f:selectItem>
+                            <f:selectItems 
+                                value="#{enumController.priorities}" 
+                                var="pt"
+                                itemLabel="#{pt.displayName}" 
+                                itemValue="#{pt}">
+                            </f:selectItems>
+                        </p:selectOneMenu>
+                    </h:panelGroup>
+                </h:panelGrid>
+
+                <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value=""/>
                     <p:commandButton 
                         ajax="false" 
-                        action="#{laboratoryManagementController.searchPatientReports()}"  
-                        value="Search Report" 
+                        action="#{laboratoryManagementController.searchPatientReportsDTO()}"  
+                        value="Search Report DTO" 
                         icon="fas fa-file-invoice-dollar" 
                         styleClass="m-1 ui-button-success w-100">
                     </p:commandButton>
@@ -186,82 +202,96 @@
             </h:panelGrid>
             <p:dataTable  
                 class="w-100 mt-3"
-                value="#{laboratoryManagementController.items}" 
-                var="patientInvestigation" 
+                value="#{laboratoryManagementController.investigationDTO}" 
+                var="pi" 
                 paginator="true"
-                rowKey="#{patientInvestigation.id}"
+                rowKey="#{pi.investigationId}"
                 paginatorPosition="bottom"
                 rows="15"
+                rowIndexVar="i"
                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                 rowsPerPageTemplate="15,50,100"
                 style="table-layout: fixed; width: 100%;">
+
+                <p:column headerText="#" style="width: 2em; vertical-align: top;">
+                    <h:outputLabel value="#{i+1}"/>
+                </p:column>
 
                 <!-- Bill Number Column with Icon and Colour -->
                 <p:column headerText="Bill Number" style="width: 13em; vertical-align: top;">
                     <p:commandLink 
                         ajax="false" 
                         class="text-primary"
-                        value="#{patientInvestigation.billItem.bill.deptId}" 
-                        action="#{billSearch.navigateToViewOpdBill()}">
-                        <f:setPropertyActionListener value="#{patientInvestigation.billItem.bill}" target="#{billSearch.bill}"/>
+                        value="#{pi.billNumber}">
                     </p:commandLink>
                     <br/>
-                    <h:outputLabel value="#{patientInvestigation.billItem.bill.createdAt}">
+                    <h:outputLabel value="#{pi.billDate}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                     </h:outputLabel>
-                    <br/>
-                    <h:panelGroup rendered="#{patientInvestigation.billItem.bill.patientEncounter ne null}">
-                        <h:outputLabel style="color: #0d6efd;" value="#{patientInvestigation.billItem.bill.patientEncounter.bhtNo}"/>
+                    <h:panelGroup rendered="#{pi.billType eq 'IP'}">
+                        <br/>
+                        <h:outputLabel class="text-primary" value="#{laboratoryCommonController.getBHTNumberFromPatientInvestigationId(pi.investigationId)}"/>
                     </h:panelGroup>
                 </p:column>
 
                 <!-- Patient Details Column with Icons -->
                 <p:column headerText="Patient" style="vertical-align: top;">
                     <i class="fas fa-user text-primary" style="width: 27px;"></i> <!-- Name Icon -->
-                    <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.nameWithTitle}" />
+                    <h:outputLabel value="#{pi.patientNameWithTitle}" />
                     <br/>
                     <i class="fas fa-birthday-cake text-info" style="width: 27px;"></i> <!-- Age Icon -->
-                    <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.ageAsString}" />
+                    <h:outputLabel value="#{pi.patientAge}" />
                     <h:outputLabel value="/" class="text-center" style="width: 30px;"/>
                     <i class="fas fa-venus-mars text-danger" style="width: 27px;"></i> <!-- Sex Icon -->
-                    <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.sex.label}" />
+                    <h:outputLabel value="#{pi.patientGender}" />
                     <br/>
-                    <h:panelGroup rendered="#{!patientInvestigation.billItem.bill.patient.person.mobile.blank}">
+                    <h:panelGroup rendered="#{!pi.patientMobile.blank}">
                         <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
-                        <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.mobile}" />
+                        <h:outputLabel value="#{pi.patientMobile}" />
                     </h:panelGroup>
                 </p:column>
 
                 <!-- Investigation Name Column -->
                 <p:column headerText="Investigation" style="width: 400px; vertical-align: top;">
                     <i class="fas fa-vial text-danger" style="width: 27px;"></i> <!-- Investigation Icon -->
-                    <h:outputLabel rendered="#{not webUserController.hasPrivilege('Developers')}" value="#{patientInvestigation.investigation.name}"/>
+                    <h:outputLabel rendered="#{not webUserController.hasPrivilege('Developers')}" value="#{pi.itemName}"/>
                     <p:commandLink 
-                        value="#{patientInvestigation.investigation.name}" 
+                        value="#{pi.itemName}"
+                        ajax="false"
                         rendered="#{webUserController.hasPrivilege('Developers')}" 
-                        action="#{investigationController.navigateToManageInvestigation()}">
-                        <f:setPropertyActionListener value="#{patientInvestigation.investigation}" target="#{investigationController.current}"/>
+                        action="#{patientInvestigationController.navigateToManageInvestigation(pi.investigationId)}">
                     </p:commandLink>
+                    <div class="d-flex gap-2 mt-2">
+                        <h:panelGroup class=" w-100" id="priority" rendered="#{!pi.priority.shortName.blank and pi.priority ne null }" >
+                            <div 
+                                class="card p-1"
+                                style="font-weight: 700; background-color: #{pi.priority.priorityColor}; text-align: center;" >
+                                #{pi.priority.displayName}
+                            </div>
+                        </h:panelGroup>
+                    </div>
+                    <p:tooltip for="priority" value="#{pi.priority.description}" position="bottom"/>
                 </p:column>
 
                 <!-- Ordered Institution and Department Column with Icons -->
                 <p:column headerText="Ordered Institute" style="vertical-align: top;">
-                    <h:panelGroup rendered="#{patientInvestigation.billItem.bill.collectingCentre == null}">
+                    <h:panelGroup rendered="#{pi.billType eq 'CC'}">
+                        <i class="fas fa-box text-secondary" style="width: 27px;"></i>
+                        <h:outputLabel value="#{laboratoryCommonController.getCollectingCentrNameFromPatientInvestigationID(pi.investigationId)}" />
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{pi.billType ne 'CC'}">
                         <i class="fas fa-hospital text-info" style="width: 27px;"></i> <!-- Institution Icon -->
-                        <h:outputLabel value="#{patientInvestigation.billItem.bill.institution.name}" />
+                        <h:outputLabel value="#{pi.orderedInstitution}" />
                         <br/>
                         <i class="fas fa-building text-primary" style="width: 27px;"></i> <!-- Department Icon -->
-                        <h:outputLabel value="#{patientInvestigation.billItem.bill.department.name}" />
-                    </h:panelGroup>
-                    <h:panelGroup rendered="#{patientInvestigation.billItem.bill.collectingCentre != null}">
-                        <i class="fas fa-box text-secondary" style="width: 27px;"></i> <!-- Collecting Centre Icon -->
-                        <h:outputLabel value="#{patientInvestigation.billItem.bill.collectingCentre.name}" />
+                        <h:outputLabel value="#{pi.orderedDepartment}" />
                     </h:panelGroup>
                 </p:column>
 
                 <!-- Samples Column -->
                 <p:column headerText="Sample IDs" style="width:10em; vertical-align: top;">
-                    <ui:repeat value="#{laboratoryManagementController.getPatientSampleComponentsByInvestigation(patientInvestigation)}" var="sample">
+                    <ui:repeat value="#{laboratoryManagementController.getPatientSampleComponentsByInvestigation(pi.investigationId)}" var="sample">
                         <div class="ui-g d-grid" style="margin-bottom: 10px;">
                             <div class="ui-g-6 d-flex">
                                 <i class="fa fa-vial"></i>
@@ -273,12 +303,33 @@
 
                 <!-- Status Column -->
                 <p:column headerText="Status" style="width: 12em; vertical-align: top;">
-                    <h:outputLabel value="#{patientInvestigation.status.label}"/>
+                    <h:panelGroup rendered="#{!pi.itemRefunded and !pi.billCanceled}">
+                        <h:outputLabel value="#{pi.status.label}"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{pi.itemRefunded or pi.billCanceled}">
+                        <br/>
+                        <p:badge 
+                            value="Item Refunded" 
+                            severity="info"
+                            style="width: 200px;"
+                            rendered="#{pi.itemRefunded}"
+                            styleClass="ui-badge-warning" >
+                        </p:badge>
+
+                        <p:badge 
+                            value="Bill Cancel" 
+                            severity="info"
+                            rendered="#{pi.billCanceled}"
+                            style="width: 200px;"
+                            styleClass="ui-badge-danger" >
+                        </p:badge>
+                    </h:panelGroup>
                 </p:column>
 
                 <!-- Actions Column -->
-                <p:column headerText="Actions" style="width: 420px; vertical-align: top;">
-                    <h:panelGroup rendered="#{patientInvestigation.billItem.bill.cancelled}" class=" d-flex justify-content-center">
+                <p:column headerText="Actions" style="width: 500px; vertical-align: top;">
+                    <h:panelGroup rendered="#{pi.billCanceled}" class=" d-flex justify-content-center">
                         <p:badge 
                             value="Bill Cancel" 
                             class="w-50"
@@ -287,7 +338,7 @@
                         </p:badge>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{patientInvestigation.billItem.refunded}" class=" d-flex justify-content-center">
+                    <h:panelGroup rendered="#{pi.itemRefunded}" class=" d-flex justify-content-center">
                         <p:badge 
                             value="Item Refunded"
                             severity="info"
@@ -296,8 +347,8 @@
                         </p:badge>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{!patientInvestigation.billItem.bill.cancelled and !patientInvestigation.billItem.refunded}">
-                        <h:panelGroup rendered="#{!laboratoryManagementController.hasPatientReports(patientInvestigation)}" class=" d-flex justify-content-center">
+                    <h:panelGroup rendered="#{!pi.billCanceled and !pi.itemRefunded}">
+                        <h:panelGroup rendered="#{!laboratoryManagementController.hasPatientReports(pi.investigationId)}" class=" d-flex justify-content-center">
                             <p:badge 
                                 value="Sample Prossesing.." 
                                 severity="warning"
@@ -306,8 +357,8 @@
                             </p:badge>
                         </h:panelGroup>
 
-                        <h:panelGroup rendered="#{laboratoryManagementController.hasPatientReports(patientInvestigation)}">
-                            <ui:repeat value="#{laboratoryManagementController.patientReports(patientInvestigation)}" var="dpr">
+                        <h:panelGroup rendered="#{laboratoryManagementController.hasPatientReports(pi.investigationId)}">
+                            <ui:repeat value="#{laboratoryManagementController.patientReports(pi.investigationId)}" var="dpr">
                                 <div class="d-flex justify-content-between">
                                     <div class="d-flex gap-2 mb-2">
                                         <p:commandButton 
@@ -343,40 +394,70 @@
                                             class="mt-2"
                                             rendered="#{!dpr.approved}">
                                         </p:badge>
-
-                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers') and dpr.approved}" >
-                                            <a target="_blank" href="#{dpr.qrCodeContentsLink}" class="fa fa-link fa-xl mt-3"  title="SMS Link"></a>
-                                        </h:panelGroup>
-
                                     </div>
-                                    <p:dialog id="dlg" modal="true" widgetVar="dlg" header="Report Remove Comment" width="700" height="50">
-                                        <div class="d-flex gap-2">
-                                            <p:inputText value="#{laboratoryManagementController.comment}"  class="w-100"></p:inputText>
-                                            <p:commandButton 
-                                                id="btnSave" 
-                                                value="Remove" 
-                                                ajax="false"
-                                                icon="fas fa-trash"
-                                                class="ui-button-danger"
-                                                rendered="#{webUserController.hasPrivilege('LabDeAutherizing')}"
-                                                onclick="if (!confirm('Are You Sure You Want to Delete this Patient Report?'))
+
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{!dpr.printComplete}"
+                                            title="Not Print"
+                                            name="print_pending.png" 
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{dpr.printComplete}"
+                                            name="print_done.png"
+                                            title="Report Printed"
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{!dpr.handoverComplete}"
+                                            title="Not Issue"
+                                            name="handover_pending.png" 
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{dpr.handoverComplete}"
+                                            name="handover_done.png" 
+                                            title="Report Issued."
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+
+                                        <p:dialog id="dlg" modal="true" widgetVar="dlg" header="Report Remove Comment" width="700" height="50">
+                                            <div class="d-flex gap-2">
+                                                <p:inputText value="#{laboratoryManagementController.comment}"  class="w-100"></p:inputText>
+                                                <p:commandButton 
+                                                    id="btnSave" 
+                                                    value="Remove" 
+                                                    ajax="false"
+                                                    icon="fas fa-trash"
+                                                    class="ui-button-danger"
+                                                    rendered="#{webUserController.hasPrivilege('LabDeAutherizing')}"
+                                                    onclick="if (!confirm('Are You Sure You Want to Delete this Patient Report?'))
                                                             return false;"
-                                                action="#{laboratoryManagementController.removePatientReport(dpr.id)}" 
-                                                oncomplete="PF('dlg').hide();" >
-                                            </p:commandButton>
-                                        </div>
-                                    </p:dialog>
-                                    <p:commandButton 
-                                        title="To Remove Report" 
-                                        id="btnRemove" 
-                                        disabled="#{dpr.approved}"
-                                        rendered="#{webUserController.hasPrivilege('LabDeAutherizing')}"  
-                                        process="@this" 
-                                        class="ui-button-danger mb-2"
-                                        update="dlg" 
-                                        icon="fa fa-trash"
-                                        oncomplete="PF('dlg').show()" >
-                                    </p:commandButton>
+                                                    action="#{laboratoryManagementController.removePatientReport(dpr.id)}" 
+                                                    oncomplete="PF('dlg').hide();" >
+                                                </p:commandButton>
+                                            </div>
+                                        </p:dialog>
+                                        <p:commandButton 
+                                            title="To Remove Report" 
+                                            id="btnRemove" 
+                                            disabled="#{dpr.approved}"
+                                            rendered="#{webUserController.hasPrivilege('LabDeAutherizing')}"  
+                                            process="@this" 
+                                            class="ui-button-danger mb-2"
+                                            update="dlg" 
+                                            icon="fa fa-trash"
+                                            oncomplete="PF('dlg').show()" >
+                                        </p:commandButton>
+                                    </div>
                                 </div>
                             </ui:repeat>
                         </h:panelGroup>

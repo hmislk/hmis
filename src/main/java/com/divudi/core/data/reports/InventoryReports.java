@@ -6,6 +6,7 @@ public enum InventoryReports implements IReportType {
     GOOD_IN_TRANSIT_REPORT("Good In Transit"),
     CONSUMPTION_REPORT("Consumption Report"),
     GRN_REPORT("GRN Report"),
+    GRN_RETURN_VARIANCE_REPORT("GRN Return Variance Report"),
     STOCK_LEDGER_REPORT("Stock Ledger Report");
 
     private final String displayName;

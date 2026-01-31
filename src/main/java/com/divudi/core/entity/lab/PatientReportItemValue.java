@@ -65,6 +65,7 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    private boolean allowToExportChart;
 
     public String getStrValue() {
         return strValue;
@@ -340,6 +341,14 @@ public class PatientReportItemValue implements Serializable, RetirableEntity {
 
     public void setDisplayValue(String displayValue) {
         this.displayValue = displayValue;
+    }
+
+    public boolean isAllowToExportChart() {
+        return allowToExportChart;
+    }
+
+    public void setAllowToExportChart(boolean allowToExportChart) {
+        this.allowToExportChart = allowToExportChart;
     }
 
 }

@@ -560,7 +560,6 @@ public class InwardTimedItemController implements Serializable {
         }
         double count = getInwardBean().calCount(timedItemFee, getCurrent().getPatientEncounter().getDateOfAdmission(), getCurrent().getToTime());
 
-        System.out.println("getCurrent().getPatientEncounter().isForiegner() = " + getCurrent().getPatientEncounter().isForiegner());
 
         if (getCurrent().getPatientEncounter().isForiegner()) {
             getCurrent().setServiceValue(count * timedItemFee.getFfee());
@@ -618,13 +617,10 @@ public class InwardTimedItemController implements Serializable {
         System.out.println("pic.getPatientEncounter().isForiegner() = " + pic.getPatientEncounter().isForiegner());
 
         if (pic.getPatientEncounter().isForiegner()) {
-            System.out.println("timedItemFee.getFfee() = " + timedItemFee.getFfee());
             pic.setServiceValue(count * timedItemFee.getFfee());
         } else {
-            System.out.println("timedItemFee.getFee() = " + timedItemFee.getFee());
             pic.setServiceValue(count * timedItemFee.getFee());
         }
-        System.out.println("pic.getServiceValue() = " + pic.getServiceValue());
 
         getPatientItemFacade().edit(pic);
 

@@ -19,6 +19,10 @@
 
                 <h:form id="formImage" enctype="multipart/form-data" rendered="true">
                     <p:growl id="msg"/>
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
+                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="pi pi-times" />
+                    </p:confirmDialog>
                     <div class="row" >
                         <div class="col-12 px-4" >
 
@@ -36,7 +40,7 @@
                                 icon="fas fa-medkit" 
                                 title="Pharmacy">
                             </p:commandButton>
-                            
+
                             <p:commandButton class="p-0 m-1 ui-button-secondary" action="#{patientEncounterController.issueServices()}" icon="pi pi-shopping-cart" title="Order"></p:commandButton>
                             <p:commandButton class="p-0 m-1" action="clinical_letter_index" icon="pi pi-envelope" title="Letters">
                                 <f:setPropertyActionListener target="#{letterController.patientEncounter}" value="${patientEncounterController.current}" />
@@ -274,7 +278,7 @@
                                                 </div>
                                             </p:panel>
 
-                                            <p:panel class="w-100 m-1" >
+                                            <p:panel id="panelDiagnosis" class="w-100 m-1" >
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-stethoscope"/>
                                                     <h:outputText class="mx-4" value="Diagnosis"/>
@@ -291,15 +295,24 @@
                                                                         inputStyleClass="w-100">
                                                         </p:autoComplete>
                                                     </div>
-                                                    <div class="col-md-3" >
-                                                        <p:commandButton ajax="true" 
+                                                    <div class="col-md-3 d-flex gap-2" >
+                                                        <p:commandButton ajax="true"
                                                                          class="ui-button-success"
                                                                          value="Add"
-                                                                         id="btnAddDx" 
+                                                                         id="btnAddDx"
                                                                          action="#{patientEncounterController.addDx}"
-                                                                         process="acDx txtDx btnAddDx" 
+                                                                         process="acDx txtDx btnAddDx"
                                                                          update="acDx txtDx gpDx :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                          icon="pi pi-plus">
+                                                        </p:commandButton>
+                                                        <p:commandButton ajax="true"
+                                                                         class="ui-button-info"
+                                                                         value="Add Favourites"
+                                                                         id="btnAddFavDx"
+                                                                         action="#{patientEncounterController.addFavouriteDiagnosis}"
+                                                                         process="acDx txtDx btnAddFavDx"
+                                                                         update="acDx txtDx gpDx tblRxx :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                         icon="fas fa-star">
                                                         </p:commandButton>
                                                     </div>
                                                 </div>
@@ -307,8 +320,8 @@
                                                                  id="txtDx" 
                                                                  value="#{patientEncounterController.diagnosisComments}">
                                                 </p:inputTextarea>
-                                                
-                                                
+
+
                                                 <p:tooltip value="Add a Diagnosis" for="btnAddDx" ></p:tooltip>
                                                 <h:panelGroup id="gpDx" >
                                                     <p:dataTable id="tblDx" 
@@ -382,8 +395,8 @@
                                                                  id="txtIx" 
                                                                  value="#{patientEncounterController.encounterInvestigation.lobValue}">
                                                 </p:inputTextarea>
-                                                
-                                                
+
+
                                                 <h:panelGroup id="gpIx" >
                                                     <p:dataTable id="tblIx" 
                                                                  rendered="#{patientEncounterController.encounterInvestigations ne null and patientEncounterController.encounterInvestigations.size() > 0}"
@@ -426,6 +439,7 @@
                                                 <f:facet name="header">
                                                     <h:outputText styleClass="fas fa-pills"/>
                                                     <p:outputLabel class="mx-4" value="Medicines" />
+
 
                                                     <p:commandButton value="Refill" process="@this" class='ui-button-warning' icon='fas fa-fill' style="float: right;" update="#{p:resolveFirstComponentWithId('medicines',view).clientId} #{p:resolveFirstComponentWithId('msg',view).clientId}" action="#{patientEncounterController.fillMedicines(patientController.current)}"/>
 
@@ -509,13 +523,25 @@
                                                         <!-- Add Prescription Button -->
                                                         <div>
                                                             <label for="chkIndoor" class="w-100"></label>
-                                                            <p:commandButton value="Add"
-                                                                             class="ui-button-success"
-                                                                             id="btnAddRx"
-                                                                             icon="pi pi-plus"
-                                                                             process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                                             update=" tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" 
-                                                                             action="#{patientEncounterController.addEncounterMedicine}" />
+                                                            <p:commandButton 
+                                                                value="Add"
+                                                                class="ui-button-success"
+                                                                id="btnAddRx"
+                                                                icon="pi pi-plus"
+                                                                process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" 
+                                                                action="#{patientEncounterController.addEncounterMedicine}" />
+
+                                                            <p:commandButton 
+                                                                id="btnAddRxFav"
+                                                                value="Add Favourite" 
+                                                                process="btnAddRxFav acMedicine" 
+                                                                class='ui-button-success' 
+                                                                icon='fas fa-star' 
+                                                                style="float: right; margin-right: 5px;" 
+                                                                update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}" 
+                                                                action="#{patientEncounterController.addFavouriteMedicines(patientController.current)}"/>
+
                                                         </div>
                                                     </div>
                                                 </div>
@@ -577,8 +603,8 @@
                                                                  id="txtIxp"
                                                                  value="#{patientEncounterController.encounterInvestigationResult.lobValue}">
                                                 </p:inputTextarea>
-                                                
-                                                
+
+
                                                 <h:panelGroup id="gpIxp" >
                                                     <p:dataTable id="tblIxp"
                                                                  rendered="#{patientEncounterController.encounterInvestigationResults ne null and patientEncounterController.encounterInvestigationResults.size() > 0}"
@@ -667,8 +693,8 @@
                                                                  value="#{patientEncounterController.encounterProcedure.lobValue}">
                                                 </p:inputTextarea>
 
-                                                
-                                                
+
+
                                                 <h:panelGroup id="gpSx" >
                                                     <p:dataTable id="tblSx" 
                                                                  rendered="#{patientEncounterController.encounterProcedures ne null and patientEncounterController.encounterProcedures.size() > 0}"
@@ -736,7 +762,7 @@
                                                                  value="#{patientEncounterController.encounterPlanOfAction.lobValue}">
                                                 </p:inputTextarea>
 
-                                                
+
 
                                                 <h:panelGroup id="hgPa">
                                                     <p:dataTable id="tblPa" 
@@ -777,7 +803,29 @@
 
 
                                         <div class="ui-g-12 ui-md-4">
-                                            <p:panel id="docPrescreption" >
+                                            <!-- Warning panel when no default prescription template -->
+                                            <p:panel id="prescriptionWarning"
+                                                     rendered="#{not patientEncounterController.hasDefaultPrescriptionTemplate()}"
+                                                     styleClass="ui-panel-warning">
+                                                <f:facet name="header">
+                                                    <h:outputText styleClass="fas fa-exclamation-triangle"/>
+                                                    <h:outputText class="mx-4" value="Prescription Configuration Required"/>
+                                                </f:facet>
+                                                <div class="p-3">
+                                                    <h:outputText value="#{patientEncounterController.prescriptionWarningMessage}"
+                                                                  styleClass="text-warning"/>
+                                                    <br/><br/>
+                                                    <p:commandButton
+                                                        value="Configure Prescription Template"
+                                                        icon="fas fa-cog"
+                                                        styleClass="ui-button-warning"
+                                                        action="/emr/settings/index"
+                                                        ajax="false"/>
+                                                </div>
+                                            </p:panel>
+
+                                            <!-- Prescription panel (only shows when default template exists) -->
+                                            <p:panel id="docPrescreption" rendered="#{patientEncounterController.hasDefaultPrescriptionTemplate()}" >
                                                 <h:outputStylesheet library="css" name="printing/prescription.css" ></h:outputStylesheet>
                                                 <f:facet name="header">
                                                     <h:outputText  styleClass="fas fa-prescription-bottle"/>
@@ -849,6 +897,7 @@
 
                                                 <h:panelGroup id="txtPrescriptionDoc">
                                                     <p:textEditor
+                                                        id="txtGeneratedPrescreption"
                                                         styleClass="textEditer"
                                                         class="my-2"
                                                         toolbarVisible="false"
@@ -866,38 +915,142 @@
                                     </div>
 
                                 </p:tab>
-                                <p:tab title="Referrals">
+                                <p:tab id="tabReferrals" title="Referrals">
                                     <div class="row" >
                                         <div class="col-4 p-1" >
-                                            <p:panelGrid columns="3" class="w-100 m-1" >
+                                            <p:panel class="w-100 m-1">
                                                 <f:facet name="header" >
                                                     <p:outputLabel value="Generate New Document" ></p:outputLabel>
                                                 </f:facet>
-                                                <p:outputLabel value="Select a Template" ></p:outputLabel>
-                                                <p:selectOneMenu id="somTemplates" value="#{patientEncounterController.selectedDocumentTemplate}" >
-                                                    <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                    <f:selectItems 
-                                                        value="#{patientEncounterController.userDocumentTemplates}"
-                                                        var="dt"
-                                                        itemLabel="#{dt.name}"
-                                                        itemValue="#{dt}"></f:selectItems>
-                                                </p:selectOneMenu>
-                                                <p:commandButton 
-                                                    id="btnGenerateNewDocument"
-                                                    value="Generate" 
-                                                    class="ui-button-warning"
-                                                    icon="fas fa-arrows-rotate"
-                                                    process="btnGenerateNewDocument somTemplates"
-                                                    update="lstEncounterDocs gpReferralDoc"
-                                                    action="#{patientEncounterController.generateAndAddDocumentFromTemplate}" >
-                                                </p:commandButton>
-                                            </p:panelGrid>
-                                            <p:panelGrid columns="3" class="w-100 m-1" >
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <p:outputLabel value="Select a Template" class="form-label"></p:outputLabel>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-8">
+                                                        <p:selectOneMenu id="somTemplates" value="#{patientEncounterController.selectedDocumentTemplate}" class="w-100">
+                                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                                            <f:selectItems
+                                                                value="#{patientEncounterController.userDocumentTemplates}"
+                                                                var="dt"
+                                                                itemLabel="#{dt.name}"
+                                                                itemValue="#{dt}"></f:selectItems>
+                                                            <p:ajax update="medicalCertDatePanel" process="somTemplates" />
+                                                        </p:selectOneMenu>
+                                                    </div>
+                                                    <div class="col-2">
+                                                        <p:commandButton
+                                                            id="btnRefreshTemplates"
+                                                            value="Refresh"
+                                                            class="ui-button-info"
+                                                            icon="fas fa-sync-alt"
+                                                            title="Refresh template list"
+                                                            process="btnRefreshTemplates"
+                                                            update="somTemplates"
+                                                            action="#{patientEncounterController.refreshUserDocumentTemplates}">
+                                                        </p:commandButton>
+                                                    </div>
+                                                    <div class="col-2">
+                                                        <p:commandButton
+                                                            id="btnGenerateNewDocument"
+                                                            value="Generate"
+                                                            class="ui-button-warning"
+                                                            icon="fas fa-arrows-rotate"
+                                                            process="btnGenerateNewDocument somTemplates medicalCertDatePanel"
+                                                            update="lstEncounterDocs gpReferralDoc"
+                                                            action="#{patientEncounterController.generateAndAddDocumentFromTemplate}">
+                                                        </p:commandButton>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Medical Certificate Date Panel -->
+                                                <h:panelGroup id="medicalCertDatePanel" layout="block">
+                                                    <h:panelGroup layout="block" styleClass="row mt-3" rendered="#{patientEncounterController.selectedTemplateMedicalCertificate}">
+                                                        <div class="col-12">
+                                                            <p:panel header="Medical Certificate Dates" styleClass="ui-panel-info">
+                                                                <div class="row">
+                                                                    <div class="col-6">
+                                                                        <p:outputLabel value="From Date" class="form-label"></p:outputLabel>
+                                                                        <p:calendar
+                                                                            id="medicalFromDate"
+                                                                            value="#{patientEncounterController.medicalCertificateFromDate}"
+                                                                            pattern="#{configOptionApplicationController.getShortTextValueByKey('Long Date Format' , 'dd MMMM yyyy' )}"
+                                                                            readonlyInput="true"
+                                                                            styleClass="w-100">
+                                                                        </p:calendar>
+                                                                    </div>
+                                                                    <div class="col-6">
+                                                                        <p:outputLabel value="To Date" class="form-label"></p:outputLabel>
+                                                                        <p:calendar
+                                                                            id="medicalToDate"
+                                                                            value="#{patientEncounterController.medicalCertificateToDate}"
+                                                                            pattern="#{configOptionApplicationController.getShortTextValueByKey('Long Date Format' , 'dd MMMM yyyy' )}"
+                                                                            readonlyInput="true"
+                                                                            styleClass="w-100">
+                                                                        </p:calendar>
+                                                                    </div>
+                                                                </div>
+                                                            </p:panel>
+                                                        </div>
+                                                    </h:panelGroup>
+
+                                                    <!-- Referral Details Panel -->
+                                                    <h:panelGroup layout="block" styleClass="row mt-3" rendered="#{patientEncounterController.selectedTemplateReferral}">
+                                                        <div class="col-12">
+                                                            <p:panel header="Referral Details" styleClass="ui-panel-info">
+                                                                <div class="row">
+                                                                    <div class="col-6">
+                                                                        <p:outputLabel value="Referral Institution" class="form-label"></p:outputLabel>
+                                                                        <p:autoComplete
+                                                                            id="referralInstitution"
+                                                                            forceSelection="true"
+                                                                            value="#{patientEncounterController.referralInstitution}"
+                                                                            completeMethod="#{institutionController.completeIns}"
+                                                                            var="ri"
+                                                                            itemLabel="#{ri.name}"
+                                                                            itemValue="#{ri}"
+                                                                            scrollHeight="400"
+                                                                            styleClass="w-100"
+                                                                            inputStyleClass="w-100">
+                                                                            <p:column headerText="Institution Name" style="padding: 2px;">#{ri.name}</p:column>
+                                                                            <p:column headerText="Code" style="padding: 2px;">#{ri.institutionCode}</p:column>
+                                                                        </p:autoComplete>
+                                                                    </div>
+                                                                    <div class="col-6">
+                                                                        <p:outputLabel value="Referral Doctor" class="form-label"></p:outputLabel>
+                                                                        <p:autoComplete
+                                                                            forceSelection="true"
+                                                                            id="referralDoctor"
+                                                                            value="#{patientEncounterController.referralDoctor}"
+                                                                            completeMethod="#{doctorController.completeDoctor}"
+                                                                            var="rd"
+                                                                            itemLabel="#{rd.person.name}"
+                                                                            itemValue="#{rd}"
+                                                                            styleClass="w-100"
+                                                                            inputStyleClass="w-100"
+                                                                            scrollHeight="400">
+                                                                            <p:column headerText="Name" style="padding: 2px;">
+                                                                                <h:outputText value="#{rd.person.nameWithTitle}" ></h:outputText>
+                                                                            </p:column>
+                                                                            <p:column headerText="Code" style="padding: 2px;">
+                                                                                <h:outputText value="#{rd.code}" ></h:outputText>
+                                                                            </p:column>
+                                                                        </p:autoComplete>
+                                                                    </div>
+                                                                </div>
+                                                            </p:panel>
+                                                        </div>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+                                            </p:panel>
+                                            <p:panelGrid columns="1" class="w-100 m-1" >
                                                 <f:facet name="header" >
                                                     <p:outputLabel value="Generated Documents" ></p:outputLabel>
                                                 </f:facet>
                                                 <p:selectOneListbox 
                                                     id="lstEncounterDocs"
+                                                    class="w-100"
                                                     value="#{patientEncounterController.encounterReferral}"  >
                                                     <f:selectItems 
                                                         value="#{patientEncounterController.encounterDocuments}" 
@@ -911,58 +1064,77 @@
                                             </p:panelGrid>
                                         </div>
                                         <div class="col-8" >
-                                            <p:panelGrid columns="1" id="gpReferralDoc" >
+                                            <p:panel id="gpReferralDoc" class="w-100" >
                                                 <f:facet name="header" >
-                                                    <div class="d-flex justify-content-between">
-                                                        <h:outputLabel 
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <h:outputText
                                                             rendered="#{patientEncounterController.encounterReferral.stringValue ne null}"
-                                                            id="txtDocName" 
-                                                            value="#{patientEncounterController.encounterReferral.stringValue}">
-                                                        </h:outputLabel>
+                                                            id="txtDocName"
+                                                            value="#{patientEncounterController.encounterReferral.stringValue}"
+                                                            styleClass="fw-bold">
+                                                        </h:outputText>
                                                         <div class="d-flex gap-2">
-                                                            <p:commandButton 
+                                                            <p:commandButton
                                                                 id="btnSaveDoc"
-                                                                value="Save" 
-                                                                class="ui-button-warning"
-                                                                icon="fas fa-save"
+                                                                value="Save"
+                                                                styleClass="ui-button-warning"
+                                                                icon="pi pi-save"
                                                                 action="#{patientEncounterController.saveEncounterReferral()}"
-                                                                process="btnSaveDoc "
-                                                                update="lstEncounterDocs">
+                                                                process="btnSaveDoc"
+                                                                update="lstEncounterDocs"
+                                                                title="Save the current document">
                                                             </p:commandButton>
-                                                            <p:commandButton 
+                                                            <p:commandButton
                                                                 id="btnDeleteDoc"
                                                                 value="Delete"
-                                                                class="ui-button-danger"
-                                                                icon="fas fa-trash"
+                                                                styleClass="ui-button-danger"
+                                                                icon="pi pi-trash"
                                                                 action="#{patientEncounterController.removeEncounterReferral()}"
                                                                 process="btnDeleteDoc"
-                                                                update="lstEncounterDocs txeLetterPreview">
+                                                                update="lstEncounterDocs txeLetterPreview"
+                                                                title="Delete the selected document">
+                                                                <p:confirm header="Confirmation" message="Are you sure you want to delete this document?" />
                                                             </p:commandButton>
-                                                            <p:commandButton 
-                                                                id="btnCommentPrint"
+                                                            <p:commandButton
+                                                                id="btnPrintDoc"
                                                                 ajax="false"
                                                                 icon="pi pi-print"
-                                                                class="ui-button-info" 
-                                                                value="Print">
+                                                                styleClass="ui-button-info"
+                                                                value="Print Report"
+                                                                title="Print the current document">
                                                                 <p:printer target="txeLetterPreview"/>
+                                                            </p:commandButton>
+                                                            <p:commandButton
+                                                                id="btnDownloadWordDoc"
+                                                                ajax="false"
+                                                                icon="pi pi-download"
+                                                                styleClass="ui-button-success"
+                                                                value="Download Word"
+                                                                title="Download document as Word file">
+                                                                <p:fileDownload value="#{patientEncounterController.downloadAsWordDocument()}" />
                                                             </p:commandButton>
                                                         </div>
                                                     </div>
-
-
                                                 </f:facet>
 
-                                                <p:textEditor
-                                                    style="width: 210mm;;"
-                                                    toolbarVisible="false"
-                                                    id="txeLetterPreview"
-                                                    rendered="#{patientEncounterController.encounterReferral.lobValue ne null}" 
-                                                    secure="false" 
-                                                    value="#{patientEncounterController.encounterReferral.lobValue}" >
-                                                </p:textEditor>
+                                                <div class="mt-3">
+                                                    <p:textEditor
+                                                        style="width: 100%; min-height: 400px;"
+                                                        toolbarVisible="false"
+                                                        id="txeLetterPreview"
+                                                        rendered="#{patientEncounterController.encounterReferral.lobValue ne null}"
+                                                        secure="false"
+                                                        value="#{patientEncounterController.encounterReferral.lobValue}"
+                                                        placeholder="Select a document from the list to view its content">
+                                                    </p:textEditor>
 
-
-                                            </p:panelGrid>          
+                                                    <h:panelGroup rendered="#{patientEncounterController.encounterReferral.lobValue eq null}" layout="block" styleClass="text-center py-5">
+                                                        <h:outputText value="No document selected" styleClass="text-muted fs-5"/>
+                                                        <br/>
+                                                        <h:outputText value="Please select a document from the list to view its content" styleClass="text-muted"/>
+                                                    </h:panelGroup>
+                                                </div>
+                                            </p:panel>          
 
                                         </div>
 
@@ -1218,8 +1390,357 @@
                                     </div>
 
                                 </p:tab>
-                                <p:tab title="Health Analytics">
-                                    <!-- Analytics such as FBS Graph, Lipid Profile, BMI Chart, etc. -->
+                                <p:tab id="tabHealthAnalytics" title="Health Analytics">
+                                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+                                    <!-- Analytics Dashboard with improved layout utilizing horizontal space -->
+                                    <div class="container-fluid p-2">
+                                        <!-- Top Row: Blood Pressure and BMI/Weight Charts -->
+                                        <div class="row mb-3">
+                                            <!-- Blood Pressure Chart Panel - Left Half -->
+                                            <div class="col-md-6 mb-3">
+                                                <p:panel id="panelBloodPressureChart" class="h-100">
+                                                    <f:facet name="header">
+                                                        <div class="d-flex justify-content-between align-items-center w-100">
+                                                            <div class="d-flex align-items-center">
+                                                                <h:outputText styleClass="pi pi-heart me-2" style="color: #e74c3c;"/>
+                                                                <h:outputText value="Blood Pressure Analytics"/>
+                                                            </div>
+                                                            <p:commandButton
+                                                                value="Generate"
+                                                                action="#{patientEncounterController.generateBloodPressureChart()}"
+                                                                ajax="true"
+                                                                update="chartContainer"
+                                                                icon="pi pi-chart-line"
+                                                                styleClass="ui-button-info ui-button-sm"
+                                                                title="Generate Blood Pressure Chart"/>
+                                                        </div>
+                                                    </f:facet>
+
+                                                    <!-- Chart display container with reduced height -->
+                                                    <h:panelGroup id="chartContainer" layout="block">
+                                                        <h:panelGroup rendered="#{patientEncounterController.bloodPressureData.size() > 0}">
+                                                            <div class="w-100" style="width: 100%; height: 280px;">
+                                                                <canvas id="bpCanvas" class="w-100" style="height:100%;"></canvas>
+                                                            </div>
+
+                                                        <script type="text/javascript">
+                                                            setTimeout(function() {
+                                                                if (typeof Chart !== 'undefined') {
+                                                                    var ctx = document.getElementById('bpCanvas');
+                                                                    if (ctx) {
+                                                                        var chart = new Chart(ctx, {
+                                                                            type: 'line',
+                                                                            data: {
+                                                                                labels: [
+                                                                                    <ui:repeat value="#{patientEncounterController.bloodPressureData}" var="bpRecord" varStatus="status">
+                                                                                        '<h:outputText value="#{bpRecord[0]}"><f:convertDateTime pattern="MM/dd" /></h:outputText>'#{!status.last ? ',' : ''}
+                                                                                    </ui:repeat>
+                                                                                ],
+                                                                                datasets: [{
+                                                                                    label: 'Systolic BP',
+                                                                                    data: [
+                                                                                        <ui:repeat value="#{patientEncounterController.bloodPressureData}" var="bpRecord" varStatus="status">
+                                                                                            #{bpRecord[1]}#{!status.last ? ',' : ''}
+                                                                                        </ui:repeat>
+                                                                                    ],
+                                                                                    borderColor: 'rgb(255, 99, 132)',
+                                                                                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                                                                    fill: false
+                                                                                }, {
+                                                                                    label: 'Diastolic BP',
+                                                                                    data: [
+                                                                                        <ui:repeat value="#{patientEncounterController.bloodPressureData}" var="bpRecord" varStatus="status">
+                                                                                            #{bpRecord[2]}#{!status.last ? ',' : ''}
+                                                                                        </ui:repeat>
+                                                                                    ],
+                                                                                    borderColor: 'rgb(54, 162, 235)',
+                                                                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                                                                    fill: false
+                                                                                }]
+                                                                            },
+                                                                            options: {
+                                                                                responsive: true,
+                                                                                plugins: {
+                                                                                    title: {
+                                                                                        display: true,
+                                                                                        text: 'Blood Pressure Trends'
+                                                                                    }
+                                                                                },
+                                                                                scales: {
+                                                                                    y: {
+                                                                                        beginAtZero: false,
+                                                                                        title: {
+                                                                                            display: true,
+                                                                                            text: 'Blood Pressure (mmHg)'
+                                                                                        }
+                                                                                    },
+                                                                                    x: {
+                                                                                        title: {
+                                                                                            display: true,
+                                                                                            text: 'Date'
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                }
+                                                            }, 1000);
+                                                        </script>
+                                                    </h:panelGroup>
+
+                                                        <h:outputText
+                                                            value="Click 'Generate' to view blood pressure trends over time."
+                                                            rendered="#{patientEncounterController.bloodPressureData.size() == 0}"
+                                                            styleClass="text-muted d-block text-center mt-3"/>
+                                                    </h:panelGroup>
+                                                </p:panel>
+                                            </div>
+
+                                            <!-- BMI/Weight Chart Panel - Right Half -->
+                                            <div class="col-md-6 mb-3">
+                                                <p:panel id="panelBmiWeightChart" class="h-100">
+                                                    <f:facet name="header">
+                                                        <div class="d-flex justify-content-between align-items-center w-100">
+                                                            <div class="d-flex align-items-center">
+                                                                <h:outputText styleClass="pi pi-chart-line me-2" style="color: #27ae60;"/>
+                                                                <h:outputText value="BMI &amp; Weight Analytics"/>
+                                                            </div>
+                                                            <p:commandButton
+                                                                value="Generate"
+                                                                action="#{patientEncounterController.generateBmiWeightChart()}"
+                                                                ajax="true"
+                                                                update="bmiWeightChartContainer"
+                                                                icon="pi pi-chart-line"
+                                                                styleClass="ui-button-success ui-button-sm"
+                                                                title="Generate BMI &amp; Weight Chart"/>
+                                                        </div>
+                                                    </f:facet>
+
+                                                    <!-- Chart display container with reduced height -->
+                                                    <h:panelGroup id="bmiWeightChartContainer" layout="block">
+                                                        <h:panelGroup rendered="#{patientEncounterController.bmiWeightData.size() > 0}">
+                                                            <div class="w-100" style="width: 100%; height: 280px;">
+                                                                <canvas id="bmiWeightCanvas" class="w-100" style="height:100%;"></canvas>
+                                                            </div>
+
+                                                        <script type="text/javascript">
+                                                            setTimeout(function() {
+                                                                if (typeof Chart !== 'undefined') {
+                                                                    var ctx = document.getElementById('bmiWeightCanvas');
+                                                                    if (ctx) {
+                                                                        var chart = new Chart(ctx, {
+                                                                            type: 'line',
+                                                                            data: {
+                                                                                labels: [
+                                                                                    <ui:repeat value="#{patientEncounterController.bmiWeightData}" var="bmiRecord" varStatus="status">
+                                                                                        '<h:outputText value="#{bmiRecord[0]}"><f:convertDateTime pattern="MM/dd" /></h:outputText>'#{!status.last ? ',' : ''}
+                                                                                    </ui:repeat>
+                                                                                ],
+                                                                                datasets: [{
+                                                                                    label: 'Weight (kg)',
+                                                                                    data: [
+                                                                                        <ui:repeat value="#{patientEncounterController.bmiWeightData}" var="bmiRecord" varStatus="status">
+                                                                                            #{bmiRecord[1]}#{!status.last ? ',' : ''}
+                                                                                        </ui:repeat>
+                                                                                    ],
+                                                                                    borderColor: 'rgb(75, 192, 192)',
+                                                                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                                                                    fill: false,
+                                                                                    yAxisID: 'y'
+                                                                                }, {
+                                                                                    label: 'BMI (kg/m²)',
+                                                                                    data: [
+                                                                                        <ui:repeat value="#{patientEncounterController.bmiWeightData}" var="bmiRecord" varStatus="status">
+                                                                                            #{bmiRecord[2]}#{!status.last ? ',' : ''}
+                                                                                        </ui:repeat>
+                                                                                    ],
+                                                                                    borderColor: 'rgb(255, 159, 64)',
+                                                                                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                                                                    fill: false,
+                                                                                    yAxisID: 'y1'
+                                                                                }]
+                                                                            },
+                                                                            options: {
+                                                                                responsive: true,
+                                                                                plugins: {
+                                                                                    title: {
+                                                                                        display: true,
+                                                                                        text: 'BMI &amp; Weight Trends'
+                                                                                    }
+                                                                                },
+                                                                                scales: {
+                                                                                    x: {
+                                                                                        title: {
+                                                                                            display: true,
+                                                                                            text: 'Date'
+                                                                                        }
+                                                                                    },
+                                                                                    y: {
+                                                                                        type: 'linear',
+                                                                                        display: true,
+                                                                                        position: 'left',
+                                                                                        title: {
+                                                                                            display: true,
+                                                                                            text: 'Weight (kg)'
+                                                                                        }
+                                                                                    },
+                                                                                    y1: {
+                                                                                        type: 'linear',
+                                                                                        display: true,
+                                                                                        position: 'right',
+                                                                                        title: {
+                                                                                            display: true,
+                                                                                            text: 'BMI (kg/m²)'
+                                                                                        },
+                                                                                        grid: {
+                                                                                            drawOnChartArea: false
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                }
+                                                            }, 1000);
+                                                        </script>
+                                                    </h:panelGroup>
+
+                                                        <h:outputText
+                                                            value="Click 'Generate' to view BMI and weight trends over time."
+                                                            rendered="#{patientEncounterController.bmiWeightData.size() == 0}"
+                                                            styleClass="text-muted d-block text-center mt-3"/>
+                                                    </h:panelGroup>
+                                                </p:panel>
+                                            </div>
+                                        </div>
+
+                                        <!-- Bottom Row: Investigation Results Chart - Full Width -->
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <p:panel id="panelInvestigationChart" class="mb-0">
+                                                    <f:facet name="header">
+                                                        <div class="d-flex align-items-center">
+                                                            <h:outputText styleClass="pi pi-chart-bar me-2" style="color: #8e44ad;"/>
+                                                            <h:outputText value="Investigation Results Analytics"/>
+                                                        </div>
+                                                    </f:facet>
+
+                                                    <!-- Investigation selection and button in compact layout -->
+                                                    <div class="row align-items-end mb-3">
+                                                        <div class="col-md-9">
+                                                            <p:outputLabel value="Investigation Type:" for="acInvestigationItem" styleClass="form-label mb-1"/>
+                                                            <p:autoComplete
+                                                                id="acInvestigationItem"
+                                                                value="#{patientEncounterController.selectedInvestigationItem}"
+                                                                completeMethod="#{patientEncounterController.completeInvestigationItems}"
+                                                                var="ii"
+                                                                itemLabel="#{ii.name}"
+                                                                itemValue="#{ii}"
+                                                                placeholder="Type investigation name (e.g., ESR, Blood Sugar, Cholesterol)"
+                                                                minQueryLength="2"
+                                                                maxResults="20"
+                                                                styleClass="w-100"
+                                                                inputStyleClass="w-100">
+                                                                <p:column headerText="Value Name">
+                                                                    <h:outputLabel value="#{ii.name}" />
+                                                                </p:column>
+                                                                <p:column headerText="Report">
+                                                                    <h:outputLabel value="#{ii.item.name}" />
+                                                                </p:column>
+                                                            </p:autoComplete>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <p:commandButton
+                                                                value="Generate Chart"
+                                                                action="#{patientEncounterController.generateInvestigationChart()}"
+                                                                ajax="true"
+                                                                update="investigationChartContainer"
+                                                                icon="pi pi-chart-line"
+                                                                styleClass="ui-button-warning w-100"
+                                                                title="Generate Investigation Trends Chart"/>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Chart display container with optimized height -->
+                                                    <h:panelGroup id="investigationChartContainer" layout="block">
+                                                        <h:panelGroup rendered="#{patientEncounterController.investigationChartData.size() > 0}">
+                                                            <div class="w-100" style="width: 100%; height: 300px;">
+                                                                <canvas id="investigationCanvas" class="w-100" style="height:100%;"></canvas>
+                                                            </div>
+
+                                                        <script type="text/javascript">
+                                                            setTimeout(function() {
+                                                                if (typeof Chart !== 'undefined') {
+                                                                    var ctx = document.getElementById('investigationCanvas');
+                                                                    if (ctx) {
+                                                                        var chart = new Chart(ctx, {
+                                                                            type: 'line',
+                                                                            data: {
+                                                                                labels: [
+                                                                                    <ui:repeat value="#{patientEncounterController.investigationChartData}" var="invRecord" varStatus="status">
+                                                                                        '<h:outputText value="#{invRecord[0]}"><f:convertDateTime pattern="MM/dd" /></h:outputText>'#{!status.last ? ',' : ''}
+                                                                                    </ui:repeat>
+                                                                                ],
+                                                                                datasets: [{
+                                                                                    label: '#{patientEncounterController.selectedInvestigationItem.name}',
+                                                                                    data: [
+                                                                                        <ui:repeat value="#{patientEncounterController.investigationChartData}" var="invRecord" varStatus="status">
+                                                                                            #{invRecord[1]}#{!status.last ? ',' : ''}
+                                                                                        </ui:repeat>
+                                                                                    ],
+                                                                                    borderColor: 'rgb(153, 102, 255)',
+                                                                                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                                                                                    fill: false,
+                                                                                    tension: 0.1
+                                                                                }]
+                                                                            },
+                                                                            options: {
+                                                                                responsive: true,
+                                                                                plugins: {
+                                                                                    title: {
+                                                                                        display: true,
+                                                                                        text: '#{patientEncounterController.selectedInvestigationItem.name} Trends'
+                                                                                    }
+                                                                                },
+                                                                                scales: {
+                                                                                    y: {
+                                                                                        beginAtZero: false,
+                                                                                        title: {
+                                                                                            display: true,
+                                                                                            text: '#{patientEncounterController.selectedInvestigationItem.name}'
+                                                                                        }
+                                                                                    },
+                                                                                    x: {
+                                                                                        title: {
+                                                                                            display: true,
+                                                                                            text: 'Date'
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                }
+                                                            }, 1000);
+                                                        </script>
+                                                    </h:panelGroup>
+
+                                                        <h:outputText
+                                                            value="Type an investigation name and click 'Generate Chart' to view trends over time."
+                                                            rendered="#{patientEncounterController.investigationChartData.size() == 0 and patientEncounterController.selectedInvestigationItem == null}"
+                                                            styleClass="text-muted d-block text-center mt-3"/>
+
+                                                        <h:outputText
+                                                            value="No data found for '#{patientEncounterController.selectedInvestigationItem.name}'. This patient may not have any recorded results for this investigation."
+                                                            rendered="#{patientEncounterController.investigationChartData.size() == 0 and patientEncounterController.selectedInvestigationItem != null}"
+                                                            styleClass="text-muted d-block text-center mt-3"/>
+                                                    </h:panelGroup>
+                                                </p:panel>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </p:tab>
                             </p:tabView>
                         </div>

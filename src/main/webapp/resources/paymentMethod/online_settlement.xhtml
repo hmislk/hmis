@@ -21,21 +21,35 @@
                     onfocus="this.select();"
                     value="#{cc.attrs.paymentMethodData.onlineSettlement.totalValue}"
                     style="width: 6em;"
-                    id="txtVal">
+                    id="txtVal"
+                    required="true"
+                    requiredMessage="Value is required">
                     <p:ajax process="@this" />
                     <f:convertNumber pattern="#,##0.00" />
                 </p:inputText>
             </h:panelGroup>
-            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.onlineSettlement.institution}" style="width: 10em;">
+            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.onlineSettlement.institution}" style="width: 10em;"
+                             required="true"
+                             requiredMessage="Bank is required">
                 <f:selectItem itemLabel="Select Bank"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                 <p:ajax process="@this" />
             </p:selectOneMenu>
-            <p:calendar value="#{cc.attrs.paymentMethodData.onlineSettlement.date}" placeholder="Select date" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date">
+            <p:calendar value="#{cc.attrs.paymentMethodData.onlineSettlement.date}" placeholder="Select date" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date"
+                        required="true"
+                        requiredMessage="Date is required">
                 <p:ajax process="@this" />
             </p:calendar>
-            <p:inputText value="#{cc.attrs.paymentMethodData.onlineSettlement.referenceNo}" placeholder="Referance No" class="w-100" style="width:7rem!important"/>
-            <p:inputText value="#{cc.attrs.paymentMethodData.onlineSettlement.comment}" placeholder="Comments" class="w-100" style="width:7rem!important"/>
+            <p:inputText value="#{cc.attrs.paymentMethodData.onlineSettlement.referenceNo}" placeholder="Reference No" class="w-100" style="width:7rem!important"
+                         required="true"
+                         requiredMessage="Reference No is required">
+                <p:ajax process="@this" />
+            </p:inputText>
+            <p:inputText value="#{cc.attrs.paymentMethodData.onlineSettlement.comment}" placeholder="Comments" class="w-100" style="width:7rem!important"
+                         required="true"
+                         requiredMessage="Comments are required">
+                <p:ajax process="@this" />
+            </p:inputText>
         </div>
     </cc:implementation>
 </html>

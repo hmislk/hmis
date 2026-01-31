@@ -1,0 +1,224 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="originalBill" type="com.divudi.core.entity.Bill" />
+        <cc:attribute name="cancellationBill" type="com.divudi.core.entity.Bill" />
+        <cc:attribute name="duplicate" type="java.lang.Boolean" default="false"/>
+        <cc:attribute name="controller" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:outputStylesheet library="css" name="custom2.css" ></h:outputStylesheet>
+        <div class="custom2bill" style="page-break-after: always; width: 190mm; padding: 15px; font-family: Arial, sans-serif;">
+
+            <!-- Compact Header -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+                <tr>
+                    <td style="width: 60%; vertical-align: top;">
+                        <div style="font-size: 16pt; font-weight: bold; color: #2c5aa0; margin-bottom: 3px;">
+                            <h:outputLabel value="#{cc.attrs.cancellationBill.department.printingName}" />
+                        </div>
+                        <div style="font-size: 9pt; color: #555; margin-bottom: 1px;">
+                            <h:outputLabel value="#{cc.attrs.cancellationBill.department.institution.address}" />
+                        </div>
+                        <div style="font-size: 9pt; color: #555;">
+                            <h:outputLabel value="Tel: #{cc.attrs.cancellationBill.department.institution.phone}" />
+                        </div>
+                    </td>
+                    <td style="width: 40%; text-align: right; vertical-align: top;">
+                        <div style="background-color: #ffebee; padding: 10px; border: 2px solid #f44336; border-radius: 5px;">
+                            <div style="font-weight: bold; font-size: 12pt; color: #d32f2f; text-align: center;">
+                                <h:outputLabel value="CANCELLATION" />
+                            </div>
+                            <div style="font-weight: bold; font-size: 12pt; color: #d32f2f; text-align: center;">
+                                <h:outputLabel value="RECEIPT" />
+                            </div>
+                            <h:panelGroup rendered="#{cc.attrs.duplicate eq true}">
+                                <div style="font-size: 8pt; color: #f44336; text-align: center; margin-top: 3px;">
+                                    <h:outputLabel value="[DUPLICATE]" />
+                                </div>
+                            </h:panelGroup>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Transaction Summary Section -->
+            <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 12px; margin-bottom: 15px; border-radius: 3px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 9pt;">
+                    <tr>
+                        <td style="width: 25%; padding: 3px; font-weight: bold;">Original Bill:</td>
+                        <td style="width: 25%; padding: 3px;"><h:outputLabel value="#{cc.attrs.originalBill.deptId}"/></td>
+                        <td style="width: 25%; padding: 3px; font-weight: bold;">Cancel Bill:</td>
+                        <td style="width: 25%; padding: 3px;"><h:outputLabel value="#{cc.attrs.cancellationBill.deptId}"/></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px; font-weight: bold;">Original Amount:</td>
+                        <td style="padding: 3px;">
+                            <h:outputLabel value="#{cc.attrs.originalBill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                        <td style="padding: 3px; font-weight: bold;">Refund Amount:</td>
+                        <td style="padding: 3px; font-weight: bold; color: #2e7d32;">
+                            <h:outputLabel value="#{cc.attrs.cancellationBill.absoluteNetTotalTransient}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Original Settlement Details -->
+            <table style="width: 100%; border: 1px solid #dee2e6; border-collapse: collapse; margin-bottom: 15px;">
+                <tr style="background-color: #e3f2fd;">
+                    <td colspan="2" style="border: 1px solid #ddd; padding: 8px; font-weight: bold; text-align: center; color: #1976d2;">
+                        ORIGINAL SETTLEMENT DETAILS
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 6px; width: 30%; font-weight: bold; font-size: 8pt;">Settlement Date &amp; Time:</td>
+                    <td style="border: 1px solid #ddd; padding: 6px; font-size: 8pt;">
+                        <h:outputLabel value="#{cc.attrs.originalBill.billDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                        </h:outputLabel>
+                        <h:outputLabel value=" at " />
+                        <h:outputLabel value="#{cc.attrs.originalBill.billTime}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                        </h:outputLabel>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 6px; font-weight: bold; font-size: 8pt;">Payment Method:</td>
+                    <td style="border: 1px solid #ddd; padding: 6px; font-size: 8pt;"><h:outputLabel value="#{cc.attrs.originalBill.paymentMethod}"/></td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 6px; font-weight: bold; font-size: 8pt;">Credit Company:</td>
+                    <td style="border: 1px solid #ddd; padding: 6px; font-size: 8pt;">
+                        <h:outputLabel value="#{cc.attrs.originalBill.fromInstitution.name}" style="text-transform: capitalize;" />
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Bills Settled (Compact Table) -->
+            <table style="width: 100%; border: 1px solid #dee2e6; border-collapse: collapse; margin-bottom: 15px; font-size: 7pt;">
+                <tr style="background-color: #f5f5f5; font-weight: bold;">
+                    <td style="border: 1px solid #ddd; padding: 4px; width: 25%;">Bill No</td>
+                    <td style="border: 1px solid #ddd; padding: 4px; width: 50%;">Patient Name</td>
+                    <td style="border: 1px solid #ddd; padding: 4px; width: 25%; text-align: right;">Amount</td>
+                </tr>
+
+                <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.originalBill)}" var="originalItem">
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 4px; font-family: monospace;">
+                            <p:outputLabel value="#{originalItem.patientEncounter.bhtNo}" rendered="#{originalItem.patientEncounter ne null}"/>
+                            <p:outputLabel value="#{originalItem.referenceBill.deptId}" rendered="#{originalItem.patientEncounter eq null}"/>
+                        </td>
+                        <td style="border: 1px solid #ddd; padding: 4px; text-transform: capitalize;">
+                            <p:outputLabel value="#{originalItem.referenceBill.patient.person.name}" rendered="#{originalItem.patientEncounter eq null}"/>
+                            <p:outputLabel value="#{originalItem.patientEncounter.patient.person.name}" rendered="#{originalItem.patientEncounter ne null}"/>
+                        </td>
+                        <td style="border: 1px solid #ddd; padding: 4px; text-align: right; font-family: monospace;">
+                            <h:outputLabel value="#{originalItem.netValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </ui:repeat>
+
+                <tr style="background-color: #e8f5e8; font-weight: bold;">
+                    <td colspan="2" style="border: 2px solid #4caf50; padding: 6px; text-align: right; font-size: 8pt;">
+                        SETTLEMENT TOTAL:
+                    </td>
+                    <td style="border: 2px solid #4caf50; padding: 6px; text-align: right; font-family: monospace; color: #2e7d32; font-size: 8pt;">
+                        <h:outputLabel value="#{cc.attrs.originalBill.netTotal}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Cancellation Details -->
+            <table style="width: 100%; border: 1px solid #dee2e6; border-collapse: collapse; margin-bottom: 15px;">
+                <tr style="background-color: #ffebee;">
+                    <td colspan="2" style="border: 1px solid #f44336; padding: 8px; font-weight: bold; text-align: center; color: #d32f2f;">
+                        CANCELLATION DETAILS
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 6px; width: 30%; font-weight: bold; font-size: 8pt;">Cancellation Date &amp; Time:</td>
+                    <td style="border: 1px solid #ddd; padding: 6px; font-size: 8pt;">
+                        <h:outputLabel value="#{cc.attrs.cancellationBill.billDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                        </h:outputLabel>
+                        <h:outputLabel value=" at " />
+                        <h:outputLabel value="#{cc.attrs.cancellationBill.billTime}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                        </h:outputLabel>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 6px; font-weight: bold; font-size: 8pt;">Cancelled By:</td>
+                    <td style="border: 1px solid #ddd; padding: 6px; font-size: 8pt;">
+                        <h:outputLabel value="#{cc.attrs.cancellationBill.creater.webUserPerson.nameWithTitle}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 6px; font-weight: bold; font-size: 8pt;">Refund Method:</td>
+                    <td style="border: 1px solid #ddd; padding: 6px; font-size: 8pt;"><h:outputLabel value="#{cc.attrs.cancellationBill.paymentMethod}"/></td>
+                </tr>
+                <ui:fragment rendered="#{cc.attrs.cancellationBill.comments ne null and cc.attrs.cancellationBill.comments ne ''}">
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 6px; font-weight: bold; font-size: 8pt; vertical-align: top;">Reason:</td>
+                        <td style="border: 1px solid #ddd; padding: 6px; font-size: 8pt; font-style: italic;">
+                            <h:outputLabel value="#{cc.attrs.cancellationBill.comments}" />
+                        </td>
+                    </tr>
+                </ui:fragment>
+            </table>
+
+            <!-- Financial Summary -->
+            <table style="width: 50%; border: 2px solid #4caf50; border-collapse: collapse; margin: 0 auto 15px auto;">
+                <tr style="background-color: #e8f5e8; font-weight: bold;">
+                    <td style="border: 1px solid #4caf50; padding: 8px; text-align: center; font-size: 10pt; color: #2e7d32;">
+                        NET REFUND AMOUNT
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #4caf50; padding: 15px; text-align: center; font-size: 14pt; font-weight: bold; color: #2e7d32; font-family: monospace;">
+                        <h:outputLabel value="#{cc.attrs.cancellationBill.absoluteNetTotalTransient}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Footer -->
+            <div style="border-top: 2px solid #dee2e6; padding-top: 10px; font-size: 7pt; text-align: center;">
+                <div style="margin-bottom: 5px;">
+                    <h:outputLabel value="This cancellation makes original bills available for re-settlement. Retain this receipt." />
+                </div>
+                <div style="color: #6c757d;">
+                    <h:outputLabel value="Printed: " />
+                    <h:outputLabel value="#{sessionController.currentDate}">
+                        <f:convertDateTime pattern="dd-MMM-yyyy HH:mm" timeZone="Asia/Colombo" />
+                    </h:outputLabel>
+                    <h:outputLabel value=" | System Generated - No Signature Required" />
+                </div>
+            </div>
+
+        </div>
+
+    </cc:implementation>
+
+</html>

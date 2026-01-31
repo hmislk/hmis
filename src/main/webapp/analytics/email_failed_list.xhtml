@@ -10,49 +10,70 @@
             <ui:define name="report">
                 <h:form>
                     <p:panel header="Failed Email List" styleClass="p-3">
-                        <p:panelGrid columns="4" styleClass="w-100 mb-3">
+                        <p:panelGrid columns="6" styleClass="w-100 mb-3">
                             <h:outputLabel value="From Date:" />
-                            <p:calendar value="#{emailController.fromDate}" pattern="yyyy-MM-dd" />
+                            <p:calendar 
+                                value="#{emailController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
 
                             <h:outputLabel value="To Date:" />
-                            <p:calendar value="#{emailController.toDate}" pattern="yyyy-MM-dd" />
+                            <p:calendar 
+                                value="#{emailController.toDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
 
                             <p:spacer />
                             <p:commandButton
-                                value="Search"
+                                value="Search E-Mails"
                                 icon="pi pi-search"
                                 styleClass="ui-button-warning"
                                 action="#{emailController.fillFailedEmails}"
                                 ajax="false" />
                         </p:panelGrid>
 
-                        <p:dataTable value="#{emailController.failedEmails}" var="e" paginator="true" rows="20" styleClass="w-100" selectionMode="single" selection="#{emailController.selectedEmail}" rowKey="#{e.id}">
-                            <p:column headerText="Date" sortBy="#{e.createdAt}">
+                        <p:dataTable 
+                            value="#{emailController.failedEmails}" 
+                            var="e" 
+                            paginator="true"
+                            rows="20" 
+                            rowsPerPageTemplate="20,50,100"
+                            paginatorPosition="bottom"
+                            styleClass="w-100" 
+                            selectionMode="single" 
+                            selection="#{emailController.selectedEmail}" 
+                            rowKey="#{e.id}">
+
+                            <p:column headerText="Date" sortBy="#{e.createdAt}" width="12em;">
                                 <h:outputText value="#{e.createdAt}">
                                     <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
                                 </h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Recipient">
-                                <h:outputText value="#{e.receipientEmail}" />
                             </p:column>
 
                             <p:column headerText="Subject">
                                 <h:outputText value="#{e.messageSubject}" />
                             </p:column>
 
-                            <p:column headerText="Retry">
+                            <p:column headerText="Recipient">
+                                <h:outputText value="#{e.receipientEmail}" />
+                            </p:column>
+
+
+
+                            <p:column headerText="Action" width="8em">
                                 <p:commandButton
                                     icon="pi pi-replay"
                                     styleClass="ui-button-secondary"
-                                    value="Retry"
+                                    value="Re-Send"
                                     action="#{emailController.resendSelectedEmail}"
                                     update="@form"
                                     process="@this"
-                                    ajax="true" />
-                                <f:setPropertyActionListener
-                                    target="#{emailController.selectedEmail}"
-                                    value="#{e}" />
+                                    ajax="true" >
+                                    <f:setPropertyActionListener
+                                        target="#{emailController.selectedEmail}"
+                                        value="#{e}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandButton>
                             </p:column>
                         </p:dataTable>
                     </p:panel>

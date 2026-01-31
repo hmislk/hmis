@@ -1,0 +1,543 @@
+<ui:component xmlns="http://www.w3.org/1999/xhtml"
+              xmlns:ui="http://java.sun.com/jsf/facelets"
+              xmlns:composite="http://java.sun.com/jsf/composite" xmlns:h="http://xmlns.jcp.org/jsf/html"
+              xmlns:p="http://primefaces.org/ui"
+              xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles"
+              xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <composite:interface>
+    </composite:interface>
+
+    <composite:implementation>
+        <h:form>
+            <p:panel class="m-1">
+                <f:facet name="header">
+                    <div class="d-flex align-item-center justify-content-between">
+                        <div>
+                            <h:outputLabel
+                                value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summary By Department Report Menu Name','Daily Lab Summary By Department')}"/>
+                        </div>
+                    </div>
+                </f:facet>
+
+                <h:panelGrid columns="8" class="w-100">
+                    <h:outputLabel value="From"/>
+                    <p:calendar
+                        class="w-100 "
+                        inputStyleClass="w-100"
+                        id="fromDate"
+                        value="#{laborataryReportController.fromDate}"
+                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                    </p:calendar>
+
+                    <p:spacer width="20"></p:spacer>
+
+                    <h:outputLabel value="To"/>
+                    <p:calendar
+                        class="w-100 "
+                        inputStyleClass="w-100"
+                        id="toDate"
+                        value="#{laborataryReportController.toDate}"
+                        navigator="false"
+                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                    </p:calendar>
+
+                    <p:spacer></p:spacer>
+                    <p:spacer></p:spacer>
+                    <p:spacer></p:spacer>
+
+                    <h:panelGroup layout="block" styleClass="form-group">
+                        <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
+                        <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                    </h:panelGroup>
+                    <p:selectOneMenu
+                        id="cmbIns"
+                        styleClass="w-100 form-control"
+                        value="#{laborataryReportController.institution}"
+                        filter="true">
+                        <f:selectItem itemLabel="All Institutions"/>
+                        <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                       itemValue="#{ins}"/>
+                        <p:ajax process="cmbIns" update="cmbDept"/>
+                    </p:selectOneMenu>
+
+                    <p:spacer></p:spacer>
+
+                    <h:panelGroup layout="block" styleClass="form-group">
+                        <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/> <!-- FontAwesome map marker icon -->
+                        <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                    </h:panelGroup>
+                    <p:selectOneMenu
+                        id="siteMenu"
+                        styleClass="w-100 form-control"
+                        value="#{laborataryReportController.site}"
+                        filter="true">
+                        <f:selectItem itemLabel="All Sites"/>
+                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                       itemValue="#{site}"/>
+                        <p:ajax process="siteMenu" update="cmbDept"/>
+                    </p:selectOneMenu>
+
+                    <p:spacer></p:spacer>
+
+                    <h:panelGroup layout="block" styleClass="form-group">
+                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
+                        <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                    </h:panelGroup>
+                    <h:panelGroup id="cmbDept">
+
+                        <!-- Component 1: Without Institution and Site -->
+                        <p:selectOneMenu
+                            rendered="#{laborataryReportController.institution eq null and laborataryReportController.site eq null}"
+                            styleClass="w-100 form-control"
+                            value="#{laborataryReportController.department}"
+                            filterMatchMode="contains"
+                            filter="true">
+                            <f:selectItem itemLabel="All Departments"/>
+                            <f:selectItems
+                                value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                var="d"
+                                itemLabel="#{d.name}"
+                                itemValue="#{d}"/>
+                        </p:selectOneMenu>
+
+                        <!-- Component 2: With Site Only -->
+                        <p:selectOneMenu
+                            rendered="#{laborataryReportController.institution eq null and laborataryReportController.site ne null}"
+                            styleClass="w-100 form-control"
+                            value="#{laborataryReportController.department}"
+                            filterMatchMode="contains"
+                            filter="true">
+                            <f:selectItem itemLabel="All Departments"/>
+                            <f:selectItems
+                                value="#{departmentController.getDepartmentsOfInstitutionAndSite(laborataryReportController.site)}"
+                                var="d"
+                                itemLabel="#{d.name}"
+                                itemValue="#{d}"/>
+                        </p:selectOneMenu>
+
+                        <!-- Component 3: With Institution Only -->
+                        <p:selectOneMenu
+                            rendered="#{laborataryReportController.institution ne null and laborataryReportController.site eq null}"
+                            styleClass="w-100 form-control"
+                            value="#{laborataryReportController.department}"
+                            filterMatchMode="contains"
+                            filter="true">
+                            <f:selectItem itemLabel="All Departments"/>
+                            <f:selectItems
+                                value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(laborataryReportController.institution)}"
+                                var="d"
+                                itemLabel="#{d.name}"
+                                itemValue="#{d}"/>
+                        </p:selectOneMenu>
+
+                        <!-- Component 4: With Both Institution and Site -->
+                        <p:selectOneMenu
+                            rendered="#{laborataryReportController.institution ne null and laborataryReportController.site ne null}"
+                            styleClass="w-100 form-control"
+                            value="#{laborataryReportController.department}"
+                            filterMatchMode="contains"
+                            filter="true">
+                            <f:selectItem itemLabel="All Departments"/>
+                            <f:selectItems
+                                value="#{departmentController.getDepartmentsOfInstitutionAndSite(laborataryReportController.institution, laborataryReportController.site)}"
+                                var="d"
+                                itemLabel="#{d.name}"
+                                itemValue="#{d}"/>
+                        </p:selectOneMenu>
+
+                        <p:selectOneMenu
+                            rendered="false"
+                            styleClass="w-100 form-control"
+                            value="#{laborataryReportController.department}"
+                            filter="true">
+                            <f:selectItem itemLabel="All Departments"/>
+                            <f:selectItems
+                                value="#{departmentController.getDepartmentsOfInstitutionAndSite(laborataryReportController.institution, laborataryReportController.site)}"
+                                var="d"
+                                itemLabel="#{d.name}"
+                                itemValue="#{d}"/>
+                        </p:selectOneMenu>
+                    </h:panelGroup>
+
+                    <p:spacer></p:spacer>
+
+
+                </h:panelGrid>
+
+                <p:commandButton
+                    value="Process"
+                    ajax="false"
+                    action="#{laborataryReportController.generateDailyLabSummaryByDepartment}"
+                    class="ui-button-warning my-2" 
+                    icon="fas fa-cogs">
+                </p:commandButton>
+                <p:commandButton
+                    icon="fa-solid fa-print"
+                    class="m-2 ui-button-info"
+                    style="width: 150px"
+                    ajax="false"
+                    value="Print">
+                    <p:printer target="printPanel"/>
+                </p:commandButton>
+                
+            </p:panel>
+
+            <p:panel>
+                <h:panelGroup id="printPanel" class="w-100" style="">
+                    <div class="header">
+                        <div class="d-flex justify-content-center text-5"
+                             style="font-weight: 700; font-size: 16px;">
+                            <h:outputText value="#{sessionController.institution.name}"/>
+                        </div>
+                        <div class="d-flex justify-content-center text-2"
+                             style="font-weight: 700; font-size: 12px;">
+                            <h:outputText value="#{sessionController.institution.address}"/>
+                        </div>
+                        <div class="d-flex justify-content-center text-5"
+                             style="font-weight: 400; font-size: 14px;">
+                            <h:outputText
+                                value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summary By Department Report Printing Name','Daily Lab Summary Report')}"/>
+                        </div>
+                        <div class="d-flex justify-content-center text-5"
+                             style="font-weight: 700; font-size: 14px;">
+                            <h:outputText value="#{laborataryReportController.department.name}"/>
+                        </div>
+
+                    </div>
+                    <h:panelGrid class="w-100" columns="8" style="font-size: 12px;">
+                        <h:outputLabel value="Department"/>
+                        <h:outputLabel value=":"/>
+                        <h:outputLabel value="#{laborataryReportController.department.name}"/>
+                        <h:outputLabel value=""/>
+                        <h:outputLabel value=""/>
+                        <h:outputLabel value="9B Number"/>
+                        <h:outputLabel value=":"/>
+                        <h:outputLabel value=""/>
+                        <h:outputLabel value="From"/>
+                        <h:outputLabel value=":"/>
+                        <h:outputLabel value="#{laborataryReportController.fromDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                        <h:outputLabel value=""/>
+                        <h:outputLabel value=""/>
+                        <h:outputLabel value="To"/>
+                        <h:outputLabel value=":"/>
+                        <h:outputLabel value="#{laborataryReportController.toDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </h:panelGrid>
+                    
+                    <table class="table table-hover mt-3" style="font-size: 12px;">
+                        <thead>
+                            <tr style="font-size: 12px;">
+                                <th>(+) Additions</th>
+                                <th class="text-end"> Cash</th>
+                                <th class="text-end"> Card</th>
+                                <th class="text-end"> Online Settlement</th>
+                                <th class="text-end"> Credit</th>
+                                <th class="text-end"> Inward Credit</th>
+                                <th class="text-end"> Other</th>
+                                <th class="text-end"> Total</th>
+                                <th class="text-end"> Discount</th>
+                                <th class="text-end"> Service Charge</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ui:repeat value="#{laborataryReportController.bundleReport.reportTemplateRows}" var="row">
+                                <tr style="font-size: 12px;">
+                                    <td>#{row.itemName}</td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{row.cashValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{row.cardValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{row.onlineSettlementValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{row.creditValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{row.inpatientTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{row.otherIncomeValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{row.total}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{row.discount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{row.serviceCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                            <tr style="font-weight: 700; border-bottom: 1px solid; border-top: 2px solid; font-size: 12px;">
+                                <td style="">Total Additions</td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalAdditionCashValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalAdditionCardValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalAdditionOnlineSettlementValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalAdditionCreditValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalAdditionInwardCreditValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalAdditionOtherValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalAdditionTotalValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalAdditionDiscountValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalAdditionServiceChargeValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                            <tr style="font-weight: 700; font-size: 12px;">
+                                <td colspan="10">(-) Deductions</td>
+                            </tr>
+                            <ui:repeat value="#{laborataryReportController.bundle.rows}" var="rows">
+                                <tr style="font-size: 12px;">
+                                    <td>#{rows.itemName}</td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{rows.cashValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{rows.cardValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{rows.onlineSettlementValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{rows.creditValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{rows.inpatientCreditValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{rows.otherValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{rows.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{rows.discount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputLabel value="#{rows.serviceCharge}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                            <tr style="font-weight: 700; border-bottom: 1px solid; border-top: 2px solid; font-size: 12px;">
+                                <td style="">Total Deductions</td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalDeductionCashValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalDeductionCardValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalDeductionOnlineSettlementValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalDeductionCreditValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalDeductionInwardCreditValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalDeductionOtherValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalDeductionTotalValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalDeductionDiscountValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel value="#{laborataryReportController.totalDeductionServiceChargeValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                            <tr style="font-weight: 700; border-bottom: 1px double black; font-size: 12px;">
+                                <td style="">Cash Balance (According to System)</td>
+                                <td class="text-end">
+                                    <h:outputLabel
+                                        value="#{laborataryReportController.totalAdditionCashValue + laborataryReportController.totalDeductionCashValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel
+                                        value="#{laborataryReportController.totalAdditionCardValue + laborataryReportController.totalDeductionCardValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel
+                                        value="#{laborataryReportController.totalAdditionOnlineSettlementValue + laborataryReportController.totalDeductionOnlineSettlementValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel
+                                        value="#{laborataryReportController.totalAdditionCreditValue + laborataryReportController.totalDeductionCreditValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel
+                                        value="#{laborataryReportController.totalAdditionInwardCreditValue + laborataryReportController.totalDeductionInwardCreditValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel
+                                        value="#{laborataryReportController.totalAdditionOtherValue + laborataryReportController.totalDeductionOtherValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel
+                                        value="#{laborataryReportController.totalAdditionTotalValue + laborataryReportController.totalDeductionTotalValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel
+                                        value="#{laborataryReportController.totalAdditionDiscountValue + laborataryReportController.totalDeductionDiscountValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputLabel
+                                        value="#{laborataryReportController.totalAdditionServiceChargeValue + laborataryReportController.totalDeductionServiceChargeValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                            <tr style="font-weight: 500; font-size: 12px">
+                                <td style="">Actual Cash in hand</td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                            </tr>
+                            <tr style="font-weight: 500; font-size: 12px">
+                                <td style="">Excess/Shortage</td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="text-end text-capitalize" style="font-size: 12px">
+                        Printed @
+                        <h:outputLabel value="#{sessionController.currentDate}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                        by #{sessionController.loggedUser.name}
+                    </div>
+
+                </h:panelGroup>
+            </p:panel>
+
+        </h:form>
+    </composite:implementation>
+
+</ui:component>

@@ -474,7 +474,7 @@
                                                             <p:selectBooleanCheckbox
                                                                 value="#{inwardSearch.withProfessionalFee}"
                                                                 itemLabel="With Professional Fee"
-                                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',true)}"
+                                                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Disable With Professional Fee in Final Bill',false)}"
                                                                 onchange="#{inwardSearch.showProfessionalFee()}">
                                                                 <p:ajax process="@this" update="OriginalFinalBillSummaryPriview"/>
                                                             </p:selectBooleanCheckbox>

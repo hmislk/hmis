@@ -496,7 +496,7 @@ public class AgentAndCcApplicationController {
             lock.unlock();
         }
     }
-    
+
     private void handleCcDeposit(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill) {
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
         Lock lock = lockMap.computeIfAbsent(collectingCentreId, id -> new ReentrantLock());

@@ -1,762 +1,864 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-<h:body>
-    <ui:composition template="/reports/index.xhtml">
-        <ui:define name="subcontent">
-            <h:form>
-                <p:panel header="Consumption">
-                    <h:panelGrid columns="8" class="w-100">
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
-                            <p:outputLabel value="From Date" for="fromDate" class="mx-3">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <p:calendar
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel header="Consumption">
+                        <h:panelGrid columns="8" class="w-100">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
+                                <p:outputLabel value="From Date" for="fromDate" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:calendar
                                 class="w-100"
                                 inputStyleClass="w-100"
                                 id="fromDate"
                                 value="#{pharmacyController.fromDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
-                        <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
-                            <p:outputLabel value="To Date" for="toDate" class="mx-3">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <p:calendar
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
+                                <p:outputLabel value="To Date" for="toDate" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:calendar
                                 class="w-100"
                                 inputStyleClass="w-100"
                                 id="toDate"
                                 value="#{pharmacyController.toDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
-                        <p:spacer width="20"/>
-                        <p:spacer width="20"/>
-                        <p:spacer width="20"/>
+                            <p:spacer width="20"/>
+                            <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText styleClass="fa fa-university ml-5"/>
-                            <p:outputLabel value="Institution" for="phmIns" class="mx-3">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <p:selectOneMenu
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university ml-5"/>
+                                <p:outputLabel value="Institution" for="phmIns" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
                                 id="phmIns"
                                 class="w-100"
                                 value="#{pharmacyController.institution}"
                                 filter="true">
-                            <f:selectItem itemLabel="All Institutions"/>
-                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
-                                           itemValue="#{ins}"/>
-                            <p:ajax process="phmIns" update="phmDept"/>
-                        </p:selectOneMenu>
+                                <f:selectItem itemLabel="All Institutions"/>
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                               itemValue="#{ins}"/>
+                                <p:ajax process="phmIns" update="phmDept"/>
+                            </p:selectOneMenu>
 
-                        <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText styleClass="fa fa-map-marker-alt ml-5"/>
-                            <p:outputLabel value="Site" for="phmSite" class="mx-3"/>
-                        </h:panelGroup>
-                        <p:selectOneMenu
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt ml-5"/>
+                                <p:outputLabel value="Site" for="phmSite" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
                                 id="phmSite"
                                 class="w-100"
                                 value="#{pharmacyController.site}"
                                 filter="true">
-                            <f:selectItem itemLabel="All Sites"/>
-                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
-                                           itemValue="#{site}"/>
-                            <p:ajax process="phmSite" update="phmDept"/>
-                        </p:selectOneMenu>
+                                <f:selectItem itemLabel="All Sites"/>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                               itemValue="#{site}"/>
+                                <p:ajax process="phmSite" update="phmDept"/>
+                            </p:selectOneMenu>
 
-                        <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText styleClass="fa fa-building ml-5"/>
-                            <p:outputLabel value="Department" for="phmDept" class="mx-3">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <p:selectOneMenu
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building ml-5"/>
+                                <p:outputLabel value="Department" for="phmDept" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
                                 id="phmDept"
                                 class="w-100"
                                 value="#{pharmacyController.dept}"
                                 filter="true">
-                            <f:selectItem itemLabel="All Departments"/>
-                            <f:selectItems
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
                                     value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.institution, pharmacyController.site)}"
                                     var="dept"
                                     itemLabel="#{dept.name}"
                                     itemValue="#{dept}"/>
-                        </p:selectOneMenu>
+                            </p:selectOneMenu>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText styleClass="fa fa-tags ml-5"/>
-                            <p:outputLabel value="Category" for="phmCategory" class="mx-3">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <p:selectOneMenu
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-tags ml-5"/>
+                                <p:outputLabel value="Category" for="phmCategory" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
                                 id="phmCategory"
                                 value="#{pharmacyController.category}"
                                 filter="true"
                                 class="w-100 ">
-                            <f:selectItem itemLabel="All Categories"/>
-                            <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
-                                           var="category"
-                                           itemLabel="#{category.name}"
-                                           itemValue="#{category}"/>
-                        </p:selectOneMenu>
+                                <f:selectItem itemLabel="All Categories"/>
+                                <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
+                                               var="category"
+                                               itemLabel="#{category.name}"
+                                               itemValue="#{category}"/>
+                            </p:selectOneMenu>
 
-                        <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText styleClass="fa fa-box ml-5"/>
-                            <p:outputLabel value="Item" class="mx-3">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <p:autoComplete value="#{pharmacyController.item}"
-                                        inputStyleClass="w-100"
-                                        class="w-100"
-                                        completeMethod="#{itemController.completeAmpItemAll}"
-                                        var="item" itemValue="#{item}" itemLabel="#{item.name}"
-                                        forceSelection="true">
-                            <p:column headerText="Item">
-                                <h:outputLabel value="#{item.name}"/>
-                            </p:column>
-                            <p:column headerText="Code">
-                                <h:outputLabel value="#{item.code}">
-                                    <f:convertNumber integerOnly="true"/>
-                                </h:outputLabel>
-                            </p:column>
-                        </p:autoComplete>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-box ml-5"/>
+                                <p:outputLabel value="Item" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:autoComplete value="#{pharmacyController.item}"
+                                            inputStyleClass="w-100"
+                                            class="w-100"
+                                            completeMethod="#{itemController.completeAmpItemAll}"
+                                            var="item" itemValue="#{item}" itemLabel="#{item.name}"
+                                            forceSelection="true">
+                                <p:column headerText="Item">
+                                    <h:outputLabel value="#{item.name}"/>
+                                </p:column>
+                                <p:column headerText="Code">
+                                    <h:outputLabel value="#{item.code}"/>
+                                </p:column>
+                            </p:autoComplete>
 
-                        <p:spacer width="20"/>
+                            <p:spacer width="20"/>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText styleClass="fa fa-list-alt ml-5"/>
-                            <p:outputLabel value="Report Type" class="mx-3" for="grnReportType">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <p:selectOneMenu class="w-100" id="grnReportType" value="#{pharmacyController.reportType}">
-                            <f:selectItem itemLabel="Summary" itemValue="summeryReport"/>
-                            <f:selectItem itemLabel="Department Unit Issue by Bill No" itemValue="byBill"/>
-                            <f:selectItem itemLabel="Department Unit Issue by Bill Item" itemValue="byBillItem"/>
-                            <f:selectItem itemLabel="Category Wise Issue Details by Department"
-                                          itemValue="categoryWise"/>
-                        </p:selectOneMenu>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-list-alt ml-5"/>
+                                <p:outputLabel value="Report Type" class="mx-3" for="grnReportType">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100" id="grnReportType" value="#{pharmacyController.reportType}">
+                                <f:selectItem itemLabel="Summary" itemValue="summeryReport"/>
+                                <f:selectItem itemLabel="By Bill" itemValue="byBill"/>
+                                <f:selectItem itemLabel="By Bill Item" itemValue="byBillItem"/>
+                                <f:selectItem itemLabel="By Category"
+                                              itemValue="categoryWise"/>
+                            </p:selectOneMenu>
 
-                        <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText styleClass="fa fa-barcode ml-5"/>
-                            <p:outputLabel value="Consumption Department" for="phmCde" class="mx-3">
-                            </p:outputLabel>
-                        </h:panelGroup>
-                        <p:autoComplete value="#{pharmacyController.toDepartment}"
-                                        inputStyleClass="w-100"
-                                        id="phmCde"
-                                        class="w-100"
-                                        completeMethod="#{departmentController.completeDept}"
-                                        var="i" itemValue="#{i}" itemLabel="#{i.name}"
-                                        forceSelection="true">
-                            <p:column headerText="Department">
-                                <h:outputLabel value="#{i.name}"/>
-                            </p:column>
-                        </p:autoComplete>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-barcode ml-5"/>
+                                <p:outputLabel value="Consumption Department" for="phmCde" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:autoComplete value="#{pharmacyController.toDepartment}"
+                                            inputStyleClass="w-100"
+                                            id="phmCde"
+                                            class="w-100"
+                                            completeMethod="#{departmentController.completeDept}"
+                                            var="i" itemValue="#{i}" itemLabel="#{i.name}"
+                                            forceSelection="true">
+                                <p:column headerText="Department">
+                                    <h:outputLabel value="#{i.name}"/>
+                                </p:column>
+                            </p:autoComplete>
 
-                    </h:panelGrid>
+                        </h:panelGrid>
 
-                    <div class="d-flex align-items-center mt-3">
-                        <p:commandButton class="ui-button-warning mx-1"
-                                         icon="fas fa-cogs"
-                                         ajax="false"
-                                         value="Process"
-                                         action="#{pharmacyController.createConsumptionReportTable()}">
-                        </p:commandButton>
-                        <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
-                                         rendered="#{pharmacyController.reportType eq 'summeryReport' or pharmacyController.reportType eq null or empty pharmacyController.reportType}"
-                                         onclick="hidePaginatorBeforePrint()">
-                            <p:printer target="tbl1" oncomplete="restorePaginatorAfterPrint()"/>
-                        </p:commandButton>
-                        <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
-                                         rendered="#{pharmacyController.reportType eq 'byBill'}"
-                                         onclick="hidePaginatorBeforePrint()">
-                            <p:printer target="tbl2" oncomplete="restorePaginatorAfterPrint()"/>
-                        </p:commandButton>
-                        <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
-                                         rendered="#{pharmacyController.reportType eq 'byBillItem'}"
-                                         onclick="hidePaginatorBeforePrint()">
-                            <p:printer target="tbl3" oncomplete="restorePaginatorAfterPrint()"/>
-                        </p:commandButton>
-                        <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
-                                         rendered="#{pharmacyController.reportType eq 'categoryWise'}"
-                                         onclick="hidePaginatorBeforePrint()">
-                            <p:printer target="tbl4" oncomplete="restorePaginatorAfterPrint()"/>
-                        </p:commandButton>
-                        <h:outputScript>
-                            function hidePaginatorBeforePrint() {
+                        <div class="d-flex align-items-center mt-3">
+                            <p:commandButton class="ui-button-warning mx-1"
+                                             icon="fas fa-cogs"
+                                             ajax="false"
+                                             value="Process"
+                                             action="#{pharmacyController.createConsumptionReportTable()}">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
+                                             rendered="#{pharmacyController.reportType eq 'summeryReport' or pharmacyController.reportType eq null or empty pharmacyController.reportType}"
+                                             onclick="hidePaginatorBeforePrint()">
+                                <p:printer target="tbl1" oncomplete="restorePaginatorAfterPrint()"/>
+                            </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
+                                             rendered="#{pharmacyController.reportType eq 'byBill'}"
+                                             onclick="hidePaginatorBeforePrint()">
+                                <p:printer target="tblListBills" oncomplete="restorePaginatorAfterPrint()"/>
+                            </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
+                                             rendered="#{pharmacyController.reportType eq 'byBillItem'}"
+                                             onclick="hidePaginatorBeforePrint()">
+                                <p:printer target="tblListBillItems" oncomplete="restorePaginatorAfterPrint()"/>
+                            </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
+                                             rendered="#{pharmacyController.reportType eq 'categoryWise'}"
+                                             onclick="hidePaginatorBeforePrint()">
+                                <p:printer target="tblCategory" oncomplete="restorePaginatorAfterPrint()"/>
+                            </p:commandButton>
+                            <h:outputScript>
+                                function hidePaginatorBeforePrint() {
                                 let paginators = document.querySelectorAll('.ui-paginator');
                                 paginators.forEach(el => el.style.display = 'none');
-                            }
+                                }
 
-                            function restorePaginatorAfterPrint() {
+                                function restorePaginatorAfterPrint() {
                                 let paginators = document.querySelectorAll('.ui-paginator');
                                 paginators.forEach(el => el.style.display = '');
-                            }
+                                }
 
-                            window.onafterprint = function () {
+                                window.onafterprint = function () {
                                 restorePaginatorAfterPrint();
-                            };
-                        </h:outputScript>
+                                };
+                            </h:outputScript>
 
-                        <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
-                                         value="Download"
-                                         rendered="#{pharmacyController.reportType eq 'summeryReport' or pharmacyController.reportType eq null or empty pharmacyController.reportType}"
-                                         action="#{pharmacyController.exportConsumptionReportSummaryToExcel()}">
-                        </p:commandButton>
-                        <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
-                                         value="Download" rendered="#{pharmacyController.reportType eq 'byBill'}">
-                            <p:dataExporter type="xlsx" target="tbl2"
-                                            fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
-                        </p:commandButton>
-                        <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
-                                         value="Download" rendered="#{pharmacyController.reportType eq 'byBillItem'}">
-                            <p:dataExporter type="xlsx" target="tbl3"
-                                            fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
-                        </p:commandButton>
-                        <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
-                                         value="Download" rendered="#{pharmacyController.reportType eq 'categoryWise'}"
-                                         action="#{pharmacyController.exportConsumptionReportCategoryWiseToExcel()}"/>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
+                                             value="Download"
+                                             rendered="#{pharmacyController.reportType eq 'summeryReport' or pharmacyController.reportType eq null or empty pharmacyController.reportType}"
+                                             action="#{pharmacyController.exportConsumptionReportSummaryToExcel()}">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
+                                             value="Download" rendered="#{pharmacyController.reportType eq 'byBill'}">
+                                <p:dataExporter type="xlsx" target="tblListBills"
+                                                fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
+                                             value="Download" rendered="#{pharmacyController.reportType eq 'byBillItem'}">
+                                <p:dataExporter type="xlsx" target="tblListBillItems"
+                                                fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
+                                             value="Download" rendered="#{pharmacyController.reportType eq 'categoryWise'}"
+                                             action="#{pharmacyController.exportConsumptionReportCategoryWiseToExcel()}"/>
 
-                        <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
-                                         rendered="#{pharmacyController.reportType eq 'summeryReport' or pharmacyController.reportType eq null or empty pharmacyController.reportType}"
-                                         action="#{pharmacyController.exportConsumptionReportSummaryToPdf()}">
-                        </p:commandButton>
-                        <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
-                                         rendered="#{pharmacyController.reportType eq 'byBill'}">
-                            <p:dataExporter type="pdf" target="tbl2"
-                                            fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
-                        </p:commandButton>
-                        <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
-                                         rendered="#{pharmacyController.reportType eq 'byBillItem'}">
-                            <p:dataExporter type="pdf" target="tbl3"
-                                            fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
-                        </p:commandButton>
-                        <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
-                                         rendered="#{pharmacyController.reportType eq 'categoryWise'}"
-                                         action="#{pharmacyController.exportConsumptionReportCategoryWiseToPdf}">
-                        </p:commandButton>
-                    </div>
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
+                                             rendered="#{pharmacyController.reportType eq 'summeryReport' or pharmacyController.reportType eq null or empty pharmacyController.reportType}"
+                                             action="#{pharmacyController.exportConsumptionReportSummaryToPdf()}">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
+                                             rendered="#{pharmacyController.reportType eq 'byBill'}">
+                                <p:dataExporter type="pdf" target="tblListBills"
+                                                fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
+                                             rendered="#{pharmacyController.reportType eq 'byBillItem'}">
+                                <p:dataExporter type="pdf" target="tblListBillItems"
+                                                fileName="#{pharmacyController.generateFileNameForReport('Consumption')}"/>
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
+                                             rendered="#{pharmacyController.reportType eq 'categoryWise'}"
+                                             action="#{pharmacyController.exportConsumptionReportCategoryWiseToPdf()}">
+                            </p:commandButton>
+                        </div>
 
-                    <!--                    <h:panelGroup rendered="#{pharmacyController.reportType eq 'summeryReport'}">-->
-                    <!--                        <h5 class="mt-3">Department Summary</h5>-->
-                    <!--                        <p:dataTable id="tbl1" value="#{pharmacyController.departmentTotals.entrySet()}"-->
-                    <!--                                     var="map"-->
-                    <!--                                     rowIndexVar="n"-->
-                    <!--                                     rowKey="#{map.key}"-->
-                    <!--                                     rows="10"-->
-                    <!--                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"-->
-                    <!--                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}">-->
-                    <!--                            <p:columnGroup type="header">-->
-                    <!--                                <p:row>-->
-                    <!--                                    <p:column headerText="Department"/>-->
-                    <!--                                    <p:column headerText="Net Total" style="font-weight: bold; text-align: right"/>-->
-                    <!--                                </p:row>-->
-                    <!--                            </p:columnGroup>-->
-                    <!--                            <p:subTable value="#{map.value.entrySet()}" var="entry">-->
-                    <!--                                <f:facet name="header">-->
-                    <!--                                    <h:outputLabel value="#{map.key}"/>-->
-                    <!--                                </f:facet>-->
-                    <!--                                <p:column>-->
-                    <!--                                    <h:outputLabel value="#{entry.key}"/>-->
-                    <!--                                </p:column>-->
-                    <!--                                <p:column style="text-align: right">-->
-                    <!--                                    <h:outputLabel value="#{entry.value}">-->
-                    <!--                                        <f:convertNumber pattern="#,##0.00"/>-->
-                    <!--                                    </h:outputLabel>-->
-                    <!--                                    <f:facet name="footer">-->
-                    <!--                                        <h:outputLabel value="#{pharmacyController.totalSaleValue}"-->
-                    <!--                                                       style="font-weight: bold;">-->
-                    <!--                                            <f:convertNumber pattern="#,##0.00"/>-->
-                    <!--                                        </h:outputLabel>-->
-                    <!--                                    </f:facet>-->
-                    <!--                                </p:column>-->
-                    <!--                                <p:columnGroup type="footer">-->
-                    <!--                                    <p:row>-->
-                    <!--                                        <p:column>-->
-                    <!--                                            <f:facet name="footer">-->
-                    <!--                                                <h:outputLabel value="Total" style="font-weight: bold;"/>-->
-                    <!--                                            </f:facet>-->
-                    <!--                                        </p:column>-->
-                    <!--                                        <p:column style="font-weight: bold; text-align: right">-->
-                    <!--                                            <f:facet name="footer">-->
-                    <!--                                                <h:outputLabel-->
-                    <!--                                                        value="#{pharmacyController.pharmacyTotals.get(map.key)}">-->
-                    <!--                                                    <f:convertNumber pattern="#,##0.00"/>-->
-                    <!--                                                </h:outputLabel>-->
-                    <!--                                            </f:facet>-->
-                    <!--                                        </p:column>-->
-                    <!--                                    </p:row>-->
-                    <!--                                </p:columnGroup>-->
-                    <!--                            </p:subTable>-->
-                    <!--                            <p:columnGroup type="footer">-->
-                    <!--                                <p:row>-->
-                    <!--                                    <p:column>-->
-                    <!--                                        <f:facet name="footer">-->
-                    <!--                                            <h:outputLabel value="Total" style="font-weight: bold;"/>-->
-                    <!--                                        </f:facet>-->
-                    <!--                                    </p:column>-->
-                    <!--                                    <p:column style="font-weight: bold; text-align: right">-->
-                    <!--                                        <f:facet name="footer">-->
-                    <!--                                            <h:outputLabel value="#{pharmacyController.totalSaleValue}">-->
-                    <!--                                                <f:convertNumber pattern="#,##0.00"/>-->
-                    <!--                                            </h:outputLabel>-->
-                    <!--                                        </f:facet>-->
-                    <!--                                    </p:column>-->
-                    <!--                                </p:row>-->
-                    <!--                            </p:columnGroup>-->
-                    <!--                        </p:dataTable>-->
-                    <!--                    </h:panelGroup>-->
+                        <h:panelGroup rendered="#{pharmacyController.reportType eq 'summeryReport'}" id="tbl1">
+                            <h5 class="mt-3">Department Summary</h5>
 
-                    <h:panelGroup rendered="#{pharmacyController.reportType eq 'summeryReport'}" id="tbl1">
-                        <h5 class="mt-3">Department Summary</h5>
+                            <ui:repeat value="#{pharmacyController.departmentTotals.entrySet()}" var="map"
+                                       varStatus="status">
+                                <p:dataTable id="tblSummary" value="#{map.value.entrySet()}" var="entry"
+                                             rowIndexVar="n" rowKey="#{entry.key}" rows="10"
+                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}">
 
-                        <ui:repeat value="#{pharmacyController.departmentTotals.entrySet()}" var="map"
-                                   varStatus="status">
-                            <p:dataTable id="tbl5" value="#{map.value.entrySet()}" var="entry"
-                                         rowIndexVar="n" rowKey="#{entry.key}" rows="10"
-                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Department" rendered="#{status.first}"/>
+                                    </f:facet>
 
-                                <f:facet name="header">
-                                    <h:outputLabel value="Department" rendered="#{status.first}"/>
-                                </f:facet>
+                                    <p:column headerText="#{map.key}"
+                                              filterBy="#{entry.key}"
+                                              filterMatchMode="contains">
+                                        <h:outputLabel value="#{entry.key}"/>
+                                    </p:column>
 
-                                <p:column headerText="#{map.key}"
-                                          filterBy="#{entry.key}"
-                                          filterMatchMode="contains">
-                                    <h:outputLabel value="#{entry.key}"/>
-                                </p:column>
+                                    <p:column headerText="Purchase Value" style="text-align: right">
+                                        <h:outputLabel value="#{entry.value[0]}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
 
-                                <p:column headerText="Cost Value Total" style="text-align: right">
-                                    <h:outputLabel value="#{entry.value[1]}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </p:column>
+                                    <p:column headerText="Cost Value" style="text-align: right">
+                                        <h:outputLabel value="#{entry.value[1]}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
 
-                                <p:column headerText="Net Total" style="text-align: right">
-                                    <h:outputLabel value="#{entry.value[0]}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:columnGroup type="footer">
-                                    <p:row>
-                                        <p:column colspan="1">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="Total" style="font-weight: bold;"/>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: right; font-weight: bold;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel
-                                                        value="#{pharmacyController.pharmacyTotals.get(map.key)[1]}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: right; font-weight: bold;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel
-                                                        value="#{pharmacyController.pharmacyTotals.get(map.key)[0]}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
+                                    <p:column headerText="Retail Value" style="text-align: right">
+                                        <h:outputLabel value="#{entry.value[2]}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
 
-                                    <p:row rendered="#{status.last}">
-                                        <p:column colspan="1">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="Total" style="font-weight: bold;"/>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: right; font-weight: bold;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="#{pharmacyController.totalCostValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: right; font-weight: bold;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="#{pharmacyController.totalSaleValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                </p:columnGroup>
-                            </p:dataTable>
-                        </ui:repeat>
-                    </h:panelGroup>
+                                    <p:column headerText="Net Total" style="text-align: right">
+                                        <h:outputLabel value="#{entry.value[3]}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:columnGroup type="footer">
+                                        <p:row rendered="#{status.last}">
+                                            <p:column colspan="1">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="Total" style="font-weight: bold;"/>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right; font-weight: bold;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="#{pharmacyController.totalPurchase}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right; font-weight: bold;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="#{pharmacyController.totalCostValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right; font-weight: bold;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="#{pharmacyController.totalRetailValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right; font-weight: bold;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="#{pharmacyController.totalSaleValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                </p:dataTable>
+                            </ui:repeat>
+                        </h:panelGroup>
 
-                    <h:panelGroup rendered="#{pharmacyController.reportType eq 'byBill'}">
-                        <h5 class="mt-3">Department unit issue by Bill No</h5>
-                        <p:dataTable id="tbl2" value="#{pharmacyController.pharmacyRows}"
-                                     var="b"
-                                     rowIndexVar="n"
-                                     paginator="true"
-                                     rows="10"
-                                     paginatorPosition="bottom"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
-                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
-                            <p:column
+                        <h:panelGroup rendered="#{pharmacyController.reportType eq 'byBill'}">
+                            <h5 class="mt-3">Department unit issue by Bill No</h5>
+                            <p:dataTable 
+                                id="tblListBills" 
+                                value="#{pharmacyController.pharmacyRows}"
+                                var="b"
+                                rowIndexVar="n"
+                                paginator="true"
+                                rows="10"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                                <p:column
                                     headerText="Bill No"
                                     width="10em"
                                     filterMatchMode="contains"
                                     sortBy="#{b.bill.deptId}"
                                     filterBy="#{b.bill.deptId}">
-                                <h:outputText value="#{b.bill.deptId}"/>
-                            </p:column>
+                                    <h:outputText value="#{b.bill.deptId}"/>
+                                </p:column>
 
-                            <p:column
+                                <p:column
                                     headerText="Consumption Department"
                                     width="10em"
                                     filterMatchMode="contains"
                                     sortBy="#{b.bill.toDepartment.name}"
                                     filterBy="#{b.bill.toDepartment.name}">
-                                <h:outputText value="#{b.bill.toDepartment.name}"/>
-                            </p:column>
+                                    <h:outputText value="#{b.bill.toDepartment.name}"/>
+                                </p:column>
 
-                            <p:column
+                                <p:column
                                     headerText="Request No"
                                     width="6em"
                                     filterMatchMode="contains"
                                     sortBy="#{b.bill.invoiceNumber}"
                                     filterBy="#{b.bill.invoiceNumber}">
-                                <h:outputText value="#{b.bill.invoiceNumber}"/>
-                            </p:column>
+                                    <h:outputText value="#{b.bill.invoiceNumber}"/>
+                                </p:column>
 
-                            <p:column headerText="Cancel/Refund No" width="5em">
-                                <h:outputText value="#{b.bill.cancelledBill.deptId}" style="color: red;"/>
-                                <h:outputText value="#{b.bill.refundedBill.deptId}" style="color: orange;"/>
-                            </p:column>
+                                <p:column headerText="Status/Links" width="10em">
+                                    <!-- Show status if this bill is cancelled or returned -->
+                                    <h:panelGroup rendered="#{b.bill.cancelled}">
+                                        <h:outputText value="CANCELLED" style="color: red; font-weight: bold; display: block;" />
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{b.bill.fullReturned}">
+                                        <h:outputText value="RETURNED" style="color: orange; font-weight: bold; display: block;" />
+                                    </h:panelGroup>
 
-                            <p:column
-                                    headerText="Purchase Rate Value"
+                                    <!-- If this bill has been cancelled, show link to cancellation bill -->
+                                    <h:panelGroup rendered="#{b.bill.cancelledBill != null}" styleClass="d-block mt-1">
+                                        <h:outputText value="Cancel: #{b.bill.cancelledBill.deptId}" style="color: red;"/>
+                                        <p:commandButton
+                                            title="View Cancellation Bill"
+                                            ajax="false"
+                                            styleClass="mx-1 ui-button-sm"
+                                            icon="pi pi-eye"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(b.bill.cancelledBill.id)}" />
+                                    </h:panelGroup>
+
+                                    <!-- If this bill has been returned, show link to return bill -->
+                                    <h:panelGroup rendered="#{b.bill.refundedBill != null}" styleClass="d-block mt-1">
+                                        <h:outputText value="Return: #{b.bill.refundedBill.deptId}" style="color: orange;"/>
+                                        <p:commandButton
+                                            title="View Return Bill"
+                                            ajax="false"
+                                            styleClass="mx-1 ui-button-sm"
+                                            icon="pi pi-eye"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(b.bill.refundedBill.id)}" />
+                                    </h:panelGroup>
+
+                                    <!-- If this is a cancellation/return bill, show link to original bill -->
+                                    <h:panelGroup rendered="#{b.bill.billedBill != null}" styleClass="d-block mt-1">
+                                        <h:outputText value="Original: #{b.bill.billedBill.deptId}" style="color: blue;"/>
+                                        <p:commandButton
+                                            title="View Original Bill"
+                                            ajax="false"
+                                            styleClass="mx-1 ui-button-sm ui-button-info"
+                                            icon="pi pi-eye"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(b.bill.billedBill.id)}" />
+                                    </h:panelGroup>
+                                </p:column>
+
+                                <p:column headerText="Action" width="5em">
+                                    <p:commandButton
+                                        id="btnViewBill"
+                                        title="View Bill"
+                                        ajax="false"
+                                        styleClass="mx-1 ui-button-sm"
+                                        icon="pi pi-eye"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(b.bill.id)}" />
+                                </p:column>
+
+                                <p:column
+                                    headerText="Purchase Value"
                                     width="4em"
                                     style="text-align: right;"
                                     filterMatchMode="contains"
-                                    sortBy="#{-1 * b.bill.stockBill.stockValueAtPurchaseRates}"
-                                    filterBy="#{-1 * b.bill.stockBill.stockValueAtPurchaseRates}">
-                                <h:outputText value="#{-1 * b.bill.stockBill.stockValueAtPurchaseRates}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{-1 * pharmacyController.totalPurchase}">
-                                        <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
-                                </f:facet>
-                            </p:column>
+                                    sortBy="#{b.bill.billFinanceDetails.totalPurchaseValue}">
+                                    <h:outputText value="#{b.bill.billFinanceDetails.totalPurchaseValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyController.totalPurchase}">
+                                            <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                    </f:facet>
+                                </p:column>
 
-                            <p:column
-                                    headerText="Cost Rate Value"
+                                <p:column
+                                    headerText="Cost Value"
                                     width="4em"
                                     style="text-align: right;"
                                     filterMatchMode="contains"
-                                    sortBy="#{b.costValue}"
-                                    filterBy="#{b.costValue}">
-                                <h:outputText value="#{b.costValue}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacyController.totalCostValue}">
-                                        <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
-                                </f:facet>
-                            </p:column>
+                                    sortBy="#{b.bill.billFinanceDetails.totalCostValue}">
+                                    <h:outputText value="#{b.bill.billFinanceDetails.totalCostValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyController.totalCostValue}">
+                                            <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                    </f:facet>
+                                </p:column>
 
-                            <p:column
+                                <p:column
+                                    headerText="Retail Value"
+                                    width="4em"
+                                    style="text-align: right;"
+                                    filterMatchMode="contains"
+                                    sortBy="#{b.bill.billFinanceDetails.totalRetailSaleValue}">
+                                    <h:outputText value="#{b.bill.billFinanceDetails.totalRetailSaleValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyController.totalRetailValue}">
+                                            <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+
+                                <p:column
                                     headerText="Created Date and Time"
                                     width="6em"
                                     filterMatchMode="contains"
                                     sortBy="#{b.bill.createdAt}"
                                     filterBy="#{pharmacyController.formatDate(b.bill.createdAt)}">
-                                <h:outputText value="#{b.bill.createdAt}">
-                                    <f:convertDateTime
+                                    <h:outputText value="#{b.bill.createdAt}">
+                                        <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                </h:outputText>
-                            </p:column>
+                                    </h:outputText>
+                                </p:column>
 
-                            <p:column headerText="Document Created By" width="10em">
-                                <h:outputText value="#{b.bill.creater.webUserPerson.name}"/>
-                            </p:column>
+                                <p:column headerText="Document Created By" width="10em">
+                                    <h:outputText value="#{b.bill.creater.webUserPerson.name}"/>
+                                </p:column>
 
-                            <p:column headerText="Remarks" width="10em">
-                                <h:outputText value="#{b.bill.comments}"/>
-                            </p:column>
-                        </p:dataTable>
-                    </h:panelGroup>
+                                <p:column headerText="Remarks" width="10em">
+                                    <h:outputText value="#{b.bill.comments}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGroup>
 
-                    <h:panelGroup rendered="#{pharmacyController.reportType eq 'byBillItem'}">
-                        <h5 class="mt-3"> Department unit issue by Bill Item</h5>
-                        <p:dataTable id="tbl3" value="#{pharmacyController.pharmacyRows}"
-                                     var="i"
-                                     rowIndexVar="n"
-                                     rowKey="#{i.id}"
-                                     paginator="true"
-                                     rows="10"
-                                     paginatorPosition="bottom"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
-                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
-                            <p:column headerText="No" width="2em">
-                                <p:outputLabel value="#{n+1}"/>
-                            </p:column>
+                        <h:panelGroup rendered="#{pharmacyController.reportType eq 'byBillItem'}">
+                            <h5 class="mt-3"> Department unit issue by Bill Item</h5>
+                            <p:dataTable 
+                                id="tblListBillItems"
+                                value="#{pharmacyController.pharmacyRows}"
+                                var="i"
+                                rowIndexVar="n"
+                                rowKey="#{i.id}"
+                                paginator="true"
+                                rows="10"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                                <p:column headerText="No" width="2em">
+                                    <p:outputLabel value="#{n+1}"/>
+                                </p:column>
 
-                            <p:column
+                                <p:column
                                     headerText="Bill No"
                                     width="6em"
                                     filterMatchMode="contains"
                                     sortBy="#{i.billItem.bill.deptId}"
                                     filterBy="#{i.billItem.bill.deptId}">
-                                <p:outputLabel value="#{i.billItem.bill.deptId}"/>
-                            </p:column>
+                                    <p:outputLabel value="#{i.billItem.bill.deptId}"/>
+                                </p:column>
 
-                            <p:column
+                                <p:column
                                     headerText="Request No"
                                     width="6em"
                                     filterMatchMode="contains"
                                     sortBy="#{i.billItem.bill.invoiceNumber}"
                                     filterBy="#{i.billItem.bill.invoiceNumber}">
-                                <p:outputLabel value="#{i.billItem.bill.invoiceNumber}"/>
-                            </p:column>
+                                    <p:outputLabel value="#{i.billItem.bill.invoiceNumber}"/>
+                                </p:column>
 
-                            <p:column
+                                <p:column
                                     headerText="Consumption Department"
                                     width="10em"
                                     filterMatchMode="contains"
                                     sortBy="#{i.billItem.bill.toDepartment.name}"
                                     filterBy="#{i.billItem.bill.toDepartment.name}">
-                                <p:outputLabel value="#{i.billItem.bill.toDepartment.name}"/>
-                            </p:column>
+                                    <p:outputLabel value="#{i.billItem.bill.toDepartment.name}"/>
+                                </p:column>
 
-                            <p:column
+                                <p:column
                                     headerText="Item"
                                     width="6em"
                                     filterMatchMode="contains"
                                     sortBy="#{i.billItem.item.name}"
                                     filterBy="#{i.billItem.item.name}">
-                                <p:outputLabel value="#{i.billItem.item.name}"/>
-                            </p:column>
+                                    <p:outputLabel value="#{i.billItem.item.name}"/>
+                                </p:column>
 
-                            <p:column
+                                <p:column
                                     headerText="Item Category"
                                     width="6em"
                                     filterMatchMode="contains"
                                     sortBy="#{i.billItem.item.category.name}"
                                     filterBy="#{i.billItem.item.category.name}">
-                                <p:outputLabel value="#{i.billItem.item.category.name}"/>
-                            </p:column>
+                                    <p:outputLabel value="#{i.billItem.item.category.name}"/>
+                                </p:column>
 
-                            <p:column
+                                <p:column
                                     headerText="Quantity"
                                     width="4em"
                                     style="text-align: right; padding-right: 20px;"
                                     filterMatchMode="contains"
                                     sortBy="#{i.billItem.qty}"
                                     filterBy="#{i.billItem.qty}">
-                                <p:outputLabel value="#{i.billItem.qty}"/>
-                            </p:column>
+                                    <p:outputLabel value="#{i.billItem.qty}"/>
+                                </p:column>
 
-                            <p:column headerText="Cancel No" width="5em">
-                                <h:outputText value="#{i.billItem.bill.cancelledBill.deptId}" style="color: red;"/>
-                                <h:outputText value="#{i.billItem.bill.refundedBill.deptId}" style="color: orange;"/>
-                            </p:column>
+                                <p:column headerText="Status/Links" width="10em">
+                                    <!-- Show status if this bill is cancelled or returned -->
+                                    <h:panelGroup rendered="#{i.billItem.bill.cancelled}">
+                                        <h:outputText value="CANCELLED" style="color: red; font-weight: bold; display: block;" />
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{i.billItem.bill.fullReturned}">
+                                        <h:outputText value="RETURNED" style="color: orange; font-weight: bold; display: block;" />
+                                    </h:panelGroup>
 
-                            <p:column
+                                    <!-- If this bill has been cancelled, show link to cancellation bill -->
+                                    <h:panelGroup rendered="#{i.billItem.bill.cancelledBill != null}" styleClass="d-block mt-1">
+                                        <h:outputText value="Cancel: #{i.billItem.bill.cancelledBill.deptId}" style="color: red;"/>
+                                        <p:commandButton
+                                            title="View Cancellation Bill"
+                                            ajax="false"
+                                            styleClass="mx-1 ui-button-sm"
+                                            icon="pi pi-eye"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(i.billItem.bill.cancelledBill.id)}" />
+                                    </h:panelGroup>
+
+                                    <!-- If this bill has been returned, show link to return bill -->
+                                    <h:panelGroup rendered="#{i.billItem.bill.refundedBill != null}" styleClass="d-block mt-1">
+                                        <h:outputText value="Return: #{i.billItem.bill.refundedBill.deptId}" style="color: orange;"/>
+                                        <p:commandButton
+                                            title="View Return Bill"
+                                            ajax="false"
+                                            styleClass="mx-1 ui-button-sm"
+                                            icon="pi pi-eye"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(i.billItem.bill.refundedBill.id)}" />
+                                    </h:panelGroup>
+
+                                    <!-- If this is a cancellation/return bill, show link to original bill -->
+                                    <h:panelGroup rendered="#{i.billItem.bill.billedBill != null}" styleClass="d-block mt-1">
+                                        <h:outputText value="Original: #{i.billItem.bill.billedBill.deptId}" style="color: blue;"/>
+                                        <p:commandButton
+                                            title="View Original Bill"
+                                            ajax="false"
+                                            styleClass="mx-1 ui-button-sm ui-button-info"
+                                            icon="pi pi-eye"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(i.billItem.bill.billedBill.id)}" />
+                                    </h:panelGroup>
+                                </p:column>
+
+                                <p:column headerText="Action" width="5em">
+                                    <p:commandButton
+                                        id="btnViewBill"
+                                        title="View Bill"
+                                        ajax="false"
+                                        styleClass="mx-1 ui-button-sm"
+                                        icon="pi pi-eye"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillItemId(i.billItem.id)}" />
+                                </p:column>
+
+                                <p:column
                                     headerText="Purchase Rate"
                                     width="6em"
                                     style="text-align: right;"
                                     filterMatchMode="contains"
-                                    sortBy="#{i.billItem.pharmaceuticalBillItem.purchaseRate}"
-                                    filterBy="#{i.billItem.pharmaceuticalBillItem.purchaseRate}">
-                                <p:outputLabel value="#{i.billItem.pharmaceuticalBillItem.purchaseRate}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </p:outputLabel>
-                            </p:column>
+                                    sortBy="#{i.billItem.billItemFinanceDetails.purchaseRate}">
+                                    <p:outputLabel value="#{i.billItem.billItemFinanceDetails.purchaseRate}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                </p:column>
 
-                            <p:column
+                                <p:column
                                     headerText="Purchase Value"
                                     width="6em"
                                     style="text-align: right;"
                                     filterMatchMode="contains"
-                                    sortBy="#{i.billItem.qty * i.billItem.pharmaceuticalBillItem.purchaseRate}"
-                                    filterBy="#{i.billItem.qty * i.billItem.pharmaceuticalBillItem.purchaseRate}">
-                                <p:outputLabel
-                                        value="#{i.billItem.qty * i.billItem.pharmaceuticalBillItem.purchaseRate}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </p:outputLabel>
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacyController.totalPurchase}">
-                                        <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
-                                </f:facet>
-                            </p:column>
+                                    sortBy="#{i.billItem.billItemFinanceDetails.valueAtPurchaseRate}">
+                                    <p:outputLabel
+                                        value="#{i.billItem.billItemFinanceDetails.valueAtPurchaseRate}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyController.totalPurchase}">
+                                            <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                    </f:facet>
+                                </p:column>
 
-                            <p:column
+                                <p:column
+                                    headerText="Retail Rate"
+                                    width="6em"
+                                    style="text-align: right;"
+                                    filterMatchMode="contains"
+                                    sortBy="#{i.billItem.billItemFinanceDetails.retailSaleRate}">
+                                    <p:outputLabel value="#{i.billItem.billItemFinanceDetails.retailSaleRate}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column
+                                    headerText="Retail Value"
+                                    width="6em"
+                                    style="text-align: right;"
+                                    filterMatchMode="contains"
+                                    sortBy="#{i.billItem.billItemFinanceDetails.valueAtRetailRate}">
+                                    <p:outputLabel value="#{i.billItem.billItemFinanceDetails.valueAtRetailRate}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyController.totalRetailValue}">
+                                            <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column
                                     headerText="Cost Rate"
                                     width="6em"
                                     style="text-align: right;"
                                     filterMatchMode="contains"
-                                    sortBy="#{i.itemBatch.costRate}"
-                                    filterBy="#{i.itemBatch.costRate}">
-                                <p:outputLabel value="#{i.itemBatch.costRate}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </p:outputLabel>
-                            </p:column>
+                                    sortBy="#{i.billItem.billItemFinanceDetails.costRate}">
+                                    <p:outputLabel value="#{i.billItem.billItemFinanceDetails.costRate}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                </p:column>
 
-                            <p:column
+                                <p:column
                                     headerText="Cost Value"
                                     width="6em"
                                     style="text-align: right;"
                                     filterMatchMode="contains"
-                                    sortBy="#{i.billItem.qty * i.itemBatch.costRate}"
-                                    filterBy="#{i.billItem.qty * i.itemBatch.costRate}">
-                                <p:outputLabel value="#{i.billItem.qty * i.itemBatch.costRate}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </p:outputLabel>
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{pharmacyController.totalCostValue}">
-                                        <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
-                                </f:facet>
-                            </p:column>
+                                    sortBy="#{i.billItem.billItemFinanceDetails.valueAtCostRate}">
+                                    <p:outputLabel value="#{i.billItem.billItemFinanceDetails.valueAtCostRate}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyController.totalCostValue}">
+                                            <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                    </f:facet>
+                                </p:column>
 
-                            <p:column
-                                    headerText="Created Date and Time"
+                                <p:column
+                                    headerText="Created At"
                                     width="8em"
                                     filterMatchMode="contains"
                                     sortBy="#{i.billItem.bill.createdAt}"
                                     filterBy="#{pharmacyController.formatDate(i.billItem.bill.createdAt)}">
-                                <p:outputLabel value="#{i.billItem.bill.createdAt}">
-                                    <f:convertDateTime
+                                    <p:outputLabel value="#{i.billItem.bill.createdAt}">
+                                        <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                </p:outputLabel>
-                            </p:column>
+                                    </p:outputLabel>
+                                </p:column>
 
-                            <p:column headerText="Document Created By" width="8em">
-                                <p:outputLabel value="#{i.billItem.bill.creater.webUserPerson.name}">
-                                </p:outputLabel>
-                            </p:column>
+                                <p:column headerText="User" width="8em">
+                                    <p:outputLabel value="#{i.billItem.bill.creater.webUserPerson.name}">
+                                    </p:outputLabel>
+                                </p:column>
 
-                            <p:column headerText="Remarks" width="10em">
-                                <p:outputLabel value="#{i.billItem.bill.comments}"/>
-                            </p:column>
-                        </p:dataTable>
-                    </h:panelGroup>
+                                <p:column headerText="Remarks" width="10em">
+                                    <p:outputLabel value="#{i.billItem.bill.comments}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGroup>
 
-                    <h:panelGroup rendered="#{pharmacyController.reportType eq 'categoryWise'}" id="tbl4">
-                        <h5 class="mt-3">Category Wise Issue Details by Department</h5>
-                        <ui:repeat value="#{pharmacyController.departmentCategoryMap.entrySet()}" var="map"
-                                   varStatus="status">
-                            <p:dataTable id="itbl4"
-                                         value="#{map.value.entrySet()}"
-                                         var="entry"
-                                         rowIndexVar="n"
-                                         rowKey="#{entry.key}"
-                                         rows="10"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}">
-                                <p:columnGroup type="header">
-                                    <p:row style="background: #e5e9ec" rendered="#{status.first}">
-                                        <p:column headerText="Department Unit"
-                                                  style="font-weight: bold; background: #e5e9ec" colspan="5"/>
-                                    </p:row>
-                                    <p:row style="background: #70a4ca">
-                                        <p:column headerText="#{map.key}" style="font-weight: bold; background: #70a4ca"
-                                                  colspan="3"/>
-                                        <p:column
-                                                headerText="#{pharmacyController.getDepartmentCostTotalForConsumptionReport(map.key)}"
-                                                style="font-weight: bold; background: #70a4ca"/>
-                                        <p:column
-                                                headerText="#{pharmacyController.getDepartmentTotalForConsumptionReport(map.key)}"
-                                                style="font-weight: bold; background: #70a4ca"/>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column headerText="Category" style="font-weight: bold;"/>
-                                        <p:column headerText="Issues" style="font-weight: bold;"/>
-                                        <p:column headerText="" style="font-weight: bold;" colspan="3"/>
-                                    </p:row>
-                                    <p:row>
-                                        <p:column headerText="" style="font-weight: bold;"/>
-                                        <p:column headerText="Rate" style="font-weight: bold;"/>
-                                        <p:column headerText="Qty" style="font-weight: bold;"/>
-                                        <p:column headerText="Cost Value" style="font-weight: bold;"/>
-                                        <p:column headerText="Value" style="font-weight: bold;"/>
-                                    </p:row>
-                                </p:columnGroup>
-                                <p:subTable value="#{entry.value}" var="item">
+                        <h:panelGroup 
+                            rendered="#{pharmacyController.reportType eq 'categoryWise'}" 
+                            id="tblCategory">
+                            <h5 class="mt-3">Category Wise Issue Details by Department</h5>
+                            <ui:repeat value="#{pharmacyController.departmentCategoryMap.entrySet()}" var="map"
+                                       varStatus="status">
+                                <p:dataTable id="itblCategory"
+                                             value="#{map.value.entrySet()}"
+                                             var="entry"
+                                             rowIndexVar="n"
+                                             rowKey="#{entry.key}"
+                                             rows="10"
+                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}">
                                     <p:columnGroup type="header">
+                                        <p:row style="background: #e5e9ec" rendered="#{status.first}">
+                                            <p:column headerText="Department Unit"
+                                                      style="font-weight: bold; background: #e5e9ec" colspan="7"/>
+                                        </p:row>
+                                        <p:row style="background: #70a4ca">
+                                            <p:column headerText="#{map.key}" style="font-weight: bold; background: #70a4ca"
+                                                      colspan="3"/>
+                                            <p:column
+                                                headerText="#{pharmacyController.getDepartmentPurchaseTotalForConsumptionReport(map.key)}"
+                                                style="font-weight: bold; background: #70a4ca; text-align: right;"/>
+                                            <p:column
+                                                headerText="#{pharmacyController.getDepartmentCostTotalForConsumptionReport(map.key)}"
+                                                style="font-weight: bold; background: #70a4ca; text-align: right;"/>
+                                            <p:column
+                                                headerText="#{pharmacyController.getDepartmentRetailTotalForConsumptionReport(map.key)}"
+                                                style="font-weight: bold; background: #70a4ca; text-align: right;"/>
+                                            <p:column
+                                                headerText="#{pharmacyController.getDepartmentNetTotalForConsumptionReport(map.key)}"
+                                                style="font-weight: bold; background: #70a4ca; text-align: right;"/>
+                                        </p:row>
                                         <p:row>
-                                            <p:column headerText="#{entry.key}" style="font-weight: bold;" colspan="3"/>
-                                            <p:column
-                                                    headerText="#{pharmacyController.getCategoryCostTotalForConsumptionReport(map.key, entry.key)}"
-                                                    style="font-weight: bold;"/>
-                                            <p:column
-                                                    headerText="#{pharmacyController.getCategoryTotalForConsumptionReport(map.key, entry.key)}"
-                                                    style="font-weight: bold;"/>
+                                            <p:column headerText="Category" style="font-weight: bold;"/>
+                                            <p:column headerText="Issues" style="font-weight: bold;"/>
+                                            <p:column headerText="" style="font-weight: bold;" colspan="4"/>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column headerText="" style="font-weight: bold;"/>
+                                            <p:column headerText="Qty" style="font-weight: bold;"/>
+                                            <p:column headerText="Purchase Value" style="font-weight: bold;"/>
+                                            <p:column headerText="Cost Value" style="font-weight: bold;"/>
+                                            <p:column headerText="Retail Value" style="font-weight: bold;"/>
+                                            <p:column headerText="Net Total" style="font-weight: bold;"/>
                                         </p:row>
                                     </p:columnGroup>
-                                    <p:column headerText="Item Name">
-                                        <h:outputText value="#{item.item.name}"/>
-                                    </p:column>
-                                    <p:column headerText="Rate">
-                                        <h:outputText value="#{item.purchaseRate}"/>
-                                    </p:column>
-                                    <p:column headerText="Quantity">
-                                        <h:outputText value="#{item.qty}"/>
-                                    </p:column>
-                                    <p:column headerText="Cost Value">
-                                        <h:outputText value="#{item.costRate * item.qty}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Value">
-                                        <h:outputText value="#{item.netTotal}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                    </p:column>
-                                </p:subTable>
-                                <p:columnGroup type="footer" rendered="#{status.last}">
-                                    <p:row>
-                                        <p:column colspan="3">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="Total" style="font-weight: bold;"/>
-                                            </f:facet>
+                                    <p:subTable value="#{entry.value}" var="item">
+                                        <p:columnGroup type="header">
+                                            <p:row>
+                                                <p:column headerText="#{entry.key}" style="font-weight: bold;" colspan="2"/>
+                                                <p:column
+                                                    headerText="#{pharmacyController.getCategoryPurchaseTotalForConsumptionReport(map.key, entry.key)}"
+                                                    style="font-weight: bold; text-align: right;"/>
+                                                <p:column
+                                                    headerText="#{pharmacyController.getCategoryCostTotalForConsumptionReport(map.key, entry.key)}"
+                                                    style="font-weight: bold; text-align: right;"/>
+                                                <p:column
+                                                    headerText="#{pharmacyController.getCategoryRetailTotalForConsumptionReport(map.key, entry.key)}"
+                                                    style="font-weight: bold; text-align: right;"/>
+                                                <p:column
+                                                    headerText="#{pharmacyController.getCategoryNetTotalForConsumptionReport(map.key, entry.key)}"
+                                                    style="font-weight: bold; text-align: right;"/>
+                                            </p:row>
+                                        </p:columnGroup>
+                                        <p:column headerText="Item Name">
+                                            <h:outputText value="#{item.item.name}"/>
                                         </p:column>
-                                        <p:column style="font-weight: bold;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="#{pharmacyController.totalCostValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
-                                            </f:facet>
+                                        <p:column headerText="Quantity">
+                                            <h:outputText value="#{item.qty}"/>
                                         </p:column>
-                                        <p:column style="font-weight: bold;">
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="#{pharmacyController.totalSaleValue}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
-                                            </f:facet>
+                                        <p:column headerText="Purchase Value" style="text-align: right;">
+                                            <h:outputText value="#{item.totalPurchaseValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
                                         </p:column>
-                                    </p:row>
-                                </p:columnGroup>
-                            </p:dataTable>
-                        </ui:repeat>
-                    </h:panelGroup>
-                </p:panel>
-            </h:form>
-        </ui:define>
-    </ui:composition>
-</h:body>
+                                        <p:column headerText="Cost Value" style="text-align: right;">
+                                            <h:outputText value="#{item.totalCostValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Retail Value" style="text-align: right;">
+                                            <h:outputText value="#{item.totalRetailValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Net Total" style="text-align: right;">
+                                            <h:outputText value="#{item.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                    </p:subTable>
+                                    <p:columnGroup type="footer" rendered="#{status.last}">
+                                        <p:row>
+                                            <p:column colspan="2">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="Total" style="font-weight: bold;"/>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="font-weight: bold; text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="#{pharmacyController.totalPurchase}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="font-weight: bold; text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="#{pharmacyController.totalCostValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="font-weight: bold; text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="#{pharmacyController.totalRetailValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="font-weight: bold; text-align: right;">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="#{pharmacyController.totalSaleValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                </p:dataTable>
+                            </ui:repeat>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
 </html>

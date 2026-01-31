@@ -33,7 +33,7 @@
             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD 5x8 Bill Header')}" >
                 <h:outputStylesheet library="css" name="five_eight_bill_without_header.css" />
             </h:panelGroup>
-            
+
             <style>
                 .receipt-table {
                     border-collapse: collapse;
@@ -153,7 +153,7 @@
                             </td>
                         </tr>
                     </h:panelGroup>
-                    
+
                     <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}" >
                         <tr>
                             <td style="padding: 2px;">Credit </td>
@@ -188,7 +188,15 @@
                             <tr>
                                 <!-- Display the item number across all items -->
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
-                                <td>#{item.item.name}</td>
+                                <td>
+                                    <h:outputLabel value="#{item.item.name}"/>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show the Priority in Bill Preview.',false)}" >
+                                        <h:outputLabel 
+                                            value="(#{item.priority.displayName})" 
+                                            class="mx-1" 
+                                            rendered="#{!item.priority.shortName.blank and item.item.allowedForBillingPriority}"/>
+                                    </h:panelGroup>
+                                </td>
                                 <td style="text-align: right">
                                     <h:outputLabel value="#{item.grossValue}">
                                         <f:convertNumber pattern="#,##0.00" />
@@ -285,29 +293,62 @@
                     </div>
                 </div>
 
+                <h:panelGroup rendered="#{cc.attrs.bill.membershipScheme ne null or cc.attrs.bill.chiefHouseHolder ne null or cc.attrs.bill.memberFamily ne null}">
+                    <table  style="font-size: 8pt;">
+                        <tr>
+                            <td style="vertical-align: top;" colspan="3">
+                                <div class="d-flex gap-1">
+                                    <h:outputLabel value="CHH"/>
+                                    <h:outputLabel value=" : "/>
+                                    <h:outputLabel value="#{cc.attrs.bill.chiefHouseHolder.person.nameWithTitle}"/>
+                                    <h:outputLabel value=" / "/>
+                                    <h:outputLabel value="#{cc.attrs.bill.membershipScheme.name}"/>
+                                    <h:outputLabel value="(#{cc.attrs.bill.memberFamily.membershipCardNo})" rendered="#{cc.attrs.bill.memberFamily ne null}" />
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </h:panelGroup>
+
                 <table  style="font-size: 8pt;">
+
                     <tr>
                         <td style="width: 4cm; vertical-align: top;">
-                            <h:outputLabel value="Billed By :"/>
-                            <h:outputLabel value="#{cc.attrs.bill.creater.name}"/>
+                            <div class="d-flex gap-1">
+                                <h:outputLabel value="Billed By"/>
+                                <h:outputLabel value=" : "/>
+                                <h:outputLabel value=" #{cc.attrs.bill.creater.name}"/>
+                            </div>
                         </td>
                         <td style="width: 2cm;"></td>
                         <td style=" vertical-align: top;">
 
                         </td>
                     </tr>
+                    
+                    <h:panelGroup rendered="#{cc.attrs.bill.backwardReferenceBill ne null}">
+                        <tr>
+                            <td style="width: 4cm; vertical-align: top;" colspan="3">
+                                <div class="d-flex gap-1">
+                                    <h:outputLabel value="Batch Bill"/>
+                                    <h:outputLabel value=" : "/>
+                                    <h:outputLabel value=" #{cc.attrs.bill.backwardReferenceBill.deptId}"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
                     <h:panelGroup rendered="#{cc.attrs.duplicate}">
                         <tr>
                             <td style="vertical-align: top;" colspan="3">
-                                <div class="d-flex gap-2">
-                                    <h:outputLabel value="Printerd By "/>
+                                <div class="d-flex gap-1">
+                                    <h:outputLabel value="Printed By "/>
                                     <h:outputLabel value="#{sessionController.loggedUser.name}"/>
-                                    <h:outputLabel value=" - "/>
+                                    <h:outputLabel value=" at "/>
                                     <h:outputLabel value="#{sessionController.currentDate}">
                                         <f:convertDateTime pattern="yyyy-MM-dd hh:mm a"/>
                                     </h:outputLabel>
                                 </div>
-
                             </td>
                         </tr>
                     </h:panelGroup>
@@ -322,10 +363,7 @@
                     <h:outputLabel value="Powered by CareCode (Pvt) Ltd."/>
                 </div>
 
-
             </div>
-
         </cc:implementation>
-
     </h:body>
 </html>

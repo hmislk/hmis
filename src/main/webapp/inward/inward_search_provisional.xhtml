@@ -48,6 +48,7 @@
                                         action="#{searchController.createInwardProvisionalBills()}" 
                                         value="Search Bills"  />
                                     <p:spacer height="10" width="5" ></p:spacer>
+                                    
                                     <p:commandButton 
                                         ajax="false" 
                                         icon="fa fa-search"
@@ -56,6 +57,7 @@
                                         value="Search Cancelled Bills"
                                         rendered="false"/>
                                     <p:spacer height="10" width="5" ></p:spacer>
+                                    
                                     <p:commandButton 
                                         ajax="false" 
                                         icon="fa-solid fa-file-excel"
@@ -75,6 +77,8 @@
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
                                     <h:outputLabel value="Name"/>
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                                    <h:outputLabel value="MRN / PHN No"/>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="w-100"/>
                                     <h:outputLabel value="Telephone"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
                                     <h:outputLabel value="Gross Total"/>

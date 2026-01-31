@@ -33,12 +33,27 @@
                                              style="float: right; margin-right: 0.5em;"
                                              onclick="if (!confirm('Are you sure you want to delete the selected options?'))
                                                          return false;" />
+                            <!-- Reload Config button -->
+                            <p:commandButton value="Reload Config"
+                                             icon="pi pi-refresh"
+                                             styleClass="ui-button-warning"
+                                             action="#{configOptionApplicationController.loadApplicationOptions}"
+                                             update="optionsTable"
+                                             style="float: right; margin-right: 0.5em;"
+                                             title="Reload configuration options to reflect changes" />
                             <!-- Button to List Application Options, with an icon and aligned to the right -->
                             <p:commandButton value="List Application Options" icon="pi pi-list" action="#{configOptionController.listApplicationOptions}"
                                              update="optionsTable" style="float: right; margin-right: 0.5em;" />
                             <!-- Excel export button -->
                             <p:commandButton ajax="false" icon="pi pi-file-excel" title="Export to Excel" style="float: right; margin-right: 0.5em;">
                                 <p:dataExporter type="xlsx" target="optionsTable" fileName="application_options" />
+                            </p:commandButton>
+                            <p:commandButton
+                                ajax="false"
+                                action="#{configOptionController.navigateToDuplicateOptions()}"
+                                icon="pi pi-copy"
+                                title="Navigate to Duplicates"
+                                style="float: right; margin-right: 0.5em;">
                             </p:commandButton>
                         </f:facet>
                         <!-- Data Table for Options -->
@@ -264,7 +279,13 @@
                             <div class="mb-3">
                                 <p>Upload a CSV file with the following format:</p>
                                 <p><strong>Option Key, Option Value, Value Type, Enum Type</strong></p>
-                                <p class="text-muted">Note: If an option key already exists, its value will be replaced with the imported value.</p>
+                                <div class="text-info">
+                                    <p><strong>Import Modes:</strong></p>
+                                    <ul>
+                                        <li><strong>Import and Replace:</strong> Updates existing options and creates new ones</li>
+                                        <li><strong>Import Missing Only:</strong> Only creates new options, skips existing ones</li>
+                                    </ul>
+                                </div>
                             </div>
 
                             <div class="mb-3">
@@ -275,19 +296,27 @@
                                     sizeLimit="1000000"
                                     label="Choose CSV File" />
                             </div>
-                            
+
                             <div class="mb-3">
-                                <p:commandButton 
-                                    value="Import CSV" 
+                                <p:commandButton
+                                    value="Import and Replace"
                                     icon="pi pi-upload"
                                     ajax="false"
-                                    action="#{configOptionController.importOptionsFromCsv}"
-                                    styleClass="ui-button-success" />
-                                <p:commandButton 
-                                    value="Cancel" 
+                                    action="#{configOptionController.importAndReplaceOptionsFromCsv}"
+                                    styleClass="ui-button-success mr-2"
+                                    title="Updates existing options and creates new ones" />
+                                <p:commandButton
+                                    value="Import Missing Only"
+                                    icon="pi pi-plus"
+                                    ajax="false"
+                                    action="#{configOptionController.importMissingOnlyOptionsFromCsv}"
+                                    styleClass="ui-button-warning mr-2"
+                                    title="Only creates new options, skips existing ones" />
+                                <p:commandButton
+                                    value="Cancel"
                                     icon="pi pi-times"
                                     onclick="PF('importDialog').hide();"
-                                    styleClass="ui-button-secondary ml-2" />
+                                    styleClass="ui-button-secondary" />
                             </div>
 
                             <div class="mt-3">

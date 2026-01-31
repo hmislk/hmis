@@ -4,6 +4,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.MeasurementUnitController;
 import com.divudi.bean.pharmacy.VmpController;
 import com.divudi.core.data.clinical.PrescriptionTemplateType;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.clinical.PrescriptionTemplate;
 import com.divudi.core.entity.pharmacy.MeasurementUnit;
@@ -71,7 +72,11 @@ public class FavouriteController implements Serializable {
     }
 
     public void fillFavouriteDisgnosis() {
+        System.out.println("DEBUG FILL: fillFavouriteDisgnosis() called");
+        System.out.println("DEBUG FILL: Selected item (diagnosis): " + (item != null ? item.getName() : "NULL"));
+        System.out.println("DEBUG FILL: Type: " + PrescriptionTemplateType.FavouriteDiagnosis);
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
+        System.out.println("DEBUG FILL: Found " + (items != null ? items.size() : "null") + " favourite diagnosis items");
     }
 
     public String toAddFavDig() {
@@ -89,7 +94,28 @@ public class FavouriteController implements Serializable {
     }
 
     public void fillFavouriteItems(Item forItem, PrescriptionTemplateType type) {
+        System.out.println("DEBUG FILL: fillFavouriteItems() called");
+        System.out.println("DEBUG FILL: forItem: " + (forItem != null ? forItem.getName() : "NULL"));
+        System.out.println("DEBUG FILL: type: " + type);
         items = listFavouriteItems(forItem, type);
+        System.out.println("DEBUG FILL: listFavouriteItems returned " + (items != null ? items.size() : "null") + " items");
+        if (items != null && !items.isEmpty()) {
+            System.out.println("DEBUG FILL: Found items:");
+            for (int i = 0; i < items.size(); i++) {
+                PrescriptionTemplate template = items.get(i);
+                if (template != null && template.getItem() != null) {
+                    System.out.println("DEBUG FILL:   " + (i+1) + ". " + template.getItem().getName() +
+                                     " (Type: " + template.getType() +
+                                     ", ForItem: " + (template.getForItem() != null ? template.getForItem().getName() : "NULL") +
+                                     ", FromDays: " + template.getFromDays() +
+                                     ", ToDays: " + template.getToDays() + ")");
+                } else {
+                    System.out.println("DEBUG FILL:   " + (i+1) + ". NULL template or item");
+                }
+            }
+        } else {
+            System.out.println("DEBUG FILL: No items found");
+        }
     }
 
     public List<PrescriptionTemplate> listFavouriteItems(Item forItem, PrescriptionTemplateType type) {
@@ -105,6 +131,13 @@ public class FavouriteController implements Serializable {
     }
 
     public List<PrescriptionTemplate> listFavouriteItems(Item forItem, PrescriptionTemplateType type, Double weight, Long ageInDays) {
+        System.out.println("DEBUG QUERY: listFavouriteItems called with:");
+        System.out.println("DEBUG QUERY:   forItem: " + (forItem != null ? forItem.getName() + " (ID: " + forItem.getId() + ")" : "NULL"));
+        System.out.println("DEBUG QUERY:   type: " + type);
+        System.out.println("DEBUG QUERY:   weight: " + weight);
+        System.out.println("DEBUG QUERY:   ageInDays: " + ageInDays);
+        System.out.println("DEBUG QUERY:   currentUser: " + (sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getWebUserPerson().getNameWithTitle() : "NULL"));
+
         String j;
         Map m = new HashMap();
         j = "select i "
@@ -115,24 +148,33 @@ public class FavouriteController implements Serializable {
         if (type != null) {
             m.put("t", type);
             j += " and i.type=:t ";
+            System.out.println("DEBUG QUERY: Added type filter: " + type);
         }
 
         if(forItem!=null){
             m.put("fi", forItem);
             j += " and i.forItem=:fi ";
+            System.out.println("DEBUG QUERY: Added forItem filter: " + forItem.getName() + " (ID: " + forItem.getId() + ")");
         }
         if (weight != null) {
             j += " and ( i.fromKg < :wt and i.toKg > :wt ) ";
             m.put("wt", weight);
+            System.out.println("DEBUG QUERY: Added weight filter: " + weight);
         }
         if (ageInDays != null) {
             j += " and ( i.fromDays < :ad and i.toDays > :ad ) ";
             m.put("ad", (double)ageInDays);
+            System.out.println("DEBUG QUERY: Added age filter: " + ageInDays + " days");
         }
         j += " order by i.orderNo";
 
+        System.out.println("DEBUG QUERY: Final JPQL: " + j);
+        System.out.println("DEBUG QUERY: Parameters: " + m);
+
         m.put("wu", sessionController.getLoggedUser());
         List<PrescriptionTemplate> its = favouriteItemFacade.findByJpql(j, m);
+        System.out.println("DEBUG QUERY: Query returned " + (its != null ? its.size() : "null") + " results");
+
         if(its==null){
             its = new ArrayList<>();
         }
@@ -192,6 +234,9 @@ public class FavouriteController implements Serializable {
                 break;
             default:
         }
+
+        // Pre-populate fields from AMP/VMP properties
+        onItemSelected();
     }
 
     public void prepareAddingFavouriteDiagnosis() {
@@ -222,6 +267,86 @@ public class FavouriteController implements Serializable {
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine);
         current = null;
         JsfUtil.addSuccessMessage("Saved");
+    }
+
+    /**
+     * Prepares the current object for editing an existing favourite medicine
+     */
+    public void prepareEditFavouriteMedicine(PrescriptionTemplate editingTemplate) {
+        if (editingTemplate == null) {
+            JsfUtil.addErrorMessage("No favourite medicine selected for editing");
+            return;
+        }
+        current = editingTemplate;
+        item = editingTemplate.getForItem();
+
+        // Populate available units based on medicine type
+        prepareAvailableUnitsForEdit();
+    }
+
+    /**
+     * Updates an existing favourite medicine
+     */
+    public void updateFavMedicine(){
+        if (current == null) {
+            JsfUtil.addErrorMessage("No favourite medicine to update");
+            return;
+        }
+        current.setType(PrescriptionTemplateType.FavouriteMedicine);
+        favouriteItemFacade.edit(current);
+        fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine);
+        current = null;
+        JsfUtil.addSuccessMessage("Updated successfully");
+    }
+
+    /**
+     * Removes a favourite medicine by setting it as retired
+     */
+    public void removeFavouriteMedicine(PrescriptionTemplate removingTemplate) {
+        if (removingTemplate == null) {
+            JsfUtil.addErrorMessage("No favourite medicine selected for removal");
+            return;
+        }
+        removingTemplate.setRetired(true);
+        favouriteItemFacade.edit(removingTemplate);
+        fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine);
+        JsfUtil.addSuccessMessage("Favourite medicine removed successfully");
+    }
+
+    /**
+     * Prepares available units for editing based on the selected medicine type
+     */
+    private void prepareAvailableUnitsForEdit() {
+        if (item == null) {
+            return;
+        }
+
+        availableDoseUnits = new ArrayList<>();
+        availableItems = new ArrayList<>();
+
+        switch (item.getMedicineType()) {
+            case Vmp:
+                availableDoseUnits.add(item.getMeasurementUnit());
+                availableDoseUnits.add(item.getIssueUnit());
+                availableDoseUnits.add(item.getPackUnit());
+                availableItems.add(item);
+                availableItems.addAll(vmpController.ampsOfVmp(item));
+                break;
+            case Amp:
+                availableDoseUnits.add(item.getVmp().getBaseUnit());
+                availableDoseUnits.add(item.getVmp().getIssueUnit());
+                availableItems.add(item);
+                break;
+            case Vtm:
+            case Atm:
+                availableDoseUnits = measurementUnitController.getDoseUnits();
+                availableItems.addAll(vmpController.ampsAndVmpsContainingVtm(item));
+                availableItems.add(item);
+                break;
+            default:
+                availableDoseUnits = measurementUnitController.getDoseUnits();
+                break;
+        }
     }
 
 //    public void removeFavourite() {
@@ -450,6 +575,215 @@ public class FavouriteController implements Serializable {
         this.itemadd = itemadd;
     }
 
+    /**
+     * Helper methods for AMP/VMP property extraction
+     */
 
+    /**
+     * Checks if the selected item is AMP or VMP type
+     */
+    public boolean isSelectedItemAmpOrVmp() {
+        if (item == null) {
+            return false;
+        }
+        return isAmp(item) || isVmp(item);
+    }
+
+    /**
+     * Checks if item is AMP type
+     */
+    public boolean isAmp(Item checkItem) {
+        if (checkItem == null) {
+            return false;
+        }
+        return checkItem.getMedicineType() != null &&
+               checkItem.getMedicineType().toString().equals("Amp");
+    }
+
+    /**
+     * Checks if item is VMP type
+     */
+    public boolean isVmp(Item checkItem) {
+        if (checkItem == null) {
+            return false;
+        }
+        return checkItem.getMedicineType() != null &&
+               checkItem.getMedicineType().toString().equals("Vmp");
+    }
+
+    /**
+     * Gets the medicine category/dosage form from AMP or VMP
+     */
+    public Category getItemMedicineCategory() {
+        if (item == null) {
+            return null;
+        }
+
+        if (isVmp(item)) {
+            // VMP has direct dosageForm property
+            return item.getCategory(); // Assuming dosageForm is mapped to category
+        } else if (isAmp(item)) {
+            // AMP gets dosageForm from parent VMP
+            if (item.getVmp() != null) {
+                return item.getVmp().getCategory();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets the dose unit from AMP or VMP
+     */
+    public MeasurementUnit getItemDoseUnit() {
+        if (item == null) {
+            return null;
+        }
+
+        if (isVmp(item)) {
+            return item.getStrengthUnit();
+        } else if (isAmp(item)) {
+            if (item.getVmp() != null) {
+                return item.getVmp().getStrengthUnit();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets the issue unit from AMP or VMP
+     */
+    public MeasurementUnit getItemIssueUnit() {
+        if (item == null) {
+            return null;
+        }
+
+        if (isVmp(item)) {
+            return item.getIssueUnit();
+        } else if (isAmp(item)) {
+            if (item.getVmp() != null) {
+                return item.getVmp().getIssueUnit();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Pre-populates fields from AMP/VMP properties when item is selected
+     */
+    public void onItemSelected() {
+        if (current != null && isSelectedItemAmpOrVmp()) {
+            // Pre-populate category if available
+            Category medicineCategory = getItemMedicineCategory();
+            if (medicineCategory != null) {
+                current.setCategory(medicineCategory);
+            }
+
+            // Pre-populate dose unit if available
+            MeasurementUnit doseUnit = getItemDoseUnit();
+            if (doseUnit != null) {
+                current.setDoseUnit(doseUnit);
+            }
+
+            // Pre-populate issue unit if available
+            MeasurementUnit issueUnit = getItemIssueUnit();
+            if (issueUnit != null) {
+                current.setIssueUnit(issueUnit);
+            }
+        }
+    }
+
+    // ========================================
+    // DIAGNOSIS FAVOURITE METHODS
+    // ========================================
+
+    /**
+     * Saves or updates a favourite diagnosis based on ID
+     */
+    public void saveFavDiagnosis(){
+        if (item == null) {
+            JsfUtil.addErrorMessage("No Diagnosis Selected");
+            return;
+        }
+        if (current == null) {
+            JsfUtil.addErrorMessage("No diagnosis template prepared");
+            return;
+        }
+        if (current.getItem() == null) {
+            JsfUtil.addErrorMessage("No Medicine Selected");
+            return;
+        }
+
+        current.setType(PrescriptionTemplateType.FavouriteDiagnosis);
+        current.setForItem(item);
+        current.setForWebUser(sessionController.getLoggedUser());
+
+        // Check if ID is null to determine create vs update
+        if (current.getId() == null) {
+            current.setOrderNo(getItems().size() + 1.0);
+            favouriteItemFacade.create(current);
+            JsfUtil.addSuccessMessage("Favourite diagnosis saved successfully");
+        } else {
+            favouriteItemFacade.edit(current);
+            JsfUtil.addSuccessMessage("Favourite diagnosis updated successfully");
+        }
+
+        fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
+        current = null;
+    }
+
+    /**
+     * Prepares the current object for editing an existing favourite diagnosis
+     */
+    public void prepareEditFavouriteDiagnosis(PrescriptionTemplate editingTemplate) {
+        if (editingTemplate == null) {
+            JsfUtil.addErrorMessage("No favourite diagnosis selected for editing");
+            return;
+        }
+        current = editingTemplate;
+        item = editingTemplate.getForItem();
+    }
+
+    /**
+     * Updates an existing favourite diagnosis
+     */
+    public void updateFavDiagnosis(){
+        if (current == null) {
+            JsfUtil.addErrorMessage("No diagnosis template prepared for update");
+            return;
+        }
+        if (current.getItem() == null) {
+            JsfUtil.addErrorMessage("No Medicine Selected");
+            return;
+        }
+        current.setType(PrescriptionTemplateType.FavouriteDiagnosis);
+        current.setForWebUser(sessionController.getLoggedUser());
+
+        // Check if ID is null to determine create vs update
+        if (current.getId() == null) {
+            current.setOrderNo(getItems().size() + 1.0);
+            favouriteItemFacade.create(current);
+            JsfUtil.addSuccessMessage("Favourite diagnosis created successfully");
+        } else {
+            favouriteItemFacade.edit(current);
+            JsfUtil.addSuccessMessage("Favourite diagnosis updated successfully");
+        }
+
+        fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
+        current = null;
+    }
+
+    /**
+     * Removes an existing favourite diagnosis (soft delete)
+     */
+    public void removeFavouriteDiagnosis(PrescriptionTemplate removingTemplate) {
+        if (removingTemplate == null) {
+            JsfUtil.addErrorMessage("No favourite diagnosis selected for removal");
+            return;
+        }
+        removingTemplate.setRetired(true);
+        favouriteItemFacade.edit(removingTemplate);
+        fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
+        JsfUtil.addSuccessMessage("Favourite diagnosis removed successfully");
+    }
 
 }

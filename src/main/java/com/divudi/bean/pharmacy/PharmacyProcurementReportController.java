@@ -256,7 +256,6 @@ public class PharmacyProcurementReportController implements Serializable {
     }
 
     public void processProcurementItemList() {
-        System.out.println("processProcurementItemList");
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);

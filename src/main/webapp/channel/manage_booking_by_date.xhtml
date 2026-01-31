@@ -1258,7 +1258,7 @@
 
                         </p:tab>
 
-                        <p:tab title="Reprint" id="rePrint" >
+                        <p:tab title="Reprint" id="rePrint" disabled="#{!webUserController.hasPrivilege('ChannellingReprintOriginalBill')}">
 
                             <h:panelGroup>
                                 <div class="row">
@@ -1584,7 +1584,7 @@
                                 <p:panel header="Current Patient for Booking" >
                                     <ezcommon:patient patient="#{bookingControllerViewScope.selectedBillSession.bill.patient}" ></ezcommon:patient>
                                 </p:panel>
-                                <ezcommon:patient_details_view_scope_1 controller="#{bookingControllerViewScope}" ></ezcommon:patient_details_view_scope_1>
+                                <ezcommon:patient_details_view_scope_1 editable="true" controller="#{bookingControllerViewScope}" ></ezcommon:patient_details_view_scope_1>
                             </p:panelGrid>
                         </p:tab>
 

@@ -130,7 +130,6 @@ public class NotificationController implements Serializable {
     }
 
     private void createInwardRoomDischargeNotifications(PatientRoom pr) {
-        System.out.println("pr = " + pr);
         Date date = new Date();
         for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_DISCHARGED)) {
             Notification nn = new Notification();
@@ -444,7 +443,7 @@ public class NotificationController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

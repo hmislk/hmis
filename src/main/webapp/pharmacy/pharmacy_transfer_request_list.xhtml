@@ -1,16 +1,30 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/pharmacy/disbursement_index.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
+
+
         <h:form>
             <p:panel >
                 <f:facet name="header">
                     <p:outputLabel value="Select Request For Department : #{sessionController.department.name}"/> 
+                    <!-- Admin Config Button (Admin Only) -->
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                        <p:commandButton
+                            value="Config"
+                            icon="fa fa-cog"
+                            title="Page Configuration Management"
+                            action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_transfer_request_list')}"
+                            ajax="false"
+                            styleClass="ui-button-secondary ms-5">
+                        </p:commandButton>
+                    </h:panelGroup>
+
                 </f:facet>
 
                 <div class="row">
@@ -41,16 +55,14 @@
                             icon="fas fa-search"
                             class="ui-button-warning w-100 my-2"
                             action="#{searchController.createRequestTableDto()}"
-                            actionListener="#{transferIssueController.makeNull()}">
+                            actionListener="#{transferIssueForRequestsController.makeNull()}">
                         </p:commandButton>
-                        
+
                         <h:outputLabel value="Request No"/>   
                         <p:inputText class="w-100"  autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />   
-                        <h:outputLabel value="From Department"/> 
-                        <p:inputText class="w-100"  autocomplete="off"  value="#{searchController.searchKeyword.department}" /> 
-                      
+
                     </div>
-                    
+
                     <div class="col-md-10">
                         <p:dataTable
                             value="#{searchController.transferRequestDtos}"
@@ -79,6 +91,7 @@
                             </p:column>  
                             <p:column width="100px" headerText="Action" >
                                 <p:commandButton
+                                    id="btnViewTransferRequest"
                                     ajax="false"
                                     title="View Request"
                                     icon="far fa-eye"
@@ -94,22 +107,24 @@
                                     title="Issue"
                                     class="ui-button-success mx-2"
                                     actionListener="#{pharmacyController.clearItemHistory()}"
-                                    action="#{transferIssueController.navigateToPharmacyIssueForRequestsById}"
+                                    action="#{transferIssueForRequestsController.navigateToPharmacyIssueForRequestsById}"
                                     disabled="#{p.cancelled eq true or p.fullyIssued eq true}">
-                                    <f:setPropertyActionListener target="#{transferIssueController.requestedBillId}" value="#{p.billId}"/>
+                                    <f:setPropertyActionListener target="#{transferIssueForRequestsController.requestedBillId}" value="#{p.billId}"/>
                                 </p:commandButton>
                             </p:column>
 
                             <p:column headerText="Issued" style="text-align: center;" >
-                                <p:dataTable var="b" value="#{p.issuedBills}">
+                                <p:dataTable var="b" value="#{p.issuedBills}" rowKey="#{b.billId}">
                                     <p:column headerText="Issue No." >
-                                        <p:commandLink
+                                        <p:commandButton
+                                            id="btnViewIssueBill"
                                             ajax="false"
                                             value="#{b.deptId}"
-                                            class="ui-button-info"
-                                            action="#{pharmacyBillSearch.navigateToReprintPharmacyTransferIssueById}" >
-                                            <f:setPropertyActionListener target="#{pharmacyBillSearch.billId}" value="#{b.billId}"/>
-                                        </p:commandLink>
+                                            class="ui-button-success ui-button-sm"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeBySelectedId}"
+                                            process="@this">
+                                            <f:setPropertyActionListener value="#{b.billId}" target="#{billSearch.selectedBillId}"/>
+                                        </p:commandButton>
                                     </p:column>
                                     <p:column headerText="Date/Time" >
                                         <h:outputLabel value="#{b.createdAt}" >
@@ -140,7 +155,7 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>                                  
                                     </p:column>
-                                    
+
                                 </p:dataTable>
                             </p:column>
                         </p:dataTable>

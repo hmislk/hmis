@@ -66,37 +66,43 @@ public class BigDecimalUtil {
     /**
      * Null-safe addition of two BigDecimal values.
      * Treats null values as BigDecimal.ZERO.
-     * 
+     *
      * @param a the first BigDecimal value (may be null)
      * @param b the second BigDecimal value (may be null)
      * @return the sum of the two values, treating null as zero
      */
     public static BigDecimal add(BigDecimal a, BigDecimal b) {
-        return valueOrZero(a).add(valueOrZero(b));
+        BigDecimal nonNullA = a == null ? BigDecimal.ZERO : a;
+        BigDecimal nonNullB = b == null ? BigDecimal.ZERO : b;
+        return nonNullA.add(nonNullB);
     }
     
     /**
      * Null-safe subtraction of two BigDecimal values.
      * Treats null values as BigDecimal.ZERO.
-     * 
+     *
      * @param a the minuend BigDecimal value (may be null)
-     * @param b the subtrahend BigDecimal value (may be null)  
+     * @param b the subtrahend BigDecimal value (may be null)
      * @return the difference of the two values, treating null as zero
      */
     public static BigDecimal subtract(BigDecimal a, BigDecimal b) {
-        return valueOrZero(a).subtract(valueOrZero(b));
+        BigDecimal nonNullA = a == null ? BigDecimal.ZERO : a;
+        BigDecimal nonNullB = b == null ? BigDecimal.ZERO : b;
+        return nonNullA.subtract(nonNullB);
     }
     
     /**
      * Null-safe multiplication of two BigDecimal values.
      * Treats null values as BigDecimal.ZERO.
-     * 
+     *
      * @param a the first BigDecimal value (may be null)
      * @param b the second BigDecimal value (may be null)
      * @return the product of the two values, treating null as zero
      */
     public static BigDecimal multiply(BigDecimal a, BigDecimal b) {
-        return valueOrZero(a).multiply(valueOrZero(b));
+        BigDecimal nonNullA = a == null ? BigDecimal.ZERO : a;
+        BigDecimal nonNullB = b == null ? BigDecimal.ZERO : b;
+        return nonNullA.multiply(nonNullB);
     }
     
     /**

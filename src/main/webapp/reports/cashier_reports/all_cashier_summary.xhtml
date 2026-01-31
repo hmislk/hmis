@@ -263,9 +263,10 @@
 
                             </p:column>
 
-                            <p:column headerText="Cash" 
-                                      style="text-align: right;"
-                                      sortBy="#{summary.cashValue}" filterBy="#{summary.cashValue}" rendered="#{searchController.bundle.hasCashTransaction}" >
+                            <p:column 
+                                headerText="Cash" 
+                                styleClass="text-end"
+                                sortBy="#{summary.cashValue}" filterBy="#{summary.cashValue}" rendered="#{searchController.bundle.hasCashTransaction}" >
                                 <h:outputText value="#{summary.cashValue}"  style="text-align: right;">
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
@@ -277,7 +278,10 @@
 
                             </p:column>
 
-                            <p:column headerText="Card" sortBy="#{summary.cardValue}" filterBy="#{summary.cardValue}"  rendered="#{searchController.bundle.hasCardTransaction}" >
+                            <p:column
+                                headerText="Card" 
+                                styleClass="text-end"
+                                sortBy="#{summary.cardValue}" filterBy="#{summary.cardValue}"  rendered="#{searchController.bundle.hasCardTransaction}" >
                                 <h:outputText value="#{summary.cardValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
@@ -288,7 +292,12 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Multiple Payment Methods" sortBy="#{summary.multiplePaymentMethodsValue}" filterBy="#{summary.multiplePaymentMethodsValue}"  rendered="false" >
+                            <p:column 
+                                headerText="Multiple Payment Methods" 
+                                styleClass="text-end"
+                                sortBy="#{summary.multiplePaymentMethodsValue}" 
+                                filterBy="#{summary.multiplePaymentMethodsValue}"
+                                rendered="false" >
                                 <h:outputText value="#{summary.multiplePaymentMethodsValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
@@ -299,7 +308,12 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Credit" sortBy="#{summary.creditValue}" filterBy="#{summary.creditValue}"  rendered="#{searchController.bundle.hasCreditTransaction}" >
+                            <p:column 
+                                headerText="Credit" 
+                                styleClass="text-end"
+                                sortBy="#{summary.creditValue}" 
+                                filterBy="#{summary.creditValue}"  
+                                rendered="#{searchController.bundle.hasCreditTransaction}" >
                                 <h:outputText value="#{summary.creditValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
@@ -311,7 +325,12 @@
                             </p:column>
 
                             <!-- Continuing from Credit -->
-                            <p:column headerText="Staff Welfare" sortBy="#{summary.staffWelfareValue}" filterBy="#{summary.staffWelfareValue}"  rendered="#{searchController.bundle.hasStaffWelfareTransaction}" >
+                            <p:column 
+                                styleClass="text-end"
+                                headerText="Staff Welfare" 
+                                sortBy="#{summary.staffWelfareValue}" 
+                                filterBy="#{summary.staffWelfareValue}" 
+                                rendered="#{searchController.bundle.hasStaffWelfareTransaction}" >
                                 <h:outputText value="#{summary.staffWelfareValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
@@ -322,7 +341,12 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Voucher" sortBy="#{summary.voucherValue}" filterBy="#{summary.voucherValue}"  rendered="#{searchController.bundle.hasVoucherTransaction}" >
+                            <p:column 
+                                styleClass="text-end"
+                                headerText="Voucher"
+                                sortBy="#{summary.voucherValue}"
+                                filterBy="#{summary.voucherValue}"  
+                                rendered="#{searchController.bundle.hasVoucherTransaction}" >
                                 <h:outputText value="#{summary.voucherValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
@@ -333,7 +357,12 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="IOU" sortBy="#{summary.iouValue}" filterBy="#{summary.iouValue}"  rendered="#{searchController.bundle.hasIouTransaction}" >
+                            <p:column 
+                                styleClass="text-end"
+                                headerText="IOU" 
+                                sortBy="#{summary.iouValue}" 
+                                filterBy="#{summary.iouValue}"  
+                                rendered="#{searchController.bundle.hasIouTransaction}" >
                                 <h:outputText value="#{summary.iouValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
@@ -344,7 +373,12 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Agent" sortBy="#{summary.agentValue}" filterBy="#{summary.agentValue}"  rendered="#{searchController.bundle.hasAgentTransaction}" >
+                            <p:column 
+                                styleClass="text-end"
+                                headerText="Agent" 
+                                sortBy="#{summary.agentValue}"
+                                filterBy="#{summary.agentValue}"
+                                rendered="#{searchController.bundle.hasAgentTransaction}" >
                                 <h:outputText value="#{summary.agentValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
@@ -355,7 +389,12 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Cheque" sortBy="#{summary.chequeValue}" filterBy="#{summary.chequeValue}"  rendered="#{searchController.bundle.hasChequeTransaction}" >
+                            <p:column 
+                                styleClass="text-end"
+                                headerText="Cheque"
+                                sortBy="#{summary.chequeValue}" 
+                                filterBy="#{summary.chequeValue}" 
+                                rendered="#{searchController.bundle.hasChequeTransaction}" >
                                 <h:outputText value="#{summary.chequeValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
@@ -366,7 +405,12 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Slip" sortBy="#{summary.slipValue}" filterBy="#{summary.slipValue}"  rendered="#{searchController.bundle.hasSlipTransaction}" >
+                            <p:column 
+                                styleClass="text-end"
+                                headerText="Slip" 
+                                sortBy="#{summary.slipValue}" 
+                                filterBy="#{summary.slipValue}"  
+                                rendered="#{searchController.bundle.hasSlipTransaction}" >
                                 <h:outputText value="#{summary.slipValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
@@ -377,7 +421,12 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="eWallet" sortBy="#{summary.ewalletValue}" filterBy="#{summary.ewalletValue}"  rendered="#{searchController.bundle.hasEWalletTransaction}" >
+                            <p:column 
+                                styleClass="text-end"
+                                headerText="eWallet" 
+                                sortBy="#{summary.ewalletValue}" 
+                                filterBy="#{summary.ewalletValue}" 
+                                rendered="#{searchController.bundle.hasEWalletTransaction}" >
                                 <h:outputText value="#{summary.ewalletValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
@@ -388,7 +437,12 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Patient Deposit" sortBy="#{summary.patientDepositValue}" filterBy="#{summary.patientDepositValue}"  rendered="#{searchController.bundle.hasPatientDepositTransaction}" >
+                            <p:column 
+                                styleClass="text-end"
+                                headerText="Patient Deposit" 
+                                sortBy="#{summary.patientDepositValue}" 
+                                filterBy="#{summary.patientDepositValue}"  
+                                rendered="#{searchController.bundle.hasPatientDepositTransaction}" >
                                 <h:outputText value="#{summary.patientDepositValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
@@ -399,7 +453,12 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Patient Points" sortBy="#{summary.patientPointsValue}" filterBy="#{summary.patientPointsValue}"  rendered="#{searchController.bundle.hasPatientPointsTransaction}" >
+                            <p:column 
+                                styleClass="text-end"
+                                headerText="Patient Points"
+                                sortBy="#{summary.patientPointsValue}"
+                                filterBy="#{summary.patientPointsValue}" 
+                                rendered="#{searchController.bundle.hasPatientPointsTransaction}" >
                                 <h:outputText value="#{summary.patientPointsValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
@@ -410,7 +469,12 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Online Settlement" sortBy="#{summary.onlineSettlementValue}" filterBy="#{summary.onlineSettlementValue}"  rendered="#{searchController.bundle.hasOnCallTransaction}" >
+                            <p:column 
+                                styleClass="text-end"
+                                headerText="Online Settlement" 
+                                sortBy="#{summary.onlineSettlementValue}" 
+                                filterBy="#{summary.onlineSettlementValue}"  
+                                rendered="#{searchController.bundle.hasOnCallTransaction}" >
                                 <h:outputText value="#{summary.onlineSettlementValue}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
@@ -422,27 +486,34 @@
                             </p:column>
 
                             <p:column headerText="Grand Total" class="text-end">
-                                <h:outputText value="#{summary.cashValue + 
-                                                       summary.cardValue + 
-                                                       summary.voucherValue + 
-                                                       summary.iouValue + 
-                                                       summary.chequeValue + 
-                                                       summary.creditValue + 
-                                                       summary.slipValue + 
-                                                       summary.ewalletValue }" 
-                                              style="text-align: right;">
+                                <h:outputText value="#{searchController.rowCashierGrandTotal(summary)}" style="text-align: right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{searchController.bundle.cashValue + 
-                                                           searchController.bundle.cardValue + 
-                                                           searchController.bundle.creditValue + 
-                                                           searchController.bundle.voucherValue + 
-                                                           searchController.bundle.iouValue + 
-                                                           searchController.bundle.chequeValue + 
-                                                           searchController.bundle.slipValue + 
-                                                           searchController.bundle.ewalletValue }" 
-                                                  style="text-align: right;">
+                                    <h:outputText value="#{searchController.allCashierSummaryGrandTotal}" style="text-align: right;">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+
+                            <p:column headerText="Collection Total" class="text-end">
+                                <h:outputText value="#{searchController.rowCashierCollectionTotal(summary)}" style="text-align: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.allCashierSummaryCollectionTotal}" style="text-align: right;">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Total NOT included in Collection Total" class="text-end">
+                                <h:outputText value="#{searchController.rowCashierExcludedTotal(summary)}" style="text-align: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.allCashierSummaryExcludedTotal}" style="text-align: right;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -450,6 +521,10 @@
 
 
                         </p:dataTable>
+                        <h:panelGrid columns="1" styleClass="mt-3 w-100">
+                            <h:outputText value="Collection Total includes: #{searchController.allCashierCollectionIncludedLabels}" />
+                            <h:outputText value="Total NOT included in Collection Total: #{searchController.allCashierCollectionExcludedLabels}" />
+                        </h:panelGrid>
                     </p:panel>
 
 

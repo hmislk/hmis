@@ -38,7 +38,9 @@ public class AppEmail implements Serializable {
     private PatientInvestigation patientInvestigation;
     @ManyToOne
     private Bill bill;
-
+    @ManyToOne
+    private EncounterCreditCompany encounterCreditCompany;
+    
     @Enumerated(EnumType.STRING)
     private MessageType messageType;
     
@@ -194,7 +196,7 @@ public class AppEmail implements Serializable {
 
     @Override
     public String toString() {
-        return "com.divudi.core.entity.Sms[ id=" + id + " ]";
+        return "com.divudi.core.entity.AppEmail[ id=" + id + " ]";
     }
 
     public MessageType getSmsType() {
@@ -331,6 +333,14 @@ public class AppEmail implements Serializable {
 
     public void setMessageType(MessageType messageType) {
         this.messageType = messageType;
+    }
+
+    public EncounterCreditCompany getEncounterCreditCompany() {
+        return encounterCreditCompany;
+    }
+
+    public void setEncounterCreditCompany(EncounterCreditCompany encounterCreditCompany) {
+        this.encounterCreditCompany = encounterCreditCompany;
     }
     
     

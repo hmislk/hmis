@@ -11,7 +11,19 @@
 
                 <h:form >
 
-                    <p:panel header="Cost Of Good Sold " >
+                    <p:panel >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Cost Of Goods Sold" class="mx-1" ></h:outputLabel>
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                value="Config"
+                                icon="fa fa-cog"
+                                title="Page Configuration Management"
+                                action="#{pageAdminController.navigateToPageAdmin('reports/inventoryReports/cost_of_goods_sold')}"
+                                ajax="false"
+                                styleClass="ui-button-secondary ms-5">
+                            </p:commandButton>
+                        </f:facet>
 
                         <p:panelGrid columns="6" class="w-100">
 
@@ -42,8 +54,8 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
 
-                            <p:spacer width="20"/>
-                            <p:spacer width="20"/>
+                            <p:spacer />
+                            <p:spacer />
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university ml-5" />
@@ -141,7 +153,25 @@
                                 </p:selectOneMenu>
                             </h:panelGroup>
 
-
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-pills ml-5" />
+                                <p:outputLabel value="Item" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:autoComplete
+                                id="phmItem"
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                value="#{pharmacyReportController.item}"
+                                completeMethod="#{itemController.completeItem}"
+                                var="itm"
+                                itemLabel="#{itm.name}"
+                                itemValue="#{itm}"
+                                forceSelection="true">
+                                <p:column>
+                                    <h:outputText value="#{itm.name}" />
+                                </p:column>
+                            </p:autoComplete>
 
                         </p:panelGrid>
 
@@ -219,6 +249,12 @@
 
                             <p:column headerText="Cost Value" style="text-align: right; padding-right: 200px !important;">
                                 <h:outputText value="#{f.value['costValue']}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Retail Value" style="text-align: right; padding-right: 200px !important;">
+                                <h:outputText value="#{f.value['retailValue']}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>

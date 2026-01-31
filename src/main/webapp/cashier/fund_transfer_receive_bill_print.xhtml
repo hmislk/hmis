@@ -15,21 +15,28 @@
                 <h:form >
 
 
-                    <p:panel 
+                    <p:panel
                         header="Fund Transfer Received Bill"
                         class="w-100 m-1"     >
                         <f:facet name="header" >
                             <h:outputLabel value="Float Transfer Receive Note" ></h:outputLabel>
-                            <p:commandButton 
-                                value="Cashier Index" 
-                                ajax="false" 
+                            <p:commandButton
+                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                value="Settings"
+                                icon="fas fa-cog"
+                                class="float-end m-1 ui-button-secondary"
+                                type="button"
+                                onclick="PF('fundTransferReceiveConfigDialog').show();" />
+                            <p:commandButton
+                                value="Cashier Index"
+                                ajax="false"
                                 class="float-end m-1"
                                 action="#{financialTransactionController.navigateToFinancialTransactionIndex()}" >
                             </p:commandButton>
-                            <p:commandButton 
+                            <p:commandButton
                                 value="To List Fund Transfers for me to Receive"
                                 icon=""
-                                ajax="false" 
+                                ajax="false"
                                 class="float-end m-1"
                                 action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
                             </p:commandButton>
@@ -101,21 +108,152 @@
                             </div>
                         </div>
 
-
-                        <p:commandButton 
-                            value="Print" 
+                        <p:commandButton
+                            value="Print"
                             ajax="false" >
-                            <p:printer target="panelPrint"    ></p:printer>
+                            <p:printer target="panelPrint"/>
                         </p:commandButton>
 
-                        <h:panelGroup id="panelPrint" >
-                            <prints:float_transfer_receive_five_five bill="#{financialTransactionController.currentBill}"/>  
+                        <h:panelGroup id="panelPrint">
+                            <!-- POS Paper with header -->
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is POS Paper', false)}">
+                                <prints:float_transfer_receive_pos bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
+
+                            <!-- POS Printed Paper (without header) -->
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is POS Printed Paper', false)}">
+                                <prints:float_transfer_receive_pos_printed bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
+
+                            <!-- 5x5 Paper with header (default) -->
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is 5x5 Paper', true)}">
+                                <prints:float_transfer_receive_five_five bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
+
+                            <!-- 5x5 Printed Paper (without header) -->
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is 5x5 Printed Paper', false)}">
+                                <prints:float_transfer_receive_five_five_printed bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
+
+                            <!-- A4 Paper with header -->
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is A4 Paper', false)}">
+                                <prints:float_transfer_receive_a4 bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
+
+                            <!-- A4 Printed Paper (without header) -->
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is A4 Printed Paper', false)}">
+                                <prints:float_transfer_receive_a4_printed bill="#{financialTransactionController.currentBill}"/>
+                            </h:panelGroup>
                         </h:panelGroup>
 
 
 
                     </p:panel>
 
+                    <!-- Fund Transfer Receive Bill Configuration Dialog -->
+                    <p:dialog id="fundTransferReceiveConfigDialog"
+                              header="Fund Transfer Receive Bill Printer Configuration"
+                              widgetVar="fundTransferReceiveConfigDialog"
+                              modal="true"
+                              width="600"
+                              height="500"
+                              resizable="true"
+                              maximizable="true"
+                              closeOnEscape="true">
+
+                        <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update=":#{p:resolveFirstComponentWithId('fundTransferReceiveCheckboxes',view).clientId}" process="@this" />
+
+                        <h:form id="fundTransferReceiveConfigForm">
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card config-section">
+                                        <div class="card-header">
+                                            <h6><i class="fas fa-file-alt"></i> Fund Transfer Receive Bill Paper Settings</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <h:panelGroup id="fundTransferReceiveCheckboxes">
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox
+                                                        id="fundTransferReceivePosPaper"
+                                                        value="#{pharmacyConfigController.fundTransferReceivePosPaper}" />
+                                                    <h:outputLabel for="fundTransferReceivePosPaper" value="POS Paper (with header)" class="ms-2" />
+                                                    <small class="form-text text-muted d-block">POS thermal paper format with institutional header</small>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox
+                                                        id="fundTransferReceivePosPrintedPaper"
+                                                        value="#{pharmacyConfigController.fundTransferReceivePosPrintedPaper}" />
+                                                    <h:outputLabel for="fundTransferReceivePosPrintedPaper" value="POS Printed Paper (without header)" class="ms-2" />
+                                                    <small class="form-text text-muted d-block">POS format for pre-printed paper without header</small>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox
+                                                        id="fundTransferReceiveFiveFivePaper"
+                                                        value="#{pharmacyConfigController.fundTransferReceiveFiveFivePaper}" />
+                                                    <h:outputLabel for="fundTransferReceiveFiveFivePaper" value="5x5 Paper (with header)" class="ms-2" />
+                                                    <small class="form-text text-muted d-block">5x5 inch paper format with institutional header (Default)</small>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox
+                                                        id="fundTransferReceiveFiveFivePrintedPaper"
+                                                        value="#{pharmacyConfigController.fundTransferReceiveFiveFivePrintedPaper}" />
+                                                    <h:outputLabel for="fundTransferReceiveFiveFivePrintedPaper" value="5x5 Printed Paper (without header)" class="ms-2" />
+                                                    <small class="form-text text-muted d-block">5x5 inch format for pre-printed paper without header</small>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox
+                                                        id="fundTransferReceiveA4Paper"
+                                                        value="#{pharmacyConfigController.fundTransferReceiveA4Paper}" />
+                                                    <h:outputLabel for="fundTransferReceiveA4Paper" value="A4 Paper (with header)" class="ms-2" />
+                                                    <small class="form-text text-muted d-block">Standard A4 size paper format with institutional header</small>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox
+                                                        id="fundTransferReceiveA4PrintedPaper"
+                                                        value="#{pharmacyConfigController.fundTransferReceiveA4PrintedPaper}" />
+                                                    <h:outputLabel for="fundTransferReceiveA4PrintedPaper" value="A4 Printed Paper (without header)" class="ms-2" />
+                                                    <small class="form-text text-muted d-block">A4 format for pre-printed paper without header</small>
+                                                </div>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p:messages id="fundTransferReceiveConfigMessages" showDetail="true" closable="true" />
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex gap-2">
+                                                    <p:commandButton
+                                                        value="Apply &amp; Close"
+                                                        icon="fas fa-save"
+                                                        class="ui-button-success"
+                                                        ajax="false"
+                                                        action="#{pharmacyConfigController.saveFundTransferReceiveConfig}" />
+                                                    <p:commandButton
+                                                        value="Cancel"
+                                                        icon="fas fa-times"
+                                                        class="ui-button-secondary"
+                                                        onclick="PF('fundTransferReceiveConfigDialog').hide(); return false;"
+                                                        type="button" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </h:form>
+                    </p:dialog>
 
                 </h:form>
             </ui:define>

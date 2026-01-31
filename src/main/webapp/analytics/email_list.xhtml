@@ -10,12 +10,18 @@
             <ui:define name="report">
                 <h:form>
                     <p:panel header="Sent Email List" styleClass="p-3">
-                        <p:panelGrid columns="4" styleClass="w-100 mb-3">
+                        <p:panelGrid columns="6" styleClass="w-100 mb-3">
                             <h:outputLabel value="From Date:" />
-                            <p:calendar value="#{emailController.fromDate}" pattern="yyyy-MM-dd" />
+                            <p:calendar 
+                                value="#{emailController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                            </p:calendar>
 
                             <h:outputLabel value="To Date:" />
-                            <p:calendar value="#{emailController.toDate}" pattern="yyyy-MM-dd" />
+                            <p:calendar 
+                                value="#{emailController.toDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                            </p:calendar>
 
                             <p:spacer />
                             <p:commandButton
@@ -26,30 +32,36 @@
                                 ajax="false" />
                         </p:panelGrid>
 
-                        <p:dataTable value="#{emailController.emails}" var="e" paginator="true" rows="20" styleClass="w-100">
+                        <p:dataTable 
+                            value="#{emailController.emails}" 
+                            var="e" 
+                            paginator="true" 
+                            rowsPerPageTemplate="20,50,100"
+                            paginatorPosition="bottom"
+                            rows="20" 
+                            styleClass="w-100">
 
-                            <p:column headerText="Date" sortBy="#{e.createdAt}">
+                            <p:column headerText="Date" sortBy="#{e.createdAt}" width="12em;">
                                 <h:outputText value="#{e.createdAt}">
                                     <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
                                 </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Subject">
+                                <h:outputText value="#{e.messageSubject}" />
                             </p:column>
 
                             <p:column headerText="Recipient">
                                 <h:outputText value="#{e.receipientEmail}" />
                             </p:column>
 
-                            <p:column headerText="Subject">
-                                <h:outputText value="#{e.messageSubject}" />
-                            </p:column>
-
-                            <p:column headerText="Success">
-                                <h:outputText value="#{e.sentSuccessfully ? 'Yes' : 'No'}" />
-                            </p:column>
-
-                            <p:column headerText="Created By">
+                            <p:column headerText="Created By"  width="15em;">
                                 <h:outputText value="#{e.creater.webUserPerson.name}" />
                             </p:column>
 
+                            <p:column headerText="Success"  width="6em;">
+                                <h:outputText value="#{e.sentSuccessfully ? 'Yes' : 'No'}" />
+                            </p:column>
                         </p:dataTable>
                     </p:panel>
 

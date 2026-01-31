@@ -7,9 +7,17 @@ import java.util.Date;
 public class AgentHistoryDTO implements Serializable {
 
     private Long id;
+    private Long agencyId;
+    private String agencyName;
+    private Long billId;
+    private String billNumber;
     private double balanceBeforeTransaction;
     private double balanceAfterTransaction;
     private double transactionValue;
+    private Double agentBalanceBefore;
+    private Double agentBalanceAfter;
+    private Double companyBalanceBefore;
+    private Double companyBalanceAfter;
     private String historyType;
     private String creatorName;
     private String institutionName;
@@ -113,5 +121,69 @@ public class AgentHistoryDTO implements Serializable {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Long getAgencyId() {
+        return agencyId;
+    }
+
+    public void setAgencyId(Long agencyId) {
+        this.agencyId = agencyId;
+    }
+
+    public String getAgencyName() {
+        return agencyName;
+    }
+
+    public void setAgencyName(String agencyName) {
+        this.agencyName = agencyName;
+    }
+
+    public Long getBillId() {
+        return billId;
+    }
+
+    public void setBillId(Long billId) {
+        this.billId = billId;
+    }
+
+    public String getBillNumber() {
+        return billNumber;
+    }
+
+    public void setBillNumber(String billNumber) {
+        this.billNumber = billNumber;
+    }
+
+    public Double getAgentBalanceBefore() {
+        return agentBalanceBefore;
+    }
+
+    public void setAgentBalanceBefore(Double agentBalanceBefore) {
+        this.agentBalanceBefore = agentBalanceBefore;
+    }
+
+    public Double getAgentBalanceAfter() {
+        return agentBalanceAfter;
+    }
+
+    public void setAgentBalanceAfter(Double agentBalanceAfter) {
+        this.agentBalanceAfter = agentBalanceAfter;
+    }
+
+    public Double getCompanyBalanceBefore() {
+        return companyBalanceBefore;
+    }
+
+    public void setCompanyBalanceBefore(Double companyBalanceBefore) {
+        this.companyBalanceBefore = companyBalanceBefore;
+    }
+
+    public Double getCompanyBalanceAfter() {
+        return companyBalanceAfter;
+    }
+
+    public void setCompanyBalanceAfter(Double companyBalanceAfter) {
+        this.companyBalanceAfter = companyBalanceAfter;
     }
 }

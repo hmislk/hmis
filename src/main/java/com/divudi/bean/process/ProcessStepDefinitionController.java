@@ -55,13 +55,11 @@ public class ProcessStepDefinitionController implements Serializable {
     // Getter and Setter for 'current'
     public ProcessStepDefinition getCurrent() {
         System.out.println("getCurrent");
-        System.out.println("current = " + current);
         return current;
     }
 
     public void setCurrent(ProcessStepDefinition current) {
         System.out.println("setCurrent");
-        System.out.println("current = " + current);
         this.current = current;
     }
 
@@ -126,7 +124,6 @@ public class ProcessStepDefinitionController implements Serializable {
         current.setSequenceOrder((double)(getItems().size()+1));
         System.out.println("current = " + current);
         current.setProcessDefinition(processDefinitionController.getCurrent());
-        System.out.println("current = " + current);
         editable = true;
         return null; // Stay on the same page
     }

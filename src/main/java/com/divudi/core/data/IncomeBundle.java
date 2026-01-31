@@ -4,6 +4,7 @@ import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
 import com.divudi.core.data.dto.OpdIncomeReportDTO;
 import com.divudi.core.data.dto.LabIncomeReportDTO;
+import com.divudi.core.data.dto.OpdRevenueDashboardDTO;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
@@ -148,6 +149,7 @@ public class IncomeBundle implements Serializable {
         double sumOfTax = 0.0;
         double sumOfActualTotal = 0.0;
         double sumOfNetTotal = 0.0;
+        double sumOfTotalCostValue = 0.0;
 
         // Aggregate all rows
         for (IncomeRow r : rows) {
@@ -176,6 +178,7 @@ public class IncomeBundle implements Serializable {
             sumOfTax += r.getTax();
             sumOfActualTotal += r.getActualTotal();
             sumOfNetTotal += r.getNetTotal();
+            sumOfTotalCostValue += r.getTotalCostValue();
         }
 
         // Set summary row values
@@ -204,6 +207,7 @@ public class IncomeBundle implements Serializable {
         getSummaryRow().setTax(sumOfTax);
         getSummaryRow().setActualTotal(sumOfActualTotal);
         getSummaryRow().setNetTotal(sumOfNetTotal);
+        getSummaryRow().setTotalCostValue(sumOfTotalCostValue);
     }
 
     public void fixDiscountsAndMarginsInRows() {
@@ -305,6 +309,15 @@ public class IncomeBundle implements Serializable {
                 for (Object obj : entries) {
                     if (obj instanceof OpdIncomeReportDTO) {
                         OpdIncomeReportDTO dto = (OpdIncomeReportDTO) obj;
+                        IncomeRow ir = new IncomeRow(dto);
+                        rows.add(ir);
+                    }
+                }
+            } else if (firstElement instanceof OpdRevenueDashboardDTO) {
+                // Process list as IncomeRows
+                for (Object obj : entries) {
+                    if (obj instanceof OpdRevenueDashboardDTO) {
+                        OpdRevenueDashboardDTO dto = (OpdRevenueDashboardDTO) obj;
                         IncomeRow ir = new IncomeRow(dto);
                         rows.add(ir);
                     }
@@ -763,6 +776,7 @@ public class IncomeBundle implements Serializable {
             groupRow.setVoucherValue(groupRow.getVoucherValue() + r.getVoucherValue());
             groupRow.setEwalletValue(groupRow.getEwalletValue() + r.getEwalletValue());
             groupRow.setOnCallValue(groupRow.getOnCallValue() + r.getOnCallValue());
+            groupRow.setTotalCostValue(groupRow.getTotalCostValue() + r.getTotalCostValue());
         }
 
         // Replace with grouped rows
@@ -839,6 +853,7 @@ public class IncomeBundle implements Serializable {
             groupRow.setVoucherValue(groupRow.getVoucherValue() + r.getVoucherValue());
             groupRow.setEwalletValue(groupRow.getEwalletValue() + r.getEwalletValue());
             groupRow.setOnCallValue(groupRow.getOnCallValue() + r.getOnCallValue());
+            groupRow.setTotalCostValue(groupRow.getTotalCostValue() + r.getTotalCostValue());
         }
 
         // Replace with grouped rows
@@ -914,6 +929,7 @@ public class IncomeBundle implements Serializable {
             groupRow.setVoucherValue(groupRow.getVoucherValue() + r.getVoucherValue());
             groupRow.setEwalletValue(groupRow.getEwalletValue() + r.getEwalletValue());
             groupRow.setOnCallValue(groupRow.getOnCallValue() + r.getOnCallValue());
+            groupRow.setTotalCostValue(groupRow.getTotalCostValue() + r.getTotalCostValue());
         }
 
         // Replace with grouped rows, sorted by combined key
@@ -1025,6 +1041,73 @@ public class IncomeBundle implements Serializable {
 
         }
         populateSummaryRow();
+    }
+    
+    public void generateDiscountDetailsForDashboard() {
+        Map<Object, IncomeRow> grouped = new LinkedHashMap<>();
+        
+        for (IncomeRow r : getRows()) {
+            Bill b = r.getBill();
+            
+            if(b == null || (b.getDepartment() == null && b.getToDepartment() == null)) {
+                continue;
+            }
+            
+            r.setDiscount(b.getDiscount());
+            
+            DepartmentType st;
+            String dept;
+            if (b.getToDepartment() != null) {
+                st = b.getToDepartment().getDepartmentType();
+                if (st == null) {
+                    dept = b.getToDepartment().getName();
+                } else {
+                    dept = st.toString();
+                }
+            } else {
+                st = b.getDepartment().getDepartmentType();
+                if (st == null) {
+                    dept = b.getDepartment().getName();
+                } else {
+                    dept = st.toString();
+                }
+            }
+                
+            IncomeRow groupRow = grouped.computeIfAbsent(dept, k -> {
+                IncomeRow ir = new IncomeRow();
+                ir.setRowType(k.toString());
+                return ir;
+            });
+            if (b.getBillTypeAtomic() != null) {
+                switch (b.getBillTypeAtomic().getBillCategory()) {
+                    case REFUND:
+                        groupRow.setDiscount(groupRow.getDiscount() + (-(Math.abs(r.getDiscount()))));
+                        break;
+                    case CANCELLATION:
+                        groupRow.setDiscount(groupRow.getDiscount() + (-(Math.abs(r.getDiscount()))));
+                        break;
+                    case BILL:
+                        groupRow.setDiscount(groupRow.getDiscount() + (Math.abs(r.getDiscount())));
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        
+        getRows().clear();
+        grouped.values().stream()
+                .filter(row -> row.getDiscount() != 0.0)
+                .sorted(Comparator.comparing(IncomeRow::getRowType, 
+                        Comparator.nullsLast(Comparator.naturalOrder())))
+                .forEachOrdered(getRows()::add);
+        
+        double sumOfDiscount = 0.0;
+        for (IncomeRow r : rows) {
+            sumOfDiscount += r.getDiscount();
+        }
+        
+        getSummaryRow().setDiscount(sumOfDiscount);
     }
 
     @Deprecated

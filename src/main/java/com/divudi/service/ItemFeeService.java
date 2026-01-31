@@ -31,7 +31,6 @@ public class ItemFeeService {
     public List<ItemFee> fetchSiteFeesByItem(String itemCode, Institution site) {
         System.out.println("fetchSiteFeesByItem");
         System.out.println("itemCode = " + itemCode);
-        System.out.println("site = " + site);
         String jpql = "select f "
                 + " from ItemFee f "
                 + " where f.retired=:ret ";

@@ -79,6 +79,19 @@
                                 </f:facet> 
 
 
+                                <p:column 
+                                    rendered="#{webUserController.hasPrivilege('Developers')}"
+                                    headerText="Item"
+                                    sortBy="#{i.itemBatch.item.name}"
+                                    filterBy="#{i.itemBatch.item.name}"
+                                    filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="ID"/>                                     
+                                    </f:facet>
+                                    <h:outputLabel 
+                                        value="#{i.itemBatch.id}">
+                                    </h:outputLabel>
+                                </p:column>
 
                                 <p:column headerText="Category" 
                                           style="text-align: left;"

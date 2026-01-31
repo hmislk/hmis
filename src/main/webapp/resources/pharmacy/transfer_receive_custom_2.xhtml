@@ -1,0 +1,193 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+        <div style="position: relative!important;
+        /*padding-left: 0.5%!important;*/
+        height:800px!important;
+        width:100%!important; 
+/*        overflow:hidden!important; */
+        font-family: monospace!important; 
+        font-size: 12px!important; 
+        margin:1px!important; 
+        padding: 1px!important;
+        background-size: 100% auto!important; 
+/*        border: 1px solid!important;*/
+        font-size: 100%;
+        line-height: 2!important;">
+            
+            <div class="institutionName">
+                <h:outputLabel value="#{cc.attrs.bill.institution.name}"/>
+            </div>
+            <div class="institutionContact" >
+                <div>
+                    <h:outputLabel value="#{cc.attrs.bill.institution.address}"/>
+                </div>
+                <div >
+                    <!--                    <h:outputLabel value="Tel : 0912234059 - 60 , "/>-->
+                    <h:outputLabel value="#{cc.attrs.bill.institution.phone} "/>
+<!--                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>-->
+                </div>
+                <div >
+                    <!--<h:outputLabel value="Fax : 0912234061 "/>-->
+                    <h:outputLabel value="#{cc.attrs.bill.institution.fax}"/>                                                 
+                </div>
+                <div >
+                    <!--<h:outputLabel value="Email : ruhunuhos@sltnet.lk "/>-->
+                    <h:outputLabel value="#{cc.attrs.bill.institution.email}"/>                                                 
+                </div>
+            </div>
+
+            <div class="headingBill">
+                <h:outputLabel value="Transfer Receive Note"   />       
+                <h:outputLabel value="**Cancelled**" rendered="#{cc.attrs.bill.billedBill.cancelled eq true}" />
+            </div>
+
+            <h:panelGrid columns="7" style="min-width: 100%;">
+                
+                <h:outputLabel value="Request To"/>
+                <h:outputLabel/>
+                <h:outputLabel value="#{cc.attrs.bill.fromDepartment.name}"   style="font-weight: bold;"/>
+                <h:outputLabel/>
+                <h:outputLabel value="Request From"/>
+                <h:outputLabel/>
+                <h:outputLabel value="#{cc.attrs.bill.department.name}"   style="font-weight: bold;"/>
+
+                <h:outputLabel value="Issue No"/>
+                <h:outputLabel/>
+                <h:outputLabel value="#{cc.attrs.bill.deptId}"   />
+                <h:outputLabel/>
+                <h:outputLabel value="Bill Date"/>
+                <h:outputLabel/>
+                <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                </h:outputLabel>
+                
+                <h:outputLabel/>
+                <h:outputLabel/>
+                <h:outputLabel/>
+                <h:outputLabel/>
+                <h:outputLabel value="Bill Time"/>
+                <h:outputLabel/>
+                <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                </h:outputLabel>
+                
+            </h:panelGrid>
+
+            <div >
+
+                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont compact-table" value="#{cc.attrs.bill.billItems}" sortBy="#{bip.searialNo}" var="bip"
+                             style="line-height: 1.1;">
+
+                    <p:column style="text-align: left;">
+                        <f:facet name="header">
+                            <h:outputLabel value="No"/>
+                        </f:facet>
+                        <h:outputLabel value="#{rowIndex+1}"/>
+                    </p:column>
+
+                    <p:column style="text-align: left;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Item Name"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.item.name}"/>
+                    </p:column>
+                    
+                    <p:column style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Batch"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.batchNo}"/>
+                    </p:column>
+                    
+                    <p:column style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="DOE"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                        </h:outputLabel>
+                    </p:column>
+                    
+                    <p:column style="text-align: right;"
+                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                        <f:facet name="header">
+                            <h:outputLabel value="Rate"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                            <f:convertNumber pattern="#0.00" />
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="QTY"/>
+                        </f:facet>
+                        <h:outputLabel value="#{0-bip.qty}"/>
+                    </p:column>                    
+
+                    <p:column style="text-align: right;"
+                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                        <f:facet name="header">
+                            <h:outputLabel value="Gross Price"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.billItemFinanceDetails.lineGrossTotal}">
+                            <f:convertNumber pattern="#0.00" />
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:columnGroup type="footer"
+                                   rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                        <p:row>
+                            <p:column colspan="6">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="Total"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column  style="text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{-cc.attrs.bill.netTotal}">
+                                        <f:convertNumber pattern="#0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>
+                    </p:columnGroup>
+                </p:dataTable>
+            </div>
+            
+            <div>
+                <h:panelGrid columns="2">
+                    <h:outputLabel value="Prepared by:"/>
+                    <h:outputLabel value=" #{cc.attrs.bill.creater.staff.code}"/>
+                    
+                    <h:outputLabel value="Transporter:"/>
+                    <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}"/>
+                    
+                    <h:outputLabel value="Issued by:"/>
+                    <h:outputLabel value="................................."/>
+                    
+                    <h:outputLabel value="Checked by:"/>
+                    <h:outputLabel value="................................."/>
+                </h:panelGrid>
+                
+            </div>
+
+
+        </div>
+    </cc:implementation>
+</html>

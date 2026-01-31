@@ -90,12 +90,14 @@ public class Payment implements Serializable, RetirableEntity {
 
     private String retireComments;
 
+    @Deprecated // Use referenceNo
     private String chequeRefNo;
+
+    @Deprecated // Use referenceNo
+    private String creditCardRefNo;
 
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date chequeDate;
-
-    private String creditCardRefNo;
 
     private double paidValue;
 
@@ -385,10 +387,12 @@ public class Payment implements Serializable, RetirableEntity {
     }
 
     // Can be use as a reference number for any payment method
+    @Deprecated // Use getReferenceNo()
     public String getChequeRefNo() {
         return chequeRefNo;
     }
 
+    @Deprecated // Use setReferenceNo()
     public void setChequeRefNo(String chequeRefNo) {
         this.chequeRefNo = chequeRefNo;
     }
@@ -401,10 +405,12 @@ public class Payment implements Serializable, RetirableEntity {
         this.chequeDate = chequeDate;
     }
 
+    @Deprecated // Use getReferenceNo()
     public String getCreditCardRefNo() {
         return creditCardRefNo;
     }
 
+    @Deprecated // Use setReferenceNo()
     public void setCreditCardRefNo(String creditCardRefNo) {
         this.creditCardRefNo = creditCardRefNo;
     }
@@ -587,12 +593,25 @@ public class Payment implements Serializable, RetirableEntity {
     }
 
     public String getReferenceNo() {
-
+        // Backward compatibility: if referenceNo is null or blank, try deprecated fields
+        if (referenceNo == null || referenceNo.trim().isEmpty()) {
+            if (chequeRefNo != null && !chequeRefNo.trim().isEmpty()) {
+                return chequeRefNo;
+            }
+            if (creditCardRefNo != null && !creditCardRefNo.trim().isEmpty()) {
+                return creditCardRefNo;
+            }
+        }
         return referenceNo;
     }
 
     public void setReferenceNo(String referenceNo) {
         this.referenceNo = referenceNo;
+        // Sync deprecated fields during migration period for backward compatibility
+        if (referenceNo != null && !referenceNo.trim().isEmpty()) {
+            setChequeRefNo(referenceNo);
+            setCreditCardRefNo(referenceNo);
+        }
     }
 
     public boolean getCashbookEntryCompleted() {
@@ -669,7 +688,9 @@ public class Payment implements Serializable, RetirableEntity {
 
     public Date getPaymentDate() {
         if (paymentDate == null) {
-            if (this.getBill() != null) {
+            if (chequeDate != null) {
+                paymentDate = chequeDate;
+            } else if (this.getBill() != null) {
                 paymentDate = this.getBill().getCreatedAt();
             }
         }

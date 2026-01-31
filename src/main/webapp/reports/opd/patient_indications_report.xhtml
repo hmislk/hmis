@@ -47,9 +47,9 @@
 
                             <!-- Component 1: Without Institution and Site -->
                             <p:selectOneMenu
-                                    rendered="#{opdReportController.institution eq null and opdReportController.site eq null}"
+                                    rendered="#{searchController.institution eq null and searchController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{opdReportController.department}"
+                                    value="#{searchController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                 <f:selectItem itemLabel="All Departments" />
@@ -62,14 +62,14 @@
 
                             <!-- Component 2: With Site Only -->
                             <p:selectOneMenu
-                                    rendered="#{opdReportController.institution eq null and opdReportController.site ne null}"
+                                    rendered="#{searchController.institution eq null and searchController.site ne null}"
                                     styleClass="w-100 form-control"
-                                    value="#{opdReportController.department}"
+                                    value="#{searchController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                 <f:selectItem itemLabel="All Departments" />
                                 <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(opdReportController.site)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.site)}"
                                         var="d"
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}" />
@@ -77,14 +77,14 @@
 
                             <!-- Component 3: With Institution Only -->
                             <p:selectOneMenu
-                                    rendered="#{opdReportController.institution ne null and opdReportController.site eq null}"
+                                    rendered="#{searchController.institution ne null and searchController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{opdReportController.department}"
+                                    value="#{searchController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                 <f:selectItem itemLabel="All Departments" />
                                 <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(opdReportController.institution)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
                                         var="d"
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}" />
@@ -92,14 +92,14 @@
 
                             <!-- Component 4: With Both Institution and Site -->
                             <p:selectOneMenu
-                                    rendered="#{opdReportController.institution ne null and opdReportController.site ne null}"
+                                    rendered="#{searchController.institution ne null and searchController.site ne null}"
                                     styleClass="w-100 form-control"
-                                    value="#{opdReportController.department}"
+                                    value="#{searchController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                 <f:selectItem itemLabel="All Departments" />
                                 <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(opdReportController.institution, opdReportController.site)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}"
                                         var="d"
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}" />

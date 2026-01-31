@@ -20,7 +20,7 @@
                         <p:panel >
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between">
-                                    <div>
+                                    <div class="mt-2">
                                         <h:outputText styleClass="fas fa-search" />
                                         <h:outputLabel value="Pay to Collecting Center" class="mx-2"/>
                                     </div>
@@ -101,7 +101,6 @@
 
                                 </h:panelGrid>
 
-
                             </h:panelGroup>
 
                             <h:panelGroup 
@@ -110,12 +109,28 @@
                                 rendered="#{collectingCentrePaymentController.currentCollectingCentre ne null}" >
                                 <h:panelGroup rendered="#{collectingCentrePaymentController.printPriview eq false}">
 
-                                    <div>
-                                        <div>#{collectingCentrePaymentController.currentCollectingCentre.code} - #{collectingCentrePaymentController.currentCollectingCentre.name}</div>
-                                        <div>#{collectingCentrePaymentController.fromDate} to #{collectingCentrePaymentController.toDate} </div>
-                                        <div>Pay to Collecting Center</div>
+                                    <div class="d-flex justify-content-center">
+                                        <div>
+                                            <div class="d-flex justify-content-center" style="font-weight: 700; font-size: 28px;">
+                                                #{collectingCentrePaymentController.currentCollectingCentre.code} - #{collectingCentrePaymentController.currentCollectingCentre.name}
+                                            </div>
+                                            <div  class="d-flex justify-content-center gap-2" style="font-weight: 600; font-size: 18px;">
+                                                <h:outputLabel value="#{collectingCentrePaymentController.fromDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputLabel>
+                                                <h:outputLabel value="to"></h:outputLabel>
+                                                <h:outputLabel value="#{collectingCentrePaymentController.toDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputLabel>
+
+                                            </div>
+                                            <div  class="d-flex justify-content-center" style="font-weight: 600; font-size: 22px;">
+                                                Pay to Collecting Center
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>
+                                    
+                                    <div class="my-2">
                                         <p:commandButton
                                             id="btnExcel"
                                             icon="fa-solid fa-file-excel"
@@ -129,8 +144,7 @@
 
                                     <p:dataTable   
                                         id="tblFee"
-                                        value="#{collectingCentrePaymentController.pandingCCpaymentBills}"
-                                        selection="#{collectingCentrePaymentController.selectedCCpaymentBills}"
+                                        value="#{collectingCentrePaymentController.selectedCCpaymentBills}"
                                         class="w-100 m-1"
                                         paginator="true"
                                         rows="10"
@@ -139,39 +153,32 @@
                                         currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                         rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
                                         var="b" 
+                                        rowIndexVar="i"
                                         rowKey="#{b.id}" >
 
-                                        <p:ajax  event="rowSelectCheckbox" process="tblFee" listener="#{collectingCentrePaymentController.performCalculations()}"   
-                                                 update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />  
+                                        <p:column width="15" headerText="#" style="padding:8px;">
+                                            <h:outputLabel value="#{i+1}"></h:outputLabel>
+                                        </p:column>
 
-                                        <p:ajax  event="rowUnselectCheckbox" process="tblFee" listener="#{collectingCentrePaymentController.performCalculations()}"   
-                                                 update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />  
-
-                                        <p:ajax  event="toggleSelect" process="tblFee" listener="#{collectingCentrePaymentController.performCalculations()}"   
-                                                 update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId}"  />  
-
-                                        <p:column selectionBox="true" width="10" style="padding:8px;"></p:column>
-
-
-                                        <p:column headerText="Bill No" width="9em;" style="padding:8px;">
+                                        <p:column headerText="Bill No" width="16em;" style="padding:8px;">
                                             <h:outputLabel value="#{b.billNo}"></h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Reference Number" width="9em;" style="padding:8px;">
+                                        <p:column headerText="Reference Number" width="14em;" style="padding:8px;">
                                             <h:outputLabel value="#{b.referenceNumber}"></h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Bill At" width="8em" style="padding:8px;">   
+                                        <p:column headerText="Bill At" width="16em" style="padding:8px;">   
                                             <h:outputLabel value="#{b.billDate}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Patient" width="5em" style="padding:8px;">                                  
+                                        <p:column headerText="Patient" style="padding:8px;">                                  
                                             <h:outputLabel value="#{b.patientName}"/>                                    
                                         </p:column>
 
-                                        <p:column headerText="Hos. Fee" width="6em;" class="text-end" style="padding:8px;">
+                                        <p:column headerText="Hos. Fee" width="12em;" class="text-end" style="padding:8px;">
                                             <h:outputLabel value="#{b.hospitalTotal}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
@@ -182,7 +189,7 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column headerText="CC Fee" width="6em;" class="text-end" style="padding:8px;">
+                                        <p:column headerText="CC Fee" width="12em;" class="text-end" style="padding:8px;">
                                             <h:outputLabel value="#{b.ccTotal}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
@@ -192,6 +199,7 @@
                                                 </h:outputText>
                                             </f:facet>
                                         </p:column>
+                                        
                                     </p:dataTable>
 
                                     <p:panel id="pTotals" class="mt-2" >
@@ -221,10 +229,10 @@
                                                     <h:outputLabel value="#{collectingCentrePaymentController.finalEndingBalanseInCC}" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
-                                                    <h:outputLabel value="Total Paying Amount ( Acoding to CC Balabce)" ></h:outputLabel>
-                                                    <h:outputLabel value="#{collectingCentrePaymentController.payingBalanceAcodingToCCBalabce}" >
+                                                    <h:outputLabel value="Total Paying Amount ( Acoding to CC Balabce )" ></h:outputLabel>
+                                                    <h:outputLabel value="#{collectingCentrePaymentController.payingBalanceAcodingToCCBalabce}" style="font-weight: 700; font-size: 22px;">
                                                         <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputLabel> 
+                                                    </h:outputLabel>
 
                                                 </p:panelGrid>
 
@@ -251,7 +259,7 @@
                                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
                                                     </p:selectOneMenu>
                                                     <h:outputLabel value="Total Payment Completed for this month" ></h:outputLabel>
-                                                    <h:outputLabel   value="#{collectingCentrePaymentController.payingBalanceAcodingToCCBalabce}" >
+                                                    <h:outputLabel   value="#{collectingCentrePaymentController.payingBalanceAcodingToCCBalabce}" style="font-weight: 700; font-size: 22px;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </p:panelGrid>

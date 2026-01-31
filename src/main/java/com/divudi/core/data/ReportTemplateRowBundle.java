@@ -152,6 +152,15 @@ public class ReportTemplateRowBundle implements Serializable {
 
     private boolean patientDepositsAreConsideredInHandingover = true;
 
+    private double cashierGrandTotal;
+    private double cashierCollectionTotal;
+    private double cashierExcludedTotal;
+    private boolean cashierGrandTotalComputed;
+    private boolean cashierCollectionTotalComputed;
+    private boolean cashierExcludedTotalComputed;
+    private List<PaymentMethod> cashierCollectionPaymentMethods = new ArrayList<>();
+    private List<PaymentMethod> cashierExcludedPaymentMethods = new ArrayList<>();
+
     public ReportTemplateRowBundle() {
         this.id = UUID.randomUUID();
     }
@@ -239,6 +248,17 @@ public class ReportTemplateRowBundle implements Serializable {
         hasPatientDepositTransaction = false;
         hasPatientPointsTransaction = false;
         hasOnlineSettlementTransaction = false;
+
+        resetCashierTotalsAndFlags();
+    }
+
+    private void resetCashierTotalsAndFlags() {
+        cashierGrandTotal = 0.0;
+        cashierCollectionTotal = 0.0;
+        cashierExcludedTotal = 0.0;
+        cashierGrandTotalComputed = false;
+        cashierCollectionTotalComputed = false;
+        cashierExcludedTotalComputed = false;
     }
 
     public void collectDepartments() {
@@ -845,7 +865,6 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     public void calculateTotalsByChildBundles(boolean forHandover) {
-        System.out.println("calculateTotalsByChildBundles");
         resetTotalsAndFlags();
         boolean selectAll = !forHandover;
 
@@ -883,7 +902,6 @@ public class ReportTemplateRowBundle implements Serializable {
 
                     System.out.println("childBundle.getTotal() = " + childBundle.getTotal());
 
-                    System.out.println("total Before= " + total);
 
                     addValueAndUpdateFlag("total", safeDouble(childBundle.getTotal()));
 
@@ -893,7 +911,6 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     public void calculateTotalsByChildBundlesForHandover() {
-        System.out.println("calculateTotalsByChildBundlesForHandover");
         resetTotalsAndFlags();
 
         if (this.bundles != null && !this.bundles.isEmpty()) {
@@ -940,7 +957,6 @@ public class ReportTemplateRowBundle implements Serializable {
                     System.out.println("total After= " + total);
 
                     System.out.println("childBundle.totalOut() = " + childBundle.getTotalOut());
-                    System.out.println("totalOut Before= " + totalOut);
                     addValueAndUpdateFlag("totalOut", safeDouble(childBundle.getTotalOut()));
 
                 }
@@ -1795,6 +1811,7 @@ public class ReportTemplateRowBundle implements Serializable {
                 if (row.getBill() == null) {
                     continue;
                 }
+                // Debugging bill details
 
                 // Debugging bill details
                 System.out.println("row.getBill().getGrantTotal() = " + row.getBill().getGrantTotal());
@@ -1812,13 +1829,13 @@ public class ReportTemplateRowBundle implements Serializable {
                 row.setStaffTotal(row.getBill().getTotalStaffFee());
                 row.setCcTotal(row.getBill().getTotalCenterFee());
                 // Debugging after setting
+                // Debugging after setting
 
                 // Debugging after setting
                 System.out.println("row.getGrossTotal() = " + row.getGrossTotal());
                 System.out.println("row.getDiscount() = " + row.getDiscount());
                 System.out.println("row.getTotal() = " + row.getTotal());
                 System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
-                System.out.println("row.getStaffTotal() = " + row.getStaffTotal());
             }
         } else {
         }
@@ -1842,13 +1859,13 @@ public class ReportTemplateRowBundle implements Serializable {
                 row.setStaffTotal(row.getBillItem().getStaffFee());
                 row.setCcTotal(row.getBillItem().getCollectingCentreFee());
                 // Debugging after setting
+                // Debugging after setting
 
                 // Debugging after setting
                 System.out.println("row.getGrossTotal() = " + row.getGrossTotal());
                 System.out.println("row.getDiscount() = " + row.getDiscount());
                 System.out.println("row.getTotal() = " + row.getTotal());
                 System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
-                System.out.println("row.getStaffTotal() = " + row.getStaffTotal());
             }
         } else {
         }
@@ -1871,6 +1888,8 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     private void resetTotalsAndFlags() {
+        resetCashierTotalsAndFlags();
+
         this.cashValue = this.cardValue = this.multiplePaymentMethodsValue = this.staffValue
                 = this.creditValue = this.staffWelfareValue = this.voucherValue = this.iouValue
                 = this.agentValue = this.chequeValue = this.slipValue = this.eWalletValue
@@ -2852,6 +2871,86 @@ public class ReportTemplateRowBundle implements Serializable {
         this.onlineSettlementHandoverValue = onlineSettlementHandoverValue;
     }
 
+    public double getCashierGrandTotal() {
+        return cashierGrandTotal;
+    }
+
+    public void setCashierGrandTotal(double cashierGrandTotal) {
+        this.cashierGrandTotal = cashierGrandTotal;
+        this.cashierGrandTotalComputed = true;
+    }
+
+    public double getCashierCollectionTotal() {
+        return cashierCollectionTotal;
+    }
+
+    public void setCashierCollectionTotal(double cashierCollectionTotal) {
+        this.cashierCollectionTotal = cashierCollectionTotal;
+        this.cashierCollectionTotalComputed = true;
+    }
+
+    public double getCashierExcludedTotal() {
+        return cashierExcludedTotal;
+    }
+
+    public void setCashierExcludedTotal(double cashierExcludedTotal) {
+        this.cashierExcludedTotal = cashierExcludedTotal;
+        this.cashierExcludedTotalComputed = true;
+    }
+
+    public boolean isCashierGrandTotalComputed() {
+        return cashierGrandTotalComputed;
+    }
+
+    public void setCashierGrandTotalComputed(boolean cashierGrandTotalComputed) {
+        this.cashierGrandTotalComputed = cashierGrandTotalComputed;
+        if (!cashierGrandTotalComputed) {
+            this.cashierGrandTotal = 0.0;
+        }
+    }
+
+    public boolean isCashierCollectionTotalComputed() {
+        return cashierCollectionTotalComputed;
+    }
+
+    public void setCashierCollectionTotalComputed(boolean cashierCollectionTotalComputed) {
+        this.cashierCollectionTotalComputed = cashierCollectionTotalComputed;
+        if (!cashierCollectionTotalComputed) {
+            this.cashierCollectionTotal = 0.0;
+        }
+    }
+
+    public boolean isCashierExcludedTotalComputed() {
+        return cashierExcludedTotalComputed;
+    }
+
+    public void setCashierExcludedTotalComputed(boolean cashierExcludedTotalComputed) {
+        this.cashierExcludedTotalComputed = cashierExcludedTotalComputed;
+        if (!cashierExcludedTotalComputed) {
+            this.cashierExcludedTotal = 0.0;
+        }
+    }
+
+    public List<PaymentMethod> getCashierCollectionPaymentMethods() {
+        return cashierCollectionPaymentMethods;
+    }
+
+    public void setCashierCollectionPaymentMethods(List<PaymentMethod> cashierCollectionPaymentMethods) {
+        this.cashierCollectionPaymentMethods = cashierCollectionPaymentMethods == null
+                ? new ArrayList<>()
+                : new ArrayList<>(cashierCollectionPaymentMethods);
+    }
+
+    public List<PaymentMethod> getCashierExcludedPaymentMethods() {
+        return cashierExcludedPaymentMethods;
+    }
+
+    public void setCashierExcludedPaymentMethods(List<PaymentMethod> cashierExcludedPaymentMethods) {
+        this.cashierExcludedPaymentMethods = cashierExcludedPaymentMethods == null
+                ? new ArrayList<>()
+                : new ArrayList<>(cashierExcludedPaymentMethods);
+    }
+
     //    public SessionController getSessionController() {
 //        return sessionController;
 //    }
@@ -3038,6 +3137,14 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void seteWalletHandoverValue(double eWalletHandoverValue) {
         this.eWalletHandoverValue = eWalletHandoverValue;
+    }
+
+    public double getEWalletValue() {
+        return eWalletValue;
+    }
+    
+     public void setEWalletValue(double eWalletValue) {
+        this.eWalletValue = eWalletValue;
     }
 
 }

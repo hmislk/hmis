@@ -780,9 +780,8 @@ public class InstitutionController implements Serializable {
             Long longId = Long.parseLong(id);
             return findInstitution(longId);
         } catch (NumberFormatException e) {
-            // Handle the case where the string is not a valid long number
-            System.err.println("Invalid institution ID format: " + id);
-            return null;
+// Handle the case where the string is not a valid long number
+                        return null;
         }
     }
 
@@ -822,7 +821,7 @@ public class InstitutionController implements Serializable {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -840,7 +839,7 @@ public class InstitutionController implements Serializable {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
 
         current = null;
@@ -858,7 +857,7 @@ public class InstitutionController implements Serializable {
             getFacade().edit(getAgency());
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         fetchSelectedAgencys();
         prepareAddAgency();
