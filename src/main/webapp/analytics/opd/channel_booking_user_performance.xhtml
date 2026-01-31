@@ -1,0 +1,171 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/analytics/opd/index.xhtml">
+
+            <ui:define name="subcontent">
+
+                <h:form>
+                    <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+
+                    <p:panel header="Channel Booking User Performance Report">
+                        <f:facet name="header">
+                            <i class="fa fa-chart-bar"></i>
+                            <h:outputLabel value=" Channel Booking User Performance Report"/>
+                        </f:facet>
+
+                        <!-- Filters Panel -->
+                        <p:panel styleClass="noPrintButton">
+                            <f:facet name="header">
+                                <h:outputLabel value="Filter Criteria"/>
+                            </f:facet>
+
+                            <p:panelGrid columns="2" columnClasses="formLabel,formValue" styleClass="noPrintButton">
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar id="frmDate"
+                                            value="#{channelBookingUserPerformanceController.fromDate}"
+                                            navigator="true"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                                </p:calendar>
+
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate"
+                                            value="#{channelBookingUserPerformanceController.toDate}"
+                                            navigator="true"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                                </p:calendar>
+                            </p:panelGrid>
+
+                            <h:panelGrid columns="4" class="mt-2 noPrintButton">
+                                <p:commandButton
+                                    id="btnProcess"
+                                    ajax="false"
+                                    value="Process Report"
+                                    styleClass="noPrintButton ui-button-success"
+                                    action="#{channelBookingUserPerformanceController.processReport}"
+                                    icon="fa fa-play"/>
+                                <p:defaultCommand target="btnProcess"/>
+
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Clear"
+                                    styleClass="noPrintButton ui-button-secondary"
+                                    action="#{channelBookingUserPerformanceController.clear}"
+                                    icon="fa fa-eraser"/>
+
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Print"
+                                    styleClass="noPrintButton"
+                                    icon="fa fa-print">
+                                    <p:printer target="reportPrint"/>
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Excel"
+                                    styleClass="noPrintButton ui-button-help"
+                                    icon="fa fa-file-excel">
+                                    <p:dataExporter type="xlsx" target="tbl" fileName="Channel_Booking_User_Performance"/>
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </p:panel>
+
+                        <!-- Report Panel -->
+                        <p:panel id="reportPrint" class="mt-3">
+                            <f:facet name="header">
+                                <h:outputLabel value="#{sessionController.institution.name}"/><br/>
+                                <h:outputLabel value="Channel Booking User Performance Report"/><br/>
+                                <h:outputLabel value="From: "/>
+                                <h:outputLabel class="ml-2" value="#{channelBookingUserPerformanceController.fromDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputLabel>
+                                <h:outputLabel class="ml-5" value="To: "/>
+                                <h:outputLabel class="ml-2" value="#{channelBookingUserPerformanceController.toDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputLabel>
+                            </f:facet>
+
+                            <p:dataTable
+                                value="#{channelBookingUserPerformanceController.userPerformanceList}"
+                                var="row"
+                                id="tbl"
+                                paginator="true"
+                                rows="20"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="20,50,100"
+                                emptyMessage="No data found for the selected date range">
+
+                                <!-- Row Number Column -->
+                                <p:column style="text-align: center; width: 50px;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="No."/>
+                                    </f:facet>
+                                    <h:outputText value="#{tbl.rowIndex + 1}"/>
+                                </p:column>
+
+                                <!-- User Name Column -->
+                                <p:column style="text-align: left;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="User Name"/>
+                                    </f:facet>
+                                    <h:outputText value="#{row.displayName}"/>
+                                </p:column>
+
+                                <!-- Total Bookings Column -->
+                                <p:column style="text-align: right; width: 150px;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Total Bookings"/>
+                                    </f:facet>
+                                    <h:outputText value="#{row.totalBookings}">
+                                        <f:convertNumber pattern="#,##0"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <!-- Paid Bookings Column -->
+                                <p:column style="text-align: right; width: 150px;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Paid Bookings"/>
+                                    </f:facet>
+                                    <h:outputText value="#{row.paidBookings}">
+                                        <f:convertNumber pattern="#,##0"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <!-- Footer with Totals -->
+                                <f:facet name="footer">
+                                    <p:outputPanel>
+                                        <h:panelGrid columns="4" style="width: 100%;">
+                                            <h:outputText value="Total:" style="font-weight: bold;"/>
+                                            <h:outputText value=""/>
+                                            <h:outputText
+                                                value="#{channelBookingUserPerformanceController.totalBookingsSum}"
+                                                style="text-align: right; font-weight: bold;">
+                                                <f:convertNumber pattern="#,##0"/>
+                                            </h:outputText>
+                                            <h:outputText
+                                                value="#{channelBookingUserPerformanceController.totalPaidBookingsSum}"
+                                                style="text-align: right; font-weight: bold;">
+                                                <f:convertNumber pattern="#,##0"/>
+                                            </h:outputText>
+                                        </h:panelGrid>
+                                    </p:outputPanel>
+                                </f:facet>
+                            </p:dataTable>
+                        </p:panel>
+                    </p:panel>
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>
