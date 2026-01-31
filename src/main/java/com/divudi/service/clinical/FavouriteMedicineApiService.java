@@ -15,7 +15,14 @@ import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.clinical.PrescriptionTemplate;
+import com.divudi.core.entity.lab.Antibiotic;
 import com.divudi.core.entity.pharmacy.MeasurementUnit;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.Atm;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.entity.pharmacy.Vtm;
 import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.MeasurementUnitFacade;
@@ -26,6 +33,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -100,7 +108,30 @@ public class FavouriteMedicineApiService implements Serializable {
             }
 
             if (item == null) {
-                throw new IllegalArgumentException("Item not found: " + itemName + " (type: " + itemType + ")");
+                // Enhanced error message with subclass awareness
+                StringBuilder errorMessage = new StringBuilder();
+                errorMessage.append("Item not found: ").append(itemName).append(" (type: ").append(itemType).append(")");
+
+                // Provide specific guidance based on item type
+                switch (itemTypeEnum) {
+                    case Vtm:
+                        errorMessage.append(". Note: VTM searches include Antibiotic subclasses. ")
+                                  .append("Check if '").append(itemName).append("' exists as either VTM or Antibiotic entity.");
+                        break;
+                    case Vmp:
+                        errorMessage.append(". Note: VMP searches include Vmpp subclasses. ")
+                                  .append("Check if '").append(itemName).append("' exists as either VMP or VMPP entity.");
+                        break;
+                    case Amp:
+                        errorMessage.append(". Note: AMP searches include Ampp subclasses. ")
+                                  .append("Check if '").append(itemName).append("' exists as either AMP or AMPP entity.");
+                        break;
+                    default:
+                        errorMessage.append(". Please verify the entity name and type are correct.");
+                        break;
+                }
+
+                throw new IllegalArgumentException(errorMessage.toString());
             }
 
             // Create the prescription template
@@ -359,6 +390,7 @@ public class FavouriteMedicineApiService implements Serializable {
 
     /**
      * Search VTMs by name with optional limit
+     * Includes Antibiotic entities (which extend VTM)
      */
     public List<Item> searchVtms(String query, Integer limit) {
         if (query == null || query.trim().isEmpty()) {
@@ -366,12 +398,13 @@ public class FavouriteMedicineApiService implements Serializable {
         }
 
         String jpql = "SELECT i FROM Item i WHERE i.retired = false " +
-                     "AND i.itemType = :itemType " +
+                     "AND type(i) in :types " +
                      "AND (UPPER(i.name) LIKE :query OR UPPER(i.code) LIKE :query) " +
                      "ORDER BY i.name";
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("itemType", ItemType.Vtm);
+        Class[] types = getPolymorphicClasses(ItemType.Vtm);
+        parameters.put("types", Arrays.asList(types));
         parameters.put("query", "%" + query.trim().toUpperCase() + "%");
 
         if (limit != null && limit > 0) {
@@ -395,6 +428,7 @@ public class FavouriteMedicineApiService implements Serializable {
 
     /**
      * Search ATMs by name with optional limit
+     * ATM has no subclasses but uses polymorphic pattern for consistency
      */
     public List<Item> searchAtms(String query, Integer limit) {
         if (query == null || query.trim().isEmpty()) {
@@ -402,12 +436,13 @@ public class FavouriteMedicineApiService implements Serializable {
         }
 
         String jpql = "SELECT i FROM Item i WHERE i.retired = false " +
-                     "AND i.itemType = :itemType " +
+                     "AND type(i) in :types " +
                      "AND (UPPER(i.name) LIKE :query OR UPPER(i.code) LIKE :query) " +
                      "ORDER BY i.name";
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("itemType", ItemType.Atm);
+        Class[] types = getPolymorphicClasses(ItemType.Atm);
+        parameters.put("types", Arrays.asList(types));
         parameters.put("query", "%" + query.trim().toUpperCase() + "%");
 
         if (limit != null && limit > 0) {
@@ -430,6 +465,7 @@ public class FavouriteMedicineApiService implements Serializable {
 
     /**
      * Search VMPs by name with optional limit
+     * Includes Vmpp entities (which extend VMP)
      */
     public List<Item> searchVmps(String query, Integer limit) {
         if (query == null || query.trim().isEmpty()) {
@@ -437,12 +473,13 @@ public class FavouriteMedicineApiService implements Serializable {
         }
 
         String jpql = "SELECT i FROM Item i WHERE i.retired = false " +
-                     "AND i.itemType = :itemType " +
+                     "AND type(i) in :types " +
                      "AND (UPPER(i.name) LIKE :query OR UPPER(i.code) LIKE :query) " +
                      "ORDER BY i.name";
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("itemType", ItemType.Vmp);
+        Class[] types = getPolymorphicClasses(ItemType.Vmp);
+        parameters.put("types", Arrays.asList(types));
         parameters.put("query", "%" + query.trim().toUpperCase() + "%");
 
         if (limit != null && limit > 0) {
@@ -465,6 +502,7 @@ public class FavouriteMedicineApiService implements Serializable {
 
     /**
      * Search AMPs by name with optional limit
+     * Includes Ampp entities (which extend AMP)
      */
     public List<Item> searchAmps(String query, Integer limit) {
         if (query == null || query.trim().isEmpty()) {
@@ -472,12 +510,13 @@ public class FavouriteMedicineApiService implements Serializable {
         }
 
         String jpql = "SELECT i FROM Item i WHERE i.retired = false " +
-                     "AND i.itemType = :itemType " +
+                     "AND type(i) in :types " +
                      "AND (UPPER(i.name) LIKE :query OR UPPER(i.code) LIKE :query) " +
                      "ORDER BY i.name";
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("itemType", ItemType.Amp);
+        Class[] types = getPolymorphicClasses(ItemType.Amp);
+        parameters.put("types", Arrays.asList(types));
         parameters.put("query", "%" + query.trim().toUpperCase() + "%");
 
         if (limit != null && limit > 0) {
@@ -653,15 +692,20 @@ public class FavouriteMedicineApiService implements Serializable {
                     if (vtm != null) {
                         result.put("exists", true);
                         result.put("entityId", vtm.getId());
-                        result.put("message", "VTM found");
+                        String entityType = vtm instanceof Antibiotic ? "Antibiotic (VTM subclass)" : "VTM";
+                        result.put("message", entityType + " found");
                     } else {
-                        result.put("message", "VTM not found");
+                        result.put("message", "VTM not found (searched VTM and Antibiotic entities)");
                         result.put("canCreate", true);
-                        // Add suggestions for similar VTMs
+                        // Add suggestions for similar VTMs (includes Antibiotic entities)
                         List<Item> similarVtms = searchVtms(name.trim(), 5);
                         List<String> suggestions = new ArrayList<>();
                         for (Item item : similarVtms) {
-                            suggestions.add(item.getName());
+                            String suggestion = item.getName();
+                            if (item instanceof Antibiotic) {
+                                suggestion += " (Antibiotic)";
+                            }
+                            suggestions.add(suggestion);
                         }
                         result.put("suggestions", suggestions);
                     }
@@ -684,9 +728,10 @@ public class FavouriteMedicineApiService implements Serializable {
                     if (vmp != null) {
                         result.put("exists", true);
                         result.put("entityId", vmp.getId());
-                        result.put("message", "VMP found");
+                        String entityType = vmp instanceof Vmpp ? "Vmpp (VMP subclass)" : "VMP";
+                        result.put("message", entityType + " found");
                     } else {
-                        result.put("message", "VMP not found");
+                        result.put("message", "VMP not found (searched VMP and Vmpp entities)");
                         result.put("canCreate", true);
                     }
                     break;
@@ -696,9 +741,10 @@ public class FavouriteMedicineApiService implements Serializable {
                     if (amp != null) {
                         result.put("exists", true);
                         result.put("entityId", amp.getId());
-                        result.put("message", "AMP found");
+                        String entityType = amp instanceof Ampp ? "Ampp (AMP subclass)" : "AMP";
+                        result.put("message", entityType + " found");
                     } else {
-                        result.put("message", "AMP not found");
+                        result.put("message", "AMP not found (searched AMP and Ampp entities)");
                         result.put("canCreate", true);
                     }
                     break;
@@ -795,6 +841,7 @@ public class FavouriteMedicineApiService implements Serializable {
 
     /**
      * Find entity by name and type with case-insensitive search
+     * Uses polymorphic query to include subclasses (e.g., Antibiotic when searching for VTM)
      */
     public Item findItemByNameAndType(String name, ItemType itemType) {
         if (name == null || name.trim().isEmpty() || itemType == null) {
@@ -802,11 +849,12 @@ public class FavouriteMedicineApiService implements Serializable {
         }
 
         String jpql = "SELECT i FROM Item i WHERE i.retired = false " +
-                     "AND i.itemType = :itemType " +
+                     "AND type(i) in :types " +
                      "AND UPPER(i.name) = :name";
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("itemType", itemType);
+        Class[] types = getPolymorphicClasses(itemType);
+        parameters.put("types", Arrays.asList(types));
         parameters.put("name", name.trim().toUpperCase());
 
         return itemFacade.findFirstByJpql(jpql, parameters);
@@ -865,6 +913,29 @@ public class FavouriteMedicineApiService implements Serializable {
                 return ItemType.Amp;
             default:
                 throw new IllegalArgumentException("Invalid item type: " + itemType + ". Must be one of: Vtm, Atm, Vmp, Amp");
+        }
+    }
+
+    /**
+     * Map ItemType enums to polymorphic entity class hierarchies
+     * This enables searching for subclasses (e.g., Antibiotic when searching for VTM)
+     */
+    private Class[] getPolymorphicClasses(ItemType itemType) {
+        switch (itemType) {
+            case Vtm:
+                // Include both Vtm and Antibiotic (Antibiotic extends Vtm)
+                return new Class[]{Vtm.class, Antibiotic.class};
+            case Vmp:
+                // Include both Vmp and Vmpp
+                return new Class[]{Vmp.class, Vmpp.class};
+            case Amp:
+                // Include both Amp and Ampp
+                return new Class[]{Amp.class, Ampp.class};
+            case Atm:
+                // ATM has no subclasses
+                return new Class[]{Atm.class};
+            default:
+                throw new IllegalArgumentException("Unsupported item type: " + itemType);
         }
     }
 
