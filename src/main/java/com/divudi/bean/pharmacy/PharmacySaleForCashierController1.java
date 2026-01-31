@@ -2438,10 +2438,8 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
                             + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
                     return;
                 }
-            } else {
-                // First item: set department type on PreBill after all validations pass
-                getPreBill().setDepartmentType(itemDepartmentType);
             }
+            // Note: Department type will be set in addBillItemSingleItem() after item is successfully added
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Add quantity from multiple batches in pharmacy retail billing")) {
@@ -2657,6 +2655,13 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
         System.out.println("SUCCESS: Adding item to bill - ID: " + getStockDto().getId() + ", Qty: " + qty);
         getPreBill().getBillItems().add(billItem);
         System.out.println("Total items in bill now: " + getPreBill().getBillItems().size());
+
+        // Set department type on PreBill if this is the first item (only after successful add)
+        if (getPreBill().getDepartmentType() == null && billItem.getItem() != null) {
+            DepartmentType itemDeptType = billItem.getItem().getDepartmentType();
+            getPreBill().setDepartmentType(itemDeptType);
+            System.out.println("Department type set to: " + (itemDeptType != null ? itemDeptType.getLabel() : "null"));
+        }
 
         // UserStock operations commented out for performance
         //if (getUserStockContainer().getId() == null) {
