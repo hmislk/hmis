@@ -28,6 +28,7 @@ import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Person;
@@ -671,6 +672,11 @@ public class PharmacyIssueController implements Serializable {
         parameters.put("stockMin", 0.0);
         parameters.put("query", "%" + qry.toUpperCase() + "%");
 
+        // Add department type filter if set
+        if (getPreBill().getDepartmentType() != null) {
+            parameters.put("departmentType", getPreBill().getDepartmentType());
+        }
+
         // Check if consumption restriction is enabled
         boolean restrictConsumption = configOptionApplicationController.getBooleanValueByKey(
                 "Restrict Consumption to Items with Consumption Allowed Flag", true);
@@ -708,6 +714,11 @@ public class PharmacyIssueController implements Serializable {
         sql.append("FROM Stock s ")
             .append("WHERE s.stock > :stockMin ")
             .append("AND s.department = :department ");
+
+        // Add department type filter if set
+        if (getPreBill().getDepartmentType() != null) {
+            sql.append("AND s.itemBatch.item.departmentType = :departmentType ");
+        }
 
         // Add consumption allowed filter if enabled (null-safe for legacy data)
         if (restrictConsumption) {
@@ -946,6 +957,19 @@ public class PharmacyIssueController implements Serializable {
                 return;
             }
         }
+
+        // Validate department type consistency
+        if (getPreBill().getDepartmentType() != null && !getPreBill().getBillItems().isEmpty()) {
+            for (BillItem bi : getPreBill().getBillItems()) {
+                if (bi.getItem() != null && bi.getItem().getDepartmentType() != null) {
+                    if (!bi.getItem().getDepartmentType().equals(getPreBill().getDepartmentType())) {
+                        JsfUtil.addErrorMessage("Inconsistent department types detected. All items must belong to the same department type.");
+                        return;
+                    }
+                }
+            }
+        }
+
         if (checkAllBillItem()) {
             return;
         }
@@ -1022,6 +1046,43 @@ public class PharmacyIssueController implements Serializable {
             errorMessage = "Select an item. If the item is not listed, there is no stocks from that item. Check the department you are logged and the stock.";
             JsfUtil.addErrorMessage("Please Enter Item");
             return 0.0;
+        }
+
+        if (getStock().getItemBatch() == null || getStock().getItemBatch().getItem() == null) {
+            errorMessage = "Invalid stock data. Item batch or item is missing.";
+            JsfUtil.addErrorMessage("Invalid stock data");
+            return 0.0;
+        }
+
+        // Auto-set department type if not already set
+        if (getPreBill().getDepartmentType() == null) {
+            Item selectedItem = getStock().getItemBatch().getItem();
+            if (selectedItem.getDepartmentType() != null) {
+                getPreBill().setDepartmentType(selectedItem.getDepartmentType());
+            } else {
+                // Fallback to Pharmacy if item has no department type
+                getPreBill().setDepartmentType(DepartmentType.Pharmacy);
+            }
+        }
+
+        // Validate item's department type matches bill's department type
+        if (getPreBill().getDepartmentType() != null) {
+            Item selectedItem = getStock().getItemBatch().getItem();
+            DepartmentType itemDepartmentType = selectedItem.getDepartmentType();
+
+            if (itemDepartmentType != null && !itemDepartmentType.equals(getPreBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                        + "Bill is set for " + getPreBill().getDepartmentType().getLabel()
+                        + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
+                return 0.0;
+            }
+
+            // Verify department type is allowed for pharmacy transactions
+            List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+            if (allowedTypes == null || !allowedTypes.contains(getPreBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + getPreBill().getDepartmentType().getLabel());
+                return 0.0;
+            }
         }
         if (getQty() == null) {
             errorMessage = "Please enter a quentity";
@@ -1105,6 +1166,44 @@ public class PharmacyIssueController implements Serializable {
             JsfUtil.addErrorMessage("Please Enter Item");
             return;
         }
+
+        if (getStock().getItemBatch() == null || getStock().getItemBatch().getItem() == null) {
+            errorMessage = "Invalid stock data. Item batch or item is missing.";
+            JsfUtil.addErrorMessage("Invalid stock data");
+            return;
+        }
+
+        // Auto-set department type if not already set
+        if (getPreBill().getDepartmentType() == null) {
+            Item selectedItem = getStock().getItemBatch().getItem();
+            if (selectedItem.getDepartmentType() != null) {
+                getPreBill().setDepartmentType(selectedItem.getDepartmentType());
+            } else {
+                // Fallback to Pharmacy if item has no department type
+                getPreBill().setDepartmentType(DepartmentType.Pharmacy);
+            }
+        }
+
+        // Validate item's department type matches bill's department type
+        if (getPreBill().getDepartmentType() != null) {
+            Item selectedItem = getStock().getItemBatch().getItem();
+            DepartmentType itemDepartmentType = selectedItem.getDepartmentType();
+
+            if (itemDepartmentType != null && !itemDepartmentType.equals(getPreBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                        + "Bill is set for " + getPreBill().getDepartmentType().getLabel()
+                        + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
+                return;
+            }
+
+            // Verify department type is allowed for pharmacy transactions
+            List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+            if (allowedTypes == null || !allowedTypes.contains(getPreBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + getPreBill().getDepartmentType().getLabel());
+                return;
+            }
+        }
+
         if (getQty() == null) {
             errorMessage = "Please enter a quentity";
             JsfUtil.addErrorMessage("Please enter a quentity");
@@ -1350,6 +1449,11 @@ public class PharmacyIssueController implements Serializable {
         userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
         getPreBill().getBillItems().remove(b.getSearialNo());
 
+        // Clear department type if all items are removed
+        if (getPreBill().getBillItems().isEmpty()) {
+            getPreBill().setDepartmentType(null);
+        }
+
         calTotal();
     }
 
@@ -1580,6 +1684,9 @@ public class PharmacyIssueController implements Serializable {
     }
 
     private void clearBill() {
+        if (preBill != null) {
+            preBill.setDepartmentType(null);
+        }
         preBill = null;
         newPatient = null;
         searchedPatient = null;
@@ -2300,6 +2407,9 @@ public class PharmacyIssueController implements Serializable {
     }
 
     public void changeDepartment() {
+        if (preBill != null) {
+            preBill.setDepartmentType(null);
+        }
         preBill = null;
         setToDepartment(null);
     }
@@ -2316,6 +2426,7 @@ public class PharmacyIssueController implements Serializable {
         getPreBill().setFromInstitution(sessionController.getInstitution());
         getPreBill().setFromDepartment(sessionController.getDepartment());
         getPreBill().setToDepartment(toDepartment);
+        getPreBill().setDepartmentType(null);
         return "";
     }
 }
