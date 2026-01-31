@@ -36,11 +36,19 @@
                                                 value="OPD Income Daily Summary"
                                                 action="#{opdReportController.navigateToOpdIncomeDailySummary()}"/>
                                             <p:commandButton
+                                                id="btnNavigateToHospitalFeeAndDoctorFeeReportByBills"
                                                 class="w-100"
                                                 ajax="false"
                                                 style="text-align: left"
                                                 value="Hospital Fee &amp; Doctor Fee Report"
                                                 action="#{opdReportController.navigateToHospitalDoctorFeeReport()}"/>
+                                            <p:commandButton
+                                                id="btnNavigateToBillItemReport"
+                                                class="w-100"
+                                                ajax="false"
+                                                style="text-align: left"
+                                                value="Hospital Fee &amp; Doctor Fee Report (By Items)"
+                                                action="#{opdReportController.navigateToBillItemReport()}"/>
                                         </div>
                                     </p:tab>
 

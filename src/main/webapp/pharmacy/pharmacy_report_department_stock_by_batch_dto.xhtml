@@ -25,12 +25,24 @@
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
                                             <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
-                                            <h:outputLabel value="Department Type" for="cmbDeptType" styleClass="mb-0"/>
+                                            <h:outputLabel value="Department Types" for="departmentTypeFilter" styleClass="mb-0"/>
                                         </h:panelGroup>
-                                        <p:selectOneMenu id="cmbDeptType" value="#{reportsStock.departmentType}" filter="true" filterMatchMode="contains" styleClass="w-100">
-                                            <f:selectItem itemLabel="All Department Types" itemValue="#{null}" />
-                                            <f:selectItems value="#{departmentTypeController.departmentTypes}" var="dt" itemLabel="#{dt.label}" itemValue="#{dt}" />
-                                        </p:selectOneMenu>
+                                        <p:selectCheckboxMenu
+                                            id="departmentTypeFilter"
+                                            value="#{reportsStock.selectedDepartmentTypes}"
+                                            label="Select Department Types"
+                                            styleClass="w-100"
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            showHeader="true"
+                                            scrollHeight="200"
+                                            title="Select one or more department types to filter results. Leave empty to include all departments.">
+                                            <f:selectItems
+                                                value="#{reportsStock.availableDepartmentTypes}"
+                                                var="depType"
+                                                itemLabel="#{depType.label}"
+                                                itemValue="#{depType}"/>
+                                        </p:selectCheckboxMenu>
                                     </h:panelGroup>
                                 </h:panelGroup>
                                 <!-- Action Buttons -->

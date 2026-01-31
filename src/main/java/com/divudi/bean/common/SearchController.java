@@ -2894,15 +2894,21 @@ public class SearchController implements Serializable {
 
         Map m = new HashMap();
         m.put("bt", billType);
-        m.put("billedClass", PreBill.class);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("ins", getSessionController().getInstitution());
+        
+        List<BillTypeAtomic> bta = new ArrayList<>();
+        bta.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL);
+        bta.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
+        
+        m.put("bta", bta);
+        
         String sql;
 
         sql = "Select b from RefundBill b where  b.retired=false "
                 + " and b.institution=:ins and "
-                + " (b.billedBill is null  or type(b.billedBill)=:billedClass ) "
+                + " b.billTypeAtomic in :bta "
                 + " and b.createdAt between :fd and :td"
                 + " and b.billType=:bt ";
 
@@ -3554,7 +3560,6 @@ public class SearchController implements Serializable {
      * entire entity relationships.
      */
     public void createPharmacyTableReDto() {
-        System.out.println("DEBUG: Starting createPharmacyTableReDto");
         cashierPreBillSearchDtos = null;
 
         // Set parameters first
@@ -3565,11 +3570,8 @@ public class SearchController implements Serializable {
         params.put("toDate", getToDate());
         params.put("deptid", getSessionController().getDepartment().getId());
 
-        System.out.println("DEBUG: Parameters set - billType: " + params.get("billTypeAtomic"));
-
         // STEP 1: Try minimal query - just IDs
         try {
-            System.out.println("DEBUG STEP 1: Trying minimal query (IDs only)");
             String jpql1 = "SELECT b.id FROM PreBill b " +
                           "WHERE b.billTypeAtomic = :billTypeAtomic " +
                           "AND b.institution.id = :insId " +
@@ -3579,16 +3581,13 @@ public class SearchController implements Serializable {
                           "ORDER BY b.createdAt DESC";
 
             List<Long> ids = (List<Long>) getBillFacade().findLightsByJpql(jpql1, params, TemporalType.TIMESTAMP);
-            System.out.println("DEBUG STEP 1: SUCCESS! Found " + ids.size() + " records");
 
             if (ids.isEmpty()) {
-                System.out.println("DEBUG: No records found with current filters");
                 cashierPreBillSearchDtos = new ArrayList<>();
                 return;
             }
 
         } catch (Exception e) {
-            System.out.println("DEBUG STEP 1: FAILED!");
             e.printStackTrace();
             cashierPreBillSearchDtos = new ArrayList<>();
             return;
@@ -3613,10 +3612,8 @@ public class SearchController implements Serializable {
 
             cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()
                     .findLightsByJpql(jpql2, params, TemporalType.TIMESTAMP);
-            System.out.println("DEBUG STEP 2: SUCCESS! Retrieved " + cashierPreBillSearchDtos.size() + " DTOs");
 
         } catch (Exception e) {
-            System.out.println("DEBUG STEP 2: FAILED!");
             e.printStackTrace();
             cashierPreBillSearchDtos = new ArrayList<>();
             return;
@@ -3624,7 +3621,6 @@ public class SearchController implements Serializable {
 
         // STEP 3: Try adding patient name with LEFT JOIN
         try {
-            System.out.println("DEBUG STEP 3: Adding patient name (with LEFT JOIN)");
             String jpql3 = "SELECT new com.divudi.core.data.dto.PharmacyCashierPreBillSearchDTO(" +
                           "b.id, b.deptId, b.department.name, b.createdAt, " +
                           "b.refunded, b.cancelled, " +
@@ -3643,17 +3639,14 @@ public class SearchController implements Serializable {
 
             cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()
                     .findLightsByJpql(jpql3, params, TemporalType.TIMESTAMP);
-            System.out.println("DEBUG STEP 3: SUCCESS! Retrieved " + cashierPreBillSearchDtos.size() + " DTOs with patient names");
 
         } catch (Exception e) {
-            System.out.println("DEBUG STEP 3: FAILED! Keeping STEP 2 data");
             e.printStackTrace();
             return;
         }
 
         // STEP 4: Try using full DTO constructor with all needed fields (except reference bill fields)
         try {
-            System.out.println("DEBUG STEP 4: Using full DTO constructor with all UI-needed fields");
             String jpql4 = "SELECT new com.divudi.core.data.dto.PharmacyCashierPreBillSearchDTO(" +
                           "b.id, " +                                              // 1
                           "b.deptId, " +                                          // 2
@@ -3710,27 +3703,103 @@ public class SearchController implements Serializable {
                           "AND b.institution.id = :insId " +
                           "AND b.createdAt BETWEEN :fromDate AND :toDate " +
                           "AND (b.retired = false OR b.retired IS NULL) " +
-                          "AND b.department.id = :deptid " +
-                          "ORDER BY b.createdAt DESC";
+                          "AND b.department.id = :deptid ";
+
+            jpql4 = checkSearchKeywordForSearch(jpql4, params);
+            
+            jpql4 += " ORDER BY b.createdAt DESC";
 
             cashierPreBillSearchDtos = (List<PharmacyCashierPreBillSearchDTO>) getBillFacade()
                     .findLightsByJpql(jpql4, params, TemporalType.TIMESTAMP);
-            System.out.println("DEBUG STEP 4: SUCCESS! Retrieved " + cashierPreBillSearchDtos.size() + " DTOs with ALL fields");
-            System.out.println("DEBUG: Query optimization complete - using single query with LEFT JOINs");
 
         } catch (Exception e) {
-            System.out.println("DEBUG STEP 4: FAILED! Keeping STEP 3 data (limited fields)");
             e.printStackTrace();
             // Keep the data from step 3
             return;
         }
 
-        System.out.println("DEBUG: All steps completed successfully!");
+    }
+    
+    public void clearSearchKeywords(){
+        searchKeyword = null;
     }
 
     // DELETED: populateReferenceBillFields() method - no longer needed
     // All data now fetched in single optimized query using LEFT JOINs
     // This eliminates N+1 query problem (was causing 1000+ queries for 100 records)
+    
+    private String checkSearchKeywordForSearch(String jpql4, Map<String, Object> params){
+        
+        if(searchKeyword == null){
+            return jpql4;
+        }
+    
+        if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().isEmpty()) {
+            jpql4 += " AND (b.deptId like :billNo or paymentBill.deptId like :billNo) ";
+            params.put("billNo", "%" + searchKeyword.getBillNo() + "%");
+        }
+
+        if (searchKeyword.getPatientName() != null && !searchKeyword.getPatientName().isEmpty()) {
+            jpql4 += " AND LOWER(patientPerson.name) like :name ";
+            params.put("name", "%" + searchKeyword.getPatientName().toLowerCase() + "%");
+        }
+
+        if (searchKeyword.getPatientPhone() != null && !searchKeyword.getPatientPhone().isEmpty()) {
+
+            try {
+                String phoneNo = searchKeyword.getPatientPhone();
+
+                Long phoneNoLong = Long.valueOf(phoneNo);
+
+                jpql4 += " AND (p.patientPhoneNumber = :mobile or p.patientMobileNumber = :mobile) ";
+                params.put("mobile", phoneNoLong);
+
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Phone number search key word is not valid");
+            }
+
+        }
+
+        if (searchKeyword.getDepartment() != null && !searchKeyword.getDepartment().isEmpty()) {
+            jpql4 += " AND LOWER(b.department.name) like :deptName ";
+            params.put("deptName", "%" + searchKeyword.getDepartment().toLowerCase() + "%");
+        }
+
+        if (searchKeyword.getTotal() != null && !searchKeyword.getTotal().isEmpty()) {
+
+            String total = searchKeyword.getTotal();
+
+            try {
+                double totalAsDouble = Double.valueOf(total);
+
+                jpql4 += " AND b.total = :total ";
+                params.put("total", totalAsDouble);
+
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Total Search Keyword is invalid");
+            }
+
+        }
+
+        if (searchKeyword.getNetTotal() != null && !searchKeyword.getNetTotal().isEmpty()) {
+
+            String netTotal = searchKeyword.getNetTotal();
+
+            try {
+                double netTotalAsDouble = Double.valueOf(netTotal);
+
+                jpql4 += " AND b.netTotal = :netTotal ";
+                params.put("netTotal", netTotalAsDouble);
+
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Net Total Search Keyword is invalid");
+            }
+
+        }
+
+        return jpql4;
+        
+    }
 
     public void listPharmacyIssue() {
         Map<String, Object> m = new HashMap<>();

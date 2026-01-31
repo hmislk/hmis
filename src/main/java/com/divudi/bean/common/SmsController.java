@@ -226,7 +226,7 @@ public class SmsController implements Serializable {
 
         String jpql
                 = "select new com.divudi.core.data.dto.SmsDTO("
-                + " COALESCE(s.id, '') "
+                + " COALESCE(s.id, ''), "
                 + " s.createdAt, "
                 + " s.sentAt, "
                 + " s.smsType, "
