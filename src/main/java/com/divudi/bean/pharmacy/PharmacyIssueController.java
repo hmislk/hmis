@@ -1042,6 +1042,18 @@ public class PharmacyIssueController implements Serializable {
             return 0.0;
         }
 
+        if (getStock() == null) {
+            errorMessage = "Select an item. If the item is not listed, there is no stocks from that item. Check the department you are logged and the stock.";
+            JsfUtil.addErrorMessage("Please Enter Item");
+            return 0.0;
+        }
+
+        if (getStock().getItemBatch() == null || getStock().getItemBatch().getItem() == null) {
+            errorMessage = "Invalid stock data. Item batch or item is missing.";
+            JsfUtil.addErrorMessage("Invalid stock data");
+            return 0.0;
+        }
+
         // Auto-set department type if not already set
         if (getPreBill().getDepartmentType() == null) {
             Item selectedItem = getStock().getItemBatch().getItem();
@@ -1071,12 +1083,6 @@ public class PharmacyIssueController implements Serializable {
                 JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + getPreBill().getDepartmentType().getLabel());
                 return 0.0;
             }
-        }
-
-        if (getStock() == null) {
-            errorMessage = "Select an item. If the item is not listed, there is no stocks from that item. Check the department you are logged and the stock.";
-            JsfUtil.addErrorMessage("Please Enter Item");
-            return 0.0;
         }
         if (getQty() == null) {
             errorMessage = "Please enter a quentity";
@@ -1155,6 +1161,18 @@ public class PharmacyIssueController implements Serializable {
             return;
         }
 
+        if (getStock() == null) {
+            errorMessage = "Select an item. If the item is not listed, there is no stocks from that item. Check the department you are logged and the stock.";
+            JsfUtil.addErrorMessage("Please Enter Item");
+            return;
+        }
+
+        if (getStock().getItemBatch() == null || getStock().getItemBatch().getItem() == null) {
+            errorMessage = "Invalid stock data. Item batch or item is missing.";
+            JsfUtil.addErrorMessage("Invalid stock data");
+            return;
+        }
+
         // Auto-set department type if not already set
         if (getPreBill().getDepartmentType() == null) {
             Item selectedItem = getStock().getItemBatch().getItem();
@@ -1186,11 +1204,6 @@ public class PharmacyIssueController implements Serializable {
             }
         }
 
-        if (getStock() == null) {
-            errorMessage = "Select an item. If the item is not listed, there is no stocks from that item. Check the department you are logged and the stock.";
-            JsfUtil.addErrorMessage("Please Enter Item");
-            return;
-        }
         if (getQty() == null) {
             errorMessage = "Please enter a quentity";
             JsfUtil.addErrorMessage("Please enter a quentity");
