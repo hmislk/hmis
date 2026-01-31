@@ -2442,16 +2442,18 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         if (getStockDto() != null && getStockDto().getItemId() != null) {
             Item selectedItem = itemFacade.find(getStockDto().getItemId());
 
-            // Null-check for selected item
+            // Null-check for selected item (prevents NPE if item not found in database)
             if (selectedItem == null) {
                 JsfUtil.addErrorMessage("Selected item not found. Please try again.");
                 return;
             }
 
-            // Get item's department type (null defaults to Pharmacy)
+            // Get item's department type
+            // Note: Item.getDepartmentType() getter already handles null by returning DepartmentType.Pharmacy
+            // So itemDepartmentType will never be null here - it's either the actual type or Pharmacy default
             DepartmentType itemDepartmentType = selectedItem.getDepartmentType();
             if (itemDepartmentType == null) {
-                itemDepartmentType = DepartmentType.Pharmacy;
+                itemDepartmentType = DepartmentType.Pharmacy; // Defensive fallback (should never execute)
             }
 
             // Get allowed department types
