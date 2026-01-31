@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
@@ -484,6 +485,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
     ConfigOptionController configOptionController;
     @Inject
     private PharmacyController pharmacyController;
+    @Inject
+    private ItemController itemController;
     /**
      * Properties
      */
@@ -1089,6 +1092,19 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         calculateBillTotalsFromItems();
         currentBillItem = null;
+    }
+
+    /**
+     * Autocomplete method for items filtered by department type
+     * When department type is set on the bill, only items of that type are returned
+     * Otherwise, items from all allowed department types are returned
+     */
+    public List<Item> completeItemsFilteredByDepartmentType(String query) {
+        DepartmentType filterType = null;
+        if (getBill() != null && getBill().getDepartmentType() != null) {
+            filterType = getBill().getDepartmentType();
+        }
+        return itemController.completeAmpAndAmppItemForLoggedDepartment(query, filterType);
     }
 
     public Payment createPayment(Bill bill) {

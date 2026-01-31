@@ -88,7 +88,7 @@
                                             id="acItem"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.item}"
                                             forceSelection="true"
-                                            completeMethod="#{itemController.completeAmpAndAmppItemForLoggedDepartment}"
+                                            completeMethod="#{pharmacyDirectPurchaseController.completeItemsFilteredByDepartmentType}"
                                             var="vt"
                                             maxResults="20"
                                             itemLabel="#{vt.name}"
