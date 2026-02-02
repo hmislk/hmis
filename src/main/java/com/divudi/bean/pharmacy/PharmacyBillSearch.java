@@ -3244,6 +3244,8 @@ public class PharmacyBillSearch implements Serializable {
 
 //            pharmacyCancelBillItemsReduceStock(cb); //for create billfees ,billfee payments
             pharmacyCancelBillItemsReduceStock(cb, p);
+            calculateCancelledDirectPurchaseFinancials(cb, getBill());
+            getBillFacade().edit(cb);
 //
 //            List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findByJpql("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
 //
