@@ -96,7 +96,7 @@ Available department types for use in API calls:
 **Parameters**:
 - `query` (required): Institution name or code search term
 - `type` (optional): InstitutionType enum value (e.g., Hospital, Pharmacy, Lab)
-- `limit` (optional): Result limit (default: 30, max: 100)
+- `limit` (optional): Result limit (default: 20, max: 100)
 
 **Example Request**:
 ```bash
@@ -146,7 +146,7 @@ GET /api/institutions/search?query=Central%20Hospital&type=Hospital&limit=10
 - `query` (required): Department name or code search term
 - `type` (optional): DepartmentType enum value (e.g., Pharmacy, Lab, Opd)
 - `institutionId` (optional): Filter by institution ID
-- `limit` (optional): Result limit (default: 30, max: 100)
+- `limit` (optional): Result limit (default: 20, max: 100)
 
 **Example Request**:
 ```bash
@@ -187,7 +187,7 @@ GET /api/departments/search?query=Pharmacy&type=Pharmacy&institutionId=1&limit=2
 
 **Parameters**:
 - `query` (required): Site name or code search term
-- `limit` (optional): Result limit (default: 30, max: 100)
+- `limit` (optional): Result limit (default: 20, max: 100)
 
 **Example Request**:
 ```bash

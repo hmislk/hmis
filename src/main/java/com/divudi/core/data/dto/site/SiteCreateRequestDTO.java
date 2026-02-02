@@ -120,11 +120,11 @@ public class SiteCreateRequestDTO implements Serializable {
         return "SiteCreateRequestDTO{" +
                 "name='" + name + '\'' +
                 ", code='" + code + '\'' +
-                ", address='" + address + '\'' +
-                ", phone='" + phone + '\'' +
-                ", mobile='" + mobile + '\'' +
-                ", email='" + email + '\'' +
-                ", fax='" + fax + '\'' +
+                ", address='<REDACTED>'" +
+                ", phone='<REDACTED>'" +
+                ", mobile='<REDACTED>'" +
+                ", email='<REDACTED>'" +
+                ", fax='<REDACTED>'" +
                 ", parentInstitutionId=" + parentInstitutionId +
                 '}';
     }

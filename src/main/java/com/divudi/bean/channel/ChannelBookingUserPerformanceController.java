@@ -170,6 +170,8 @@ public class ChannelBookingUserPerformanceController implements Serializable {
             userPerformanceList.sort((a, b) -> {
                 String nameA = a.getUserPersonName() != null ? a.getUserPersonName() : a.getUserName();
                 String nameB = b.getUserPersonName() != null ? b.getUserPersonName() : b.getUserName();
+                nameA = nameA != null ? nameA : "";
+                nameB = nameB != null ? nameB : "";
                 return nameA.compareToIgnoreCase(nameB);
             });
 

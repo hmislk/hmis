@@ -402,6 +402,12 @@ public class DepartmentApi {
             // Set department ID from path parameter
             request.setDepartmentId(id);
 
+            // Validate required fields
+            if (request.getConfigKey() == null || request.getConfigKey().trim().isEmpty() ||
+                request.getConfigValue() == null) {
+                return errorResponse("configKey and configValue are required", 400);
+            }
+
             // Update department config option
             DepartmentConfigDTO response = configOptionService.updateDepartmentConfig(request, user);
             return successResponse(response);
