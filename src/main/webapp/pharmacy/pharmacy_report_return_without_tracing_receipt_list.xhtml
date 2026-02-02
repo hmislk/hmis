@@ -95,7 +95,7 @@
                             <p:selectOneMenu id="cmbDept" styleClass="w-100 form-control"
                                              value="#{pharmacyReturnWithoutTrasingReportController.department}" filter="true">
                                 <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
-                                <f:selectItems value="#{departmentController.userDepartments}" var="dep"
+                                <f:selectItems value="#{departmentController.departmentList}" var="dep"
                                               itemLabel="#{dep.name}" itemValue="#{dep}" />
                             </p:selectOneMenu>
 

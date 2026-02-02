@@ -23,10 +23,10 @@
 
                 <h:panelGroup rendered="#{(webUserController.hasPrivilege('LabAutherizing') eq true or webUserController.hasPrivilege('LabDataentry') eq true or webUserController.hasPrivilege('LabPrinting') eq true)}" >
                     <h:form id="form">
-                        
+
                         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
                         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
-                        
+
                         <p:panel>
                             <f:facet name="header">
                                 <h:outputText value="Report View" />
@@ -39,13 +39,25 @@
                                     ajax="false">
                                 </p:commandButton>
 
+                                <p:remoteCommand 
+                                    name="recordExportHistory"
+                                    actionListener="#{patientReportController.reportExport()}"
+                                    async="true" >
+                                </p:remoteCommand>
+
+                                <p:remoteCommand 
+                                    name="recordPrintHistory"
+                                    actionListener="#{patientReportController.printPatientReport()}"
+                                    async="true" >
+                                </p:remoteCommand>
+
                                 <p:commandButton
                                     class="ui-button-info mx-1 "
                                     icon="fas fa-print"
                                     ajax="false"
                                     style="float: right;"
-                                    value="Print"
-                                    actionListener="#{patientReportController.printPatientReport()}">
+                                    onclick="recordPrintHistory();"
+                                    value="Print">
                                     <p:printer target="divPrint" />
                                 </p:commandButton>
 
@@ -59,8 +71,48 @@
                                     style="float: right;"
                                     ajax="false">
                                 </p:commandButton>
-
                             </f:facet>
+
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Need to record the history of issuing lab reports.',true) and patientReportController.currentPatientReport.approved}">
+                                <div class="row mb-4">
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <h:panelGroup rendered="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patientEncounter ne null}" class="d-flex gap-2">
+                                            <p:autoComplete 
+                                                completeMethod="#{staffController.completeStaff}"
+                                                value="#{laboratoryManagementController.reportHandoverStaff}" 
+                                                var="mys"
+                                                style="width: 400px;"
+                                                maxResults="15"
+                                                placeholder="Please Add a Staff"
+                                                inputStyleClass="form-control"
+                                                itemLabel="#{mys.person.nameWithTitle}" 
+                                                panelStyleClass="custom-dropdown-panel"
+                                                itemValue="#{mys}">
+                                                <p:column headerText="Code" style="padding: 4px; width: 20px;">#{mys.code}</p:column>
+                                                <p:column headerText="Name" style="padding: 4px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
+                                            </p:autoComplete>
+
+                                            <p:commandButton 
+                                                ajax="false"
+                                                value="Handover to Ward Staff" 
+                                                icon="fa-solid fa-people-carry-box"
+                                                style="float: right"
+                                                class="ui-button-stores" 
+                                                action="#{laboratoryManagementController.addIssueHistory()}">
+                                            </p:commandButton>
+                                        </h:panelGroup>
+                                        <p:commandButton 
+                                            ajax="false"
+                                            value="Handover to Patient" 
+                                            icon="fa-solid fa-people-carry-box"
+                                            rendered="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patientEncounter eq null}"
+                                            style="float: right"
+                                            class="ui-button-stores" 
+                                            action="#{laboratoryManagementController.addIssueHistory()}">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
 
                             <div class="d-flex justify-content-end">
                                 <h:outputLabel value="Show Background" class="mx-1 my-1" style="font-weight: bold; font-size: 20px;"></h:outputLabel>
@@ -81,12 +133,12 @@
                                         }
                                         /* Repeat for other elements as needed */
                                     }
-
                                 </style>
 
                                 <script>
                                     function downloadPdf() {
                                         console.log("Downloading PDF...");
+                                        recordExportHistory();
                                         const element = document.getElementById('pdf');
                                         element.classList.remove('print-only');
 
@@ -110,7 +162,6 @@
                                     }
                                 </script>
 
-
                                 <div class="d-flex justify-content-center">
                                     <h:panelGroup  id="divPrint" >
 
@@ -130,13 +181,10 @@
                                     </h:panelGroup>
                                 </div>
 
-
                             </div>
 
                         </p:panel>
-
                     </h:form>
-
                 </h:panelGroup>
             </ui:define>
         </ui:composition>

@@ -172,7 +172,7 @@
                         <f:selectItem itemValue="Approved" itemLabel="Approved"/>
                     </p:selectOneMenu>
                 </h:panelGrid>
-                
+
                 <h:panelGrid columns="1" class="w-100">
                     <h:outputLabel class="w-100" value="Priority"/>
                     <h:panelGroup id="gppriority">
@@ -187,7 +187,7 @@
                         </p:selectOneMenu>
                     </h:panelGroup>
                 </h:panelGrid>
-                
+
                 <h:panelGrid columns="1" class="w-100">
                     <h:outputLabel class="w-100" value=""/>
                     <p:commandButton 
@@ -212,11 +212,11 @@
                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                 rowsPerPageTemplate="15,50,100"
                 style="table-layout: fixed; width: 100%;">
-                
+
                 <p:column headerText="#" style="width: 2em; vertical-align: top;">
                     <h:outputLabel value="#{i+1}"/>
                 </p:column>
-                
+
                 <!-- Bill Number Column with Icon and Colour -->
                 <p:column headerText="Bill Number" style="width: 13em; vertical-align: top;">
                     <p:commandLink 
@@ -328,7 +328,7 @@
                 </p:column>
 
                 <!-- Actions Column -->
-                <p:column headerText="Actions" style="width: 420px; vertical-align: top;">
+                <p:column headerText="Actions" style="width: 500px; vertical-align: top;">
                     <h:panelGroup rendered="#{pi.billCanceled}" class=" d-flex justify-content-center">
                         <p:badge 
                             value="Bill Cancel" 
@@ -394,37 +394,70 @@
                                             class="mt-2"
                                             rendered="#{!dpr.approved}">
                                         </p:badge>
-
                                     </div>
-                                    
-                                    <p:dialog id="dlg" modal="true" widgetVar="dlg" header="Report Remove Comment" width="700" height="50">
-                                        <div class="d-flex gap-2">
-                                            <p:inputText value="#{laboratoryManagementController.comment}"  class="w-100"></p:inputText>
-                                            <p:commandButton 
-                                                id="btnSave" 
-                                                value="Remove" 
-                                                ajax="false"
-                                                icon="fas fa-trash"
-                                                class="ui-button-danger"
-                                                rendered="#{webUserController.hasPrivilege('LabDeAutherizing')}"
-                                                onclick="if (!confirm('Are You Sure You Want to Delete this Patient Report?'))
+
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{!dpr.printComplete}"
+                                            title="Not Print"
+                                            name="print_pending.png" 
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{dpr.printComplete}"
+                                            name="print_done.png"
+                                            title="Report Printed"
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{!dpr.handoverComplete}"
+                                            title="Not Issue"
+                                            name="handover_pending.png" 
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+
+                                        <p:graphicImage 
+                                            library="image" 
+                                            rendered="#{dpr.handoverComplete}"
+                                            name="handover_done.png" 
+                                            title="Report Issued."
+                                            style="height: 50px; width: 50px;" >
+                                        </p:graphicImage>
+
+                                        <p:dialog id="dlg" modal="true" widgetVar="dlg" header="Report Remove Comment" width="700" height="50">
+                                            <div class="d-flex gap-2">
+                                                <p:inputText value="#{laboratoryManagementController.comment}"  class="w-100"></p:inputText>
+                                                <p:commandButton 
+                                                    id="btnSave" 
+                                                    value="Remove" 
+                                                    ajax="false"
+                                                    icon="fas fa-trash"
+                                                    class="ui-button-danger"
+                                                    rendered="#{webUserController.hasPrivilege('LabDeAutherizing')}"
+                                                    onclick="if (!confirm('Are You Sure You Want to Delete this Patient Report?'))
                                                             return false;"
-                                                action="#{laboratoryManagementController.removePatientReport(dpr.id)}" 
-                                                oncomplete="PF('dlg').hide();" >
-                                            </p:commandButton>
-                                        </div>
-                                    </p:dialog>
-                                    <p:commandButton 
-                                        title="To Remove Report" 
-                                        id="btnRemove" 
-                                        disabled="#{dpr.approved}"
-                                        rendered="#{webUserController.hasPrivilege('LabDeAutherizing')}"  
-                                        process="@this" 
-                                        class="ui-button-danger mb-2"
-                                        update="dlg" 
-                                        icon="fa fa-trash"
-                                        oncomplete="PF('dlg').show()" >
-                                    </p:commandButton>
+                                                    action="#{laboratoryManagementController.removePatientReport(dpr.id)}" 
+                                                    oncomplete="PF('dlg').hide();" >
+                                                </p:commandButton>
+                                            </div>
+                                        </p:dialog>
+                                        <p:commandButton 
+                                            title="To Remove Report" 
+                                            id="btnRemove" 
+                                            disabled="#{dpr.approved}"
+                                            rendered="#{webUserController.hasPrivilege('LabDeAutherizing')}"  
+                                            process="@this" 
+                                            class="ui-button-danger mb-2"
+                                            update="dlg" 
+                                            icon="fa fa-trash"
+                                            oncomplete="PF('dlg').show()" >
+                                        </p:commandButton>
+                                    </div>
                                 </div>
                             </ui:repeat>
                         </h:panelGroup>
