@@ -3291,6 +3291,7 @@ public class PharmacyBillSearch implements Serializable {
 //            }
 
             getBill().setCancelled(true);
+            getBill().setCompleted(true);
             getBill().setCancelledBill(cb);
             pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
             getBillFacade().edit(getBill());
