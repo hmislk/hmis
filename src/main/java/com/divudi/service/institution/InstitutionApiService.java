@@ -109,7 +109,7 @@ public class InstitutionApiService implements Serializable {
         if (request.getCode() != null && !request.getCode().trim().isEmpty()) {
             institution.setCode(request.getCode());
         } else {
-            institution.setCode(CommonFunctions.generateCode(request.getName()));
+            institution.setCode(CommonFunctions.nameToCode(request.getName()));
         }
 
         institution.setInstitutionType(request.getInstitutionType());

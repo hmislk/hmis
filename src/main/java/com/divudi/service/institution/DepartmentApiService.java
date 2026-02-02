@@ -123,7 +123,7 @@ public class DepartmentApiService implements Serializable {
         if (request.getCode() != null && !request.getCode().trim().isEmpty()) {
             department.setCode(request.getCode());
         } else {
-            department.setCode(CommonFunctions.generateCode(request.getName()));
+            department.setCode(CommonFunctions.nameToCode(request.getName()));
         }
 
         department.setDepartmentType(request.getDepartmentType());

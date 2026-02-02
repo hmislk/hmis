@@ -110,7 +110,7 @@ public class SiteApiService implements Serializable {
         if (request.getCode() != null && !request.getCode().trim().isEmpty()) {
             site.setCode(request.getCode());
         } else {
-            site.setCode(CommonFunctions.generateCode(request.getName()));
+            site.setCode(CommonFunctions.nameToCode(request.getName()));
         }
 
         // Set institution type to Site
