@@ -104,6 +104,7 @@
                                         </p:commandButton>
 
                                         <p:commandButton
+                                            id="btnSettleBillForCashier"
                                             accesskey="c"
                                             ajax="false"
                                             value="Settle Bill At Cashier"
@@ -145,7 +146,7 @@
                                                             accesskey="i"
                                                             id="acStock"
                                                             value="#{pharmacySaleForCashierController.stockDto}"
-                                                            completeMethod="#{pharmacySaleForCashierController.completeAvailableStockOptimizedDto}"
+                                                            completeMethod="#{pharmacySaleForCashierController.completeAvailableStockOptimizedDtoFilteredByDepartmentType}"
                                                             converter="#{pharmacySaleForCashierController.stockDtoConverter}"
                                                             var="i"
                                                             class="w-100"
@@ -200,14 +201,14 @@
                                                     <div class="col-md-2">
                                                         <br/>
                                                         <p:commandButton
-                                                            accesskey="a" 
-                                                            id="btnAdd" 
+                                                            accesskey="a"
+                                                            id="btnAdd"
                                                             value="Add"
                                                             icon="fa fa-plus"
                                                             class="w-100 ui-button-success"
                                                             action="#{pharmacySaleForCashierController.addBillItem()}"
-                                                            process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmdDiscountScheme',view).clientId}"
-                                                            update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('txtVal',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId}" >
+                                                            process="@this acStock txtQty selDepartmentType :#{p:resolveFirstComponentWithId('cmdDiscountScheme',view).clientId}"
+                                                            update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('txtVal',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem selDepartmentType :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId}" >
                                                         </p:commandButton>
                                                     </div>
                                                 </div>
@@ -428,7 +429,12 @@
                                             <p:column 
                                                 width="2em"
                                                 styleClass="text-end">
-                                                <p:commandButton icon="fas fa-trash" action="#{pharmacySaleForCashierController.removeBillItem(bi)}" class="ui-button-danger" ajax="false" >
+                                                <p:commandButton 
+                                                    id="btnRemoveSingleBillItem"
+                                                    icon="fas fa-trash" 
+                                                    action="#{pharmacySaleForCashierController.removeBillItem(bi)}" 
+                                                    class="ui-button-danger" 
+                                                    ajax="false" >
 
                                                 </p:commandButton>
                                             </p:column>
@@ -495,6 +501,24 @@
                                                             update="pBillDetails welfareStaff"
                                                             event="change"
                                                             listener="#{pharmacySaleForCashierController.changeListener()}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <div class="col-6">
+                                                <p:outputLabel
+                                                    value="Department Type"
+                                                    class="form-label m-1"
+                                                    for="selDepartmentType"/>
+                                                <p:selectOneMenu
+                                                    id="selDepartmentType"
+                                                    value="#{pharmacySaleForCashierController.preBill.departmentType}"
+                                                    class="w-100 m-1"
+                                                    disabled="#{not empty pharmacySaleForCashierController.preBill.billItems and pharmacySaleForCashierController.preBill.billItems.size() gt 0}">
+                                                    <f:selectItem itemLabel="Select Department Type" itemValue="#{null}"/>
+                                                    <f:selectItems value="#{sessionController.availableDepartmentTypesForPharmacyTransactions}"
+                                                                   var="dt"
+                                                                   itemLabel="#{dt.label}"
+                                                                   itemValue="#{dt}"/>
+                                                    <p:ajax process="@this" update="acStock" event="change"/>
                                                 </p:selectOneMenu>
                                             </div>
                                         </div>
