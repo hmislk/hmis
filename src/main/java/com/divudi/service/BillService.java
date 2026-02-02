@@ -81,6 +81,7 @@ import com.divudi.core.light.common.BillLight;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import javax.annotation.security.PermitAll;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
@@ -1871,6 +1872,7 @@ public class BillService {
         return (List<OpdIncomeReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
+    @PermitAll
     public List<HospitalDoctorFeeReportDTO> fetchHospitalDoctorFeeReportDTOs(Date fromDate,
             Date toDate,
             Institution institution,
