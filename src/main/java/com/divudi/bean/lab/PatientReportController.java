@@ -204,6 +204,7 @@ public class PatientReportController implements Serializable {
             return "/lab/patient_report?faces-redirect=true";
         } else {
             switch (patientReport.getReportType()) {
+                case INTERFACE:
                 case GENARATE:
                     setCurrentPatientReport(patientReport);
                     fillReportFormats(patientReport);
