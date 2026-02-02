@@ -303,9 +303,18 @@ public class DepartmentApiService implements Serializable {
         if (request.getSuperDepartmentId() != null) {
             Department superDepartment = loadAndValidateDepartment(request.getSuperDepartmentId());
 
-            // Prevent circular reference
+            // Prevent circular reference (direct and transitive)
             if (superDepartment.getId().equals(department.getId())) {
                 throw new Exception("Department cannot be its own super department");
+            }
+
+            // Walk the ancestor chain to detect circular hierarchy
+            Department ancestor = superDepartment.getSuperDepartment();
+            while (ancestor != null) {
+                if (ancestor.getId().equals(department.getId())) {
+                    throw new Exception("Circular department hierarchy detected");
+                }
+                ancestor = ancestor.getSuperDepartment();
             }
 
             department.setSuperDepartment(superDepartment);
