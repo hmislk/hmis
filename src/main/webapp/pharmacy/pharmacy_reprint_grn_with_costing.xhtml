@@ -46,14 +46,14 @@
                                         ajax="false">
                                         <p:fileDownload value="#{pharmacyBillSearch.exportAsJson()}"/>
                                     </p:commandButton>
-                                    <p:commandButton 
+                                    <p:commandButton
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN Cancellations are allowed',true)}"
-                                        ajax="false" 
-                                        value="To Cancel" 
+                                        ajax="false"
+                                        value="To Cancel"
                                         class="ui-button-danger"
                                         icon="fa fa-times-circle"
-                                        action="pharmacy_cancel_grn?faces-redirect=true" 
-                                        disabled="#{pharmacyBillSearch.bill.cancelled}">
+                                        action="pharmacy_cancel_grn?faces-redirect=true"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.hasGrnReturnsOrPendingReturns()}">
                                     </p:commandButton>
                                     <p:commandButton
                                         rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"

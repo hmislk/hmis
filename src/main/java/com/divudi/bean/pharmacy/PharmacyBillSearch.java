@@ -1555,6 +1555,39 @@ public class PharmacyBillSearch implements Serializable {
         return false;
     }
 
+    /**
+     * Public method to check if the current bill has any GRN returns (completed or pending)
+     * Used in XHTML to disable cancel button when return process exists
+     * @return true if GRN has any returns or pending return processes
+     */
+    public boolean hasGrnReturnsOrPendingReturns() {
+        if (getBill() == null || getBill().getBillType() != BillType.PharmacyGrnBill) {
+            return false;
+        }
+
+        // Check for completed GRN returns
+        if (checkGrnReturn()) {
+            return true;
+        }
+
+        // Check for pending/unapproved GRN returns
+        String jpql = "SELECT COUNT(b) FROM RefundBill b "
+                + "WHERE b.billType = :bt "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.referenceBill = :refBill "
+                + "AND b.cancelled = false "
+                + "AND b.retired = false "
+                + "AND (b.checked IS NULL OR b.checked = false OR b.completed IS NULL OR b.completed = false)";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.PharmacyGrnReturn);
+        params.put("bta", BillTypeAtomic.PHARMACY_GRN_RETURN);
+        params.put("refBill", getBill());
+
+        Long count = getBillFacade().findLongByJpql(jpql, params);
+        return count != null && count > 0;
+    }
+
     private boolean checkSaleReturn(Bill b) {
         String sql = "Select b From RefundBill b where b.retired=false "
                 + " and b.creater is not null"
