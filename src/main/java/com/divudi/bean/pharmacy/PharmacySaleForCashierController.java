@@ -1841,6 +1841,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     /**
      * Autocomplete method for stocks filtered by department type
+     * Note: Department type is now included in the StockDTO via JPQL, eliminating the N+1 query problem
      */
     public List<StockDTO> completeAvailableStockOptimizedDtoFilteredByDepartmentType(String qry) {
         List<StockDTO> allResults = completeAvailableStockOptimizedDto(qry);
@@ -1852,14 +1853,12 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
         DepartmentType filterType = getPreBill().getDepartmentType();
 
-        // Filter results by department type
+        // Filter results by department type using DTO field (no database queries needed)
+        // Item.getDepartmentType() getter handles null by returning DepartmentType.Pharmacy
         List<StockDTO> filteredResults = new ArrayList<>();
         for (StockDTO dto : allResults) {
-            if (dto.getItemId() != null) {
-                Item item = itemFacade.find(dto.getItemId());
-                if (item != null && filterType.equals(item.getDepartmentType())) {
-                    filteredResults.add(dto);
-                }
+            if (dto.getDepartmentType() != null && filterType.equals(dto.getDepartmentType())) {
+                filteredResults.add(dto);
             }
         }
 
@@ -1966,7 +1965,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
                     .append("s.id, s.itemBatch.id, s.itemBatch.item.id, s.itemBatch.item.name, s.itemBatch.item.code, ")
                     .append("COALESCE(s.itemBatch.item.vmp.name, ''), s.itemBatch.batchNo, ")
-                    .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire, s.itemBatch.item.discountAllowed) ")
+                    .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire, s.itemBatch.item.discountAllowed, ")
+                    .append("s.itemBatch.item.departmentType) ")
                     .append("FROM Stock s ")
                     .append("WHERE s.stock > :stockMin ")
                     .append("AND s.department = :department ")
@@ -2064,7 +2064,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             StringBuilder sql = new StringBuilder("SELECT NEW com.divudi.core.data.dto.StockDTO(")
                     .append("s.id, s.itemBatch.id, s.itemBatch.item.id, s.itemBatch.item.name, s.itemBatch.item.code, ")
                     .append("COALESCE(s.itemBatch.item.vmp.name, ''), s.itemBatch.batchNo, ")
-                    .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire, s.itemBatch.item.discountAllowed) ")
+                    .append("s.itemBatch.retailsaleRate, s.stock, s.itemBatch.dateOfExpire, s.itemBatch.item.discountAllowed, ")
+                    .append("s.itemBatch.item.departmentType) ")
                     .append("FROM Stock s ")
                     .append("WHERE s.stock > :stockMin ")
                     .append("AND s.department = :department ");
@@ -2442,33 +2443,43 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         if (getStockDto() != null && getStockDto().getItemId() != null) {
             Item selectedItem = itemFacade.find(getStockDto().getItemId());
 
-            // Auto-set department type if not already set (first item)
-            if (getPreBill().getDepartmentType() == null) {
-                if (selectedItem.getDepartmentType() != null) {
-                    getPreBill().setDepartmentType(selectedItem.getDepartmentType());
-                } else {
-                    getPreBill().setDepartmentType(DepartmentType.Pharmacy);
-                }
+            // Null-check for selected item (prevents NPE if item not found in database)
+            if (selectedItem == null) {
+                JsfUtil.addErrorMessage("Selected item not found. Please try again.");
+                return;
             }
 
-            // Validate item's department type matches PreBill's department type
-            if (getPreBill().getDepartmentType() != null) {
-                DepartmentType itemDepartmentType = selectedItem.getDepartmentType();
+            // Get item's department type
+            // Note: Item.getDepartmentType() getter already handles null by returning DepartmentType.Pharmacy
+            // So itemDepartmentType will never be null here - it's either the actual type or Pharmacy default
+            DepartmentType itemDepartmentType = selectedItem.getDepartmentType();
+            if (itemDepartmentType == null) {
+                itemDepartmentType = DepartmentType.Pharmacy; // Defensive fallback (should never execute)
+            }
 
-                if (itemDepartmentType != null && !itemDepartmentType.equals(getPreBill().getDepartmentType())) {
+            // Get allowed department types
+            List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+            if (allowedTypes == null || allowedTypes.isEmpty()) {
+                JsfUtil.addErrorMessage("No department types are configured for pharmacy transactions.");
+                return;
+            }
+
+            // Validate item's department type is allowed
+            if (!allowedTypes.contains(itemDepartmentType)) {
+                JsfUtil.addErrorMessage("Items of type " + itemDepartmentType.getLabel() + " are not allowed for pharmacy transactions.");
+                return;
+            }
+
+            // If PreBill already has a department type set, validate item matches it
+            if (getPreBill().getDepartmentType() != null) {
+                if (!itemDepartmentType.equals(getPreBill().getDepartmentType())) {
                     JsfUtil.addErrorMessage("Cannot add items from different department types. "
                             + "Bill is set for " + getPreBill().getDepartmentType().getLabel()
                             + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
                     return;
                 }
-
-                // Verify department type is allowed
-                List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
-                if (allowedTypes == null || !allowedTypes.contains(getPreBill().getDepartmentType())) {
-                    JsfUtil.addErrorMessage("Items are not allowed for the selected department type: " + getPreBill().getDepartmentType().getLabel());
-                    return;
-                }
             }
+            // Note: Department type will be set in addBillItemSingleItem() after item is successfully added
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Add quantity from multiple batches in pharmacy retail billing")) {
@@ -2684,6 +2695,13 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         System.out.println("SUCCESS: Adding item to bill - ID: " + getStockDto().getId() + ", Qty: " + qty);
         getPreBill().getBillItems().add(billItem);
         System.out.println("Total items in bill now: " + getPreBill().getBillItems().size());
+
+        // Set department type on PreBill if this is the first item (only after successful add)
+        if (getPreBill().getDepartmentType() == null && billItem.getItem() != null) {
+            DepartmentType itemDeptType = billItem.getItem().getDepartmentType();
+            getPreBill().setDepartmentType(itemDeptType);
+            System.out.println("Department type set to: " + (itemDeptType != null ? itemDeptType.getLabel() : "null"));
+        }
 
         // UserStock operations commented out for performance
         //if (getUserStockContainer().getId() == null) {
