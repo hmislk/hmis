@@ -15,6 +15,7 @@ import com.divudi.core.facade.DepartmentFacade;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.persistence.TemporalType;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +63,7 @@ public class ConfigOptionApiService implements Serializable {
 
         @SuppressWarnings("unchecked")
         List<DepartmentConfigDTO> results = (List<DepartmentConfigDTO>) configOptionFacade.findLightsByJpql(
-            jpql.toString(), params);
+            jpql.toString(), params, TemporalType.TIMESTAMP);
 
         return results;
     }

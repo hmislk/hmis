@@ -20,6 +20,7 @@ import com.divudi.core.util.CommonFunctions;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.persistence.TemporalType;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -79,7 +80,7 @@ public class DepartmentApiService implements Serializable {
 
         @SuppressWarnings("unchecked")
         List<DepartmentDTO> results = (List<DepartmentDTO>) departmentFacade.findLightsByJpql(
-            jpql.toString(), params, resultLimit);
+            jpql.toString(), params, TemporalType.TIMESTAMP, resultLimit);
 
         return results;
     }

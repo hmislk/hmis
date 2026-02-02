@@ -17,6 +17,7 @@ import com.divudi.core.util.CommonFunctions;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.persistence.TemporalType;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -53,7 +54,7 @@ public class SiteApiService implements Serializable {
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT new com.divudi.core.data.dto.search.SiteDTO(")
-            .append("i.id, i.name, i.code, i.address, i.phone, i.email) ")
+            .append("i.id, i.name, i.code, i.address) ")
             .append("FROM Institution i ")
             .append("WHERE i.retired = false ")
             .append("AND i.institutionType = :type ")
@@ -64,7 +65,7 @@ public class SiteApiService implements Serializable {
 
         @SuppressWarnings("unchecked")
         List<SiteDTO> results = (List<SiteDTO>) institutionFacade.findLightsByJpql(
-            jpql.toString(), params, resultLimit);
+            jpql.toString(), params, TemporalType.TIMESTAMP, resultLimit);
 
         return results;
     }
