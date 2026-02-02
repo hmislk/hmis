@@ -12,6 +12,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.Duration;
 import java.util.Properties;
+import javax.ejb.EJB;
+import com.divudi.service.ApplicationStartupTimeService;
 
 /**
  *
@@ -21,6 +23,9 @@ import java.util.Properties;
 @ApplicationScoped
 public class VersionController {
 
+    @EJB
+    private ApplicationStartupTimeService startupTimeService;
+
     private String systemVersion; // Stores the system version read from VERSION.txt
 
     // Build / Git metadata populated from git.properties (generated at build time)
@@ -28,12 +33,7 @@ public class VersionController {
     private String gitBranch;
     private String gitBuildTime;
 
-    // Application startup time
-    private final ZonedDateTime applicationStartupTime;
-
     public VersionController() {
-        // Capture the application startup time when this @ApplicationScoped bean is created
-        this.applicationStartupTime = ZonedDateTime.now();
         readFirstLine();
         loadGitInfo();
     }
@@ -180,11 +180,12 @@ public class VersionController {
      * @return Formatted timestamp of when the application started
      */
     public String getApplicationStartupTime() {
-        if (applicationStartupTime == null) {
+        if (startupTimeService == null || startupTimeService.getStartupTime() == null) {
             return null;
         }
+        ZonedDateTime startupTime = startupTimeService.getStartupTime();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z");
-        return applicationStartupTime.format(formatter);
+        return startupTime.format(formatter);
     }
 
     /**
@@ -192,13 +193,14 @@ public class VersionController {
      * @return A string like "2 minutes ago", "3 hours ago", "14 days ago", etc.
      */
     public String getApplicationStartupTimeElapsed() {
-        if (applicationStartupTime == null) {
+        if (startupTimeService == null || startupTimeService.getStartupTime() == null) {
             return null;
         }
 
         try {
-            ZonedDateTime now = ZonedDateTime.now(applicationStartupTime.getZone());
-            Duration duration = Duration.between(applicationStartupTime, now);
+            ZonedDateTime startupTime = startupTimeService.getStartupTime();
+            ZonedDateTime now = ZonedDateTime.now(startupTime.getZone());
+            Duration duration = Duration.between(startupTime, now);
             long totalMinutes = duration.toMinutes();
             long totalHours = duration.toHours();
             long totalDays = duration.toDays();
