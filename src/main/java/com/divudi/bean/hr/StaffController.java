@@ -1170,7 +1170,7 @@ public class StaffController implements Serializable {
     public void delete() {
         if (current != null) {
             if (current.getId() == null) {
-                JsfUtil.addSuccessMessage("Nothing To Delete");
+                JsfUtil.addErrorMessage("Nothing To Delete");
             } else {
 
                 current.setRetired(true);
@@ -1180,7 +1180,7 @@ public class StaffController implements Serializable {
                 JsfUtil.addSuccessMessage("Deleted Successfully");
             }
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

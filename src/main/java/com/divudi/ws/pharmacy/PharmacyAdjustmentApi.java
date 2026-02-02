@@ -166,6 +166,44 @@ public class PharmacyAdjustmentApi {
     }
 
     /**
+     * Adjust purchase rate for a single stock item
+     * Endpoint: POST /api/pharmacy_adjustments/purchase_rate
+     */
+    @POST
+    @Path("/purchase_rate")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response adjustPurchaseRate(String requestBody) {
+        try {
+            // Validate API key
+            String key = requestContext.getHeader("Finance");
+            WebUser user = validateApiKey(key);
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+
+            // Parse request body
+            PurchaseRateAdjustmentDTO request;
+            try {
+                request = gson.fromJson(requestBody, PurchaseRateAdjustmentDTO.class);
+            } catch (JsonSyntaxException e) {
+                return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
+            }
+
+            if (request == null) {
+                return errorResponse("Request body is required", 400);
+            }
+
+            // Process adjustment
+            AdjustmentResponseDTO response = adjustmentService.adjustPurchaseRate(request, user);
+            return successResponse(response);
+
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
      * Validate API key and return associated user
      */
     private WebUser validateApiKey(String key) {

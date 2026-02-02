@@ -39,6 +39,7 @@ import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
 import com.divudi.core.data.dto.OpdIncomeReportDTO;
 import com.divudi.core.data.dto.OpdRevenueDashboardDTO;
 import com.divudi.core.data.dto.HospitalDoctorFeeReportDTO;
+import com.divudi.core.data.dto.BillItemReportDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillFinanceDetails;
@@ -80,6 +81,7 @@ import com.divudi.core.light.common.BillLight;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import javax.annotation.security.PermitAll;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
@@ -1870,6 +1872,7 @@ public class BillService {
         return (List<OpdIncomeReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
+    @PermitAll
     public List<HospitalDoctorFeeReportDTO> fetchHospitalDoctorFeeReportDTOs(Date fromDate,
             Date toDate,
             Institution institution,
@@ -1982,6 +1985,92 @@ public class BillService {
         List<HospitalDoctorFeeReportDTO> results = (List<HospitalDoctorFeeReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
         System.out.println("Query returned: " + (results != null ? results.size() : 0) + " results");
         System.out.println("=== END DEBUG ===");
+
+        return results;
+    }
+
+    public List<BillItemReportDTO> fetchBillItemReportDTOs(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme) {
+
+        if (fromDate == null || toDate == null) {
+            throw new IllegalArgumentException("fromDate and toDate cannot be null");
+        }
+        if (fromDate.after(toDate)) {
+            throw new IllegalArgumentException("fromDate cannot be after toDate");
+        }
+
+        // Query with LEFT JOINs to fetch bill items with item names
+        String jpql = "select new com.divudi.core.data.dto.BillItemReportDTO("
+                + " b.id, "                              // billId
+                + " bi.id, "                             // billItemId
+                + " b.deptId, "                          // Bill Number
+                + " coalesce(p.name, 'N/A'), "          // Patient name from LEFT JOIN
+                + " coalesce(i.name, 'No Item'), "      // Item name from BillItem.item
+                + " coalesce(fs.name, 'N/A'), "         // Doctor name from fromStaff only
+                + " coalesce(bi.hospitalFee,0.0), "     // Hospital fee from BillItem
+                + " coalesce(bi.staffFee,0.0), "        // Staff fee from BillItem
+                + " coalesce(bi.netValue,0.0), "        // Net value from BillItem
+                + " b.createdAt, "                       // Bill date
+                + " b.paymentMethod, "                   // Payment method
+                + " b.billTypeAtomic ) "                 // Bill type atomic
+                + " from Bill b "
+                + " JOIN b.billItems bi "                // Join to BillItem (inner join)
+                + " LEFT JOIN bi.item i "                // Join to Item for item name
+                + " LEFT JOIN b.patient pt "
+                + " LEFT JOIN pt.person p "
+                + " LEFT JOIN b.fromStaff fromStaff "
+                + " LEFT JOIN fromStaff.person fs "
+                + " where b.retired=:ret "
+                + " and bi.retired=false "               // Filter non-retired BillItems
+                + " and b.createdAt between :fromDate and :toDate";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        // Only add billTypeAtomics filter if the list is non-null and non-empty
+        if (billTypeAtomics != null && !billTypeAtomics.isEmpty()) {
+            jpql += " and b.billTypeAtomic in :billTypesAtomics";
+            params.put("billTypesAtomics", billTypeAtomics);
+        }
+
+        // Add filters one by one with debugging
+        if (institution != null) {
+            jpql += " and b.institution=:ins";
+            params.put("ins", institution);
+        }
+        if (webUser != null) {
+            jpql += " and b.creater=:user";
+            params.put("user", webUser);
+        }
+        if (department != null) {
+            jpql += " and b.department=:dep";
+            params.put("dep", department);
+        }
+        if (site != null) {
+            jpql += " and b.department.site=:site";
+            params.put("site", site);
+        }
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType";
+            params.put("admissionType", admissionType);
+        }
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        jpql += " order by b.createdAt desc, bi.id";
+
+        List<BillItemReportDTO> results = (List<BillItemReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         return results;
     }

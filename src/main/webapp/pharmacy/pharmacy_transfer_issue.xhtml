@@ -190,6 +190,9 @@
                                 <h:outputLabel value="Items will be issued to"/>
                                 <h:outputLabel value="#{transferIssueForRequestsController.issuedBill.toDepartment.name}" />
 
+                                <h:outputLabel value="Department Type" rendered="#{transferIssueForRequestsController.transferRequestBill.departmentType != null}" />
+                                <h:outputLabel value="#{transferIssueForRequestsController.transferRequestBill.departmentType.label}" rendered="#{transferIssueForRequestsController.transferRequestBill.departmentType != null}" />
+
                                 <h:outputLabel value="Value &amp;nbsp;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}" />
                                 <h:outputLabel id="billNetTotal" value="#{transferIssueForRequestsController.issuedBill.netTotal}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}" />
 
