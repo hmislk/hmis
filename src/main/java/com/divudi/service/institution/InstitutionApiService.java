@@ -264,8 +264,8 @@ public class InstitutionApiService implements Serializable {
         if (request.getParentInstitutionId() != null) {
             Institution parentInstitution = loadAndValidateInstitution(request.getParentInstitutionId());
 
-            // Prevent circular reference
-            if (parentInstitution.getId().equals(institution.getId())) {
+            // Prevent circular reference - checks both immediate self-parenting and deeper cycles
+            if (wouldCreateCycle(institution, parentInstitution)) {
                 throw new Exception("Institution cannot be its own parent");
             }
 
@@ -315,6 +315,26 @@ public class InstitutionApiService implements Serializable {
             throw new Exception("Institution is retired");
         }
         return institution;
+    }
+
+    /**
+     * Check if setting newParent as parent of institution would create a cycle
+     * Walks up the parent chain from newParent to detect if institution is already an ancestor
+     */
+    private boolean wouldCreateCycle(Institution institution, Institution newParent) {
+        if (institution == null || newParent == null) {
+            return false;
+        }
+
+        Institution current = newParent;
+        while (current != null) {
+            if (current.getId().equals(institution.getId())) {
+                return true;
+            }
+            current = current.getInstitution();
+        }
+
+        return false;
     }
 
     /**
