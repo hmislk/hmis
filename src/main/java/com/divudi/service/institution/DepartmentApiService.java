@@ -6,6 +6,7 @@
 package com.divudi.service.institution;
 
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.dto.department.DepartmentCreateRequestDTO;
 import com.divudi.core.data.dto.department.DepartmentRelationshipUpdateDTO;
 import com.divudi.core.data.dto.department.DepartmentResponseDTO;
@@ -373,6 +374,9 @@ public class DepartmentApiService implements Serializable {
         }
         if (site.isRetired()) {
             throw new Exception("Site is retired");
+        }
+        if (site.getInstitutionType() == null || site.getInstitutionType() != InstitutionType.Site) {
+            throw new Exception("Institution is not a Site");
         }
         return site;
     }

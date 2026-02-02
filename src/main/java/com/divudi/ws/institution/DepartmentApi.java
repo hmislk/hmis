@@ -238,6 +238,14 @@ public class DepartmentApi {
                 return errorResponse("Request body is required", 400);
             }
 
+            // Validate path id against payload id if present
+            if (request.getId() != null && !request.getId().equals(id)) {
+                return errorResponse("Path id and payload id mismatch", 400);
+            }
+
+            // Set id from path parameter
+            request.setId(id);
+
             // Update department
             DepartmentResponseDTO response = departmentService.updateDepartment(id, request, user);
             return successResponse(response);

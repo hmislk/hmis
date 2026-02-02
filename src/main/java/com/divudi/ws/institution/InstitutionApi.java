@@ -143,10 +143,11 @@ public class InstitutionApi {
             return successResponse(result);
 
         } catch (Exception e) {
-            if (e.getMessage().contains("not found")) {
-                return errorResponse(e.getMessage(), 404);
+            String msg = e.getMessage();
+            if (msg != null && msg.contains("not found")) {
+                return errorResponse(msg, 404);
             }
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
     }
 
@@ -225,10 +226,11 @@ public class InstitutionApi {
             return successResponse(response);
 
         } catch (Exception e) {
-            if (e.getMessage().contains("not found")) {
-                return errorResponse(e.getMessage(), 404);
+            String msg = e.getMessage();
+            if (msg != null && msg.contains("not found")) {
+                return errorResponse(msg, 404);
             }
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
     }
 
@@ -260,10 +262,11 @@ public class InstitutionApi {
             return successResponse(response);
 
         } catch (Exception e) {
-            if (e.getMessage().contains("not found")) {
-                return errorResponse(e.getMessage(), 404);
+            String msg = e.getMessage();
+            if (msg != null && msg.contains("not found")) {
+                return errorResponse(msg, 404);
             }
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
     }
 
@@ -308,10 +311,11 @@ public class InstitutionApi {
             return successResponse(response);
 
         } catch (Exception e) {
-            if (e.getMessage().contains("not found")) {
-                return errorResponse(e.getMessage(), 404);
+            String msg = e.getMessage();
+            if (msg != null && msg.contains("not found")) {
+                return errorResponse(msg, 404);
             }
-            return errorResponse("An error occurred: " + e.getMessage(), 500);
+            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
     }
 
