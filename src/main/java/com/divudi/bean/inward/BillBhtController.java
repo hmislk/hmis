@@ -62,6 +62,7 @@ import com.divudi.core.data.ItemLight;
 import static com.divudi.core.data.ItemListingStrategy.*;
 import com.divudi.core.data.lab.InvestigationTubeSticker;
 import com.divudi.core.data.lab.Priority;
+import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.UserPreference;
 import com.divudi.ws.lims.Lims;
 import java.io.Serializable;
@@ -692,6 +693,18 @@ public class BillBhtController implements Serializable {
 
         if (getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("Please select Bht Number");
+            return true;
+        }
+        
+        Patient billPatient = patientFacade.findWithoutCache(patientEncounter.getPatient().getId());
+        
+        if(billPatient.getPerson().getDob() == null){
+            JsfUtil.addErrorMessage("Please add the Patinet DOB");
+            return true;
+        }
+        
+        if(billPatient.getPerson().getSex() == null){
+            JsfUtil.addErrorMessage("Please add the Patinet Gender");
             return true;
         }
 
