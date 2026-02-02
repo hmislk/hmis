@@ -1,146 +1,361 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <h:head>
-        <h:outputStylesheet>
-            .printTable {
-            border-collapse: collapse;
-            font-size: #{pharmacySummaryReportController.fontSizeForPrinting}!important;
-            }
-            .printTable th, .printTable td {
-            border: 1px solid black;
-            padding: 5px;
-            }
-            .printTable th {
-            background-color: #f2f2f2;
-            }
-            .pageBreak {
-            page-break-after: always;
-            }
-            .screenOnly {
-            display: none;
-            }
-            @media screen {
-            .screenOnly {
-            display: inline-block;
-            }
-            }
-        </h:outputStylesheet>
-    </h:head>
+<h:body>
+    <ui:composition template="/resources/template/template.xhtml">
+        <ui:define name="content">
 
-    <h:body>
-        <ui:composition template="/resources/template/template_contents_only.xhtml">
-            <ui:define name="content">
-                <h:form>
-                    <p:commandButton 
-                        value="Print" 
-                        onclick="window.print();" 
-                        class="screenOnly ui-button-warning m-1"
-                        icon="pi pi-print"/>
+            <h:form>
+                <p:panel header="OPD Income Report Print" styleClass="w-100">
 
-                    <table class="printTable w-100">
-                        <thead>
-                            <tr>
-                                <th>Bill No</th>
-                                <th>Patient</th>
-                                <th>Date</th>
-                                <th class="text-end">Net Total</th>
-                                <th class="text-end">Cash</th>
-                                <th class="text-end">Card</th>
-                                <th class="text-end">Discount</th>
-                                <th class="text-end">Service Charge</th>
-                                <th class="text-end">Actual Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <ui:repeat value="#{pharmacySummaryReportController.bundle.rows}" var="row" varStatus="status">
+                    <!-- TOP BAR -->
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <h:outputText value="OPD Income Daily Summary Report Print" class="mt-2"/>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false"
+                                        value="Print">
+                                    <p:printer target="reportView"/>
+                                </p:commandButton>
+
+                                <p:commandButton
+                                        ajax="false"
+                                        value="Back to Report"
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="opd_income_report?faces-redirect=true"/>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <!-- STYLES -->
+                    <style>
+                        @media screen{
+                            .paper{
+                                position: static !important;
+                                width: 297mm !important;
+                                zoom: 1.35;
+                                margin: 0 auto;
+                            }
+
+                            table{
+                                border-collapse: collapse;
+                                width: 100%;
+                                font-size: 12px !important;
+                                margin-top: 3mm !important;
+                            }
+                            th, td{
+                                border: 1px solid #000;
+                                padding: 2px 4px !important;
+                                vertical-align: top;
+                            }
+
+                            thead th{ font-weight: 900; }
+                            tfoot td{ font-weight: 900; }
+
+                            /* ✅ IMPORTANT: some browsers hide tfoot in print/preview unless forced */
+                            thead { display: table-header-group; }
+                            tfoot { display: table-row-group; } /* keeps totals visible */
+
+                            .text-right { text-align: right; }
+                            .text-left { text-align: left; }
+                            .text-center { text-align: center; }
+
+                            .title-1 { font-weight: 900; font-size: 18px; }
+                            .title-2 { font-weight: 800; font-size: 13px; margin-top: 1mm; }
+
+                            .filters-box{
+                                margin-top: 3mm;
+                                border:  none !important;
+                                padding: 6px 10px;
+                                border-radius: 6px;
+                            }
+                            .filters-grid{
+                                width: 100%;
+                                border-collapse: collapse;
+                                font-size: 12px !important;
+                            }
+                            .filters-grid td{
+                                border: none !important;
+                                padding: 2px 6px !important;
+                            }
+                            .label{ font-weight: 800; white-space: nowrap; }
+                            .value{ font-weight: 600; }
+                            .muted{ font-weight: 600; opacity: .85; }
+                        }
+
+                        @media print{
+                            @page{
+                                size: A4 landscape;
+                                margin: 8mm;
+                            }
+
+                            body{
+                                -webkit-print-color-adjust: exact;
+                                print-color-adjust: exact;
+                            }
+
+                            .paper{
+                                width: 297mm !important;
+                                margin: 0 auto;
+                            }
+
+                            table{
+                                border-collapse: collapse;
+                                width: 100%;
+                                font-size: 11px !important;
+                                margin-top: 3mm !important;
+                            }
+                            th, td{
+                                border: 1px solid #000;
+                                padding: 2px 4px !important;
+                            }
+
+                            thead th{ font-weight: 900; }
+                            tfoot td{ font-weight: 900; }
+
+
+                            thead { display: table-header-group; }
+                            tfoot { display: table-row-group; }
+
+                            .text-right { text-align: right; }
+                            .text-left { text-align: left; }
+                            .text-center { text-align: center; }
+
+                            .title-1 { font-weight: 900; font-size: 16px; }
+                            .title-2 { font-weight: 800; font-size: 12px; margin-top: 1mm; }
+
+                            .filters-box{
+                                margin-top: 3mm;
+                                border: none;
+                                padding: 6px 10px;
+                                border-radius: 6px;
+                            }
+                            .filters-grid{
+                                width: 100%;
+                                border-collapse: collapse;
+                                font-size: 11px !important;
+                            }
+                            .filters-grid td{
+                                border: none !important;
+                                padding: 2px 6px !important;
+                            }
+                            .label{ font-weight: 900; white-space: nowrap; }
+                            .value{ font-weight: 700; }
+                            .muted{ font-weight: 700; opacity: .9; }
+                        }
+                    </style>
+
+                    <!-- PRINT AREA -->
+                    <h:panelGroup id="reportView" layout="block" styleClass="d-flex justify-content-center">
+                        <div class="paper">
+
+                            <!-- HEADER -->
+                            <div class="text-center title-1">
+                                <h:outputText value="#{sessionController.institution.name}" />
+                            </div>
+
+                            <div class="text-center title-2">
+                                <h:outputText value="OPD Income Summary Report" />
+                            </div>
+
+                
+                            <div class="filters-box">
+                                <table class="filters-grid">
+                                    <tr>
+                                        <td class="label text-right" style="width: 20%;">From Date</td>
+                                        <td class="value" style="width: 30%;">
+                                            <h:outputText value="#{opdReportController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputText>
+                                        </td>
+
+                                        <td class="label text-right" style="width: 20%;">To Date</td>
+                                        <td class="value" style="width: 30%;">
+                                            <h:outputText value="#{opdReportController.toDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="label text-right">Billing Institution</td>
+                                        <td class="muted">
+                                            <h:outputText value="#{opdReportController.institution != null ? opdReportController.institution.name : 'All'}" />
+                                        </td>
+
+                                        <td class="label text-right">Billing Site</td>
+                                        <td class="muted">
+                                            <h:outputText value="#{opdReportController.site != null ? opdReportController.site.name : 'All'}" />
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="label text-right">Billing Department</td>
+                                        <td class="muted">
+                                            <h:outputText value="#{opdReportController.department != null ? opdReportController.department.name : 'All'}" />
+                                        </td>
+
+                                        <td class="label text-right">Admission Type</td>
+                                        <td class="muted">
+                                            <h:outputText value="#{opdReportController.admissionType != null ? opdReportController.admissionType.name : 'All'}" />
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="label text-right">Service Institution</td>
+                                        <td class="muted">
+                                            <h:outputText value="#{opdReportController.toInstitution != null ? opdReportController.toInstitution.name : 'All'}" />
+                                        </td>
+
+                                        <td class="label text-right">Service Site</td>
+                                        <td class="muted">
+                                            <h:outputText value="#{opdReportController.toSite != null ? opdReportController.toSite.name : 'All'}" />
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="label text-right">Service Department</td>
+                                        <td class="muted">
+                                            <h:outputText value="#{opdReportController.toDepartment != null ? opdReportController.toDepartment.name : 'All'}" />
+                                        </td>
+
+                                        <td class="label text-right">Discount Scheme</td>
+                                        <td class="muted">
+                                            <h:outputText value="#{opdReportController.paymentScheme != null ? opdReportController.paymentScheme.name : 'All'}" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- TABLE -->
+                            <table>
+                                <thead>
                                 <tr>
-                                    <td><h:outputText value="#{row.bill.deptId}" /></td>
-                                    <td style="text-align: left;"><h:outputText value="#{row.bill.patient.person.nameWithTitle}" /></td>
-                                    <td>
-                                        <h:outputText value="#{row.bill.createdAt}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                        </h:outputText>
-                                    </td>
-                                    <td class="text-end">
-                                        <h:outputText value="#{row.bill.netTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </td>
-                                    <td class="text-end">
-                                        <h:outputText value="#{row.cashValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </td>
-                                    <td class="text-end">
-                                        <h:outputText value="#{row.cardValue}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </td>
-                                    <td class="text-end">
-                                        <h:outputText value="#{row.discount}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </td>
-                                    <td class="text-end">
-                                        <h:outputText value="#{row.serviceCharge}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </td>
-                                    <td class="text-end">
-                                        <h:outputText value="#{row.grossTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                    </td>
+                                    <th style="width: 10mm;" class="text-center">No</th>
+                                    <th style="width: 22mm;" class="text-left">Date</th>
+
+                                    <th style="width: 20mm;" class="text-right">Net Total</th>
+                                    <th style="width: 20mm;" class="text-right">Cash</th>
+                                    <th style="width: 20mm;" class="text-right">Card</th>
+                                    <th style="width: 20mm;" class="text-right">Cheque</th>
+
+                                    <th style="width: 22mm;" class="text-right">IP Credit</th>
+                                    <th style="width: 22mm;" class="text-right">OP Credit</th>
+                                    <th style="width: 22mm;" class="text-right">Staff Credit</th>
+                                    <th style="width: 22mm;" class="text-right">Agent Credit</th>
+
+                                    <th style="width: 20mm;" class="text-right">Total</th>
+                                    <th style="width: 22mm;" class="text-right">Discount</th>
+                                    <th style="width: 26mm;" class="text-right">Service Charge</th>
+                                    <th style="width: 24mm;" class="text-right">Actual Total</th>
                                 </tr>
-                                <h:panelGroup rendered="#{(status.index + 1) mod pharmacySummaryReportController.rowsPerPageForPrinting == 0}">
-                                    <tr class="pageBreak"><td colspan="9"></td></tr>
-                                </h:panelGroup>
-                            </ui:repeat>
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="3" class="text-end fw-bold">Total:</td>
-                                <td class="text-end">
-                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </td>
-                                <td class="text-end">
-                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.cashValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </td>
-                                <td class="text-end">
-                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.cardValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </td>
-                                <td class="text-end">
-                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.discount}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </td>
-                                <td class="text-end">
-                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.serviceCharge}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </td>
-                                <td class="text-end">
-                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.grossTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </h:form>
-            </ui:define>
-        </ui:composition>
-    </h:body>
+                                </thead>
+
+                                <tbody>
+                                <ui:repeat value="#{opdReportController.bundle.rows}" var="row" varStatus="i">
+                                    <tr>
+                                        <td class="text-center">
+                                            <h:outputText value="#{i.index + 1}" />
+                                        </td>
+
+                                        <td class="text-left">
+                                            <h:outputText value="#{row.date}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                            </h:outputText>
+                                        </td>
+
+                                        <td class="text-right"><h:outputText value="#{row.netTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                        <td class="text-right"><h:outputText value="#{row.cashValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                        <td class="text-right"><h:outputText value="#{row.cardValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                        <td class="text-right"><h:outputText value="#{row.chequeValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+
+                                        <td class="text-right"><h:outputText value="#{row.inpatientCreditValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                        <td class="text-right"><h:outputText value="#{row.opdCreditValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                        <td class="text-right"><h:outputText value="#{row.staffValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                        <td class="text-right"><h:outputText value="#{row.agentValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+
+                                        <td class="text-right"><h:outputText value="#{row.grossTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                        <td class="text-right"><h:outputText value="#{row.discount}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                        <td class="text-right"><h:outputText value="#{row.serviceCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                        <td class="text-right"><h:outputText value="#{row.netTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    </tr>
+                                </ui:repeat>
+                                </tbody>
+
+                                <!-- ✅ TOTALS ALWAYS VISIBLE -->
+                                <tfoot>
+                                <tr>
+                                    <td></td>
+                                    <td class="text-left">Totals</td>
+
+                                    <td class="text-right"><h:outputText value="#{opdReportController.bundle.summaryRow.netTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="text-right"><h:outputText value="#{opdReportController.bundle.summaryRow.cashValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="text-right"><h:outputText value="#{opdReportController.bundle.summaryRow.cardValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="text-right"><h:outputText value="#{opdReportController.bundle.summaryRow.chequeValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+
+                                    <td class="text-right"><h:outputText value="#{opdReportController.bundle.summaryRow.inpatientCreditValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="text-right"><h:outputText value="#{opdReportController.bundle.summaryRow.opdCreditValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="text-right"><h:outputText value="#{opdReportController.bundle.summaryRow.staffValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="text-right"><h:outputText value="#{opdReportController.bundle.summaryRow.agentValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+
+                                    <td class="text-right"><h:outputText value="#{opdReportController.bundle.summaryRow.grossTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="text-right"><h:outputText value="#{opdReportController.bundle.summaryRow.discount}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="text-right"><h:outputText value="#{opdReportController.bundle.summaryRow.serviceCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="text-right"><h:outputText value="#{opdReportController.bundle.summaryRow.netTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+
+                            
+<!--                            <div style="margin-top: 3mm; border: 1px solid #000; padding: 6px 10px; border-radius: 6px;">
+                                <div class="d-flex justify-content-end" style="gap: 20mm; font-size: 12px;">
+                                    <div>
+                                        <div><b>Gross Total:</b>
+                                            <h:outputText value="#{opdReportController.bundle.summaryRow.grossTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </div>
+                                        <div><b>Discount:</b>
+                                            <h:outputText value="#{opdReportController.bundle.summaryRow.discount}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div><b>Service Charge:</b>
+                                            <h:outputText value="#{opdReportController.bundle.summaryRow.serviceCharge}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </div>
+                                        <div><b>Net Total:</b>
+                                            <h:outputText value="#{opdReportController.bundle.summaryRow.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>-->
+
+                        </div>
+                    </h:panelGroup>
+
+                </p:panel>
+            </h:form>
+
+        </ui:define>
+    </ui:composition>
+</h:body>
 </html>
