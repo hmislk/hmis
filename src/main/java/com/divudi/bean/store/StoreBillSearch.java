@@ -748,6 +748,7 @@ public class StoreBillSearch implements Serializable {
         cb.setInstitution(getSessionController().getInstitution());
 
         cb.setComments(getBill().getComments());
+        cb.setCompleted(true);
 
         return cb;
     }
