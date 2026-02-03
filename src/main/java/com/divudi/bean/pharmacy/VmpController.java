@@ -201,7 +201,7 @@ public class VmpController implements Serializable {
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("query", "%" + query.trim().toLowerCase() + "%");
 
-            vmpList = getFacade().findByJpql(jpql, parameters);
+            vmpList = getFacade().findByJpqlWithoutCache(jpql, parameters);
         }
         return vmpList;
     }
@@ -491,7 +491,7 @@ public class VmpController implements Serializable {
         } else {
             sql = "select c from Vmp c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
-            suggestions = getFacade().findByJpql(sql);
+            suggestions = getFacade().findByJpql(sql, true); // true = noCache
         }
         return suggestions;
     }
@@ -593,7 +593,7 @@ public class VmpController implements Serializable {
 
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            getFacade().edit(getCurrent());
+            getFacade().editAndCommit(getCurrent());
             JsfUtil.addSuccessMessage("Updated Successfully.");
         }
         recreateModel();
