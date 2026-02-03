@@ -224,8 +224,8 @@
                                                     id="btnAdd"
                                                     value="Add"
                                                     action="#{pharmacyIssueController.addBillItem}"
-                                                    process="@this acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}"
-                                                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtPRate txtPurchaseRate txtCostRate txtQty txtPVal txtRVal txtCostVal txtIssueVal acStock focusItem" >
+                                                    process="@this acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId} :#{p:resolveFirstComponentWithId('selDepartmentType',view).clientId}"
+                                                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('selDepartmentType',view).clientId} txtRate txtPRate txtPurchaseRate txtCostRate txtQty txtPVal txtRVal txtCostVal txtIssueVal acStock focusItem" >
                                                 </p:commandButton>
 
                                                 <p:defaultCommand  target="btnAdd" />
@@ -457,6 +457,21 @@
                                                     ajax="false"
                                                     action="#{pharmacyIssueController.changeDepartment()}" />
                                             </h:panelGroup>
+
+                                            <h:outputLabel value="Department Type"
+                                                           for="selDepartmentType"/>
+                                            <p:selectOneMenu
+                                                id="selDepartmentType"
+                                                value="#{pharmacyIssueController.preBill.departmentType}"
+                                                class="w-100"
+                                                disabled="#{not empty pharmacyIssueController.preBill.billItems and pharmacyIssueController.preBill.billItems.size() > 0}">
+                                                <f:selectItem itemLabel="Select Department Type" itemValue="#{null}"/>
+                                                <f:selectItems value="#{sessionController.availableDepartmentTypesForPharmacyTransactions}"
+                                                               var="dt"
+                                                               itemLabel="#{dt.label}"
+                                                               itemValue="#{dt}"/>
+                                                <p:ajax process="@this" update="acDept acStock" event="change"/>
+                                            </p:selectOneMenu>
 
                                             <h:outputLabel value="Request Number"/>
                                             <p:inputText class="w-100" value="#{pharmacyIssueController.preBill.invoiceNumber}" id="req"/>
