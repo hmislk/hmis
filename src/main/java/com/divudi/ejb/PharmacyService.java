@@ -377,6 +377,19 @@ public class PharmacyService {
         return bundle;
     }
 
+    /**
+     * Fetch pharmacy stock purchase value by bill type DTO with completed filter.
+     * Only includes bills where completed = true.
+     */
+    public PharmacyBundle fetchPharmacyStockPurchaseValueByBillTypeDtoCompleted(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
+        PharmacyBundle bundle;
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyPurchaseBillTypes();
+        List<BillLight> pharmacyIncomeBillLights = billService.fetchBillLightsWithFinanceDetailsCompleted(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new PharmacyBundle(pharmacyIncomeBillLights);
+        bundle.generatePharmacyPurchaseGroupedByBillTypeDtos();
+        return bundle;
+    }
+
     public PharmacyBundle fetchPharmacyTransferValueByBillType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
         List<BillTypeAtomic> billTypeAtomics = getPharmacyInternalTransferBillTypes();

@@ -254,6 +254,7 @@ public class PatientReportController implements Serializable {
             return "/lab/patient_report_print?faces-redirect=true";
         } else {
             switch (pr.getReportType()) {
+                case INTERFACE:
                 case GENARATE:
                     setCurrentPatientReport(pr);
                     return "/lab/patient_report_print?faces-redirect=true";
@@ -279,6 +280,7 @@ public class PatientReportController implements Serializable {
             return "/collecting_centre/courier/patient_report_print?faces-redirect=true";
         } else {
             switch (pr.getReportType()) {
+                case INTERFACE:
                 case GENARATE:
                     setCurrentPatientReport(pr);
                     return "/collecting_centre/courier/patient_report_print?faces-redirect=true";

@@ -172,11 +172,11 @@ public class PharmacyDailyStockReportOptimizedController implements Serializable
         System.out.println(">>> Sales total: " + (saleBundle != null && saleBundle.getSummaryRow() != null ? saleBundle.getSummaryRow().getNetTotal() : "null"));
         dailyStockBalanceReport.setPharmacySalesByAdmissionTypeAndDiscountSchemeBundle(saleBundle);
 
-        // STEP 5: Fetch Purchase Data
+        // STEP 5: Fetch Purchase Data (only completed bills)
         stepStartTime = System.currentTimeMillis();
-        System.out.println("\n🔄 STEP 5: Fetching PURCHASE data...");
+        System.out.println("\n🔄 STEP 5: Fetching PURCHASE data (completed=true only)...");
 
-        PharmacyBundle purchaseBundle = pharmacyService.fetchPharmacyStockPurchaseValueByBillTypeDto(
+        PharmacyBundle purchaseBundle = pharmacyService.fetchPharmacyStockPurchaseValueByBillTypeDtoCompleted(
                 startOfTheDay, endOfTheDay, null, null, department, null, null, null);
 
         stepDuration = System.currentTimeMillis() - stepStartTime;
