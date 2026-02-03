@@ -46,14 +46,15 @@
                                         ajax="false">
                                         <p:fileDownload value="#{pharmacyBillSearch.exportAsJson()}"/>
                                     </p:commandButton>
-                                    <p:commandButton 
+                                    <p:commandButton
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN Cancellations are allowed',true)}"
-                                        ajax="false" 
-                                        value="To Cancel" 
+                                        ajax="false"
+                                        value="To Cancel"
                                         class="ui-button-danger"
                                         icon="fa fa-times-circle"
-                                        action="pharmacy_cancel_grn?faces-redirect=true" 
-                                        disabled="#{pharmacyBillSearch.bill.cancelled}">
+                                        action="pharmacy_cancel_grn?faces-redirect=true"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.hasGrnReturnsOrPendingReturns()}"
+                                        title="#{pharmacyBillSearch.bill.cancelled ? 'GRN is already cancelled' : (pharmacyBillSearch.hasGrnReturnsOrPendingReturns() ? 'Cannot cancel - GRN has return process in progress or completed' : 'Cancel this GRN')}">
                                     </p:commandButton>
                                     <p:commandButton
                                         rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
@@ -75,6 +76,14 @@
                         </f:facet>
 
                         <div style="width: 100%;">
+                            <!-- Information message when GRN cannot be cancelled due to returns -->
+                            <h:panelGroup rendered="#{not pharmacyBillSearch.bill.cancelled and pharmacyBillSearch.hasGrnReturnsOrPendingReturns()}">
+                                <p:messages id="grnCancelInfo" closable="false" autoUpdate="false">
+                                    <p:message severity="info" summary="Cancellation Not Available"
+                                               detail="This GRN cannot be cancelled because it has return processes (completed or in progress). Please check the Returns and Cancellations section." />
+                                </p:messages>
+                            </h:panelGroup>
+
                             <!--                            <h:panelGroup id="gpBillPreview" >
                                                             <ph:grn_with_costing bill="#{pharmacyBillSearch.bill}"/>
                                                         </h:panelGroup>-->
