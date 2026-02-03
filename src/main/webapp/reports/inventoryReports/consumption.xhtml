@@ -112,6 +112,30 @@
                                                itemValue="#{category}"/>
                             </p:selectOneMenu>
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building ml-5"/>
+                                <p:outputLabel value="Item Department Type" for="departmentTypeFilter" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <p:selectCheckboxMenu
+                                    id="departmentTypeFilter"
+                                    value="#{pharmacyController.selectedDepartmentTypes}"
+                                    label="Select Department Types"
+                                    class="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    showHeader="true"
+                                    scrollHeight="200"
+                                    title="Select one or more department types to filter results. Leave empty to include all.">
+                                    <f:selectItems
+                                        value="#{pharmacyController.availableDepartmentTypes}"
+                                        var="depType"
+                                        itemLabel="#{depType.label}"
+                                        itemValue="#{depType}"/>
+                                </p:selectCheckboxMenu>
+                                <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all." position="top"/>
+                            </h:panelGroup>
+
                             <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
