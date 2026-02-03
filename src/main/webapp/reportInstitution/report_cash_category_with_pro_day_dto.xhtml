@@ -1,0 +1,271 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/reportInstitution/report_own.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashSummery"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/income_report"
+                >
+
+    <ui:define name="subcontent">
+
+        <h:form >
+
+            <p:panel>
+                <f:facet name="header" >
+                    <h:outputLabel value="Book Keeping Summary (With Professional) - DTO Optimized"  styleClass="noPrintButton" />
+                    </f:facet>
+                    <h:panelGrid columns="2" class="my-2" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{bookKeepingSummery.fromDate}" pattern="dd MM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{bookKeepingSummery.toDate}" pattern="dd MM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="Select Institution"/>
+
+                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeCompany}" required="true"
+                                        forceSelection="true"
+                                        requiredMessage="Please Select Institution" value="#{bookKeepingSummery.institution}"
+                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
+                    </h:panelGrid>
+
+                    <h:panelGrid columns="6" class="my-2">
+
+                        <p:commandButton value="Process" ajax="false" class="ui-button-warning" icon="fas fa-cogs"
+                                         action="#{bookKeepingSummery.createCashCategoryWithProDayDto}"/>
+                        <p:commandButton ajax="false" value="Print"  class="ui-button-info mx-2" icon="fas fa-print" >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+                        <p:commandButton value="Excel" ajax="false" class="ui-button-success" icon="fas fa-file-excel" >
+                            <p:dataExporter type="xlsx" target="opdCashTable,
+                                            opdCreditTable,
+                                            pharmacySalesTable,
+                                            pharmacyWholeSalesTable,
+                                            channelTable,
+                                            inwardTable,
+                                            summaryTable"
+                                            fileName="Book_Keeping_Summery_with_pro_day_dto"
+                                            />
+                        </p:commandButton>
+                        <p:commandButton value="Compare with Old Version" ajax="false" class="ui-button-secondary" icon="fas fa-balance-scale"
+                                         action="report_cash_category_with_pro_day"/>
+                    </h:panelGrid>
+                <!--            <p:spacer height="30" />-->
+                <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+                    <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+
+                    <div class="alert alert-success" role="alert">
+                        <strong>DTO Optimized Version:</strong> This report uses optimized database queries for better performance.
+                    </div>
+
+                    <p:spacer height="30"/>
+
+                    <!-- OPD Cash Collections -->
+                    <h3>OPD Cash Collections (Cash, Card, Cheque, Slip)</h3>
+                    <p:dataTable id="opdCashTable" value="#{bookKeepingSummery.opdCashDtoList}" var="dto"
+                                 emptyMessage="No data available">
+                        <p:column headerText="Category">
+                            <h:outputLabel value="#{dto.categoryName}" />
+                        </p:column>
+                        <p:column headerText="Total Value" style="text-align: right;">
+                            <h:outputLabel value="#{dto.totalValue}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Bill Count" style="text-align: right;">
+                            <h:outputLabel value="#{dto.billCount}" />
+                        </p:column>
+                        <f:facet name="footer">
+                            <h:outputLabel value="Total: #{bookKeepingSummery.opdCashDtoTotal}" style="font-weight: bold;">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:dataTable>
+
+                    <p:spacer height="30"/>
+
+                    <!-- OPD Credit Collections -->
+                    <h3>OPD Credit Collections</h3>
+                    <p:dataTable id="opdCreditTable" value="#{bookKeepingSummery.opdCreditDtoList}" var="dto"
+                                 emptyMessage="No data available">
+                        <p:column headerText="Category">
+                            <h:outputLabel value="#{dto.categoryName}" />
+                        </p:column>
+                        <p:column headerText="Total Value" style="text-align: right;">
+                            <h:outputLabel value="#{dto.totalValue}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Bill Count" style="text-align: right;">
+                            <h:outputLabel value="#{dto.billCount}" />
+                        </p:column>
+                        <f:facet name="footer">
+                            <h:outputLabel value="Total: #{bookKeepingSummery.opdCreditDtoTotal}" style="font-weight: bold;">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:dataTable>
+
+                    <p:spacer height="30"/>
+
+                    <!-- Pharmacy Sales -->
+                    <h3>Pharmacy Sales</h3>
+                    <p:dataTable id="pharmacySalesTable" value="#{bookKeepingSummery.pharmacySalesDtoList}" var="dto"
+                                 emptyMessage="No data available">
+                        <p:column headerText="Category">
+                            <h:outputLabel value="#{dto.categoryName}" />
+                        </p:column>
+                        <p:column headerText="Total Value" style="text-align: right;">
+                            <h:outputLabel value="#{dto.totalValue}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Bill Count" style="text-align: right;">
+                            <h:outputLabel value="#{dto.billCount}" />
+                        </p:column>
+                    </p:dataTable>
+
+                    <p:spacer height="30"/>
+
+                    <!-- Pharmacy Wholesale -->
+                    <h3>Pharmacy Wholesale</h3>
+                    <p:dataTable id="pharmacyWholeSalesTable" value="#{bookKeepingSummery.pharmacyWholeSalesDtoList}" var="dto"
+                                 emptyMessage="No data available">
+                        <p:column headerText="Category">
+                            <h:outputLabel value="#{dto.categoryName}" />
+                        </p:column>
+                        <p:column headerText="Total Value" style="text-align: right;">
+                            <h:outputLabel value="#{dto.totalValue}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Bill Count" style="text-align: right;">
+                            <h:outputLabel value="#{dto.billCount}" />
+                        </p:column>
+                        <f:facet name="footer">
+                            <h:outputLabel value="Pharmacy Total: #{bookKeepingSummery.pharmacyDtoTotal}" style="font-weight: bold;">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:dataTable>
+
+                    <p:spacer height="30"/>
+
+                    <!-- Channel Collections -->
+                    <h3>Channel Collections</h3>
+                    <p:dataTable id="channelTable" value="#{bookKeepingSummery.channelBillsDtoList}" var="dto"
+                                 emptyMessage="No data available">
+                        <p:column headerText="Category">
+                            <h:outputLabel value="#{dto.categoryName}" />
+                        </p:column>
+                        <p:column headerText="Total Value" style="text-align: right;">
+                            <h:outputLabel value="#{dto.totalValue}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Bill Count" style="text-align: right;">
+                            <h:outputLabel value="#{dto.billCount}" />
+                        </p:column>
+                        <f:facet name="footer">
+                            <h:outputLabel value="Total: #{bookKeepingSummery.channelDtoTotal}" style="font-weight: bold;">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:dataTable>
+
+                    <p:spacer height="30"/>
+
+                    <!-- Inward Collections -->
+                    <h3>Inward Collections</h3>
+                    <p:dataTable id="inwardTable" value="#{bookKeepingSummery.inwardCollectionsDtoList}" var="dto"
+                                 emptyMessage="No data available">
+                        <p:column headerText="Category">
+                            <h:outputLabel value="#{dto.categoryName}" />
+                        </p:column>
+                        <p:column headerText="Total Value" style="text-align: right;">
+                            <h:outputLabel value="#{dto.totalValue}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Bill Count" style="text-align: right;">
+                            <h:outputLabel value="#{dto.billCount}" />
+                        </p:column>
+                        <f:facet name="footer">
+                            <h:outputLabel value="Total: #{bookKeepingSummery.inwardDtoTotal}" style="font-weight: bold;">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:dataTable>
+
+                    <p:spacer height="30"/>
+
+                    <!-- Agent Collections (using existing entity-based) -->
+                    <h3>Agent Collections</h3>
+                    <p:dataTable value="#{bookKeepingSummery.agentCollections}" var="bill"
+                                 emptyMessage="No data available">
+                        <p:column headerText="Bill Number">
+                            <h:outputLabel value="#{bill.deptId}" />
+                        </p:column>
+                        <p:column headerText="Net Total" style="text-align: right;">
+                            <h:outputLabel value="#{bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <f:facet name="footer">
+                            <h:outputLabel value="Total: #{bookKeepingSummery.agentPaymentTotal}" style="font-weight: bold;">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:dataTable>
+
+                    <p:spacer height="30"/>
+
+                    <!-- Collecting Centre Collections (using existing entity-based) -->
+                    <h3>Collecting Centre Collections</h3>
+                    <p:dataTable value="#{bookKeepingSummery.collectingCentreCollections}" var="bill"
+                                 emptyMessage="No data available">
+                        <p:column headerText="Bill Number">
+                            <h:outputLabel value="#{bill.deptId}" />
+                        </p:column>
+                        <p:column headerText="Net Total" style="text-align: right;">
+                            <h:outputLabel value="#{bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <f:facet name="footer">
+                            <h:outputLabel value="Total: #{bookKeepingSummery.collectingCentrePaymentTotal}" style="font-weight: bold;">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:dataTable>
+
+                    <p:spacer height="30"/>
+
+                    <!-- Grand Summary -->
+                    <h3>Grand Summary</h3>
+                    <p:dataTable id="summaryTable">
+                        <p:column headerText="Description" style="font-weight: bold;">
+                            <h:outputLabel value="Grand Total (DTO Optimized)" />
+                        </p:column>
+                        <p:column headerText="Amount" style="text-align: right; font-weight: bold;">
+                            <h:outputLabel value="#{bookKeepingSummery.grandDtoTotal}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+
+                    <f:facet name="footer" >
+                        <h:outputLabel value="Printed By: #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                    </f:facet>
+                </p:panel>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>
