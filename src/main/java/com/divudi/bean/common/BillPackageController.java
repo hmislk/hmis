@@ -1706,7 +1706,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public void settleBill() {
-        System.out.println("Start settleBill()");
 //        if (validatePaymentMethodDeta()) {
 //            return;
 //        }
@@ -1717,9 +1716,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (performErrorChecks()) {
             return;
         }
-        
-        System.out.println("1. Bill Item = " + currentBillItem.getItem());
-        
+
         if(configOptionApplicationController.getBooleanValueByKey("Package bill – Reloading of Packages with Consideration of Gender")){
             if(getPatient() == null){
                 JsfUtil.addErrorMessage("Please add the Patient first.");
@@ -1729,13 +1726,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 JsfUtil.addErrorMessage("Please add the Patient Gender.");
                 return;
             }
-            
-            System.out.println("Patient Gender = " + getPatient().getPerson().getSex().getLabel());
-            System.out.println("Item = " + currentBillItem.getItem());
-            System.out.println("ForGender = " + currentBillItem.getItem().getForGender());
+
             String gender = currentBillItem.getItem().getForGender();
-            System.out.println("Gender = " + gender);
-            
+
             if(!"Both".equals(gender)){
                 if(! getPatient().getPerson().getSex().getLabel().equals(gender)){
                     JsfUtil.addErrorMessage("This item/service is only available for " + gender + " patients.");
@@ -1743,8 +1736,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 }
             }
         }
-        System.out.println("2. Bill Item = " + currentBillItem.getItem());
-        
+
         savePatient();
         if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
@@ -1757,7 +1749,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         } else {
             putToBills();
         }
-        System.out.println("3. Bill Item = " + currentBillItem.getItem());
+
         saveBatchBill();
 
         // Transfer staff member data to paymentMethodData before payment creation
@@ -2368,8 +2360,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
         
-        System.out.println("current Package = " + currentSelectedPackage);
-        
         if(configOptionApplicationController.getBooleanValueByKey("Package bill – Reloading of Packages with Consideration of Gender")){
             if(getPatient() == null){
                 JsfUtil.addErrorMessage("Please add the Patient first.");
@@ -2379,12 +2369,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 JsfUtil.addErrorMessage("Please add the Patient Gender.");
                 return;
             }
-            
-            System.out.println("Patient Gender = " + getPatient().getPerson().getSex().getLabel());
-            System.out.println("Item = " + currentSelectedPackage);
-            System.out.println("ForGender = " + currentSelectedPackage.getForGender());
+
             String gender = currentSelectedPackage.getForGender();
-            System.out.println("Gender = " + gender);
             
             if(!"Both".equals(gender)){
                 if(! getPatient().getPerson().getSex().getLabel().equals(gender)){
@@ -2395,15 +2381,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
 
         List<Item> itemList = getBillBean().itemFromPackage(currentSelectedPackage);
-        System.out.println("itemList = " + itemList);
+        
         for (Item i : itemList) {
-            System.out.println("i = " + i);
             if (i.getDepartment() == null) {
-                System.out.println(i.getName() + " - Department Null");
                 JsfUtil.addErrorMessage("Under administration, add a Department for item " + i.getName());
                 return;
             }
-            System.out.println(i.getName() + " - Department Not Null");
             
             BillItem tmp = new BillItem();
             tmp.setItem(i);
