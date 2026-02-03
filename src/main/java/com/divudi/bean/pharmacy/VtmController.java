@@ -10,7 +10,8 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-
+import com.divudi.service.AuditService;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.entity.pharmacy.Vtm;
 import com.divudi.core.facade.SpecialityFacade;
 import com.divudi.core.facade.VtmFacade;
@@ -50,6 +51,8 @@ public class VtmController implements Serializable {
     private VtmFacade ejbFacade;
     @EJB
     private SpecialityFacade specialityFacade;
+    @EJB
+    private AuditService auditService;
     @Inject
     private BillBeanController billBean;
     List<Vtm> selectedItems;
@@ -114,14 +117,18 @@ public class VtmController implements Serializable {
     }
 
     public List<Vtm> completeVtm(String query) {
-
-        String sql;
         if (query == null) {
             vtmList = new ArrayList<Vtm>();
         } else {
-            sql = "select c from Vtm c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////// // System.out.println(sql);
-            vtmList = getFacade().findByJpql(sql);
+            String sql = "SELECT c FROM Vtm c WHERE c.retired=:retired " +
+                        "AND UPPER(c.name) LIKE :query " +
+                        "AND (c.departmentType IS NULL OR c.departmentType=:dep) " +
+                        "ORDER BY c.name";
+            Map<String, Object> params = new HashMap<>();
+            params.put("retired", false);
+            params.put("query", "%" + query.toUpperCase() + "%");
+            params.put("dep", DepartmentType.Pharmacy);
+            vtmList = getFacade().findByJpql(sql, params);
         }
         return vtmList;
     }
@@ -216,28 +223,50 @@ public class VtmController implements Serializable {
 
     public List<Vtm> getSelectedItems() {
         if (selectText == null || selectText.trim().isEmpty()) {
-            selectedItems = getFacade().findByJpql("select c from Vtm c where c.retired=false order by c.name");
+            String sql = "SELECT c FROM Vtm c WHERE c.retired=:retired " +
+                        "AND (c.departmentType IS NULL OR c.departmentType=:dep) " +
+                        "ORDER BY c.name";
+            Map<String, Object> params = new HashMap<>();
+            params.put("retired", false);
+            params.put("dep", DepartmentType.Pharmacy);
+            selectedItems = getFacade().findByJpql(sql, params);
         } else {
-            String sql = "select c from Vtm c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
-            selectedItems = getFacade().findByJpql(sql);
-
+            String sql = "SELECT c FROM Vtm c WHERE c.retired=:retired " +
+                        "AND UPPER(c.name) LIKE :query " +
+                        "AND (c.departmentType IS NULL OR c.departmentType=:dep) " +
+                        "ORDER BY c.name";
+            Map<String, Object> params = new HashMap<>();
+            params.put("retired", false);
+            params.put("query", "%" + getSelectText().toUpperCase() + "%");
+            params.put("dep", DepartmentType.Pharmacy);
+            selectedItems = getFacade().findByJpql(sql, params);
         }
         return selectedItems;
     }
 
     public void fillItems() {
-        items = getFacade().findByJpql("select c from Vtm c where c.retired=false order by c.name");
+        String sql = "SELECT c FROM Vtm c WHERE c.retired=:retired " +
+                    "AND (c.departmentType IS NULL OR c.departmentType=:dep) " +
+                    "ORDER BY c.name";
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);
+        params.put("dep", DepartmentType.Pharmacy);
+        items = getFacade().findByJpql(sql, params);
     }
 
     public void prepareAdd() {
         current = new Vtm();
+        current.setDepartmentType(DepartmentType.Pharmacy);
         editable = true;
     }
 
     public void edit() {
-        if (current == null) {
-            JsfUtil.addErrorMessage("Select one to edit");
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("Please select a VTM to edit");
             return;
+        }
+        if (current.isRetired()) {
+            JsfUtil.addWarningMessage("Editing inactive VTM '" + current.getName() + "'");
         }
         editable = true;
     }
@@ -311,15 +340,46 @@ public class VtmController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
-        if (getCurrent().getId() != null) {
-            getFacade().edit(getCurrent());
-            JsfUtil.addSuccessMessage("Updated Successfully.");
-        } else {
-            getCurrent().setCreatedAt(new Date());
-            getCurrent().setCreater(getSessionController().getLoggedUser());
-            getFacade().create(getCurrent());
-            JsfUtil.addSuccessMessage("Saved Successfully");
+
+        // Validate before saving
+        if (!validateVtm()) {
+            return;
         }
+
+        try {
+            if (getCurrent().getId() != null) {
+                // UPDATE - capture before state
+                Vtm beforeUpdate = getFacade().find(getCurrent().getId());
+                Map<String, Object> beforeData = createAuditMap(beforeUpdate);
+
+                getFacade().edit(getCurrent());
+
+                Map<String, Object> afterData = createAuditMap(getCurrent());
+                auditService.logAudit(beforeData, afterData,
+                                    getSessionController().getLoggedUser(),
+                                    "Vtm", "Update VTM", getCurrent().getId());
+
+                JsfUtil.addSuccessMessage("VTM '" + getCurrent().getName() + "' updated successfully");
+                editable = false;
+            } else {
+                // CREATE - no before state
+                getCurrent().setCreatedAt(new Date());
+                getCurrent().setCreater(getSessionController().getLoggedUser());
+                getFacade().create(getCurrent());
+
+                Map<String, Object> afterData = createAuditMap(getCurrent());
+                auditService.logAudit(null, afterData,
+                                    getSessionController().getLoggedUser(),
+                                    "Vtm", "Create VTM", getCurrent().getId());
+
+                JsfUtil.addSuccessMessage("VTM '" + getCurrent().getName() + "' created successfully");
+                editable = false;
+            }
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving VTM '" + (getCurrent().getName() != null ? getCurrent().getName() : "Unknown") + "': " + e.getMessage());
+            e.printStackTrace();
+        }
+
         items = null;
         getItems();
     }
@@ -371,15 +431,30 @@ public class VtmController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
-            current.setRetired(true);
-            current.setRetiredAt(new Date());
-            current.setRetirer(getSessionController().getLoggedUser());
-            getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Deleted Successfully");
+            String vtmName = current.getName();
+            try {
+                // Capture before state for audit
+                Map<String, Object> beforeData = createAuditMap(current);
+
+                current.setRetired(true);
+                current.setRetiredAt(new Date());
+                current.setRetirer(getSessionController().getLoggedUser());
+                getFacade().edit(current);
+
+                // Capture after state for audit
+                Map<String, Object> afterData = createAuditMap(current);
+                auditService.logAudit(beforeData, afterData,
+                                    getSessionController().getLoggedUser(),
+                                    "Vtm", "Delete VTM", current.getId());
+
+                JsfUtil.addSuccessMessage("VTM '" + (vtmName != null ? vtmName : "Unknown") + "' deleted successfully");
+            } catch (Exception e) {
+                JsfUtil.addErrorMessage("Error deleting VTM '" + (vtmName != null ? vtmName : "Unknown") + "': " + e.getMessage());
+                e.printStackTrace();
+            }
         } else {
-            JsfUtil.addErrorMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("No VTM selected for deletion");
         }
         current = null;
         items = null;
@@ -394,8 +469,13 @@ public class VtmController implements Serializable {
 
     public List<Vtm> getItems() {
         if (items == null) {
-            String sql = "select c from Vtm c where c.retired=false order by c.name";
-            items = getFacade().findByJpql(sql);
+            String sql = "SELECT c FROM Vtm c WHERE c.retired=:retired " +
+                        "AND (c.departmentType IS NULL OR c.departmentType=:dep) " +
+                        "ORDER BY c.name";
+            Map<String, Object> params = new HashMap<>();
+            params.put("retired", false);
+            params.put("dep", DepartmentType.Pharmacy);
+            items = getFacade().findByJpql(sql, params);
         }
         return items;
     }
@@ -414,6 +494,86 @@ public class VtmController implements Serializable {
 
     public void setEditable(boolean editable) {
         this.editable = editable;
+    }
+
+    private Map<String, Object> createAuditMap(Vtm vtm) {
+        Map<String, Object> auditData = new HashMap<>();
+        if (vtm != null) {
+            auditData.put("id", vtm.getId());
+            auditData.put("name", vtm.getName());
+            auditData.put("code", vtm.getCode());
+            auditData.put("retired", vtm.isRetired());
+            auditData.put("departmentType", vtm.getDepartmentType() != null ? vtm.getDepartmentType().toString() : null);
+            auditData.put("description", vtm.getDescription());
+            auditData.put("instructions", vtm.getInstructions());
+        }
+        return auditData;
+    }
+
+    public boolean checkVtmName(String name, Vtm savingVtm) {
+        if (savingVtm == null || name == null || name.trim().isEmpty()) {
+            return false;
+        }
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "SELECT c FROM Vtm c WHERE c.retired=:retired AND UPPER(c.name)=:name";
+        if (savingVtm.getId() != null) {
+            jpql += " AND c.id <> :id";
+            params.put("id", savingVtm.getId());
+        }
+        params.put("retired", false);
+        params.put("name", name.toUpperCase().trim());
+        Vtm vtm = getFacade().findFirstByJpql(jpql, params);
+        return vtm != null;
+    }
+
+    public boolean checkVtmCode(String code, Vtm savingVtm) {
+        if (savingVtm == null || code == null || code.trim().isEmpty()) {
+            return false;
+        }
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "SELECT c FROM Vtm c WHERE c.retired=:retired AND UPPER(c.code)=:code";
+        if (savingVtm.getId() != null) {
+            jpql += " AND c.id <> :id";
+            params.put("id", savingVtm.getId());
+        }
+        params.put("retired", false);
+        params.put("code", code.toUpperCase().trim());
+        Vtm vtm = getFacade().findFirstByJpql(jpql, params);
+        return vtm != null;
+    }
+
+    private boolean validateVtm() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No VTM selected for validation");
+            return false;
+        }
+
+        // Validate name
+        if (current.getName() == null || current.getName().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("VTM name is required");
+            return false;
+        }
+
+        // Check name uniqueness
+        if (checkVtmName(current.getName(), current)) {
+            JsfUtil.addErrorMessage("A VTM with this name already exists");
+            return false;
+        }
+
+        // Check code uniqueness if provided
+        if (current.getCode() != null && !current.getCode().trim().isEmpty()) {
+            if (checkVtmCode(current.getCode(), current)) {
+                JsfUtil.addErrorMessage("A VTM with this code already exists");
+                return false;
+            }
+        }
+
+        // Validate department type consistency
+        if (current.getDepartmentType() != null && current.getDepartmentType() != DepartmentType.Pharmacy) {
+            JsfUtil.addWarningMessage("VTM department type should be Pharmacy for proper categorization");
+        }
+
+        return true;
     }
 
     /**
