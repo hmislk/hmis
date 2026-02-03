@@ -2334,6 +2334,13 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             JsfUtil.addErrorMessage("Please select an Item");
             return;
         }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Package bill – Reloading of Packages with Consideration of Expiry Date.", false)) {
+            if (getCurrentBillItem().getItem().getExpired()) {
+                JsfUtil.addErrorMessage("Selected Package is Expired.");
+                return;
+            }
+        }
 
         List<Item> itemList = getBillBean().itemFromPackage(currentBillItem.getItem());
         for (Item i : itemList) {
