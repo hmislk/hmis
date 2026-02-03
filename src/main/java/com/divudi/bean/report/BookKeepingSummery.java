@@ -15,6 +15,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.DepartmentPayment;
+import com.divudi.core.data.dto.CategoryDayEndReportDto;
 import com.divudi.core.data.table.String1Value2;
 import com.divudi.core.data.table.String1Value3;
 import com.divudi.core.data.table.String3Value2;
@@ -157,6 +158,20 @@ public class BookKeepingSummery implements Serializable {
     List<Bill> billedBills;
     List<Bill> cans;
     List<Bill> refs;
+
+    // DTO-based variables for optimized Category Day End Report
+    private List<CategoryDayEndReportDto> opdCashDtoList;
+    private List<CategoryDayEndReportDto> opdCreditDtoList;
+    private List<CategoryDayEndReportDto> pharmacySalesDtoList;
+    private List<CategoryDayEndReportDto> pharmacyWholeSalesDtoList;
+    private List<CategoryDayEndReportDto> inwardCollectionsDtoList;
+    private List<CategoryDayEndReportDto> channelBillsDtoList;
+    private double opdCashDtoTotal;
+    private double opdCreditDtoTotal;
+    private double pharmacyDtoTotal;
+    private double inwardDtoTotal;
+    private double channelDtoTotal;
+    private double grandDtoTotal;
 
     public void makeNull() {
         //List
@@ -4313,6 +4328,277 @@ public class BookKeepingSummery implements Serializable {
 
     }
 
+    /**
+     * DTO-based method for Category Day End Report - Optimized for performance
+     * This method uses direct DTO queries instead of fetching entities
+     * Resolves issue #18380 - timeout problems with entity-based approach
+     */
+    public void createCashCategoryWithProDayDto() {
+        makeNullDto();
+        long lng = CommonFunctions.getDayCount(getFromDate(), getToDate());
+
+        if (Math.abs(lng) > 2) {
+            JsfUtil.addErrorMessage("Date Range is too Long");
+            return;
+        }
+
+        // OPD Cash and Credit collections using DTO
+        opdCashDtoList = fetchOpdCollectionsByPaymentMethodDto(
+            Arrays.asList(PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card)
+        );
+        opdCreditDtoList = fetchOpdCollectionsByPaymentMethodDto(
+            Arrays.asList(PaymentMethod.Credit)
+        );
+
+        // Calculate totals from DTO lists
+        opdCashDtoTotal = calculateDtoTotal(opdCashDtoList);
+        opdCreditDtoTotal = calculateDtoTotal(opdCreditDtoList);
+
+        // Pharmacy collections using DTO
+        pharmacySalesDtoList = fetchPharmacyCollectionsDto(BillType.PharmacySale);
+        pharmacyWholeSalesDtoList = fetchPharmacyCollectionsDto(BillType.PharmacyWholeSale);
+        pharmacyDtoTotal = calculateDtoTotal(pharmacySalesDtoList) + calculateDtoTotal(pharmacyWholeSalesDtoList);
+
+        // Channel collections using DTO
+        channelBillsDtoList = fetchChannelCollectionsDto();
+        channelDtoTotal = calculateDtoTotal(channelBillsDtoList);
+
+        // Inward collections using DTO
+        inwardCollectionsDtoList = fetchInwardCollectionsDto();
+        inwardDtoTotal = calculateDtoTotal(inwardCollectionsDtoList);
+
+        // Calculate grand total
+        grandDtoTotal = opdCashDtoTotal + opdCreditDtoTotal + pharmacyDtoTotal +
+                       channelDtoTotal + inwardDtoTotal;
+
+        // Keep using entity-based methods for sections that are already performant
+        // Agent and collecting centre collections
+        agentCollections = getBillBean().fetchBills(BillType.AgentPaymentReceiveBill, getFromDate(), getToDate(), getInstitution());
+        collectingCentreCollections = getBillBean().fetchBills(BillType.CollectingCentrePaymentReceiveBill, getFromDate(), getToDate(), getInstitution());
+
+        // Credit company collections
+        creditCompanyCollections = getBillBean().fetchBillItems(BillType.CashRecieveBill, true, fromDate, toDate, institution);
+        creditCompanyCollectionsInward = getBillBean().fetchBillItems(BillType.CashRecieveBill, false, fromDate, toDate, institution);
+        creditCompanyCollectionsPharmacy = getBillBean().fetchBillItemsPharmacy(BillType.CashRecieveBill, fromDate, toDate, institution);
+        creditCompanyCollectionsPharmacyOld = getBillBean().fetchBillItemsPharmacyOld(BillType.CashRecieveBill, fromDate, toDate, institution);
+
+        // Professional payments
+        PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card};
+        departmentProfessionalPayments = createDoctorPaymentOpdBySpecility(null, Arrays.asList(PaymentMethod.Credit));
+        departmentProfessionalPaymentsCredit = createDoctorPaymentOpdBySpecility(Arrays.asList(PaymentMethod.Credit), null);
+        createDoctorPaymentChannelling();
+        createDoctorPaymentInward();
+
+        // Payment method specific bills
+        creditCardBill = getBillBean().fetchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
+        chequeBill = getBillBean().fetchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
+        slipBill = getBillBean().fetchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
+
+        // Calculate totals
+        agentPaymentTotal = getBillBean().calBillTotal(BillType.AgentPaymentReceiveBill, fromDate, toDate, institution);
+        collectingCentrePaymentTotal = getBillBean().calBillTotal(BillType.CollectingCentrePaymentReceiveBill, fromDate, toDate, institution);
+        creditCompanyTotal = getBillBean().calBillTotal(BillType.CashRecieveBill, true, fromDate, toDate, institution);
+        creditCompanyTotalInward = getBillBean().calBillTotal(BillType.CashRecieveBill, false, fromDate, toDate, institution);
+        creditCompanyTotalPharmacy = getBillBean().calBillTotalPharmacy(BillType.CashRecieveBill, fromDate, toDate, institution);
+        creditCompanyTotalPharmacyOld = getBillBean().calBillTotalPharmacyold(BillType.CashRecieveBill, fromDate, toDate, institution);
+        pettyCashTotal = getBillBean().calBillTotal(BillType.PettyCash, fromDate, toDate, institution);
+
+        FeeType[] feeTypes = {FeeType.OwnInstitution, FeeType.CollectingCentre};
+        opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), Arrays.asList(feeTypes), getInstitution(), creditCompany, Arrays.asList(paymentMethods));
+        opdStaffTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Staff, getInstitution(), creditCompany, Arrays.asList(paymentMethods));
+        opdHospitalTotalCredit = getBillBean().calFeeValue(getFromDate(), getToDate(), Arrays.asList(feeTypes), getInstitution(), creditCompany, Arrays.asList(PaymentMethod.Credit));
+        opdStaffTotalCredit = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Staff, getInstitution(), creditCompany, Arrays.asList(PaymentMethod.Credit));
+
+        departmentProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution, null, Arrays.asList(PaymentMethod.Credit));
+        departmentProfessionalPaymentTotalCredit = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution, Arrays.asList(PaymentMethod.Credit), null);
+
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.ChannelCash);
+        bts.add(BillType.ChannelAgent);
+        bts.add(BillType.ChannelPaid);
+        channellingProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, bts);
+
+        createDoctorPaymentInwardByCategoryAndSpeciality();
+
+        creditCardTotal = getBillBean().calBillTotal(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
+        chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
+        slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
+
+        createFinalSummery();
+    }
+
+    /**
+     * Initialize DTO-based variables to null/zero
+     */
+    private void makeNullDto() {
+        opdCashDtoList = null;
+        opdCreditDtoList = null;
+        pharmacySalesDtoList = null;
+        pharmacyWholeSalesDtoList = null;
+        inwardCollectionsDtoList = null;
+        channelBillsDtoList = null;
+        opdCashDtoTotal = 0;
+        opdCreditDtoTotal = 0;
+        pharmacyDtoTotal = 0;
+        inwardDtoTotal = 0;
+        channelDtoTotal = 0;
+        grandDtoTotal = 0;
+
+        // Also clear existing entity-based variables
+        makeNull();
+    }
+
+    /**
+     * Fetch OPD collections grouped by category using DTO
+     */
+    private List<CategoryDayEndReportDto> fetchOpdCollectionsByPaymentMethodDto(List<PaymentMethod> paymentMethods) {
+        List<CategoryDayEndReportDto> dtoList = new ArrayList<>();
+
+        if (institution == null || fromDate == null || toDate == null) {
+            return dtoList;
+        }
+
+        String jpql = "SELECT NEW com.divudi.core.data.dto.CategoryDayEndReportDto("
+                + "COALESCE(c.name, 'No Category'), "
+                + "SUM(bi.netValue), "
+                + "COUNT(DISTINCT b.id)) "
+                + "FROM BillItem bi JOIN bi.bill b "
+                + "LEFT JOIN bi.item.category c "
+                + "WHERE b.billType IN :billTypes "
+                + "AND b.institution = :ins "
+                + "AND b.createdAt BETWEEN :fd AND :td "
+                + "AND b.paymentMethod IN :pm "
+                + "AND b.retired = false "
+                + "GROUP BY c.name "
+                + "ORDER BY c.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billTypes", Arrays.asList(BillType.OpdBill));
+        params.put("ins", institution);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("pm", paymentMethods);
+
+        dtoList = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        return dtoList == null ? new ArrayList<>() : dtoList;
+    }
+
+    /**
+     * Fetch pharmacy collections grouped by category using DTO
+     */
+    private List<CategoryDayEndReportDto> fetchPharmacyCollectionsDto(BillType billType) {
+        List<CategoryDayEndReportDto> dtoList = new ArrayList<>();
+
+        if (institution == null || fromDate == null || toDate == null) {
+            return dtoList;
+        }
+
+        String jpql = "SELECT NEW com.divudi.core.data.dto.CategoryDayEndReportDto("
+                + "COALESCE(c.name, 'No Category'), "
+                + "SUM(bi.netValue), "
+                + "COUNT(DISTINCT b.id)) "
+                + "FROM BillItem bi JOIN bi.bill b "
+                + "LEFT JOIN bi.item.category c "
+                + "WHERE b.billType = :bt "
+                + "AND b.institution = :ins "
+                + "AND b.createdAt BETWEEN :fd AND :td "
+                + "AND b.retired = false "
+                + "GROUP BY c.name "
+                + "ORDER BY c.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", billType);
+        params.put("ins", institution);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        dtoList = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        return dtoList == null ? new ArrayList<>() : dtoList;
+    }
+
+    /**
+     * Fetch channel collections grouped by category using DTO
+     */
+    private List<CategoryDayEndReportDto> fetchChannelCollectionsDto() {
+        List<CategoryDayEndReportDto> dtoList = new ArrayList<>();
+
+        if (institution == null || fromDate == null || toDate == null) {
+            return dtoList;
+        }
+
+        String jpql = "SELECT NEW com.divudi.core.data.dto.CategoryDayEndReportDto("
+                + "COALESCE(c.name, 'Channel'), "
+                + "SUM(b.netTotal), "
+                + "COUNT(b.id)) "
+                + "FROM Bill b "
+                + "LEFT JOIN b.billItems bi "
+                + "LEFT JOIN bi.item.category c "
+                + "WHERE b.billType IN :billTypes "
+                + "AND b.institution = :ins "
+                + "AND b.createdAt BETWEEN :fd AND :td "
+                + "AND b.retired = false "
+                + "GROUP BY c.name "
+                + "ORDER BY c.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billTypes", Arrays.asList(BillType.ChannelCash, BillType.ChannelAgent, BillType.ChannelPaid));
+        params.put("ins", institution);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        dtoList = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        return dtoList == null ? new ArrayList<>() : dtoList;
+    }
+
+    /**
+     * Fetch inward collections grouped by category using DTO
+     */
+    private List<CategoryDayEndReportDto> fetchInwardCollectionsDto() {
+        List<CategoryDayEndReportDto> dtoList = new ArrayList<>();
+
+        if (institution == null || fromDate == null || toDate == null) {
+            return dtoList;
+        }
+
+        String jpql = "SELECT NEW com.divudi.core.data.dto.CategoryDayEndReportDto("
+                + "COALESCE(c.name, 'Inward'), "
+                + "SUM(bi.netValue), "
+                + "COUNT(DISTINCT b.id)) "
+                + "FROM BillItem bi JOIN bi.bill b "
+                + "LEFT JOIN bi.item.category c "
+                + "WHERE b.billType IN :billTypes "
+                + "AND b.institution = :ins "
+                + "AND b.createdAt BETWEEN :fd AND :td "
+                + "AND b.retired = false "
+                + "GROUP BY c.name "
+                + "ORDER BY c.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billTypes", Arrays.asList(BillType.InwardBill, BillType.InwardPaymentBill));
+        params.put("ins", institution);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        dtoList = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        return dtoList == null ? new ArrayList<>() : dtoList;
+    }
+
+    /**
+     * Calculate total from DTO list
+     */
+    private double calculateDtoTotal(List<CategoryDayEndReportDto> dtoList) {
+        if (dtoList == null || dtoList.isEmpty()) {
+            return 0.0;
+        }
+        return dtoList.stream()
+                .mapToDouble(CategoryDayEndReportDto::getTotalValue)
+                .sum();
+    }
+
     Institution creditCompany;
 
     public Institution getCreditCompany() {
@@ -5364,6 +5650,104 @@ public class BookKeepingSummery implements Serializable {
 
     public void setOnlineSettlementBill(List<Bill> onlineSettlementBill) {
         this.onlineSettlementBill = onlineSettlementBill;
+    }
+
+    // Getters and Setters for DTO-based variables
+
+    public List<CategoryDayEndReportDto> getOpdCashDtoList() {
+        return opdCashDtoList;
+    }
+
+    public void setOpdCashDtoList(List<CategoryDayEndReportDto> opdCashDtoList) {
+        this.opdCashDtoList = opdCashDtoList;
+    }
+
+    public List<CategoryDayEndReportDto> getOpdCreditDtoList() {
+        return opdCreditDtoList;
+    }
+
+    public void setOpdCreditDtoList(List<CategoryDayEndReportDto> opdCreditDtoList) {
+        this.opdCreditDtoList = opdCreditDtoList;
+    }
+
+    public List<CategoryDayEndReportDto> getPharmacySalesDtoList() {
+        return pharmacySalesDtoList;
+    }
+
+    public void setPharmacySalesDtoList(List<CategoryDayEndReportDto> pharmacySalesDtoList) {
+        this.pharmacySalesDtoList = pharmacySalesDtoList;
+    }
+
+    public List<CategoryDayEndReportDto> getPharmacyWholeSalesDtoList() {
+        return pharmacyWholeSalesDtoList;
+    }
+
+    public void setPharmacyWholeSalesDtoList(List<CategoryDayEndReportDto> pharmacyWholeSalesDtoList) {
+        this.pharmacyWholeSalesDtoList = pharmacyWholeSalesDtoList;
+    }
+
+    public List<CategoryDayEndReportDto> getInwardCollectionsDtoList() {
+        return inwardCollectionsDtoList;
+    }
+
+    public void setInwardCollectionsDtoList(List<CategoryDayEndReportDto> inwardCollectionsDtoList) {
+        this.inwardCollectionsDtoList = inwardCollectionsDtoList;
+    }
+
+    public List<CategoryDayEndReportDto> getChannelBillsDtoList() {
+        return channelBillsDtoList;
+    }
+
+    public void setChannelBillsDtoList(List<CategoryDayEndReportDto> channelBillsDtoList) {
+        this.channelBillsDtoList = channelBillsDtoList;
+    }
+
+    public double getOpdCashDtoTotal() {
+        return opdCashDtoTotal;
+    }
+
+    public void setOpdCashDtoTotal(double opdCashDtoTotal) {
+        this.opdCashDtoTotal = opdCashDtoTotal;
+    }
+
+    public double getOpdCreditDtoTotal() {
+        return opdCreditDtoTotal;
+    }
+
+    public void setOpdCreditDtoTotal(double opdCreditDtoTotal) {
+        this.opdCreditDtoTotal = opdCreditDtoTotal;
+    }
+
+    public double getPharmacyDtoTotal() {
+        return pharmacyDtoTotal;
+    }
+
+    public void setPharmacyDtoTotal(double pharmacyDtoTotal) {
+        this.pharmacyDtoTotal = pharmacyDtoTotal;
+    }
+
+    public double getInwardDtoTotal() {
+        return inwardDtoTotal;
+    }
+
+    public void setInwardDtoTotal(double inwardDtoTotal) {
+        this.inwardDtoTotal = inwardDtoTotal;
+    }
+
+    public double getChannelDtoTotal() {
+        return channelDtoTotal;
+    }
+
+    public void setChannelDtoTotal(double channelDtoTotal) {
+        this.channelDtoTotal = channelDtoTotal;
+    }
+
+    public double getGrandDtoTotal() {
+        return grandDtoTotal;
+    }
+
+    public void setGrandDtoTotal(double grandDtoTotal) {
+        this.grandDtoTotal = grandDtoTotal;
     }
 
 }
