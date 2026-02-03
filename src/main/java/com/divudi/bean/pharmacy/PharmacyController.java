@@ -5606,6 +5606,10 @@ public class PharmacyController implements Serializable {
         addFilter(sql, parameters, "b.toInstitution", "tIns", toInstitution);
         addFilter(sql, parameters, "b.toDepartment.site", "tSite", toSite);
         addFilter(sql, parameters, "b.toDepartment", "tDept", toDepartment);
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+            sql.append(" AND b.departmentType IN :departmentTypes ");
+            parameters.put("departmentTypes", selectedDepartmentTypes);
+        }
     }
 
     public void generateReportByBillItems(BillType billType) {
@@ -5635,6 +5639,10 @@ public class PharmacyController implements Serializable {
             addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
             addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
             addFilter(sql, parameters, "bi.item", "item", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                sql.append(" AND bi.bill.departmentType IN :departmentTypes ");
+                parameters.put("departmentTypes", selectedDepartmentTypes);
+            }
 
             sql.append(" ORDER BY bi.id DESC");
 
@@ -5725,6 +5733,10 @@ public class PharmacyController implements Serializable {
             addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
             addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
             addFilter(sql, parameters, "bi.item", "item", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                sql.append(" AND bi.bill.departmentType IN :departmentTypes ");
+                parameters.put("departmentTypes", selectedDepartmentTypes);
+            }
 
             sql.append(" ORDER BY bi.id DESC");
 
@@ -5816,6 +5828,10 @@ public class PharmacyController implements Serializable {
         addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
         addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
         addFilter(sql, parameters, "bi.item", "item", item);
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+            sql.append(" AND bi.bill.departmentType IN :departmentTypes ");
+            parameters.put("departmentTypes", selectedDepartmentTypes);
+        }
 
         try {
             List<BillItem> items = getBillItemFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
