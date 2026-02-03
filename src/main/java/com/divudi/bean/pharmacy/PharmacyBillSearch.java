@@ -1644,6 +1644,7 @@ public class PharmacyBillSearch implements Serializable {
 
         cb.setComments(getComment());
         cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+        cb.setCompleted(true);
 
         return cb;
     }
