@@ -51,15 +51,23 @@
                                     </p:tab>
                                     <p:tab title="Medicine Component Management">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="VTMs" 
-                                                action="#{pharmacyController.navigateToVtm()}" />
-                                            <p:commandButton 
-                                                class="w-100" 
-                                                ajax="false" 
-                                                value="ATMs" 
+<!--                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="VTMs (Entity)"
+                                                action="#{pharmacyController.navigateToVtm()}"
+                                                title="Traditional VTM management with full entity operations" />-->
+                                            <p:commandButton
+                                                class="w-100 ui-button-success"
+                                                ajax="false"
+                                                value="VTMs"
+                                                action="#{pharmacyController.navigateToVtmDto()}"
+                                                icon="fa fa-rocket"
+                                                title="VTM management" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="ATMs"
                                                 action="#{pharmacyController.navigateToAtm()}" />
                                             <p:commandButton 
                                                 class="w-100" 
