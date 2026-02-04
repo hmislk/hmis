@@ -12,6 +12,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.Duration;
 import java.util.Properties;
+import javax.ejb.EJB;
+import com.divudi.service.ApplicationStartupTimeService;
 
 /**
  *
@@ -20,6 +22,9 @@ import java.util.Properties;
 @Named
 @ApplicationScoped
 public class VersionController {
+
+    @EJB
+    private ApplicationStartupTimeService startupTimeService;
 
     private String systemVersion; // Stores the system version read from VERSION.txt
 
@@ -165,6 +170,57 @@ public class VersionController {
             }
         } catch (Exception e) {
             // If parsing fails, return null
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Gets the application startup time (when Payara server started or application was deployed)
+     * @return Formatted timestamp of when the application started
+     */
+    public String getApplicationStartupTime() {
+        if (startupTimeService == null || startupTimeService.getStartupTime() == null) {
+            return null;
+        }
+        ZonedDateTime startupTime = startupTimeService.getStartupTime();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z");
+        return startupTime.format(formatter);
+    }
+
+    /**
+     * Gets the time elapsed since application startup in a human-readable format
+     * @return A string like "2 minutes ago", "3 hours ago", "14 days ago", etc.
+     */
+    public String getApplicationStartupTimeElapsed() {
+        if (startupTimeService == null || startupTimeService.getStartupTime() == null) {
+            return null;
+        }
+
+        try {
+            ZonedDateTime startupTime = startupTimeService.getStartupTime();
+            ZonedDateTime now = ZonedDateTime.now(startupTime.getZone());
+            Duration duration = Duration.between(startupTime, now);
+            long totalMinutes = duration.toMinutes();
+            long totalHours = duration.toHours();
+            long totalDays = duration.toDays();
+
+            if (totalMinutes < 1) {
+                return "just now";
+            } else if (totalMinutes < 60) {
+                return totalMinutes == 1 ? "1 minute ago" : totalMinutes + " minutes ago";
+            } else if (totalHours < 24) {
+                return totalHours == 1 ? "1 hour ago" : totalHours + " hours ago";
+            } else if (totalDays < 30) {
+                return totalDays == 1 ? "1 day ago" : totalDays + " days ago";
+            } else if (totalDays < 365) {
+                long months = totalDays / 30;
+                return months == 1 ? "1 month ago" : months + " months ago";
+            } else {
+                long years = totalDays / 365;
+                return years == 1 ? "1 year ago" : years + " years ago";
+            }
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
