@@ -29,10 +29,10 @@
                     <div class="row mb-3">
                         <div class="col-12">
                             <p:commandButton
-                                value="Back to VTM Management"
+                                value="Back"
                                 icon="fas fa-arrow-left"
                                 action="/pharmacy/admin/vtm_dto?faces-redirect=true"
-                                class="ui-button-secondary mr-2"
+                                class="ui-button-secondary m-1"
                                 immediate="true" />
 
                             <p:commandButton
@@ -40,14 +40,13 @@
                                 icon="fas fa-sync"
                                 action="#{vtmController.fillVtmAuditEvents}"
                                 update=":form:auditTable :form:msg"
-                                class="ui-button-info" />
+                                class="ui-button-info m-1" />
 
                             <p:commandButton
                                 value="Debug All VTM Events"
                                 icon="fas fa-bug"
                                 action="#{vtmController.debugAllVtmAuditEvents}"
-                                class="ui-button-warning ml-2"
-                                style="margin-left: 10px;" />
+                                class="ui-button-warning m-1"/>
                         </div>
                     </div>
 

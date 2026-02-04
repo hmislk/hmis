@@ -1409,10 +1409,10 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/admin/vmp?faces-redirect=true";
     }
 
-    public String navigateToVtm() {
-        vtmController.fillItems();
-        return "/pharmacy/admin/vtm?faces-redirect=true";
-    }
+//    public String navigateToVtm() {
+//        vtmController.fillItems();
+//        return "/pharmacy/admin/vtm?faces-redirect=true";
+//    }
 
     public String navigateToVtmDto() {
         vtmController.clearDtoCache(); // Ensure fresh DTO data

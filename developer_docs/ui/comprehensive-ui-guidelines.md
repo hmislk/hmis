@@ -1,8 +1,8 @@
 # HMIS UI Development Handbook
 
 ## Scope and Principles
-- Applies to all JSF/PrimeFaces pages in the HMIS ERP web tier.
-- Build with consistency, accessibility, and privilege validation in mind.
+- Applies to all JSF pages
+- Build with consistency, accessibility and privilege validation in mind.
 - Prefer simple, template-aligned solutions before adding custom code or CSS.
 - Keep behaviour aligned with centralized configuration (`configOptionApplicationController`) and feature toggles.
 
@@ -10,14 +10,13 @@
 
 **🚨 These rules MUST be followed when working on UI tasks:**
 
-1. **UI-ONLY CHANGES**: When UI improvements are requested, make ONLY frontend/XHTML changes
-2. **NO BACKEND MODIFICATIONS**: Do NOT add new controller properties, methods, or backend dependencies unless explicitly requested
-3. **KEEP IT SIMPLE**: Use existing controller properties and methods - avoid introducing filteredValues, globalFilter, or new backend logic
-4. **FRONTEND FOCUS**: Stick to HTML/CSS styling, PrimeFaces component attributes, and layout improvements
-5. **ERP UI RULE**: Use `h:outputText` instead of HTML headings (h1-h6)
-6. **PRIMEFACES CSS**: Use PrimeFaces button classes, not Bootstrap button classes
-7. **XHTML STRUCTURE**: HTML DOCTYPE with `ui:composition` and template inside `h:body`
-8. **XML ENTITIES**: Always escape ampersands as `&amp;` in XHTML attributes
+**UI-ONLY CHANGES**: When UI improvements are requested, make ONLY frontend/XHTML changes
+**KEEP IT SIMPLE**: Use existing controller properties and methods - avoid introducing filteredValues, globalFilter, or new backend logic
+**FRONTEND FOCUS**: Stick to HTML/CSS styling, PrimeFaces component attributes, and layout improvements
+**ERP UI RULE**: Use `h:outputText` instead of HTML headings (h1-h6)
+**PRIMEFACES CSS**: Use PrimeFaces button classes, not Bootstrap button classes
+**XHTML STRUCTURE**: HTML DOCTYPE with `ui:composition` and template inside `h:body`
+**XML ENTITIES**: Always escape ampersands as `&amp;` in XHTML attributes
 
 ---
 
@@ -97,16 +96,11 @@
 | Cancel / Close | `ui-button-danger ui-button-outlined` | `fas fa-times` | Always add confirmation. |
 
 Supporting rules:
-- Keep buttons in a flex container (`d-flex gap-2`) or vertical stack when space is limited.
-- Apply `min-width: 90px` to primary buttons; `70px` for secondary ones.
-- Gate every action with `rendered="#{webUserController.hasPrivilege('...')}"`.
-- Add global `<p:confirmDialog>` once per page and attach `<p:confirm>` to destructive buttons.
 - Use `p:growl` for feedback after actions.
 
 ---
 
 ## Data Presentation
-- Use `p:dataTable` with `styleClass="table-striped"` (or other theme classes) and keep a single action column.
 - Align numeric fields with `text-end`, status columns with `text-center`, and specify column widths in `em`.
 - Format numbers with `<f:convertNumber pattern="#,##0.00"/>` and dates with application preference patterns (`#{sessionController.applicationPreference.shortDateTimeFormat}` etc.).
 - Avoid placing decorative icons in every cell; reserve icons for headers or action columns.
@@ -125,7 +119,6 @@ Supporting rules:
 ## Accessibility, Security, and Behaviour
 - Always pair icons with text labels; never rely on colour or icon alone.
 - Provide `title` attributes or `aria` labels for buttons and links.
-- Validate privileges through `webUserController.hasPrivilege()` before rendering actions.
 - Honour configuration toggles (feature flags, color schemes) via `configOptionApplicationController`.
 - Prefer server-side sanitised data and avoid embedding secrets or hard-coded environment values.
 

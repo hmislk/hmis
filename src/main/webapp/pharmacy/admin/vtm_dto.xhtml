@@ -25,7 +25,7 @@
                                             value="Add New"
                                             icon="fa fa-plus"
                                             action="#{vtmController.prepareAdd()}"
-                                            class="m-1 ui-button-success w-25"
+                                            class="m-1 ui-button-success"
                                             update=":form:acVtm :form:gpDetail :form:btnEdit :form:btnDelete :form:btnViewAuditEvents"
                                             process="btnAdd">
                                             <f:setPropertyActionListener target="#{vtmController.selectedVtmDto}" value="#{null}" />
@@ -36,7 +36,7 @@
                                             value="Edit"
                                             icon="fas fa-edit"
                                             action="#{vtmController.edit()}"
-                                            class="m-1 ui-button-info w-25"
+                                            class="m-1 ui-button-info"
                                             update=":form:acVtm :form:gpDetail :form:btnAdd :form:btnDelete :form:btnViewAuditEvents"
                                             process="btnEdit"
                                             disabled="#{vtmController.editable or vtmController.selectedVtmDto eq null}">
@@ -50,23 +50,17 @@
                                             action="#{vtmController.delete()}"
                                             value="Delete"
                                             icon="fas fa-trash"
-                                            class="m-1 ui-button-danger w-25"
+                                            class="m-1 ui-button-danger"
                                             update=":form:acVtm :form:gpDetail :form:msg"
                                             process="btnDelete"
                                             disabled="#{vtmController.editable or vtmController.selectedVtmDto eq null}">
                                         </p:commandButton>
-                                    </div>
-                                </div>
-
-                                <!-- Second row for View Audit Events button -->
-                                <div class="row">
-                                    <div class="col-12">
                                         <p:commandButton
                                             id="btnViewAuditEvents"
-                                            value="View Audit Events"
+                                            value="History"
                                             icon="fas fa-history"
                                             action="#{vtmController.navigateToAuditEvents()}"
-                                            class="m-1 ui-button-secondary w-50"
+                                            class="m-1 ui-button-secondary"
                                             process="btnViewAuditEvents"
                                             ajax="false"
                                             disabled="#{vtmController.selectedVtmDto eq null}">
@@ -192,18 +186,19 @@
                                                 action="#{vtmController.save}"
                                                 class="m-1 ui-button-warning w-25"
                                                 process="btnSave gpDetail"
-                                                update=":form:acVtm :form:gpDetail :form:msg :form:btnEdit :form:btnDelete :form:btnAdd :form:vtmDetails"
+                                                update=":form:acVtm :form:gpDetail :form:msg :form:btnEdit :form:btnDelete :form:btnAdd :form:vtmDetails :form:btnViewAuditEvents"
                                                 disabled="#{!vtmController.editable}"
                                                 oncomplete="try { if (PF('acVtm')) { PF('acVtm').cache = {}; } } catch(e) {}">
                                             </p:commandButton>
                                             <p:commandButton
+                                                immediate="true"
                                                 id="btnCancel"
                                                 value="Cancel"
                                                 icon="fas fa-times"
                                                 action="#{vtmController.cancel()}"
                                                 class="m-1 ui-button-secondary w-25"
                                                 process="btnCancel"
-                                                update=":form:acVtm :form:gpDetail :form:btnEdit :form:btnDelete :form:btnAdd :form:vtmDetails"
+                                                update=":form:acVtm :form:gpDetail :form:btnEdit :form:btnDelete :form:btnAdd :form:vtmDetails :form:btnViewAuditEvents"
                                                 disabled="#{!vtmController.editable}">
                                                 <f:setPropertyActionListener target="#{vtmController.selectedVtmDto}" value="#{null}" />
                                             </p:commandButton>
