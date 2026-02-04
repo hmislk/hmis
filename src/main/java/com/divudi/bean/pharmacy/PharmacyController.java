@@ -3460,6 +3460,11 @@ public class PharmacyController implements Serializable {
                 tmp.put("toDept", toDepartment);
             }
 
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql += " AND b.departmentType IN :departmentTypes";
+                tmp.put("departmentTypes", selectedDepartmentTypes);
+            }
+
             jpql += " order by b.createdAt asc";
 
             bills = getBillFacade().findByJpql(jpql, tmp, TemporalType.TIMESTAMP);
@@ -3615,6 +3620,11 @@ public class PharmacyController implements Serializable {
             if (toDepartment != null) {
                 jpql.append("AND bi.bill.toDepartment = :toDepartment ");
                 parameters.put("toDepartment", toDepartment);
+            }
+
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND bi.bill.departmentType IN :departmentTypes ");
+                parameters.put("departmentTypes", selectedDepartmentTypes);
             }
 
             jpql.append("ORDER BY bi.bill.createdAt ASC");
@@ -4029,6 +4039,11 @@ public class PharmacyController implements Serializable {
             if (toDepartment != null) {
                 jpql += "AND bi.bill.toDepartment = :toDepartment ";
                 parameters.put("toDepartment", toDepartment);
+            }
+
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql += "AND bi.bill.departmentType IN :departmentTypes ";
+                parameters.put("departmentTypes", selectedDepartmentTypes);
             }
 
             // Group by clause - removed rates since we're aggregating values
@@ -5591,6 +5606,10 @@ public class PharmacyController implements Serializable {
         addFilter(sql, parameters, "b.toInstitution", "tIns", toInstitution);
         addFilter(sql, parameters, "b.toDepartment.site", "tSite", toSite);
         addFilter(sql, parameters, "b.toDepartment", "tDept", toDepartment);
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+            sql.append(" AND b.departmentType IN :departmentTypes ");
+            parameters.put("departmentTypes", selectedDepartmentTypes);
+        }
     }
 
     public void generateReportByBillItems(BillType billType) {
@@ -5620,6 +5639,10 @@ public class PharmacyController implements Serializable {
             addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
             addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
             addFilter(sql, parameters, "bi.item", "item", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                sql.append(" AND bi.bill.departmentType IN :departmentTypes ");
+                parameters.put("departmentTypes", selectedDepartmentTypes);
+            }
 
             sql.append(" ORDER BY bi.id DESC");
 
@@ -5710,6 +5733,10 @@ public class PharmacyController implements Serializable {
             addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
             addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
             addFilter(sql, parameters, "bi.item", "item", item);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                sql.append(" AND bi.bill.departmentType IN :departmentTypes ");
+                parameters.put("departmentTypes", selectedDepartmentTypes);
+            }
 
             sql.append(" ORDER BY bi.id DESC");
 
@@ -5801,6 +5828,10 @@ public class PharmacyController implements Serializable {
         addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
         addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
         addFilter(sql, parameters, "bi.item", "item", item);
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+            sql.append(" AND bi.bill.departmentType IN :departmentTypes ");
+            parameters.put("departmentTypes", selectedDepartmentTypes);
+        }
 
         try {
             List<BillItem> items = getBillItemFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
@@ -7612,6 +7643,7 @@ public class PharmacyController implements Serializable {
     }
 
     private Institution institution;
+    private List<DepartmentType> selectedDepartmentTypes;
     private List<StockAverage> stockAverages;
 
     @Inject
@@ -10575,6 +10607,26 @@ public class PharmacyController implements Serializable {
 
     public void setPharmacyHistoryIndex(int pharmacyHistoryIndex) {
         this.pharmacyHistoryIndex = pharmacyHistoryIndex;
+    }
+
+    public List<DepartmentType> getSelectedDepartmentTypes() {
+        if (selectedDepartmentTypes == null) {
+            selectedDepartmentTypes = new ArrayList<>();
+        }
+        return selectedDepartmentTypes;
+    }
+
+    public void setSelectedDepartmentTypes(List<DepartmentType> selectedDepartmentTypes) {
+        this.selectedDepartmentTypes = selectedDepartmentTypes;
+    }
+
+    public List<DepartmentType> getAvailableDepartmentTypes() {
+        return Arrays.asList(
+            DepartmentType.Pharmacy,
+            DepartmentType.Store,
+            DepartmentType.Lab,
+            DepartmentType.Kitchen
+        );
     }
 
     public static class TransferBreakdownGroup implements Serializable {

@@ -180,6 +180,7 @@ public class InwardReportController implements Serializable {
     // for specialty/doctor wise demographic data 
     private List<InwardAdmissionDemographicDataDTO> demographicDataList;
     private boolean demographicDataUnknownGender = false;
+    private boolean demographicGeneratedByDoctor;
 
     private ReportKeyWord reportKeyWord;
 
@@ -539,8 +540,10 @@ public class InwardReportController implements Serializable {
             .append(" left join p.person pp")
             .append(" Where a.retired = false ")
             .append(" And type(a.referringConsultant) = :consultantClass ")
-            .append(" And a.dateOfAdmission <= :toDate ")
-            .append(" And (a.dateOfDischarge >= :fromDate OR a.dateOfDischarge IS NULL) ");
+//            .append(" And a.dateOfAdmission <= :toDate ")
+//            .append(" And (a.dateOfDischarge >= :fromDate OR a.dateOfDischarge IS NULL) ");
+        // date range considered for discharge date
+            .append(" AND a.dateOfDischarge BETWEEN :fromDate AND :toDate ");
 
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
@@ -574,8 +577,10 @@ public class InwardReportController implements Serializable {
         
         if (byDoctor) {
             processDemographicDataDoctorWiseReport(rawList);
+            demographicGeneratedByDoctor = true;
         } else {
             processDemographicDataSpecialtyWiseReport(rawList);
+            demographicGeneratedByDoctor = false;
         }
     }
 
@@ -2728,6 +2733,14 @@ public class InwardReportController implements Serializable {
     
     public void setByDoctor(boolean dw) {
         this.byDoctor = dw;
+    }
+    
+    public boolean isDemographicGeneratedByDoctor() {
+        return demographicGeneratedByDoctor;
+    }
+    
+    public void setDemographicGeneratedByDoctor(boolean dw) {
+        this.demographicGeneratedByDoctor = dw;
     }
     
     public void setDemographicDataList(List<InwardAdmissionDemographicDataDTO> list) {
