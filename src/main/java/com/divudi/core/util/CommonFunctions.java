@@ -10,6 +10,8 @@ import com.divudi.core.data.dataStructure.YearMonthDay;
 
 import java.text.*;
 import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -62,6 +64,33 @@ public class CommonFunctions {
             default:
                 return nm;
         }
+    }
+
+    public static List<MonthInfo> getMonthsBetween(Date fromDate, Date toDate) {
+        List<MonthInfo> monthList = new ArrayList<>();
+
+        // Convert to LocalDate using system default time zone
+        java.time.LocalDate startLocal = fromDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        java.time.LocalDate endLocal = toDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        // Get starting YearMonth and reset to first day of month
+        YearMonth current = YearMonth.from(startLocal.withDayOfMonth(1));
+        YearMonth end = YearMonth.from(endLocal);
+
+        while (!current.isAfter(end)) {
+            // Get start date of the month as LocalDate, then convert back to java.util.Date
+            java.time.LocalDate monthStartLocal = current.atDay(1);
+            Date monthStartDate = Date.from(monthStartLocal.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+            // Get the Month enum
+            Month currentMonth = current.getMonth();
+
+            monthList.add(new MonthInfo(monthStartDate, currentMonth));
+
+            // Increment to the next month
+            current = current.plusMonths(1);
+        }
+        return monthList;
     }
 
     public static String capitalizeFirstLetter(String str) {
