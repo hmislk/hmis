@@ -60,6 +60,33 @@
 
 ---
 
+## Panel Structure Best Practices
+
+### Panel Layout Patterns
+- **Action placement**: Use `f:facet name="header"` for panel-related actions instead of separate button rows
+- **Data display**: Use `p:panelGrid columns="2" layout="tabular"` for label-value pairs instead of Bootstrap grid divs
+- **Avoid over-nesting**: Place dataTable directly in panel content when it's the primary element; don't wrap in additional panels
+
+Example:
+```xhtml
+<p:panel header="Entity Information">
+    <f:facet name="header">
+        <p:commandButton value="Action" styleClass="ui-button-info"/>
+    </f:facet>
+
+    <p:panelGrid columns="2" layout="tabular">
+        <p:outputLabel value="Name:"/>
+        <h:outputText value="#{bean.name}"/>
+    </p:panelGrid>
+
+    <p:dataTable value="#{bean.items}" var="item">
+        <!-- Direct table content -->
+    </p:dataTable>
+</p:panel>
+```
+
+---
+
 ## Forms and Input Patterns
 - Align labels and inputs with `p:outputLabel` + PrimeFaces components; include `for` attributes for accessibility.
 - Reuse controller state; avoid duplicating filters or adding new global variables when not required.
@@ -105,6 +132,30 @@ Supporting rules:
 - Format numbers with `<f:convertNumber pattern="#,##0.00"/>` and dates with application preference patterns (`#{sessionController.applicationPreference.shortDateTimeFormat}` etc.).
 - Avoid placing decorative icons in every cell; reserve icons for headers or action columns.
 - Use neutral currency labels (e.g., `Requested Value`, `Net Amount`) and neutral icons such as `pi pi-money-bill` (or `fas fa-coins` when no PrimeFaces option exists) so pages stay multi-currency friendly.
+
+### Badge Usage for Status Indicators
+- **ALWAYS use PrimeFaces `p:badge`** instead of HTML/Bootstrap badge classes (`badge`, `badge-*`)
+- PrimeFaces badges provide better visibility and theming support
+- Use semantic severity attributes: `success`, `info`, `warning`, `danger`, `secondary`
+- Example implementation:
+```xhtml
+<!-- ❌ AVOID: HTML badges (may not be visible in all themes) -->
+<span class="badge badge-success">Active</span>
+
+<!-- ✅ PREFER: PrimeFaces badges -->
+<p:badge value="Active" severity="success"/>
+
+<!-- ✅ Dynamic severity based on conditions -->
+<p:badge value="#{item.status}"
+         severity="#{item.active ? 'success' : 'danger'}"/>
+```
+- Center-align badge columns with `styleClass="text-center"` for better presentation
+- Common severity mappings:
+  - `success`: Active, Completed, Approved
+  - `danger`: Retired, Failed, Rejected, Cancelled
+  - `warning`: Pending, In Progress, Draft
+  - `info`: Information counts, totals
+  - `secondary`: Codes, identifiers
 
 ---
 

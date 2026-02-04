@@ -742,32 +742,6 @@ public class VtmController implements Serializable {
         return auditEventFacade.findByJpql(jpql, params);
     }
 
-    /**
-     * Debug method to check all VTM-related audit events in system
-     * Temporary method for troubleshooting - remove after issue is resolved
-     */
-    public void debugAllVtmAuditEvents() {
-        String jpql = "select a from AuditEvent a " +
-                     "where a.entityType = :entityType " +
-                     "order by a.eventDataTime desc";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("entityType", "Vtm");
-
-        List<AuditEvent> allVtmEvents = auditEventFacade.findByJpql(jpql, params);
-        System.out.println("=== ALL VTM AUDIT EVENTS DEBUG ===");
-        System.out.println("Total VTM audit events in system: " + allVtmEvents.size());
-
-        for (AuditEvent event : allVtmEvents) {
-            System.out.println("ID: " + event.getId() +
-                             ", ObjectId: " + event.getObjectId() +
-                             ", Trigger: " + event.getEventTrigger() +
-                             ", Status: " + event.getEventStatus() +
-                             ", EntityType: " + event.getEntityType() +
-                             ", Time: " + event.getEventDataTime());
-        }
-        System.out.println("=== END ALL VTM AUDIT EVENTS DEBUG ===");
-    }
 
     /**
      * Navigate to VTM audit events page

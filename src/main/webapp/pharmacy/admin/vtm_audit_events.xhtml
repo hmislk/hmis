@@ -10,128 +10,100 @@
             <ui:define name="subcontent">
                 <h:form id="form">
                     <p:growl id="msg"/>
-
-                    <!-- Page Header -->
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <h3>
-                                <i class="fas fa-history"></i>
-                                VTM Audit Events
-                                <small class="text-muted">
-                                    - #{vtmController.current.name}
-                                    <span class="badge badge-secondary">#{vtmController.current.code}</span>
-                                </small>
-                            </h3>
-                        </div>
-                    </div>
-
-                    <!-- Navigation Buttons -->
-                    <div class="row mb-3">
-                        <div class="col-12">
+                    <p:panel header="VTM Information" styleClass="mb-3">
+                        <f:facet name="header" >
+                            <h:outputText value="VTM Audit Events" />
                             <p:commandButton
-                                value="Back"
+                                value="Back to VTM List"
                                 icon="fas fa-arrow-left"
                                 action="/pharmacy/admin/vtm_dto?faces-redirect=true"
-                                class="ui-button-secondary m-1"
-                                immediate="true" />
+                                styleClass="ui-button-info ui-button-outlined mx-1"
+                                ajax="false"
+                                immediate="true"
+                                title="Return to VTM management"/>
 
                             <p:commandButton
-                                value="Refresh"
+                                value="Refresh Events"
                                 icon="fas fa-sync"
                                 action="#{vtmController.fillVtmAuditEvents}"
                                 update=":form:auditTable :form:msg"
-                                class="ui-button-info m-1" />
+                                styleClass="ui-button-info mx-1"
+                                title="Reload audit events for this VTM"/>
 
-                            <p:commandButton
-                                value="Debug All VTM Events"
-                                icon="fas fa-bug"
-                                action="#{vtmController.debugAllVtmAuditEvents}"
-                                class="ui-button-warning m-1"/>
-                        </div>
-                    </div>
+                        </f:facet>
 
-                    <!-- VTM Information Summary -->
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <p:panel header="VTM Information" styleClass="mb-3">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <strong>Name:</strong> #{vtmController.current.name}<br/>
-                                        <strong>Code:</strong> #{vtmController.current.code}<br/>
-                                        <strong>Status:</strong>
-                                        <span class="badge #{vtmController.current.retired ? 'badge-danger' : 'badge-success'}">
-                                            #{vtmController.current.retired ? 'Retired' : 'Active'}
-                                        </span>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <strong>Department:</strong> #{vtmController.current.departmentType}<br/>
-                                        <strong>Total Audit Events:</strong>
-                                        <span class="badge badge-info">#{vtmController.vtmAuditEvents.size()}</span>
-                                    </div>
+                        <p:panelGrid columns="2" layout="tabular" >
+                            <p:outputLabel for="vtmName" value="Name: "/>
+                            <h:outputText id="vtmName" value="#{vtmController.current.name}"/>
+                            <p:outputLabel for="vtmCode" value="Code: "/>
+                            <h:outputText id="vtmCode" value="#{vtmController.current.code}"/>
+                            <p:outputLabel for="vtmStatus" value="Status: "/>
+                            <p:badge id="vtmStatus"
+                                     value="#{vtmController.current.retired ? 'Retired' : 'Active'}"
+                                     severity="#{vtmController.current.retired ? 'danger' : 'success'}"/>
+                            <p:outputLabel for="vtmDept" value="Department: "/>
+                            <h:outputText id="vtmDept" value="#{vtmController.current.departmentType}"/>
+                            <p:outputLabel for="totalEvents" value="Total Audit Events: "/>
+                            <p:badge id="totalEvents"
+                                     value="#{vtmController.vtmAuditEvents.size()}"
+                                     severity="info"/>
+                        </p:panelGrid>
+                        <p:dataTable
+                            id="auditTable"
+                            value="#{vtmController.vtmAuditEvents}"
+                            var="audit"
+                            paginator="true"
+                            rows="20"
+                            paginatorPosition="both"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} events"
+                            rowsPerPageTemplate="10,20,50,100"
+                            emptyMessage="No audit events found for this VTM."
+                            styleClass="table table-striped">
+
+                            <p:column headerText="ID" style="width: 4em;" styleClass="text-end">
+                                <h:outputText value="#{audit.id}" />
+                            </p:column>
+
+                            <p:column headerText="Date / Time" style="width: 12em;">
+                                <h:outputText value="#{audit.eventDataTime}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Action" style="width: 8em;" styleClass="text-center">
+                                <p:badge value="#{audit.eventTrigger}"
+                                         severity="#{audit.eventTrigger eq 'Create VTM' ? 'success' :
+                                                     (audit.eventTrigger eq 'Update VTM' ? 'warning' : 'danger')}"/>
+                            </p:column>
+
+                            <p:column headerText="User" style="width: 12em;">
+                                <h:outputText value="#{webUserController.findWebUserNameWithTitleById(audit.webUserId)}" />
+                            </p:column>
+
+                            <p:column headerText="Changes" style="width: auto;">
+                                <div class="audit-changes">
+                                    <h:outputText escape="false" value="#{audit.difference}" />
                                 </div>
-                            </p:panel>
-                        </div>
-                    </div>
+                            </p:column>
 
-                    <!-- Audit Events Table -->
-                    <div class="row">
-                        <div class="col-12">
-                            <p:panel header="Audit Events History">
-                                <p:dataTable
-                                    id="auditTable"
-                                    value="#{vtmController.vtmAuditEvents}"
-                                    var="audit"
-                                    paginator="true"
-                                    rows="20"
-                                    paginatorPosition="both"
-                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} events"
-                                    rowsPerPageTemplate="10,20,50,100"
-                                    emptyMessage="No audit events found for this VTM."
-                                    styleClass="table table-striped">
+                            <p:column headerText="Status" style="width: 6em;" styleClass="text-center">
+                                <p:badge value="#{audit.eventStatus}"
+                                         severity="#{audit.eventStatus eq 'Completed' ? 'success' :
+                                                     (audit.eventStatus eq 'Failed' ? 'danger' : 'warning')}"/>
+                            </p:column>
 
-                                    <p:column headerText="#" style="width: 50px;">
-                                        <h:outputText value="#{audit.id}" />
-                                    </p:column>
+                            <p:column headerText="IP Address" style="width: 10em;">
+                                <h:outputText value="#{audit.ipAddress}" styleClass="text-muted" style="font-size: 0.85em;"/>
+                            </p:column>
 
-                                    <p:column headerText="Date / Time" style="width: 150px;">
-                                        <h:outputText value="#{audit.eventDataTime}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                        </h:outputText>
-                                    </p:column>
+                        </p:dataTable>
+                    </p:panel>
 
-                                    <p:column headerText="Action" style="width: 120px;">
-                                        <span class="badge #{audit.eventTrigger eq 'Create VTM' ? 'badge-success' :
-                                                            (audit.eventTrigger eq 'Update VTM' ? 'badge-warning' : 'badge-danger')}">
-                                            #{audit.eventTrigger}
-                                        </span>
-                                    </p:column>
 
-                                    <p:column headerText="User" style="width: 150px;">
-                                        <h:outputText value="#{webUserController.findWebUserNameWithTitleById(audit.webUserId)}" />
-                                    </p:column>
 
-                                    <p:column headerText="Changes" style="width: auto;">
-                                        <div class="audit-changes">
-                                            <h:outputText escape="false" value="#{audit.difference}" />
-                                        </div>
-                                    </p:column>
 
-                                    <p:column headerText="Status" style="width: 80px;">
-                                        <span class="badge #{audit.eventStatus eq 'Completed' ? 'badge-success' :
-                                                            (audit.eventStatus eq 'Failed' ? 'badge-danger' : 'badge-warning')}">
-                                            #{audit.eventStatus}
-                                        </span>
-                                    </p:column>
 
-                                    <p:column headerText="IP" style="width: 120px;">
-                                        <small class="text-muted">#{audit.ipAddress}</small>
-                                    </p:column>
-
-                                </p:dataTable>
-                            </p:panel>
-                        </div>
-                    </div>
 
                     <!-- Load audit events when page loads -->
                     <f:event type="preRenderView" listener="#{vtmController.fillVtmAuditEvents}" />
@@ -149,11 +121,6 @@
                         line-height: 1.3;
                     }
 
-                    .badge {
-                        font-size: 0.75em;
-                        padding: 0.25em 0.5em;
-                    }
-
                     .table th {
                         background-color: #f8f9fa;
                         font-weight: 600;
@@ -163,10 +130,6 @@
                     .table td {
                         vertical-align: middle;
                         padding: 0.75rem 0.5rem;
-                    }
-
-                    .text-muted {
-                        color: #6c757d !important;
                     }
                 </style>
 
