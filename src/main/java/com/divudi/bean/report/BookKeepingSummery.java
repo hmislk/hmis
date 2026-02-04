@@ -4479,7 +4479,7 @@ public class BookKeepingSummery implements Serializable {
         params.put("td", toDate);
         params.put("pm", paymentMethods);
 
-        dtoList = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        dtoList = (List<CategoryDayEndReportDto>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         return dtoList == null ? new ArrayList<>() : dtoList;
     }
@@ -4513,7 +4513,7 @@ public class BookKeepingSummery implements Serializable {
         params.put("fd", fromDate);
         params.put("td", toDate);
 
-        dtoList = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        dtoList = (List<CategoryDayEndReportDto>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         return dtoList == null ? new ArrayList<>() : dtoList;
     }
@@ -4548,7 +4548,7 @@ public class BookKeepingSummery implements Serializable {
         params.put("fd", fromDate);
         params.put("td", toDate);
 
-        dtoList = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        dtoList = (List<CategoryDayEndReportDto>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         return dtoList == null ? new ArrayList<>() : dtoList;
     }
@@ -4582,7 +4582,7 @@ public class BookKeepingSummery implements Serializable {
         params.put("fd", fromDate);
         params.put("td", toDate);
 
-        dtoList = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        dtoList = (List<CategoryDayEndReportDto>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         return dtoList == null ? new ArrayList<>() : dtoList;
     }
