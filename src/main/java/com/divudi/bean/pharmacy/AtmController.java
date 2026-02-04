@@ -63,7 +63,6 @@ public class AtmController implements Serializable {
     private boolean editable;
 
     // DTO properties - For optimized display and reporting
-    private List<AtmDto> atmDtoList;
     private AtmDto selectedAtmDto;
 
     // Audit properties - For viewing audit history
@@ -247,7 +246,6 @@ public class AtmController implements Serializable {
         }
         recreateModel();
         getItems();
-        clearDtoCache(); // Clear DTO cache when data changes
         editable = false;
     }
 
@@ -324,7 +322,6 @@ public class AtmController implements Serializable {
         recreateModel();
         getItems();
         selectedAtmDto = null; // Clear DTO selection after delete
-        clearDtoCache(); // Clear DTO cache when data changes
         current = null;
         getCurrent();
         editable = false;
@@ -359,33 +356,30 @@ public class AtmController implements Serializable {
 
     /**
      * Gets ATM DTOs with department type filtering for pharmacy operations.
-     * Uses lazy loading and caching for optimal performance.
+     * Always returns fresh data without caching.
      *
      * @return List of ATM DTOs filtered for pharmacy department
      */
     public List<AtmDto> getAtmDtos() {
-        if (atmDtoList == null) {
-            String jpql = "SELECT new com.divudi.core.data.dto.AtmDto("
-                    + "a.id, "
-                    + "a.name, "
-                    + "a.code, "
-                    + "a.descreption, "
-                    + "a.retired, "
-                    + "a.vtm.id, "
-                    + "a.vtm.name, "
-                    + "CAST(a.departmentType AS string)) "
-                    + "FROM Atm a WHERE a.retired=:retired "
-                    + "AND a.departmentType=:dep "
-                    + "ORDER BY a.name";
+        String jpql = "SELECT new com.divudi.core.data.dto.AtmDto("
+                + "a.id, "
+                + "a.name, "
+                + "a.code, "
+                + "a.descreption, "
+                + "a.retired, "
+                + "a.vtm.id, "
+                + "a.vtm.name, "
+                + "CAST(a.departmentType AS string)) "
+                + "FROM Atm a WHERE a.retired=:retired "
+                + "AND a.departmentType=:dep "
+                + "ORDER BY a.name";
 
-            Map<String, Object> params = new HashMap<>();
-            params.put("retired", false);
-            params.put("dep", DepartmentType.Pharmacy);
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);
+        params.put("dep", DepartmentType.Pharmacy);
 
-            // Use findLightsByJpql for DTO constructor queries
-            atmDtoList = (List<AtmDto>) getFacade().findLightsByJpql(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
-        }
-        return atmDtoList;
+        // Use findLightsByJpql for DTO constructor queries
+        return (List<AtmDto>) getFacade().findLightsByJpql(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
     }
 
     /**
@@ -486,13 +480,6 @@ public class AtmController implements Serializable {
         );
     }
 
-    /**
-     * Clears the DTO cache to force reload on next access.
-     * Should be called after create, update, or delete operations.
-     */
-    public void clearDtoCache() {
-        atmDtoList = null;
-    }
 
     // ========================== Audit History Methods ==========================
 

@@ -1367,7 +1367,7 @@ public class PharmacyController implements Serializable {
     public String navigateToAtm() {
         atmController.getItems();
         atmController.getCurrent();
-        return "/pharmacy/admin/atm?faces-redirect=true";
+        return "/pharmacy/admin/atm_dto?faces-redirect=true";
     }
 
     public String navigateToManufacturers() {

@@ -73,7 +73,6 @@
                                             class="w-100 m-1"
                                             inputStyleClass="w-100"
                                             id="acAtm"
-                                            widgetVar="acAtm"
                                             value="#{atmController.selectedAtmDto}"
                                             completeMethod="#{atmController.completeAtmDto}"
                                             var="dto"
@@ -83,17 +82,15 @@
                                             forceSelection="true"
                                             disabled="#{atmController.editable}"
                                             placeholder="Type to search Pharmacy ATMs..."
-                                            cache="false"
                                             minQueryLength="2">
                                             <p:ajax event="itemSelect" process="@this" update=":form:gpDetail :form:btnEdit :form:btnDelete :form:btnViewAuditEvents :form:atmDetails" />
-                                            <p:ajax event="change" process="@this" update=":form:gpDetail :form:btnEdit :form:btnDelete :form:btnViewAuditEvents :form:atmDetails" />
-                                            <p:column headerText="Name" >
+                                            <p:column headerText="Name">
                                                 <h:outputText value="#{dto.name}" />
                                             </p:column>
-                                            <p:column headerText="Code" >
+                                            <p:column headerText="Code">
                                                 <h:outputText value="#{dto.code}"/>
                                             </p:column>
-                                            <p:column headerText="VTM" >
+                                            <p:column headerText="VTM">
                                                 <h:outputText value="#{dto.vtmName}"/>
                                             </p:column>
                                         </p:autoComplete>
@@ -211,8 +208,7 @@
                                                 class="m-1 ui-button-warning w-25"
                                                 process="btnSave gpDetail"
                                                 update=":form:acAtm :form:gpDetail :form:msg :form:btnEdit :form:btnDelete :form:btnAdd :form:atmDetails :form:btnViewAuditEvents"
-                                                disabled="#{!atmController.editable}"
-                                                oncomplete="try { if (PF('acAtm')) { PF('acAtm').cache = {}; } } catch(e) {}">
+                                                disabled="#{!atmController.editable}">
                                             </p:commandButton>
                                             <p:commandButton
                                                 immediate="true"
