@@ -39,8 +39,7 @@
                             </p:commandButton>
                             <p:commandButton
                                 id="btnDelete"
-                                onclick="if (!confirm('Are you sure you want to delete the VTM: ' +
-                                        '#{vtmController.current.name}' + '? This action cannot be undone.'))
+                                onclick="if (!confirm('Are you sure you want to delete this VTM? This action cannot be undone.'))
                                             return false;"
                                 action="#{vtmController.delete()}"
                                 value="Delete"
@@ -73,10 +72,10 @@
                                 <f:facet name="header">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span>Manage VTM Details</span>
-                                        <span rendered="#{vtmController.current.id ne null}"
-                                              class="badge #{vtmController.current.retired ? 'badge-danger' : 'badge-success'}">
+                                        <h:panelGroup rendered="#{vtmController.current.id ne null}"
+                                                      styleClass="badge #{vtmController.current.retired ? 'badge-danger' : 'badge-success'}">
                                             #{vtmController.current.retired ? 'Inactive' : 'Active'}
-                                        </span>
+                                        </h:panelGroup>
                                     </div>
                                 </f:facet>
                                 <p:panelGrid

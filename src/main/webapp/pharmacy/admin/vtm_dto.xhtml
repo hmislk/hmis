@@ -68,6 +68,7 @@
                                             action="#{vtmController.navigateToAuditEvents()}"
                                             class="m-1 ui-button-secondary w-50"
                                             process="btnViewAuditEvents"
+                                            ajax="false"
                                             disabled="#{vtmController.selectedVtmDto eq null}">
                                         </p:commandButton>
                                     </div>
@@ -120,14 +121,14 @@
                                         <span>
                                             <i class="fa fa-rocket" /> VTM Details
                                         </span>
-                                        <span rendered="#{vtmController.current ne null and vtmController.current.id ne null}"
-                                              class="badge #{vtmController.current.retired ? 'badge-danger' : 'badge-success'}">
+                                        <h:panelGroup rendered="#{vtmController.current ne null and vtmController.current.id ne null}"
+                                                      styleClass="badge #{vtmController.current.retired ? 'badge-danger' : 'badge-success'}">
                                             #{vtmController.current.retired ? 'Inactive' : 'Active'}
-                                        </span>
-                                        <span rendered="#{vtmController.editable}"
-                                              class="badge badge-warning">
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{vtmController.editable}"
+                                                      styleClass="badge badge-warning">
                                             #{vtmController.current.id ne null ? 'Editing' : 'Adding New'}
-                                        </span>
+                                        </h:panelGroup>
                                     </div>
                                 </f:facet>
 
@@ -212,8 +213,6 @@
                             </p:panel>
                         </div>
                     </div>
-
-                    <p:growl />
 
                 </h:form>
             </ui:define>
