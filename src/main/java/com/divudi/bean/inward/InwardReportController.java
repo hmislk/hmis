@@ -10,11 +10,13 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.EncounterType;
+import com.divudi.core.data.ItemCount;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.dto.InwardAdmissionDTO;
 import com.divudi.core.data.dto.InwardAdmissionDemographicDataDTO;
 import com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO;
+import com.divudi.core.data.dto.MonthlySurgeryCountDTO;
 import com.divudi.core.data.dto.PaymentTypeAdmissionDTO;
 import com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
@@ -44,6 +46,7 @@ import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -140,6 +143,7 @@ public class InwardReportController implements Serializable {
     private List<AdmissionType> admissionTypes;
     List<PatientEncounter> patientEncounters;
     List<BillItem> billItems;
+    private List<MonthlySurgeryCountDTO> monthlySurgeryCountList;
 
     List<BillItem> billedBill;
     List<BillItem> cancelledBill;
@@ -345,6 +349,36 @@ public class InwardReportController implements Serializable {
         billList.add(grandTotal);
 
         createChartModels();
+    }
+    
+    
+    
+    public void processSurgerySurveyReport(){
+        monthlySurgeryCountList = new ArrayList<>();
+        MonthlySurgeryCountDTO monthlySurgeryCountDTO = new MonthlySurgeryCountDTO();
+        List<ItemCount> itemCountList = new ArrayList<>();
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append(" Select new com.divudi.core.data.ItemCount(")
+                .append(" e.item.name, ")
+                .append(" e.item.id, ")
+                .append(" SUM(e) ")
+                .append(") ")
+                .append(" from PatientEncounter e ")
+                .append(" Where e.retired = false ")
+                .append(" AND e.createdAt BETWEEN :fromDate AND :toDate ")
+                .append("Group By e.item");
+
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        itemCountList = (List<ItemCount>) billFacade.findDTOsByJpql(jpql.toString() , params, TemporalType.TIMESTAMP);
+        
+        monthlySurgeryCountDTO.setItemcounts(itemCountList);
+        monthlySurgeryCountDTO.setMonth(Month.JANUARY);
+        
+        monthlySurgeryCountList.add(monthlySurgeryCountDTO);
     }
     
     public void processSpecialtyDoctorWiseIncomeReport() {
@@ -2757,6 +2791,17 @@ public class InwardReportController implements Serializable {
     
     public void setDemographicDataUnknownGender(boolean demographicDataUnknownGender){
         this.demographicDataUnknownGender = demographicDataUnknownGender;
+    }
+
+    public List<MonthlySurgeryCountDTO> getMonthlySurgeryCountList() {
+        if(monthlySurgeryCountList == null){
+            monthlySurgeryCountList = new ArrayList<>();
+        }
+        return monthlySurgeryCountList;
+    }
+
+    public void setMonthlySurgeryCountList(List<MonthlySurgeryCountDTO> monthlySurgeryCountList) {
+        this.monthlySurgeryCountList = monthlySurgeryCountList;
     }
 
     public class IncomeByCategoryRecord {

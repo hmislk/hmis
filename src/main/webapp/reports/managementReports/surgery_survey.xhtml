@@ -25,7 +25,7 @@
                             yearNavigator="true"
                             monthNavigator="true"
                             timeInput="true"
-                            value="#{patientInvestigationController.fromDate}"
+                            value="#{inwardReportController.fromDate}"
                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                             />
                             <p:spacer width="20"/>
@@ -41,7 +41,7 @@
                             yearNavigator="true"
                             monthNavigator="true"
                             timeInput="true"
-                            value="#{patientInvestigationController.fromDate}"
+                            value="#{inwardReportController.toDate}"
                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                             />
                             <p:spacer width="20"/>
@@ -111,7 +111,7 @@
                                 icon="fas fa-cogs"
                                 ajax="false"
                                 value="Process"
-                                action="#"/>
+                                action="#{inwardReportController.processSurgerySurveyReport()}"/>
 
                         <p:commandButton class="ui-button-primary mx-1"
                                          icon="fas fa-print"
@@ -142,6 +142,23 @@
                             
                          <!--Summary Report-->
                         <p:panel header="Surgery Survey Summary Report">
+                            
+                            #{inwardReportController.monthlySurgeryCountList}
+                            
+                            <table>
+                                
+                            <ui:repeat value="#{inwardReportController.monthlySurgeryCountList}" var="msc">
+                                <tr>
+                                    <td>#{msc.month}</td>
+                                    <td>#{msc.itemcounts}</td>
+                                </tr>
+                                
+                                
+                            </ui:repeat>
+                                
+                            </table>
+                            
+                            
                             <p:dataTable id="sumlWise"
                                          value="#"
                                          var="var"

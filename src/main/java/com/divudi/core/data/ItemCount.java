@@ -28,7 +28,12 @@ public class ItemCount {
         this.serviceCount = serviceCount;
     }
 
-
+    public ItemCount(String service, Long serviceId, Long serviceCount) {
+        this.service = service;
+        this.serviceId = serviceId;
+        this.serviceCount = serviceCount;
+    }
+    
 
     public ItemCount(String category, String testName, Long testCount) {
         this.category = category;
