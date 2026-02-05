@@ -131,6 +131,11 @@ public class PharmacyAdjustmentApi {
                 return errorResponse("Request body is required", 400);
             }
 
+            String privilege = "PharmacyAdjustmentSaleRate";
+            if (!webUserService.hasPrivilege(privilege, user, request.getDepartmentId())) {
+                return errorResponse("Not autherized", 401);
+            }
+
             // Process adjustment
             AdjustmentResponseDTO response = adjustmentService.adjustRetailRate(request, user);
             return successResponse(response);
@@ -169,6 +174,11 @@ public class PharmacyAdjustmentApi {
                 return errorResponse("Request body is required", 400);
             }
 
+            String privilege = "PharmacyAdjustmentExpiryDate";
+            if (!webUserService.hasPrivilege(privilege, user, request.getDepartmentId())) {
+                return errorResponse("Not autherized", 401);
+            }
+
             // Process adjustment
             AdjustmentResponseDTO response = adjustmentService.adjustExpiryDate(request, user);
             return successResponse(response);
@@ -205,6 +215,11 @@ public class PharmacyAdjustmentApi {
 
             if (request == null) {
                 return errorResponse("Request body is required", 400);
+            }
+
+            String privilege = "PharmacyAdjustmentPurchaseRate";
+            if (!webUserService.hasPrivilege(privilege, user, request.getDepartmentId())) {
+                return errorResponse("Not autherized", 401);
             }
 
             // Process adjustment
