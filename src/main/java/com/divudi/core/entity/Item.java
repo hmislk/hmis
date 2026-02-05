@@ -213,6 +213,9 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     private Date expiryDate;
     private boolean scanFee;
     double profitMargin;
+    
+    @Transient
+    private Boolean expired;
 
     //Matara Phrmacy Sale Autocomplete
     @ManyToOne
@@ -1665,6 +1668,18 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setAllowedForBillingPriority(boolean allowedForBillingPriority) {
         this.allowedForBillingPriority = allowedForBillingPriority;
+    }
+
+    public Boolean getExpired() {
+        if (expiryDate == null) {
+            return false;
+        }
+        expired = new Date().after(expiryDate);
+        return expired;
+    }
+
+    public void setExpired(Boolean expired) {
+        this.expired = expired;
     }
     
     static class ReportItemComparator implements Comparator<ReportItem> {
