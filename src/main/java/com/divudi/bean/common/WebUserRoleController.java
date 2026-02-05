@@ -34,23 +34,28 @@ import javax.inject.Named;
 @SessionScoped
 public class WebUserRoleController implements Serializable {
 
+    public WebUserRoleController() {
+    }
+    
     @Inject
     SessionController sessionController;
     @Inject
     WebUserRoleUserController webUserRoleUserController;
+    @Inject
+    UserPrivilageController userPrivilageController;
+    
     @EJB
     private WebUserRoleFacade ejbFacade;
 
     private WebUserRole current;
     private List<WebUserRole> items = null;
-
+    private String comment;
 
     public String navigateToManageWebUserRoles(){
         items = findAllItems();
+        comment = null;
         return "/admin/users/user_roles?faces-redirect=true";
     }
-
-
 
     public String navigateToManageWebUserRolePrivileges(){
         if(current==null){
@@ -61,6 +66,7 @@ public class WebUserRoleController implements Serializable {
             JsfUtil.addErrorMessage("Save first");
             return null;
         }
+        userPrivilageController.setPrivilegesLoaded(false);
         return "/admin/users/user_role_privileges?faces-redirect=true";
     }
 
@@ -113,6 +119,7 @@ public class WebUserRoleController implements Serializable {
 
     public void save(WebUserRole r){
         if(r==null){
+            JsfUtil.addErrorMessage("Select the Role");
             return;
         }
         if(r.getId()==null){
@@ -123,18 +130,34 @@ public class WebUserRoleController implements Serializable {
             getFacade().edit(r);
         }
     }
+    
+    public void removeRole(WebUserRole r){
+        if(r == null){
+            JsfUtil.addErrorMessage("Select the Role");
+            return;
+        }
+        if(comment == null || comment.isEmpty()){
+            JsfUtil.addErrorMessage("Comment is mandatory.");
+            return;
+        }
+        r.setRetired(true);
+        r.setRetiredAt(new Date());
+        r.setRetirer(sessionController.getLoggedUser());
+        r.setRetireComments(comment);
+        getFacade().edit(r);
+        JsfUtil.addSuccessMessage("Comment is Mandertory");
+    }
 
     private List<WebUserRole> findAllItems(){
         String jpql = "Select r "
                 + " from WebUserRole r "
-                + " where r.retired=:ret"
+                + " where r.retired=:ret "
                 + " order by r.name";
         Map m = new HashMap<>();
         m.put("ret", false);
+        m.put("act", true);
         return getFacade().findByJpql(jpql, m);
     }
-
-
 
     public WebUserRoleFacade getEjbFacade() {
         return ejbFacade;
@@ -151,11 +174,6 @@ public class WebUserRoleController implements Serializable {
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-
-    public WebUserRoleController() {
-    }
-
-
 
     public WebUserRole getCurrent() {
         return current;
@@ -176,6 +194,13 @@ public class WebUserRoleController implements Serializable {
         return items;
     }
 
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
 
     /**
      *

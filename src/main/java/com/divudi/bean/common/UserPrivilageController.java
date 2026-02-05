@@ -23,6 +23,7 @@ import com.divudi.core.entity.WebUserRolePrivilege;
 import com.divudi.core.facade.WebUserRolePrivilegeFacade;
 import com.divudi.service.AuditEventService;
 import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.facade.WebUserRoleFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -793,7 +794,7 @@ public class UserPrivilageController implements Serializable {
 
     public void saveUserRolePrivileges() {
         if (webUserRole == null) {
-            JsfUtil.addErrorMessage("Please select a user");
+            JsfUtil.addErrorMessage("Please select a User Role");
             return;
         }
         saveWebUserRolePrivileges();
@@ -1041,9 +1042,20 @@ public class UserPrivilageController implements Serializable {
         }
         getRoleFacede().batchCreate(newWups);
         getRoleFacede().batchEdit(oldWups);
+        
+        //Save Last Edit Data
+        webUserRole.setLastUpdateAt(new Date());
+        webUserRole.setLastUpdater(sessionController.getLoggedUser());
+        webUserRoleFacade.edit(webUserRole);
+        System.out.println("Update Last Edit by " + webUserRole.getLastUpdater().getName() +" at " + webUserRole.getLastUpdateAt());
+        
+        
         fillUserRolePrivileges();
         JsfUtil.addSuccessMessage("Updated");
     }
+    
+    @EJB
+    WebUserRoleFacade webUserRoleFacade;
 
     private static void checkNodes(TreeNode root, List<PrivilegeHolder> privilegesToCheck) {
         if (root == null || privilegesToCheck == null || privilegesToCheck.isEmpty()) {
@@ -1302,6 +1314,7 @@ public class UserPrivilageController implements Serializable {
         currentUserPrivilegeHolders = createRolePrivilegeHolders(currentWebUserRolePrivileges);
         unselectTreeNodes(rootTreeNode);
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
+        privilegesLoaded = true;
     }
 
     public List<WebUserRolePrivilege> fetchUserPrivileges(WebUserRole role) {
