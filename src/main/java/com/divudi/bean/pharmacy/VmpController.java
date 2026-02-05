@@ -123,6 +123,7 @@ public class VmpController implements Serializable {
         if (vmp == null) {
             vmp = new Vmp();
             vmp.setName(vmpName);
+            vmp.setDepartmentType(DepartmentType.Pharmacy); // Set to Pharmacy
             String vmpCode = CommonFunctions.nameToCode("vmp_" + vmpName);
             vmp.setSymanticType(SymanticType.Pharmacologic_Substance);
             getFacade().create(vmp);
@@ -214,9 +215,10 @@ public class VmpController implements Serializable {
         if (query == null || query.trim().isEmpty()) {
             vmpList = new ArrayList<>();
         } else {
-            String jpql = "SELECT c FROM Vmp c WHERE c.retired = false AND LOWER(c.name) LIKE :query ORDER BY c.name";
+            String jpql = "SELECT c FROM Vmp c WHERE c.retired = false AND LOWER(c.name) LIKE :query AND c.departmentType=:dep ORDER BY c.name";
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("query", "%" + query.trim().toLowerCase() + "%");
+            parameters.put("dep", DepartmentType.Pharmacy);
 
             vmpList = getFacade().findByJpqlWithoutCache(jpql, parameters);
         }
@@ -311,6 +313,7 @@ public class VmpController implements Serializable {
         v = new Vmp();
         v.setName(vmpName);
         v.setCode("vmp_" + CommonFunctions.nameToCode(vmpName));
+        v.setDepartmentType(DepartmentType.Pharmacy); // Set to Pharmacy
         v.setVtm(vtm);
         v.setDosageForm(dosageForm);
         v.setStrengthOfAnIssueUnit(strengthOfAnIssueUnit);
@@ -341,6 +344,7 @@ public class VmpController implements Serializable {
         v = new Vmp();
         v.setName(vmpName);
         v.setCode("vmp_" + CommonFunctions.nameToCode(vmpName));
+        v.setDepartmentType(DepartmentType.Pharmacy); // Set to Pharmacy
         v.setVtm(vtm);
         v.setDosageForm(dosageForm);
         v.setStrengthUnit(strengthUnit);
@@ -558,6 +562,9 @@ public class VmpController implements Serializable {
 
     public void prepareAdd() {
         current = new Vmp();
+        current.setDepartmentType(DepartmentType.Pharmacy); // Automatically set to Pharmacy
+        selectedVmpDto = null; // Clear DTO selection
+        vmpAuditEvents = null; // Clear audit events
         addingVtmInVmp = new VirtualProductIngredient();
         editable = true;
     }
@@ -567,11 +574,17 @@ public class VmpController implements Serializable {
             JsfUtil.addErrorMessage("Select one to edit");
             return;
         }
+        // Sync the DTO with current entity
+        if (current.getId() != null) {
+            selectedVmpDto = createVmpDto(current);
+        }
         editable = true;
     }
 
     public void cancel() {
         current = null;
+        selectedVmpDto = null;
+        vmpAuditEvents = null;
         editable = false;
     }
 
@@ -589,6 +602,7 @@ public class VmpController implements Serializable {
                 Vmp tix = new Vmp();
                 tix.setCode(code);
                 tix.setName(ix);
+                tix.setDepartmentType(DepartmentType.Pharmacy); // Set to Pharmacy
                 tix.setDepartment(null);
 
             } catch (Exception ignored) {
@@ -642,6 +656,7 @@ public class VmpController implements Serializable {
             Vmp beforeUpdate = getFacade().find(getCurrent().getId());
             Map<String, Object> beforeData = createAuditMap(beforeUpdate);
 
+            getCurrent().setDepartmentType(DepartmentType.Pharmacy); // Ensure Pharmacy type
             getFacade().edit(getCurrent());
 
             // Log audit for update
@@ -653,6 +668,7 @@ public class VmpController implements Serializable {
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             // CREATE - no before state
+            getCurrent().setDepartmentType(DepartmentType.Pharmacy); // Ensure Pharmacy type
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
@@ -738,11 +754,15 @@ public class VmpController implements Serializable {
     public List<Vmp> getItems() {
         if (items == null) {
             String j;
+            Map<String, Object> params = new HashMap<>();
             j = "select v "
                     + " from Vmp v "
-                    + " where v.retired=false "
+                    + " where v.retired=:retired "
+                    + " and v.departmentType=:dep "
                     + " order by v.name";
-            items = getFacade().findByJpql(j);
+            params.put("retired", false);
+            params.put("dep", DepartmentType.Pharmacy);
+            items = getFacade().findByJpql(j, params);
         }
         return items;
     }

@@ -26,7 +26,7 @@
                                     value="Add New"
                                     action="#{vmpController.prepareAdd()}"
                                     styleClass="ui-button-success m-1"
-                                    update="acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel"
+                                    update="acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel btnAuditEvents"
                                     icon="fas fa-plus"
                                     process="@this"
                                     disabled="#{vmpController.editable}"
@@ -38,7 +38,7 @@
                                     value="Edit Selected"
                                     action="#{vmpController.edit()}"
                                     icon="fas fa-edit"
-                                    update="detailPanel btnAdd btnEdit btnDelete btnSave btnCancel acVmp"
+                                    update="detailPanel btnAdd btnEdit btnDelete btnSave btnCancel btnAuditEvents acVmp"
                                     process="@this"
                                     styleClass="ui-button-warning m-1"
                                     disabled="#{vmpController.editable or vmpController.current.id eq null}"
@@ -252,17 +252,7 @@
                                         itemLabel="#{m.name}"/>
                                 </p:selectOneMenu>
 
-                                <p:outputLabel for="selectDepartmentType" value="Type" styleClass="fw-bold"/>
-                                <p:selectOneMenu  
-                                    id="selectDepartmentType"
-                                    value="#{vmpController.current.departmentType}" 
-                                    styleClass="w-100"
-                                    filter="true"
-                                    filterMatchMode="contains"
-                                    disabled="#{!vmpController.editable}">
-                                    <f:selectItem itemLabel="-- Select Department Type --" itemValue="#{null}"/>
-                                    <f:selectItems value="#{enumController.departmentType}" ></f:selectItems>
-                                </p:selectOneMenu>
+                                <!-- Department Type automatically set to Pharmacy - not displayed -->
 
                                 <p:outputLabel for="txtDescription" value="Description" styleClass="fw-bold"/>
                                 <p:inputTextarea 
@@ -288,21 +278,23 @@
 
                             <!-- Action Buttons -->
                             <div class="mt-3 d-flex gap-2">
-                                <p:commandButton 
+                                <p:commandButton
                                     id="btnSave"
                                     value="Save"
-                                    ajax="false"
-                                    action="#{vmpController.saveSelected}" 
+                                    action="#{vmpController.save}"
+                                    update="vmpForm:messages acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel btnAuditEvents"
+                                    process="@form"
                                     styleClass="ui-button-success"
                                     icon="fas fa-save"
                                     disabled="#{!vmpController.editable}"
                                     title="Save VMP record"/>
 
-                                <p:commandButton 
+                                <p:commandButton
                                     id="btnCancel"
                                     value="Cancel"
                                     action="#{vmpController.cancel()}"
-                                    ajax="false"
+                                    update="acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel btnAuditEvents"
+                                    process="@this"
                                     styleClass="ui-button-secondary"
                                     icon="fas fa-times"
                                     disabled="#{!vmpController.editable}"
