@@ -44,8 +44,7 @@
 
                                         <p:commandButton
                                             id="btnDelete"
-                                            onclick="if (!confirm('Are you sure you want to delete the ATM: ' +
-                                                            '#{atmController.selectedAtmDto.name}' + '? This action cannot be undone.'))
+                                            onclick="if (!confirm('Are you sure you want to delete this ATM? This action cannot be undone.'))
                                                         return false;"
                                             action="#{atmController.delete()}"
                                             value="Delete"
@@ -89,9 +88,6 @@
                                             </p:column>
                                             <p:column headerText="Code">
                                                 <h:outputText value="#{dto.code}"/>
-                                            </p:column>
-                                            <p:column headerText="VTM">
-                                                <h:outputText value="#{dto.vtmName}"/>
                                             </p:column>
                                         </p:autoComplete>
                                     </div>
@@ -152,28 +148,6 @@
                                             placeholder="Enter ATM code (optional)"
                                             disabled="#{!atmController.editable}" />
 
-                                        <h:outputText value="VTM" />
-                                        <p:autoComplete
-                                            id="acVtm"
-                                            class="w-100"
-                                            inputStyleClass="w-100"
-                                            completeMethod="#{vtmController.completeVtm}"
-                                            value="#{atmController.current.vtm}"
-                                            var="v"
-                                            itemLabel="#{v.name}"
-                                            itemValue="#{v}"
-                                            required="true"
-                                            requiredMessage="VTM is needed"
-                                            disabled="#{!atmController.editable}"
-                                            placeholder="Search and select VTM..."
-                                            forceSelection="true">
-                                            <p:column headerText="Name" >
-                                                <h:outputText value="#{v.name}" />
-                                            </p:column>
-                                            <p:column headerText="Code" >
-                                                <h:outputText value="#{v.code}"/>
-                                            </p:column>
-                                        </p:autoComplete>
 
                                         <h:outputText value="Department Type" />
                                         <p:selectOneMenu
@@ -193,7 +167,6 @@
                                             required="false"
                                             class="form-control"
                                             rows="3"
-                                            placeholder="Enter description (optional)"
                                             disabled="#{!atmController.editable}" />
 
                                     </p:panelGrid>
