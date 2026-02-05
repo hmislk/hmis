@@ -72,12 +72,16 @@
                                                                 required="true" 
                                                                 requiredMessage="Please enter a Name" >
                                                             </p:inputTextarea>
+                                                            <p:outputLabel value="Active" for="tglswt" ></p:outputLabel>
+                                                            <p:toggleSwitch id="tglswt" value="#{webUserRoleController.current.activated}" onIcon="pi pi-check" offIcon="pi pi-times" />
+                                                        
                                                         </p:panelGrid>
+                                                        
                                                         <p:commandButton
                                                             id="btnSave"
                                                             icon="fas fa-save"
                                                             class="ui-button-warning my-2"
-                                                            process="txtRole txtComments btnSave"
+                                                            process="txtRole txtComments btnSave tglswt"
                                                             update="lstItems focusForList actions growl"
                                                             value="Save" 
                                                             action="#{webUserRoleController.saveCurrent()}" ></p:commandButton>
