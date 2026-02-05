@@ -11,10 +11,8 @@
             <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Consumption">
-                        <h:panelGrid columns="6" 
-                                     class="w-100 ui-fluid"
-                                     style="table-layout: fixed">
-                            <h:panelGroup layout="block" styleClass="form-group ms-3">
+                        <h:panelGrid columns="8" class="w-100">
+                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
                                 <p:outputLabel value="From Date" for="fromDate" class="mx-3">
                                 </p:outputLabel>
@@ -26,9 +24,9 @@
                                 value="#{pharmacyController.fromDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
-                           
+                            <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group ms-5">
+                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
                                 <p:outputLabel value="To Date" for="toDate" class="mx-3">
                                 </p:outputLabel>
@@ -40,87 +38,8 @@
                                 value="#{pharmacyController.toDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
-                            
                             <p:spacer width="20"/>
-                            <p:spacer width="20"/>
-
-                            <h:panelGroup layout="block" styleClass="form-group ms-3">
-                                <h:outputText styleClass="fa fa-university ml-5"/>
-                                <p:outputLabel value="Institution" for="phmIns" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                id="phmIns"
-                                class="w-100"
-                                styleClass="form-control"
-                                value="#{pharmacyController.institution}"
-                                filter="true">
-                                <f:selectItem itemLabel="All Institutions"/>
-                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
-                                               itemValue="#{ins}"/>
-                                <p:ajax process="phmIns" update="phmDept"/>
-                            </p:selectOneMenu>
-
-                           
-
-                            <h:panelGroup layout="block" styleClass="form-group ms-5">
-                                <h:outputText styleClass="fa fa-map-marker-alt ml-5"/>
-                                <p:outputLabel value="Site" for="phmSite" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                id="phmSite"
-                                class="w-100"
-                                styleClass="form-control"
-                                value="#{pharmacyController.site}"
-                                filter="true">
-                                <f:selectItem itemLabel="All Sites"/>
-                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
-                                               itemValue="#{site}"/>
-                                <p:ajax process="phmSite" update="phmDept"/>
-                            </p:selectOneMenu>
-
-                           
-
-                            <h:panelGroup layout="block" styleClass="form-group ms-5">
-                                <h:outputText styleClass="fa fa-building ml-5"/>
-                                <p:outputLabel value="Department" for="phmDept" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                id="phmDept"
-                                class="w-100"
-                                styleClass="form-control"
-                                value="#{pharmacyController.dept}"
-                                filter="true">
-                                <f:selectItem itemLabel="All Departments"/>
-                                <f:selectItems
-                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.institution, pharmacyController.site)}"
-                                    var="dept"
-                                    itemLabel="#{dept.name}"
-                                    itemValue="#{dept}"/>
-                            </p:selectOneMenu>
-
-                            <h:panelGroup layout="block" styleClass="form-group ms-3">
-                                <h:outputText styleClass="fa fa-tags ml-5"/>
-                                <p:outputLabel value="Category" for="phmCategory" class="mx-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                id="phmCategory"
-                                value="#{pharmacyController.category}"
-                                filter="true"
-                                class="w-100 "
-                                styleClass="form-control">
-                                <f:selectItem itemLabel="All Categories"/>
-                                <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
-                                               var="category"
-                                               itemLabel="#{category.name}"
-                                               itemValue="#{category}"/>
-                            </p:selectOneMenu>
-                            
-              
-
-                            <h:panelGroup layout="block" styleClass="form-group d-flex align-items-center ms-5">
+                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building ml-5"/>
                                 <p:outputLabel value="Item Department Type" for="departmentTypeFilter" class="mx-3"/>
                             </h:panelGroup>
@@ -144,15 +63,87 @@
                                 <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all." position="top"/>
                             </h:panelGroup>
 
-                
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university ml-5"/>
+                                <p:outputLabel value="Institution" for="phmIns" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmIns"
+                                class="w-100"
+                                value="#{pharmacyController.institution}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions"/>
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                               itemValue="#{ins}"/>
+                                <p:ajax process="phmIns" update="phmDept"/>
+                            </p:selectOneMenu>
 
-                            <h:panelGroup layout="block" styleClass="form-group ms-5">
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt ml-5"/>
+                                <p:outputLabel value="Site" for="phmSite" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmSite"
+                                class="w-100"
+                                value="#{pharmacyController.site}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites"/>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                               itemValue="#{site}"/>
+                                <p:ajax process="phmSite" update="phmDept"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building ml-5"/>
+                                <p:outputLabel value="Department" for="phmDept" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmDept"
+                                class="w-100"
+                                value="#{pharmacyController.dept}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments"/>
+                                <f:selectItems
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.institution, pharmacyController.site)}"
+                                    var="dept"
+                                    itemLabel="#{dept.name}"
+                                    itemValue="#{dept}"/>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-tags ml-5"/>
+                                <p:outputLabel value="Category" for="phmCategory" class="mx-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmCategory"
+                                value="#{pharmacyController.category}"
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All Categories"/>
+                                <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
+                                               var="category"
+                                               itemLabel="#{category.name}"
+                                               itemValue="#{category}"/>
+                            </p:selectOneMenu>
+
+
+
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-box ml-5"/>
                                 <p:outputLabel value="Item" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:autoComplete value="#{pharmacyController.item}"
-                                            inputStyleClass="w-100 form-control"
+                                            inputStyleClass="w-100"
                                             class="w-100"
                                             completeMethod="#{itemController.completeAmpItemAll}"
                                             var="item" itemValue="#{item}" itemLabel="#{item.name}"
@@ -165,31 +156,28 @@
                                 </p:column>
                             </p:autoComplete>
 
-                            <h:panelGroup layout="block" styleClass="form-group ms-3">
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-list-alt ml-5"/>
                                 <p:outputLabel value="Report Type" class="mx-3" for="grnReportType">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100" 
-                                             styleClass="form-control"
-                                             id="grnReportType"
-                                             value="#{pharmacyController.reportType}">
+                            <p:selectOneMenu class="w-100" id="grnReportType" value="#{pharmacyController.reportType}">
                                 <f:selectItem itemLabel="Summary" itemValue="summeryReport"/>
                                 <f:selectItem itemLabel="By Bill" itemValue="byBill"/>
                                 <f:selectItem itemLabel="By Bill Item" itemValue="byBillItem"/>
                                 <f:selectItem itemLabel="By Category"
                                               itemValue="categoryWise"/>
                             </p:selectOneMenu>
-                            
 
-                            <h:panelGroup layout="block" 
-                                          styleClass="form-group d-flex align-items-center ms-5">
+                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-barcode ml-5"/>
                                 <p:outputLabel value="Consumption Department" for="phmCde" class="mx-3">
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:autoComplete value="#{pharmacyController.toDepartment}"
-                                            inputStyleClass="w-100 form-control"
+                                            inputStyleClass="w-100"
                                             id="phmCde"
                                             class="w-100"
                                             completeMethod="#{departmentController.completeDept}"
@@ -284,7 +272,7 @@
                             </p:commandButton>
                         </div>
 
-                        <h:panelGroup rendered="#{pharmacyController.reportType eq 'summeryReport'}" id="tbl1">
+                        <h:panelGroup rendered="#{pharmacyController.reportType eq 'summeryReport' and (pharmacyController.totalPurchase != 0 or pharmacyController.totalCostValue != 0 or pharmacyController.totalRetailValue != 0 or pharmacyController.totalSaleValue != 0)}" id="tbl1">
                             <h5 class="mt-3">Department Summary</h5>
 
                             <ui:repeat value="#{pharmacyController.departmentTotals.entrySet()}" var="map"
@@ -366,6 +354,13 @@
                                     </p:columnGroup>
                                 </p:dataTable>
                             </ui:repeat>
+                        </h:panelGroup>
+
+                        <!-- No data message for Summary report -->
+                        <h:panelGroup rendered="#{pharmacyController.reportType eq 'summeryReport' and pharmacyController.totalPurchase == 0 and pharmacyController.totalCostValue == 0 and pharmacyController.totalRetailValue == 0 and pharmacyController.totalSaleValue == 0}">
+                            <div class="ui-messages ui-widget ui-corner-all ui-messages-info ui-messages-noicon" style="margin-top: 20px;">
+                                <div class="ui-messages-info-summary">No data found for the selected criteria.</div>
+                            </div>
                         </h:panelGroup>
 
                         <h:panelGroup rendered="#{pharmacyController.reportType eq 'byBill'}">
@@ -451,7 +446,9 @@
                                     </h:panelGroup>
                                 </p:column>
 
-                                <p:column headerText="Action" width="5em">
+                                <p:column 
+                                    exportable="false"
+                                    headerText="Action" width="5em">
                                     <p:commandButton
                                         id="btnViewBill"
                                         title="View Bill"
@@ -602,7 +599,7 @@
                                     <p:outputLabel value="#{i.billItem.qty}"/>
                                 </p:column>
 
-                                <p:column headerText="Status/Links" width="10em">
+                                <p:column headerText="Status/Links" width="10em" exportable="false">
                                     <!-- Show status if this bill is cancelled or returned -->
                                     <h:panelGroup rendered="#{i.billItem.bill.cancelled}">
                                         <h:outputText value="CANCELLED" style="color: red; font-weight: bold; display: block;" />
@@ -645,7 +642,7 @@
                                     </h:panelGroup>
                                 </p:column>
 
-                                <p:column headerText="Action" width="5em">
+                                <p:column headerText="Action" width="5em" exportable="false">
                                     <p:commandButton
                                         id="btnViewBill"
                                         title="View Bill"

@@ -148,18 +148,6 @@
                                             placeholder="Enter ATM code (optional)"
                                             disabled="#{!atmController.editable}" />
 
-
-                                        <h:outputText value="Department Type" />
-                                        <p:selectOneMenu
-                                            value="#{atmController.current.departmentType}"
-                                            class="w-100"
-                                            filter="true"
-                                            disabled="#{!atmController.editable}"
-                                            filterMatchMode="contains">
-                                            <f:selectItem itemLabel="Select Department Type" ></f:selectItem>
-                                            <f:selectItems value="#{enumController.departmentType}" ></f:selectItems>
-                                        </p:selectOneMenu>
-
                                         <h:outputText value="Description" />
                                         <h:inputTextarea
                                             id="txtDes"
