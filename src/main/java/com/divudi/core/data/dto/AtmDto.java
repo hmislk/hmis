@@ -68,6 +68,29 @@ public class AtmDto implements Serializable {
     }
 
     /**
+     * Constructor for JPQL query - core ATM management use case without VTM
+     * Includes essential fields needed for basic ATM operations
+     *
+     * @param id ATM ID
+     * @param name ATM name
+     * @param code ATM code (can be null)
+     * @param descreption ATM description (note: spelling preserved for backward
+     * compatibility)
+     * @param retired Whether ATM is retired/inactive
+     */
+    public AtmDto(Long id, String name, String code, String descreption,
+            Boolean retired) {
+        this.id = id;
+        this.name = name;
+        this.code = code;
+        this.descreption = descreption;
+        this.retired = retired != null ? retired : false;
+        // VTM fields remain null
+        this.vtmId = null;
+        this.vtmName = null;
+    }
+
+    /**
      * Constructor for JPQL query - basic ATM management use case
      * Includes core fields needed for display and management operations
      * with VTM relationship data
