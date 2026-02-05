@@ -140,8 +140,6 @@ public class BhtSummeryController implements Serializable {
     List<BillItem> pharmacyItems;
     private List<Bill> paymentBill;
     private List<Bill> pharmacyIssues;
-    private List<Bill> medicineOnlyIssues;
-    private List<Bill> medicinesAndSurgicalSupplies;
     List<Bill> storeIssues;
     private List<Bill> surgeryBills;
     private Bill surgeryBill;
@@ -623,14 +621,6 @@ public class BhtSummeryController implements Serializable {
                     break;
                 case Medicine:
                     discountValue = updateIssueBillFees(cit.getInwardChargeType(), BillType.PharmacyBhtPre);
-                    break;
-                case MedicinesAndSurgicalSupplies:
-                    // Only apply discount if the feature is enabled
-                    if (isMedicinesAndSurgicalSuppliesSeparatelyDisplayed()) {
-                        discountValue = updateIssueBillFees(cit.getInwardChargeType(), BillType.PharmacyBhtPre);
-                    } else {
-                        discountValue = 0;
-                    }
                     break;
                 case GeneralIssuing:
                     discountValue = updateIssueBillFees(cit.getInwardChargeType(), BillType.StoreBhtPre);
@@ -1119,10 +1109,10 @@ public class BhtSummeryController implements Serializable {
         return dis;
     }
 
-    public void updatePatientItem(PatientItem patientItem, boolean isEstimatedBill) {
+    public void updatePatientItem(PatientItem patientItem) {
         getInwardTimedItemController().finalizeService(patientItem);
         createPatientItems();
-        createChargeItemTotals(isEstimatedBill);
+        createChargeItemTotals();
 
     }
 
@@ -1274,12 +1264,26 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void settleOriginalBill() {
+        long startTime = System.currentTimeMillis();
+        System.out.println("    === settleOriginalBill START ===");
+
+        long stepStart = System.currentTimeMillis();
         if (errorCheck()) {
+            System.out.println("    === settleOriginalBill END: errorCheck failed ===");
             return;
         }
+        System.out.println("    1. errorCheck: " + (System.currentTimeMillis() - stepStart) + "ms");
 
+        stepStart = System.currentTimeMillis();
         saveOriginalBill();
+        System.out.println("    2. saveOriginalBill: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        stepStart = System.currentTimeMillis();
         saveOriginalBillItem();
+        System.out.println("    3. saveOriginalBillItem: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        long totalTime = System.currentTimeMillis() - startTime;
+        System.out.println("    === settleOriginalBill END: Total time = " + totalTime + "ms ===");
 
         JsfUtil.addSuccessMessage("Original Bill Saved");
 
@@ -1525,30 +1529,6 @@ public class BhtSummeryController implements Serializable {
 
     }
 
-    public boolean chackPharmacyTransaction() {
-        String jpql = "select b "
-                + " from Bill b "
-                + " where b.billTypeAtomic =:atomic "
-                + " and b.retired=false  "
-                + " and b.patientEncounter =:encounter "
-                + " and b.patientEncounter.discharged =:discharged "
-                + " and b.completed =:completed"
-                + " and b.cancelled =:cancel";
-        Map m = new HashMap();
-        m.put("completed", false);
-        m.put("cancel", false);
-        m.put("atomic", BillTypeAtomic.REQUEST_MEDICINE_INWARD);
-        m.put("encounter", getPatientEncounter());
-        m.put("discharged", false);
-        Bill bill = billFacade.findFirstByJpql(jpql, m);
-
-        if (bill == null) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
     public void discharge() {
         if (getPatientEncounter() == null) {
             return;
@@ -1562,20 +1542,6 @@ public class BhtSummeryController implements Serializable {
         if (date == null) {
             JsfUtil.addErrorMessage("Please Enter the Date");
             return;
-        }
-        
-        if (configOptionApplicationController.getBooleanValueByKey("Do not discharge until all medication has been dispensed.", false)) {
-            if (chackPharmacyTransaction()) {
-                JsfUtil.addErrorMessage("A request has been made for a medication request.");
-                return;
-            }
-        }
-
-        if (!configOptionApplicationController.getBooleanValueByKey("Payment can be released without completing it.", true)) {
-            if (getGrantTotal() > getPaid()) {
-                JsfUtil.addErrorMessage("Payment for " + getPatientEncounter().getBhtNo() + " has not been completed.");
-                return;
-            }
         }
 
         if (checkDischargeTime()) {
@@ -1758,41 +1724,73 @@ public class BhtSummeryController implements Serializable {
     }
 
     public String toSettle() {
+        long overallStart = System.currentTimeMillis();
+        System.out.println("========== toSettle() START ==========");
+        System.out.println("PatientEncounter: " + (getPatientEncounter() != null ? getPatientEncounter().getBhtNo() : "null"));
+
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
 
         if (getPatientEncounter() == null) {
+            System.out.println("========== toSettle() END: PatientEncounter is null ==========");
             return "";
         }
 
         if (!getPatientEncounter().isDischarged()) {
             JsfUtil.addErrorMessage(" Please Discharge This Patient ");
+            System.out.println("========== toSettle() END: Patient not discharged ==========");
             return "";
         }
 
         if (getPatientEncounter().getAdmissionType() == null) {
+            System.out.println("========== toSettle() END: AdmissionType is null ==========");
             return "";
         }
 
+        long stepStart = System.currentTimeMillis();
         if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission && !getWebUserController().hasPrivilege("InwardBillSettleWithoutCheck")) {
             if (checkBill()) {
+                System.out.println("========== toSettle() END: checkBill failed ==========");
                 return "";
             }
         }
+        System.out.println("1. checkBill / privilege check: " + (System.currentTimeMillis() - stepStart) + "ms");
+
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
             if (getPatientEncounter().getCreditCompany() == null) {
                 JsfUtil.addErrorMessage("Payment method is Credit So Please Select Credit Company");
             }
         }
-        childPatientEncouters = getInwardBean().fetchChildPatientEncounter(patientEncounter);
-        createTables();
-        calculateDiscount();
-        createPatientRooms();
-        updateTotal();
-        settleOriginalBill();
 
-        return "inward_bill_final?faces-redirect=true";
+        stepStart = System.currentTimeMillis();
+        childPatientEncouters = getInwardBean().fetchChildPatientEncounter(patientEncounter);
+        System.out.println("2. fetchChildPatientEncounter: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        stepStart = System.currentTimeMillis();
+        createTables();
+        System.out.println("3. createTables: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        stepStart = System.currentTimeMillis();
+        calculateDiscount();
+        System.out.println("4. calculateDiscount: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        stepStart = System.currentTimeMillis();
+        createPatientRooms();
+        System.out.println("5. createPatientRooms: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        stepStart = System.currentTimeMillis();
+        updateTotal();
+        System.out.println("6. updateTotal: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        stepStart = System.currentTimeMillis();
+        settleOriginalBill();
+        System.out.println("7. settleOriginalBill: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        long overallTime = System.currentTimeMillis() - overallStart;
+        System.out.println("========== toSettle() END: Total time = " + overallTime + "ms ==========");
+
+        return "inward_bill_final?faces-redirect=true;";
 
     }
 
@@ -1947,14 +1945,14 @@ public class BhtSummeryController implements Serializable {
 
             if (cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
                 updateProBillFee(temBi);
-                temProfFee += cit.getAdjustedTotal();
+                temProfFee += cit.getTotal();
             } else {
                 if (configOptionApplicationController.getBooleanValueByKey("Create Professional Bill Fees For Assistant Chargers", false)) {
                     if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
                         updateProBillFeeForDocAndNeurses(temBi);;
                     }
                 }
-                temHosFee += cit.getAdjustedTotal();
+                temHosFee += cit.getTotal();
             }
 
             if (cit.getInwardChargeType() == InwardChargeType.RoomCharges) {
@@ -1988,14 +1986,14 @@ public class BhtSummeryController implements Serializable {
 
             if (cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
                 updateProTempBillFee(temBi);
-                temProfFee += cit.getAdjustedTotal();
+                temProfFee += cit.getTotal();
             } else {
                 if (configOptionApplicationController.getBooleanValueByKey("Create Professional Bill Fees For Assistant Chargers", false)) {
                     if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
                         updateProTempBillFeeForDocAndNeurses(temBi);;
                     }
                 }
-                temHosFee += cit.getAdjustedTotal();
+                temHosFee += cit.getTotal();
             }
 
             if (cit.getInwardChargeType() == InwardChargeType.RoomCharges) {
@@ -2010,9 +2008,17 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void saveOriginalBillItem() {
+        long startTime = System.currentTimeMillis();
+        System.out.println("        --- saveOriginalBillItem START ---");
+        System.out.println("        ChargeItemTotals count: " + (chargeItemTotals != null ? chargeItemTotals.size() : 0));
+
         double temProfFee = 0;
         double temHosFee = 0.0;
+        int itemCount = 0;
         for (ChargeItemTotal cit : chargeItemTotals) {
+            long itemStart = System.currentTimeMillis();
+            itemCount++;
+
             BillItem temBi = new BillItem();
             temBi.setBill(getOriginalBill());
             temBi.setInwardChargeType(cit.getInwardChargeType());
@@ -2023,41 +2029,66 @@ public class BhtSummeryController implements Serializable {
             temBi.setCreatedAt(new Date());
             temBi.setCreater(getSessionController().getLoggedUser());
 
+            long createStart = System.currentTimeMillis();
             if (temBi.getId() == null) {
                 getBillItemFacade().create(temBi);
             } else {
                 getBillItemFacade().edit(temBi);
             }
+            long createTime = System.currentTimeMillis() - createStart;
 
+            long updateFeeStart = System.currentTimeMillis();
             if (cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
                 updateProBillFee(temBi);
-                temProfFee += cit.getAdjustedTotal();
+                temProfFee += cit.getTotal();
             } else {
-                temHosFee += cit.getAdjustedTotal();
+                temHosFee += cit.getTotal();
             }
+            long updateFeeTime = System.currentTimeMillis() - updateFeeStart;
 
+            long roomFeeStart = System.currentTimeMillis();
             if (cit.getInwardChargeType() == InwardChargeType.RoomCharges) {
                 saveRoomBillFee(getPatientRooms(), temBi);
             }
+            long roomFeeTime = System.currentTimeMillis() - roomFeeStart;
 
+            long editStart = System.currentTimeMillis();
             getBillItemFacade().edit(temBi);
+            long editTime = System.currentTimeMillis() - editStart;
 
             getOriginalBill().getBillItems().add(temBi);
+
+            long itemTime = System.currentTimeMillis() - itemStart;
+            if (itemTime > 100) {
+                System.out.println("        SLOW ChargeItem #" + itemCount + " (" + cit.getInwardChargeType() + "): " + itemTime + "ms [create:" + createTime + "ms, updateFee:" + updateFeeTime + "ms, roomFee:" + roomFeeTime + "ms, edit:" + editTime + "ms]");
+            }
         }
 
+        long finalEditStart = System.currentTimeMillis();
         getOriginalBill().setProfessionalFee(temProfFee);
         getOriginalBill().setHospitalFee(temHosFee);
-
         getBillFacade().edit(getOriginalBill());
+        System.out.println("        Final bill edit: " + (System.currentTimeMillis() - finalEditStart) + "ms");
+
+        long totalTime = System.currentTimeMillis() - startTime;
+        System.out.println("        --- saveOriginalBillItem END: Total time = " + totalTime + "ms ---");
     }
 
     private void updateProBillFee(BillItem bItem) {
+        long startTime = System.currentTimeMillis();
+        int feeCount = (getProfesionallFee() != null ? getProfesionallFee().size() : 0);
+
         for (BillFee bf : getProfesionallFee()) {
             bf.setReferenceBillItem(bItem);
             getBillFeeFacade().edit(bf);
 
             bItem.getProFees().add(bf);
 
+        }
+
+        long totalTime = System.currentTimeMillis() - startTime;
+        if (totalTime > 50) {
+            System.out.println("            updateProBillFee: " + totalTime + "ms for " + feeCount + " fees");
         }
 
     }
@@ -2102,6 +2133,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void saveRoomBillFee(List<PatientRoom> patientRooms, BillItem bItem) {
+        long startTime = System.currentTimeMillis();
+        int roomCount = (patientRooms != null ? patientRooms.size() : 0);
+
         List<BillFee> list = new ArrayList<>();
         for (PatientRoom pt : patientRooms) {
             BillFee tmp = new BillFee();
@@ -2123,6 +2157,11 @@ public class BhtSummeryController implements Serializable {
         }
 
         bItem.setBillFees(list);
+
+        long totalTime = System.currentTimeMillis() - startTime;
+        if (totalTime > 50) {
+            System.out.println("            saveRoomBillFee: " + totalTime + "ms for " + roomCount + " rooms");
+        }
 
     }
 
@@ -2156,33 +2195,77 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void createTables() {
+        long overallStart = System.currentTimeMillis();
+        System.out.println("======== createTables START ========");
+        System.out.println("PatientEncounter: " + (patientEncounter != null ? patientEncounter.getBhtNo() : "null"));
+
         makeNull();
 
         if (patientEncounter == null) {
             return;
         }
 
+        long stepStart = System.currentTimeMillis();
         if (childPatientEncouters == null || childPatientEncouters.isEmpty()) {
             childPatientEncouters = getInwardBean().fetchChildPatientEncounter(getPatientEncounter());
         }
+        System.out.println("1. fetchChildPatientEncounter: " + (System.currentTimeMillis() - stepStart) + "ms");
 
+        stepStart = System.currentTimeMillis();
         createPatientRooms();
+        System.out.println("2. createPatientRooms: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        stepStart = System.currentTimeMillis();
         createPatientItems();
+        System.out.println("3. createPatientItems: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        stepStart = System.currentTimeMillis();
         pharmacyIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters);
-        medicineOnlyIssues = filterMedicineOnlyIssues(pharmacyIssues);
-        medicinesAndSurgicalSupplies = filterMedicinesAndSurgicalSupplies(pharmacyIssues);
+        System.out.println("4. fetchIssueTable (Pharmacy): " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        stepStart = System.currentTimeMillis();
         storeIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.StoreBhtPre, childPatientEncouters);
-        departmentBillItems = getInwardBean().createDepartmentBillItems(patientEncounter, null, childPatientEncouters);
+        System.out.println("5. fetchIssueTable (Store): " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        stepStart = System.currentTimeMillis();
+        departmentBillItems = getInwardBean().createDepartmentBillItemsOptimized(patientEncounter, null, childPatientEncouters);
+        System.out.println("6. createDepartmentBillItems: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        stepStart = System.currentTimeMillis();
         additionalChargeBill = getInwardBean().fetchOutSideBill(getPatientEncounter(), childPatientEncouters);
+        System.out.println("7. fetchOutSideBill: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        stepStart = System.currentTimeMillis();
         getInwardBean().setProfesionallFeeAdjusted(getPatientEncounter(), childPatientEncouters);
+        System.out.println("8. setProfesionallFeeAdjusted: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        stepStart = System.currentTimeMillis();
         profesionallFee = getInwardBean().createProfesionallFee(getPatientEncounter(), childPatientEncouters);
+        System.out.println("9. createProfesionallFee: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        stepStart = System.currentTimeMillis();
         doctorAndNurseFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(), childPatientEncouters);
+        System.out.println("10. createDoctorAndNurseFee: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        stepStart = System.currentTimeMillis();
         paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
+        System.out.println("11. fetchPaymentBill: " + (System.currentTimeMillis() - stepStart) + "ms");
 
+        stepStart = System.currentTimeMillis();
         updateRoomChargeList();
-        createChargeItemTotals(false);
+        System.out.println("12. updateRoomChargeList: " + (System.currentTimeMillis() - stepStart) + "ms");
 
+        stepStart = System.currentTimeMillis();
+        createChargeItemTotals();
+        System.out.println("13. createChargeItemTotals: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        stepStart = System.currentTimeMillis();
         updateTotal();
+        System.out.println("14. updateTotal: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        long overallTime = System.currentTimeMillis() - overallStart;
+        System.out.println("======== createTables END: Total time = " + overallTime + "ms ========");
+
         JsfUtil.addSuccessMessage("Recalculated Successfully");
 
         if (patientEncounter != null && patientEncounter.getDateOfDischarge() != null) {
@@ -2211,10 +2294,8 @@ public class BhtSummeryController implements Serializable {
         createPatientRooms();
         createPatientItems();
         pharmacyIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters);
-        medicineOnlyIssues = filterMedicineOnlyIssues(pharmacyIssues);
-        medicinesAndSurgicalSupplies = filterMedicinesAndSurgicalSupplies(pharmacyIssues);
         storeIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.StoreBhtPre, childPatientEncouters);
-        departmentBillItems = getInwardBean().createDepartmentBillItems(patientEncounter, null, childPatientEncouters);
+        departmentBillItems = getInwardBean().createDepartmentBillItemsOptimized(patientEncounter, null, childPatientEncouters);
         additionalChargeBill = getInwardBean().fetchOutSideBill(getPatientEncounter(), childPatientEncouters);
         getInwardBean().setProfesionallFeeAdjusted(getPatientEncounter(), childPatientEncouters);
         profesionallFee = getInwardBean().createProfesionallFeeEstimated(getPatientEncounter());
@@ -2222,7 +2303,7 @@ public class BhtSummeryController implements Serializable {
         paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
 
         updateRoomChargeList();
-        createChargeItemTotals(true);
+        createChargeItemTotals();
 
         updateTotal();
 
@@ -2738,92 +2819,10 @@ public class BhtSummeryController implements Serializable {
         this.timedItemFeeFacade = timedItemFeeFacade;
     }
 
-    private List<Bill> filterMedicineOnlyIssues(List<Bill> pharmacyIssues) {
-        if (pharmacyIssues == null || pharmacyIssues.isEmpty()) {
-            return pharmacyIssues;
-        }
-        
-        // Check if the feature is enabled via application option
-        if (!isMedicinesAndSurgicalSuppliesSeparatelyDisplayed()) {
-            return pharmacyIssues; // Return all bills if feature disabled
-        }
-        
-        List<Bill> filtered = new ArrayList<>();
-        
-        for (Bill bill : pharmacyIssues) {
-            // Check if bill's bill type atomic is an inward/regular medicine type
-            if (isInwardMedicineType(bill.getBillTypeAtomic())) {
-                filtered.add(bill);
-            }
-        }
-        
-        return filtered;
-    }
+    private void createChargeItemTotals() {
+        long overallStart = System.currentTimeMillis();
+        System.out.println("        createChargeItemTotals START");
 
-    private List<Bill> filterMedicinesAndSurgicalSupplies(List<Bill> pharmacyIssues) {
-        // Check if the feature is enabled via application option
-        if (!isMedicinesAndSurgicalSuppliesSeparatelyDisplayed()) {
-            return new ArrayList<>();
-        }
-        
-        List<Bill> filtered = new ArrayList<>();
-        
-        if (pharmacyIssues == null || pharmacyIssues.isEmpty()) {
-            return filtered;
-        }
-        
-        for (Bill bill : pharmacyIssues) {
-            // Check if bill's bill type atomic is a theatre/surgical supplies medicine type
-            if (isTheatreMedicineType(bill.getBillTypeAtomic())) {
-                filtered.add(bill);
-            }
-        }
-        
-        return filtered;
-    }
-
-    private boolean isInwardMedicineType(BillTypeAtomic billTypeAtomic) {
-        if (billTypeAtomic == null) {
-            return false;
-        }
-        
-        // Inward medicine bill type atomics
-        return billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE
-                || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION
-                || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
-                || billTypeAtomic == BillTypeAtomic.REQUEST_MEDICINE_INWARD
-                || billTypeAtomic == BillTypeAtomic.REQUEST_MEDICINE_INWARD_CANCELLATION
-                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD
-                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION
-                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
-                || billTypeAtomic == BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD
-                || billTypeAtomic == BillTypeAtomic.RETURN_MEDICINE_INWARD
-                || billTypeAtomic == BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD;
-    }
-
-    private boolean isTheatreMedicineType(BillTypeAtomic billTypeAtomic) {
-        if (billTypeAtomic == null) {
-            return false;
-        }
-        
-        // Theatre/surgical supplies medicine bill type atomics
-        return billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE
-                || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
-                || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN
-                || billTypeAtomic == BillTypeAtomic.REQUEST_MEDICINE_THEATRE
-                || billTypeAtomic == BillTypeAtomic.REQUEST_MEDICINE_THEATRE_CANCELLATION
-                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE
-                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION
-                || billTypeAtomic == BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_THEATRE
-                || billTypeAtomic == BillTypeAtomic.RETURN_MEDICINE_THEATRE
-                || billTypeAtomic == BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE;
-    }
-
-    private boolean isMedicinesAndSurgicalSuppliesSeparatelyDisplayed() {
-        return configOptionApplicationController.getBooleanValueByKey("Separate Medicines and Surgical Supplies Tab", false);
-    }
-
-    private void createChargeItemTotals(boolean isEstimatedBill) {
         chargeItemTotals = new ArrayList<>();
 
         for (InwardChargeType i : InwardChargeType.values()) {
@@ -2834,14 +2833,30 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (getPatientEncounter() != null) {
-            setKnownChargeTot(isEstimatedBill);
+            long stepStart = System.currentTimeMillis();
+            setKnownChargeTot();
+            System.out.println("        1. setKnownChargeTot: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+            stepStart = System.currentTimeMillis();
             setServiceTotCategoryWise();
+            System.out.println("        2. setServiceTotCategoryWise: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+            stepStart = System.currentTimeMillis();
             setTimedServiceTotCategoryWise();
+            System.out.println("        3. setTimedServiceTotCategoryWise: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+            stepStart = System.currentTimeMillis();
             setChargeValueFromAdditional();
+            System.out.println("        4. setChargeValueFromAdditional: " + (System.currentTimeMillis() - stepStart) + "ms");
 
         }
 
+        long stepStart = System.currentTimeMillis();
         setNetAdjustValue();
+        System.out.println("        5. setNetAdjustValue: " + (System.currentTimeMillis() - stepStart) + "ms");
+
+        long overallTime = System.currentTimeMillis() - overallStart;
+        System.out.println("        createChargeItemTotals END: Total time = " + overallTime + "ms");
 
     }
 
@@ -2852,12 +2867,20 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void setChargeValueFromAdditional() {
-        for (ChargeItemTotal cit : chargeItemTotals) {
-            double adj = getInwardBean().caltValueFromAdditionalCharge(cit.getInwardChargeType(), getPatientEncounter(), childPatientEncouters);
-            double tot = cit.getTotal();
+        long startTime = System.currentTimeMillis();
+        System.out.println("            setChargeValueFromAdditional START");
 
+        // OPTIMIZED: Fetch all totals in ONE bulk query
+        Map<InwardChargeType, Double> bulkTotals = getInwardBean().caltValueFromAdditionalChargeBulk(getPatientEncounter(), childPatientEncouters);
+
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            double adj = bulkTotals.getOrDefault(cit.getInwardChargeType(), 0.0);
+            double tot = cit.getTotal();
             cit.setTotal(tot + adj);
         }
+
+        long totalTime = System.currentTimeMillis() - startTime;
+        System.out.println("            setChargeValueFromAdditional END: " + totalTime + "ms (OPTIMIZED)");
     }
 
     private void updateRoomChargeList() {
@@ -2912,7 +2935,7 @@ public class BhtSummeryController implements Serializable {
             if (childPatientEncouters == null || childPatientEncouters.isEmpty()) {
                 childPatientEncouters = getInwardBean().fetchChildPatientEncounter(getPatientEncounter());
             }
-            createChargeItemTotals(false);
+            createChargeItemTotals();
         }
         return chargeItemTotals;
     }
@@ -2922,7 +2945,7 @@ public class BhtSummeryController implements Serializable {
 
     private List<Bill> additionalChargeBill;
 
-    private void setKnownChargeTot(boolean isEstimatedBill) {
+    private void setKnownChargeTot() {
 
         for (ChargeItemTotal i : chargeItemTotals) {
             switch (i.getInwardChargeType()) {
@@ -2964,28 +2987,11 @@ public class BhtSummeryController implements Serializable {
                     btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
                     i.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters));
                     break;
-                case MedicinesAndSurgicalSupplies:
-                    // Theatre/surgical supplies medicines - Only calculate if the feature is enabled
-                    if (isMedicinesAndSurgicalSuppliesSeparatelyDisplayed()) {
-                        List<BillTypeAtomic> theatreMedicineBtas = new ArrayList<>();
-                        theatreMedicineBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
-                        theatreMedicineBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
-                        theatreMedicineBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
-                        theatreMedicineBtas.add(BillTypeAtomic.REQUEST_MEDICINE_THEATRE);
-                        theatreMedicineBtas.add(BillTypeAtomic.REQUEST_MEDICINE_THEATRE_CANCELLATION);
-                        theatreMedicineBtas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE);
-                        theatreMedicineBtas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION);
-                        theatreMedicineBtas.add(BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_THEATRE);
-                        theatreMedicineBtas.add(BillTypeAtomic.RETURN_MEDICINE_THEATRE);
-                        theatreMedicineBtas.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE);
-                        i.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), theatreMedicineBtas, childPatientEncouters));
-                    }
-                    break;
                 case GeneralIssuing:
                     i.setTotal(getInwardBean().calCostOfIssue(getPatientEncounter(), BillType.StoreBhtPre, childPatientEncouters));
                     break;
                 case ProfessionalCharge:
-                    i.setTotal(getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters, isEstimatedBill));
+                    i.setTotal(getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters));
                     break;
                 case DoctorAndNurses:
                     i.setTotal(getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters));
@@ -2995,9 +3001,19 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void setServiceTotCategoryWise() {
+        long startTime = System.currentTimeMillis();
+        System.out.println("            setServiceTotCategoryWise START - processing " + chargeItemTotals.size() + " charge types");
+
+        // OPTIMIZED: Fetch all totals in ONE bulk query instead of N separate queries
+        Map<InwardChargeType, Double> bulkTotals = getInwardBean().calServiceBillItemsTotalByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
+
         for (ChargeItemTotal ch : chargeItemTotals) {
-            ch.setTotal(ch.getTotal() + getInwardBean().calServiceBillItemsTotalByInwardChargeType(ch.getInwardChargeType(), getPatientEncounter(), childPatientEncouters));
+            Double total = bulkTotals.getOrDefault(ch.getInwardChargeType(), 0.0);
+            ch.setTotal(ch.getTotal() + total);
         }
+
+        long totalTime = System.currentTimeMillis() - startTime;
+        System.out.println("            setServiceTotCategoryWise END: Total time = " + totalTime + "ms (OPTIMIZED)");
     }
 
     public List<InwardBillItem> getInwardBillItemByType() {
@@ -3037,11 +3053,19 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void setTimedServiceTotCategoryWise() {
+        long startTime = System.currentTimeMillis();
+        System.out.println("            setTimedServiceTotCategoryWise START");
+
+        // OPTIMIZED: Fetch all totals in ONE bulk query
+        Map<InwardChargeType, Double> bulkTotals = getInwardBean().getTimedItemFeeTotalByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
 
         for (ChargeItemTotal ch : chargeItemTotals) {
-            ch.setTotal(ch.getTotal() + getInwardBean().getTimedItemFeeTotalByInwardChargeType(ch.getInwardChargeType(), getPatientEncounter(), childPatientEncouters));
+            Double total = bulkTotals.getOrDefault(ch.getInwardChargeType(), 0.0);
+            ch.setTotal(ch.getTotal() + total);
         }
 
+        long totalTime = System.currentTimeMillis() - startTime;
+        System.out.println("            setTimedServiceTotCategoryWise END: " + totalTime + "ms (OPTIMIZED)");
     }
 
     public void setChargeItemTotals(List<ChargeItemTotal> chargeItemTotals) {
@@ -3156,7 +3180,7 @@ public class BhtSummeryController implements Serializable {
 
     public List<DepartmentBillItems> getDepartmentBillItems() {
         if (departmentBillItems == null) {
-            departmentBillItems = getInwardBean().createDepartmentBillItems(patientEncounter, null, childPatientEncouters);
+            departmentBillItems = getInwardBean().createDepartmentBillItemsOptimized(patientEncounter, null, childPatientEncouters);
         }
         return departmentBillItems;
     }
@@ -3187,22 +3211,6 @@ public class BhtSummeryController implements Serializable {
 
     public void setPharmacyIssues(List<Bill> pharmacyIssues) {
         this.pharmacyIssues = pharmacyIssues;
-    }
-
-    public List<Bill> getMedicineOnlyIssues() {
-        return medicineOnlyIssues;
-    }
-
-    public void setMedicineOnlyIssues(List<Bill> medicineOnlyIssues) {
-        this.medicineOnlyIssues = medicineOnlyIssues;
-    }
-
-    public List<Bill> getMedicinesAndSurgicalSupplies() {
-        return medicinesAndSurgicalSupplies;
-    }
-
-    public void setMedicinesAndSurgicalSupplies(List<Bill> medicinesAndSurgicalSupplies) {
-        this.medicinesAndSurgicalSupplies = medicinesAndSurgicalSupplies;
     }
 
     public List<Bill> getStoreIssues() {
@@ -3349,31 +3357,6 @@ public class BhtSummeryController implements Serializable {
 
     public void setChildPatientEncouters(List<PatientEncounter> childPatientEncouters) {
         this.childPatientEncouters = childPatientEncouters;
-    }
-
-    /**
-     * Calculate total of bed charges (Linen, MO, Nursing, Maintain, Medical Care, Administration)
-     * @param billItems List of bill items to calculate from
-     * @return Total of all bed charges
-     */
-    public double getBedChargesTotal(List<BillItem> billItems) {
-        if (billItems == null) {
-            return 0.0;
-        }
-        
-        double total = 0.0;
-        for (BillItem item : billItems) {
-            if (item.getAdjustedValue() != 0 && 
-                (item.getInwardChargeType() == InwardChargeType.LinenCharges ||
-                 item.getInwardChargeType() == InwardChargeType.MOCharges ||
-                 item.getInwardChargeType() == InwardChargeType.NursingCharges ||
-                 item.getInwardChargeType() == InwardChargeType.MaintainCharges ||
-                 item.getInwardChargeType() == InwardChargeType.MedicalCareICU ||
-                 item.getInwardChargeType() == InwardChargeType.AdministrationCharge)) {
-                total += item.getAdjustedValue();
-            }
-        }
-        return total;
     }
 
 }
