@@ -941,9 +941,6 @@ public class IncomeBundle implements Serializable {
         populateSummaryRow();
     }
 
-    @EJB
-    private BillService billService;
-
     public void generatePaymentDetailsForBillsAndBatchBills() {
         for (IncomeRow r : getRows()) {
             Bill b = r.getBill();
