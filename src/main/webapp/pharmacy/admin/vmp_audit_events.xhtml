@@ -78,7 +78,10 @@
                             <p:column headerText="Action" style="width: 8em;" styleClass="text-center">
                                 <p:badge value="#{audit.eventTrigger}"
                                          severity="#{audit.eventTrigger eq 'Create VMP' ? 'success' :
-                                                     (audit.eventTrigger eq 'Update VMP' ? 'warning' : 'danger')}"/>
+                                                     (audit.eventTrigger eq 'Update VMP' ? 'warning' :
+                                                     (audit.eventTrigger eq 'Delete VMP' ? 'danger' :
+                                                     (audit.eventTrigger eq 'Activate VMP' ? 'info' :
+                                                     (audit.eventTrigger eq 'Deactivate VMP' ? 'secondary' : 'primary'))))}"/>
                             </p:column>
 
                             <p:column headerText="User" style="width: 12em;">
