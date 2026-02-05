@@ -1,0 +1,216 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/pharmacy/admin/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="form">
+                    <p:growl id="msg"/>
+                    <p:focus id="selectFocus" for="acVtm" />
+                    <p:focus id="detailFocus" for="gpDetail" />
+
+                    <div class="row">
+                        <div class="col-md-5">
+                            <!-- DTO-Optimized VTM Selection -->
+                            <p:panel header="VTM Management" class="mb-3 w-100">
+
+                                <div class="row" >
+                                    <div class="col-12" >
+                                        <p:commandButton
+                                            id="btnAdd"
+                                            value="Add New"
+                                            icon="fa fa-plus"
+                                            action="#{vtmController.prepareAdd()}"
+                                            class="m-1 ui-button-success"
+                                            update=":form:acVtm :form:gpDetail :form:btnEdit :form:btnDelete :form:btnViewAuditEvents"
+                                            process="btnAdd">
+                                            <f:setPropertyActionListener target="#{vtmController.selectedVtmDto}" value="#{null}" />
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            id="btnEdit"
+                                            value="Edit"
+                                            icon="fas fa-edit"
+                                            action="#{vtmController.edit()}"
+                                            class="m-1 ui-button-info"
+                                            update=":form:acVtm :form:gpDetail :form:btnAdd :form:btnDelete :form:btnViewAuditEvents"
+                                            process="btnEdit"
+                                            disabled="#{vtmController.editable or vtmController.selectedVtmDto eq null}">
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            id="btnDelete"
+                                            onclick="if (!confirm('Are you sure you want to delete the VTM: ' +
+                                                            '#{vtmController.selectedVtmDto.name}' + '? This action cannot be undone.'))
+                                                        return false;"
+                                            action="#{vtmController.delete()}"
+                                            value="Delete"
+                                            icon="fas fa-trash"
+                                            class="m-1 ui-button-danger"
+                                            update=":form:acVtm :form:gpDetail :form:msg"
+                                            process="btnDelete"
+                                            disabled="#{vtmController.editable or vtmController.selectedVtmDto eq null}">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            id="btnViewAuditEvents"
+                                            value="History"
+                                            icon="fas fa-history"
+                                            action="#{vtmController.navigateToAuditEvents()}"
+                                            class="m-1 ui-button-secondary"
+                                            process="btnViewAuditEvents"
+                                            ajax="false"
+                                            disabled="#{vtmController.selectedVtmDto eq null}">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                                <div class="row" >
+                                    <div class="col-12"  >
+                                        <p:autoComplete
+                                            class="w-100 m-1"
+                                            inputStyleClass="w-100"
+                                            id="acVtm"
+                                            widgetVar="acVtm"
+                                            value="#{vtmController.selectedVtmDto}"
+                                            completeMethod="#{vtmController.completeVtmDto}"
+                                            var="dto"
+                                            itemLabel="#{dto.name}"
+                                            itemValue="#{dto}"
+                                            converter="vtmDtoConverter"
+                                            forceSelection="true"
+                                            disabled="#{vtmController.editable}"
+                                            placeholder="Type to search VTMs (Pharmacy Department)..."
+                                            cache="false"
+                                            minQueryLength="2">
+                                            <p:ajax event="itemSelect" process="@this" update=":form:gpDetail :form:btnEdit :form:btnDelete :form:btnViewAuditEvents :form:vtmDetails" />
+                                            <p:ajax event="change" process="@this" update=":form:gpDetail :form:btnEdit :form:btnDelete :form:btnViewAuditEvents :form:vtmDetails" />
+                                            <p:column headerText="Name" >
+                                                <h:outputText value="#{dto.name}" />
+                                            </p:column>
+                                            <p:column headerText="Code" >
+                                                <h:outputText value="#{dto.code}"/>
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </div>
+                                </div>
+
+
+
+
+
+
+                            </p:panel>
+
+                            <p:focus id="focusItem" for="txtName" />
+                            <p:focus id="focusSelect" for="acVtm" />
+                        </div>
+
+                        <div class="col-md-7">
+                            <p:panel id="vtmDetails">
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <i class="fa fa-rocket" /> VTM Details
+                                        </span>
+                                        <h:panelGroup rendered="#{vtmController.current ne null and vtmController.current.id ne null}"
+                                                      styleClass="badge #{vtmController.current.retired ? 'badge-danger' : 'badge-success'}">
+                                            #{vtmController.current.retired ? 'Inactive' : 'Active'}
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{vtmController.editable}"
+                                                      styleClass="badge badge-warning">
+                                            #{vtmController.current.id ne null ? 'Editing' : 'Adding New'}
+                                        </h:panelGroup>
+                                    </div>
+                                </f:facet>
+
+
+                                <p:panelGrid
+                                    id="gpDetail"
+                                    columns="1"
+                                    class="w-100">
+                                    <p:panelGrid
+                                        id="gpDetailText"
+                                        columns="2"
+                                        columnClasses="w-25 , w-75"
+                                        class="w-100">
+                                        <!-- Form fields - use entity for both editing and display -->
+                                        <h:outputText value="Name" />
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="txtName"
+                                            value="#{vtmController.current.name}"
+                                            required="true"
+                                            requiredMessage="VTM name is required"
+                                            placeholder="Enter VTM name"
+                                            class="w-100"
+                                            disabled="#{!vtmController.editable}" />
+
+                                        <h:outputText value="Code" />
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="txtCode"
+                                            value="#{vtmController.current.code}"
+                                            required="false"
+                                            class="w-100"
+                                            placeholder="Enter VTM code (optional)"
+                                            disabled="#{!vtmController.editable}" />
+
+                                        <h:outputText value="Description" />
+                                        <h:inputTextarea
+                                            id="txtDes"
+                                            value="#{vtmController.current.descreption}"
+                                            required="false"
+                                            class="form-control"
+                                            rows="3"
+                                            disabled="#{!vtmController.editable}" />
+
+                                        <h:outputText value="Instructions" />
+                                        <h:inputTextarea
+                                            id="txtIns"
+                                            value="#{vtmController.current.instructions}"
+                                            required="false"
+                                            class="form-control"
+                                            rows="3"
+                                            disabled="#{!vtmController.editable}" />
+                                    </p:panelGrid>
+
+                                    <h:panelGroup layout="block" class="text-end">
+                                        <div>
+                                            <p:commandButton
+                                                id="btnSave"
+                                                value="Save"
+                                                icon="fas fa-save"
+                                                action="#{vtmController.save}"
+                                                class="m-1 ui-button-warning w-25"
+                                                process="btnSave gpDetail"
+                                                update=":form:acVtm :form:gpDetail :form:msg :form:btnEdit :form:btnDelete :form:btnAdd :form:vtmDetails :form:btnViewAuditEvents"
+                                                disabled="#{!vtmController.editable}"
+                                                oncomplete="try { if (PF('acVtm')) { PF('acVtm').cache = {}; } } catch(e) {}">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                immediate="true"
+                                                id="btnCancel"
+                                                value="Cancel"
+                                                icon="fas fa-times"
+                                                action="#{vtmController.cancel()}"
+                                                class="m-1 ui-button-secondary w-25"
+                                                process="btnCancel"
+                                                update=":form:acVtm :form:gpDetail :form:btnEdit :form:btnDelete :form:btnAdd :form:vtmDetails :form:btnViewAuditEvents"
+                                                disabled="#{!vtmController.editable}">
+                                                <f:setPropertyActionListener target="#{vtmController.selectedVtmDto}" value="#{null}" />
+                                            </p:commandButton>
+                                        </div>
+                                    </h:panelGroup>
+                                </p:panelGrid>
+                            </p:panel>
+                        </div>
+                    </div>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
