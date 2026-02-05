@@ -1790,7 +1790,7 @@ public class BhtSummeryController implements Serializable {
         long overallTime = System.currentTimeMillis() - overallStart;
         System.out.println("========== toSettle() END: Total time = " + overallTime + "ms ==========");
 
-        return "inward_bill_final?faces-redirect=true;";
+        return "inward_bill_final?faces-redirect=true";
 
     }
 
