@@ -3321,6 +3321,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return auditEventFacade;
     }
     public boolean saveSelected(Patient p) {
+        boolean isNew = (p.getId() == null);
         if (p == null) {
             JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
             return false;
@@ -3397,15 +3398,15 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().editAndFlush(p);    // Immediate flush to database
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
         }
-        createAuditEventPatientSaved(p);
+        createAuditEventPatientSaved(p, isNew);
         return true;
     }
-    public void createAuditEventPatientSaved(Patient patient){
+    public void createAuditEventPatientSaved(Patient patient, boolean isNew){
          try {
         Object before = null;
         
         // If this is an edit (patient already has an ID), get the previous state
-        if (patient.getId() != null) {
+        if (!isNew && patient.getId() != null) {
             String jpql = "SELECT a FROM AuditEvent a WHERE a.objectId = :objectId AND a.entityType = :entityType ORDER BY a.eventDataTime DESC";
             Map<String, Object> params = new HashMap<>();
             params.put("objectId", patient.getId());
@@ -3478,7 +3479,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         after.put("createdBy", createdBy);
         
         // Determine event trigger
-        String eventTrigger = (before == null) ? "Create patient" : "Update patient";
+        String eventTrigger = isNew ? "Create patient" : "Update patient";
         
         // Log the audit
         Long objectId = patient.getId();
