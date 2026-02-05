@@ -971,7 +971,7 @@ public class VmpController implements Serializable {
             }
         }
 
-        getItems(); // Refresh items based on new filter
+//        getItems(); // Refresh items based on new filter
     }
 
     public boolean isShowingActive() {

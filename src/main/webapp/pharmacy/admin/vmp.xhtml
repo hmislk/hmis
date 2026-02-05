@@ -21,7 +21,7 @@
                         <div class="mb-3">
                             <h5 class="mb-2">Actions</h5>
                             <div class="d-flex flex-wrap gap-1" id="actionButtons">
-                            <p:commandButton
+                                <p:commandButton
                                     id="btnAdd"
                                     value="Add New"
                                     action="#{vmpController.prepareAdd()}"
@@ -61,46 +61,18 @@
                                         icon="fas fa-exclamation-triangle" />
                                 </p:commandButton>
 
+
+                                <p:commandButton
+                                    id="btnAuditEventsDetail"
+                                    value="Audit History"
+                                    action="#{vmpController.navigateToVmpAuditEvents()}"
+                                    icon="fas fa-history"
+                                    ajax="false"
+                                    styleClass="ui-button-info"
+                                    disabled="#{vmpController.current.id eq null}"
+                                    title="View audit history for this VMP record"/>
+
                             </div>
-                        </div>
-
-                        <!-- Status Filter -->
-                        <div class="mb-3 vmp-status-filter">
-                            <h5 class="mb-2">Filter VMPs</h5>
-                            <div class="d-flex gap-1 mb-2 filter-button-group">
-                                <p:commandButton
-                                    id="btnFilterActive"
-                                    value="Active"
-                                    action="#{vmpController.setFilterToActive()}"
-                                    update="acVmp detailPanel filterStatusLabel btnFilterActive btnFilterInactive btnFilterAll btnAdd btnEdit btnDelete btnToggleStatusDetail"
-                                    process="@this"
-                                    styleClass="#{vmpController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
-                                    icon="fas fa-check-circle"
-                                    title="Show only active VMPs"/>
-
-                                <p:commandButton
-                                    id="btnFilterInactive"
-                                    value="Inactive"
-                                    action="#{vmpController.setFilterToInactive()}"
-                                    update="acVmp detailPanel filterStatusLabel btnFilterActive btnFilterInactive btnFilterAll btnAdd btnEdit btnDelete btnToggleStatusDetail"
-                                    process="@this"
-                                    styleClass="#{vmpController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
-                                    icon="fas fa-times-circle"
-                                    title="Show only inactive VMPs"/>
-
-                                <p:commandButton
-                                    id="btnFilterAll"
-                                    value="All"
-                                    action="#{vmpController.setFilterToAll()}"
-                                    update="acVmp detailPanel filterStatusLabel btnFilterActive btnFilterInactive btnFilterAll btnAdd btnEdit btnDelete btnToggleStatusDetail"
-                                    process="@this"
-                                    styleClass="#{vmpController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
-                                    icon="fas fa-list"
-                                    title="Show all VMPs"/>
-                            </div>
-                            <p:outputLabel id="filterStatusLabel"
-                                          value="Currently showing: #{vmpController.filterStatusDisplay}"
-                                          styleClass="text-muted small"/>
                         </div>
 
                         <!-- Selection List -->
@@ -133,6 +105,42 @@
                                     </div>
                                 </p:column>
                             </p:autoComplete>
+
+
+                            <p:commandButton
+                                id="btnFilterActive"
+                                value="Active"
+                                action="#{vmpController.setFilterToActive()}"
+                                update="acVmp detailPanel filterStatusLabel btnFilterActive btnFilterInactive btnFilterAll btnAdd btnEdit btnDelete btnToggleStatusDetail"
+                                process="@this"
+                                styleClass="mx-1 #{vmpController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
+                                icon="fas fa-check-circle"
+                                title="Show only active VMPs"/>
+
+                            <p:commandButton
+                                id="btnFilterInactive"
+                                value="Inactive"
+                                action="#{vmpController.setFilterToInactive()}"
+                                update="acVmp detailPanel filterStatusLabel btnFilterActive btnFilterInactive btnFilterAll btnAdd btnEdit btnDelete btnToggleStatusDetail"
+                                process="@this"
+                                styleClass="mx-1 #{vmpController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
+                                icon="fas fa-times-circle"
+                                title="Show only inactive VMPs"/>
+
+                            <p:commandButton
+                                id="btnFilterAll"
+                                value="All"
+                                action="#{vmpController.setFilterToAll()}"
+                                update="acVmp detailPanel filterStatusLabel btnFilterActive btnFilterInactive btnFilterAll btnAdd btnEdit btnDelete btnToggleStatusDetail"
+                                process="@this"
+                                styleClass="mx-1 #{vmpController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
+                                icon="fas fa-list"
+                                title="Show all VMPs"/>
+                            
+                            <p:outputLabel id="filterStatusLabel"
+                                           value="Currently showing: #{vmpController.filterStatusDisplay}"
+                                           styleClass="text-muted small"/>
+
                         </div>
                     </div>
 
@@ -359,15 +367,7 @@
                                             icon="fas fa-question-circle" />
                                     </p:commandButton>
 
-                                    <p:commandButton
-                                        id="btnAuditEventsDetail"
-                                        value="View Audit History"
-                                        action="#{vmpController.navigateToVmpAuditEvents()}"
-                                        icon="fas fa-history"
-                                        ajax="false"
-                                        styleClass="ui-button-info"
-                                        disabled="#{vmpController.current.id eq null}"
-                                        title="View audit history for this VMP record"/>
+
                                 </div>
                             </div>
                         </p:panel>
