@@ -1367,7 +1367,7 @@ public class PharmacyController implements Serializable {
     public String navigateToAtm() {
         atmController.getItems();
         atmController.getCurrent();
-        return "/pharmacy/admin/atm?faces-redirect=true";
+        return "/pharmacy/admin/atm_dto?faces-redirect=true";
     }
 
     public String navigateToManufacturers() {
@@ -1409,9 +1409,14 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/admin/vmp?faces-redirect=true";
     }
 
-    public String navigateToVtm() {
-        vtmController.fillItems();
-        return "/pharmacy/admin/vtm?faces-redirect=true";
+//    public String navigateToVtm() {
+//        vtmController.fillItems();
+//        return "/pharmacy/admin/vtm?faces-redirect=true";
+//    }
+
+    public String navigateToVtmDto() {
+        vtmController.clearDtoCache(); // Ensure fresh DTO data
+        return "/pharmacy/admin/vtm_dto?faces-redirect=true";
     }
 
     public String navigateToVmpp() {
