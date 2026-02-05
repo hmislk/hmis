@@ -33,7 +33,15 @@ public class WebUserService {
         Map m = new HashMap();
         m.put("deptId", departmentId);
         m.put("wu", user);
-        m.put("pri", privilege);
+
+        try {
+            // Convert String privilege to Privileges enum
+            m.put("pri", Privileges.valueOf(privilege));
+        } catch (IllegalArgumentException e) {
+            // If privilege string doesn't match any enum value, deny access
+            return false;
+        }
+
         WebUserPrivilege wup = webUserPrivilegeFacade.findFirstByJpql(jpql, m);
         if (wup == null) {
             return false;
