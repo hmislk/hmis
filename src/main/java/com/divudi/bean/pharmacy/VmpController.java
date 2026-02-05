@@ -10,10 +10,14 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.AuditEventController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.SymanticType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.dto.VmpDto;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Item;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.MeasurementUnit;
 import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
@@ -21,10 +25,12 @@ import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vtm;
 import com.divudi.core.entity.pharmacy.VirtualProductIngredient;
 import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.AuditEventFacade;
 import com.divudi.core.facade.SpecialityFacade;
 import com.divudi.core.facade.VmpFacade;
 import com.divudi.core.facade.VirtualProductIngredientFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.AuditService;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -64,6 +70,12 @@ public class VmpController implements Serializable {
     private SpecialityFacade specialityFacade;
     @Inject
     private BillBeanController billBean;
+    @Inject
+    private AuditService auditService;
+    @EJB
+    private AuditEventFacade auditEventFacade;
+    @Inject
+    private AuditEventController auditEventController;
     List<Vmp> selectedItems;
     private Vmp current;
     private List<Vmp> items = null;
@@ -81,6 +93,11 @@ public class VmpController implements Serializable {
     @EJB
     VmpFacade vmpFacade;
     private boolean editable;
+
+    // DTO Management Fields
+    private VmpDto selectedVmpDto;
+    private List<VmpDto> vmpDtos;
+    private List<AuditEvent> vmpAuditEvents;
 
     public String navigateToListAllVmps() {
         String jpql = "Select vmp "
@@ -591,6 +608,24 @@ public class VmpController implements Serializable {
         items = null;
     }
 
+    private Map<String, Object> createAuditMap(Vmp vmp) {
+        Map<String, Object> auditData = new HashMap<>();
+        if (vmp != null) {
+            auditData.put("id", vmp.getId());
+            auditData.put("name", vmp.getName());
+            auditData.put("code", vmp.getCode());
+            auditData.put("retired", vmp.isRetired());
+            auditData.put("departmentType", vmp.getDepartmentType() != null ?
+                vmp.getDepartmentType().toString() : null);
+            auditData.put("descreption", vmp.getDescreption());
+            auditData.put("vtmId", vmp.getVtm() != null ? vmp.getVtm().getId() : null);
+            auditData.put("vtmName", vmp.getVtm() != null ? vmp.getVtm().getName() : null);
+            auditData.put("dosageFormId", vmp.getDosageForm() != null ? vmp.getDosageForm().getId() : null);
+            auditData.put("dosageFormName", vmp.getDosageForm() != null ? vmp.getDosageForm().getName() : null);
+        }
+        return auditData;
+    }
+
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().editAndCommit(getCurrent());
@@ -603,14 +638,36 @@ public class VmpController implements Serializable {
 
     public void save() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            // UPDATE - capture before state
+            Vmp beforeUpdate = getFacade().find(getCurrent().getId());
+            Map<String, Object> beforeData = createAuditMap(beforeUpdate);
+
             getFacade().edit(getCurrent());
+
+            // Log audit for update
+            Map<String, Object> afterData = createAuditMap(getCurrent());
+            auditService.logAudit(beforeData, afterData,
+                    getSessionController().getLoggedUser(),
+                    "Vmp", "Update VMP", getCurrent().getId());
+
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
+            // CREATE - no before state
+            getCurrent().setCreatedAt(new Date());
+            getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
+
+            // Log audit for create
+            Map<String, Object> afterData = createAuditMap(getCurrent());
+            auditService.logAudit(null, afterData,
+                    getSessionController().getLoggedUser(),
+                    "Vmp", "Create VMP", getCurrent().getId());
+
             JsfUtil.addSuccessMessage("Saved Successfully.");
         }
         recreateModel();
         getItems();
+        editable = false;
     }
 
     public void setSelectText(String selectText) {
@@ -648,12 +705,20 @@ public class VmpController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
+            // Capture before state for audit
+            Map<String, Object> beforeData = createAuditMap(current);
+
             current.setRetired(true);
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
+
+            // Capture after state for audit
+            Map<String, Object> afterData = createAuditMap(current);
+            auditService.logAudit(beforeData, afterData,
+                    getSessionController().getLoggedUser(),
+                    "Vmp", "Delete VMP", current.getId());
 
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
@@ -688,6 +753,95 @@ public class VmpController implements Serializable {
 
     public void setSpecialityFacade(SpecialityFacade specialityFacade) {
         this.specialityFacade = specialityFacade;
+    }
+
+    // DTO Management Methods
+
+    public List<VmpDto> getVmpDtos() {
+        String jpql = "SELECT new com.divudi.core.data.dto.VmpDto("
+                + "v.id, v.name, v.code, v.descreption, v.retired) "
+                + "FROM Vmp v WHERE v.retired=:retired "
+                + "AND v.departmentType=:dep ORDER BY v.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);
+        params.put("dep", DepartmentType.Pharmacy);
+
+        return (List<VmpDto>) getFacade().findLightsByJpql(jpql, params);
+    }
+
+    public List<VmpDto> completeVmpDto(String query) {
+        if (query == null || query.trim().length() < 2) {
+            return new ArrayList<>();
+        }
+
+        String jpql = "SELECT new com.divudi.core.data.dto.VmpDto("
+                + "v.id, v.name, v.code, v.descreption, v.retired) "
+                + "FROM Vmp v WHERE v.retired=:retired "
+                + "AND LOWER(v.name) LIKE :query "
+                + "AND v.departmentType=:dep ORDER BY v.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("retired", false);
+        params.put("query", "%" + query.toLowerCase() + "%");
+        params.put("dep", DepartmentType.Pharmacy);
+
+        return (List<VmpDto>) getFacade().findLightsByJpql(jpql, params);
+    }
+
+    public VmpDto getSelectedVmpDto() {
+        return selectedVmpDto;
+    }
+
+    public void setSelectedVmpDto(VmpDto selectedVmpDto) {
+        this.selectedVmpDto = selectedVmpDto;
+        if (selectedVmpDto != null && selectedVmpDto.getId() != null) {
+            this.current = getFacade().find(selectedVmpDto.getId());
+        } else {
+            this.current = null;
+        }
+    }
+
+    public VmpDto createVmpDto(Vmp vmp) {
+        if (vmp == null) {
+            return null;
+        }
+        return new VmpDto(vmp.getId(), vmp.getName(), vmp.getCode(),
+                          vmp.getDescreption(), vmp.isRetired());
+    }
+
+    // Audit History Management
+    public void fillVmpAuditEvents() {
+        if (current != null && current.getId() != null) {
+            List<AuditEvent> allEvents = new ArrayList<>();
+            // Get all types of VMP audit events
+            List<AuditEvent> createEvents = auditEventController.fillAllAuditEvents(current.getId(), "Create VMP");
+            List<AuditEvent> updateEvents = auditEventController.fillAllAuditEvents(current.getId(), "Update VMP");
+            List<AuditEvent> deleteEvents = auditEventController.fillAllAuditEvents(current.getId(), "Delete VMP");
+
+            allEvents.addAll(createEvents);
+            allEvents.addAll(updateEvents);
+            allEvents.addAll(deleteEvents);
+
+            // Sort by event date/time (most recent first)
+            allEvents.sort((e1, e2) -> e2.getEventDataTime().compareTo(e1.getEventDataTime()));
+
+            vmpAuditEvents = allEvents;
+        } else {
+            vmpAuditEvents = new ArrayList<>();
+        }
+    }
+
+    public String navigateToVmpAuditEvents() {
+        fillVmpAuditEvents();
+        return "/pharmacy/admin/vmp_audit_events?faces-redirect=true";
+    }
+
+    public List<AuditEvent> getVmpAuditEvents() {
+        if (vmpAuditEvents == null) {
+            fillVmpAuditEvents();
+        }
+        return vmpAuditEvents;
     }
 
     public boolean isEditable() {
@@ -736,6 +890,41 @@ public class VmpController implements Serializable {
                 throw new IllegalArgumentException("object " + object + " is of type "
                         + object.getClass().getName() + "; expected type: " + VmpController.class.getName());
             }
+        }
+    }
+
+    /**
+     * JSF converter for VMP DTO
+     */
+    @FacesConverter("vmpDtoConverter")
+    public static class VmpDtoConverter implements Converter {
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.isEmpty()) {
+                return null;
+            }
+            try {
+                Long id = Long.parseLong(value);
+                VmpController controller = (VmpController) facesContext.getApplication()
+                        .getELResolver().getValue(facesContext.getELContext(), null, "vmpController");
+
+                Vmp entity = controller.getFacade().find(id);
+                return entity != null ? controller.createVmpDto(entity) : null;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof VmpDto) {
+                VmpDto dto = (VmpDto) object;
+                return dto.getId() != null ? dto.getId().toString() : null;
+            }
+            throw new IllegalArgumentException("Expected VmpDto object");
         }
     }
 }
