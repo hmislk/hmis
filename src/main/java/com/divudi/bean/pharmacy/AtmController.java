@@ -368,8 +368,7 @@ public class AtmController implements Serializable {
                 + "a.descreption, "
                 + "a.retired, "
                 + "a.vtm.id, "
-                + "a.vtm.name, "
-                + "CAST(a.departmentType AS string)) "
+                + "a.vtm.name) "
                 + "FROM Atm a WHERE a.retired=:retired "
                 + "AND a.departmentType=:dep "
                 + "ORDER BY a.name";

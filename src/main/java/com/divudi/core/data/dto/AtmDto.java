@@ -49,7 +49,12 @@ public class AtmDto implements Serializable {
      * @param vtmId VTM ID (can be null)
      * @param vtmName VTM name for display (can be null)
      * @param departmentTypeName Department type name (for display)
+     *
+     * @deprecated Use the 7-argument constructor instead. Department type should be
+     * filtered in WHERE clause, not included in DTO for consistency across all
+     * DTO creation methods (getAtmDtos, completeAtmDto, createAtmDto).
      */
+    @Deprecated
     public AtmDto(Long id, String name, String code, String descreption,
             Boolean retired, Long vtmId, String vtmName, String departmentTypeName) {
         this.id = id;
