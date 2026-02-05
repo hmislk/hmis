@@ -392,6 +392,38 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
         this.inactive = inactive;
     }
 
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
+    }
+
     public List<WorksheetItem> getWorksheetItems() {
         if (worksheetItems != null) {
             try {
@@ -743,37 +775,6 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
         this.createdAt = createdAt;
     }
 
-    public boolean isRetired() {
-        return retired;
-    }
-
-    public void setRetired(boolean retired) {
-        this.retired = retired;
-    }
-
-    public WebUser getRetirer() {
-        return retirer;
-    }
-
-    public void setRetirer(WebUser retirer) {
-        this.retirer = retirer;
-    }
-
-    public Date getRetiredAt() {
-        return retiredAt;
-    }
-
-    public void setRetiredAt(Date retiredAt) {
-        this.retiredAt = retiredAt;
-    }
-
-    public String getRetireComments() {
-        return retireComments;
-    }
-
-    public void setRetireComments(String retireComments) {
-        this.retireComments = retireComments;
-    }
 
     public Item getParentItem() {
         return parentItem;

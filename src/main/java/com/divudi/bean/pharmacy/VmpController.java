@@ -105,7 +105,7 @@ public class VmpController implements Serializable {
     public String navigateToListAllVmps() {
         String jpql = "Select vmp "
                 + " from Vmp vmp "
-                + " where vmp.retired=:ret "
+                + " where vmp.inactive=:ret "
                 + " order by vmp.name";
         Map m = new HashMap();
         m.put("ret", false);
@@ -116,7 +116,7 @@ public class VmpController implements Serializable {
     public Vmp findOrCreateVmpByName(String vmpName) {
         String jpql = "Select vmp "
                 + " from Vmp vmp "
-                + " where vmp.retired=:ret "
+                + " where vmp.inactive=:ret "
                 + " and vmp.name=:vmpName "
                 + " order by vmp.name";
         Map m = new HashMap();
@@ -237,7 +237,7 @@ public class VmpController implements Serializable {
         String jpql;
         Map m = new HashMap();
         jpql = "select a from Amp a "
-                + " where a.retired=:ret"
+                + " where a.inactive=:ret"
                 + " and a.vmp=:vmp "
                 + " order by a.name";
         m.put("ret", false);
@@ -253,7 +253,7 @@ public class VmpController implements Serializable {
         }
         jpql = "select c "
                 + " from Vmp c "
-                + " where c.retired=:ret "
+                + " where c.inactive=:ret "
                 + " and c.name=:name";
         Map m = new HashMap();
         m.put("name", name);
@@ -289,7 +289,7 @@ public class VmpController implements Serializable {
         Map m = new HashMap();
         j = "Select vmp "
                 + " from VirtualProductIngredient viv join viv.vmp vmp"
-                + " where viv.retired=:ret "
+                + " where viv.inactive=:ret "
                 + " and viv.vtm=:vtm "
                 + " order by vmp.name";
         m.put("ret", false);
@@ -513,7 +513,7 @@ public class VmpController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<Vmp>();
         } else {
-            sql = "select c from Vmp c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from Vmp c where c.inactive=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
             suggestions = getFacade().findByJpql(sql, true); // true = noCache
         }
@@ -555,9 +555,9 @@ public class VmpController implements Serializable {
 
     public List<Vmp> getSelectedItems() {
         if (selectText.trim().isEmpty()) {
-            selectedItems = getFacade().findByJpql("select c from Vmp c where c.retired=false order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Vmp c where c.inactive=false order by c.name");
         } else {
-            String sql = "select c from Vmp c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
+            String sql = "select c from Vmp c where c.inactive=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
             selectedItems = getFacade().findByJpql(sql);
         }
         return selectedItems;
@@ -632,6 +632,7 @@ public class VmpController implements Serializable {
             auditData.put("name", vmp.getName());
             auditData.put("code", vmp.getCode());
             auditData.put("retired", vmp.isRetired());
+            auditData.put("inactive", vmp.isInactive());
             auditData.put("departmentType", vmp.getDepartmentType() != null ?
                 vmp.getDepartmentType().toString() : null);
             auditData.put("descreption", vmp.getDescreption());
@@ -771,10 +772,10 @@ public class VmpController implements Serializable {
             // Apply status filter
             if ("active".equals(filterStatus)) {
                 j += "and v.retired=:retired ";
-                params.put("retired", false);
+                params.put("inactive", false);
             } else if ("inactive".equals(filterStatus)) {
                 j += "and v.retired=:retired ";
-                params.put("retired", true);
+                params.put("inactive", true);
             }
             // For "all", no additional filter needed
 
@@ -796,19 +797,20 @@ public class VmpController implements Serializable {
 
     public List<VmpDto> getVmpDtos() {
         String jpql = "SELECT new com.divudi.core.data.dto.VmpDto("
-                + "v.id, v.name, v.code, v.descreption, v.retired) "
-                + "FROM Vmp v WHERE v.departmentType=:dep ";
+                + "v.id, v.name, v.code, v.descreption, v.retired, v.inactive) "
+                + "FROM Vmp v WHERE v.departmentType=:dep AND v.retired=:retired ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("dep", DepartmentType.Pharmacy);
+        params.put("retired", false); // Only show non-deleted items
 
-        // Apply status filter
+        // Apply status filter based on inactive attribute
         if ("active".equals(filterStatus)) {
-            jpql += "AND v.retired=:retired ";
-            params.put("retired", false);
+            jpql += "AND v.inactive=:inactive ";
+            params.put("inactive", false);
         } else if ("inactive".equals(filterStatus)) {
-            jpql += "AND v.retired=:retired ";
-            params.put("retired", true);
+            jpql += "AND v.inactive=:inactive ";
+            params.put("inactive", true);
         }
         // For "all", no additional filter needed
 
@@ -823,21 +825,22 @@ public class VmpController implements Serializable {
         }
 
         String jpql = "SELECT new com.divudi.core.data.dto.VmpDto("
-                + "v.id, v.name, v.code, v.descreption, v.retired) "
+                + "v.id, v.name, v.code, v.descreption, v.retired, v.inactive) "
                 + "FROM Vmp v WHERE LOWER(v.name) LIKE :query "
-                + "AND v.departmentType=:dep ";
+                + "AND v.departmentType=:dep AND v.retired=:retired ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("query", "%" + query.toLowerCase() + "%");
         params.put("dep", DepartmentType.Pharmacy);
+        params.put("retired", false); // Only show non-deleted items
 
-        // Apply status filter
+        // Apply status filter based on inactive attribute
         if ("active".equals(filterStatus)) {
-            jpql += "AND v.retired=:retired ";
-            params.put("retired", false);
+            jpql += "AND v.inactive=:inactive ";
+            params.put("inactive", false);
         } else if ("inactive".equals(filterStatus)) {
-            jpql += "AND v.retired=:retired ";
-            params.put("retired", true);
+            jpql += "AND v.inactive=:inactive ";
+            params.put("inactive", true);
         }
         // For "all", no additional filter needed
 
@@ -864,7 +867,7 @@ public class VmpController implements Serializable {
             return null;
         }
         return new VmpDto(vmp.getId(), vmp.getName(), vmp.getCode(),
-                          vmp.getDescreption(), vmp.isRetired());
+                          vmp.getDescreption(), vmp.isRetired(), vmp.isInactive());
     }
 
     // Audit History Management
@@ -954,10 +957,10 @@ public class VmpController implements Serializable {
             boolean shouldKeepSelection = false;
             switch (filterStatus) {
                 case "active":
-                    shouldKeepSelection = !current.isRetired();
+                    shouldKeepSelection = !current.isInactive();
                     break;
                 case "inactive":
-                    shouldKeepSelection = current.isRetired();
+                    shouldKeepSelection = current.isInactive();
                     break;
                 case "all":
                     shouldKeepSelection = true;
@@ -1009,19 +1012,15 @@ public class VmpController implements Serializable {
         // Capture before state for audit
         Map<String, Object> beforeData = createAuditMap(current);
 
-        boolean wasRetired = current.isRetired();
+        boolean wasInactive = current.isInactive();
 
-        if (wasRetired) {
+        if (wasInactive) {
             // Reactivate VMP
-            current.setRetired(false);
-            current.setRetiredAt(null);
-            current.setRetirer(null);
+            current.setInactive(false);
             JsfUtil.addSuccessMessage("VMP Activated Successfully");
         } else {
             // Deactivate VMP
-            current.setRetired(true);
-            current.setRetiredAt(new Date());
-            current.setRetirer(getSessionController().getLoggedUser());
+            current.setInactive(true);
             JsfUtil.addSuccessMessage("VMP Deactivated Successfully");
         }
 
@@ -1029,7 +1028,7 @@ public class VmpController implements Serializable {
 
         // Capture after state for audit
         Map<String, Object> afterData = createAuditMap(current);
-        String action = wasRetired ? "Activate VMP" : "Deactivate VMP";
+        String action = wasInactive ? "Activate VMP" : "Deactivate VMP";
 
         // Log audit event
         auditService.logAudit(beforeData, afterData,
@@ -1038,7 +1037,7 @@ public class VmpController implements Serializable {
 
         // Update DTO to reflect new status
         if (selectedVmpDto != null) {
-            selectedVmpDto.setRetired(current.isRetired());
+            selectedVmpDto.setInactive(current.isInactive());
         }
 
         // Refresh data to reflect changes
@@ -1050,23 +1049,23 @@ public class VmpController implements Serializable {
         if (current == null || current.getId() == null) {
             return "Toggle Status";
         }
-        return current.isRetired() ? "Activate" : "Deactivate";
+        return current.isInactive() ? "Activate" : "Deactivate";
     }
 
     public String getToggleStatusButtonIcon() {
         if (current == null || current.getId() == null) {
             return "fas fa-toggle-off";
         }
-        return current.isRetired() ? "fas fa-check-circle" : "fas fa-times-circle";
+        return current.isInactive() ? "fas fa-check-circle" : "fas fa-times-circle";
     }
 
     public String getToggleStatusButtonClass() {
         if (current == null || current.getId() == null) {
             return "ui-button-secondary";
         }
-        // If retired (inactive), show green "Activate" button
+        // If inactive (inactive), show green "Activate" button
         // If active, show orange "Deactivate" button
-        return current.isRetired() ? "ui-button-success" : "ui-button-warning";
+        return current.isInactive() ? "ui-button-success" : "ui-button-warning";
     }
 
     /**

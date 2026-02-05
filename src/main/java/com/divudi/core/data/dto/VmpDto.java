@@ -20,7 +20,8 @@ public class VmpDto implements Serializable {
     private String name;
     private String code;
     private String descreption; // Note: intentional spelling for backward compatibility
-    private Boolean retired;
+    private Boolean retired; // For delete functionality (permanent removal from lists)
+    private Boolean inactive; // For active/inactive status (visible but marked inactive)
 
     // VTM relationship fields
     private Long vtmId;
@@ -37,6 +38,23 @@ public class VmpDto implements Serializable {
     }
 
     /**
+     * Backwards-compatible constructor for JPQL query - assumes not retired
+     * @param id VMP ID
+     * @param name VMP name
+     * @param code VMP code (can be null)
+     * @param descreption VMP description
+     * @param inactive Whether VMP is inactive
+     */
+    public VmpDto(Long id, String name, String code, String descreption, Boolean inactive) {
+        this.id = id;
+        this.name = name;
+        this.code = code;
+        this.descreption = descreption;
+        this.retired = false; // Assume not retired for backwards compatibility
+        this.inactive = inactive != null ? inactive : false;
+    }
+
+    /**
      * Constructor for JPQL query - core VMP management use case
      * Includes essential fields needed for basic VMP operations
      *
@@ -45,15 +63,17 @@ public class VmpDto implements Serializable {
      * @param code VMP code (can be null)
      * @param descreption VMP description (note: spelling preserved for backward
      * compatibility)
-     * @param retired Whether VMP is retired/inactive
+     * @param retired Whether VMP is retired/deleted
+     * @param inactive Whether VMP is inactive
      */
     public VmpDto(Long id, String name, String code, String descreption,
-            Boolean retired) {
+            Boolean retired, Boolean inactive) {
         this.id = id;
         this.name = name;
         this.code = code;
         this.descreption = descreption;
         this.retired = retired != null ? retired : false;
+        this.inactive = inactive != null ? inactive : false;
         // Relationship fields remain null
         this.vtmId = null;
         this.vtmName = null;
@@ -71,17 +91,18 @@ public class VmpDto implements Serializable {
      * @param code VMP code (can be null)
      * @param descreption VMP description (note: spelling preserved for backward
      * compatibility)
-     * @param retired Whether VMP is retired/inactive
+     * @param inactive Whether VMP is inactive
      * @param vtmId VTM ID (can be null)
      * @param vtmName VTM name for display (can be null)
      */
     public VmpDto(Long id, String name, String code, String descreption,
-            Boolean retired, Long vtmId, String vtmName) {
+            Boolean retired, Boolean inactive, Long vtmId, String vtmName) {
         this.id = id;
         this.name = name;
         this.code = code;
         this.descreption = descreption;
         this.retired = retired != null ? retired : false;
+        this.inactive = inactive != null ? inactive : false;
         this.vtmId = vtmId;
         this.vtmName = vtmName;
         this.dosageFormId = null;
@@ -97,19 +118,20 @@ public class VmpDto implements Serializable {
      * @param code VMP code (can be null)
      * @param descreption VMP description (note: spelling preserved for backward
      * compatibility)
-     * @param retired Whether VMP is retired/inactive
+     * @param inactive Whether VMP is inactive
      * @param vtmId VTM ID (can be null)
      * @param vtmName VTM name for display (can be null)
      * @param dosageFormId Dosage form ID (can be null)
      * @param dosageFormName Dosage form name for display (can be null)
      */
     public VmpDto(Long id, String name, String code, String descreption,
-            Boolean retired, Long vtmId, String vtmName, Long dosageFormId, String dosageFormName) {
+            Boolean retired, Boolean inactive, Long vtmId, String vtmName, Long dosageFormId, String dosageFormName) {
         this.id = id;
         this.name = name;
         this.code = code;
         this.descreption = descreption;
         this.retired = retired != null ? retired : false;
+        this.inactive = inactive != null ? inactive : false;
         this.vtmId = vtmId;
         this.vtmName = vtmName;
         this.dosageFormId = dosageFormId;
@@ -147,6 +169,19 @@ public class VmpDto implements Serializable {
 
     public void setDescreption(String descreption) {
         this.descreption = descreption;
+    }
+
+    public Boolean getInactive() {
+        return inactive;
+    }
+
+    // Prefer boolean accessor for EL friendliness
+    public boolean isInactive() {
+        return inactive != null && inactive;
+    }
+
+    public void setInactive(Boolean inactive) {
+        this.inactive = inactive;
     }
 
     public Boolean getRetired() {
@@ -199,14 +234,14 @@ public class VmpDto implements Serializable {
      * Returns display status for UI - Active/Inactive
      */
     public String getStatusDisplay() {
-        return isRetired() ? "Inactive" : "Active";
+        return isInactive() ? "Inactive" : "Active";
     }
 
     /**
      * Returns CSS class for status display - for styling
      */
     public String getStatusCssClass() {
-        return isRetired() ? "badge-danger" : "badge-success";
+        return isInactive() ? "badge-danger" : "badge-success";
     }
 
     /**

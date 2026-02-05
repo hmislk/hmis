@@ -26,7 +26,7 @@
                                     value="Add New"
                                     action="#{vmpController.prepareAdd()}"
                                     styleClass="ui-button-success m-1"
-                                    update="acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel btnToggleStatusDetail"
+                                    update="acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel"
                                     icon="fas fa-plus"
                                     process="@this"
                                     disabled="#{vmpController.editable}"
@@ -38,7 +38,7 @@
                                     value="Edit Selected"
                                     action="#{vmpController.edit()}"
                                     icon="fas fa-edit"
-                                    update="detailPanel btnAdd btnEdit btnDelete btnSave btnCancel btnToggleStatusDetail acVmp"
+                                    update="detailPanel btnAdd btnEdit btnDelete btnSave btnCancel acVmp"
                                     process="@this"
                                     styleClass="ui-button-warning m-1"
                                     disabled="#{vmpController.editable or vmpController.current.id eq null}"
@@ -50,10 +50,10 @@
                                     value="Delete Selected"
                                     action="#{vmpController.delete()}"
                                     icon="fas fa-trash"
-                                    update="vmpForm:messages acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel btnToggleStatusDetail"
+                                    update="vmpForm:messages acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel"
                                     process="@this"
                                     styleClass="ui-button-danger m-1"
-                                    disabled="#{vmpController.editable}"
+                                    disabled="#{vmpController.editable or vmpController.current.id eq null}"
                                     title="Delete selected VMP record">
                                     <p:confirm
                                         header="Confirm Delete"
@@ -95,12 +95,12 @@
                                 placeholder="Type to search VMPs (minimum 2 characters)...">
                                 <p:ajax event="itemSelect"
                                         process="@this"
-                                        update="detailPanel btnAdd btnEdit btnDelete btnToggleStatusDetail" />
+                                        update="detailPanel btnAdd btnEdit btnDelete btnToggleStatus btnAuditEventsDetail" />
                                 <p:column headerText="Name" style="padding: 3px;">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h:outputText value="#{dto.name}"/>
                                         <p:badge value="#{dto.statusDisplay}"
-                                                 severity="#{dto.retired ? 'danger' : 'success'}"
+                                                 severity="#{dto.inactive ? 'danger' : 'success'}"
                                                  style="font-size: 0.65em; margin-left: 8px;"/>
                                     </div>
                                 </p:column>
@@ -111,9 +111,9 @@
                                 id="btnFilterActive"
                                 value="Active"
                                 action="#{vmpController.setFilterToActive()}"
-                                update="acVmp detailPanel filterStatusLabel btnFilterActive btnFilterInactive btnFilterAll btnAdd btnEdit btnDelete btnToggleStatusDetail"
+                                update="acVmp detailPanel filterStatusLabel btnFilterActive btnFilterInactive btnFilterAll btnAdd btnEdit btnDelete"
                                 process="@this"
-                                styleClass="mx-1 #{vmpController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
+                                styleClass="m-1 #{vmpController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
                                 icon="fas fa-check-circle"
                                 title="Show only active VMPs"/>
 
@@ -121,9 +121,9 @@
                                 id="btnFilterInactive"
                                 value="Inactive"
                                 action="#{vmpController.setFilterToInactive()}"
-                                update="acVmp detailPanel filterStatusLabel btnFilterActive btnFilterInactive btnFilterAll btnAdd btnEdit btnDelete btnToggleStatusDetail"
+                                update="acVmp detailPanel filterStatusLabel btnFilterActive btnFilterInactive btnFilterAll btnAdd btnEdit btnDelete"
                                 process="@this"
-                                styleClass="mx-1 #{vmpController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
+                                styleClass="m-1 #{vmpController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
                                 icon="fas fa-times-circle"
                                 title="Show only inactive VMPs"/>
 
@@ -131,17 +131,45 @@
                                 id="btnFilterAll"
                                 value="All"
                                 action="#{vmpController.setFilterToAll()}"
-                                update="acVmp detailPanel filterStatusLabel btnFilterActive btnFilterInactive btnFilterAll btnAdd btnEdit btnDelete btnToggleStatusDetail"
+                                update="acVmp detailPanel filterStatusLabel btnFilterActive btnFilterInactive btnFilterAll btnAdd btnEdit btnDelete"
                                 process="@this"
-                                styleClass="mx-1 #{vmpController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
+                                styleClass="m-1 #{vmpController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
                                 icon="fas fa-list"
                                 title="Show all VMPs"/>
-                            
+
                             <p:outputLabel id="filterStatusLabel"
                                            value="Currently showing: #{vmpController.filterStatusDisplay}"
                                            styleClass="text-muted small"/>
 
                         </div>
+
+
+                        <!-- Status Management Buttons -->
+                        <div class="status-management-section" rendered="#{vmpController.current ne null and vmpController.current.id ne null}">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0 text-muted">Status Management</h6>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    id="btnToggleStatus"
+                                    value="#{vmpController.toggleStatusButtonText}"
+                                    action="#{vmpController.toggleVmpStatus()}"
+                                    icon="#{vmpController.toggleStatusButtonIcon}"
+                                    update="vmpForm:messages acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel btnToggleStatus btnAuditEventsDetail filterStatusLabel"
+                                    process="@this"
+                                    styleClass="#{vmpController.toggleStatusButtonClass} vmp-toggle-status"
+                                    disabled="#{vmpController.editable}"
+                                    title="Toggle VMP active/inactive status">
+                                    <p:confirm
+                                        header="Confirm Status Change"
+                                        message="Are you sure you want to #{vmpController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this VMP: #{vmpController.current.name}?"
+                                        icon="fas fa-question-circle" />
+                                </p:commandButton>
+
+
+                            </div>
+                        </div>
+
                     </div>
 
                     <!-- Right Panel - VMP Details -->
@@ -155,8 +183,8 @@
                                               (empty vmpController.current.id ? 'Add New VMP' : 'Edit VMP Details')}
                                         </span>
                                         <h:panelGroup rendered="#{vmpController.current ne null and vmpController.current.id ne null}">
-                                            <p:badge value="#{vmpController.current.retired ? 'INACTIVE' : 'ACTIVE'}"
-                                                     severity="#{vmpController.current.retired ? 'danger' : 'success'}"
+                                            <p:badge value="#{vmpController.current.inactive ? 'INACTIVE' : 'ACTIVE'}"
+                                                     severity="#{vmpController.current.inactive ? 'danger' : 'success'}"
                                                      style="font-size: 0.8em; font-weight: bold;"/>
                                         </h:panelGroup>
                                     </div>
@@ -326,7 +354,7 @@
                                     id="btnSave"
                                     value="Save"
                                     action="#{vmpController.save}"
-                                    update="vmpForm:messages acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel btnToggleStatusDetail"
+                                    update="vmpForm:messages acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel"
                                     process="@form"
                                     styleClass="ui-button-success"
                                     icon="fas fa-save"
@@ -337,7 +365,7 @@
                                     id="btnCancel"
                                     value="Cancel"
                                     action="#{vmpController.cancel()}"
-                                    update="acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel btnToggleStatusDetail"
+                                    update="acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel"
                                     process="@this"
                                     styleClass="ui-button-secondary"
                                     icon="fas fa-times"
@@ -345,31 +373,7 @@
                                     title="Cancel changes and clear form"/>
                             </div>
 
-                            <!-- Status Management Buttons -->
-                            <div class="status-management-section" rendered="#{vmpController.current ne null and vmpController.current.id ne null}">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h6 class="mb-0 text-muted">Status Management</h6>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <p:commandButton
-                                        id="btnToggleStatus"
-                                        value="#{vmpController.toggleStatusButtonText}"
-                                        action="#{vmpController.toggleVmpStatus()}"
-                                        icon="#{vmpController.toggleStatusButtonIcon}"
-                                        update="vmpForm:messages acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel btnToggleStatus btnAuditEventsDetail filterStatusLabel"
-                                        process="@this"
-                                        styleClass="#{vmpController.toggleStatusButtonClass} vmp-toggle-status"
-                                        disabled="#{vmpController.editable}"
-                                        title="Toggle VMP active/inactive status">
-                                        <p:confirm
-                                            header="Confirm Status Change"
-                                            message="Are you sure you want to #{vmpController.current.retired ? 'ACTIVATE' : 'DEACTIVATE'} this VMP: #{vmpController.current.name}?"
-                                            icon="fas fa-question-circle" />
-                                    </p:commandButton>
 
-
-                                </div>
-                            </div>
                         </p:panel>
                     </div>
                 </div>
