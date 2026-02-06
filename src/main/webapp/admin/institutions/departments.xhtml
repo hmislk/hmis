@@ -76,10 +76,9 @@
                                 <f:facet name="header">
                                     <h:outputText value="Actions"/>
                                 </f:facet>
-                                <p:commandButton icon="fas fa-pencil" styleClass="ui-button-success" style="margin-right: 10px;" 
-                                                 action="#{departmentController.toEditDepartment()}">
-                                    <f:setPropertyActionListener value="#{item}" target="#{departmentController.current}" />
-                                </p:commandButton>
+                                                                <p:commandButton icon="fas fa-pencil" styleClass="ui-button-success" style="margin-right: 10px;"
+                                                                                 action="#{departmentController.toEditDepartment()}" ajax="false">
+                                                                    <f:setPropertyActionListener value="#{item}" target="#{departmentController.current}" />                                </p:commandButton>
                                 <p:commandButton icon="fas fa-trash" styleClass="ui-button-danger" 
                                                  action="#{departmentController.deleteDepartment()}" 
                                                  onclick="if (!confirm('Are you sure you want to delete this record?'))
