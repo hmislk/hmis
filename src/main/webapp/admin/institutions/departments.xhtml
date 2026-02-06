@@ -105,7 +105,7 @@
                                           styleClass="badge badge-warning" style="background-color: #ffc107; color: black; padding: 3px 8px; border-radius: 3px;"/>
                         </p:column>
 
-                        <p:column headerText="Actions" style="width: 180px;">
+                        <p:column headerText="Actions" style="width: 220px;">
                             <p:commandButton icon="fas fa-pencil" styleClass="ui-button-success"
                                              action="#{departmentController.toEditDepartment()}"
                                              title="Edit">
@@ -123,6 +123,15 @@
                                 <p:confirm header="Confirm Status Change"
                                            message="Are you sure you want to #{item.retired ? 'activate' : 'deactivate'} this department?"
                                            icon="pi pi-exclamation-triangle" />
+                            </p:commandButton>
+
+                            <!-- Audit History Button -->
+                            <p:commandButton styleClass="ui-button-info mx-1"
+                                             icon="fas fa-history"
+                                             action="#{departmentController.navigateToDepartmentAuditEvents()}"
+                                             ajax="false"
+                                             title="View Audit History">
+                                <f:setPropertyActionListener value="#{item}" target="#{departmentController.current}" />
                             </p:commandButton>
 
                             <p:commandButton icon="fas fa-trash" styleClass="ui-button-danger"

@@ -66,6 +66,16 @@
                                                icon="pi pi-exclamation-triangle" />
                                 </p:commandButton>
 
+                                <!-- Audit History Button -->
+                                <p:commandButton id="btnHistory"
+                                                 icon="fas fa-history"
+                                                 value="History"
+                                                 styleClass="ui-button-info mr-1"
+                                                 action="#{institutionController.navigateToInstitutionAuditEvents()}"
+                                                 ajax="false"
+                                                 disabled="#{institutionController.current == null or institutionController.current.id == null}"
+                                                 title="View Audit History" />
+
                                 <p:commandButton id="btnDelete"
                                                  icon="fa fa-trash"
                                                  action="#{institutionController.deleteSite()}"
