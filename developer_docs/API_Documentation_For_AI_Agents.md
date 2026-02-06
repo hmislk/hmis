@@ -103,7 +103,7 @@ GET /api/pharmacy_adjustments/search/stocks?query=Paracetamol&department=Main%20
       "batchNo": "B001234",
       "retailRate": 25.00,
       "stockQty": 150.0,
-      "dateOfExpire": "2025-12-31 00:00:00",
+      "dateOfExpire": "2025-12-31",
       "purchaseRate": 20.00,
       "wholesaleRate": 22.50,
       "costRate": 21.00,
@@ -303,7 +303,7 @@ GET /api/pharmacy_adjustments/search/items?query=Para&limit=20
 {
   "itemId": 1234,
   "batchNo": "BATCH001",
-  "expiryDate": "2025-12-31 00:00:00",
+  "expiryDate": "2025-12-31",
   "retailRate": 100.0,
   "purchaseRate": 85.0,
   "costRate": null,
@@ -334,7 +334,7 @@ GET /api/pharmacy_adjustments/search/items?query=Para&limit=20
     "retailRate": 100.0,
     "purchaseRate": 85.0,
     "costRate": 85.0,
-    "expiryDate": "2025-12-31 00:00:00",
+    "expiryDate": "2025-12-31",
     "message": "Created new batch"
   }
 }
@@ -419,7 +419,7 @@ curl -X POST "http://localhost:8080/api/pharmacy_batches/create" \
   -d '{
     "itemId": 2001,
     "batchNo": "AMX2025001",
-    "expiryDate": "2026-06-30 00:00:00",
+    "expiryDate": "2026-06-30",
     "retailRate": 50.0,
     "departmentId": 1,
     "comment": "New medication stock creation"
@@ -439,7 +439,7 @@ curl -X POST "http://localhost:8080/api/pharmacy_batches/create" \
   -H "Finance: YOUR_API_KEY" \
   -d '{
     "itemId": 1234,
-    "expiryDate": "2025-12-31 00:00:00",
+    "expiryDate": "2025-12-31",
     "retailRate": 100.0,
     "departmentId": 456
   }'
@@ -475,7 +475,7 @@ curl -X POST "http://localhost:8080/api/pharmacy_batches/create" \
   -d '{
     "itemId": 1234,
     "batchNo": "EXISTING001",
-    "expiryDate": "2025-12-31 00:00:00",
+    "expiryDate": "2025-12-31",
     "retailRate": 100.0,
     "departmentId": 2
   }'
@@ -808,7 +808,7 @@ curl -X GET "http://localhost:8080/api/pharmacy_adjustments/search/stocks?query=
       "itemName": "Zaart 50mg tablet",
       "batchNo": "B2025001",
       "stockQty": 30.0,
-      "dateOfExpire": "2026-01-30 00:00:00",
+      "dateOfExpire": "2026-01-30",
       "retailRate": 15.50
     },
     {
@@ -816,7 +816,7 @@ curl -X GET "http://localhost:8080/api/pharmacy_adjustments/search/stocks?query=
       "itemName": "Zaart 50mg tablet",
       "batchNo": "B2025002",
       "stockQty": 25.0,
-      "dateOfExpire": "2026-03-15 00:00:00",
+      "dateOfExpire": "2026-03-15",
       "retailRate": 15.50
     }
   ]

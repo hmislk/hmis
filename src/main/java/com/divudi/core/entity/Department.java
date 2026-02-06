@@ -88,6 +88,9 @@ public class Department implements Serializable {
     String retireComments;
     private Boolean active;
 
+    //Inactive Status
+    private boolean inactive;
+
     double margin;
     double pharmacyMarginFromPurchaseRate;
 
@@ -359,6 +362,14 @@ public class Department implements Serializable {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public boolean isInactive() {
+        return inactive;
+    }
+
+    public void setInactive(boolean inactive) {
+        this.inactive = inactive;
     }
 
     public Institution getSite() {
