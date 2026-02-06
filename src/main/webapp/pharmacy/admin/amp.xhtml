@@ -166,40 +166,56 @@
                                     <div class="col-md-8">
                                         <p:panel id="detailPanel" styleClass="h-100">
                                             <f:facet name="header">
-
-                                                #{empty ampController.current ? 'AMP Details' :
-                                                  (empty ampController.current.id ? 'Add New AMP' : 'Edit AMP Details')}
-
-                                                <h:panelGroup rendered="#{ampController.current ne null and ampController.current.id ne null}"
-                                                              styleClass="badge #{ampController.current.retired ? 'badge-danger' : 'badge-success'} me-2">
-                                                    #{ampController.current.retired ? 'Inactive' : 'Active'}
-                                                </h:panelGroup>
-                                                <h:panelGroup rendered="#{ampController.editable}"
-                                                              styleClass="badge badge-warning">
-                                                    #{ampController.current.id ne null ? 'Editing' : 'Adding New'}
-                                                </h:panelGroup>
-
-                                                <p:commandButton
-                                                    id="btnSave"
-                                                    value="Save"
-                                                    action="#{ampController.save}"
-                                                    update="form:msg acAmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel"
-                                                    process="@form"
-                                                    styleClass="ui-button-success"
-                                                    icon="fas fa-save"
-                                                    disabled="#{!ampController.editable}"
-                                                    title="Save AMP record"/>
-
-                                                <p:commandButton
-                                                    id="btnCancel"
-                                                    value="Cancel"
-                                                    action="#{ampController.cancel()}"
-                                                    update="acAmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel"
-                                                    process="@this"
-                                                    styleClass="ui-button-secondary"
-                                                    icon="fas fa-times"
-                                                    disabled="#{!ampController.editable}"
-                                                    title="Cancel changes and clear form"/>
+                                                <div class="d-flex justify-content-between align-items-center w-100">
+                                                    <!-- Labels - Left -->
+                                                    <div class="d-flex align-items-center">
+                                                        <h:outputLabel value="AMP Details"
+                                                                       rendered="#{empty ampController.current}"
+                                                                       styleClass="fw-bold mb-0"/>
+                                                        <h:outputLabel value="Add New AMP"
+                                                                       rendered="#{not empty ampController.current and empty ampController.current.id}"
+                                                                       styleClass="fw-bold mb-0"/>
+                                                        <h:outputLabel value="Edit AMP Details"
+                                                                       rendered="#{not empty ampController.current and not empty ampController.current.id}"
+                                                                       styleClass="fw-bold mb-0"/>
+                                                    </div>
+                                                    <!-- Status - Centre -->
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <h:panelGroup rendered="#{ampController.current ne null and ampController.current.id ne null}"
+                                                                      styleClass="badge #{ampController.current.retired ? 'badge-danger' : 'badge-success'}">
+                                                            <h:outputLabel value="#{ampController.current.retired ? 'Inactive' : 'Active'}"
+                                                                           styleClass="mb-0"/>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{ampController.editable}"
+                                                                      styleClass="badge badge-warning">
+                                                            <h:outputLabel value="#{ampController.current.id ne null ? 'Editing' : 'Adding New'}"
+                                                                           styleClass="mb-0"/>
+                                                        </h:panelGroup>
+                                                    </div>
+                                                    <!-- Buttons - Right -->
+                                                    <div class="d-flex align-items-center gap-1">
+                                                        <p:commandButton
+                                                            id="btnSave"
+                                                            value="Save"
+                                                            action="#{ampController.save}"
+                                                            update="form:msg acAmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel"
+                                                            process="@form"
+                                                            styleClass="ui-button-success"
+                                                            icon="fas fa-save"
+                                                            disabled="#{!ampController.editable}"
+                                                            title="Save AMP record"/>
+                                                        <p:commandButton
+                                                            id="btnCancel"
+                                                            value="Cancel"
+                                                            action="#{ampController.cancel()}"
+                                                            update="acAmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel"
+                                                            process="@this"
+                                                            styleClass="ui-button-secondary"
+                                                            icon="fas fa-times"
+                                                            disabled="#{!ampController.editable}"
+                                                            title="Cancel changes and clear form"/>
+                                                    </div>
+                                                </div>
                                             </f:facet>
 
                                             <!-- Clean, simplified form fields -->
