@@ -1,8 +1,10 @@
 package com.divudi.core.data.dto;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class OpdSaleSummaryDTO implements Serializable {
+
     // Display fields
     private String categoryName;
     private String itemName;
@@ -17,14 +19,18 @@ public class OpdSaleSummaryDTO implements Serializable {
     private Long categoryId;
     private Long itemId;
 
+    // Newly added Doctor
+    private String doctorName;
+    private Long doctorId;
+
     public OpdSaleSummaryDTO() {
     }
 
     // CRITICAL: Keep existing constructor for backward compatibility
     public OpdSaleSummaryDTO(String categoryName, String itemName, Long itemCount,
-                              Double hospitalFee, Double professionalFee,
-                              Double grossAmount, Double discountAmount,
-                              Double netTotal) {
+            Double hospitalFee, Double professionalFee,
+            Double grossAmount, Double discountAmount,
+            Double netTotal) {
         this.categoryName = categoryName;
         this.itemName = itemName;
         this.itemCount = itemCount;
@@ -37,11 +43,11 @@ public class OpdSaleSummaryDTO implements Serializable {
 
     // NEW: Constructor with IDs for navigation support
     public OpdSaleSummaryDTO(Long categoryId, String categoryName,
-                              Long itemId, String itemName,
-                              Long itemCount,
-                              Double hospitalFee, Double professionalFee,
-                              Double grossAmount, Double discountAmount,
-                              Double netTotal) {
+            Long itemId, String itemName,
+            Long itemCount,
+            Double hospitalFee, Double professionalFee,
+            Double grossAmount, Double discountAmount,
+            Double netTotal) {
         this.categoryId = categoryId;
         this.categoryName = categoryName;
         this.itemId = itemId;
@@ -54,8 +60,84 @@ public class OpdSaleSummaryDTO implements Serializable {
         this.netTotal = netTotal;
     }
 
+//    public OpdSaleSummaryDTO( 
+//            Long categoryId,
+//            String categoryName,
+//            Long itemId,
+//            String itemName,
+//            Long doctorId,
+//            String doctorName,
+//            Long itemCount,
+//            Double hospitalFee,
+//            Double professionalFee,
+//            Double grossAmount,
+//            Double discountAmount,
+//            Double netTotal) {
+//        this.categoryId = categoryId;
+//        this.categoryName = categoryName;
+//        this.itemId = itemId;
+//        this.itemName = itemName;
+//
+//        this.doctorId = doctorId;
+//        this.doctorName = doctorName;
+//
+//        this.itemCount = itemCount;
+//        this.hospitalFee = hospitalFee;
+//        this.professionalFee = professionalFee;
+//        this.grossAmount = grossAmount;
+//        this.discountAmount = discountAmount;
+//        this.netTotal = netTotal;
+//    }
+
+//    Newone
+    public OpdSaleSummaryDTO(
+            Long categoryId,
+            String categoryName,
+            Long itemId,
+            String itemName,
+            Long doctorId,
+            String doctorName,
+            Long itemCount,
+            Double hospitalFee,
+            Double professionalFee,
+            Double grossAmount,
+            Double discountAmount,
+            Double netTotal) {
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.doctorId = doctorId;
+        this.doctorName = doctorName;
+        this.itemCount = itemCount;
+        this.hospitalFee = hospitalFee;
+        this.professionalFee = professionalFee;
+        this.grossAmount = grossAmount;
+        this.discountAmount = discountAmount;
+        this.netTotal = netTotal;
+
+    }
+
+    ;
+
     public String getCategoryName() {
         return categoryName;
+    }
+
+    public String getDoctorName() {
+        return doctorName;
+    }
+
+    public void setDoctorName(String doctorName) {
+        this.doctorName = doctorName;
+    }
+
+    public Long getDoctorId() {
+        return doctorId;
+    }
+
+    public void setDoctorId(Long doctorId) {
+        this.doctorId = doctorId;
     }
 
     public void setCategoryName(String categoryName) {

@@ -1231,7 +1231,7 @@ public class SearchController implements Serializable {
      */
     public String navigateToOpdBillItemListFromDto(OpdSaleSummaryDTO dto) {
         // Load full entities only when navigating (on-demand loading)
-        if (dto.getCategoryId() != null) {
+        if (dto.getCategoryId()!= null) {
             this.category = categoryFacade.find(dto.getCategoryId());
         } else {
             this.category = null;
@@ -21522,6 +21522,119 @@ public class SearchController implements Serializable {
 
         }, CashierReports.TOTAL_CASHIER_SUMMARY, sessionController.getLoggedUser());
     }
+    
+//    public void fillOpdSaleSummary() {
+//
+//    String jpql =
+//        "SELECT new com.divudi.core.data.dto.OpdSaleSummaryDTO("
+//      + "  cat.id, cat.name, "
+//      + "  itm.id, itm.name, "
+//      + "  b.referredBy.id, b.referredBy.person.name "
+//      + "  COUNT(bi), "
+//      + "  SUM(bi.hospitalFee), "
+//      + "  SUM(bi.professionalFee), "
+//      + "  SUM(bi.grossValue), "
+//      + "  SUM(bi.discount), "
+//      + "  SUM(bi.netValue) "
+//      + ") "
+//      + "FROM BillItem bi "
+//      + "JOIN bi.item itm "
+//      + "JOIN itm.category cat "
+//      + "JOIN bi.bill b "
+//      + "WHERE bi.retired=false AND b.referredBy IS NOT NULL "
+//      + "AND b.cancelled =:can "
+//      + "AND bi.refunded =:ref "
+//      + "AND b.retired=false "
+//      + "AND b.createdAt BETWEEN :fd AND :td "
+//      + "GROUP BY cat.id, cat.name, itm.id, itm.name, b.referredBy.id, b.referredBy.person.name "
+//      + "ORDER BY cat.name, itm.name";
+//
+//    Map<String, Object> m = new HashMap<>();
+//    m.put("fd", fromDate);
+//    m.put("td", toDate);
+//    m.put("can", false);
+//    m.put("ref", false);
+//    opdSaleSummaryDtos =
+//    (List<OpdSaleSummaryDTO>) billItemFacade.findLightsByJpql(jpql, m);
+//
+//}
+    
+    
+    public void fillOpdSaleSummary() {
+
+        System.out.println("===== OPD Sale Summary START =====");
+        System.out.println("From Date : " + fromDate);
+        System.out.println("To Date   : " + toDate);
+
+        String jpql
+                = "SELECT new com.divudi.core.data.dto.OpdSaleSummaryDTO("
+                + "  bi.item.category.id, "
+                + " bi.item.category.name, "
+                + "  bi.item.id, "
+                + " bi.item.name, "
+                + "  bi.bill.referredBy.id, "
+                + " bi.bill.referredBy.person.name, "
+                + "  COUNT(bi), "
+                + "  SUM(bi.hospitalFee), "
+                + "  SUM(bi.staffFee), "
+                + "  SUM(bi.grossValue), "
+                + "  SUM(bi.discount), "
+                + "  SUM(bi.netValue) "
+                + ") "
+                + "FROM BillItem bi "
+                + "WHERE bi.retired=false "
+                + "AND bi.bill.cancelled = :can "
+                + "AND bi.refunded = :ref "
+                + "AND bi.bill.retired=false "
+                + "AND bi.bill.createdAt BETWEEN :fd AND :td "
+                + "GROUP BY bi.item.category.id, bi.item.category.name, bi.item.id, bi.item.name, bi.bill.referredBy.id, bi.bill.referredBy.person.name "
+                + "ORDER BY bi.item.category.name, bi.item.name";
+
+    System.out.println("JPQL Query:");
+    System.out.println(jpql);
+
+    Map<String, Object> m = new HashMap<>();
+    m.put("fd", fromDate);
+    m.put("td", toDate);
+    m.put("can", false);
+    m.put("ref", false);
+
+    System.out.println("Query Params: " + m);
+
+    try {
+
+        opdSaleSummaryDtos =
+            (List<OpdSaleSummaryDTO>) billItemFacade.findLightsByJpql(jpql, m);
+
+        if (opdSaleSummaryDtos == null) {
+            System.out.println("❌ RESULT LIST IS NULL");
+            return;
+        }
+
+        System.out.println("✅ Result Count : " + opdSaleSummaryDtos.size());
+
+        // print first few rows to verify doctor
+        for (int i = 0; i < Math.min(opdSaleSummaryDtos.size(), 5); i++) {
+            OpdSaleSummaryDTO dto = opdSaleSummaryDtos.get(i);
+
+            System.out.println("Row " + (i+1));
+            System.out.println("Category : " + dto.getCategoryName());
+            System.out.println("Item     : " + dto.getItemName());
+            System.out.println("Doctor   : " + dto.getDoctorName());
+            System.out.println("Doctor Fee :"+dto.getProfessionalFee());
+            System.out.println("NetTotal : " + dto.getNetTotal());
+            System.out.println("-----------------------------");
+        }
+
+    } catch (Exception e) {
+        System.out.println("🔥 ERROR LOADING OPD SUMMARY");
+        e.printStackTrace();
+    }
+
+    System.out.println("===== OPD Sale Summary END =====");
+}
+
+
 
     public void generateShiftStartEndSummary() {
         reportTimerController.trackReportExecution(() -> {
@@ -21558,6 +21671,8 @@ public class SearchController implements Serializable {
             bills = billFacade.findByJpql(jpql, parameters, TemporalType.TIMESTAMP);
         }, CashierReports.CASHIER_SHIFT_END_SUMMARY, sessionController.getLoggedUser());
     }
+    
+    
 
     public SearchController() {
     }
