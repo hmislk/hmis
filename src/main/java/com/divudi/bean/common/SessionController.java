@@ -1634,6 +1634,11 @@ public class SessionController implements Serializable, HttpSessionListener {
             return "";
         }
 
+        if (department != null && department.isInactive()) {
+            JsfUtil.addErrorMessage("Cannot log into an inactive department");
+            return "";
+        }
+
         // Clear cached department types to ensure they are refreshed for the new department
         availableDepartmentTypesForPharmacyTransactions = null;
 
@@ -1984,6 +1989,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                 + " from WebUserDepartment wd "
                 + " where wd.retired=false "
                 + " and wd.department.retired=false "
+                + " and wd.department.inactive=false "
                 + " and wd.webUser=:wu "
                 + " order by wd.department.name";
         return departmentFacade.findByJpql(sql, m);
@@ -2001,6 +2007,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                 + " from WebUserDepartment wd "
                 + " where wd.retired=false "
                 + " and wd.department.retired=false "
+                + " and wd.department.inactive=false "
                 + " and wd.webUser=:wu "
                 + " order by wd.department.name";
         return departmentFacade.findByJpql(sql, m);
