@@ -210,7 +210,14 @@
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Taking Report(New)')}" class="w-100 ui-button-warning" value="Stock Taking Report(New)" action="pharmacy_report_adjustment_bill_for_stock_taking?faces-redirect=true" ajax="false" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock With Movement')}" class="w-100 ui-button-warning" value="Stock With Movement" action="pharmacy_report_item_stock_sale?faces-redirect=true" ajax="false" />
 
-
+                                            <p:commandButton
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Department Vice Stock Report', true)}"
+                                                class="w-100 ui-button-success"
+                                                icon="fa fa-building"
+                                                value="Department Vice Stock"
+                                                action="#{reportsStock.navigateToDepartmentViceStockReport()}"
+                                                ajax="false"
+                                                title="Aggregated stock report by department" />
 
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Summary (with Suppliers)')}"
                                                              class="w-100"

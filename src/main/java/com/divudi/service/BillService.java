@@ -81,6 +81,7 @@ import com.divudi.core.light.common.BillLight;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import javax.annotation.security.PermitAll;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
@@ -1248,6 +1249,86 @@ public class BillService {
         return fetchedBills;
     }
 
+    /**
+     * Fetch bill lights with finance details and completed filter for purchase reports.
+     * Only includes bills where completed = true.
+     */
+    public List<BillLight> fetchBillLightsWithFinanceDetailsCompleted(
+            Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme) {
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "select new com.divudi.core.light.common.BillLight("
+                + " b.id, "
+                + " b.billTypeAtomic, "
+                + " b.total, "
+                + " b.netTotal, "
+                + " b.discount, "
+                + " b.margin, "
+                + " b.serviceCharge, "
+                + " coalesce(bfd.totalCostValue, 0.0), "
+                + " coalesce(bfd.totalPurchaseValue, 0.0), "
+                + " coalesce(bfd.totalRetailSaleValue, 0.0), "
+                + " b.paymentMethod, "
+                + " b.patientEncounter "
+                + ") "
+                + " from Bill b "
+                + " left join b.billFinanceDetails bfd "
+                + " where b.retired=:ret "
+                + " and b.completed=:completed "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("ret", false);
+        params.put("completed", true);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        jpql += " order by b.createdAt desc ";
+
+        List<BillLight> fetchedBills = (List<BillLight>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+        return fetchedBills;
+    }
+
     public List<BillLight> fetchBillLightsWithFinanceDetailsAndPaymentScheme(
             Date fromDate,
             Date toDate,
@@ -1871,6 +1952,7 @@ public class BillService {
         return (List<OpdIncomeReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
+    @PermitAll
     public List<HospitalDoctorFeeReportDTO> fetchHospitalDoctorFeeReportDTOs(Date fromDate,
             Date toDate,
             Institution institution,

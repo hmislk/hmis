@@ -11,6 +11,7 @@ import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.report.CommonReport;
 import com.divudi.core.data.dto.StockReportByItemDTO;
+import com.divudi.core.data.dto.DepartmentViceStockDTO;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
@@ -202,6 +203,11 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     public String navigateToPharmacyStockOverviewReport() {
         pharmacyStockRows = new ArrayList<>();
         return "/pharmacy/pharmacy_report_department_stock_overview?faces-redirect=true";
+    }
+
+    public String navigateToDepartmentViceStockReport() {
+        departmentViceStockDtos = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_vice_stock?faces-redirect=true";
     }
 
     /**
@@ -692,6 +698,53 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         this.stockReportByItemDTOS = stockReportByItemDTOS;
     }
 
+    // Department Vice Stock Report fields
+    private List<DepartmentViceStockDTO> departmentViceStockDtos;
+    private double totalDepartmentViceStockQuantity;
+    private double totalDepartmentViceStockPurchaseValue;
+    private double totalDepartmentViceStockRetailValue;
+    private double totalDepartmentViceStockCostValue;
+
+    public List<DepartmentViceStockDTO> getDepartmentViceStockDtos() {
+        return departmentViceStockDtos;
+    }
+
+    public void setDepartmentViceStockDtos(List<DepartmentViceStockDTO> departmentViceStockDtos) {
+        this.departmentViceStockDtos = departmentViceStockDtos;
+    }
+
+    public double getTotalDepartmentViceStockQuantity() {
+        return totalDepartmentViceStockQuantity;
+    }
+
+    public void setTotalDepartmentViceStockQuantity(double totalDepartmentViceStockQuantity) {
+        this.totalDepartmentViceStockQuantity = totalDepartmentViceStockQuantity;
+    }
+
+    public double getTotalDepartmentViceStockPurchaseValue() {
+        return totalDepartmentViceStockPurchaseValue;
+    }
+
+    public void setTotalDepartmentViceStockPurchaseValue(double totalDepartmentViceStockPurchaseValue) {
+        this.totalDepartmentViceStockPurchaseValue = totalDepartmentViceStockPurchaseValue;
+    }
+
+    public double getTotalDepartmentViceStockRetailValue() {
+        return totalDepartmentViceStockRetailValue;
+    }
+
+    public void setTotalDepartmentViceStockRetailValue(double totalDepartmentViceStockRetailValue) {
+        this.totalDepartmentViceStockRetailValue = totalDepartmentViceStockRetailValue;
+    }
+
+    public double getTotalDepartmentViceStockCostValue() {
+        return totalDepartmentViceStockCostValue;
+    }
+
+    public void setTotalDepartmentViceStockCostValue(double totalDepartmentViceStockCostValue) {
+        this.totalDepartmentViceStockCostValue = totalDepartmentViceStockCostValue;
+    }
+
     public void fillDepartmentZeroItemStocks() {
         reportTimerController.trackReportExecution(() -> {
             if (department == null && site == null && institution == null) {
@@ -757,6 +810,52 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         }
         pharmacyStockRows = lsts;
 
+    }
+
+    public void fillDepartmentViceStockDtos() {
+        reportTimerController.trackReportExecution(() -> {
+            Map<String, Object> m = new HashMap<>();
+            StringBuilder jpql = new StringBuilder("SELECT new com.divudi.core.data.dto.DepartmentViceStockDTO(");
+            jpql.append("d.institution.name, ");
+            jpql.append("d.site.name, ");
+            jpql.append("d.name, ");
+            jpql.append("s.itemBatch.item.departmentType, ");
+            jpql.append("SUM(s.stock), ");
+            jpql.append("SUM(s.stock * COALESCE(s.itemBatch.purcahseRate, 0.0)), ");
+            jpql.append("SUM(s.stock * COALESCE(s.itemBatch.retailsaleRate, 0.0)), ");
+            jpql.append("SUM(s.stock * COALESCE(s.itemBatch.costRate, 0.0))) ");
+            jpql.append("FROM Stock s JOIN s.department d ");
+            jpql.append("WHERE s.stock > 0 ");
+            jpql.append("GROUP BY d.institution.name, d.site.name, d.name, s.itemBatch.item.departmentType ");
+            jpql.append("ORDER BY d.institution.name, d.site.name, d.name, s.itemBatch.item.departmentType");
+
+            List<DepartmentViceStockDTO> dtos = (List<DepartmentViceStockDTO>) stockFacade.findLightsByJpql(jpql.toString(), m);
+
+            // Set serial numbers and calculate totals
+            int serialNo = 1;
+            totalDepartmentViceStockQuantity = 0.0;
+            totalDepartmentViceStockPurchaseValue = 0.0;
+            totalDepartmentViceStockRetailValue = 0.0;
+            totalDepartmentViceStockCostValue = 0.0;
+
+            for (DepartmentViceStockDTO dto : dtos) {
+                dto.setSerialNo(serialNo++);
+                if (dto.getQuantity() != null) {
+                    totalDepartmentViceStockQuantity += dto.getQuantity();
+                }
+                if (dto.getPurchaseValue() != null) {
+                    totalDepartmentViceStockPurchaseValue += dto.getPurchaseValue();
+                }
+                if (dto.getRetailValue() != null) {
+                    totalDepartmentViceStockRetailValue += dto.getRetailValue();
+                }
+                if (dto.getCostValue() != null) {
+                    totalDepartmentViceStockCostValue += dto.getCostValue();
+                }
+            }
+
+            departmentViceStockDtos = dtos;
+        }, PharmacyReports.DEPARTMENT_VICE_STOCK_REPORT, sessionController.getLoggedUser());
     }
 
     public void fillDepartmentInventryStocks() {
