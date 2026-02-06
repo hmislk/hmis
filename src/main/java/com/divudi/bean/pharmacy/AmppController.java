@@ -237,6 +237,11 @@ public class AmppController implements Serializable {
         return amppAuditEvents;
     }
 
+    public void refreshAuditEvents() {
+        amppAuditEvents = null;
+        fillAmppAuditEvents();
+    }
+
     // Filter Status Management
     public String getFilterStatus() {
         return filterStatus;
