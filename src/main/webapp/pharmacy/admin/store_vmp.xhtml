@@ -145,11 +145,11 @@
                                     update="vmpForm:messages acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel btnToggleStatus btnAuditEventsDetail filterStatusLabel"
                                     process="@this"
                                     styleClass="#{storeVmpController.toggleStatusButtonClass} vmp-toggle-status"
-                                    disabled="#{storeVmpController.editable}"
+                                    disabled="#{storeVmpController.editable or storeVmpController.current.id eq null}"
                                     title="Toggle Store VMP active/inactive status">
                                     <p:confirm
                                         header="Confirm Status Change"
-                                        message="Are you sure you want to #{storeVmpController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this Store VMP: #{storeVmpController.current.name}?"
+                                        message="Are you sure you want to #{storeVmpController.current.id ne null ? (storeVmpController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE') : 'change'} this Store VMP: #{storeVmpController.current.id ne null ? storeVmpController.current.name : ''}?"
                                         icon="fas fa-question-circle" />
                                 </p:commandButton>
 

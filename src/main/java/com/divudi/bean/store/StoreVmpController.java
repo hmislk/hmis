@@ -48,7 +48,7 @@ public class StoreVmpController implements Serializable {
     SessionController sessionController;
     @EJB
     private VmpFacade ejbFacade;
-    @EJB
+    @Inject
     private AuditService auditService;
     @EJB
     private AuditEventFacade auditEventFacade;
@@ -233,16 +233,18 @@ public class StoreVmpController implements Serializable {
     public List<Vmp> getItems() {
         if (items == null) {
             String jpql = "select v from Vmp v "
-                    + "where v.departmentType=:dep ";
+                    + "where v.departmentType=:dep "
+                    + "and v.retired=:retired ";
             Map<String, Object> params = new HashMap<>();
             params.put("dep", DepartmentType.Store);
+            params.put("retired", false);
 
             if ("active".equals(filterStatus)) {
-                jpql += "and v.retired=:retired ";
-                params.put("retired", false);
+                jpql += "and v.inactive=:inactive ";
+                params.put("inactive", false);
             } else if ("inactive".equals(filterStatus)) {
-                jpql += "and v.retired=:retired ";
-                params.put("retired", true);
+                jpql += "and v.inactive=:inactive ";
+                params.put("inactive", true);
             }
 
             jpql += "order by v.name";
