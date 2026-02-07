@@ -49,7 +49,7 @@
                                             <p:commandButton class="w-100" ajax="false" value="Adjustment Categories" action="/pharmacy/pharmacy_adjustment_category" ></p:commandButton>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="Medicine Component Management">
+                                    <p:tab title="Pharmaceutical Component Management">
                                         <div class="d-grid gap-2">
 <!--                                            <p:commandButton
                                                 class="w-100"
@@ -89,6 +89,26 @@
                                                 ajax="false" 
                                                 value="AMPPs" 
                                                 action="#{pharmacyController.navigateToAmpp()}" />
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Store Item Management">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="AMPs"
+                                                action="#{pharmacyController.navigateToStoreAmp()}" />
+                                            <!-- Future: VTMs, ATMs, VMPs, VMPPs, AMPPs for Store -->
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Lab Item Management">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
+                                                value="AMPs"
+                                                action="#{pharmacyController.navigateToLabAmp()}" />
+                                            <!-- Future: VTMs, ATMs, VMPs, VMPPs, AMPPs for Lab -->
                                         </div>
                                     </p:tab>
 
