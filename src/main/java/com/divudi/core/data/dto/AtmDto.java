@@ -21,6 +21,7 @@ public class AtmDto implements Serializable {
     private String code;
     private String descreption; // Note: intentional spelling for backward compatibility
     private Boolean retired;
+    private Boolean inactive;
 
     // VTM relationship fields
     private Long vtmId;
@@ -85,7 +86,28 @@ public class AtmDto implements Serializable {
         this.code = code;
         this.descreption = descreption;
         this.retired = retired != null ? retired : false;
-        // VTM fields remain null
+        this.vtmId = null;
+        this.vtmName = null;
+    }
+
+    /**
+     * Constructor for JPQL query - ATM management with inactive status
+     *
+     * @param id ATM ID
+     * @param name ATM name
+     * @param code ATM code (can be null)
+     * @param descreption ATM description
+     * @param retired Whether ATM is retired (soft deleted)
+     * @param inactive Whether ATM is inactive (temporarily disabled)
+     */
+    public AtmDto(Long id, String name, String code, String descreption,
+            Boolean retired, Boolean inactive) {
+        this.id = id;
+        this.name = name;
+        this.code = code;
+        this.descreption = descreption;
+        this.retired = retired != null ? retired : false;
+        this.inactive = inactive != null ? inactive : false;
         this.vtmId = null;
         this.vtmName = null;
     }
@@ -161,6 +183,18 @@ public class AtmDto implements Serializable {
         this.retired = retired;
     }
 
+    public Boolean getInactive() {
+        return inactive;
+    }
+
+    public boolean isInactive() {
+        return inactive != null && inactive;
+    }
+
+    public void setInactive(Boolean inactive) {
+        this.inactive = inactive;
+    }
+
     public Long getVtmId() {
         return vtmId;
     }
@@ -187,17 +221,17 @@ public class AtmDto implements Serializable {
 
     // Utility methods for display
     /**
-     * Returns display status for UI - Active/Inactive
+     * Returns display status for UI - Active/Inactive based on inactive attribute
      */
     public String getStatusDisplay() {
-        return isRetired() ? "Inactive" : "Active";
+        return isInactive() ? "Inactive" : "Active";
     }
 
     /**
-     * Returns CSS class for status display - for styling
+     * Returns CSS class for status display - for styling based on inactive attribute
      */
     public String getStatusCssClass() {
-        return isRetired() ? "badge-danger" : "badge-success";
+        return isInactive() ? "badge-danger" : "badge-success";
     }
 
     /**

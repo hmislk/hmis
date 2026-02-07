@@ -10,13 +10,13 @@
             <ui:define name="subcontent">
                 <h:form id="form">
                     <p:growl id="msg" life="3000"/>
-                    <p:focus id="selectFocus" for="acVtm" />
+                    <p:focus id="selectFocus" for="acAtm" />
                     <p:focus id="detailFocus" for="gpDetail" />
 
                     <div class="row">
                         <div class="col-md-5">
-                            <!-- DTO-Optimized VTM Selection -->
-                            <p:panel header="VTM Management" class="mb-3 w-100">
+                            <!-- DTO-Optimized Lab ATM Selection -->
+                            <p:panel header="Lab ATM Management" class="mb-3 w-100">
 
                                 <!-- Status Filter Section -->
                                 <h:panelGroup id="statusFilterPanel" layout="block" styleClass="status-filter-section mb-3">
@@ -25,41 +25,111 @@
                                         <p:commandButton
                                             id="btnFilterActive"
                                             value="Active"
-                                            action="#{vtmController.setFilterToActive()}"
-                                            update="acVtm vtmDetails statusFilterPanel actionButtons"
+                                            action="#{labAtmController.setFilterToActive()}"
+                                            update="acAtm atmDetails statusFilterPanel actionButtons"
                                             process="@this"
-                                            styleClass="m-1 #{vtmController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
+                                            styleClass="m-1 #{labAtmController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
                                             icon="fas fa-check-circle"
-                                            disabled="#{vtmController.editable}"
-                                            title="Show only active VTMs"/>
+                                            disabled="#{labAtmController.editable}"
+                                            title="Show only active Lab ATMs"/>
 
                                         <p:commandButton
                                             id="btnFilterInactive"
                                             value="Inactive"
-                                            action="#{vtmController.setFilterToInactive()}"
-                                            update="acVtm vtmDetails statusFilterPanel actionButtons"
+                                            action="#{labAtmController.setFilterToInactive()}"
+                                            update="acAtm atmDetails statusFilterPanel actionButtons"
                                             process="@this"
-                                            styleClass="m-1 #{vtmController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
+                                            styleClass="m-1 #{labAtmController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
                                             icon="fas fa-times-circle"
-                                            disabled="#{vtmController.editable}"
-                                            title="Show only inactive VTMs"/>
+                                            disabled="#{labAtmController.editable}"
+                                            title="Show only inactive Lab ATMs"/>
 
                                         <p:commandButton
                                             id="btnFilterAll"
                                             value="All"
-                                            action="#{vtmController.setFilterToAll()}"
-                                            update="acVtm vtmDetails statusFilterPanel actionButtons"
+                                            action="#{labAtmController.setFilterToAll()}"
+                                            update="acAtm atmDetails statusFilterPanel actionButtons"
                                             process="@this"
-                                            styleClass="m-1 #{vtmController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
+                                            styleClass="m-1 #{labAtmController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
                                             icon="fas fa-list"
-                                            disabled="#{vtmController.editable}"
-                                            title="Show all VTMs"/>
+                                            disabled="#{labAtmController.editable}"
+                                            title="Show all Lab ATMs"/>
                                     </div>
 
                                     <p:outputLabel id="filterStatusLabel"
-                                                   value="Currently showing: #{vtmController.filterStatusDisplay}"
+                                                   value="Currently showing: #{labAtmController.filterStatusDisplay}"
                                                    styleClass="text-muted small mt-1"/>
+                                </h:panelGroup>
 
+                                <h:panelGroup id="actionButtons">
+                                    <div class="row" >
+                                        <div class="col-12" >
+                                            <p:commandButton
+                                                id="btnAdd"
+                                                value="Add New"
+                                                icon="fa fa-plus"
+                                                action="#{labAtmController.prepareAdd()}"
+                                                class="m-1 ui-button-success"
+                                                update="acAtm gpDetail actionButtons statusFilterPanel atmDetails"
+                                                process="@this"
+                                                disabled="#{labAtmController.editable}">
+                                                <f:setPropertyActionListener target="#{labAtmController.selectedAtmDto}" value="#{null}" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnEdit"
+                                                value="Edit"
+                                                icon="fas fa-edit"
+                                                action="#{labAtmController.edit()}"
+                                                class="m-1 ui-button-info"
+                                                update="atmDetails acAtm actionButtons statusFilterPanel"
+                                                process="@this"
+                                                disabled="#{labAtmController.editable or labAtmController.selectedAtmDto eq null}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnDelete"
+                                                action="#{labAtmController.delete()}"
+                                                value="Delete"
+                                                icon="fas fa-trash"
+                                                class="m-1 ui-button-danger"
+                                                update="form:msg acAtm gpDetail actionButtons statusFilterPanel atmDetails"
+                                                process="@this"
+                                                disabled="#{labAtmController.editable or labAtmController.selectedAtmDto eq null}">
+                                                <p:confirm
+                                                    header="Confirm Delete"
+                                                    message="Are you sure you want to delete this Lab ATM record?"
+                                                    icon="fas fa-exclamation-triangle" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnToggleStatus"
+                                                value="#{labAtmController.toggleStatusButtonText}"
+                                                action="#{labAtmController.toggleAtmStatus()}"
+                                                icon="#{labAtmController.toggleStatusButtonIcon}"
+                                                update="form:msg acAtm gpDetail actionButtons statusFilterPanel atmDetails filterStatusLabel"
+                                                process="@this"
+                                                styleClass="#{labAtmController.toggleStatusButtonClass} m-1"
+                                                disabled="#{labAtmController.editable or labAtmController.selectedAtmDto eq null}"
+                                                title="Toggle Lab ATM active/inactive status">
+                                                <p:confirm
+                                                    header="Confirm Status Change"
+                                                    message="Are you sure you want to #{labAtmController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this Lab ATM: #{labAtmController.current.name}?"
+                                                    icon="fas fa-question-circle" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnViewAuditEvents"
+                                                value="History"
+                                                icon="fas fa-history"
+                                                action="#{labAtmController.navigateToAuditEvents()}"
+                                                class="m-1 ui-button-secondary"
+                                                process="@this"
+                                                ajax="false"
+                                                disabled="#{labAtmController.selectedAtmDto eq null}">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
                                 </h:panelGroup>
 
                                 <div class="row" >
@@ -67,21 +137,21 @@
                                         <p:autoComplete
                                             class="w-100 m-1"
                                             inputStyleClass="w-100"
-                                            id="acVtm"
-                                            widgetVar="acVtm"
-                                            value="#{vtmController.selectedVtmDto}"
-                                            completeMethod="#{vtmController.completeVtmDto}"
+                                            id="acAtm"
+                                            widgetVar="acAtm"
+                                            value="#{labAtmController.selectedAtmDto}"
+                                            completeMethod="#{labAtmController.completeAtmDto}"
                                             var="dto"
                                             itemLabel="#{dto.name}"
                                             itemValue="#{dto}"
-                                            converter="vtmDtoConverter"
+                                            converter="labAtmDtoConverter"
                                             forceSelection="true"
-                                            disabled="#{vtmController.editable}"
-                                            placeholder="Type to search VTMs (Pharmacy Department)..."
+                                            disabled="#{labAtmController.editable}"
+                                            placeholder="Type to search Lab ATMs..."
                                             cache="false"
                                             minQueryLength="2">
-                                            <p:ajax event="itemSelect" process="@this" update="gpDetail actionButtons vtmDetails" />
-                                            <p:ajax event="change" process="@this" update="gpDetail actionButtons vtmDetails" />
+                                            <p:ajax event="itemSelect" process="@this" update="gpDetail actionButtons atmDetails" />
+                                            <p:ajax event="change" process="@this" update="gpDetail actionButtons atmDetails" />
                                             <p:column headerText="Name" >
                                                 <h:outputText value="#{dto.name}" />
                                             </p:column>
@@ -92,99 +162,26 @@
                                     </div>
                                 </div>
 
-                                <h:panelGroup id="actionButtons">
-                                    <div class="row" >
-                                        <div class="col-12" >
-                                            <p:commandButton
-                                                id="btnAdd"
-                                                value="Add New"
-                                                icon="fa fa-plus"
-                                                action="#{vtmController.prepareAdd()}"
-                                                class="m-1 ui-button-success"
-                                                update="acVtm gpDetail actionButtons statusFilterPanel vtmDetails"
-                                                process="@this"
-                                                disabled="#{vtmController.editable}">
-                                                <f:setPropertyActionListener target="#{vtmController.selectedVtmDto}" value="#{null}" />
-                                            </p:commandButton>
-
-                                            <p:commandButton
-                                                id="btnEdit"
-                                                value="Edit"
-                                                icon="fas fa-edit"
-                                                action="#{vtmController.edit()}"
-                                                class="m-1 ui-button-info"
-                                                update="vtmDetails acVtm actionButtons statusFilterPanel"
-                                                process="@this"
-                                                disabled="#{vtmController.editable or vtmController.selectedVtmDto eq null}">
-                                            </p:commandButton>
-
-                                            <p:commandButton
-                                                id="btnDelete"
-                                                action="#{vtmController.delete()}"
-                                                value="Delete"
-                                                icon="fas fa-trash"
-                                                class="m-1 ui-button-danger"
-                                                update="form:msg acVtm gpDetail actionButtons statusFilterPanel vtmDetails"
-                                                process="@this"
-                                                disabled="#{vtmController.editable or vtmController.selectedVtmDto eq null}">
-                                                <p:confirm
-                                                    header="Confirm Delete"
-                                                    message="Are you sure you want to delete this VTM record?"
-                                                    icon="fas fa-exclamation-triangle" />
-                                            </p:commandButton>
-
-                                            <p:commandButton
-                                                id="btnToggleStatus"
-                                                value="#{vtmController.toggleStatusButtonText}"
-                                                action="#{vtmController.toggleVtmStatus()}"
-                                                icon="#{vtmController.toggleStatusButtonIcon}"
-                                                update="form:msg acVtm gpDetail actionButtons statusFilterPanel vtmDetails"
-                                                process="@this"
-                                                styleClass="#{vtmController.toggleStatusButtonClass} m-1"
-                                                disabled="#{vtmController.editable or vtmController.selectedVtmDto eq null}"
-                                                title="Toggle VTM active/inactive status">
-                                                <p:confirm
-                                                    header="Confirm Status Change"
-                                                    message="Are you sure you want to #{vtmController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this VTM: #{vtmController.current.name}?"
-                                                    icon="fas fa-question-circle" />
-                                            </p:commandButton>
-
-                                            <p:commandButton
-                                                id="btnViewAuditEvents"
-                                                value="History"
-                                                icon="fas fa-history"
-                                                action="#{vtmController.navigateToAuditEvents()}"
-                                                class="m-1 ui-button-secondary"
-                                                process="@this"
-                                                ajax="false"
-                                                disabled="#{vtmController.selectedVtmDto eq null}">
-                                            </p:commandButton>
-                                        </div>
-                                    </div>
-                                </h:panelGroup>
-
-
-
                             </p:panel>
 
                             <p:focus id="focusItem" for="txtName" />
-                            <p:focus id="focusSelect" for="acVtm" />
+                            <p:focus id="focusSelect" for="acAtm" />
                         </div>
 
                         <div class="col-md-7">
-                            <p:panel id="vtmDetails">
+                            <p:panel id="atmDetails">
                                 <f:facet name="header">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span>
-                                            <i class="fa fa-rocket" /> VTM Details
+                                            <i class="fa fa-pills" /> Lab ATM Details
                                         </span>
-                                        <h:panelGroup rendered="#{vtmController.current ne null and vtmController.current.id ne null}"
-                                                      styleClass="badge #{vtmController.current.inactive ? 'badge-danger' : 'badge-success'}">
-                                            #{vtmController.current.inactive ? 'Inactive' : 'Active'}
+                                        <h:panelGroup rendered="#{labAtmController.current ne null and labAtmController.current.id ne null}"
+                                                      styleClass="badge #{labAtmController.current.inactive ? 'badge-danger' : 'badge-success'}">
+                                            #{labAtmController.current.inactive ? 'Inactive' : 'Active'}
                                         </h:panelGroup>
-                                        <h:panelGroup rendered="#{vtmController.editable}"
+                                        <h:panelGroup rendered="#{labAtmController.editable}"
                                                       styleClass="badge badge-warning">
-                                            #{vtmController.current.id ne null ? 'Editing' : 'Adding New'}
+                                            #{labAtmController.current.id ne null ? 'Editing' : 'Adding New'}
                                         </h:panelGroup>
                                     </div>
                                 </f:facet>
@@ -199,45 +196,36 @@
                                         columns="2"
                                         columnClasses="w-25 , w-75"
                                         class="w-100">
-                                        <!-- Form fields - use entity for both editing and display -->
                                         <h:outputText value="Name" />
                                         <p:inputText
                                             autocomplete="off"
                                             id="txtName"
-                                            value="#{vtmController.current.name}"
+                                            value="#{labAtmController.current.name}"
                                             required="true"
-                                            requiredMessage="VTM name is required"
-                                            placeholder="Enter VTM name"
+                                            requiredMessage="Lab ATM name is required"
+                                            placeholder="Enter Lab ATM name"
                                             class="w-100"
-                                            disabled="#{!vtmController.editable}" />
+                                            disabled="#{!labAtmController.editable}" />
 
                                         <h:outputText value="Code" />
                                         <p:inputText
                                             autocomplete="off"
                                             id="txtCode"
-                                            value="#{vtmController.current.code}"
+                                            value="#{labAtmController.current.code}"
                                             required="false"
                                             class="w-100"
-                                            placeholder="Enter VTM code (optional)"
-                                            disabled="#{!vtmController.editable}" />
+                                            placeholder="Enter Lab ATM code (optional)"
+                                            disabled="#{!labAtmController.editable}" />
 
                                         <h:outputText value="Description" />
                                         <h:inputTextarea
                                             id="txtDes"
-                                            value="#{vtmController.current.descreption}"
+                                            value="#{labAtmController.current.descreption}"
                                             required="false"
                                             class="form-control"
                                             rows="3"
-                                            disabled="#{!vtmController.editable}" />
+                                            disabled="#{!labAtmController.editable}" />
 
-                                        <h:outputText value="Instructions" />
-                                        <h:inputTextarea
-                                            id="txtIns"
-                                            value="#{vtmController.current.instructions}"
-                                            required="false"
-                                            class="form-control"
-                                            rows="3"
-                                            disabled="#{!vtmController.editable}" />
                                     </p:panelGrid>
 
                                     <h:panelGroup layout="block" class="text-end">
@@ -246,24 +234,24 @@
                                                 id="btnSave"
                                                 value="Save"
                                                 icon="fas fa-save"
-                                                action="#{vtmController.save}"
+                                                action="#{labAtmController.save}"
                                                 class="m-1 ui-button-warning w-25"
                                                 process="btnSave gpDetail"
-                                                update="acVtm gpDetail form:msg actionButtons vtmDetails statusFilterPanel"
-                                                disabled="#{!vtmController.editable}"
-                                                oncomplete="try { if (PF('acVtm')) { PF('acVtm').cache = {}; } } catch(e) {}">
+                                                update="acAtm gpDetail form:msg actionButtons atmDetails statusFilterPanel"
+                                                disabled="#{!labAtmController.editable}"
+                                                oncomplete="try { if (PF('acAtm')) { PF('acAtm').cache = {}; } } catch(e) {}">
                                             </p:commandButton>
                                             <p:commandButton
                                                 immediate="true"
                                                 id="btnCancel"
                                                 value="Cancel"
                                                 icon="fas fa-times"
-                                                action="#{vtmController.cancel()}"
+                                                action="#{labAtmController.cancel()}"
                                                 class="m-1 ui-button-secondary w-25"
                                                 process="btnCancel"
-                                                update="acVtm gpDetail actionButtons vtmDetails statusFilterPanel"
-                                                disabled="#{!vtmController.editable}">
-                                                <f:setPropertyActionListener target="#{vtmController.selectedVtmDto}" value="#{null}" />
+                                                update="acAtm gpDetail actionButtons atmDetails statusFilterPanel"
+                                                disabled="#{!labAtmController.editable}">
+                                                <f:setPropertyActionListener target="#{labAtmController.selectedAtmDto}" value="#{null}" />
                                             </p:commandButton>
                                         </div>
                                     </h:panelGroup>

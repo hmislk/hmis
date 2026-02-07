@@ -252,9 +252,90 @@
                                                                      process="@this"/>
                                                 </div>
                                             </div>
+                                            <div class="col-md-3">
+                                                <p:outputLabel for="ampBarcode" value="Barcode"/>
+                                                <p:inputText id="ampBarcode"
+                                                             value="#{labAmpController.current.barcode}"
+                                                             class="form-control"
+                                                             disabled="#{not labAmpController.editable}"/>
+                                            </div>
+                                        </div>
                                             
+                                        <!-- VMP Relationship Section -->
+                                        <h:outputText value="Product Information" styleClass="section-header" style="display:block; font-size:1rem; font-weight:500;"/>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <p:outputLabel for="vmpSelect" value="VMP*"/>
+                                                <p:autoComplete id="vmpSelect"
+                                                                value="#{labAmpController.current.vmp}"
+                                                                completeMethod="#{labAmpController.completeVmpByName}"
+                                                                var="vmp"
+                                                                inputStyleClass="w-100"
+                                                                itemLabel="#{vmp.name}"
+                                                                itemValue="#{vmp}"
+                                                                converter="vmp"
+                                                                disabled="#{not labAmpController.editable}"
+                                                                class="w-100"
+                                                                required="true"
+                                                                requiredMessage="VMP selection is required">
+                                                    <p:ajax event="itemSelect" update="dosageInfo"/>
+                                                </p:autoComplete>
+                                        </div>
+                                            <div class="col-md-6">
+                                                <h:panelGroup id="dosageInfo">
+                                                    <p:outputLabel value="Dosage Form"/>
+                                                    <p:outputLabel
+                                                        value="#{labAmpController.current.vmp.dosageForm.name}"
+                                                        class="form-control-plaintext"
+                                                        rendered="#{labAmpController.current.vmp ne null}"/>
+                                                    <p:outputLabel
+                                                        value="Not specified"
+                                                        class="form-control-plaintext text-muted"
+                                                        rendered="#{labAmpController.current.vmp eq null}"/>
+                                                </h:panelGroup>
+                                            </div>
                                         </div>
 
+                                        <!-- Business Rules Section -->
+                                        <h:outputText value="Business Rules" styleClass="section-header" style="display:block; font-size:1rem; font-weight:500;"/>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <p:selectBooleanCheckbox id="discountAllowed"
+                                                                             value="#{labAmpController.current.discountAllowed}"
+                                                                             disabled="#{not labAmpController.editable}"
+                                                                             styleClass="form-check-input"/>
+                                                    <p:outputLabel for="discountAllowed" value="Allow Discounts" styleClass="form-check-label"/>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <p:selectBooleanCheckbox id="refundsAllowed"
+                                                                             value="#{labAmpController.current.refundsAllowed}"
+                                                                             disabled="#{not labAmpController.editable}"
+                                                                             styleClass="form-check-input"/>
+                                                    <p:outputLabel for="refundsAllowed" value="Allow Refunds" styleClass="form-check-label"/>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <p:selectBooleanCheckbox id="consumptionAllowed"
+                                                                             value="#{labAmpController.current.consumptionAllowed}"
+                                                                             disabled="#{not labAmpController.editable}"
+                                                                             styleClass="form-check-input"/>
+                                                    <p:outputLabel for="consumptionAllowed" value="Consumable" styleClass="form-check-label"/>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <p:selectBooleanCheckbox id="allowFractions"
+                                                                             value="#{labAmpController.current.allowFractions}"
+                                                                             disabled="#{not labAmpController.editable}"
+                                                                             styleClass="form-check-input"/>
+                                                    <p:outputLabel for="allowFractions" value="Allow Fractions" styleClass="form-check-label"/>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </h:panelGroup>
                                 </p:panel>
 

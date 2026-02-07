@@ -17,96 +17,10 @@
                 <div class="row">
                     <!-- Left Panel - Actions and Selection -->
                     <div class="col-md-5">
-                        <!-- Action Buttons -->
-                        <div class="mb-3">
-                            <h5 class="mb-2">Actions</h5>
-                            <div class="d-flex flex-wrap gap-1" id="actionButtons">
-                                <p:commandButton
-                                    id="btnAdd"
-                                    value="Add New"
-                                    action="#{vmpController.prepareAdd()}"
-                                    styleClass="ui-button-success m-1"
-                                    update="acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel"
-                                    icon="fas fa-plus"
-                                    process="@this"
-                                    disabled="#{vmpController.editable}"
-                                    title="Add a new VMP record">
-                                </p:commandButton>
 
-                                <p:commandButton
-                                    id="btnEdit"
-                                    value="Edit Selected"
-                                    action="#{vmpController.edit()}"
-                                    icon="fas fa-edit"
-                                    update="detailPanel btnAdd btnEdit btnDelete btnSave btnCancel acVmp"
-                                    process="@this"
-                                    styleClass="ui-button-warning m-1"
-                                    disabled="#{vmpController.editable or vmpController.current.id eq null}"
-                                    title="Edit selected VMP record">
-                                </p:commandButton>
-
-                                <p:commandButton
-                                    id="btnDelete"
-                                    value="Delete Selected"
-                                    action="#{vmpController.delete()}"
-                                    icon="fas fa-trash"
-                                    update="vmpForm:messages acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel"
-                                    process="@this"
-                                    styleClass="ui-button-danger m-1"
-                                    disabled="#{vmpController.editable or vmpController.current.id eq null}"
-                                    title="Delete selected VMP record">
-                                    <p:confirm
-                                        header="Confirm Delete"
-                                        message="Are you sure you want to delete this VMP record?"
-                                        icon="fas fa-exclamation-triangle" />
-                                </p:commandButton>
-
-
-                                <p:commandButton
-                                    id="btnAuditEventsDetail"
-                                    value="Audit History"
-                                    action="#{vmpController.navigateToVmpAuditEvents()}"
-                                    icon="fas fa-history"
-                                    ajax="false"
-                                    styleClass="ui-button-info"
-                                    disabled="#{vmpController.current.id eq null}"
-                                    title="View audit history for this VMP record"/>
-
-                            </div>
-                        </div>
 
                         <!-- Selection List -->
                         <div>
-                            <h5 class="mb-2">Select VMP</h5>
-                            <p:autoComplete
-                                id="acVmp"
-                                class="w-100 vmp-autocomplete"
-                                inputStyleClass="w-100"
-                                value="#{vmpController.selectedVmpDto}"
-                                completeMethod="#{vmpController.completeVmpDto}"
-                                var="dto"
-                                itemLabel="#{dto.name}"
-                                itemValue="#{dto}"
-                                converter="vmpDtoConverter"
-                                maxResults="10"
-                                minQueryLength="2"
-                                forceSelection="true"
-                                disabled="#{vmpController.editable}"
-                                placeholder="Type to search VMPs (minimum 2 characters)...">
-                                <p:ajax event="itemSelect"
-                                        process="@this"
-                                        update="detailPanel btnAdd btnEdit btnDelete btnToggleStatus btnAuditEventsDetail" />
-                                <p:column headerText="Name" style="padding: 3px;">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h:outputText value="#{dto.name}"/>
-                                        <p:badge value="#{dto.statusDisplay}"
-                                                 severity="#{dto.inactive ? 'danger' : 'success'}"
-                                                 style="font-size: 0.65em; margin-left: 8px;"/>
-                                    </div>
-                                </p:column>
-                            </p:autoComplete>
-
-
                             <p:commandButton
                                 id="btnFilterActive"
                                 value="Active"
@@ -137,6 +51,38 @@
                                 icon="fas fa-list"
                                 title="Show all VMPs"/>
 
+                            <h5 class="mb-2">Select VMP</h5>
+                            <p:autoComplete
+                                id="acVmp"
+                                class="w-100 vmp-autocomplete"
+                                inputStyleClass="w-100"
+                                value="#{vmpController.selectedVmpDto}"
+                                completeMethod="#{vmpController.completeVmpDto}"
+                                var="dto"
+                                itemLabel="#{dto.name}"
+                                itemValue="#{dto}"
+                                converter="vmpDtoConverter"
+                                maxResults="10"
+                                minQueryLength="2"
+                                forceSelection="true"
+                                disabled="#{vmpController.editable}"
+                                placeholder="Type to search VMPs (minimum 2 characters)...">
+                                <p:ajax event="itemSelect"
+                                        process="@this"
+                                        update="detailPanel btnAdd btnEdit btnDelete btnToggleStatus btnAuditEventsDetail" />
+                                <p:column headerText="Name" style="padding: 3px;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h:outputText value="#{dto.name}"/>
+                                        <p:badge value="#{dto.statusDisplay}"
+                                                 severity="#{dto.inactive ? 'danger' : 'success'}"
+                                                 style="font-size: 0.65em; margin-left: 8px;"/>
+                                    </div>
+                                </p:column>
+                            </p:autoComplete>
+
+
+
+
                             <p:outputLabel id="filterStatusLabel"
                                            value="Currently showing: #{vmpController.filterStatusDisplay}"
                                            styleClass="text-muted small"/>
@@ -144,12 +90,53 @@
                         </div>
 
 
-                        <!-- Status Management Buttons -->
-                        <div class="status-management-section" rendered="#{vmpController.current ne null and vmpController.current.id ne null}">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h6 class="mb-0 text-muted">Status Management</h6>
-                            </div>
-                            <div class="d-flex gap-2">
+                        <!-- Action Buttons -->
+                        <div class="mb-3">
+                            <h5 class="mb-2">Actions</h5>
+                            <div class="d-flex flex-wrap gap-1" id="actionButtons">
+                                <p:commandButton
+                                    id="btnAdd"
+                                    value="Add New"
+                                    action="#{vmpController.prepareAdd()}"
+                                    styleClass="ui-button-success m-1"
+                                    update="acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel"
+                                    icon="fas fa-plus"
+                                    process="@this"
+                                    disabled="#{vmpController.editable}"
+                                    title="Add a new VMP record">
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    id="btnEdit"
+                                    value="Edit"
+                                    action="#{vmpController.edit()}"
+                                    icon="fas fa-edit"
+                                    update="detailPanel btnAdd btnEdit btnDelete btnSave btnCancel acVmp"
+                                    process="@this"
+                                    styleClass="ui-button-warning m-1"
+                                    disabled="#{vmpController.editable or vmpController.current.id eq null}"
+                                    title="Edit selected VMP record">
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    id="btnDelete"
+                                    value="Delete"
+                                    action="#{vmpController.delete()}"
+                                    icon="fas fa-trash"
+                                    update="vmpForm:messages acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel"
+                                    process="@this"
+                                    styleClass="ui-button-danger m-1"
+                                    disabled="#{vmpController.editable or vmpController.current.id eq null}"
+                                    title="Delete selected VMP record">
+                                    <p:confirm
+                                        header="Confirm Delete"
+                                        message="Are you sure you want to delete this VMP record?"
+                                        icon="fas fa-exclamation-triangle" />
+                                </p:commandButton>
+
+
+
+
                                 <p:commandButton
                                     id="btnToggleStatus"
                                     value="#{vmpController.toggleStatusButtonText}"
@@ -166,9 +153,19 @@
                                         icon="fas fa-question-circle" />
                                 </p:commandButton>
 
+                                <p:commandButton
+                                    id="btnAuditEventsDetail"
+                                    value="History"
+                                    action="#{vmpController.navigateToVmpAuditEvents()}"
+                                    icon="fas fa-history"
+                                    ajax="false"
+                                    styleClass="ui-button-info"
+                                    disabled="#{vmpController.current.id eq null}"
+                                    title="View audit history for this VMP record"/>
 
                             </div>
                         </div>
+
 
                     </div>
 

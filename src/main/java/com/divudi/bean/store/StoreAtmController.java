@@ -13,9 +13,9 @@ import com.divudi.bean.common.AuditEventController;
 import com.divudi.service.AuditService;
 import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.data.DepartmentType;
-import com.divudi.core.data.dto.VtmDto;
-import com.divudi.core.entity.pharmacy.Vtm;
-import com.divudi.core.facade.VtmFacade;
+import com.divudi.core.data.dto.AtmDto;
+import com.divudi.core.entity.pharmacy.Atm;
+import com.divudi.core.facade.AtmFacade;
 import com.divudi.core.facade.AuditEventFacade;
 import com.divudi.core.util.JsfUtil;
 
@@ -29,7 +29,9 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.application.FacesMessage;
 import javax.faces.convert.Converter;
+import javax.faces.convert.ConverterException;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -42,13 +44,13 @@ import javax.persistence.TemporalType;
  */
 @Named
 @SessionScoped
-public class StoreVtmController implements Serializable {
+public class StoreAtmController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
     @EJB
-    private VtmFacade ejbFacade;
+    private AtmFacade ejbFacade;
     @EJB
     private AuditService auditService;
     @EJB
@@ -56,26 +58,26 @@ public class StoreVtmController implements Serializable {
     @Inject
     private AuditEventController auditEventController;
 
-    private Vtm current;
-    private List<Vtm> items;
+    private Atm current;
+    private List<Atm> items;
 
     // DTO properties
-    private List<VtmDto> vtmDtoList;
-    private VtmDto selectedVtmDto;
+    private List<AtmDto> atmDtoList;
+    private AtmDto selectedAtmDto;
 
     // Audit properties
-    private List<AuditEvent> vtmAuditEvents;
+    private List<AuditEvent> atmAuditEvents;
 
     private boolean editable;
 
-    // Filter state for active/inactive VTMs
+    // Filter state for active/inactive ATMs
     private String filterStatus = "active";
 
-    public List<Vtm> completeVtm(String query) {
+    public List<Atm> completeAtm(String query) {
         if (query == null) {
             return new ArrayList<>();
         }
-        String sql = "SELECT c FROM Vtm c WHERE c.retired=:retired "
+        String sql = "SELECT c FROM Atm c WHERE c.retired=:retired "
                 + "AND UPPER(c.name) LIKE :query "
                 + "AND c.departmentType=:dep "
                 + "ORDER BY c.name";
@@ -87,26 +89,26 @@ public class StoreVtmController implements Serializable {
     }
 
     public void prepareAdd() {
-        current = new Vtm();
+        current = new Atm();
         current.setDepartmentType(DepartmentType.Store);
-        selectedVtmDto = null;
+        selectedAtmDto = null;
         editable = true;
     }
 
     public void edit() {
         if (current == null || current.getId() == null) {
-            JsfUtil.addErrorMessage("Please select a VTM to edit");
+            JsfUtil.addErrorMessage("Please select an ATM to edit");
             return;
         }
         if (current.isInactive()) {
-            JsfUtil.addWarningMessage("Editing inactive VTM '" + current.getName() + "'");
+            JsfUtil.addWarningMessage("Editing inactive ATM '" + current.getName() + "'");
         }
         editable = true;
     }
 
     public void cancel() {
         current = null;
-        selectedVtmDto = null;
+        selectedAtmDto = null;
         editable = false;
     }
 
@@ -116,16 +118,16 @@ public class StoreVtmController implements Serializable {
             return;
         }
 
-        if (!validateVtm()) {
+        if (!validateAtm()) {
             return;
         }
 
         try {
-            boolean isNewVtm = getCurrent().getId() == null;
+            boolean isNewAtm = getCurrent().getId() == null;
 
             if (getCurrent().getId() != null) {
                 // UPDATE
-                Vtm beforeUpdate = getFacade().find(getCurrent().getId());
+                Atm beforeUpdate = getFacade().find(getCurrent().getId());
                 Map<String, Object> beforeData = createAuditMap(beforeUpdate);
 
                 getFacade().edit(getCurrent());
@@ -133,9 +135,9 @@ public class StoreVtmController implements Serializable {
                 Map<String, Object> afterData = createAuditMap(getCurrent());
                 auditService.logAudit(beforeData, afterData,
                         getSessionController().getLoggedUser(),
-                        "StoreVtm", "Update Store VTM", getCurrent().getId());
+                        "StoreAtm", "Update Store ATM", getCurrent().getId());
 
-                JsfUtil.addSuccessMessage("Store VTM '" + getCurrent().getName() + "' updated successfully");
+                JsfUtil.addSuccessMessage("Store ATM '" + getCurrent().getName() + "' updated successfully");
             } else {
                 // CREATE
                 getCurrent().setCreatedAt(new Date());
@@ -145,17 +147,17 @@ public class StoreVtmController implements Serializable {
                 Map<String, Object> afterData = createAuditMap(getCurrent());
                 auditService.logAudit(null, afterData,
                         getSessionController().getLoggedUser(),
-                        "StoreVtm", "Create Store VTM", getCurrent().getId());
+                        "StoreAtm", "Create Store ATM", getCurrent().getId());
 
-                JsfUtil.addSuccessMessage("Store VTM '" + getCurrent().getName() + "' created successfully");
+                JsfUtil.addSuccessMessage("Store ATM '" + getCurrent().getName() + "' created successfully");
 
-                if (isNewVtm && getCurrent().getId() != null) {
-                    selectedVtmDto = createVtmDto(getCurrent());
+                if (isNewAtm && getCurrent().getId() != null) {
+                    selectedAtmDto = createAtmDto(getCurrent());
                 }
             }
             editable = false;
         } catch (Exception e) {
-            JsfUtil.addErrorMessage("Error saving Store VTM '" + (getCurrent().getName() != null ? getCurrent().getName() : "Unknown") + "': " + e.getMessage());
+            JsfUtil.addErrorMessage("Error saving Store ATM '" + (getCurrent().getName() != null ? getCurrent().getName() : "Unknown") + "': " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -166,7 +168,7 @@ public class StoreVtmController implements Serializable {
 
     public void delete() {
         if (current != null) {
-            String vtmName = current.getName();
+            String atmName = current.getName();
             try {
                 Map<String, Object> beforeData = createAuditMap(current);
 
@@ -178,18 +180,18 @@ public class StoreVtmController implements Serializable {
                 Map<String, Object> afterData = createAuditMap(current);
                 auditService.logAudit(beforeData, afterData,
                         getSessionController().getLoggedUser(),
-                        "StoreVtm", "Delete Store VTM", current.getId());
+                        "StoreAtm", "Delete Store ATM", current.getId());
 
-                JsfUtil.addSuccessMessage("Store VTM '" + (vtmName != null ? vtmName : "Unknown") + "' deleted successfully");
+                JsfUtil.addSuccessMessage("Store ATM '" + (atmName != null ? atmName : "Unknown") + "' deleted successfully");
             } catch (Exception e) {
-                JsfUtil.addErrorMessage("Error deleting Store VTM '" + (vtmName != null ? vtmName : "Unknown") + "': " + e.getMessage());
+                JsfUtil.addErrorMessage("Error deleting Store ATM '" + (atmName != null ? atmName : "Unknown") + "': " + e.getMessage());
                 e.printStackTrace();
             }
         } else {
-            JsfUtil.addErrorMessage("No VTM selected for deletion");
+            JsfUtil.addErrorMessage("No ATM selected for deletion");
         }
         current = null;
-        selectedVtmDto = null;
+        selectedAtmDto = null;
         items = null;
         clearDtoCache();
         getItems();
@@ -199,18 +201,18 @@ public class StoreVtmController implements Serializable {
 
     // ========== Getters/Setters ==========
 
-    public StoreVtmController() {
+    public StoreAtmController() {
     }
 
-    private VtmFacade getFacade() {
+    private AtmFacade getFacade() {
         return ejbFacade;
     }
 
-    public VtmFacade getEjbFacade() {
+    public AtmFacade getEjbFacade() {
         return ejbFacade;
     }
 
-    public void setEjbFacade(VtmFacade ejbFacade) {
+    public void setEjbFacade(AtmFacade ejbFacade) {
         this.ejbFacade = ejbFacade;
     }
 
@@ -222,21 +224,21 @@ public class StoreVtmController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public Vtm getCurrent() {
+    public Atm getCurrent() {
         if (current == null) {
-            current = new Vtm();
+            current = new Atm();
             current.setDepartmentType(DepartmentType.Store);
         }
         return current;
     }
 
-    public void setCurrent(Vtm current) {
+    public void setCurrent(Atm current) {
         this.current = current;
     }
 
-    public List<Vtm> getItems() {
+    public List<Atm> getItems() {
         if (items == null) {
-            String sql = "SELECT c FROM Vtm c WHERE c.retired=:retired "
+            String sql = "SELECT c FROM Atm c WHERE c.retired=:retired "
                     + "AND c.departmentType=:dep ";
             Map<String, Object> params = new HashMap<>();
             params.put("retired", false);
@@ -256,7 +258,7 @@ public class StoreVtmController implements Serializable {
         return items;
     }
 
-    public void setItems(List<Vtm> items) {
+    public void setItems(List<Atm> items) {
         this.items = items;
     }
 
@@ -270,55 +272,52 @@ public class StoreVtmController implements Serializable {
 
     // ===================== DTO Methods =====================
 
-    public List<VtmDto> getVtmDtos() {
-        if (vtmDtoList == null) {
-            String jpql = "SELECT new com.divudi.core.data.dto.VtmDto("
-                    + "v.id, "
-                    + "v.name, "
-                    + "v.code, "
-                    + "v.descreption, "
-                    + "v.instructions, "
-                    + "v.retired, "
-                    + "v.inactive, "
-                    + "COALESCE(CAST(v.departmentType AS string), 'Store')) "
-                    + "FROM Vtm v WHERE v.retired=:retired "
-                    + "AND v.departmentType=:dep ";
+    public List<AtmDto> getAtmDtos() {
+        if (atmDtoList == null) {
+            String jpql = "SELECT new com.divudi.core.data.dto.AtmDto("
+                    + "a.id, "
+                    + "a.name, "
+                    + "a.code, "
+                    + "a.descreption, "
+                    + "a.retired, "
+                    + "a.inactive) "
+                    + "FROM Atm a WHERE a.retired=:retired "
+                    + "AND a.departmentType=:dep ";
 
             Map<String, Object> params = new HashMap<>();
             params.put("retired", false);
             params.put("dep", DepartmentType.Store);
 
             if ("active".equals(filterStatus)) {
-                jpql += "AND v.inactive=:inactive ";
+                jpql += "AND a.inactive=:inactive ";
                 params.put("inactive", false);
             } else if ("inactive".equals(filterStatus)) {
-                jpql += "AND v.inactive=:inactive ";
+                jpql += "AND a.inactive=:inactive ";
                 params.put("inactive", true);
             }
 
-            jpql += "ORDER BY v.name";
+            jpql += "ORDER BY a.name";
 
-            vtmDtoList = (List<VtmDto>) getFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+            atmDtoList = (List<AtmDto>) getFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
         }
-        return vtmDtoList;
+        return atmDtoList;
     }
 
-    public List<VtmDto> completeVtmDto(String query) {
+    public List<AtmDto> completeAtmDto(String query) {
         if (query == null || query.trim().isEmpty()) {
             return new ArrayList<>();
         }
 
-        String jpql = "SELECT new com.divudi.core.data.dto.VtmDto("
-                + "v.id, "
-                + "v.name, "
-                + "v.code, "
-                + "v.descreption, "
-                + "v.instructions, "
-                + "v.retired, "
-                + "v.inactive) "
-                + "FROM Vtm v WHERE v.retired=:retired "
-                + "AND v.name LIKE :query "
-                + "AND v.departmentType=:dep ";
+        String jpql = "SELECT new com.divudi.core.data.dto.AtmDto("
+                + "a.id, "
+                + "a.name, "
+                + "a.code, "
+                + "a.descreption, "
+                + "a.retired, "
+                + "a.inactive) "
+                + "FROM Atm a WHERE a.retired=:retired "
+                + "AND a.name LIKE :query "
+                + "AND a.departmentType=:dep ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("retired", false);
@@ -326,17 +325,17 @@ public class StoreVtmController implements Serializable {
         params.put("dep", DepartmentType.Store);
 
         if ("active".equals(filterStatus)) {
-            jpql += "AND v.inactive=:inactive ";
+            jpql += "AND a.inactive=:inactive ";
             params.put("inactive", false);
         } else if ("inactive".equals(filterStatus)) {
-            jpql += "AND v.inactive=:inactive ";
+            jpql += "AND a.inactive=:inactive ";
             params.put("inactive", true);
         }
 
-        jpql += "ORDER BY v.name";
+        jpql += "ORDER BY a.name";
 
         try {
-            return (List<VtmDto>) getFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+            return (List<AtmDto>) getFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>();
@@ -344,40 +343,40 @@ public class StoreVtmController implements Serializable {
     }
 
     public void clearDtoCache() {
-        vtmDtoList = null;
+        atmDtoList = null;
     }
 
-    public VtmDto createVtmDto(Vtm vtm) {
-        if (vtm == null) {
+    public AtmDto createAtmDto(Atm atm) {
+        if (atm == null) {
             return null;
         }
-        return new VtmDto(
-                vtm.getId(),
-                vtm.getName(),
-                vtm.getCode(),
-                vtm.getDescreption(),
-                vtm.getInstructions(),
-                vtm.isRetired(),
-                vtm.isInactive()
+        AtmDto dto = new AtmDto(
+                atm.getId(),
+                atm.getName(),
+                atm.getCode(),
+                atm.getDescreption(),
+                atm.isRetired(),
+                atm.isInactive()
         );
+        return dto;
     }
 
-    public List<VtmDto> getVtmDtoList() {
-        return getVtmDtos();
+    public List<AtmDto> getAtmDtoList() {
+        return getAtmDtos();
     }
 
-    public void setVtmDtoList(List<VtmDto> vtmDtoList) {
-        this.vtmDtoList = vtmDtoList;
+    public void setAtmDtoList(List<AtmDto> atmDtoList) {
+        this.atmDtoList = atmDtoList;
     }
 
-    public VtmDto getSelectedVtmDto() {
-        return selectedVtmDto;
+    public AtmDto getSelectedAtmDto() {
+        return selectedAtmDto;
     }
 
-    public void setSelectedVtmDto(VtmDto selectedVtmDto) {
-        this.selectedVtmDto = selectedVtmDto;
-        if (selectedVtmDto != null && selectedVtmDto.getId() != null) {
-            this.current = getFacade().find(selectedVtmDto.getId());
+    public void setSelectedAtmDto(AtmDto selectedAtmDto) {
+        this.selectedAtmDto = selectedAtmDto;
+        if (selectedAtmDto != null && selectedAtmDto.getId() != null) {
+            this.current = getFacade().find(selectedAtmDto.getId());
         } else {
             this.current = null;
         }
@@ -428,8 +427,8 @@ public class StoreVtmController implements Serializable {
 
             if (!shouldKeepSelection) {
                 current = null;
-                selectedVtmDto = null;
-                vtmAuditEvents = null;
+                selectedAtmDto = null;
+                atmAuditEvents = null;
             }
         }
     }
@@ -449,21 +448,21 @@ public class StoreVtmController implements Serializable {
     public String getFilterStatusDisplay() {
         switch (filterStatus) {
             case "active":
-                return "Active Store VTMs";
+                return "Active Store ATMs";
             case "inactive":
-                return "Inactive Store VTMs";
+                return "Inactive Store ATMs";
             case "all":
-                return "All Store VTMs";
+                return "All Store ATMs";
             default:
-                return "Active Store VTMs";
+                return "Active Store ATMs";
         }
     }
 
     // ===================== Toggle Status Methods =====================
 
-    public void toggleVtmStatus() {
+    public void toggleAtmStatus() {
         if (current == null) {
-            JsfUtil.addErrorMessage("No VTM selected");
+            JsfUtil.addErrorMessage("No ATM selected");
             return;
         }
 
@@ -472,19 +471,19 @@ public class StoreVtmController implements Serializable {
 
         if (wasInactive) {
             current.setInactive(false);
-            JsfUtil.addSuccessMessage("Store VTM Activated Successfully");
+            JsfUtil.addSuccessMessage("Store ATM Activated Successfully");
         } else {
             current.setInactive(true);
-            JsfUtil.addSuccessMessage("Store VTM Deactivated Successfully");
+            JsfUtil.addSuccessMessage("Store ATM Deactivated Successfully");
         }
 
         getFacade().edit(current);
 
         Map<String, Object> afterData = createAuditMap(current);
-        String action = wasInactive ? "Activate Store VTM" : "Deactivate Store VTM";
+        String action = wasInactive ? "Activate Store ATM" : "Deactivate Store ATM";
         auditService.logAudit(beforeData, afterData,
                 getSessionController().getLoggedUser(),
-                "StoreVtm", action, current.getId());
+                "StoreAtm", action, current.getId());
 
         items = null;
         clearDtoCache();
@@ -513,32 +512,33 @@ public class StoreVtmController implements Serializable {
 
     // ===================== Audit Methods =====================
 
-    private Map<String, Object> createAuditMap(Vtm vtm) {
+    private Map<String, Object> createAuditMap(Atm atm) {
         Map<String, Object> auditData = new HashMap<>();
-        if (vtm != null) {
-            auditData.put("id", vtm.getId());
-            auditData.put("name", vtm.getName());
-            auditData.put("code", vtm.getCode());
-            auditData.put("retired", vtm.isRetired());
-            auditData.put("inactive", vtm.isInactive());
-            auditData.put("departmentType", vtm.getDepartmentType() != null ? vtm.getDepartmentType().toString() : null);
-            auditData.put("descreption", vtm.getDescreption());
-            auditData.put("instructions", vtm.getInstructions());
+        if (atm != null) {
+            auditData.put("id", atm.getId());
+            auditData.put("name", atm.getName());
+            auditData.put("code", atm.getCode());
+            auditData.put("retired", atm.isRetired());
+            auditData.put("inactive", atm.isInactive());
+            auditData.put("departmentType", atm.getDepartmentType() != null ? atm.getDepartmentType().toString() : null);
+            auditData.put("descreption", atm.getDescreption());
+            auditData.put("vtmId", atm.getVtm() != null ? atm.getVtm().getId() : null);
+            auditData.put("vtmName", atm.getVtm() != null ? atm.getVtm().getName() : null);
         }
         return auditData;
     }
 
-    public void fillVtmAuditEvents() {
-        vtmAuditEvents = new ArrayList<>();
+    public void fillAtmAuditEvents() {
+        atmAuditEvents = new ArrayList<>();
         if (current != null && current.getId() != null) {
             try {
                 String jpql = "SELECT a FROM AuditEvent a WHERE a.objectId = :objectId "
                         + "AND a.entityType = :entityType ORDER BY a.eventDataTime DESC";
                 Map<String, Object> params = new HashMap<>();
                 params.put("objectId", current.getId());
-                params.put("entityType", "StoreVtm");
+                params.put("entityType", "StoreAtm");
 
-                vtmAuditEvents = auditEventFacade.findByJpql(jpql, params);
+                atmAuditEvents = auditEventFacade.findByJpql(jpql, params);
             } catch (Exception e) {
                 JsfUtil.addErrorMessage("Error loading audit history: " + e.getMessage());
             }
@@ -547,42 +547,42 @@ public class StoreVtmController implements Serializable {
 
     public String navigateToAuditEvents() {
         if (current == null || current.getId() == null) {
-            JsfUtil.addErrorMessage("Please select a VTM first");
+            JsfUtil.addErrorMessage("Please select an ATM first");
             return null;
         }
-        fillVtmAuditEvents();
-        return "/pharmacy/admin/store_vtm_audit_events?faces-redirect=true";
+        fillAtmAuditEvents();
+        return "/pharmacy/admin/store_atm_audit_events?faces-redirect=true";
     }
 
-    public List<AuditEvent> getVtmAuditEvents() {
-        return vtmAuditEvents;
+    public List<AuditEvent> getAtmAuditEvents() {
+        return atmAuditEvents;
     }
 
-    public void setVtmAuditEvents(List<AuditEvent> vtmAuditEvents) {
-        this.vtmAuditEvents = vtmAuditEvents;
+    public void setAtmAuditEvents(List<AuditEvent> atmAuditEvents) {
+        this.atmAuditEvents = atmAuditEvents;
     }
 
     // ===================== Validation =====================
 
-    private boolean validateVtm() {
+    private boolean validateAtm() {
         if (current == null) {
-            JsfUtil.addErrorMessage("No VTM selected for validation");
+            JsfUtil.addErrorMessage("No ATM selected for validation");
             return false;
         }
 
         if (current.getName() == null || current.getName().trim().isEmpty()) {
-            JsfUtil.addErrorMessage("VTM name is required");
+            JsfUtil.addErrorMessage("ATM name is required");
             return false;
         }
 
-        if (checkVtmName(current.getName(), current)) {
-            JsfUtil.addErrorMessage("A VTM with this name already exists");
+        if (checkAtmName(current.getName(), current)) {
+            JsfUtil.addErrorMessage("An ATM with this name already exists");
             return false;
         }
 
         if (current.getCode() != null && !current.getCode().trim().isEmpty()) {
-            if (checkVtmCode(current.getCode(), current)) {
-                JsfUtil.addErrorMessage("A VTM with this code already exists");
+            if (checkAtmCode(current.getCode(), current)) {
+                JsfUtil.addErrorMessage("An ATM with this code already exists");
                 return false;
             }
         }
@@ -590,42 +590,42 @@ public class StoreVtmController implements Serializable {
         return true;
     }
 
-    public boolean checkVtmName(String name, Vtm savingVtm) {
-        if (savingVtm == null || name == null || name.trim().isEmpty()) {
+    public boolean checkAtmName(String name, Atm savingAtm) {
+        if (savingAtm == null || name == null || name.trim().isEmpty()) {
             return false;
         }
         Map<String, Object> params = new HashMap<>();
-        String jpql = "SELECT c FROM Vtm c WHERE c.retired=:retired AND UPPER(c.name)=:name";
-        if (savingVtm.getId() != null) {
+        String jpql = "SELECT c FROM Atm c WHERE c.retired=:retired AND UPPER(c.name)=:name";
+        if (savingAtm.getId() != null) {
             jpql += " AND c.id <> :id";
-            params.put("id", savingVtm.getId());
+            params.put("id", savingAtm.getId());
         }
         params.put("retired", false);
         params.put("name", name.toUpperCase().trim());
-        Vtm vtm = getFacade().findFirstByJpql(jpql, params);
-        return vtm != null;
+        Atm atm = getFacade().findFirstByJpql(jpql, params);
+        return atm != null;
     }
 
-    public boolean checkVtmCode(String code, Vtm savingVtm) {
-        if (savingVtm == null || code == null || code.trim().isEmpty()) {
+    public boolean checkAtmCode(String code, Atm savingAtm) {
+        if (savingAtm == null || code == null || code.trim().isEmpty()) {
             return false;
         }
         Map<String, Object> params = new HashMap<>();
-        String jpql = "SELECT c FROM Vtm c WHERE c.retired=:retired AND UPPER(c.code)=:code";
-        if (savingVtm.getId() != null) {
+        String jpql = "SELECT c FROM Atm c WHERE c.retired=:retired AND UPPER(c.code)=:code";
+        if (savingAtm.getId() != null) {
             jpql += " AND c.id <> :id";
-            params.put("id", savingVtm.getId());
+            params.put("id", savingAtm.getId());
         }
         params.put("retired", false);
         params.put("code", code.toUpperCase().trim());
-        Vtm vtm = getFacade().findFirstByJpql(jpql, params);
-        return vtm != null;
+        Atm atm = getFacade().findFirstByJpql(jpql, params);
+        return atm != null;
     }
 
     // ===================== JSF Converter =====================
 
-    @FacesConverter("storeVtmDtoConverter")
-    public static class StoreVtmDtoConverter implements Converter {
+    @FacesConverter("storeAtmDtoConverter")
+    public static class StoreAtmDtoConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
@@ -634,16 +634,16 @@ public class StoreVtmController implements Serializable {
             }
             try {
                 Long id = Long.parseLong(value);
-                StoreVtmController controller = (StoreVtmController) facesContext.getApplication()
-                        .getELResolver().getValue(facesContext.getELContext(), null, "storeVtmController");
+                StoreAtmController controller = (StoreAtmController) facesContext.getApplication()
+                        .getELResolver().getValue(facesContext.getELContext(), null, "storeAtmController");
 
                 if (controller == null) {
                     return null;
                 }
 
-                Vtm entity = controller.getFacade().find(id);
+                Atm entity = controller.getFacade().find(id);
                 if (entity != null) {
-                    return controller.createVtmDto(entity);
+                    return controller.createAtmDto(entity);
                 }
                 return null;
             } catch (Exception e) {
@@ -656,25 +656,39 @@ public class StoreVtmController implements Serializable {
             if (object == null) {
                 return null;
             }
-            if (object instanceof VtmDto) {
-                VtmDto dto = (VtmDto) object;
+            if (object instanceof AtmDto) {
+                AtmDto dto = (AtmDto) object;
                 return dto.getId() != null ? dto.getId().toString() : null;
             }
-            throw new IllegalArgumentException("Expected VtmDto object");
+            throw new IllegalArgumentException("Expected AtmDto object");
         }
     }
 
-    @FacesConverter("stoVtmCon")
-    public static class VtmControllerConverter implements Converter {
+    @FacesConverter("stoAtmCon")
+    public static class AtmControllerConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.trim().isEmpty()) {
                 return null;
             }
-            StoreVtmController controller = (StoreVtmController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "storeVtmController");
-            return controller.getEjbFacade().find(Long.valueOf(value));
+            try {
+                Long id = Long.parseLong(value);
+                StoreAtmController controller = (StoreAtmController) facesContext.getApplication()
+                        .getELResolver().getValue(facesContext.getELContext(), null, "storeAtmController");
+
+                if (controller == null) {
+                    return null;
+                }
+
+                return controller.getEjbFacade().find(id);
+            } catch (NumberFormatException e) {
+                throw new ConverterException(new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                        "Conversion Error", "Invalid ATM ID: " + value));
+            } catch (Exception e) {
+                throw new ConverterException(new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                        "Conversion Error", "Could not resolve ATM ID: " + value));
+            }
         }
 
         @Override
@@ -682,12 +696,12 @@ public class StoreVtmController implements Serializable {
             if (object == null) {
                 return null;
             }
-            if (object instanceof Vtm) {
-                Vtm o = (Vtm) object;
+            if (object instanceof Atm) {
+                Atm o = (Atm) object;
                 return String.valueOf(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + Vtm.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Atm.class.getName());
             }
         }
     }

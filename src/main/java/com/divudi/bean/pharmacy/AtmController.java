@@ -65,6 +65,9 @@ public class AtmController implements Serializable {
     // DTO properties - For optimized display and reporting
     private AtmDto selectedAtmDto;
 
+    // Filter status - "active", "inactive", "all"
+    private String filterStatus = "active";
+
     // Audit properties - For viewing audit history
     private List<AuditEvent> atmAuditEvents;
 
@@ -366,16 +369,24 @@ public class AtmController implements Serializable {
                 + "a.name, "
                 + "a.code, "
                 + "a.descreption, "
-                + "a.retired) "
-                + "FROM Atm a WHERE a.retired=:retired "
-                + "AND a.departmentType=:dep "
-                + "ORDER BY a.name";
+                + "a.retired, "
+                + "a.inactive) "
+                + "FROM Atm a WHERE a.retired=false "
+                + "AND a.departmentType=:dep ";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("retired", false);
         params.put("dep", DepartmentType.Pharmacy);
 
-        // Use findLightsByJpql for DTO constructor queries
+        if ("active".equals(filterStatus)) {
+            jpql += "AND a.inactive=:inactive ";
+            params.put("inactive", false);
+        } else if ("inactive".equals(filterStatus)) {
+            jpql += "AND a.inactive=:inactive ";
+            params.put("inactive", true);
+        }
+
+        jpql += "ORDER BY a.name";
+
         return (List<AtmDto>) getFacade().findLightsByJpql(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
     }
 
@@ -387,10 +398,7 @@ public class AtmController implements Serializable {
      * @return List of matching ATM DTOs
      */
     public List<AtmDto> completeAtmDto(String query) {
-        System.out.println("completeAtmDto called with query: '" + query + "'");
-
         if (query == null || query.trim().isEmpty()) {
-            System.out.println("Query is null or empty, returning empty list");
             return new ArrayList<>();
         }
 
@@ -399,23 +407,29 @@ public class AtmController implements Serializable {
                 + "a.name, "
                 + "a.code, "
                 + "a.descreption, "
-                + "a.retired) "
-                + "FROM Atm a WHERE a.retired=:retired "
+                + "a.retired, "
+                + "a.inactive) "
+                + "FROM Atm a WHERE a.retired=false "
                 + "AND a.name LIKE :query "
-                + "AND a.departmentType=:dep "
-                + "ORDER BY a.name";
+                + "AND a.departmentType=:dep ";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("retired", false);
         params.put("query", "%" + query + "%");
         params.put("dep", DepartmentType.Pharmacy);
 
+        if ("active".equals(filterStatus)) {
+            jpql += "AND a.inactive=:inactive ";
+            params.put("inactive", false);
+        } else if ("inactive".equals(filterStatus)) {
+            jpql += "AND a.inactive=:inactive ";
+            params.put("inactive", true);
+        }
+
+        jpql += "ORDER BY a.name";
+
         try {
-            List<AtmDto> results = (List<AtmDto>) getFacade().findLightsByJpql(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
-            return results;
+            return (List<AtmDto>) getFacade().findLightsByJpql(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
         } catch (Exception e) {
-            System.out.println("Error in completeAtmDto: " + e.getMessage());
-            e.printStackTrace();
             return new ArrayList<>();
         }
     }
@@ -464,7 +478,7 @@ public class AtmController implements Serializable {
         if (atm == null) {
             return null;
         }
-        return new AtmDto(
+        AtmDto dto = new AtmDto(
                 atm.getId(),
                 atm.getName(),
                 atm.getCode(),
@@ -473,8 +487,136 @@ public class AtmController implements Serializable {
                 atm.getVtm() != null ? atm.getVtm().getId() : null,
                 atm.getVtm() != null ? atm.getVtm().getName() : null
         );
+        dto.setInactive(atm.isInactive());
+        return dto;
     }
 
+
+    // ========================== Filter Status Management ==========================
+
+    public String getFilterStatus() {
+        return filterStatus;
+    }
+
+    public void setFilterStatus(String filterStatus) {
+        this.filterStatus = filterStatus;
+    }
+
+    public void setFilterToActive() {
+        filterStatus = "active";
+        refreshData();
+    }
+
+    public void setFilterToInactive() {
+        filterStatus = "inactive";
+        refreshData();
+    }
+
+    public void setFilterToAll() {
+        filterStatus = "all";
+        refreshData();
+    }
+
+    public void refreshData() {
+        recreateModel();
+
+        if (current != null) {
+            boolean shouldKeepSelection = false;
+            switch (filterStatus) {
+                case "active":
+                    shouldKeepSelection = !current.isInactive();
+                    break;
+                case "inactive":
+                    shouldKeepSelection = current.isInactive();
+                    break;
+                case "all":
+                    shouldKeepSelection = true;
+                    break;
+            }
+
+            if (!shouldKeepSelection) {
+                current = null;
+                selectedAtmDto = null;
+                atmAuditEvents = null;
+            }
+        }
+    }
+
+    public boolean isShowingActive() {
+        return "active".equals(filterStatus);
+    }
+
+    public boolean isShowingInactive() {
+        return "inactive".equals(filterStatus);
+    }
+
+    public boolean isShowingAll() {
+        return "all".equals(filterStatus);
+    }
+
+    public String getFilterStatusDisplay() {
+        switch (filterStatus) {
+            case "active":
+                return "Active ATMs";
+            case "inactive":
+                return "Inactive ATMs";
+            case "all":
+                return "All ATMs";
+            default:
+                return "Active ATMs";
+        }
+    }
+
+    // ========================== Toggle Status ==========================
+
+    public void toggleAtmStatus() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No ATM selected");
+            return;
+        }
+
+        Map<String, Object> beforeData = createAuditMap(current);
+        boolean wasInactive = current.isInactive();
+
+        if (wasInactive) {
+            current.setInactive(false);
+            JsfUtil.addSuccessMessage("ATM Activated Successfully");
+        } else {
+            current.setInactive(true);
+            JsfUtil.addSuccessMessage("ATM Deactivated Successfully");
+        }
+
+        getFacade().edit(current);
+
+        Map<String, Object> afterData = createAuditMap(current);
+        String action = wasInactive ? "Activate ATM" : "Deactivate ATM";
+        auditService.logAudit(beforeData, afterData,
+                getSessionController().getLoggedUser(),
+                "Atm", action, current.getId());
+
+        recreateModel();
+    }
+
+    public String getToggleStatusButtonText() {
+        if (current == null || current.getId() == null) {
+            return "Toggle Status";
+        }
+        return current.isInactive() ? "Activate" : "Deactivate";
+    }
+
+    public String getToggleStatusButtonIcon() {
+        if (current == null || current.getId() == null) {
+            return "fas fa-toggle-off";
+        }
+        return current.isInactive() ? "fas fa-check-circle" : "fas fa-times-circle";
+    }
+
+    public String getToggleStatusButtonClass() {
+        if (current == null || current.getId() == null) {
+            return "ui-button-secondary";
+        }
+        return current.isInactive() ? "ui-button-success" : "ui-button-warning";
+    }
 
     // ========================== Audit History Methods ==========================
 
@@ -565,6 +707,7 @@ public class AtmController implements Serializable {
             auditData.put("name", atm.getName());
             auditData.put("code", atm.getCode());
             auditData.put("retired", atm.isRetired());
+            auditData.put("inactive", atm.isInactive());
             auditData.put("departmentType", atm.getDepartmentType() != null ? atm.getDepartmentType().toString() : null);
             auditData.put("descreption", atm.getDescreption()); // Note: intentional spelling for backward compatibility
             auditData.put("vtmId", atm.getVtm() != null ? atm.getVtm().getId() : null);
