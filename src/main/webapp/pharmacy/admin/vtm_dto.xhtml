@@ -56,6 +56,9 @@
                                             title="Show all VTMs"/>
                                     </div>
 
+                                    <p:outputLabel id="filterStatusLabel"
+                                                   value="Currently showing: #{vtmController.filterStatusDisplay}"
+                                                   styleClass="text-muted small mt-1"/>
 
                                 </h:panelGroup>
 
@@ -86,9 +89,6 @@
                                                 <h:outputText value="#{dto.code}"/>
                                             </p:column>
                                         </p:autoComplete>
-                                        <p:outputLabel id="filterStatusLabel"
-                                                       value="Currently showing: #{vtmController.filterStatusDisplay}"
-                                                       styleClass="text-muted small mt-1"/>
                                     </div>
                                 </div>
 
@@ -138,7 +138,7 @@
                                                 value="#{vtmController.toggleStatusButtonText}"
                                                 action="#{vtmController.toggleVtmStatus()}"
                                                 icon="#{vtmController.toggleStatusButtonIcon}"
-                                                update="form:msg acVtm gpDetail actionButtons statusFilterPanel vtmDetails filterStatusLabel"
+                                                update="form:msg acVtm gpDetail actionButtons statusFilterPanel vtmDetails"
                                                 process="@this"
                                                 styleClass="#{vtmController.toggleStatusButtonClass} m-1"
                                                 disabled="#{vtmController.editable or vtmController.selectedVtmDto eq null}"

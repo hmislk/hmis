@@ -29,7 +29,9 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.application.FacesMessage;
 import javax.faces.convert.Converter;
+import javax.faces.convert.ConverterException;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -667,12 +669,26 @@ public class StoreAtmController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.trim().isEmpty()) {
                 return null;
             }
-            StoreAtmController controller = (StoreAtmController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "storeAtmController");
-            return controller.getEjbFacade().find(Long.valueOf(value));
+            try {
+                Long id = Long.parseLong(value);
+                StoreAtmController controller = (StoreAtmController) facesContext.getApplication()
+                        .getELResolver().getValue(facesContext.getELContext(), null, "storeAtmController");
+
+                if (controller == null) {
+                    return null;
+                }
+
+                return controller.getEjbFacade().find(id);
+            } catch (NumberFormatException e) {
+                throw new ConverterException(new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                        "Conversion Error", "Invalid ATM ID: " + value));
+            } catch (Exception e) {
+                throw new ConverterException(new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                        "Conversion Error", "Could not resolve ATM ID: " + value));
+            }
         }
 
         @Override
