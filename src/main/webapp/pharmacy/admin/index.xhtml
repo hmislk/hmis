@@ -51,12 +51,12 @@
                                     </p:tab>
                                     <p:tab title="Pharmaceutical Component Management">
                                         <div class="d-grid gap-2">
-<!--                                            <p:commandButton
-                                                class="w-100"
-                                                ajax="false"
-                                                value="VTMs (Entity)"
-                                                action="#{pharmacyController.navigateToVtm()}"
-                                                title="Traditional VTM management with full entity operations" />-->
+                                            <!--                                            <p:commandButton
+                                                                                            class="w-100"
+                                                                                            ajax="false"
+                                                                                            value="VTMs (Entity)"
+                                                                                            action="#{pharmacyController.navigateToVtm()}"
+                                                                                            title="Traditional VTM management with full entity operations" />-->
                                             <p:commandButton
                                                 class="w-100 ui-button-success"
                                                 ajax="false"
@@ -96,13 +96,14 @@
                                             <p:commandButton
                                                 class="w-100"
                                                 ajax="false"
-                                                value="AMPs"
-                                                action="#{pharmacyController.navigateToStoreAmp()}" />
+                                                value="VTMs"
+                                                action="#{pharmacyController.navigateToStoreVtm()}" />
                                             <p:commandButton
                                                 class="w-100"
                                                 ajax="false"
-                                                value="VTMs"
-                                                action="#{pharmacyController.navigateToStoreVtm()}" />
+                                                value="AMPs"
+                                                action="#{pharmacyController.navigateToStoreAmp()}" />
+
                                         </div>
                                     </p:tab>
                                     <p:tab title="Lab Item Management">
@@ -110,13 +111,14 @@
                                             <p:commandButton
                                                 class="w-100"
                                                 ajax="false"
-                                                value="AMPs"
-                                                action="#{pharmacyController.navigateToLabAmp()}" />
+                                                value="VTMs"
+                                                action="#{pharmacyController.navigateToLabVtm()}" />
                                             <p:commandButton
                                                 class="w-100"
                                                 ajax="false"
-                                                value="VTMs"
-                                                action="#{pharmacyController.navigateToLabVtm()}" />
+                                                value="AMPs"
+                                                action="#{pharmacyController.navigateToLabAmp()}" />
+
                                         </div>
                                     </p:tab>
 
@@ -196,7 +198,7 @@
                                                 action="#{dataUploadController.toUploadAmpsMin()}"  ></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" value="Update Bulk Categery" 
                                                              action="/pharmacy/pharmacy_update_categery_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
-                                           
+
                                             <p:commandButton class="w-100" ajax="false" value="Stock Item List" 
                                                              action="/pharmacy/pharmacy_report_non_moving_items" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
 
