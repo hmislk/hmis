@@ -18,54 +18,47 @@
                             <!-- DTO-Optimized ATM Selection -->
                             <p:panel header="ATM Management" class="mb-3 w-100">
 
-                                <div class="row" >
-                                    <div class="col-12" >
+                                <!-- Status Filter Section -->
+                                <h:panelGroup id="statusFilterPanel" layout="block" styleClass="mb-3">
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <label class="form-label mb-0">Filter:</label>
                                         <p:commandButton
-                                            id="btnAdd"
-                                            value="Add New"
-                                            icon="fa fa-plus"
-                                            action="#{atmController.prepareAdd()}"
-                                            class="m-1 ui-button-success"
-                                            update=":form:acAtm :form:gpDetail :form:btnEdit :form:btnDelete :form:btnViewAuditEvents"
-                                            process="btnAdd">
-                                            <f:setPropertyActionListener target="#{atmController.selectedAtmDto}" value="#{null}" />
-                                        </p:commandButton>
+                                            id="btnFilterActive"
+                                            value="Active"
+                                            action="#{atmController.setFilterToActive()}"
+                                            update="acAtm gpDetail atmDetails statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{atmController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
+                                            icon="fas fa-check-circle"
+                                            disabled="#{atmController.editable}"
+                                            title="Show only active ATMs"/>
 
                                         <p:commandButton
-                                            id="btnEdit"
-                                            value="Edit"
-                                            icon="fas fa-edit"
-                                            action="#{atmController.edit()}"
-                                            class="m-1 ui-button-info"
-                                            update=":form:acAtm :form:gpDetail :form:btnAdd :form:btnDelete :form:btnViewAuditEvents"
-                                            process="btnEdit"
-                                            disabled="#{atmController.editable or atmController.selectedAtmDto eq null}">
-                                        </p:commandButton>
+                                            id="btnFilterInactive"
+                                            value="Inactive"
+                                            action="#{atmController.setFilterToInactive()}"
+                                            update="acAtm gpDetail atmDetails statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{atmController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
+                                            icon="fas fa-times-circle"
+                                            disabled="#{atmController.editable}"
+                                            title="Show only inactive ATMs"/>
 
                                         <p:commandButton
-                                            id="btnDelete"
-                                            onclick="if (!confirm('Are you sure you want to delete this ATM? This action cannot be undone.'))
-                                                        return false;"
-                                            action="#{atmController.delete()}"
-                                            value="Delete"
-                                            icon="fas fa-trash"
-                                            class="m-1 ui-button-danger"
-                                            update=":form:acAtm :form:gpDetail :form:msg"
-                                            process="btnDelete"
-                                            disabled="#{atmController.editable or atmController.selectedAtmDto eq null}">
-                                        </p:commandButton>
-                                        <p:commandButton
-                                            id="btnViewAuditEvents"
-                                            value="History"
-                                            icon="fas fa-history"
-                                            action="#{atmController.navigateToAuditEvents()}"
-                                            class="m-1 ui-button-secondary"
-                                            process="btnViewAuditEvents"
-                                            ajax="false"
-                                            disabled="#{atmController.selectedAtmDto eq null}">
-                                        </p:commandButton>
+                                            id="btnFilterAll"
+                                            value="All"
+                                            action="#{atmController.setFilterToAll()}"
+                                            update="acAtm gpDetail atmDetails statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{atmController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
+                                            icon="fas fa-list"
+                                            disabled="#{atmController.editable}"
+                                            title="Show all ATMs"/>
                                     </div>
-                                </div>
+
+
+                                </h:panelGroup>
+
                                 <div class="row" >
                                     <div class="col-12"  >
                                         <p:autoComplete
@@ -82,16 +75,95 @@
                                             disabled="#{atmController.editable}"
                                             placeholder="Type to search Pharmacy ATMs..."
                                             minQueryLength="2">
-                                            <p:ajax event="itemSelect" process="@this" update=":form:gpDetail :form:btnEdit :form:btnDelete :form:btnViewAuditEvents :form:atmDetails" />
-                                            <p:column headerText="Name">
-                                                <h:outputText value="#{dto.name}" />
+                                            <p:ajax event="itemSelect" process="@this" update=":form:gpDetail :form:actionButtons :form:atmDetails" />
+                                            <p:column headerText="Name" style="padding: 3px;">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h:outputText value="#{dto.name}" />
+                                                    <p:badge value="#{dto.inactive ? 'INACTIVE' : 'ACTIVE'}"
+                                                             severity="#{dto.inactive ? 'danger' : 'success'}"
+                                                             style="font-size: 0.65em; margin-left: 8px;"/>
+                                                </div>
                                             </p:column>
                                             <p:column headerText="Code">
                                                 <h:outputText value="#{dto.code}"/>
                                             </p:column>
                                         </p:autoComplete>
+                                        <p:outputLabel id="filterStatusLabel"
+                                                       value="Currently showing: #{atmController.filterStatusDisplay}"
+                                                       styleClass="text-muted small mt-1"/>
                                     </div>
                                 </div>
+
+                                <h:panelGroup id="actionButtons" layout="block">
+                                    <div class="row" >
+                                        <div class="col-12" >
+                                            <p:commandButton
+                                                id="btnAdd"
+                                                value="Add New"
+                                                icon="fa fa-plus"
+                                                action="#{atmController.prepareAdd()}"
+                                                class="m-1 ui-button-success"
+                                                update=":form:acAtm :form:gpDetail :form:actionButtons :form:atmDetails :form:statusFilterPanel"
+                                                process="btnAdd"
+                                                disabled="#{atmController.editable}">
+                                                <f:setPropertyActionListener target="#{atmController.selectedAtmDto}" value="#{null}" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnEdit"
+                                                value="Edit"
+                                                icon="fas fa-edit"
+                                                action="#{atmController.edit()}"
+                                                class="m-1 ui-button-info"
+                                                update=":form:acAtm :form:gpDetail :form:actionButtons :form:atmDetails :form:statusFilterPanel"
+                                                process="btnEdit"
+                                                disabled="#{atmController.editable or atmController.selectedAtmDto eq null}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnDelete"
+                                                action="#{atmController.delete()}"
+                                                value="Delete"
+                                                icon="fas fa-trash"
+                                                class="m-1 ui-button-danger"
+                                                update=":form:acAtm :form:gpDetail :form:msg :form:actionButtons :form:atmDetails :form:statusFilterPanel"
+                                                process="btnDelete"
+                                                disabled="#{atmController.editable or atmController.selectedAtmDto eq null}">
+                                                <p:confirm
+                                                    header="Confirm Delete"
+                                                    message="Are you sure you want to delete this ATM? This action cannot be undone."
+                                                    icon="fas fa-exclamation-triangle" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnToggleStatus"
+                                                value="#{atmController.toggleStatusButtonText}"
+                                                action="#{atmController.toggleAtmStatus()}"
+                                                icon="#{atmController.toggleStatusButtonIcon}"
+                                                update=":form:msg :form:acAtm :form:gpDetail :form:actionButtons :form:atmDetails :form:statusFilterPanel"
+                                                process="@this"
+                                                styleClass="#{atmController.toggleStatusButtonClass} m-1"
+                                                disabled="#{atmController.editable or atmController.selectedAtmDto eq null}"
+                                                title="Toggle ATM active/inactive status">
+                                                <p:confirm
+                                                    header="Confirm Status Change"
+                                                    message="Are you sure you want to #{atmController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this ATM: #{atmController.current.name}?"
+                                                    icon="fas fa-question-circle" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnViewAuditEvents"
+                                                value="History"
+                                                icon="fas fa-history"
+                                                action="#{atmController.navigateToAuditEvents()}"
+                                                class="m-1 ui-button-secondary"
+                                                process="btnViewAuditEvents"
+                                                ajax="false"
+                                                disabled="#{atmController.selectedAtmDto eq null}">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
 
                             </p:panel>
 
@@ -107,8 +179,8 @@
                                             <i class="fa fa-pills" /> ATM Details
                                         </span>
                                         <h:panelGroup rendered="#{atmController.current ne null and atmController.current.id ne null}"
-                                                      styleClass="badge #{atmController.current.retired ? 'badge-danger' : 'badge-success'}">
-                                            #{atmController.current.retired ? 'Inactive' : 'Active'}
+                                                      styleClass="badge #{atmController.current.inactive ? 'badge-danger' : 'badge-success'}">
+                                            #{atmController.current.inactive ? 'Inactive' : 'Active'}
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{atmController.editable}"
                                                       styleClass="badge badge-warning">
@@ -168,7 +240,7 @@
                                                 action="#{atmController.saveSelected}"
                                                 class="m-1 ui-button-warning w-25"
                                                 process="btnSave gpDetail"
-                                                update=":form:acAtm :form:gpDetail :form:msg :form:btnEdit :form:btnDelete :form:btnAdd :form:atmDetails :form:btnViewAuditEvents"
+                                                update=":form:acAtm :form:gpDetail :form:msg :form:actionButtons :form:atmDetails :form:statusFilterPanel"
                                                 disabled="#{!atmController.editable}">
                                             </p:commandButton>
                                             <p:commandButton
@@ -179,7 +251,7 @@
                                                 action="#{atmController.cancel()}"
                                                 class="m-1 ui-button-secondary w-25"
                                                 process="btnCancel"
-                                                update=":form:acAtm :form:gpDetail :form:btnEdit :form:btnDelete :form:btnAdd :form:atmDetails :form:btnViewAuditEvents"
+                                                update=":form:acAtm :form:gpDetail :form:actionButtons :form:atmDetails :form:statusFilterPanel"
                                                 disabled="#{!atmController.editable}">
                                                 <f:setPropertyActionListener target="#{atmController.selectedAtmDto}" value="#{null}" />
                                             </p:commandButton>
@@ -189,6 +261,12 @@
                             </p:panel>
                         </div>
                     </div>
+
+                    <!-- Confirmation Dialog -->
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="fas fa-check" />
+                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fas fa-times" />
+                    </p:confirmDialog>
 
                 </h:form>
             </ui:define>
