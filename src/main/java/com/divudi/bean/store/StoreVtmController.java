@@ -98,7 +98,7 @@ public class StoreVtmController implements Serializable {
             JsfUtil.addErrorMessage("Please select a VTM to edit");
             return;
         }
-        if (current.isRetired()) {
+        if (current.isInactive()) {
             JsfUtil.addWarningMessage("Editing inactive VTM '" + current.getName() + "'");
         }
         editable = true;
