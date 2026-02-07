@@ -42,10 +42,10 @@
                             <h:outputText id="deptCode" value="#{departmentController.current.code}"/>
                             <p:outputLabel for="deptStatus" value="Status: "/>
                             <h:panelGroup id="deptStatus">
-                                <h:outputText value="Active" rendered="#{not departmentController.current.retired}"
+                                <h:outputText value="Active" rendered="#{not departmentController.current.inactive}"
                                               style="background-color: #28a745; color: white; padding: 3px 8px; border-radius: 3px;"/>
-                                <h:outputText value="Inactive" rendered="#{departmentController.current.retired}"
-                                              style="background-color: #ffc107; color: black; padding: 3px 8px; border-radius: 3px;"/>
+                                <h:outputText value="Inactive" rendered="#{departmentController.current.inactive}"
+                                              style="background-color: #dc3545; color: white; padding: 3px 8px; border-radius: 3px;"/>
                             </h:panelGroup>
                             <p:outputLabel for="deptType" value="Department Type: "/>
                             <h:outputText id="deptType" value="#{departmentController.current.departmentType}"/>

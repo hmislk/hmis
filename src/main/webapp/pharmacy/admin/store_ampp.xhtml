@@ -10,12 +10,11 @@
             <ui:define name="subcontent">
                 <h:form id="form">
                     <p:growl id="msg"/>
-                    <p:focus id="selectFocus" for="acVmpp" />
+                    <p:focus id="selectFocus" for="acAmpp" />
 
                     <div class="row">
                         <div class="col-md-5">
-                            <!-- DTO-Optimized VMPP Selection -->
-                            <p:panel header="VMPP Management" class="mb-3 w-100">
+                            <p:panel header="Store AMPP Management" class="mb-3 w-100">
 
                                 <!-- Status Filter Section -->
                                 <h:panelGroup id="statusFilterPanel" layout="block" styleClass="mb-3">
@@ -24,35 +23,35 @@
                                         <p:commandButton
                                             id="btnFilterActive"
                                             value="Active"
-                                            action="#{vmppController.setFilterToActive()}"
-                                            update="acVmpp gpDetail vmppDetails statusFilterPanel actionButtons"
+                                            action="#{storeAmppController.setFilterToActive()}"
+                                            update="acAmpp gpDetail amppDetails statusFilterPanel actionButtons"
                                             process="@this"
-                                            styleClass="m-1 #{vmppController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
+                                            styleClass="m-1 #{storeAmppController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
                                             icon="fas fa-check-circle"
-                                            disabled="#{vmppController.editable}"
-                                            title="Show only active VMPPs"/>
+                                            disabled="#{storeAmppController.editable}"
+                                            title="Show only active Store AMPPs"/>
 
                                         <p:commandButton
                                             id="btnFilterInactive"
                                             value="Inactive"
-                                            action="#{vmppController.setFilterToInactive()}"
-                                            update="acVmpp gpDetail vmppDetails statusFilterPanel actionButtons"
+                                            action="#{storeAmppController.setFilterToInactive()}"
+                                            update="acAmpp gpDetail amppDetails statusFilterPanel actionButtons"
                                             process="@this"
-                                            styleClass="m-1 #{vmppController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
+                                            styleClass="m-1 #{storeAmppController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
                                             icon="fas fa-times-circle"
-                                            disabled="#{vmppController.editable}"
-                                            title="Show only inactive VMPPs"/>
+                                            disabled="#{storeAmppController.editable}"
+                                            title="Show only inactive Store AMPPs"/>
 
                                         <p:commandButton
                                             id="btnFilterAll"
                                             value="All"
-                                            action="#{vmppController.setFilterToAll()}"
-                                            update="acVmpp gpDetail vmppDetails statusFilterPanel actionButtons"
+                                            action="#{storeAmppController.setFilterToAll()}"
+                                            update="acAmpp gpDetail amppDetails statusFilterPanel actionButtons"
                                             process="@this"
-                                            styleClass="m-1 #{vmppController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
+                                            styleClass="m-1 #{storeAmppController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
                                             icon="fas fa-list"
-                                            disabled="#{vmppController.editable}"
-                                            title="Show all VMPPs"/>
+                                            disabled="#{storeAmppController.editable}"
+                                            title="Show all Store AMPPs"/>
                                     </div>
                                 </h:panelGroup>
 
@@ -61,18 +60,18 @@
                                         <p:autoComplete
                                             class="w-100 m-1"
                                             inputStyleClass="w-100"
-                                            id="acVmpp"
-                                            value="#{vmppController.selectedVmppDto}"
-                                            completeMethod="#{vmppController.completeVmppDto}"
+                                            id="acAmpp"
+                                            value="#{storeAmppController.selectedAmppDto}"
+                                            completeMethod="#{storeAmppController.completeAmppDto}"
                                             var="dto"
                                             itemLabel="#{dto.name}"
                                             itemValue="#{dto}"
-                                            converter="vmppDtoConverter"
+                                            converter="storeAmppDtoConverter"
                                             forceSelection="true"
-                                            disabled="#{vmppController.editable}"
-                                            placeholder="Type to search Pharmacy VMPPs..."
+                                            disabled="#{storeAmppController.editable}"
+                                            placeholder="Type to search Store AMPPs..."
                                             minQueryLength="2">
-                                            <p:ajax event="itemSelect" process="@this" update=":form:gpDetail :form:actionButtons :form:vmppDetails" />
+                                            <p:ajax event="itemSelect" process="@this" update=":form:gpDetail :form:actionButtons :form:amppDetails" />
                                             <p:column headerText="Name" style="padding: 3px;">
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <h:outputText value="#{dto.name}" />
@@ -86,7 +85,7 @@
                                             </p:column>
                                         </p:autoComplete>
                                         <p:outputLabel id="filterStatusLabel"
-                                                       value="Currently showing: #{vmppController.filterStatusDisplay}"
+                                                       value="Currently showing: #{storeAmppController.filterStatusDisplay}"
                                                        styleClass="text-muted small mt-1"/>
                                     </div>
                                 </div>
@@ -98,53 +97,53 @@
                                                 id="btnAdd"
                                                 value="Add New"
                                                 icon="fa fa-plus"
-                                                action="#{vmppController.prepareAdd()}"
+                                                action="#{storeAmppController.prepareAdd()}"
                                                 class="m-1 ui-button-success"
-                                                update=":form:acVmpp :form:gpDetail :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
+                                                update=":form:acAmpp :form:gpDetail :form:actionButtons :form:amppDetails :form:statusFilterPanel"
                                                 process="btnAdd"
-                                                disabled="#{vmppController.editable}">
-                                                <f:setPropertyActionListener target="#{vmppController.selectedVmppDto}" value="#{null}" />
+                                                disabled="#{storeAmppController.editable}">
+                                                <f:setPropertyActionListener target="#{storeAmppController.selectedAmppDto}" value="#{null}" />
                                             </p:commandButton>
 
                                             <p:commandButton
                                                 id="btnEdit"
                                                 value="Edit"
                                                 icon="fas fa-edit"
-                                                action="#{vmppController.edit()}"
+                                                action="#{storeAmppController.edit()}"
                                                 class="m-1 ui-button-info"
-                                                update=":form:acVmpp :form:gpDetail :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
+                                                update=":form:acAmpp :form:gpDetail :form:actionButtons :form:amppDetails :form:statusFilterPanel"
                                                 process="btnEdit"
-                                                disabled="#{vmppController.editable or vmppController.selectedVmppDto eq null}">
+                                                disabled="#{storeAmppController.editable or storeAmppController.selectedAmppDto eq null}">
                                             </p:commandButton>
 
                                             <p:commandButton
                                                 id="btnDelete"
-                                                action="#{vmppController.delete()}"
+                                                action="#{storeAmppController.delete()}"
                                                 value="Delete"
                                                 icon="fas fa-trash"
                                                 class="m-1 ui-button-danger"
-                                                update=":form:acVmpp :form:gpDetail :form:msg :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
+                                                update=":form:acAmpp :form:gpDetail :form:msg :form:actionButtons :form:amppDetails :form:statusFilterPanel"
                                                 process="btnDelete"
-                                                disabled="#{vmppController.editable or vmppController.selectedVmppDto eq null}">
+                                                disabled="#{storeAmppController.editable or storeAmppController.selectedAmppDto eq null}">
                                                 <p:confirm
                                                     header="Confirm Delete"
-                                                    message="Are you sure you want to delete this VMPP? This action cannot be undone."
+                                                    message="Are you sure you want to delete this Store AMPP? This action cannot be undone."
                                                     icon="fas fa-exclamation-triangle" />
                                             </p:commandButton>
 
                                             <p:commandButton
                                                 id="btnToggleStatus"
-                                                value="#{vmppController.toggleStatusButtonText}"
-                                                action="#{vmppController.toggleVmppStatus()}"
-                                                icon="#{vmppController.toggleStatusButtonIcon}"
-                                                update=":form:msg :form:acVmpp :form:gpDetail :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
+                                                value="#{storeAmppController.toggleStatusButtonText}"
+                                                action="#{storeAmppController.toggleAmppStatus()}"
+                                                icon="#{storeAmppController.toggleStatusButtonIcon}"
+                                                update=":form:msg :form:acAmpp :form:gpDetail :form:actionButtons :form:amppDetails :form:statusFilterPanel"
                                                 process="@this"
-                                                styleClass="#{vmppController.toggleStatusButtonClass} m-1"
-                                                disabled="#{vmppController.editable or vmppController.selectedVmppDto eq null}"
-                                                title="Toggle VMPP active/inactive status">
+                                                styleClass="#{storeAmppController.toggleStatusButtonClass} m-1"
+                                                disabled="#{storeAmppController.editable or storeAmppController.selectedAmppDto eq null}"
+                                                title="Toggle Store AMPP active/inactive status">
                                                 <p:confirm
                                                     header="Confirm Status Change"
-                                                    message="Are you sure you want to #{vmppController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this VMPP: #{vmppController.current.name}?"
+                                                    message="Are you sure you want to #{storeAmppController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this Store AMPP: #{storeAmppController.current.name}?"
                                                     icon="fas fa-question-circle" />
                                             </p:commandButton>
 
@@ -152,11 +151,11 @@
                                                 id="btnViewAuditEvents"
                                                 value="History"
                                                 icon="fas fa-history"
-                                                action="#{vmppController.navigateToVmppAuditEvents()}"
+                                                action="#{storeAmppController.navigateToAmppAuditEvents()}"
                                                 class="m-1 ui-button-secondary"
                                                 process="btnViewAuditEvents"
                                                 ajax="false"
-                                                disabled="#{vmppController.selectedVmppDto eq null}">
+                                                disabled="#{storeAmppController.selectedAmppDto eq null}">
                                             </p:commandButton>
                                         </div>
                                     </div>
@@ -167,19 +166,19 @@
                         </div>
 
                         <div class="col-md-7">
-                            <p:panel id="vmppDetails">
+                            <p:panel id="amppDetails">
                                 <f:facet name="header">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span>
-                                            <i class="fa fa-pills" /> VMPP Details
+                                            <i class="fa fa-rocket" /> Store AMPP Details
                                         </span>
-                                        <h:panelGroup rendered="#{vmppController.current ne null and vmppController.current.id ne null}"
-                                                      styleClass="badge #{vmppController.current.inactive ? 'badge-danger' : 'badge-success'}">
-                                            #{vmppController.current.inactive ? 'Inactive' : 'Active'}
+                                        <h:panelGroup rendered="#{storeAmppController.current ne null and storeAmppController.current.id ne null}"
+                                                      styleClass="badge #{storeAmppController.current.inactive ? 'badge-danger' : 'badge-success'}">
+                                            #{storeAmppController.current.inactive ? 'Inactive' : 'Active'}
                                         </h:panelGroup>
-                                        <h:panelGroup rendered="#{vmppController.editable}"
+                                        <h:panelGroup rendered="#{storeAmppController.editable}"
                                                       styleClass="badge badge-warning">
-                                            #{vmppController.current.id ne null ? 'Editing' : 'Adding New'}
+                                            #{storeAmppController.current.id ne null ? 'Editing' : 'Adding New'}
                                         </h:panelGroup>
                                     </div>
                                 </f:facet>
@@ -193,63 +192,87 @@
                                         columns="2"
                                         columnClasses="w-25 , w-75"
                                         class="w-100">
-                                        <!-- Form fields -->
-                                        <h:outputText value="Name" />
+
+                                        <h:outputText value="Pack Name" />
                                         <p:inputText
                                             autocomplete="off"
                                             id="txtName"
-                                            value="#{vmppController.current.name}"
+                                            value="#{storeAmppController.current.name}"
                                             required="true"
-                                            requiredMessage="VMPP name is required"
-                                            placeholder="Enter VMPP name"
+                                            requiredMessage="Pack Name is required"
+                                            placeholder="Enter Store AMPP pack name"
                                             class="w-100"
-                                            disabled="#{!vmppController.editable}" />
+                                            maxlength="255"
+                                            disabled="#{!storeAmppController.editable}" />
 
-                                        <h:outputText value="VMP" />
+                                        <h:outputText value="Select AMP" />
                                         <p:autoComplete
-                                            id="acVmp"
+                                            id="acAmp"
                                             class="w-100"
                                             inputStyleClass="w-100"
-                                            value="#{vmppController.current.vmp}"
+                                            value="#{storeAmppController.current.amp}"
                                             forceSelection="true"
-                                            completeMethod="#{vmpController.completeVmp}"
-                                            var="vt"
-                                            itemLabel="#{vt.name}"
-                                            itemValue="#{vt}"
-                                            placeholder="Type to search VMP..."
-                                            disabled="#{!vmppController.editable}" />
+                                            required="true"
+                                            requiredMessage="AMP selection is required"
+                                            completeMethod="#{storeAmpController.completeAmp}"
+                                            var="pta"
+                                            itemLabel="#{pta.name}"
+                                            itemValue="#{pta}"
+                                            scrollHeight="300"
+                                            placeholder="Search and select Store AMP"
+                                            disabled="#{!storeAmppController.editable}" />
 
                                         <h:outputText value="Pack Size" />
                                         <p:inputText
                                             autocomplete="off"
-                                            id="txtPackSize"
-                                            value="#{vmppController.current.dblValue}"
+                                            id="txtSize"
+                                            onfocus="this.select()"
+                                            value="#{storeAmppController.current.dblValue}"
                                             class="w-100"
-                                            placeholder="Enter pack size"
-                                            disabled="#{!vmppController.editable}">
-                                            <f:convertNumber pattern="#" />
-                                        </p:inputText>
+                                            required="true"
+                                            requiredMessage="Pack Size is required"
+                                            placeholder="Enter pack size (numeric)"
+                                            disabled="#{!storeAmppController.editable}" />
 
                                         <h:outputText value="Pack Unit" />
                                         <p:selectOneMenu
                                             id="selPackUnit"
+                                            value="#{storeAmppController.packUnit}"
                                             class="w-100"
                                             filter="true"
+                                            required="true"
+                                            requiredMessage="Pack Unit is required"
                                             filterMatchMode="contains"
-                                            value="#{vmppController.current.strengthUnit}"
-                                            disabled="#{!vmppController.editable}">
-                                            <f:selectItem itemLabel="Select Pack Unit" />
-                                            <f:selectItems value="#{measurementUnitController.items}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
+                                            disabled="#{!storeAmppController.editable}">
+                                            <f:selectItem
+                                                itemLabel="-- Select Pack Unit --"
+                                                itemValue="#{null}"/>
+                                            <f:selectItems
+                                                value="#{measurementUnitController.items}"
+                                                var="s"
+                                                itemLabel="#{s.name}"
+                                                itemValue="#{s}" />
                                         </p:selectOneMenu>
 
                                         <h:outputText value="Description" />
                                         <h:inputTextarea
-                                            id="txtDes"
-                                            value="#{vmppController.current.descreption}"
+                                            id="txtDescription"
+                                            value="#{storeAmppController.current.comments}"
                                             required="false"
                                             class="form-control"
                                             rows="3"
-                                            disabled="#{!vmppController.editable}" />
+                                            placeholder="Enter description or comments"
+                                            maxlength="1000"
+                                            disabled="#{!storeAmppController.editable}" />
+
+                                        <h:outputText value="Allow Fractions" />
+                                        <p:selectBooleanButton
+                                            id="chkAllowFractions"
+                                            value="#{storeAmppController.current.allowFractions}"
+                                            onLabel="Yes"
+                                            offLabel="No"
+                                            styleClass="w-100"
+                                            disabled="#{!storeAmppController.editable}" />
 
                                     </p:panelGrid>
 
@@ -259,23 +282,23 @@
                                                 id="btnSave"
                                                 value="Save"
                                                 icon="fas fa-save"
-                                                action="#{vmppController.saveSelected}"
+                                                action="#{storeAmppController.saveSelected}"
                                                 class="m-1 ui-button-warning w-25"
                                                 process="btnSave gpDetail"
-                                                update=":form:acVmpp :form:gpDetail :form:msg :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
-                                                disabled="#{!vmppController.editable}">
+                                                update=":form:acAmpp :form:gpDetail :form:msg :form:actionButtons :form:amppDetails :form:statusFilterPanel"
+                                                disabled="#{!storeAmppController.editable}">
                                             </p:commandButton>
                                             <p:commandButton
                                                 immediate="true"
                                                 id="btnCancel"
                                                 value="Cancel"
                                                 icon="fas fa-times"
-                                                action="#{vmppController.cancel()}"
+                                                action="#{storeAmppController.cancel()}"
                                                 class="m-1 ui-button-secondary w-25"
                                                 process="btnCancel"
-                                                update=":form:acVmpp :form:gpDetail :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
-                                                disabled="#{!vmppController.editable}">
-                                                <f:setPropertyActionListener target="#{vmppController.selectedVmppDto}" value="#{null}" />
+                                                update=":form:acAmpp :form:gpDetail :form:actionButtons :form:amppDetails :form:statusFilterPanel"
+                                                disabled="#{!storeAmppController.editable}">
+                                                <f:setPropertyActionListener target="#{storeAmppController.selectedAmppDto}" value="#{null}" />
                                             </p:commandButton>
                                         </div>
                                     </h:panelGroup>

@@ -14,8 +14,8 @@
 
                     <div class="row">
                         <div class="col-md-5">
-                            <!-- DTO-Optimized VMPP Selection -->
-                            <p:panel header="VMPP Management" class="mb-3 w-100">
+                            <!-- DTO-Optimized Store VMPP Selection -->
+                            <p:panel header="Store VMPP Management" class="mb-3 w-100">
 
                                 <!-- Status Filter Section -->
                                 <h:panelGroup id="statusFilterPanel" layout="block" styleClass="mb-3">
@@ -24,35 +24,35 @@
                                         <p:commandButton
                                             id="btnFilterActive"
                                             value="Active"
-                                            action="#{vmppController.setFilterToActive()}"
+                                            action="#{storeVmppController.setFilterToActive()}"
                                             update="acVmpp gpDetail vmppDetails statusFilterPanel actionButtons"
                                             process="@this"
-                                            styleClass="m-1 #{vmppController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
+                                            styleClass="m-1 #{storeVmppController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
                                             icon="fas fa-check-circle"
-                                            disabled="#{vmppController.editable}"
-                                            title="Show only active VMPPs"/>
+                                            disabled="#{storeVmppController.editable}"
+                                            title="Show only active Store VMPPs"/>
 
                                         <p:commandButton
                                             id="btnFilterInactive"
                                             value="Inactive"
-                                            action="#{vmppController.setFilterToInactive()}"
+                                            action="#{storeVmppController.setFilterToInactive()}"
                                             update="acVmpp gpDetail vmppDetails statusFilterPanel actionButtons"
                                             process="@this"
-                                            styleClass="m-1 #{vmppController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
+                                            styleClass="m-1 #{storeVmppController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
                                             icon="fas fa-times-circle"
-                                            disabled="#{vmppController.editable}"
-                                            title="Show only inactive VMPPs"/>
+                                            disabled="#{storeVmppController.editable}"
+                                            title="Show only inactive Store VMPPs"/>
 
                                         <p:commandButton
                                             id="btnFilterAll"
                                             value="All"
-                                            action="#{vmppController.setFilterToAll()}"
+                                            action="#{storeVmppController.setFilterToAll()}"
                                             update="acVmpp gpDetail vmppDetails statusFilterPanel actionButtons"
                                             process="@this"
-                                            styleClass="m-1 #{vmppController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
+                                            styleClass="m-1 #{storeVmppController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
                                             icon="fas fa-list"
-                                            disabled="#{vmppController.editable}"
-                                            title="Show all VMPPs"/>
+                                            disabled="#{storeVmppController.editable}"
+                                            title="Show all Store VMPPs"/>
                                     </div>
                                 </h:panelGroup>
 
@@ -62,15 +62,15 @@
                                             class="w-100 m-1"
                                             inputStyleClass="w-100"
                                             id="acVmpp"
-                                            value="#{vmppController.selectedVmppDto}"
-                                            completeMethod="#{vmppController.completeVmppDto}"
+                                            value="#{storeVmppController.selectedVmppDto}"
+                                            completeMethod="#{storeVmppController.completeVmppDto}"
                                             var="dto"
                                             itemLabel="#{dto.name}"
                                             itemValue="#{dto}"
-                                            converter="vmppDtoConverter"
+                                            converter="storeVmppDtoConverter"
                                             forceSelection="true"
-                                            disabled="#{vmppController.editable}"
-                                            placeholder="Type to search Pharmacy VMPPs..."
+                                            disabled="#{storeVmppController.editable}"
+                                            placeholder="Type to search Store VMPPs..."
                                             minQueryLength="2">
                                             <p:ajax event="itemSelect" process="@this" update=":form:gpDetail :form:actionButtons :form:vmppDetails" />
                                             <p:column headerText="Name" style="padding: 3px;">
@@ -86,7 +86,7 @@
                                             </p:column>
                                         </p:autoComplete>
                                         <p:outputLabel id="filterStatusLabel"
-                                                       value="Currently showing: #{vmppController.filterStatusDisplay}"
+                                                       value="Currently showing: #{storeVmppController.filterStatusDisplay}"
                                                        styleClass="text-muted small mt-1"/>
                                     </div>
                                 </div>
@@ -98,53 +98,53 @@
                                                 id="btnAdd"
                                                 value="Add New"
                                                 icon="fa fa-plus"
-                                                action="#{vmppController.prepareAdd()}"
+                                                action="#{storeVmppController.prepareAdd()}"
                                                 class="m-1 ui-button-success"
                                                 update=":form:acVmpp :form:gpDetail :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
                                                 process="btnAdd"
-                                                disabled="#{vmppController.editable}">
-                                                <f:setPropertyActionListener target="#{vmppController.selectedVmppDto}" value="#{null}" />
+                                                disabled="#{storeVmppController.editable}">
+                                                <f:setPropertyActionListener target="#{storeVmppController.selectedVmppDto}" value="#{null}" />
                                             </p:commandButton>
 
                                             <p:commandButton
                                                 id="btnEdit"
                                                 value="Edit"
                                                 icon="fas fa-edit"
-                                                action="#{vmppController.edit()}"
+                                                action="#{storeVmppController.edit()}"
                                                 class="m-1 ui-button-info"
                                                 update=":form:acVmpp :form:gpDetail :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
                                                 process="btnEdit"
-                                                disabled="#{vmppController.editable or vmppController.selectedVmppDto eq null}">
+                                                disabled="#{storeVmppController.editable or storeVmppController.selectedVmppDto eq null}">
                                             </p:commandButton>
 
                                             <p:commandButton
                                                 id="btnDelete"
-                                                action="#{vmppController.delete()}"
+                                                action="#{storeVmppController.delete()}"
                                                 value="Delete"
                                                 icon="fas fa-trash"
                                                 class="m-1 ui-button-danger"
                                                 update=":form:acVmpp :form:gpDetail :form:msg :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
                                                 process="btnDelete"
-                                                disabled="#{vmppController.editable or vmppController.selectedVmppDto eq null}">
+                                                disabled="#{storeVmppController.editable or storeVmppController.selectedVmppDto eq null}">
                                                 <p:confirm
                                                     header="Confirm Delete"
-                                                    message="Are you sure you want to delete this VMPP? This action cannot be undone."
+                                                    message="Are you sure you want to delete this Store VMPP? This action cannot be undone."
                                                     icon="fas fa-exclamation-triangle" />
                                             </p:commandButton>
 
                                             <p:commandButton
                                                 id="btnToggleStatus"
-                                                value="#{vmppController.toggleStatusButtonText}"
-                                                action="#{vmppController.toggleVmppStatus()}"
-                                                icon="#{vmppController.toggleStatusButtonIcon}"
+                                                value="#{storeVmppController.toggleStatusButtonText}"
+                                                action="#{storeVmppController.toggleVmppStatus()}"
+                                                icon="#{storeVmppController.toggleStatusButtonIcon}"
                                                 update=":form:msg :form:acVmpp :form:gpDetail :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
                                                 process="@this"
-                                                styleClass="#{vmppController.toggleStatusButtonClass} m-1"
-                                                disabled="#{vmppController.editable or vmppController.selectedVmppDto eq null}"
-                                                title="Toggle VMPP active/inactive status">
+                                                styleClass="#{storeVmppController.toggleStatusButtonClass} m-1"
+                                                disabled="#{storeVmppController.editable or storeVmppController.selectedVmppDto eq null}"
+                                                title="Toggle Store VMPP active/inactive status">
                                                 <p:confirm
                                                     header="Confirm Status Change"
-                                                    message="Are you sure you want to #{vmppController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this VMPP: #{vmppController.current.name}?"
+                                                    message="Are you sure you want to #{storeVmppController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this Store VMPP: #{storeVmppController.current.name}?"
                                                     icon="fas fa-question-circle" />
                                             </p:commandButton>
 
@@ -152,11 +152,11 @@
                                                 id="btnViewAuditEvents"
                                                 value="History"
                                                 icon="fas fa-history"
-                                                action="#{vmppController.navigateToVmppAuditEvents()}"
+                                                action="#{storeVmppController.navigateToVmppAuditEvents()}"
                                                 class="m-1 ui-button-secondary"
                                                 process="btnViewAuditEvents"
                                                 ajax="false"
-                                                disabled="#{vmppController.selectedVmppDto eq null}">
+                                                disabled="#{storeVmppController.selectedVmppDto eq null}">
                                             </p:commandButton>
                                         </div>
                                     </div>
@@ -171,15 +171,15 @@
                                 <f:facet name="header">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span>
-                                            <i class="fa fa-pills" /> VMPP Details
+                                            <i class="fa fa-pills" /> Store VMPP Details
                                         </span>
-                                        <h:panelGroup rendered="#{vmppController.current ne null and vmppController.current.id ne null}"
-                                                      styleClass="badge #{vmppController.current.inactive ? 'badge-danger' : 'badge-success'}">
-                                            #{vmppController.current.inactive ? 'Inactive' : 'Active'}
+                                        <h:panelGroup rendered="#{storeVmppController.current ne null and storeVmppController.current.id ne null}"
+                                                      styleClass="badge #{storeVmppController.current.inactive ? 'badge-danger' : 'badge-success'}">
+                                            #{storeVmppController.current.inactive ? 'Inactive' : 'Active'}
                                         </h:panelGroup>
-                                        <h:panelGroup rendered="#{vmppController.editable}"
+                                        <h:panelGroup rendered="#{storeVmppController.editable}"
                                                       styleClass="badge badge-warning">
-                                            #{vmppController.current.id ne null ? 'Editing' : 'Adding New'}
+                                            #{storeVmppController.current.id ne null ? 'Editing' : 'Adding New'}
                                         </h:panelGroup>
                                     </div>
                                 </f:facet>
@@ -198,35 +198,35 @@
                                         <p:inputText
                                             autocomplete="off"
                                             id="txtName"
-                                            value="#{vmppController.current.name}"
+                                            value="#{storeVmppController.current.name}"
                                             required="true"
-                                            requiredMessage="VMPP name is required"
-                                            placeholder="Enter VMPP name"
+                                            requiredMessage="Store VMPP name is required"
+                                            placeholder="Enter Store VMPP name"
                                             class="w-100"
-                                            disabled="#{!vmppController.editable}" />
+                                            disabled="#{!storeVmppController.editable}" />
 
                                         <h:outputText value="VMP" />
                                         <p:autoComplete
                                             id="acVmp"
                                             class="w-100"
                                             inputStyleClass="w-100"
-                                            value="#{vmppController.current.vmp}"
+                                            value="#{storeVmppController.current.vmp}"
                                             forceSelection="true"
-                                            completeMethod="#{vmpController.completeVmp}"
+                                            completeMethod="#{storeVmpController.completeVmp}"
                                             var="vt"
                                             itemLabel="#{vt.name}"
                                             itemValue="#{vt}"
-                                            placeholder="Type to search VMP..."
-                                            disabled="#{!vmppController.editable}" />
+                                            placeholder="Type to search Store VMP..."
+                                            disabled="#{!storeVmppController.editable}" />
 
                                         <h:outputText value="Pack Size" />
                                         <p:inputText
                                             autocomplete="off"
                                             id="txtPackSize"
-                                            value="#{vmppController.current.dblValue}"
+                                            value="#{storeVmppController.current.dblValue}"
                                             class="w-100"
                                             placeholder="Enter pack size"
-                                            disabled="#{!vmppController.editable}">
+                                            disabled="#{!storeVmppController.editable}">
                                             <f:convertNumber pattern="#" />
                                         </p:inputText>
 
@@ -236,8 +236,8 @@
                                             class="w-100"
                                             filter="true"
                                             filterMatchMode="contains"
-                                            value="#{vmppController.current.strengthUnit}"
-                                            disabled="#{!vmppController.editable}">
+                                            value="#{storeVmppController.current.strengthUnit}"
+                                            disabled="#{!storeVmppController.editable}">
                                             <f:selectItem itemLabel="Select Pack Unit" />
                                             <f:selectItems value="#{measurementUnitController.items}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
                                         </p:selectOneMenu>
@@ -245,11 +245,11 @@
                                         <h:outputText value="Description" />
                                         <h:inputTextarea
                                             id="txtDes"
-                                            value="#{vmppController.current.descreption}"
+                                            value="#{storeVmppController.current.descreption}"
                                             required="false"
                                             class="form-control"
                                             rows="3"
-                                            disabled="#{!vmppController.editable}" />
+                                            disabled="#{!storeVmppController.editable}" />
 
                                     </p:panelGrid>
 
@@ -259,23 +259,23 @@
                                                 id="btnSave"
                                                 value="Save"
                                                 icon="fas fa-save"
-                                                action="#{vmppController.saveSelected}"
+                                                action="#{storeVmppController.save}"
                                                 class="m-1 ui-button-warning w-25"
                                                 process="btnSave gpDetail"
                                                 update=":form:acVmpp :form:gpDetail :form:msg :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
-                                                disabled="#{!vmppController.editable}">
+                                                disabled="#{!storeVmppController.editable}">
                                             </p:commandButton>
                                             <p:commandButton
                                                 immediate="true"
                                                 id="btnCancel"
                                                 value="Cancel"
                                                 icon="fas fa-times"
-                                                action="#{vmppController.cancel()}"
+                                                action="#{storeVmppController.cancel()}"
                                                 class="m-1 ui-button-secondary w-25"
                                                 process="btnCancel"
                                                 update=":form:acVmpp :form:gpDetail :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
-                                                disabled="#{!vmppController.editable}">
-                                                <f:setPropertyActionListener target="#{vmppController.selectedVmppDto}" value="#{null}" />
+                                                disabled="#{!storeVmppController.editable}">
+                                                <f:setPropertyActionListener target="#{storeVmppController.selectedVmppDto}" value="#{null}" />
                                             </p:commandButton>
                                         </div>
                                     </h:panelGroup>

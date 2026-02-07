@@ -1477,6 +1477,22 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/admin/vmpp_dto?faces-redirect=true";
     }
 
+    public String navigateToStoreVmpp() {
+        return "/pharmacy/admin/store_vmpp?faces-redirect=true";
+    }
+
+    public String navigateToLabVmpp() {
+        return "/pharmacy/admin/lab_vmpp?faces-redirect=true";
+    }
+
+    public String navigateToStoreAmpp() {
+        return "/pharmacy/admin/store_ampp?faces-redirect=true";
+    }
+
+    public String navigateToLabAmpp() {
+        return "/pharmacy/admin/lab_ampp?faces-redirect=true";
+    }
+
     public String navigateToDosageFormsMultiple() {
         return "/pharmacy/admin/dosage_forms_multiple?faces-redirect=true";
     }

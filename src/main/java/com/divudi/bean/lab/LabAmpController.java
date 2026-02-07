@@ -554,6 +554,21 @@ public class LabAmpController implements Serializable {
         this.items = items;
     }
 
+    public List<Amp> completeAmp(String qry) {
+        List<Amp> suggestions;
+        if (qry == null || qry.trim().isEmpty()) {
+            suggestions = new ArrayList<>();
+        } else {
+            String jpql = "SELECT c FROM Amp c WHERE c.retired = false AND LOWER(c.name) LIKE :query "
+                    + "AND c.departmentType=:dep ORDER BY c.name";
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("query", "%" + qry.trim().toLowerCase() + "%");
+            parameters.put("dep", DepartmentType.Lab);
+            suggestions = getFacade().findByJpqlWithoutCache(jpql, parameters);
+        }
+        return suggestions;
+    }
+
     public List<Amp> findItems() {
         String jpql = "select a "
                 + " from Amp a "
