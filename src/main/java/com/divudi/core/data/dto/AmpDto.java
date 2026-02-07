@@ -17,7 +17,7 @@ public class AmpDto implements Serializable {
     private String name;
     private String code;
     private String barcode;
-    private Boolean retired;
+    private Boolean inactive;
 
     // VMP relationship fields
     private Long vmpId;
@@ -47,14 +47,14 @@ public class AmpDto implements Serializable {
      * @param name AMP name
      * @param code AMP code
      * @param barcode AMP barcode
-     * @param retired Whether AMP is retired/inactive
+     * @param inactive Whether AMP is inactive
      */
-    public AmpDto(Long id, String name, String code, String barcode, Boolean retired) {
+    public AmpDto(Long id, String name, String code, String barcode, Boolean inactive) {
         this.id = id;
         this.name = name;
         this.code = code;
         this.barcode = barcode;
-        this.retired = retired;
+        this.inactive = inactive;
     }
 
     /**
@@ -65,13 +65,13 @@ public class AmpDto implements Serializable {
      * @param name AMP name
      * @param code AMP code
      * @param barcode AMP barcode
-     * @param retired Whether AMP is retired/inactive
+     * @param inactive Whether AMP is inactive
      * @param vmpId VMP ID
      * @param vmpName VMP name
      */
-    public AmpDto(Long id, String name, String code, String barcode, Boolean retired,
+    public AmpDto(Long id, String name, String code, String barcode, Boolean inactive,
                   Long vmpId, String vmpName) {
-        this(id, name, code, barcode, retired);
+        this(id, name, code, barcode, inactive);
         this.vmpId = vmpId;
         this.vmpName = vmpName;
     }
@@ -84,15 +84,15 @@ public class AmpDto implements Serializable {
      * @param name AMP name
      * @param code AMP code
      * @param barcode AMP barcode
-     * @param retired Whether AMP is retired/inactive
+     * @param inactive Whether AMP is inactive
      * @param vmpId VMP ID
      * @param vmpName VMP name
      * @param categoryId Category ID
      * @param categoryName Category name
      */
-    public AmpDto(Long id, String name, String code, String barcode, Boolean retired,
+    public AmpDto(Long id, String name, String code, String barcode, Boolean inactive,
                   Long vmpId, String vmpName, Long categoryId, String categoryName) {
-        this(id, name, code, barcode, retired, vmpId, vmpName);
+        this(id, name, code, barcode, inactive, vmpId, vmpName);
         this.categoryId = categoryId;
         this.categoryName = categoryName;
     }
@@ -105,16 +105,16 @@ public class AmpDto implements Serializable {
      * @param name AMP name
      * @param code AMP code
      * @param barcode AMP barcode
-     * @param retired Whether AMP is retired/inactive
+     * @param inactive Whether AMP is inactive
      * @param discountAllowed Whether discount is allowed
      * @param allowFractions Whether fractions are allowed
      * @param consumptionAllowed Whether consumption is allowed
      * @param refundsAllowed Whether refunds are allowed
      */
-    public AmpDto(Long id, String name, String code, String barcode, Boolean retired,
+    public AmpDto(Long id, String name, String code, String barcode, Boolean inactive,
                   Boolean discountAllowed, Boolean allowFractions,
                   Boolean consumptionAllowed, Boolean refundsAllowed) {
-        this(id, name, code, barcode, retired);
+        this(id, name, code, barcode, inactive);
         this.discountAllowed = discountAllowed;
         this.allowFractions = allowFractions;
         this.consumptionAllowed = consumptionAllowed;
@@ -128,7 +128,7 @@ public class AmpDto implements Serializable {
      * @return "Active" or "Inactive"
      */
     public String getStatusDisplay() {
-        return (retired != null && retired) ? "Inactive" : "Active";
+        return (inactive != null && inactive) ? "Inactive" : "Active";
     }
 
     /**
@@ -136,7 +136,7 @@ public class AmpDto implements Serializable {
      * @return CSS class for status styling
      */
     public String getStatusCssClass() {
-        return (retired != null && retired) ? "badge-danger" : "badge-success";
+        return (inactive != null && inactive) ? "badge-danger" : "badge-success";
     }
 
     /**
@@ -176,15 +176,15 @@ public class AmpDto implements Serializable {
      * @return true if active, false if inactive/retired
      */
     public boolean isActive() {
-        return retired == null || !retired;
+        return inactive == null || !inactive;
     }
 
     /**
-     * Check if AMP is retired/inactive
-     * @return true if retired, false if active
+     * Check if AMP is inactive
+     * @return true if inactive, false if active
      */
-    public boolean isRetired() {
-        return retired != null && retired;
+    public boolean isInactive() {
+        return inactive != null && inactive;
     }
 
     // Core getters and setters
