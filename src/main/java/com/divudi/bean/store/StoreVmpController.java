@@ -66,6 +66,7 @@ public class StoreVmpController implements Serializable {
     private List<AuditEvent> vmpAuditEvents;
 
     private boolean editable;
+    private Map<String, Object> beforeEditData;
 
     // Filter state for active/inactive VMPs
     private String filterStatus = "active";
@@ -89,6 +90,7 @@ public class StoreVmpController implements Serializable {
         current.setDepartmentType(DepartmentType.Store);
         selectedVmpDto = null;
         vmpAuditEvents = null;
+        beforeEditData = null;
         editable = true;
     }
 
@@ -103,6 +105,7 @@ public class StoreVmpController implements Serializable {
         if (current.getId() != null) {
             selectedVmpDto = createVmpDto(current);
         }
+        beforeEditData = createAuditMap(current);
         editable = true;
     }
 
@@ -110,6 +113,7 @@ public class StoreVmpController implements Serializable {
         current = null;
         selectedVmpDto = null;
         vmpAuditEvents = null;
+        beforeEditData = null;
         editable = false;
     }
 
@@ -122,14 +126,11 @@ public class StoreVmpController implements Serializable {
         try {
             if (getCurrent().getId() != null && getCurrent().getId() > 0) {
                 // UPDATE
-                Vmp beforeUpdate = getFacade().find(getCurrent().getId());
-                Map<String, Object> beforeData = createAuditMap(beforeUpdate);
-
                 getCurrent().setDepartmentType(DepartmentType.Store);
                 getFacade().edit(getCurrent());
 
                 Map<String, Object> afterData = createAuditMap(getCurrent());
-                auditService.logAudit(beforeData, afterData,
+                auditService.logAudit(beforeEditData, afterData,
                         getSessionController().getLoggedUser(),
                         "StoreVmp", "Update Store VMP", getCurrent().getId());
 

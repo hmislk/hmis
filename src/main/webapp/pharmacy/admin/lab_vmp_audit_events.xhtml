@@ -44,20 +44,24 @@
                             <p:outputLabel for="vmpDept" value="Department: "/>
                             <h:outputText id="vmpDept" value="#{labVmpController.current.departmentType}"/>
                             <p:outputLabel for="vmpVtm" value="Generic Name: "/>
-                            <h:outputText id="vmpVtm" value="#{labVmpController.current.vtm.name}"
-                                          rendered="#{labVmpController.current.vtm ne null}"/>
-                            <h:outputText value="Not specified"
-                                          rendered="#{labVmpController.current.vtm eq null}"
-                                          styleClass="text-muted"/>
+                            <h:panelGroup id="vmpVtm">
+                                <h:outputText value="#{labVmpController.current.vtm.name}"
+                                              rendered="#{labVmpController.current.vtm ne null}"/>
+                                <h:outputText value="Not specified"
+                                              rendered="#{labVmpController.current.vtm eq null}"
+                                              styleClass="text-muted"/>
+                            </h:panelGroup>
                             <p:outputLabel for="vmpDosageForm" value="Dosage Form: "/>
-                            <h:outputText id="vmpDosageForm" value="#{labVmpController.current.dosageForm.name}"
-                                          rendered="#{labVmpController.current.dosageForm ne null}"/>
-                            <h:outputText value="Not specified"
-                                          rendered="#{labVmpController.current.dosageForm eq null}"
-                                          styleClass="text-muted"/>
+                            <h:panelGroup id="vmpDosageForm">
+                                <h:outputText value="#{labVmpController.current.dosageForm.name}"
+                                              rendered="#{labVmpController.current.dosageForm ne null}"/>
+                                <h:outputText value="Not specified"
+                                              rendered="#{labVmpController.current.dosageForm eq null}"
+                                              styleClass="text-muted"/>
+                            </h:panelGroup>
                             <p:outputLabel for="totalEvents" value="Total Audit Events: "/>
                             <p:badge id="totalEvents"
-                                     value="#{labVmpController.vmpAuditEvents.size()}"
+                                     value="#{empty labVmpController.vmpAuditEvents ? 0 : labVmpController.vmpAuditEvents.size()}"
                                      severity="info"/>
                         </p:panelGrid>
                         <p:dataTable

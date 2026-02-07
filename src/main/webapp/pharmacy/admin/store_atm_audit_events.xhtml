@@ -38,11 +38,13 @@
                             <p:outputLabel for="atmCode" value="Code: "/>
                             <h:outputText id="atmCode" value="#{storeAtmController.current.code}"/>
                             <p:outputLabel for="atmVtm" value="VTM: "/>
-                            <h:outputText id="atmVtm" value="#{storeAtmController.current.vtm.name}"
-                                          rendered="#{storeAtmController.current.vtm ne null}"/>
-                            <h:outputText value="Not specified"
-                                          rendered="#{storeAtmController.current.vtm eq null}"
-                                          styleClass="text-muted"/>
+                            <h:panelGroup id="atmVtm">
+                                <h:outputText value="#{storeAtmController.current.vtm.name}"
+                                              rendered="#{storeAtmController.current.vtm ne null}"/>
+                                <h:outputText value="Not specified"
+                                              rendered="#{storeAtmController.current.vtm eq null}"
+                                              styleClass="text-muted"/>
+                            </h:panelGroup>
                             <p:outputLabel for="atmStatus" value="Status: "/>
                             <p:badge id="atmStatus"
                                      value="#{storeAtmController.current.statusDisplay}"
@@ -51,7 +53,7 @@
                             <h:outputText id="atmDept" value="#{storeAtmController.current.departmentType}"/>
                             <p:outputLabel for="totalEvents" value="Total Audit Events: "/>
                             <p:badge id="totalEvents"
-                                     value="#{storeAtmController.atmAuditEvents.size()}"
+                                     value="#{empty storeAtmController.atmAuditEvents ? 0 : storeAtmController.atmAuditEvents.size()}"
                                      severity="info"/>
                         </p:panelGrid>
                         <p:dataTable

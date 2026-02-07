@@ -38,11 +38,13 @@
                             <p:outputLabel for="atmCode" value="Code: "/>
                             <h:outputText id="atmCode" value="#{labAtmController.current.code}"/>
                             <p:outputLabel for="atmVtm" value="VTM: "/>
-                            <h:outputText id="atmVtm" value="#{labAtmController.current.vtm.name}"
-                                          rendered="#{labAtmController.current.vtm ne null}"/>
-                            <h:outputText value="Not specified"
-                                          rendered="#{labAtmController.current.vtm eq null}"
-                                          styleClass="text-muted"/>
+                            <h:panelGroup id="atmVtm">
+                                <h:outputText value="#{labAtmController.current.vtm.name}"
+                                              rendered="#{labAtmController.current.vtm ne null}"/>
+                                <h:outputText value="Not specified"
+                                              rendered="#{labAtmController.current.vtm eq null}"
+                                              styleClass="text-muted"/>
+                            </h:panelGroup>
                             <p:outputLabel for="atmStatus" value="Status: "/>
                             <p:badge id="atmStatus"
                                      value="#{labAtmController.current.retired ? 'Retired' : 'Active'}"
@@ -51,7 +53,7 @@
                             <h:outputText id="atmDept" value="#{labAtmController.current.departmentType}"/>
                             <p:outputLabel for="totalEvents" value="Total Audit Events: "/>
                             <p:badge id="totalEvents"
-                                     value="#{labAtmController.atmAuditEvents.size()}"
+                                     value="#{empty labAtmController.atmAuditEvents ? 0 : labAtmController.atmAuditEvents.size()}"
                                      severity="info"/>
                         </p:panelGrid>
                         <p:dataTable

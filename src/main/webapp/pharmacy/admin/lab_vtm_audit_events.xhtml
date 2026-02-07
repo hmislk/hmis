@@ -45,7 +45,7 @@
                             <h:outputText id="vtmDept" value="#{labVtmController.current.departmentType}"/>
                             <p:outputLabel for="totalEvents" value="Total Audit Events: "/>
                             <p:badge id="totalEvents"
-                                     value="#{labVtmController.vtmAuditEvents.size()}"
+                                     value="#{empty labVtmController.vtmAuditEvents ? 0 : labVtmController.vtmAuditEvents.size()}"
                                      severity="info"/>
                         </p:panelGrid>
                         <p:dataTable

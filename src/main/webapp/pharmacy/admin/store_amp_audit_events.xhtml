@@ -48,18 +48,20 @@
                                      severity="#{storeAmpController.current.inactive ? 'danger' : 'success'}"/>
 
                             <p:outputLabel for="ampVmp" value="VMP: "/>
-                            <h:outputText id="ampVmp" value="#{storeAmpController.current.vmp.name}"
-                                          rendered="#{storeAmpController.current.vmp ne null}"/>
-                            <h:outputText value="Not specified"
-                                          rendered="#{storeAmpController.current.vmp eq null}"
-                                          styleClass="text-muted"/>
+                            <h:panelGroup id="ampVmp">
+                                <h:outputText value="#{storeAmpController.current.vmp.name}"
+                                              rendered="#{storeAmpController.current.vmp ne null}"/>
+                                <h:outputText value="Not specified"
+                                              rendered="#{storeAmpController.current.vmp eq null}"
+                                              styleClass="text-muted"/>
+                            </h:panelGroup>
 
                             <p:outputLabel for="ampDept" value="Department: "/>
                             <h:outputText id="ampDept" value="#{storeAmpController.current.departmentType}"/>
 
                             <p:outputLabel for="totalEvents" value="Total Audit Events: "/>
                             <p:badge id="totalEvents"
-                                     value="#{storeAmpController.ampAuditEvents.size()}"
+                                     value="#{empty storeAmpController.ampAuditEvents ? 0 : storeAmpController.ampAuditEvents.size()}"
                                      severity="info"/>
                         </p:panelGrid>
 
