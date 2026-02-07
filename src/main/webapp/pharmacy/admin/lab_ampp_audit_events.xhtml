@@ -8,6 +8,9 @@
     <h:body>
         <ui:composition template="/pharmacy/admin/index.xhtml">
             <ui:define name="subcontent">
+                <f:metadata>
+                    <f:viewAction action="#{labAmppController.fillAmppAuditEvents}" onPostback="false" />
+                </f:metadata>
                 <h:form id="form">
                     <p:growl id="msg"/>
                     <p:panel header="Lab AMPP Information" styleClass="mb-3">
@@ -106,9 +109,6 @@
 
                         </p:dataTable>
                     </p:panel>
-
-                    <!-- Load audit events when page loads -->
-                    <f:event type="preRenderView" listener="#{labAmppController.fillAmppAuditEvents}" />
 
                 </h:form>
 

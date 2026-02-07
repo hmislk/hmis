@@ -224,19 +224,25 @@
                                             </p:selectOneMenu>
 
                                             <h:outputText value="Institution" />
-                                            <p:autoComplete
-                                                id="acIns"
-                                                class="w-100"
-                                                inputStyleClass="w-100"
-                                                completeMethod="#{institutionController.completeCompany}"
-                                                var="pta"
-                                                itemLabel="#{pta.name}"
-                                                itemValue="#{pta}"
-                                                forceSelection="true"
-                                                value="#{departmentController.current.institution}"
-                                                disabled="#{!departmentController.editable}">
-                                                <p:ajax process="acIns" update="cmbSupDept"/>
-                                            </p:autoComplete>
+                                            <h:panelGroup id="pnlInstitution" layout="block">
+                                                <p:autoComplete
+                                                    id="acIns"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    completeMethod="#{institutionController.completeActiveCompany}"
+                                                    var="pta"
+                                                    itemLabel="#{pta.name}"
+                                                    itemValue="#{pta}"
+                                                    forceSelection="true"
+                                                    value="#{departmentController.current.institution}"
+                                                    disabled="#{!departmentController.editable}">
+                                                    <p:ajax process="acIns" update="cmbSupDept pnlInstitution"/>
+                                                </p:autoComplete>
+                                                <h:panelGroup rendered="#{departmentController.current.institution ne null and departmentController.current.institution.id ne null}"
+                                                              styleClass="badge #{departmentController.current.institution.inactive ? 'badge-danger' : 'badge-success'} mt-1">
+                                                    #{departmentController.current.institution.inactive ? 'Inactive' : 'Active'}
+                                                </h:panelGroup>
+                                            </h:panelGroup>
 
                                             <h:outputText value="Super Department" />
                                             <h:panelGroup id="cmbSupDept">
@@ -251,18 +257,25 @@
                                             </h:panelGroup>
 
                                             <h:outputText value="Site" />
-                                            <p:autoComplete
-                                                id="acSite"
-                                                class="w-100"
-                                                inputStyleClass="w-100"
-                                                completeMethod="#{institutionController.completeSite}"
-                                                var="site"
-                                                itemLabel="#{site.name}"
-                                                itemValue="#{site}"
-                                                forceSelection="true"
-                                                value="#{departmentController.current.site}"
-                                                disabled="#{!departmentController.editable}">
-                                            </p:autoComplete>
+                                            <h:panelGroup id="pnlSite" layout="block">
+                                                <p:autoComplete
+                                                    id="acSite"
+                                                    class="w-100"
+                                                    inputStyleClass="w-100"
+                                                    completeMethod="#{institutionController.completeActiveSite}"
+                                                    var="site"
+                                                    itemLabel="#{site.name}"
+                                                    itemValue="#{site}"
+                                                    forceSelection="true"
+                                                    value="#{departmentController.current.site}"
+                                                    disabled="#{!departmentController.editable}">
+                                                    <p:ajax process="acSite" update="pnlSite"/>
+                                                </p:autoComplete>
+                                                <h:panelGroup rendered="#{departmentController.current.site ne null and departmentController.current.site.id ne null}"
+                                                              styleClass="badge #{departmentController.current.site.inactive ? 'badge-danger' : 'badge-success'} mt-1">
+                                                    #{departmentController.current.site.inactive ? 'Inactive' : 'Active'}
+                                                </h:panelGroup>
+                                            </h:panelGroup>
                                         </h:panelGrid>
                                     </p:tab>
 
@@ -305,13 +318,6 @@
                                             <p:inputText class="w-100" autocomplete="off"
                                                          value="#{departmentController.current.pharmacyMarginFromPurchaseRate}"
                                                          disabled="#{!departmentController.editable}" />
-                                        </h:panelGrid>
-                                    </p:tab>
-
-                                    <p:tab title="Editing Details" class="w-100">
-                                        <h:panelGrid columns="2" class="w-100">
-                                            <h:outputText value="Creator" />
-                                            <p:outputLabel class="w-100" value="#{departmentController.current.creater.webUserPerson.name}"/>
                                         </h:panelGrid>
                                     </p:tab>
                                 </p:tabView>

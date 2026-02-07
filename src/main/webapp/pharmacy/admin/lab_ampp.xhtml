@@ -232,7 +232,9 @@
                                             required="true"
                                             requiredMessage="Pack Size is required"
                                             placeholder="Enter pack size (numeric)"
-                                            disabled="#{!labAmppController.editable}" />
+                                            disabled="#{!labAmppController.editable}">
+                                            <f:convertNumber pattern="#" />
+                                        </p:inputText>
 
                                         <h:outputText value="Pack Unit" />
                                         <p:selectOneMenu

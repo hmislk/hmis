@@ -341,13 +341,39 @@ public class InstitutionController implements Serializable {
         return completeInstitution(qry, types);
     }
 
+    public List<Institution> completeActiveInstitution(String qry, InstitutionType type) {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Institution c "
+                + " where c.retired=false "
+                + " and c.inactive=false ";
+        if (qry != null) {
+            sql += " and ((c.name) like :qry or (c.code) like :qry) ";
+            hm.put("qry", "%" + qry.toUpperCase() + "%");
+        }
+        if (type != null) {
+            hm.put("type", type);
+            sql += " and c.institutionType=:type";
+        }
+        sql += " order by c.name";
+        return getFacade().findByJpql(sql, hm);
+    }
+
     public List<Institution> completeCompany(String qry) {
         return completeInstitution(qry, InstitutionType.Company);
+    }
+
+    public List<Institution> completeActiveCompany(String qry) {
+        return completeActiveInstitution(qry, InstitutionType.Company);
     }
 
     public List<Institution> completeSite(String qry) {
         //Sites
         return completeInstitution(qry, InstitutionType.Site);
+    }
+
+    public List<Institution> completeActiveSite(String qry) {
+        return completeActiveInstitution(qry, InstitutionType.Site);
     }
 
     public List<Institution> completeCollectingCenter(String qry) {
