@@ -14,42 +14,46 @@
     </h:head>
     <h:body>
 
-        <h:panelGroup rendered="#{dataAdministrationController.migrationPageAccessDenied}">
-            <div class="container mt-5">
-                <div class="alert alert-danger text-center" role="alert">
-                    <h4 class="alert-heading">Access Denied</h4>
-                    <p>This page is restricted to administrators. No database migration is currently pending.</p>
+        <!-- Migration pending: open to everyone -->
+        <h:panelGroup rendered="#{applicationController.databaseMigrationPending}">
+
+            <div class="container mt-3">
+                <div class="alert alert-warning" role="alert">
+                    <strong>Database Migration Pending</strong> —
+                    Please check for missing fields and run the migration below, then mark it as complete.
                 </div>
             </div>
-        </h:panelGroup>
-
-        <h:panelGroup rendered="#{dataAdministrationController.canAccessMigrationPage()}">
-
-            <h:panelGroup rendered="#{dataAdministrationController.migrationPending}">
-                <div class="container mt-3">
-                    <div class="alert alert-warning" role="alert">
-                        <strong>Database Migration Pending</strong> — Missing fields or tables were detected at startup.
-                        Please run the migration below, then mark it as complete.
-                    </div>
-                </div>
-            </h:panelGroup>
 
             <ez:midding_data_fields/>
 
-            <h:panelGroup rendered="#{dataAdministrationController.migrationPending}">
-                <div class="container mt-3 mb-5">
-                    <h:form id="migrationControlForm">
-                        <p:commandButton value="Mark Migration as Complete"
-                                         action="#{dataAdministrationController.markMigrationComplete()}"
-                                         update="growl"
-                                         oncomplete="setTimeout(function(){location.reload();}, 1000)"
-                                         styleClass="btn btn-success me-2"/>
-                        <p:commandButton value="Mark as Not Necessary"
-                                         action="#{dataAdministrationController.markMigrationNotNecessary()}"
-                                         update="growl"
-                                         oncomplete="setTimeout(function(){location.reload();}, 1000)"
-                                         styleClass="btn btn-secondary"/>
-                    </h:form>
+            <div class="container mt-3 mb-5">
+                <h:form id="migrationControlForm">
+                    <p:commandButton value="Mark Migration as Complete"
+                                     action="#{dataAdministrationController.markMigrationComplete()}"
+                                     ajax="false"
+                                     styleClass="btn btn-success me-2"/>
+                    <p:commandButton value="Mark as Not Necessary"
+                                     action="#{dataAdministrationController.markMigrationNotNecessary()}"
+                                     ajax="false"
+                                     styleClass="btn btn-secondary"/>
+                </h:form>
+            </div>
+
+        </h:panelGroup>
+
+        <!-- Not migration pending: admin only -->
+        <h:panelGroup rendered="#{not applicationController.databaseMigrationPending}">
+
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                <ez:midding_data_fields/>
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{not webUserController.hasPrivilege('Admin')}">
+                <div class="container mt-5">
+                    <div class="alert alert-danger text-center" role="alert">
+                        <h4 class="alert-heading">Access Denied</h4>
+                        <p>This page is restricted to administrators. No database migration is currently pending.</p>
+                    </div>
                 </div>
             </h:panelGroup>
 

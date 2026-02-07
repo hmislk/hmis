@@ -70,10 +70,6 @@
                             emptyMessage="No audit events found for this AMP."
                             styleClass="table table-striped">
 
-                            <p:column headerText="ID" style="width: 4em;" styleClass="text-end">
-                                <h:outputText value="#{audit.id}" />
-                            </p:column>
-
                             <p:column headerText="Date / Time" style="width: 12em;">
                                 <h:outputText value="#{audit.eventDataTime}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>

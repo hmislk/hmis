@@ -856,10 +856,10 @@ public class AmpController implements Serializable {
             JsfUtil.addSuccessMessage("AMP Created Successfully.");
         }
 
-        // Refresh data and clear selection
+        // Refresh data and keep selection synced
         recreateModel();
         getItems();
-        selectedAmpDto = null;
+        selectedAmpDto = createAmpDto(current);
         ampDtos = null;
         editable = false;
     }
@@ -1753,7 +1753,7 @@ public class AmpController implements Serializable {
                 String jpql = "SELECT a FROM AuditEvent a WHERE a.objectId = :objectId "
                         + "AND a.entityType = :entityType ORDER BY a.eventDataTime DESC";
                 Map<String, Object> parameters = new HashMap<>();
-                parameters.put("objectId", current.getId().toString());
+                parameters.put("objectId", current.getId());
                 parameters.put("entityType", "Amp");
 
                 ampAuditEvents = auditEventFacade.findByJpql(jpql, parameters);
