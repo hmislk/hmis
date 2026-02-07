@@ -9,12 +9,15 @@
 package com.divudi.bean.common;
 
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.AuditEventFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.entity.Route;
+import com.divudi.service.AuditService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +50,11 @@ public class DepartmentController implements Serializable {
     SessionController sessionController;
     @EJB
     private DepartmentFacade ejbFacade;
+    @EJB
+    AuditEventFacade auditEventFacade;
+    @EJB
+    AuditService auditService;
+
     List<Department> selectedItems;
     private Department current;
     private List<Department> items = null;
@@ -60,6 +68,10 @@ public class DepartmentController implements Serializable {
     List<Department> itemsToRemove;
 
     private List<DepartmentDuplicateGroup> duplicateGroups;
+
+    // Status filtering - following VMP/AMP pattern
+    private String filterStatus = "active";
+    private List<AuditEvent> departmentAuditEvents;
 
     public Department findAndSaveDepartmentByName(String name) {
         if (name == null) {
@@ -170,8 +182,21 @@ public class DepartmentController implements Serializable {
 
     public void fillItems() {
         String j;
-        j = "select i from Department i where i.retired=false order by i.name";
-        items = getFacade().findByJpql(j);
+        Map<String, Object> m = new HashMap<>();
+        j = "select i from Department i where 1=1 ";
+
+        // Apply status filter
+        if ("active".equals(filterStatus)) {
+            j += " and i.retired=:retired ";
+            m.put("retired", false);
+        } else if ("inactive".equals(filterStatus)) {
+            j += " and i.retired=:retired ";
+            m.put("retired", true);
+        }
+        // For "all", no additional filter needed
+
+        j += " order by i.name";
+        items = getFacade().findByJpql(j, m);
     }
 
     public List<Department> getInstitutionDepartments(Institution ins) {
@@ -624,6 +649,7 @@ public class DepartmentController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from Department c "
                 + " where c.retired=false "
+                + " and c.inactive=false "
                 + " and (c.name) like :q"
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
@@ -1002,6 +1028,219 @@ public class DepartmentController implements Serializable {
         }
         detectDuplicateDepartments();
         JsfUtil.addSuccessMessage("Duplicates retired for " + g.getName());
+    }
+
+    // ===================== Filter Status Management (VMP/AMP Pattern) =====================
+
+    public String getFilterStatus() {
+        return filterStatus;
+    }
+
+    public void setFilterStatus(String filterStatus) {
+        this.filterStatus = filterStatus;
+    }
+
+    public void setFilterToActive() {
+        filterStatus = "active";
+        refreshData();
+    }
+
+    public void setFilterToInactive() {
+        filterStatus = "inactive";
+        refreshData();
+    }
+
+    public void setFilterToAll() {
+        filterStatus = "all";
+        refreshData();
+    }
+
+    public void refreshData() {
+        recreateModel();
+
+        // Clear selection if current item doesn't match new filter
+        if (current != null && current.getId() != null) {
+            boolean shouldKeepSelection = false;
+            switch (filterStatus) {
+                case "active":
+                    shouldKeepSelection = !current.isRetired();
+                    break;
+                case "inactive":
+                    shouldKeepSelection = current.isRetired();
+                    break;
+                case "all":
+                    shouldKeepSelection = true;
+                    break;
+            }
+
+            if (!shouldKeepSelection) {
+                current = null;
+                departmentAuditEvents = null;
+            }
+        }
+    }
+
+    public boolean isShowingActive() {
+        return "active".equals(filterStatus);
+    }
+
+    public boolean isShowingInactive() {
+        return "inactive".equals(filterStatus);
+    }
+
+    public boolean isShowingAll() {
+        return "all".equals(filterStatus);
+    }
+
+    public String getFilterStatusDisplay() {
+        switch (filterStatus) {
+            case "active":
+                return "Active Departments";
+            case "inactive":
+                return "Inactive Departments";
+            case "all":
+                return "All Departments";
+            default:
+                return "Active Departments";
+        }
+    }
+
+    // ===================== Status Toggle Methods =====================
+
+    /**
+     * Toggle Department status (Active/Inactive) with audit logging
+     */
+    public void toggleDepartmentStatus() {
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("No Department selected");
+            return;
+        }
+
+        // Capture before state for audit
+        Map<String, Object> beforeData = createAuditMap(current);
+        boolean wasRetired = current.isRetired();
+
+        if (wasRetired) {
+            // Activate Department
+            current.setRetired(false);
+            current.setRetiredAt(null);
+            current.setRetirer(null);
+            JsfUtil.addSuccessMessage("Department Activated Successfully");
+        } else {
+            // Deactivate Department
+            current.setRetired(true);
+            current.setRetiredAt(new Date());
+            current.setRetirer(getSessionController().getLoggedUser());
+            JsfUtil.addSuccessMessage("Department Deactivated Successfully");
+        }
+
+        getFacade().edit(current);
+
+        // Log audit for status change
+        Map<String, Object> afterData = createAuditMap(current);
+        String action = wasRetired ? "Activate Department" : "Deactivate Department";
+        auditService.logAudit(beforeData, afterData,
+                getSessionController().getLoggedUser(),
+                "Department", action, current.getId());
+
+        // Refresh displays
+        recreateModel();
+    }
+
+    public String getToggleStatusButtonText() {
+        if (current == null || current.getId() == null) {
+            return "Toggle Status";
+        }
+        return current.isRetired() ? "Activate" : "Deactivate";
+    }
+
+    public String getToggleStatusButtonIcon() {
+        if (current == null || current.getId() == null) {
+            return "fas fa-toggle-off";
+        }
+        return current.isRetired() ? "fas fa-check-circle" : "fas fa-times-circle";
+    }
+
+    public String getToggleStatusButtonClass() {
+        if (current == null || current.getId() == null) {
+            return "ui-button-secondary";
+        }
+        // If retired (inactive), show green "Activate" button
+        // If active, show orange "Deactivate" button
+        return current.isRetired() ? "ui-button-success" : "ui-button-warning";
+    }
+
+    // ===================== Audit Trail Methods =====================
+
+    /**
+     * Create audit map with Department-specific fields
+     */
+    private Map<String, Object> createAuditMap(Department dept) {
+        Map<String, Object> auditData = new HashMap<>();
+        if (dept != null) {
+            // Core identification
+            auditData.put("id", dept.getId());
+            auditData.put("name", dept.getName());
+            auditData.put("code", dept.getCode());
+            auditData.put("departmentCode", dept.getDepartmentCode());
+            auditData.put("retired", dept.isRetired());
+            auditData.put("departmentType", dept.getDepartmentType() != null ?
+                    dept.getDepartmentType().toString() : null);
+
+            // Relationships
+            auditData.put("institutionId", dept.getInstitution() != null ?
+                    dept.getInstitution().getId() : null);
+            auditData.put("institutionName", dept.getInstitution() != null ?
+                    dept.getInstitution().getName() : null);
+            auditData.put("siteId", dept.getSite() != null ?
+                    dept.getSite().getId() : null);
+            auditData.put("siteName", dept.getSite() != null ?
+                    dept.getSite().getName() : null);
+            auditData.put("superDepartmentId", dept.getSuperDepartment() != null ?
+                    dept.getSuperDepartment().getId() : null);
+            auditData.put("superDepartmentName", dept.getSuperDepartment() != null ?
+                    dept.getSuperDepartment().getName() : null);
+        }
+        return auditData;
+    }
+
+    public void fillDepartmentAuditEvents() {
+        if (current != null && current.getId() != null) {
+            try {
+                String jpql = "SELECT a FROM AuditEvent a WHERE a.objectId = :objectId "
+                        + "AND a.entityType = :entityType ORDER BY a.eventDataTime DESC";
+                Map<String, Object> parameters = new HashMap<>();
+                parameters.put("objectId", current.getId());
+                parameters.put("entityType", "Department");
+
+                departmentAuditEvents = auditEventFacade.findByJpql(jpql, parameters);
+            } catch (Exception e) {
+                departmentAuditEvents = new ArrayList<>();
+            }
+        } else {
+            departmentAuditEvents = new ArrayList<>();
+        }
+    }
+
+    public String navigateToDepartmentAuditEvents() {
+        fillDepartmentAuditEvents();
+        return "/admin/institutions/department_audit_events?faces-redirect=true";
+    }
+
+    public List<AuditEvent> getDepartmentAuditEvents() {
+        if (departmentAuditEvents == null) {
+            fillDepartmentAuditEvents();
+        }
+        return departmentAuditEvents;
+    }
+
+    public void setDepartmentAuditEvents(List<AuditEvent> departmentAuditEvents) {
+        this.departmentAuditEvents = departmentAuditEvents;
+    }
+
+    public void refreshDepartmentAuditEvents() {
+        departmentAuditEvents = null;
+        fillDepartmentAuditEvents();
     }
 
     public static class DepartmentDuplicateGroup {

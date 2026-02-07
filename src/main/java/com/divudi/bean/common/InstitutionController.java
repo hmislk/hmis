@@ -3,10 +3,13 @@ package com.divudi.bean.common;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.AuditEventFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.AuditService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -49,6 +52,10 @@ public class InstitutionController implements Serializable {
     private InstitutionFacade ejbFacade;
     @EJB
     AgentHistoryFacade agentHistoryFacade;
+    @EJB
+    AuditEventFacade auditEventFacade;
+    @EJB
+    AuditService auditService;
     /**
      * Properties
      */
@@ -72,6 +79,10 @@ public class InstitutionController implements Serializable {
     private int managaeInstitutionIndex = -1;
     private List<Institution> sites;
     private List<InstitutionDuplicateGroup> duplicateGroups;
+
+    // Status filtering - following VMP/AMP pattern
+    private String filterStatus = "active";
+    private List<AuditEvent> institutionAuditEvents;
 
     public void fillAllSites() {
         sites = new ArrayList<>();
@@ -891,12 +902,22 @@ public class InstitutionController implements Serializable {
 
     public void fillItems() {
         String j;
+        Map<String, Object> m = new HashMap<>();
         j = "select i "
                 + " from Institution i "
-                + " where i.retired=:ret"
-                + " order by i.name";
-        Map m = new HashMap();
-        m.put("ret", false);
+                + " where 1=1 ";
+
+        // Apply status filter
+        if ("active".equals(filterStatus)) {
+            j += " and i.retired=:retired ";
+            m.put("retired", false);
+        } else if ("inactive".equals(filterStatus)) {
+            j += " and i.retired=:retired ";
+            m.put("retired", true);
+        }
+        // For "all", no additional filter needed
+
+        j += " order by i.name";
         items = getFacade().findByJpql(j, m);
     }
 
@@ -1000,7 +1021,7 @@ public class InstitutionController implements Serializable {
 
     public List<Institution> getSites() {
         if (sites == null) {
-            fillAllSites();
+            fillAllSitesWithFilter();
         }
 
         return sites;
@@ -1061,6 +1082,255 @@ public class InstitutionController implements Serializable {
         }
         detectDuplicateInstitutions();
         JsfUtil.addSuccessMessage("Duplicates retired for " + g.getName());
+    }
+
+    // ===================== Filter Status Management (VMP/AMP Pattern) =====================
+
+    public String getFilterStatus() {
+        return filterStatus;
+    }
+
+    public void setFilterStatus(String filterStatus) {
+        this.filterStatus = filterStatus;
+    }
+
+    public void setFilterToActive() {
+        filterStatus = "active";
+        refreshData();
+    }
+
+    public void setFilterToInactive() {
+        filterStatus = "inactive";
+        refreshData();
+    }
+
+    public void setFilterToAll() {
+        filterStatus = "all";
+        refreshData();
+    }
+
+    public void refreshData() {
+        recreateModel();
+        sites = null; // Reset sites list for site_management page
+
+        // Clear selection if current item doesn't match new filter
+        if (current != null && current.getId() != null) {
+            boolean shouldKeepSelection = false;
+            switch (filterStatus) {
+                case "active":
+                    shouldKeepSelection = !current.isRetired();
+                    break;
+                case "inactive":
+                    shouldKeepSelection = current.isRetired();
+                    break;
+                case "all":
+                    shouldKeepSelection = true;
+                    break;
+            }
+
+            if (!shouldKeepSelection) {
+                current = null;
+                institutionAuditEvents = null;
+            }
+        }
+
+        // Refresh sites list with new filter
+        fillAllSitesWithFilter();
+    }
+
+    public boolean isShowingActive() {
+        return "active".equals(filterStatus);
+    }
+
+    public boolean isShowingInactive() {
+        return "inactive".equals(filterStatus);
+    }
+
+    public boolean isShowingAll() {
+        return "all".equals(filterStatus);
+    }
+
+    public String getFilterStatusDisplay() {
+        switch (filterStatus) {
+            case "active":
+                return "Active Institutions";
+            case "inactive":
+                return "Inactive Institutions";
+            case "all":
+                return "All Institutions";
+            default:
+                return "Active Institutions";
+        }
+    }
+
+    // ===================== Status Toggle Methods =====================
+
+    /**
+     * Toggle Institution status (Active/Inactive) with audit logging
+     */
+    public void toggleInstitutionStatus() {
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("No Institution selected");
+            return;
+        }
+
+        // Capture before state for audit
+        Map<String, Object> beforeData = createAuditMap(current);
+        boolean wasRetired = current.isRetired();
+
+        if (wasRetired) {
+            // Activate Institution
+            current.setRetired(false);
+            current.setRetiredAt(null);
+            current.setRetirer(null);
+            JsfUtil.addSuccessMessage("Institution Activated Successfully");
+        } else {
+            // Deactivate Institution
+            current.setRetired(true);
+            current.setRetiredAt(new Date());
+            current.setRetirer(getSessionController().getLoggedUser());
+            JsfUtil.addSuccessMessage("Institution Deactivated Successfully");
+        }
+
+        getFacade().edit(current);
+
+        // Log audit for status change
+        Map<String, Object> afterData = createAuditMap(current);
+        String action = wasRetired ? "Activate Institution" : "Deactivate Institution";
+        auditService.logAudit(beforeData, afterData,
+                getSessionController().getLoggedUser(),
+                "Institution", action, current.getId());
+
+        // Refresh displays
+        recreateModel();
+    }
+
+    public String getToggleStatusButtonText() {
+        if (current == null || current.getId() == null) {
+            return "Toggle Status";
+        }
+        return current.isRetired() ? "Activate" : "Deactivate";
+    }
+
+    public String getToggleStatusButtonIcon() {
+        if (current == null || current.getId() == null) {
+            return "fas fa-toggle-off";
+        }
+        return current.isRetired() ? "fas fa-check-circle" : "fas fa-times-circle";
+    }
+
+    public String getToggleStatusButtonClass() {
+        if (current == null || current.getId() == null) {
+            return "ui-button-secondary";
+        }
+        // If retired (inactive), show green "Activate" button
+        // If active, show orange "Deactivate" button
+        return current.isRetired() ? "ui-button-success" : "ui-button-warning";
+    }
+
+    // ===================== Audit Trail Methods =====================
+
+    /**
+     * Create audit map with Institution-specific fields
+     */
+    private Map<String, Object> createAuditMap(Institution inst) {
+        Map<String, Object> auditData = new HashMap<>();
+        if (inst != null) {
+            // Core identification
+            auditData.put("id", inst.getId());
+            auditData.put("name", inst.getName());
+            auditData.put("code", inst.getCode());
+            auditData.put("retired", inst.isRetired());
+            auditData.put("institutionType", inst.getInstitutionType() != null ?
+                    inst.getInstitutionType().toString() : null);
+
+            // Contact information
+            auditData.put("address", inst.getAddress());
+            auditData.put("phone", inst.getPhone());
+            auditData.put("mobile", inst.getMobile());
+            auditData.put("email", inst.getEmail());
+
+            // Relationships
+            auditData.put("parentInstitutionId", inst.getParentInstitution() != null ?
+                    inst.getParentInstitution().getId() : null);
+            auditData.put("parentInstitutionName", inst.getParentInstitution() != null ?
+                    inst.getParentInstitution().getName() : null);
+
+            // Credit settings
+            auditData.put("allowedCredit", inst.getAllowedCredit());
+            auditData.put("maxCreditLimit", inst.getMaxCreditLimit());
+            auditData.put("standardCreditLimit", inst.getStandardCreditLimit());
+        }
+        return auditData;
+    }
+
+    public void fillInstitutionAuditEvents() {
+        if (current != null && current.getId() != null) {
+            try {
+                String jpql = "SELECT a FROM AuditEvent a WHERE a.objectId = :objectId "
+                        + "AND a.entityType = :entityType ORDER BY a.eventDataTime DESC";
+                Map<String, Object> parameters = new HashMap<>();
+                parameters.put("objectId", current.getId());
+                parameters.put("entityType", "Institution");
+
+                institutionAuditEvents = auditEventFacade.findByJpql(jpql, parameters);
+            } catch (Exception e) {
+                institutionAuditEvents = new ArrayList<>();
+            }
+        } else {
+            institutionAuditEvents = new ArrayList<>();
+        }
+    }
+
+    public String navigateToInstitutionAuditEvents() {
+        fillInstitutionAuditEvents();
+        return "/admin/institutions/institution_audit_events?faces-redirect=true";
+    }
+
+    public List<AuditEvent> getInstitutionAuditEvents() {
+        if (institutionAuditEvents == null) {
+            fillInstitutionAuditEvents();
+        }
+        return institutionAuditEvents;
+    }
+
+    public void setInstitutionAuditEvents(List<AuditEvent> institutionAuditEvents) {
+        this.institutionAuditEvents = institutionAuditEvents;
+    }
+
+    public void refreshAuditEvents() {
+        institutionAuditEvents = null;
+        fillInstitutionAuditEvents();
+    }
+
+    // ===================== Site-Specific Status Methods =====================
+
+    public void fillAllSitesWithFilter() {
+        sites = new ArrayList<>();
+        String sql;
+        HashMap<String, Object> hm = new HashMap<>();
+        sql = "select c from Institution c "
+                + " where c.institutionType =:type";
+
+        hm.put("type", InstitutionType.Site);
+
+        // Apply status filter
+        if ("active".equals(filterStatus)) {
+            sql += " and c.retired=:retired ";
+            hm.put("retired", false);
+        } else if ("inactive".equals(filterStatus)) {
+            sql += " and c.retired=:retired ";
+            hm.put("retired", true);
+        }
+        // For "all", no additional filter needed
+
+        sql += " order by c.name";
+        sites = getFacade().findByJpql(sql, hm);
+    }
+
+    public void toggleSiteStatus() {
+        toggleInstitutionStatus();
+        fillAllSitesWithFilter();
     }
 
     public static class InstitutionDuplicateGroup {

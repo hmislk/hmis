@@ -9,6 +9,7 @@ import com.divudi.bean.common.ApiKeyController;
 import com.divudi.core.data.dto.adjustment.*;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.WebUser;
+import com.divudi.service.WebUserService;
 import com.divudi.service.pharmacy.PharmacyAdjustmentApiService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -24,10 +25,11 @@ import javax.ws.rs.core.Response;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import javax.ejb.EJB;
 
 /**
- * REST API for Pharmacy Stock Adjustments
- * Provides endpoints for quantity, retail rate, and expiry date adjustments
+ * REST API for Pharmacy Stock Adjustments Provides endpoints for quantity,
+ * retail rate, and expiry date adjustments
  *
  * @author Buddhika
  */
@@ -44,6 +46,9 @@ public class PharmacyAdjustmentApi {
     @Inject
     private PharmacyAdjustmentApiService adjustmentService;
 
+    @EJB
+    WebUserService webUserService;
+
     private static final Gson gson = new GsonBuilder()
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
             .create();
@@ -52,8 +57,8 @@ public class PharmacyAdjustmentApi {
     }
 
     /**
-     * Adjust stock quantity for a single stock item
-     * Endpoint: POST /api/pharmacy_adjustments/stock_quantity
+     * Adjust stock quantity for a single stock item Endpoint: POST
+     * /api/pharmacy_adjustments/stock_quantity
      */
     @POST
     @Path("/stock_quantity")
@@ -67,6 +72,7 @@ public class PharmacyAdjustmentApi {
             if (user == null) {
                 return errorResponse("Not a valid key", 401);
             }
+            
 
             // Parse request body
             StockQuantityAdjustmentDTO request;
@@ -75,10 +81,17 @@ public class PharmacyAdjustmentApi {
             } catch (JsonSyntaxException e) {
                 return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
             }
+            
 
             if (request == null) {
                 return errorResponse("Request body is required", 400);
             }
+            
+            String privilege = "PharmacyAdjustmentDepartmentStockQTY";
+            if (!webUserService.hasPrivilege(privilege,user, request.getDepartmentId())) {
+                return errorResponse("Not autherized", 401);
+            }
+            
 
             // Process adjustment
             AdjustmentResponseDTO response = adjustmentService.adjustStockQuantity(request, user);
@@ -90,8 +103,8 @@ public class PharmacyAdjustmentApi {
     }
 
     /**
-     * Adjust retail rate for a single stock item
-     * Endpoint: POST /api/pharmacy_adjustments/retail_rate
+     * Adjust retail rate for a single stock item Endpoint: POST
+     * /api/pharmacy_adjustments/retail_rate
      */
     @POST
     @Path("/retail_rate")
@@ -118,6 +131,11 @@ public class PharmacyAdjustmentApi {
                 return errorResponse("Request body is required", 400);
             }
 
+            String privilege = "PharmacyAdjustmentSaleRate";
+            if (!webUserService.hasPrivilege(privilege, user, request.getDepartmentId())) {
+                return errorResponse("Not autherized", 401);
+            }
+
             // Process adjustment
             AdjustmentResponseDTO response = adjustmentService.adjustRetailRate(request, user);
             return successResponse(response);
@@ -128,8 +146,8 @@ public class PharmacyAdjustmentApi {
     }
 
     /**
-     * Adjust expiry date for a single stock item
-     * Endpoint: POST /api/pharmacy_adjustments/expiry_date
+     * Adjust expiry date for a single stock item Endpoint: POST
+     * /api/pharmacy_adjustments/expiry_date
      */
     @POST
     @Path("/expiry_date")
@@ -156,6 +174,11 @@ public class PharmacyAdjustmentApi {
                 return errorResponse("Request body is required", 400);
             }
 
+            String privilege = "PharmacyAdjustmentExpiryDate";
+            if (!webUserService.hasPrivilege(privilege, user, request.getDepartmentId())) {
+                return errorResponse("Not autherized", 401);
+            }
+
             // Process adjustment
             AdjustmentResponseDTO response = adjustmentService.adjustExpiryDate(request, user);
             return successResponse(response);
@@ -166,8 +189,8 @@ public class PharmacyAdjustmentApi {
     }
 
     /**
-     * Adjust purchase rate for a single stock item
-     * Endpoint: POST /api/pharmacy_adjustments/purchase_rate
+     * Adjust purchase rate for a single stock item Endpoint: POST
+     * /api/pharmacy_adjustments/purchase_rate
      */
     @POST
     @Path("/purchase_rate")
@@ -192,6 +215,11 @@ public class PharmacyAdjustmentApi {
 
             if (request == null) {
                 return errorResponse("Request body is required", 400);
+            }
+
+            String privilege = "PharmacyAdjustmentPurchaseRate";
+            if (!webUserService.hasPrivilege(privilege, user, request.getDepartmentId())) {
+                return errorResponse("Not autherized", 401);
             }
 
             // Process adjustment
