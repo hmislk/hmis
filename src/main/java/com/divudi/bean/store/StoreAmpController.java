@@ -635,7 +635,9 @@ public class StoreAmpController implements Serializable {
                 + "a.id, a.name, a.code, a.barcode, a.retired, "
                 + "a.vmp.id, a.vmp.name) "
                 + "FROM Amp a WHERE a.retired=false "
-                + "AND LOWER(a.name) LIKE :query "
+                + "AND (LOWER(a.name) LIKE :query "
+                + "OR LOWER(a.code) LIKE :query "
+                + "OR LOWER(a.barcode) LIKE :query) "
                 + "AND a.departmentType=:dep ";
 
         Map<String, Object> params = new HashMap<>();
