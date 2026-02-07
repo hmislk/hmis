@@ -221,12 +221,12 @@ public class AmpDto implements Serializable {
         this.barcode = barcode;
     }
 
-    public Boolean getRetired() {
-        return retired;
+    public Boolean getInactive() {
+        return inactive;
     }
 
-    public void setRetired(Boolean retired) {
-        this.retired = retired;
+    public void setInactive(Boolean inactive) {
+        this.inactive = inactive;
     }
 
     // VMP relationship getters and setters
@@ -342,7 +342,7 @@ public class AmpDto implements Serializable {
                 ", name='" + name + '\'' +
                 ", code='" + code + '\'' +
                 ", barcode='" + barcode + '\'' +
-                ", retired=" + retired +
+                ", inactive=" + inactive +
                 ", vmpName='" + vmpName + '\'' +
                 ", categoryName='" + categoryName + '\'' +
                 '}';
