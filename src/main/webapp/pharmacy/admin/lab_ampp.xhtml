@@ -1,0 +1,320 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/pharmacy/admin/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="form">
+                    <p:growl id="msg"/>
+                    <p:focus id="selectFocus" for="acAmpp" />
+
+                    <div class="row">
+                        <div class="col-md-5">
+                            <p:panel header="Lab AMPP Management" class="mb-3 w-100">
+
+                                <!-- Status Filter Section -->
+                                <h:panelGroup id="statusFilterPanel" layout="block" styleClass="mb-3">
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <label class="form-label mb-0">Filter:</label>
+                                        <p:commandButton
+                                            id="btnFilterActive"
+                                            value="Active"
+                                            action="#{labAmppController.setFilterToActive()}"
+                                            update="acAmpp gpDetail amppDetails statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{labAmppController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
+                                            icon="fas fa-check-circle"
+                                            disabled="#{labAmppController.editable}"
+                                            title="Show only active Lab AMPPs"/>
+
+                                        <p:commandButton
+                                            id="btnFilterInactive"
+                                            value="Inactive"
+                                            action="#{labAmppController.setFilterToInactive()}"
+                                            update="acAmpp gpDetail amppDetails statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{labAmppController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
+                                            icon="fas fa-times-circle"
+                                            disabled="#{labAmppController.editable}"
+                                            title="Show only inactive Lab AMPPs"/>
+
+                                        <p:commandButton
+                                            id="btnFilterAll"
+                                            value="All"
+                                            action="#{labAmppController.setFilterToAll()}"
+                                            update="acAmpp gpDetail amppDetails statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{labAmppController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
+                                            icon="fas fa-list"
+                                            disabled="#{labAmppController.editable}"
+                                            title="Show all Lab AMPPs"/>
+                                    </div>
+                                </h:panelGroup>
+
+                                <div class="row" >
+                                    <div class="col-12"  >
+                                        <p:autoComplete
+                                            class="w-100 m-1"
+                                            inputStyleClass="w-100"
+                                            id="acAmpp"
+                                            value="#{labAmppController.selectedAmppDto}"
+                                            completeMethod="#{labAmppController.completeAmppDto}"
+                                            var="dto"
+                                            itemLabel="#{dto.name}"
+                                            itemValue="#{dto}"
+                                            converter="labAmppDtoConverter"
+                                            forceSelection="true"
+                                            disabled="#{labAmppController.editable}"
+                                            placeholder="Type to search Lab AMPPs..."
+                                            minQueryLength="2">
+                                            <p:ajax event="itemSelect" process="@this" update=":form:gpDetail :form:actionButtons :form:amppDetails" />
+                                            <p:column headerText="Name" style="padding: 3px;">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h:outputText value="#{dto.name}" />
+                                                    <p:badge value="#{dto.inactive ? 'INACTIVE' : 'ACTIVE'}"
+                                                             severity="#{dto.inactive ? 'danger' : 'success'}"
+                                                             style="font-size: 0.65em; margin-left: 8px;"/>
+                                                </div>
+                                            </p:column>
+                                            <p:column headerText="Code">
+                                                <h:outputText value="#{dto.code}"/>
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <p:outputLabel id="filterStatusLabel"
+                                                       value="Currently showing: #{labAmppController.filterStatusDisplay}"
+                                                       styleClass="text-muted small mt-1"/>
+                                    </div>
+                                </div>
+
+                                <h:panelGroup id="actionButtons" layout="block">
+                                    <div class="row" >
+                                        <div class="col-12" >
+                                            <p:commandButton
+                                                id="btnAdd"
+                                                value="Add New"
+                                                icon="fa fa-plus"
+                                                action="#{labAmppController.prepareAdd()}"
+                                                class="m-1 ui-button-success"
+                                                update=":form:acAmpp :form:gpDetail :form:actionButtons :form:amppDetails :form:statusFilterPanel"
+                                                process="btnAdd"
+                                                disabled="#{labAmppController.editable}">
+                                                <f:setPropertyActionListener target="#{labAmppController.selectedAmppDto}" value="#{null}" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnEdit"
+                                                value="Edit"
+                                                icon="fas fa-edit"
+                                                action="#{labAmppController.edit()}"
+                                                class="m-1 ui-button-info"
+                                                update=":form:acAmpp :form:gpDetail :form:actionButtons :form:amppDetails :form:statusFilterPanel"
+                                                process="btnEdit"
+                                                disabled="#{labAmppController.editable or labAmppController.selectedAmppDto eq null}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnDelete"
+                                                action="#{labAmppController.delete()}"
+                                                value="Delete"
+                                                icon="fas fa-trash"
+                                                class="m-1 ui-button-danger"
+                                                update=":form:acAmpp :form:gpDetail :form:msg :form:actionButtons :form:amppDetails :form:statusFilterPanel"
+                                                process="btnDelete"
+                                                disabled="#{labAmppController.editable or labAmppController.selectedAmppDto eq null}">
+                                                <p:confirm
+                                                    header="Confirm Delete"
+                                                    message="Are you sure you want to delete this Lab AMPP? This action cannot be undone."
+                                                    icon="fas fa-exclamation-triangle" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnToggleStatus"
+                                                value="#{labAmppController.toggleStatusButtonText}"
+                                                action="#{labAmppController.toggleAmppStatus()}"
+                                                icon="#{labAmppController.toggleStatusButtonIcon}"
+                                                update=":form:msg :form:acAmpp :form:gpDetail :form:actionButtons :form:amppDetails :form:statusFilterPanel"
+                                                process="@this"
+                                                styleClass="#{labAmppController.toggleStatusButtonClass} m-1"
+                                                disabled="#{labAmppController.editable or labAmppController.selectedAmppDto eq null}"
+                                                title="Toggle Lab AMPP active/inactive status">
+                                                <p:confirm
+                                                    header="Confirm Status Change"
+                                                    message="Are you sure you want to #{labAmppController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this Lab AMPP: #{labAmppController.current.name}?"
+                                                    icon="fas fa-question-circle" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnViewAuditEvents"
+                                                value="History"
+                                                icon="fas fa-history"
+                                                action="#{labAmppController.navigateToAmppAuditEvents()}"
+                                                class="m-1 ui-button-secondary"
+                                                process="btnViewAuditEvents"
+                                                ajax="false"
+                                                disabled="#{labAmppController.selectedAmppDto eq null}">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                            </p:panel>
+
+                        </div>
+
+                        <div class="col-md-7">
+                            <p:panel id="amppDetails">
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <i class="fa fa-rocket" /> Lab AMPP Details
+                                        </span>
+                                        <h:panelGroup rendered="#{labAmppController.current ne null and labAmppController.current.id ne null}"
+                                                      styleClass="badge #{labAmppController.current.inactive ? 'badge-danger' : 'badge-success'}">
+                                            #{labAmppController.current.inactive ? 'Inactive' : 'Active'}
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{labAmppController.editable}"
+                                                      styleClass="badge badge-warning">
+                                            #{labAmppController.current.id ne null ? 'Editing' : 'Adding New'}
+                                        </h:panelGroup>
+                                    </div>
+                                </f:facet>
+
+                                <p:panelGrid
+                                    id="gpDetail"
+                                    columns="1"
+                                    class="w-100">
+                                    <p:panelGrid
+                                        id="gpDetailText"
+                                        columns="2"
+                                        columnClasses="w-25 , w-75"
+                                        class="w-100">
+
+                                        <h:outputText value="Pack Name" />
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="txtName"
+                                            value="#{labAmppController.current.name}"
+                                            required="true"
+                                            requiredMessage="Pack Name is required"
+                                            placeholder="Enter Lab AMPP pack name"
+                                            class="w-100"
+                                            maxlength="255"
+                                            disabled="#{!labAmppController.editable}" />
+
+                                        <h:outputText value="Select AMP" />
+                                        <p:autoComplete
+                                            id="acAmp"
+                                            class="w-100"
+                                            inputStyleClass="w-100"
+                                            value="#{labAmppController.current.amp}"
+                                            forceSelection="true"
+                                            required="true"
+                                            requiredMessage="AMP selection is required"
+                                            completeMethod="#{labAmpController.completeAmp}"
+                                            var="pta"
+                                            itemLabel="#{pta.name}"
+                                            itemValue="#{pta}"
+                                            scrollHeight="300"
+                                            placeholder="Search and select Lab AMP"
+                                            disabled="#{!labAmppController.editable}" />
+
+                                        <h:outputText value="Pack Size" />
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="txtSize"
+                                            onfocus="this.select()"
+                                            value="#{labAmppController.current.dblValue}"
+                                            class="w-100"
+                                            required="true"
+                                            requiredMessage="Pack Size is required"
+                                            placeholder="Enter pack size (numeric)"
+                                            disabled="#{!labAmppController.editable}" />
+
+                                        <h:outputText value="Pack Unit" />
+                                        <p:selectOneMenu
+                                            id="selPackUnit"
+                                            value="#{labAmppController.packUnit}"
+                                            class="w-100"
+                                            filter="true"
+                                            required="true"
+                                            requiredMessage="Pack Unit is required"
+                                            filterMatchMode="contains"
+                                            disabled="#{!labAmppController.editable}">
+                                            <f:selectItem
+                                                itemLabel="-- Select Pack Unit --"
+                                                itemValue="#{null}"/>
+                                            <f:selectItems
+                                                value="#{measurementUnitController.items}"
+                                                var="s"
+                                                itemLabel="#{s.name}"
+                                                itemValue="#{s}" />
+                                        </p:selectOneMenu>
+
+                                        <h:outputText value="Description" />
+                                        <h:inputTextarea
+                                            id="txtDescription"
+                                            value="#{labAmppController.current.comments}"
+                                            required="false"
+                                            class="form-control"
+                                            rows="3"
+                                            placeholder="Enter description or comments"
+                                            maxlength="1000"
+                                            disabled="#{!labAmppController.editable}" />
+
+                                        <h:outputText value="Allow Fractions" />
+                                        <p:selectBooleanButton
+                                            id="chkAllowFractions"
+                                            value="#{labAmppController.current.allowFractions}"
+                                            onLabel="Yes"
+                                            offLabel="No"
+                                            styleClass="w-100"
+                                            disabled="#{!labAmppController.editable}" />
+
+                                    </p:panelGrid>
+
+                                    <h:panelGroup layout="block" class="text-end">
+                                        <div>
+                                            <p:commandButton
+                                                id="btnSave"
+                                                value="Save"
+                                                icon="fas fa-save"
+                                                action="#{labAmppController.saveSelected}"
+                                                class="m-1 ui-button-warning w-25"
+                                                process="btnSave gpDetail"
+                                                update=":form:acAmpp :form:gpDetail :form:msg :form:actionButtons :form:amppDetails :form:statusFilterPanel"
+                                                disabled="#{!labAmppController.editable}">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                immediate="true"
+                                                id="btnCancel"
+                                                value="Cancel"
+                                                icon="fas fa-times"
+                                                action="#{labAmppController.cancel()}"
+                                                class="m-1 ui-button-secondary w-25"
+                                                process="btnCancel"
+                                                update=":form:acAmpp :form:gpDetail :form:actionButtons :form:amppDetails :form:statusFilterPanel"
+                                                disabled="#{!labAmppController.editable}">
+                                                <f:setPropertyActionListener target="#{labAmppController.selectedAmppDto}" value="#{null}" />
+                                            </p:commandButton>
+                                        </div>
+                                    </h:panelGroup>
+                                </p:panelGrid>
+                            </p:panel>
+                        </div>
+                    </div>
+
+                    <!-- Confirmation Dialog -->
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="fas fa-check" />
+                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fas fa-times" />
+                    </p:confirmDialog>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
