@@ -229,23 +229,6 @@
                                     placeholder="Search and select generic name"
                                     disabled="#{!labVmpController.editable}"/>
 
-                                <p:outputLabel for="selDosageForm" value="Dosage Form" styleClass="fw-bold"/>
-                                <p:selectOneMenu
-                                    id="selDosageForm"
-                                    value="#{labVmpController.current.dosageForm}"
-                                    styleClass="w-100"
-                                    filter="true"
-                                    required="true"
-                                    requiredMessage="Dosage Form is required"
-                                    disabled="#{!labVmpController.editable}">
-                                    <f:selectItem itemLabel="-- Select Dosage Form --" itemValue="#{null}"/>
-                                    <f:selectItems
-                                        value="#{dosageFormController.items}"
-                                        var="df"
-                                        itemValue="#{df}"
-                                        itemLabel="#{df.name}"/>
-                                </p:selectOneMenu>
-
                                 <p:outputLabel for="selCategory" value="Category" styleClass="fw-bold"/>
                                 <p:selectOneMenu
                                     id="selCategory"
@@ -289,37 +272,7 @@
                                         itemLabel="#{m.name}"/>
                                 </p:selectOneMenu>
 
-                                <p:outputLabel for="selDoseUnit" value="Dose Unit" styleClass="fw-bold"/>
-                                <p:selectOneMenu
-                                    id="selDoseUnit"
-                                    value="#{labVmpController.current.measurementUnit}"
-                                    styleClass="w-100"
-                                    filter="true"
-                                    disabled="#{!labVmpController.editable}">
-                                    <f:selectItem itemLabel="-- Select Dose Unit --" itemValue="#{null}"/>
-                                    <f:selectItems
-                                        value="#{measurementUnitController.items}"
-                                        var="m"
-                                        itemValue="#{m}"
-                                        itemLabel="#{m.name}"/>
-                                </p:selectOneMenu>
-
-                                <p:outputLabel for="selIssueUnit" value="Dispensing Unit" styleClass="fw-bold"/>
-                                <p:selectOneMenu
-                                    id="selIssueUnit"
-                                    value="#{labVmpController.current.issueUnit}"
-                                    styleClass="w-100"
-                                    filter="true"
-                                    required="true"
-                                    requiredMessage="Dispensing Unit is required"
-                                    disabled="#{!labVmpController.editable}">
-                                    <f:selectItem itemLabel="-- Select Dispensing Unit --" itemValue="#{null}"/>
-                                    <f:selectItems
-                                        value="#{measurementUnitController.issueUnits}"
-                                        var="m"
-                                        itemValue="#{m}"
-                                        itemLabel="#{m.name}"/>
-                                </p:selectOneMenu>
+                                
 
                                 <!-- Department Type automatically set to Lab - not displayed -->
 
