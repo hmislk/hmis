@@ -195,7 +195,6 @@ public class StoreAtmController implements Serializable {
         items = null;
         clearDtoCache();
         getItems();
-        getCurrent();
         editable = false;
     }
 
