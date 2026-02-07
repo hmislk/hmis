@@ -45,7 +45,7 @@
                             <h:outputText id="vtmDept" value="#{storeVtmController.current.departmentType}"/>
                             <p:outputLabel for="totalEvents" value="Total Audit Events: "/>
                             <p:badge id="totalEvents"
-                                     value="#{storeVtmController.vtmAuditEvents.size()}"
+                                     value="#{empty storeVtmController.vtmAuditEvents ? 0 : storeVtmController.vtmAuditEvents.size()}"
                                      severity="info"/>
                         </p:panelGrid>
                         <p:dataTable

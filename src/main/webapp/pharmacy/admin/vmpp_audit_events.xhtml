@@ -10,55 +10,49 @@
             <ui:define name="subcontent">
                 <h:form id="form">
                     <p:growl id="msg"/>
-                    <p:panel header="Store ATM Information" styleClass="mb-3">
+                    <p:panel header="VMPP Information" styleClass="mb-3">
                         <f:facet name="header" >
-                            <h:outputText value="Store ATM Audit Events" />
+                            <h:outputText value="VMPP Audit Events" />
                             <p:commandButton
-                                value="Back to Store ATM List"
+                                value="Back to VMPP List"
                                 icon="fas fa-arrow-left"
-                                action="/pharmacy/admin/store_atm?faces-redirect=true"
+                                action="/pharmacy/admin/vmpp_dto?faces-redirect=true"
                                 styleClass="ui-button-info ui-button-outlined mx-1"
                                 ajax="false"
                                 immediate="true"
-                                title="Return to Store ATM management"/>
+                                title="Return to VMPP management"/>
 
                             <p:commandButton
                                 value="Refresh Events"
                                 icon="fas fa-sync"
-                                action="#{storeAtmController.fillAtmAuditEvents}"
+                                action="#{vmppController.fillVmppAuditEvents}"
                                 update=":form:auditTable :form:msg"
                                 styleClass="ui-button-info mx-1"
-                                title="Reload audit events for this Store ATM"/>
+                                title="Reload audit events for this VMPP"/>
 
                         </f:facet>
 
                         <p:panelGrid columns="2" layout="tabular" >
-                            <p:outputLabel for="atmName" value="Name: "/>
-                            <h:outputText id="atmName" value="#{storeAtmController.current.name}"/>
-                            <p:outputLabel for="atmCode" value="Code: "/>
-                            <h:outputText id="atmCode" value="#{storeAtmController.current.code}"/>
-                            <p:outputLabel for="atmVtm" value="VTM: "/>
-                            <h:panelGroup id="atmVtm">
-                                <h:outputText value="#{storeAtmController.current.vtm.name}"
-                                              rendered="#{storeAtmController.current.vtm ne null}"/>
-                                <h:outputText value="Not specified"
-                                              rendered="#{storeAtmController.current.vtm eq null}"
-                                              styleClass="text-muted"/>
-                            </h:panelGroup>
-                            <p:outputLabel for="atmStatus" value="Status: "/>
-                            <p:badge id="atmStatus"
-                                     value="#{storeAtmController.current.statusDisplay}"
-                                     severity="#{storeAtmController.current.inactive ? 'danger' : 'success'}"/>
-                            <p:outputLabel for="atmDept" value="Department: "/>
-                            <h:outputText id="atmDept" value="#{storeAtmController.current.departmentType}"/>
+                            <p:outputLabel for="vmppName" value="Name: "/>
+                            <h:outputText id="vmppName" value="#{vmppController.current.name}"/>
+                            <p:outputLabel for="vmppCode" value="Code: "/>
+                            <h:outputText id="vmppCode" value="#{vmppController.current.code}"/>
+                            <p:outputLabel for="vmppVmp" value="VMP: "/>
+                            <h:outputText id="vmppVmp" value="#{vmppController.current.vmp.name}"/>
+                            <p:outputLabel for="vmppStatus" value="Status: "/>
+                            <p:badge id="vmppStatus"
+                                     value="#{vmppController.current.retired ? 'Retired' : 'Active'}"
+                                     severity="#{vmppController.current.retired ? 'danger' : 'success'}"/>
+                            <p:outputLabel for="vmppDept" value="Department: "/>
+                            <h:outputText id="vmppDept" value="#{vmppController.current.departmentType}"/>
                             <p:outputLabel for="totalEvents" value="Total Audit Events: "/>
                             <p:badge id="totalEvents"
-                                     value="#{empty storeAtmController.atmAuditEvents ? 0 : storeAtmController.atmAuditEvents.size()}"
+                                     value="#{vmppController.vmppAuditEvents.size()}"
                                      severity="info"/>
                         </p:panelGrid>
                         <p:dataTable
                             id="auditTable"
-                            value="#{storeAtmController.atmAuditEvents}"
+                            value="#{vmppController.vmppAuditEvents}"
                             var="audit"
                             paginator="true"
                             rows="20"
@@ -66,7 +60,7 @@
                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} events"
                             rowsPerPageTemplate="10,20,50,100"
-                            emptyMessage="No audit events found for this Store ATM."
+                            emptyMessage="No audit events found for this VMPP."
                             styleClass="table table-striped">
 
                             <p:column headerText="ID" style="width: 4em;" styleClass="text-end">
@@ -81,8 +75,11 @@
 
                             <p:column headerText="Action" style="width: 8em;" styleClass="text-center">
                                 <p:badge value="#{audit.eventTrigger}"
-                                         severity="#{audit.eventTrigger eq 'Create Store ATM' ? 'success' :
-                                                     (audit.eventTrigger eq 'Update Store ATM' ? 'warning' : 'danger')}"/>
+                                         severity="#{audit.eventTrigger eq 'Create VMPP' ? 'success' :
+                                                     (audit.eventTrigger eq 'Update VMPP' ? 'warning' :
+                                                     (audit.eventTrigger eq 'Delete VMPP' ? 'danger' :
+                                                     (audit.eventTrigger eq 'Activate VMPP' ? 'info' :
+                                                     (audit.eventTrigger eq 'Deactivate VMPP' ? 'secondary' : 'primary'))))}"/>
                             </p:column>
 
                             <p:column headerText="User" style="width: 12em;">
@@ -109,7 +106,7 @@
                     </p:panel>
 
                     <!-- Load audit events when page loads -->
-                    <f:event type="preRenderView" listener="#{storeAtmController.fillAtmAuditEvents}" />
+                    <f:event type="preRenderView" listener="#{vmppController.fillVmppAuditEvents}" />
 
                 </h:form>
 

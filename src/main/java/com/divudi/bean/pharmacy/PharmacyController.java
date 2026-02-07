@@ -1474,7 +1474,7 @@ public class PharmacyController implements Serializable {
     }
 
     public String navigateToVmpp() {
-        return "/pharmacy/admin/vmpp?faces-redirect=true";
+        return "/pharmacy/admin/vmpp_dto?faces-redirect=true";
     }
 
     public String navigateToDosageFormsMultiple() {
