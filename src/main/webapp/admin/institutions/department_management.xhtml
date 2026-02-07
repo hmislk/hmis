@@ -343,9 +343,8 @@
                                             action="#{departmentController.cancel()}"
                                             class="m-1 ui-button-secondary w-25"
                                             process="btnCancel"
-                                            update="acDept gpDetail actionButtons deptDetails statusFilterPanel"
+                                            update="acDept actionButtons deptDetails statusFilterPanel"
                                             disabled="#{!departmentController.editable}">
-                                            <f:setPropertyActionListener target="#{departmentController.selectedDepartmentDto}" value="#{null}" />
                                         </p:commandButton>
                                     </div>
                                 </h:panelGroup>

@@ -1351,11 +1351,7 @@ public class DepartmentController implements Serializable {
     }
 
     public void cancel() {
-        if (current != null && current.getId() != null) {
-            current = getFacade().find(current.getId());
-        } else {
-            current = null;
-        }
+        current = null;
         selectedDepartmentDto = null;
         editable = false;
     }

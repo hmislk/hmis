@@ -223,6 +223,10 @@ public class InstitutionController implements Serializable {
         return completeInstitution(qry, InstitutionType.values());
     }
 
+    public List<Institution> completeActiveIns(String qry) {
+        return completeActiveInstitution(qry, null);
+    }
+
     public List<Institution> getSearchItems() {
         return searchItems;
     }
