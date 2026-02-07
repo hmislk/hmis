@@ -146,7 +146,7 @@
                                         title="Toggle Lab AMP active/inactive status">
                                         <p:confirm
                                             header="Confirm Status Change"
-                                            message="Are you sure you want to #{labAmpController.current.retired ? 'ACTIVATE' : 'DEACTIVATE'} this Lab AMP: #{labAmpController.current.name}?"
+                                            message="Are you sure you want to #{labAmpController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this Lab AMP: #{labAmpController.current.name}?"
                                             icon="fas fa-question-circle" />
                                     </p:commandButton>
                                     <p:commandButton
@@ -182,8 +182,8 @@
                                             <!-- Status - Centre -->
                                             <div class="d-flex align-items-center gap-2">
                                                 <h:panelGroup rendered="#{labAmpController.current ne null and labAmpController.current.id ne null}"
-                                                              styleClass="badge #{labAmpController.current.retired ? 'badge-danger' : 'badge-success'}">
-                                                    <h:outputLabel value="#{labAmpController.current.retired ? 'Inactive' : 'Active'}"
+                                                              styleClass="badge #{labAmpController.current.inactive ? 'badge-danger' : 'badge-success'}">
+                                                    <h:outputLabel value="#{labAmpController.current.inactive ? 'Inactive' : 'Active'}"
                                                                    styleClass="mb-0"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{labAmpController.editable}"

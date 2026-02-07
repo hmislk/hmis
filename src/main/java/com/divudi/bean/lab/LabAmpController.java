@@ -91,7 +91,12 @@ public class LabAmpController implements Serializable {
     private List<AmpDto> ampDtos;
     private List<AuditEvent> ampAuditEvents;
 
-    // Filter state for active/inactive AMPs
+    // Filter state for active/inactive AMPs.
+    // "active"   -> inactive=false  (items in day-to-day use)
+    // "inactive" -> inactive=true   (temporarily hidden, user can reactivate)
+    // "all"      -> no inactive filter (shows both active and inactive)
+    // NOTE: All three modes always enforce retired=false. Retired items are
+    // permanently deleted and never appear in any listing or search.
     private String filterStatus = "active";
 
     // ========== Backward-compatibility methods ==========
@@ -196,22 +201,30 @@ public class LabAmpController implements Serializable {
         Amp amp = getFacade().findFirstByJpql(sql, m);
 
         DecimalFormat df = new DecimalFormat("0000");
-        if (amp != null && !amp.getCode().isEmpty()) {
-            String s = amp.getCode().substring(getCurrent().getCategory().getCode().length());
-            int i = Integer.valueOf(s);
-            i++;
+        String prefix = getCurrent().getCategory().getCode();
+        if (amp != null && amp.getCode() != null && !amp.getCode().isEmpty()
+                && amp.getCode().startsWith(prefix)) {
+            int i = 1;
+            try {
+                String s = amp.getCode().substring(prefix.length());
+                i = Integer.valueOf(s) + 1;
+            } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
+                i = 1;
+            }
             if (getCurrent().getId() != null) {
                 Amp selectedAmp = getFacade().find(getCurrent().getId());
-                if (!getCurrent().getCategory().equals(selectedAmp.getCategory())) {
-                    getCurrent().setCode(getCurrent().getCategory().getCode() + df.format(i));
-                } else {
+                if (selectedAmp != null && !getCurrent().getCategory().equals(selectedAmp.getCategory())) {
+                    getCurrent().setCode(prefix + df.format(i));
+                } else if (selectedAmp != null) {
                     getCurrent().setCode(selectedAmp.getCode());
+                } else {
+                    getCurrent().setCode(prefix + df.format(i));
                 }
             } else {
-                getCurrent().setCode(getCurrent().getCategory().getCode() + df.format(i));
+                getCurrent().setCode(prefix + df.format(i));
             }
         } else {
-            getCurrent().setCode(getCurrent().getCategory().getCode() + df.format(1));
+            getCurrent().setCode(prefix + df.format(1));
         }
     }
 
@@ -233,9 +246,20 @@ public class LabAmpController implements Serializable {
             return;
         }
 
-        int maxCodeLength = Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("Minimum Number of Characters to Search for Item", "4"));
+        int maxCodeLength;
+        try {
+            maxCodeLength = Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("Minimum Number of Characters to Search for Item", "4"));
+        } catch (NumberFormatException e) {
+            maxCodeLength = 4;
+        }
 
-        if (current.getCode().trim().length() < maxCodeLength) {
+        String code = current.getCode();
+        if (code == null || code.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please add a code to AMP");
+            return;
+        }
+
+        if (code.trim().length() < maxCodeLength) {
             JsfUtil.addErrorMessage("Minimum " + maxCodeLength + " characters are Required for Item Code");
             return;
         }
@@ -317,6 +341,12 @@ public class LabAmpController implements Serializable {
         if (savingAmp.getId() != null) {
             jpql += " and c.id <> :id ";
             m.put("id", savingAmp.getId());
+        }
+        if (savingAmp.getDepartmentType() != null) {
+            jpql += " and c.departmentType = :dtype ";
+            m.put("dtype", savingAmp.getDepartmentType());
+        } else {
+            jpql += " and c.departmentType is null ";
         }
         m.put("icode", code);
         Amp amp = getFacade().findFirstByJpql(jpql, m);
@@ -437,6 +467,12 @@ public class LabAmpController implements Serializable {
         return sc.toString();
     }
 
+    /**
+     * Permanently soft-deletes the current AMP by setting retired=true.
+     * Retired items are excluded from every query and cannot be restored
+     * from the UI. For temporary removal use toggleAmpStatus() which
+     * sets inactive instead.
+     */
     public void delete() {
         if (current != null) {
             Map<String, Object> beforeData = createAuditMap(current);
@@ -510,16 +546,17 @@ public class LabAmpController implements Serializable {
             Map<String, Object> params = new HashMap<>();
             jpql = "select a "
                     + " from Amp a "
-                    + " where a.departmentType=:dep ";
+                    + " where a.retired=false "
+                    + " and a.departmentType=:dep ";
 
             params.put("dep", DepartmentType.Lab);
 
             if ("active".equals(filterStatus)) {
-                jpql += "and a.retired=:retired ";
-                params.put("retired", false);
+                jpql += "and a.inactive=:inact ";
+                params.put("inact", false);
             } else if ("inactive".equals(filterStatus)) {
-                jpql += "and a.retired=:retired ";
-                params.put("retired", true);
+                jpql += "and a.inactive=:inact ";
+                params.put("inact", true);
             }
 
             jpql += "order by a.name";
@@ -594,17 +631,18 @@ public class LabAmpController implements Serializable {
         String jpql = "SELECT new com.divudi.core.data.dto.AmpDto("
                 + "a.id, a.name, a.code, a.barcode, a.retired, "
                 + "a.vmp.id, a.vmp.name) "
-                + "FROM Amp a WHERE a.departmentType=:dep ";
+                + "FROM Amp a WHERE a.retired=false "
+                + "AND a.departmentType=:dep ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("dep", DepartmentType.Lab);
 
         if ("active".equals(filterStatus)) {
-            jpql += "AND a.retired=:retired ";
-            params.put("retired", false);
+            jpql += "AND a.inactive=:inact ";
+            params.put("inact", false);
         } else if ("inactive".equals(filterStatus)) {
-            jpql += "AND a.retired=:retired ";
-            params.put("retired", true);
+            jpql += "AND a.inactive=:inact ";
+            params.put("inact", true);
         }
 
         jpql += "ORDER BY a.name";
@@ -620,20 +658,20 @@ public class LabAmpController implements Serializable {
         String jpql = "SELECT new com.divudi.core.data.dto.AmpDto("
                 + "a.id, a.name, a.code, a.barcode, a.retired, "
                 + "a.vmp.id, a.vmp.name) "
-                + "FROM Amp a WHERE LOWER(a.name) LIKE :query "
-                + "AND a.departmentType=:dep "
-                + "AND a.retired=false ";
+                + "FROM Amp a WHERE a.retired=false "
+                + "AND LOWER(a.name) LIKE :query "
+                + "AND a.departmentType=:dep ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("query", "%" + query.toLowerCase() + "%");
         params.put("dep", DepartmentType.Lab);
 
         if ("active".equals(filterStatus)) {
-            jpql += "AND a.inactive=:retired ";
-            params.put("retired", false);
+            jpql += "AND a.inactive=:inact ";
+            params.put("inact", false);
         } else if ("inactive".equals(filterStatus)) {
-            jpql += "AND a.inactive=:retired ";
-            params.put("retired", true);
+            jpql += "AND a.inactive=:inact ";
+            params.put("inact", true);
         }
 
         jpql += "ORDER BY a.name";
@@ -697,10 +735,10 @@ public class LabAmpController implements Serializable {
             boolean shouldKeepSelection = false;
             switch (filterStatus) {
                 case "active":
-                    shouldKeepSelection = !current.isRetired();
+                    shouldKeepSelection = !current.isInactive();
                     break;
                 case "inactive":
-                    shouldKeepSelection = current.isRetired();
+                    shouldKeepSelection = current.isInactive();
                     break;
                 case "all":
                     shouldKeepSelection = true;
@@ -750,6 +788,7 @@ public class LabAmpController implements Serializable {
             auditData.put("code", amp.getCode());
             auditData.put("barcode", amp.getBarcode());
             auditData.put("retired", amp.isRetired());
+            auditData.put("inactive", amp.isInactive());
             auditData.put("departmentType", amp.getDepartmentType() != null ?
                     amp.getDepartmentType().toString() : null);
             auditData.put("vmpId", amp.getVmp() != null ? amp.getVmp().getId() : null);
@@ -770,6 +809,12 @@ public class LabAmpController implements Serializable {
         return auditData;
     }
 
+    /**
+     * Toggles the temporary active/inactive status of the current AMP.
+     * This sets the 'inactive' flag, NOT 'retired'. The item remains in
+     * the system and can be reactivated at any time by the user.
+     * For permanent removal see delete() which sets retired=true.
+     */
     public void toggleAmpStatus() {
         if (current == null) {
             JsfUtil.addErrorMessage("No AMP selected");
@@ -777,9 +822,9 @@ public class LabAmpController implements Serializable {
         }
 
         Map<String, Object> beforeData = createAuditMap(current);
-        boolean wasRetired = current.isRetired();
+        boolean wasInactive = current.isInactive();
 
-        if (wasRetired) {
+        if (wasInactive) {
             current.setInactive(false);
             JsfUtil.addSuccessMessage("Lab AMP Activated Successfully");
         } else {
@@ -790,7 +835,7 @@ public class LabAmpController implements Serializable {
         getFacade().edit(current);
 
         Map<String, Object> afterData = createAuditMap(current);
-        String action = wasRetired ? "Activate Lab AMP" : "Deactivate Lab AMP";
+        String action = wasInactive ? "Activate Lab AMP" : "Deactivate Lab AMP";
         auditService.logAudit(beforeData, afterData,
                 getSessionController().getLoggedUser(),
                 "LabAmp", action, current.getId());
@@ -803,21 +848,21 @@ public class LabAmpController implements Serializable {
         if (current == null || current.getId() == null) {
             return "Toggle Status";
         }
-        return current.isRetired() ? "Activate" : "Deactivate";
+        return current.isInactive() ? "Activate" : "Deactivate";
     }
 
     public String getToggleStatusButtonIcon() {
         if (current == null || current.getId() == null) {
             return "fas fa-toggle-off";
         }
-        return current.isRetired() ? "fas fa-check-circle" : "fas fa-times-circle";
+        return current.isInactive() ? "fas fa-check-circle" : "fas fa-times-circle";
     }
 
     public String getToggleStatusButtonClass() {
         if (current == null || current.getId() == null) {
             return "ui-button-secondary";
         }
-        return current.isRetired() ? "ui-button-success" : "ui-button-warning";
+        return current.isInactive() ? "ui-button-success" : "ui-button-warning";
     }
 
     // ===================== Audit History Management =====================

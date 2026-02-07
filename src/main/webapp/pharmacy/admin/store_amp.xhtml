@@ -146,7 +146,7 @@
                                         title="Toggle Store AMP active/inactive status">
                                         <p:confirm
                                             header="Confirm Status Change"
-                                            message="Are you sure you want to #{storeAmpController.current.retired ? 'ACTIVATE' : 'DEACTIVATE'} this Store AMP: #{storeAmpController.current.name}?"
+                                            message="Are you sure you want to #{storeAmpController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this Store AMP: #{storeAmpController.current.name}?"
                                             icon="fas fa-question-circle" />
                                     </p:commandButton>
                                     <p:commandButton
@@ -182,8 +182,8 @@
                                             <!-- Status - Centre -->
                                             <div class="d-flex align-items-center gap-2">
                                                 <h:panelGroup rendered="#{storeAmpController.current ne null and storeAmpController.current.id ne null}"
-                                                              styleClass="badge #{storeAmpController.current.retired ? 'badge-danger' : 'badge-success'}">
-                                                    <h:outputLabel value="#{storeAmpController.current.retired ? 'Inactive' : 'Active'}"
+                                                              styleClass="badge #{storeAmpController.current.inactive ? 'badge-danger' : 'badge-success'}">
+                                                    <h:outputLabel value="#{storeAmpController.current.inactive ? 'Inactive' : 'Active'}"
                                                                    styleClass="mb-0"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{storeAmpController.editable}"

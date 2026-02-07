@@ -91,7 +91,12 @@ public class StoreAmpController implements Serializable {
     private List<AmpDto> ampDtos;
     private List<AuditEvent> ampAuditEvents;
 
-    // Filter state for active/inactive AMPs
+    // Filter state for active/inactive AMPs.
+    // "active"   -> inactive=false  (items in day-to-day use)
+    // "inactive" -> inactive=true   (temporarily hidden, user can reactivate)
+    // "all"      -> no inactive filter (shows both active and inactive)
+    // NOTE: All three modes always enforce retired=false. Retired items are
+    // permanently deleted and never appear in any listing or search.
     private String filterStatus = "active";
 
     // ========== Backward-compatibility methods ==========
@@ -437,6 +442,12 @@ public class StoreAmpController implements Serializable {
         return sc.toString();
     }
 
+    /**
+     * Permanently soft-deletes the current AMP by setting retired=true.
+     * Retired items are excluded from every query and cannot be restored
+     * from the UI. For temporary removal use toggleAmpStatus() which
+     * sets inactive instead.
+     */
     public void delete() {
         if (current != null) {
             Map<String, Object> beforeData = createAuditMap(current);
@@ -510,16 +521,17 @@ public class StoreAmpController implements Serializable {
             Map<String, Object> params = new HashMap<>();
             jpql = "select a "
                     + " from Amp a "
-                    + " where a.departmentType=:dep ";
+                    + " where a.retired=false "
+                    + " and a.departmentType=:dep ";
 
             params.put("dep", DepartmentType.Store);
 
             if ("active".equals(filterStatus)) {
-                jpql += "and a.retired=:retired ";
-                params.put("retired", false);
+                jpql += "and a.inactive=:inact ";
+                params.put("inact", false);
             } else if ("inactive".equals(filterStatus)) {
-                jpql += "and a.retired=:retired ";
-                params.put("retired", true);
+                jpql += "and a.inactive=:inact ";
+                params.put("inact", true);
             }
 
             jpql += "order by a.name";
@@ -594,17 +606,18 @@ public class StoreAmpController implements Serializable {
         String jpql = "SELECT new com.divudi.core.data.dto.AmpDto("
                 + "a.id, a.name, a.code, a.barcode, a.retired, "
                 + "a.vmp.id, a.vmp.name) "
-                + "FROM Amp a WHERE a.departmentType=:dep ";
+                + "FROM Amp a WHERE a.retired=false "
+                + "AND a.departmentType=:dep ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("dep", DepartmentType.Store);
 
         if ("active".equals(filterStatus)) {
-            jpql += "AND a.retired=:retired ";
-            params.put("retired", false);
+            jpql += "AND a.inactive=:inact ";
+            params.put("inact", false);
         } else if ("inactive".equals(filterStatus)) {
-            jpql += "AND a.retired=:retired ";
-            params.put("retired", true);
+            jpql += "AND a.inactive=:inact ";
+            params.put("inact", true);
         }
 
         jpql += "ORDER BY a.name";
@@ -620,20 +633,20 @@ public class StoreAmpController implements Serializable {
         String jpql = "SELECT new com.divudi.core.data.dto.AmpDto("
                 + "a.id, a.name, a.code, a.barcode, a.retired, "
                 + "a.vmp.id, a.vmp.name) "
-                + "FROM Amp a WHERE LOWER(a.name) LIKE :query "
-                + "AND a.departmentType=:dep "
-                + "AND a.retired=false ";
+                + "FROM Amp a WHERE a.retired=false "
+                + "AND LOWER(a.name) LIKE :query "
+                + "AND a.departmentType=:dep ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("query", "%" + query.toLowerCase() + "%");
         params.put("dep", DepartmentType.Store);
 
         if ("active".equals(filterStatus)) {
-            jpql += "AND a.inactive=:retired ";
-            params.put("retired", false);
+            jpql += "AND a.inactive=:inact ";
+            params.put("inact", false);
         } else if ("inactive".equals(filterStatus)) {
-            jpql += "AND a.inactive=:retired ";
-            params.put("retired", true);
+            jpql += "AND a.inactive=:inact ";
+            params.put("inact", true);
         }
 
         jpql += "ORDER BY a.name";
@@ -697,10 +710,10 @@ public class StoreAmpController implements Serializable {
             boolean shouldKeepSelection = false;
             switch (filterStatus) {
                 case "active":
-                    shouldKeepSelection = !current.isRetired();
+                    shouldKeepSelection = !current.isInactive();
                     break;
                 case "inactive":
-                    shouldKeepSelection = current.isRetired();
+                    shouldKeepSelection = current.isInactive();
                     break;
                 case "all":
                     shouldKeepSelection = true;
@@ -750,6 +763,7 @@ public class StoreAmpController implements Serializable {
             auditData.put("code", amp.getCode());
             auditData.put("barcode", amp.getBarcode());
             auditData.put("retired", amp.isRetired());
+            auditData.put("inactive", amp.isInactive());
             auditData.put("departmentType", amp.getDepartmentType() != null ?
                     amp.getDepartmentType().toString() : null);
             auditData.put("vmpId", amp.getVmp() != null ? amp.getVmp().getId() : null);
@@ -770,6 +784,12 @@ public class StoreAmpController implements Serializable {
         return auditData;
     }
 
+    /**
+     * Toggles the temporary active/inactive status of the current AMP.
+     * This sets the 'inactive' flag, NOT 'retired'. The item remains in
+     * the system and can be reactivated at any time by the user.
+     * For permanent removal see delete() which sets retired=true.
+     */
     public void toggleAmpStatus() {
         if (current == null) {
             JsfUtil.addErrorMessage("No AMP selected");
@@ -777,9 +797,9 @@ public class StoreAmpController implements Serializable {
         }
 
         Map<String, Object> beforeData = createAuditMap(current);
-        boolean wasRetired = current.isRetired();
+        boolean wasInactive = current.isInactive();
 
-        if (wasRetired) {
+        if (wasInactive) {
             current.setInactive(false);
             JsfUtil.addSuccessMessage("Store AMP Activated Successfully");
         } else {
@@ -790,7 +810,7 @@ public class StoreAmpController implements Serializable {
         getFacade().edit(current);
 
         Map<String, Object> afterData = createAuditMap(current);
-        String action = wasRetired ? "Activate Store AMP" : "Deactivate Store AMP";
+        String action = wasInactive ? "Activate Store AMP" : "Deactivate Store AMP";
         auditService.logAudit(beforeData, afterData,
                 getSessionController().getLoggedUser(),
                 "StoreAmp", action, current.getId());
@@ -803,21 +823,21 @@ public class StoreAmpController implements Serializable {
         if (current == null || current.getId() == null) {
             return "Toggle Status";
         }
-        return current.isRetired() ? "Activate" : "Deactivate";
+        return current.isInactive() ? "Activate" : "Deactivate";
     }
 
     public String getToggleStatusButtonIcon() {
         if (current == null || current.getId() == null) {
             return "fas fa-toggle-off";
         }
-        return current.isRetired() ? "fas fa-check-circle" : "fas fa-times-circle";
+        return current.isInactive() ? "fas fa-check-circle" : "fas fa-times-circle";
     }
 
     public String getToggleStatusButtonClass() {
         if (current == null || current.getId() == null) {
             return "ui-button-secondary";
         }
-        return current.isRetired() ? "ui-button-success" : "ui-button-warning";
+        return current.isInactive() ? "ui-button-success" : "ui-button-warning";
     }
 
     // ===================== Audit History Management =====================
