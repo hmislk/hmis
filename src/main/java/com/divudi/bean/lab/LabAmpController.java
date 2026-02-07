@@ -274,21 +274,6 @@ public class LabAmpController implements Serializable {
             current.setDepartmentType(DepartmentType.Lab);
         }
 
-        if (current.getVmp() == null) {
-            JsfUtil.addErrorMessage("No VMP selected");
-            return;
-        }
-
-        if (current.getCategory() == null) {
-            if (current.getVmp().getCategory() != null) {
-                current.setCategory(current.getVmp().getCategory());
-                JsfUtil.addSuccessMessage("Taken the category from VMP");
-            } else {
-                JsfUtil.addErrorMessage("No category");
-                return;
-            }
-        }
-
         if (current.getItemType() == null) {
             current.setItemType(ItemType.Amp);
         }
@@ -656,10 +641,11 @@ public class LabAmpController implements Serializable {
         }
 
         String jpql = "SELECT new com.divudi.core.data.dto.AmpDto("
-                + "a.id, a.name, a.code, a.barcode, a.retired, "
-                + "a.vmp.id, a.vmp.name) "
+                + "a.id, a.name, a.code, a.barcode, a.inactive) "
                 + "FROM Amp a WHERE a.retired=false "
-                + "AND LOWER(a.name) LIKE :query "
+                + "AND (LOWER(a.name) LIKE :query "
+                + "OR LOWER(a.code) LIKE :query "
+                + "OR LOWER(a.barcode) LIKE :query) "
                 + "AND a.departmentType=:dep ";
 
         Map<String, Object> params = new HashMap<>();
