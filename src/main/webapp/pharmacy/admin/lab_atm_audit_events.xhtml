@@ -1,0 +1,140 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/pharmacy/admin/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="form">
+                    <p:growl id="msg"/>
+                    <p:panel header="Lab ATM Information" styleClass="mb-3">
+                        <f:facet name="header" >
+                            <h:outputText value="Lab ATM Audit Events" />
+                            <p:commandButton
+                                value="Back to Lab ATM List"
+                                icon="fas fa-arrow-left"
+                                action="/pharmacy/admin/lab_atm?faces-redirect=true"
+                                styleClass="ui-button-info ui-button-outlined mx-1"
+                                ajax="false"
+                                immediate="true"
+                                title="Return to Lab ATM management"/>
+
+                            <p:commandButton
+                                value="Refresh Events"
+                                icon="fas fa-sync"
+                                action="#{labAtmController.fillAtmAuditEvents}"
+                                update=":form:auditTable :form:msg"
+                                styleClass="ui-button-info mx-1"
+                                title="Reload audit events for this Lab ATM"/>
+
+                        </f:facet>
+
+                        <p:panelGrid columns="2" layout="tabular" >
+                            <p:outputLabel for="atmName" value="Name: "/>
+                            <h:outputText id="atmName" value="#{labAtmController.current.name}"/>
+                            <p:outputLabel for="atmCode" value="Code: "/>
+                            <h:outputText id="atmCode" value="#{labAtmController.current.code}"/>
+                            <p:outputLabel for="atmVtm" value="VTM: "/>
+                            <h:outputText id="atmVtm" value="#{labAtmController.current.vtm.name}"
+                                          rendered="#{labAtmController.current.vtm ne null}"/>
+                            <h:outputText value="Not specified"
+                                          rendered="#{labAtmController.current.vtm eq null}"
+                                          styleClass="text-muted"/>
+                            <p:outputLabel for="atmStatus" value="Status: "/>
+                            <p:badge id="atmStatus"
+                                     value="#{labAtmController.current.retired ? 'Retired' : 'Active'}"
+                                     severity="#{labAtmController.current.retired ? 'danger' : 'success'}"/>
+                            <p:outputLabel for="atmDept" value="Department: "/>
+                            <h:outputText id="atmDept" value="#{labAtmController.current.departmentType}"/>
+                            <p:outputLabel for="totalEvents" value="Total Audit Events: "/>
+                            <p:badge id="totalEvents"
+                                     value="#{labAtmController.atmAuditEvents.size()}"
+                                     severity="info"/>
+                        </p:panelGrid>
+                        <p:dataTable
+                            id="auditTable"
+                            value="#{labAtmController.atmAuditEvents}"
+                            var="audit"
+                            paginator="true"
+                            rows="20"
+                            paginatorPosition="both"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} events"
+                            rowsPerPageTemplate="10,20,50,100"
+                            emptyMessage="No audit events found for this Lab ATM."
+                            styleClass="table table-striped">
+
+                            <p:column headerText="ID" style="width: 4em;" styleClass="text-end">
+                                <h:outputText value="#{audit.id}" />
+                            </p:column>
+
+                            <p:column headerText="Date / Time" style="width: 12em;">
+                                <h:outputText value="#{audit.eventDataTime}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Action" style="width: 8em;" styleClass="text-center">
+                                <p:badge value="#{audit.eventTrigger}"
+                                         severity="#{audit.eventTrigger eq 'Create Lab ATM' ? 'success' :
+                                                     (audit.eventTrigger eq 'Update Lab ATM' ? 'warning' : 'danger')}"/>
+                            </p:column>
+
+                            <p:column headerText="User" style="width: 12em;">
+                                <h:outputText value="#{webUserController.findWebUserNameWithTitleById(audit.webUserId)}" />
+                            </p:column>
+
+                            <p:column headerText="Changes" style="width: auto;">
+                                <div class="audit-changes">
+                                    <h:outputText escape="false" value="#{audit.difference}" />
+                                </div>
+                            </p:column>
+
+                            <p:column headerText="Status" style="width: 6em;" styleClass="text-center">
+                                <p:badge value="#{audit.eventStatus}"
+                                         severity="#{audit.eventStatus eq 'Completed' ? 'success' :
+                                                     (audit.eventStatus eq 'Failed' ? 'danger' : 'warning')}"/>
+                            </p:column>
+
+                            <p:column headerText="IP Address" style="width: 10em;">
+                                <h:outputText value="#{audit.ipAddress}" styleClass="text-muted" style="font-size: 0.85em;"/>
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:panel>
+
+                    <!-- Load audit events when page loads -->
+                    <f:event type="preRenderView" listener="#{labAtmController.fillAtmAuditEvents}" />
+
+                </h:form>
+
+                <!-- Custom CSS for better audit display -->
+                <style>
+                    .audit-changes {
+                        max-width: 400px;
+                        word-wrap: break-word;
+                        white-space: pre-line;
+                        font-family: 'Courier New', monospace;
+                        font-size: 0.85em;
+                        line-height: 1.3;
+                    }
+
+                    .table th {
+                        background-color: #f8f9fa;
+                        font-weight: 600;
+                        border-top: none;
+                    }
+
+                    .table td {
+                        vertical-align: middle;
+                        padding: 0.75rem 0.5rem;
+                    }
+                </style>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
