@@ -10,56 +10,59 @@
             <ui:define name="subcontent">
                 <h:form id="form">
                     <p:growl id="msg"/>
-                    <p:panel header="AMPP Audit Events" styleClass="mb-3">
+                    <p:panel header="Store VMP Information" styleClass="mb-3">
                         <f:facet name="header" >
-                            <h:outputText value="AMPP Audit Events" />
+                            <h:outputText value="Store VMP Audit Events" />
                             <p:commandButton
-                                value="Back to AMPP Management"
+                                value="Back to Store VMP List"
                                 icon="fas fa-arrow-left"
-                                action="/pharmacy/admin/ampp?faces-redirect=true"
+                                action="/pharmacy/admin/store_vmp?faces-redirect=true"
                                 styleClass="ui-button-info ui-button-outlined mx-1"
                                 ajax="false"
                                 immediate="true"
-                                title="Return to AMPP management"/>
+                                title="Return to Store VMP management"/>
 
                             <p:commandButton
                                 value="Refresh Events"
                                 icon="fas fa-sync"
-                                action="#{amppController.refreshAuditEvents}"
+                                action="#{storeVmpController.fillVmpAuditEvents}"
                                 update=":form:auditTable :form:msg"
                                 styleClass="ui-button-info mx-1"
-                                title="Reload audit events for this AMPP"/>
+                                title="Reload audit events for this Store VMP"/>
+
                         </f:facet>
 
-                        <!-- AMPP Information Display -->
-                        <p:panelGrid columns="2" layout="tabular" styleClass="mb-3">
-                            <p:outputLabel for="amppName" value="AMPP Name: "/>
-                            <h:outputText id="amppName" value="#{amppController.current.name}"/>
-
-                            <p:outputLabel for="amppCode" value="Code: "/>
-                            <h:outputText id="amppCode" value="#{amppController.current.code}"/>
-
-                            <p:outputLabel for="amppPackSize" value="Pack Size: "/>
-                            <h:outputText id="amppPackSize" value="#{amppController.current.dblValue}"/>
-
-                            <p:outputLabel for="amppStatus" value="Status: "/>
-                            <p:badge id="amppStatus"
-                                     value="#{amppController.current.inactive ? 'Inactive' : 'Active'}"
-                                     severity="#{amppController.current.inactive ? 'danger' : 'success'}"/>
-
-                            <p:outputLabel for="amppAmp" value="AMP: "/>
-                            <h:outputText id="amppAmp" value="#{amppController.current.amp.name}"/>
-
+                        <p:panelGrid columns="2" layout="tabular" >
+                            <p:outputLabel for="vmpName" value="Name: "/>
+                            <h:outputText id="vmpName" value="#{storeVmpController.current.name}"/>
+                            <p:outputLabel for="vmpCode" value="Code: "/>
+                            <h:outputText id="vmpCode" value="#{storeVmpController.current.code}"/>
+                            <p:outputLabel for="vmpStatus" value="Status: "/>
+                            <p:badge id="vmpStatus"
+                                     value="#{storeVmpController.current.inactive ? 'Inactive' : 'Active'}"
+                                     severity="#{storeVmpController.current.inactive ? 'danger' : 'success'}"/>
+                            <p:outputLabel for="vmpDept" value="Department: "/>
+                            <h:outputText id="vmpDept" value="#{storeVmpController.current.departmentType}"/>
+                            <p:outputLabel for="vmpVtm" value="Generic Name: "/>
+                            <h:outputText id="vmpVtm" value="#{storeVmpController.current.vtm.name}"
+                                          rendered="#{storeVmpController.current.vtm ne null}"/>
+                            <h:outputText value="Not specified"
+                                          rendered="#{storeVmpController.current.vtm eq null}"
+                                          styleClass="text-muted"/>
+                            <p:outputLabel for="vmpDosageForm" value="Dosage Form: "/>
+                            <h:outputText id="vmpDosageForm" value="#{storeVmpController.current.dosageForm.name}"
+                                          rendered="#{storeVmpController.current.dosageForm ne null}"/>
+                            <h:outputText value="Not specified"
+                                          rendered="#{storeVmpController.current.dosageForm eq null}"
+                                          styleClass="text-muted"/>
                             <p:outputLabel for="totalEvents" value="Total Audit Events: "/>
                             <p:badge id="totalEvents"
-                                     value="#{amppController.amppAuditEvents.size()}"
+                                     value="#{storeVmpController.vmpAuditEvents.size()}"
                                      severity="info"/>
                         </p:panelGrid>
-
-                        <!-- Audit Events DataTable -->
                         <p:dataTable
                             id="auditTable"
-                            value="#{amppController.amppAuditEvents}"
+                            value="#{storeVmpController.vmpAuditEvents}"
                             var="audit"
                             paginator="true"
                             rows="20"
@@ -67,7 +70,7 @@
                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} events"
                             rowsPerPageTemplate="10,20,50,100"
-                            emptyMessage="No audit events found for this AMPP."
+                            emptyMessage="No audit events found for this Store VMP."
                             styleClass="table table-striped">
 
                             <p:column headerText="ID" style="width: 4em;" styleClass="text-end">
@@ -82,11 +85,11 @@
 
                             <p:column headerText="Action" style="width: 8em;" styleClass="text-center">
                                 <p:badge value="#{audit.eventTrigger}"
-                                         severity="#{audit.eventTrigger eq 'Create AMPP' ? 'success' :
-                                                     (audit.eventTrigger eq 'Update AMPP' ? 'warning' :
-                                                     (audit.eventTrigger eq 'Delete AMPP' ? 'danger' :
-                                                     (audit.eventTrigger eq 'Activate AMPP' ? 'info' :
-                                                     (audit.eventTrigger eq 'Deactivate AMPP' ? 'secondary' : 'primary'))))}"/>
+                                         severity="#{audit.eventTrigger eq 'Create Store VMP' ? 'success' :
+                                                     (audit.eventTrigger eq 'Update Store VMP' ? 'warning' :
+                                                     (audit.eventTrigger eq 'Delete Store VMP' ? 'danger' :
+                                                     (audit.eventTrigger eq 'Activate Store VMP' ? 'info' :
+                                                     (audit.eventTrigger eq 'Deactivate Store VMP' ? 'secondary' : 'primary'))))}"/>
                             </p:column>
 
                             <p:column headerText="User" style="width: 12em;">
@@ -108,14 +111,16 @@
                             <p:column headerText="IP Address" style="width: 10em;">
                                 <h:outputText value="#{audit.ipAddress}" styleClass="text-muted" style="font-size: 0.85em;"/>
                             </p:column>
+
                         </p:dataTable>
                     </p:panel>
 
                     <!-- Load audit events when page loads -->
-                    <f:event type="preRenderView" listener="#{amppController.fillAmppAuditEvents}" />
+                    <f:event type="preRenderView" listener="#{storeVmpController.fillVmpAuditEvents}" />
+
                 </h:form>
 
-                <!-- Custom CSS for audit display -->
+                <!-- Custom CSS for better audit display -->
                 <style>
                     .audit-changes {
                         max-width: 400px;
@@ -137,6 +142,7 @@
                         padding: 0.75rem 0.5rem;
                     }
                 </style>
+
             </ui:define>
         </ui:composition>
     </h:body>

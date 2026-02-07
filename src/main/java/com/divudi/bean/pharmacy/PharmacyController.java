@@ -104,6 +104,10 @@ public class PharmacyController implements Serializable {
     @Inject
     private com.divudi.bean.lab.LabAtmController labAtmController;
     @Inject
+    private com.divudi.bean.store.StoreVmpController storeVmpController;
+    @Inject
+    private com.divudi.bean.lab.LabVmpController labVmpController;
+    @Inject
     VtmController vtmController;
     @Inject
     AtmController atmController;
@@ -1410,6 +1414,14 @@ public class PharmacyController implements Serializable {
     public String navigateToLabAtm() {
         labAtmController.clearDtoCache();
         return "/pharmacy/admin/lab_atm?faces-redirect=true";
+    }
+
+    public String navigateToStoreVmp() {
+        return "/pharmacy/admin/store_vmp?faces-redirect=true";
+    }
+
+    public String navigateToLabVmp() {
+        return "/pharmacy/admin/lab_vmp?faces-redirect=true";
     }
 
     public String navigateToManufacturers() {

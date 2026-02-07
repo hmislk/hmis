@@ -143,7 +143,24 @@ public class VtmController implements Serializable {
         } else {
             String sql = "SELECT c FROM Vtm c WHERE c.retired=:retired "
                     + "AND UPPER(c.name) LIKE :query "
-                    + "AND (c.departmentType IS NULL OR c.departmentType=:dep) "
+                    + "AND c.inactive=false "
+                    + "ORDER BY c.name";
+            Map<String, Object> params = new HashMap<>();
+            params.put("retired", false);
+            params.put("query", "%" + query.toUpperCase() + "%");
+            vtmList = getFacade().findByJpql(sql, params);
+        }
+        return vtmList;
+    }
+    
+    public List<Vtm> completeVtmPharmacy(String query) {
+        if (query == null) {
+            vtmList = new ArrayList<Vtm>();
+        } else {
+            String sql = "SELECT c FROM Vtm c WHERE c.retired=:retired "
+                    + "AND UPPER(c.name) LIKE :query "
+                    + "AND c.departmentType=:dep "
+                    + "AND c.inactive=false "
                     + "ORDER BY c.name";
             Map<String, Object> params = new HashMap<>();
             params.put("retired", false);
