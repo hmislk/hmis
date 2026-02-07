@@ -9,7 +9,7 @@
         <ui:composition template="/pharmacy/admin/index.xhtml">
             <ui:define name="subcontent">
                 <h:form id="form">
-                    <p:growl id="msg"/>
+                    <p:growl id="msg" life="3000"/>
                     <p:focus id="selectFocus" for="acVtm" />
                     <p:focus id="detailFocus" for="gpDetail" />
 
@@ -18,55 +18,120 @@
                             <!-- DTO-Optimized VTM Selection -->
                             <p:panel header="VTM Management" class="mb-3 w-100">
 
-                                <div class="row" >
-                                    <div class="col-12" >
+                                <!-- Status Filter Section -->
+                                <h:panelGroup id="statusFilterPanel" layout="block" styleClass="status-filter-section mb-3">
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <label class="form-label mb-0">Filter:</label>
                                         <p:commandButton
-                                            id="btnAdd"
-                                            value="Add New"
-                                            icon="fa fa-plus"
-                                            action="#{vtmController.prepareAdd()}"
-                                            class="m-1 ui-button-success"
-                                            update=":form:acVtm :form:gpDetail :form:btnEdit :form:btnDelete :form:btnViewAuditEvents"
-                                            process="btnAdd">
-                                            <f:setPropertyActionListener target="#{vtmController.selectedVtmDto}" value="#{null}" />
-                                        </p:commandButton>
+                                            id="btnFilterActive"
+                                            value="Active"
+                                            action="#{vtmController.setFilterToActive()}"
+                                            update="acVtm vtmDetails statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{vtmController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
+                                            icon="fas fa-check-circle"
+                                            disabled="#{vtmController.editable}"
+                                            title="Show only active VTMs"/>
 
                                         <p:commandButton
-                                            id="btnEdit"
-                                            value="Edit"
-                                            icon="fas fa-edit"
-                                            action="#{vtmController.edit()}"
-                                            class="m-1 ui-button-info"
-                                            update=":form:acVtm :form:gpDetail :form:btnAdd :form:btnDelete :form:btnViewAuditEvents"
-                                            process="btnEdit"
-                                            disabled="#{vtmController.editable or vtmController.selectedVtmDto eq null}">
-                                        </p:commandButton>
+                                            id="btnFilterInactive"
+                                            value="Inactive"
+                                            action="#{vtmController.setFilterToInactive()}"
+                                            update="acVtm vtmDetails statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{vtmController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
+                                            icon="fas fa-times-circle"
+                                            disabled="#{vtmController.editable}"
+                                            title="Show only inactive VTMs"/>
 
                                         <p:commandButton
-                                            id="btnDelete"
-                                            onclick="if (!confirm('Are you sure you want to delete the VTM: ' +
-                                                            '#{vtmController.selectedVtmDto.name}' + '? This action cannot be undone.'))
-                                                        return false;"
-                                            action="#{vtmController.delete()}"
-                                            value="Delete"
-                                            icon="fas fa-trash"
-                                            class="m-1 ui-button-danger"
-                                            update=":form:acVtm :form:gpDetail :form:msg"
-                                            process="btnDelete"
-                                            disabled="#{vtmController.editable or vtmController.selectedVtmDto eq null}">
-                                        </p:commandButton>
-                                        <p:commandButton
-                                            id="btnViewAuditEvents"
-                                            value="History"
-                                            icon="fas fa-history"
-                                            action="#{vtmController.navigateToAuditEvents()}"
-                                            class="m-1 ui-button-secondary"
-                                            process="btnViewAuditEvents"
-                                            ajax="false"
-                                            disabled="#{vtmController.selectedVtmDto eq null}">
-                                        </p:commandButton>
+                                            id="btnFilterAll"
+                                            value="All"
+                                            action="#{vtmController.setFilterToAll()}"
+                                            update="acVtm vtmDetails statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{vtmController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
+                                            icon="fas fa-list"
+                                            disabled="#{vtmController.editable}"
+                                            title="Show all VTMs"/>
                                     </div>
-                                </div>
+
+                                    <p:outputLabel id="filterStatusLabel"
+                                                   value="Currently showing: #{vtmController.filterStatusDisplay}"
+                                                   styleClass="text-muted small mt-1"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="actionButtons">
+                                    <div class="row" >
+                                        <div class="col-12" >
+                                            <p:commandButton
+                                                id="btnAdd"
+                                                value="Add New"
+                                                icon="fa fa-plus"
+                                                action="#{vtmController.prepareAdd()}"
+                                                class="m-1 ui-button-success"
+                                                update="acVtm gpDetail actionButtons statusFilterPanel vtmDetails"
+                                                process="@this"
+                                                disabled="#{vtmController.editable}">
+                                                <f:setPropertyActionListener target="#{vtmController.selectedVtmDto}" value="#{null}" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnEdit"
+                                                value="Edit"
+                                                icon="fas fa-edit"
+                                                action="#{vtmController.edit()}"
+                                                class="m-1 ui-button-info"
+                                                update="vtmDetails acVtm actionButtons statusFilterPanel"
+                                                process="@this"
+                                                disabled="#{vtmController.editable or vtmController.selectedVtmDto eq null}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnDelete"
+                                                action="#{vtmController.delete()}"
+                                                value="Delete"
+                                                icon="fas fa-trash"
+                                                class="m-1 ui-button-danger"
+                                                update="form:msg acVtm gpDetail actionButtons statusFilterPanel vtmDetails"
+                                                process="@this"
+                                                disabled="#{vtmController.editable or vtmController.selectedVtmDto eq null}">
+                                                <p:confirm
+                                                    header="Confirm Delete"
+                                                    message="Are you sure you want to delete this VTM record?"
+                                                    icon="fas fa-exclamation-triangle" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnToggleStatus"
+                                                value="#{vtmController.toggleStatusButtonText}"
+                                                action="#{vtmController.toggleVtmStatus()}"
+                                                icon="#{vtmController.toggleStatusButtonIcon}"
+                                                update="form:msg acVtm gpDetail actionButtons statusFilterPanel vtmDetails filterStatusLabel"
+                                                process="@this"
+                                                styleClass="#{vtmController.toggleStatusButtonClass} m-1"
+                                                disabled="#{vtmController.editable or vtmController.selectedVtmDto eq null}"
+                                                title="Toggle VTM active/inactive status">
+                                                <p:confirm
+                                                    header="Confirm Status Change"
+                                                    message="Are you sure you want to #{vtmController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this VTM: #{vtmController.current.name}?"
+                                                    icon="fas fa-question-circle" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnViewAuditEvents"
+                                                value="History"
+                                                icon="fas fa-history"
+                                                action="#{vtmController.navigateToAuditEvents()}"
+                                                class="m-1 ui-button-secondary"
+                                                process="@this"
+                                                ajax="false"
+                                                disabled="#{vtmController.selectedVtmDto eq null}">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
                                 <div class="row" >
                                     <div class="col-12"  >
                                         <p:autoComplete
@@ -85,8 +150,8 @@
                                             placeholder="Type to search VTMs (Pharmacy Department)..."
                                             cache="false"
                                             minQueryLength="2">
-                                            <p:ajax event="itemSelect" process="@this" update=":form:gpDetail :form:btnEdit :form:btnDelete :form:btnViewAuditEvents :form:vtmDetails" />
-                                            <p:ajax event="change" process="@this" update=":form:gpDetail :form:btnEdit :form:btnDelete :form:btnViewAuditEvents :form:vtmDetails" />
+                                            <p:ajax event="itemSelect" process="@this" update="gpDetail actionButtons vtmDetails" />
+                                            <p:ajax event="change" process="@this" update="gpDetail actionButtons vtmDetails" />
                                             <p:column headerText="Name" >
                                                 <h:outputText value="#{dto.name}" />
                                             </p:column>
@@ -96,11 +161,6 @@
                                         </p:autoComplete>
                                     </div>
                                 </div>
-
-
-
-
-
 
                             </p:panel>
 
@@ -116,8 +176,8 @@
                                             <i class="fa fa-rocket" /> VTM Details
                                         </span>
                                         <h:panelGroup rendered="#{vtmController.current ne null and vtmController.current.id ne null}"
-                                                      styleClass="badge #{vtmController.current.retired ? 'badge-danger' : 'badge-success'}">
-                                            #{vtmController.current.retired ? 'Inactive' : 'Active'}
+                                                      styleClass="badge #{vtmController.current.inactive ? 'badge-danger' : 'badge-success'}">
+                                            #{vtmController.current.inactive ? 'Inactive' : 'Active'}
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{vtmController.editable}"
                                                       styleClass="badge badge-warning">
@@ -186,7 +246,7 @@
                                                 action="#{vtmController.save}"
                                                 class="m-1 ui-button-warning w-25"
                                                 process="btnSave gpDetail"
-                                                update=":form:acVtm :form:gpDetail :form:msg :form:btnEdit :form:btnDelete :form:btnAdd :form:vtmDetails :form:btnViewAuditEvents"
+                                                update="acVtm gpDetail form:msg actionButtons vtmDetails statusFilterPanel"
                                                 disabled="#{!vtmController.editable}"
                                                 oncomplete="try { if (PF('acVtm')) { PF('acVtm').cache = {}; } } catch(e) {}">
                                             </p:commandButton>
@@ -198,7 +258,7 @@
                                                 action="#{vtmController.cancel()}"
                                                 class="m-1 ui-button-secondary w-25"
                                                 process="btnCancel"
-                                                update=":form:acVtm :form:gpDetail :form:btnEdit :form:btnDelete :form:btnAdd :form:vtmDetails :form:btnViewAuditEvents"
+                                                update="acVtm gpDetail actionButtons vtmDetails statusFilterPanel"
                                                 disabled="#{!vtmController.editable}">
                                                 <f:setPropertyActionListener target="#{vtmController.selectedVtmDto}" value="#{null}" />
                                             </p:commandButton>
@@ -209,6 +269,11 @@
                         </div>
                     </div>
 
+                    <!-- Confirmation Dialog -->
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="fas fa-check" />
+                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fas fa-times" />
+                    </p:confirmDialog>
                 </h:form>
             </ui:define>
         </ui:composition>
