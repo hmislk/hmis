@@ -288,6 +288,10 @@ public class VmppController implements Serializable {
     // ========================== DTO Management Methods ==========================
 
     public List<VmppDto> getVmppDtos() {
+        if (vmppDtos != null) {
+            return vmppDtos;
+        }
+
         String jpql = "SELECT new com.divudi.core.data.dto.VmppDto("
                 + "v.id, v.name, v.code, v.retired, v.inactive) "
                 + "FROM Vmpp v WHERE v.departmentType=:dep AND v.retired=:retired ";
@@ -306,7 +310,8 @@ public class VmppController implements Serializable {
 
         jpql += "ORDER BY v.name";
 
-        return (List<VmppDto>) getFacade().findLightsByJpql(jpql, params);
+        vmppDtos = (List<VmppDto>) getFacade().findLightsByJpql(jpql, params);
+        return vmppDtos;
     }
 
     public List<VmppDto> completeVmppDto(String query) {
@@ -408,6 +413,7 @@ public class VmppController implements Serializable {
 
     public void setFilterStatus(String filterStatus) {
         this.filterStatus = filterStatus;
+        vmppDtos = null;
     }
 
     public void setFilterToActive() {
