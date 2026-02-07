@@ -1989,7 +1989,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                 + " from WebUserDepartment wd "
                 + " where wd.retired=false "
                 + " and wd.department.retired=false "
-                + " and wd.department.inactive=false "
+                + " and (wd.department.inactive=false or wd.department.inactive is null) "
                 + " and wd.webUser=:wu "
                 + " order by wd.department.name";
         return departmentFacade.findByJpql(sql, m);
@@ -2007,7 +2007,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                 + " from WebUserDepartment wd "
                 + " where wd.retired=false "
                 + " and wd.department.retired=false "
-                + " and wd.department.inactive=false "
+                + " and (wd.department.inactive=false or wd.department.inactive is null) "
                 + " and wd.webUser=:wu "
                 + " order by wd.department.name";
         return departmentFacade.findByJpql(sql, m);
