@@ -93,20 +93,20 @@ public class AmppDto implements Serializable {
     }
 
     /**
-     * Extended constructor - with AMP relationship for display
-     * Used when AMP information is needed for display purposes
+     * Extended constructor - with pack size and AMP relationship
+     * Used when pack size and AMP information are needed for display purposes
      *
-     * @param id AMPP ID
-     * @param name AMPP name
-     * @param code AMPP code
-     * @param retired Whether AMPP is retired/deleted
-     * @param inactive Whether AMPP is inactive
-     * @param dblValue Pack size value
-     * @param ampId AMP ID
-     * @param ampName AMP name
+     * `@param` id AMPP ID
+     * `@param` name AMPP name
+     * `@param` code AMPP code
+     * `@param` retired Whether AMPP is retired/deleted
+     * `@param` inactive Whether AMPP is inactive
+     * `@param` dblValue Pack size value
+     * `@param` ampId AMP ID
+     * `@param` ampName AMP name
      */
     public AmppDto(Long id, String name, String code, Boolean retired, Boolean inactive,
-               Double dblValue, Long ampId, String ampName) {
+                   Double dblValue, Long ampId, String ampName) {
         this(id, name, code, retired, inactive);
         this.dblValue = dblValue;
         this.ampId = ampId;
