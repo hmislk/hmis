@@ -558,13 +558,14 @@ public class StoreAmpController implements Serializable {
 
     public List<Vmp> completeVmpByName(String qry) {
         List<Vmp> vmps = new ArrayList<>();
+        if (qry == null || qry.trim().isEmpty()) {
+            return vmps;
+        }
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
-        if (qry != null) {
-            vmps = vmpFacade.findByJpql("select c from Vmp c where "
-                    + " c.retired=false and"
-                    + " ((c.name) like :n ) order by c.name", m, 30);
-        }
+        vmps = vmpFacade.findByJpql("select c from Vmp c where "
+                + " c.retired=false and"
+                + " ((c.name) like :n ) order by c.name", m, 30);
         return vmps;
     }
 

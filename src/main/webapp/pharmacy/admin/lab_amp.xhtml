@@ -20,7 +20,7 @@
                                 <!-- Status Filter Section -->
                                 <h:panelGroup id="statusFilterPanel" layout="block" styleClass="status-filter-section mb-3">
                                     <div class="d-flex gap-2 align-items-center">
-                                        <label class="form-label mb-0">Filter:</label>
+                                        <h:outputText value="Filter:" styleClass="form-label mb-0"/>
                                         <p:commandButton
                                             id="btnFilterActive"
                                             value="Active"
@@ -64,7 +64,7 @@
                                 </h:panelGroup>
                                 <!-- Modern Search Section -->
                                 <div class="search-section mb-3">
-                                    <h6 class="mb-2">Search &amp; Select Lab AMP</h6>
+                                    <h:outputText value="Search &amp; Select Lab AMP" styleClass="mb-2" style="display:block; font-size:1rem; font-weight:500;"/>
                                     <p:autoComplete
                                         id="acAmp"
                                         class="w-100"
@@ -222,7 +222,7 @@
                                     <h:panelGroup layout="block" styleClass="form-section" rendered="#{labAmpController.current ne null}">
 
                                         <!-- Essential Information Section -->
-                                        <h6 class="section-header">Essential Information</h6>
+                                        <h:outputText value="Essential Information" styleClass="section-header" style="display:block; font-size:1rem; font-weight:500;"/>
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
                                                 <p:outputLabel for="ampName" value="Lab AMP Name *"/>
@@ -248,7 +248,7 @@
                                                                      action="#{labAmpController.generateCode()}"
                                                                      update="ampCode"
                                                                      rendered="#{labAmpController.editable}"
-                                                                     styleClass="btn btn-outline-secondary"
+                                                                     styleClass="ui-button-secondary"
                                                                      process="@this"/>
                                                 </div>
                                             </div>
@@ -262,7 +262,7 @@
                                         </div>
 
                                         <!-- VMP Relationship Section -->
-                                        <h6 class="section-header">Product Information</h6>
+                                        <h:outputText value="Product Information" styleClass="section-header" style="display:block; font-size:1rem; font-weight:500;"/>
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
                                                 <p:outputLabel for="vmpSelect" value="VMP*"/>
@@ -297,7 +297,7 @@
                                         </div>
 
                                         <!-- Business Rules Section -->
-                                        <h6 class="section-header">Business Rules</h6>
+                                        <h:outputText value="Business Rules" styleClass="section-header" style="display:block; font-size:1rem; font-weight:500;"/>
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-3">
                                                 <div class="form-check">
