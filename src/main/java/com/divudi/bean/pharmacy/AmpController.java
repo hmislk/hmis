@@ -1510,7 +1510,8 @@ public class AmpController implements Serializable {
                 + "a.id, a.name, a.code, a.barcode, a.retired, "
                 + "a.vmp.id, a.vmp.name) "
                 + "FROM Amp a WHERE LOWER(a.name) LIKE :query "
-                + "AND a.departmentType=:dep ";
+                + "AND a.departmentType=:dep "
+                + "AND a.retired=false ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("query", "%" + query.toLowerCase() + "%");
@@ -1518,10 +1519,10 @@ public class AmpController implements Serializable {
 
         // Apply status filter based on retired attribute
         if ("active".equals(filterStatus)) {
-            jpql += "AND a.retired=:retired ";
+            jpql += "AND a.inactive=:retired ";
             params.put("retired", false);
         } else if ("inactive".equals(filterStatus)) {
-            jpql += "AND a.retired=:retired ";
+            jpql += "AND a.inactive=:retired ";
             params.put("retired", true);
         }
         // For "all", no additional filter needed
@@ -1696,15 +1697,11 @@ public class AmpController implements Serializable {
 
         if (wasRetired) {
             // Activate AMP
-            current.setRetired(false);
-            current.setRetiredAt(null);
-            current.setRetirer(null);
+            current.setInactive(false);
             JsfUtil.addSuccessMessage("AMP Activated Successfully");
         } else {
             // Deactivate AMP
-            current.setRetired(true);
-            current.setRetiredAt(new Date());
-            current.setRetirer(getSessionController().getLoggedUser());
+            current.setInactive(true);
             JsfUtil.addSuccessMessage("AMP Deactivated Successfully");
         }
 
