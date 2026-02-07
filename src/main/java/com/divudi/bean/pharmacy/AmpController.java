@@ -1476,20 +1476,20 @@ public class AmpController implements Serializable {
      */
     public List<AmpDto> getAmpDtos() {
         String jpql = "SELECT new com.divudi.core.data.dto.AmpDto("
-                + "a.id, a.name, a.code, a.barcode, a.retired, "
-                + "a.vmp.id, a.vmp.name) "
-                + "FROM Amp a WHERE a.departmentType=:dep ";
+                + "a.id, a.name, a.code, a.barcode, a.inactive, "
+                + "v.id, v.name) "
+                + "FROM Amp a LEFT JOIN a.vmp v WHERE a.departmentType=:dep ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("dep", DepartmentType.Pharmacy);
 
-        // Apply status filter based on retired attribute
+        // Apply status filter based on inactive attribute
         if ("active".equals(filterStatus)) {
-            jpql += "AND a.retired=:retired ";
-            params.put("retired", false);
+            jpql += "AND a.inactive=:inactive ";
+            params.put("inactive", false);
         } else if ("inactive".equals(filterStatus)) {
-            jpql += "AND a.retired=:retired ";
-            params.put("retired", true);
+            jpql += "AND a.inactive=:inactive ";
+            params.put("inactive", true);
         }
         // For "all", no additional filter needed
 
@@ -1507,9 +1507,10 @@ public class AmpController implements Serializable {
         }
 
         String jpql = "SELECT new com.divudi.core.data.dto.AmpDto("
-                + "a.id, a.name, a.code, a.barcode, a.retired, "
-                + "a.vmp.id, a.vmp.name) "
-                + "FROM Amp a WHERE LOWER(a.name) LIKE :query "
+                + "a.id, a.name, a.code, a.barcode, a.inactive, "
+                + "v.id, v.name) "
+                + "FROM Amp a LEFT JOIN a.vmp v "
+                + "WHERE (LOWER(a.name) LIKE :query OR LOWER(a.code) LIKE :query OR LOWER(a.barcode) LIKE :query) "
                 + "AND a.departmentType=:dep "
                 + "AND a.retired=false ";
 
@@ -1517,13 +1518,13 @@ public class AmpController implements Serializable {
         params.put("query", "%" + query.toLowerCase() + "%");
         params.put("dep", DepartmentType.Pharmacy);
 
-        // Apply status filter based on retired attribute
+        // Apply status filter based on inactive attribute
         if ("active".equals(filterStatus)) {
-            jpql += "AND a.inactive=:retired ";
-            params.put("retired", false);
+            jpql += "AND a.inactive=:inactive ";
+            params.put("inactive", false);
         } else if ("inactive".equals(filterStatus)) {
-            jpql += "AND a.inactive=:retired ";
-            params.put("retired", true);
+            jpql += "AND a.inactive=:inactive ";
+            params.put("inactive", true);
         }
         // For "all", no additional filter needed
 
@@ -1556,7 +1557,7 @@ public class AmpController implements Serializable {
             return null;
         }
         return new AmpDto(amp.getId(), amp.getName(), amp.getCode(),
-                amp.getBarcode(), amp.isRetired(),
+                amp.getBarcode(), amp.isInactive(),
                 amp.getVmp() != null ? amp.getVmp().getId() : null,
                 amp.getVmp() != null ? amp.getVmp().getName() : null);
     }
