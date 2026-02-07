@@ -18,10 +18,11 @@
                             </h:panelGroup>
 
                             <p:datePicker
+                                value="#{reportController.fromDate}"
                                 id="fromDate"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 showTime="true"                                                           
                                 monthNavigator="true"           
                                 yearNavigator="true"                              
@@ -36,12 +37,13 @@
                                               styleClass="fa mr-2"/> 
                                 <p:outputLabel value="To" for="toDate" class="m-3"/>
                             </h:panelGroup>
-                            
+
                             <p:datePicker
+                                value="#{reportController.toDate}"
                                 id="toDate"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 showTime="true"                                                           
                                 monthNavigator="true"           
                                 yearNavigator="true"                              
@@ -54,10 +56,14 @@
                                 </p:outputLabel>
                             </h:panelGroup>
                             <p:selectOneMenu
+                                value="#{reportController.institution}"
                                 id="phmIns"
                                 class="w-100"
                                 filter="true">
                                 <f:selectItem itemLabel="All Institutions"/>
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                               itemValue="#{ins}"/>
+                                <p:ajax process="phmIns" update="sto"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>
@@ -68,10 +74,14 @@
                                 <p:outputLabel value="Site" for="phmSite" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu
+                                value="#{reportController.site}"
                                 id="phmSite"
                                 class="w-100"
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites"/>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                               itemValue="#{site}"/>
+                                <p:ajax process="phmSite" update="sto"/>
                             </p:selectOneMenu>
 
 
@@ -79,10 +89,81 @@
                                 <h:outputText value="&#xf54e;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Store/Department" for="sto" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="sto" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All Stores/Departments" ></f:selectItem>
+                            <h:panelGroup id="sto">
 
-                            </p:selectOneMenu>
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{reportController.institution eq null and reportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{reportController.institution eq null and reportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{reportController.institution ne null and reportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(reportController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{reportController.institution ne null and reportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportController.institution, reportController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu
+                                    rendered="false"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportController.department}"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportController.institution, reportController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
 
 
                             <p:spacer width="20"></p:spacer>
@@ -139,14 +220,14 @@
                                         <h:outputText value="" />
                                     </td>
                                 </tr>
-                                
+
                                 <tr>
                                     <th style="width: 200px;">Site :</th>
                                     <td>
                                         <h:outputText value="" />
                                     </td>
                                 </tr>
-                                
+
                                 <tr>
                                     <th style="width: 200px;">Store/Department :</th>
                                     <td>
@@ -183,7 +264,7 @@
                                 currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
                                 rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
                                 styleClass="table-sm">
-                                
+
                                 <p:column width= "8em" >
                                     <f:facet name="header" >
                                         <h:outputText value="MRNO" />
@@ -274,7 +355,7 @@
                                     <h:outputText value=""> 
                                     </h:outputText>
                                 </p:column>
-                                
+
                                 <p:column width="8em">
                                     <f:facet name="header">
                                         <h:outputText value="Discount Total" />
@@ -282,7 +363,7 @@
                                     <h:outputText value=""> 
                                     </h:outputText>
                                 </p:column>
-                                
+
                                 <p:column width="8em">
                                     <f:facet name="header">
                                         <h:outputText value="Net Value" />
@@ -290,7 +371,7 @@
                                     <h:outputText value=""> 
                                     </h:outputText>
                                 </p:column>
-                                
+
                                 <p:column width="8em">
                                     <f:facet name="header">
                                         <h:outputText value="Net Total" />
