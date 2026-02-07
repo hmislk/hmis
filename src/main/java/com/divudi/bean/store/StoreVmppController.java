@@ -354,6 +354,7 @@ public class StoreVmppController implements Serializable {
 
     public void setFilterStatus(String filterStatus) {
         this.filterStatus = filterStatus;
+        vmppDtos = null;
     }
 
     public void setFilterToActive() {

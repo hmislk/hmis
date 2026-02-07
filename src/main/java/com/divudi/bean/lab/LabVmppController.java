@@ -149,6 +149,7 @@ public class LabVmppController implements Serializable {
 
                 JsfUtil.addSuccessMessage("Saved Successfully.");
             }
+            selectedVmppDto = createVmppDto(getCurrent());
             editable = false;
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving Lab VMPP: " + e.getMessage());
@@ -190,7 +191,6 @@ public class LabVmppController implements Serializable {
         items = null;
         vmppDtos = null;
         getItems();
-        getCurrent();
         editable = false;
     }
 
