@@ -851,15 +851,18 @@ public class InstitutionController implements Serializable {
     }
 
     public Institution getCurrent() {
-        if (current == null) {
-            current = new Institution();
-        }
         return current;
     }
 
     public void setCurrent(Institution current) {
         codeDisabled = true;
         this.current = current;
+    }
+
+    public void ensureCurrent() {
+        if (current == null) {
+            current = new Institution();
+        }
     }
 
     public void delete() {
@@ -877,7 +880,7 @@ public class InstitutionController implements Serializable {
         getItems();
         fetchSelectedAgencys();
         current = null;
-        getCurrent();
+        ensureCurrent();
     }
 
     public void deleteSite() {
@@ -893,7 +896,7 @@ public class InstitutionController implements Serializable {
         }
 
         current = null;
-        getCurrent();
+        ensureCurrent();
         fillAllSites();
         getSites();
     }
@@ -1510,9 +1513,7 @@ public class InstitutionController implements Serializable {
                     getSessionController().getLoggedUser(),
                     "Institution", action, current.getId());
 
-            if (isNew && current.getId() != null) {
-                selectedInstitutionDto = createInstitutionDto(current);
-            }
+            selectedInstitutionDto = createInstitutionDto(current);
 
             editable = false;
         } catch (Exception e) {

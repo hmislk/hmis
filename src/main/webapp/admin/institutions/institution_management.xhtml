@@ -116,7 +116,7 @@
                                             title="Toggle Institution active/inactive status">
                                             <p:confirm
                                                 header="Confirm Status Change"
-                                                message="Are you sure you want to #{institutionController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this Institution: #{institutionController.current.name}?"
+                                                message="Are you sure you want to #{not empty institutionController.selectedInstitutionDto ? (institutionController.selectedInstitutionDto.inactive ? 'ACTIVATE' : 'DEACTIVATE') : 'CHANGE STATUS'} this Institution: #{not empty institutionController.selectedInstitutionDto ? institutionController.selectedInstitutionDto.name : ''}?"
                                                 icon="fas fa-question-circle" />
                                         </p:commandButton>
 
