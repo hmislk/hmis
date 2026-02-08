@@ -2815,7 +2815,7 @@ public class ItemController implements Serializable {
         boolean includeBarcode = q.length() >= barcodeMinLength;
 
         jpql = "SELECT i FROM Item i "
-                + "WHERE i.retired = false "
+                + "WHERE i.retired = false and i.inactive = false "
                 + "AND TYPE(i) IN (:amp, :ampp, :vmp, :vmpp) "
                 + "AND i.departmentType in :dts "
                 + "AND (UPPER(i.name) LIKE :q "

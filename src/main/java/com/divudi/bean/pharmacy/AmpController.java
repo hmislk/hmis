@@ -1596,10 +1596,10 @@ public class AmpController implements Serializable {
             boolean shouldKeepSelection = false;
             switch (filterStatus) {
                 case "active":
-                    shouldKeepSelection = !current.isRetired();
+                    shouldKeepSelection = !current.isInactive();
                     break;
                 case "inactive":
-                    shouldKeepSelection = current.isRetired();
+                    shouldKeepSelection = current.isInactive();
                     break;
                 case "all":
                     shouldKeepSelection = true;

@@ -47,8 +47,8 @@
                             </h:panelGroup>
                             <p:outputLabel for="atmStatus" value="Status: "/>
                             <p:badge id="atmStatus"
-                                     value="#{labAtmController.current.retired ? 'Retired' : 'Active'}"
-                                     severity="#{labAtmController.current.retired ? 'danger' : 'success'}"/>
+                                     value="#{labAtmController.current.inactive ? 'Inactive' : 'Active'}"
+                                     severity="#{labAtmController.current.inactive ? 'danger' : 'success'}"/>
                             <p:outputLabel for="atmDept" value="Department: "/>
                             <h:outputText id="atmDept" value="#{labAtmController.current.departmentType}"/>
                             <p:outputLabel for="totalEvents" value="Total Audit Events: "/>
