@@ -188,7 +188,8 @@
                             <p:panelGrid
                                 id="gpDetail"
                                 columns="1"
-                                class="w-100">
+                                class="w-100"
+                                rendered="#{departmentController.current ne null}">
 
                                 <p:tabView class="w-100">
                                     <p:tab title="Basic Details" class="w-100">
@@ -358,8 +359,7 @@
                                             icon="fas fa-times"
                                             action="#{departmentController.cancel()}"
                                             class="m-1 ui-button-secondary w-25"
-                                            process="btnCancel"
-                                            update="acDept actionButtons deptDetails statusFilterPanel"
+                                            ajax="false"
                                             disabled="#{!departmentController.editable}">
                                         </p:commandButton>
                                     </div>

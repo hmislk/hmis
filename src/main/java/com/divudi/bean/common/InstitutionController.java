@@ -2,6 +2,7 @@ package com.divudi.bean.common;
 
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.dto.InstitutionDto;
 import com.divudi.core.entity.AgentHistory;
 import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Institution;
@@ -28,6 +29,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -83,6 +85,11 @@ public class InstitutionController implements Serializable {
     // Status filtering - following VMP/AMP pattern
     private String filterStatus = "active";
     private List<AuditEvent> institutionAuditEvents;
+
+    // DTO properties
+    private List<InstitutionDto> institutionDtoList;
+    private InstitutionDto selectedInstitutionDto;
+    private boolean editable;
 
     public void fillAllSites() {
         sites = new ArrayList<>();
@@ -564,6 +571,8 @@ public class InstitutionController implements Serializable {
     public void prepareAdd() {
         codeDisabled = false;
         current = new Institution();
+        selectedInstitutionDto = null;
+        editable = true;
     }
 
     public void prepareAddSite() {
@@ -842,15 +851,18 @@ public class InstitutionController implements Serializable {
     }
 
     public Institution getCurrent() {
-        if (current == null) {
-            current = new Institution();
-        }
         return current;
     }
 
     public void setCurrent(Institution current) {
         codeDisabled = true;
         this.current = current;
+    }
+
+    public void ensureCurrent() {
+        if (current == null) {
+            current = new Institution();
+        }
     }
 
     public void delete() {
@@ -868,7 +880,7 @@ public class InstitutionController implements Serializable {
         getItems();
         fetchSelectedAgencys();
         current = null;
-        getCurrent();
+        ensureCurrent();
     }
 
     public void deleteSite() {
@@ -884,7 +896,7 @@ public class InstitutionController implements Serializable {
         }
 
         current = null;
-        getCurrent();
+        ensureCurrent();
         fillAllSites();
         getSites();
     }
@@ -935,15 +947,15 @@ public class InstitutionController implements Serializable {
         Map<String, Object> m = new HashMap<>();
         j = "select i "
                 + " from Institution i "
-                + " where 1=1 ";
+                + " where i.retired=false ";
 
-        // Apply status filter
+        // Apply status filter on inactive field
         if ("active".equals(filterStatus)) {
-            j += " and i.retired=:retired ";
-            m.put("retired", false);
+            j += " and i.inactive=:inactive ";
+            m.put("inactive", false);
         } else if ("inactive".equals(filterStatus)) {
-            j += " and i.retired=:retired ";
-            m.put("retired", true);
+            j += " and i.inactive=:inactive ";
+            m.put("inactive", true);
         }
         // For "all", no additional filter needed
 
@@ -1141,6 +1153,7 @@ public class InstitutionController implements Serializable {
 
     public void refreshData() {
         recreateModel();
+        clearDtoCache();
         sites = null; // Reset sites list for site_management page
 
         // Clear selection if current item doesn't match new filter
@@ -1148,10 +1161,10 @@ public class InstitutionController implements Serializable {
             boolean shouldKeepSelection = false;
             switch (filterStatus) {
                 case "active":
-                    shouldKeepSelection = !current.isRetired();
+                    shouldKeepSelection = !current.isInactive();
                     break;
                 case "inactive":
-                    shouldKeepSelection = current.isRetired();
+                    shouldKeepSelection = current.isInactive();
                     break;
                 case "all":
                     shouldKeepSelection = true;
@@ -1160,6 +1173,7 @@ public class InstitutionController implements Serializable {
 
             if (!shouldKeepSelection) {
                 current = null;
+                selectedInstitutionDto = null;
                 institutionAuditEvents = null;
             }
         }
@@ -1196,7 +1210,7 @@ public class InstitutionController implements Serializable {
     // ===================== Status Toggle Methods =====================
 
     /**
-     * Toggle Institution status (Active/Inactive) with audit logging
+     * Toggle Institution inactive status with audit logging
      */
     public void toggleInstitutionStatus() {
         if (current == null || current.getId() == null) {
@@ -1204,58 +1218,48 @@ public class InstitutionController implements Serializable {
             return;
         }
 
-        // Capture before state for audit
         Map<String, Object> beforeData = createAuditMap(current);
-        boolean wasRetired = current.isRetired();
+        boolean wasInactive = current.isInactive();
 
-        if (wasRetired) {
-            // Activate Institution
-            current.setRetired(false);
-            current.setRetiredAt(null);
-            current.setRetirer(null);
+        if (wasInactive) {
+            current.setInactive(false);
             JsfUtil.addSuccessMessage("Institution Activated Successfully");
         } else {
-            // Deactivate Institution
-            current.setRetired(true);
-            current.setRetiredAt(new Date());
-            current.setRetirer(getSessionController().getLoggedUser());
+            current.setInactive(true);
             JsfUtil.addSuccessMessage("Institution Deactivated Successfully");
         }
 
         getFacade().edit(current);
 
-        // Log audit for status change
         Map<String, Object> afterData = createAuditMap(current);
-        String action = wasRetired ? "Activate Institution" : "Deactivate Institution";
+        String action = wasInactive ? "Activate Institution" : "Deactivate Institution";
         auditService.logAudit(beforeData, afterData,
                 getSessionController().getLoggedUser(),
                 "Institution", action, current.getId());
 
-        // Refresh displays
         recreateModel();
+        clearDtoCache();
     }
 
     public String getToggleStatusButtonText() {
         if (current == null || current.getId() == null) {
             return "Toggle Status";
         }
-        return current.isRetired() ? "Activate" : "Deactivate";
+        return current.isInactive() ? "Activate" : "Deactivate";
     }
 
     public String getToggleStatusButtonIcon() {
         if (current == null || current.getId() == null) {
             return "fas fa-toggle-off";
         }
-        return current.isRetired() ? "fas fa-check-circle" : "fas fa-times-circle";
+        return current.isInactive() ? "fas fa-check-circle" : "fas fa-times-circle";
     }
 
     public String getToggleStatusButtonClass() {
         if (current == null || current.getId() == null) {
             return "ui-button-secondary";
         }
-        // If retired (inactive), show green "Activate" button
-        // If active, show orange "Deactivate" button
-        return current.isRetired() ? "ui-button-success" : "ui-button-warning";
+        return current.isInactive() ? "ui-button-success" : "ui-button-warning";
     }
 
     // ===================== Audit Trail Methods =====================
@@ -1271,6 +1275,7 @@ public class InstitutionController implements Serializable {
             auditData.put("name", inst.getName());
             auditData.put("code", inst.getCode());
             auditData.put("retired", inst.isRetired());
+            auditData.put("inactive", inst.isInactive());
             auditData.put("institutionType", inst.getInstitutionType() != null ?
                     inst.getInstitutionType().toString() : null);
 
@@ -1340,17 +1345,18 @@ public class InstitutionController implements Serializable {
         String sql;
         HashMap<String, Object> hm = new HashMap<>();
         sql = "select c from Institution c "
-                + " where c.institutionType =:type";
+                + " where c.retired=false "
+                + " and c.institutionType =:type";
 
         hm.put("type", InstitutionType.Site);
 
-        // Apply status filter
+        // Apply status filter on inactive field
         if ("active".equals(filterStatus)) {
-            sql += " and c.retired=:retired ";
-            hm.put("retired", false);
+            sql += " and c.inactive=:inactive ";
+            hm.put("inactive", false);
         } else if ("inactive".equals(filterStatus)) {
-            sql += " and c.retired=:retired ";
-            hm.put("retired", true);
+            sql += " and c.inactive=:inactive ";
+            hm.put("inactive", true);
         }
         // For "all", no additional filter needed
 
@@ -1377,6 +1383,145 @@ public class InstitutionController implements Serializable {
         public String getName() {
             return institutions.get(0).getName();
         }
+    }
+
+    // ===================== DTO Methods =====================
+
+    public List<InstitutionDto> completeInstitutionDto(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String jpql = "SELECT new com.divudi.core.data.dto.InstitutionDto("
+                + "i.id, i.name, i.code, i.institutionCode, i.retired, i.inactive) "
+                + "FROM Institution i WHERE i.retired=:ret "
+                + "AND UPPER(i.name) LIKE :query ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("query", "%" + query.toUpperCase() + "%");
+
+        if ("active".equals(filterStatus)) {
+            jpql += "AND i.inactive=:inactive ";
+            params.put("inactive", false);
+        } else if ("inactive".equals(filterStatus)) {
+            jpql += "AND i.inactive=:inactive ";
+            params.put("inactive", true);
+        }
+
+        jpql += "ORDER BY i.name";
+
+        try {
+            return (List<InstitutionDto>) getFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    public InstitutionDto createInstitutionDto(Institution inst) {
+        if (inst == null) {
+            return null;
+        }
+        return new InstitutionDto(
+                inst.getId(),
+                inst.getName(),
+                inst.getCode(),
+                inst.getInstitutionCode(),
+                inst.isRetired(),
+                inst.isInactive()
+        );
+    }
+
+    public void clearDtoCache() {
+        institutionDtoList = null;
+    }
+
+    public InstitutionDto getSelectedInstitutionDto() {
+        return selectedInstitutionDto;
+    }
+
+    public void setSelectedInstitutionDto(InstitutionDto selectedInstitutionDto) {
+        this.selectedInstitutionDto = selectedInstitutionDto;
+        if (selectedInstitutionDto != null && selectedInstitutionDto.getId() != null) {
+            this.current = getFacade().find(selectedInstitutionDto.getId());
+        } else {
+            this.current = null;
+        }
+    }
+
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
+    }
+
+    public void edit() {
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("Please select an Institution to edit");
+            return;
+        }
+        if (current.isInactive()) {
+            JsfUtil.addWarningMessage("Editing inactive Institution '" + current.getName() + "'");
+        }
+        editable = true;
+    }
+
+    public void cancel() {
+        current = null;
+        selectedInstitutionDto = null;
+        editable = false;
+    }
+
+    public void saveInstitution() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+        if (current.getName() == null || current.getName().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a name");
+            return;
+        }
+        if (current.getInstitutionType() == null) {
+            JsfUtil.addErrorMessage("Please select an Institution Type");
+            return;
+        }
+
+        if (isDuplicateName(current)) {
+            JsfUtil.addErrorMessage("Another institution with same name exists");
+            return;
+        }
+
+        try {
+            boolean isNew = current.getId() == null;
+            Map<String, Object> beforeData = isNew ? null : createAuditMap(getFacade().find(current.getId()));
+
+            if (isNew) {
+                current.setCreatedAt(new Date());
+                current.setCreater(getSessionController().getLoggedUser());
+                getFacade().create(current);
+                JsfUtil.addSuccessMessage("Institution '" + current.getName() + "' created successfully");
+            } else {
+                getFacade().edit(current);
+                JsfUtil.addSuccessMessage("Institution '" + current.getName() + "' updated successfully");
+            }
+
+            Map<String, Object> afterData = createAuditMap(current);
+            String action = isNew ? "Create Institution" : "Update Institution";
+            auditService.logAudit(beforeData, afterData,
+                    getSessionController().getLoggedUser(),
+                    "Institution", action, current.getId());
+
+            selectedInstitutionDto = createInstitutionDto(current);
+
+            editable = false;
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Institution: " + e.getMessage());
+        }
+
+        recreateModel();
+        clearDtoCache();
     }
 
     /**
@@ -1419,6 +1564,46 @@ public class InstitutionController implements Serializable {
                 throw new IllegalArgumentException("object " + object + " is of type "
                         + object.getClass().getName() + "; expected type: " + InstitutionController.class.getName());
             }
+        }
+    }
+
+    @FacesConverter("institutionDtoConverter")
+    public static class InstitutionDtoConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.isEmpty()) {
+                return null;
+            }
+            try {
+                Long id = Long.parseLong(value);
+                InstitutionController controller = (InstitutionController) facesContext.getApplication()
+                        .getELResolver().getValue(facesContext.getELContext(), null, "institutionController");
+
+                if (controller == null) {
+                    return null;
+                }
+
+                Institution entity = controller.getEjbFacade().find(id);
+                if (entity != null) {
+                    return controller.createInstitutionDto(entity);
+                }
+                return null;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof InstitutionDto) {
+                InstitutionDto dto = (InstitutionDto) object;
+                return dto.getId() != null ? dto.getId().toString() : null;
+            }
+            throw new IllegalArgumentException("Expected InstitutionDto object");
         }
     }
 }
