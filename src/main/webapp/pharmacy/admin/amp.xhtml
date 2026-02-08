@@ -146,7 +146,7 @@
                                         title="Toggle AMP active/inactive status">
                                         <p:confirm
                                             header="Confirm Status Change"
-                                            message="Are you sure you want to #{ampController.current.retired ? 'ACTIVATE' : 'DEACTIVATE'} this AMP: #{ampController.current.name}?"
+                                            message="Are you sure you want to #{ampController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this AMP: #{ampController.current.name}?"
                                             icon="fas fa-question-circle" />
                                     </p:commandButton>
                                     <p:commandButton
@@ -182,8 +182,8 @@
                                             <!-- Status - Centre -->
                                             <div class="d-flex align-items-center gap-2">
                                                 <h:panelGroup rendered="#{ampController.current ne null and ampController.current.id ne null}"
-                                                              styleClass="badge #{ampController.current.retired ? 'badge-danger' : 'badge-success'}">
-                                                    <h:outputLabel value="#{ampController.current.retired ? 'Inactive' : 'Active'}"
+                                                              styleClass="badge #{ampController.current.inactive ? 'badge-danger' : 'badge-success'}">
+                                                    <h:outputLabel value="#{ampController.current.inactive ? 'Inactive' : 'Active'}"
                                                                    styleClass="mb-0"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{ampController.editable}"
