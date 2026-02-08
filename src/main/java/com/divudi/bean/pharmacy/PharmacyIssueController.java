@@ -713,7 +713,9 @@ public class PharmacyIssueController implements Serializable {
 
         sql.append("FROM Stock s ")
             .append("WHERE s.stock > :stockMin ")
-            .append("AND s.department = :department ");
+            .append("AND s.department = :department ")
+            .append("AND s.itemBatch.item.retired = false ")
+            .append("AND s.itemBatch.item.inactive = false ");
 
         // Add department type filter if set
         if (getPreBill().getDepartmentType() != null) {
