@@ -1042,7 +1042,7 @@ public class VmpController implements Serializable {
 
         // Refresh data to reflect changes
         recreateModel();
-        getItems();
+//        getItems();
     }
 
     public String getToggleStatusButtonText() {

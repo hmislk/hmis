@@ -856,10 +856,10 @@ public class AmpController implements Serializable {
             JsfUtil.addSuccessMessage("AMP Created Successfully.");
         }
 
-        // Refresh data and clear selection
+        // Refresh data and keep selection synced
         recreateModel();
         getItems();
-        selectedAmpDto = null;
+        selectedAmpDto = createAmpDto(current);
         ampDtos = null;
         editable = false;
     }
@@ -1476,20 +1476,20 @@ public class AmpController implements Serializable {
      */
     public List<AmpDto> getAmpDtos() {
         String jpql = "SELECT new com.divudi.core.data.dto.AmpDto("
-                + "a.id, a.name, a.code, a.barcode, a.retired, "
-                + "a.vmp.id, a.vmp.name) "
-                + "FROM Amp a WHERE a.departmentType=:dep ";
+                + "a.id, a.name, a.code, a.barcode, a.inactive, "
+                + "v.id, v.name) "
+                + "FROM Amp a LEFT JOIN a.vmp v WHERE a.departmentType=:dep ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("dep", DepartmentType.Pharmacy);
 
-        // Apply status filter based on retired attribute
+        // Apply status filter based on inactive attribute
         if ("active".equals(filterStatus)) {
-            jpql += "AND a.retired=:retired ";
-            params.put("retired", false);
+            jpql += "AND a.inactive=:inactive ";
+            params.put("inactive", false);
         } else if ("inactive".equals(filterStatus)) {
-            jpql += "AND a.retired=:retired ";
-            params.put("retired", true);
+            jpql += "AND a.inactive=:inactive ";
+            params.put("inactive", true);
         }
         // For "all", no additional filter needed
 
@@ -1507,22 +1507,24 @@ public class AmpController implements Serializable {
         }
 
         String jpql = "SELECT new com.divudi.core.data.dto.AmpDto("
-                + "a.id, a.name, a.code, a.barcode, a.retired, "
-                + "a.vmp.id, a.vmp.name) "
-                + "FROM Amp a WHERE LOWER(a.name) LIKE :query "
-                + "AND a.departmentType=:dep ";
+                + "a.id, a.name, a.code, a.barcode, a.inactive, "
+                + "v.id, v.name) "
+                + "FROM Amp a LEFT JOIN a.vmp v "
+                + "WHERE (LOWER(a.name) LIKE :query OR LOWER(a.code) LIKE :query OR LOWER(a.barcode) LIKE :query) "
+                + "AND a.departmentType=:dep "
+                + "AND a.retired=false ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("query", "%" + query.toLowerCase() + "%");
         params.put("dep", DepartmentType.Pharmacy);
 
-        // Apply status filter based on retired attribute
+        // Apply status filter based on inactive attribute
         if ("active".equals(filterStatus)) {
-            jpql += "AND a.retired=:retired ";
-            params.put("retired", false);
+            jpql += "AND a.inactive=:inactive ";
+            params.put("inactive", false);
         } else if ("inactive".equals(filterStatus)) {
-            jpql += "AND a.retired=:retired ";
-            params.put("retired", true);
+            jpql += "AND a.inactive=:inactive ";
+            params.put("inactive", true);
         }
         // For "all", no additional filter needed
 
@@ -1555,7 +1557,7 @@ public class AmpController implements Serializable {
             return null;
         }
         return new AmpDto(amp.getId(), amp.getName(), amp.getCode(),
-                amp.getBarcode(), amp.isRetired(),
+                amp.getBarcode(), amp.isInactive(),
                 amp.getVmp() != null ? amp.getVmp().getId() : null,
                 amp.getVmp() != null ? amp.getVmp().getName() : null);
     }
@@ -1696,15 +1698,11 @@ public class AmpController implements Serializable {
 
         if (wasRetired) {
             // Activate AMP
-            current.setRetired(false);
-            current.setRetiredAt(null);
-            current.setRetirer(null);
+            current.setInactive(false);
             JsfUtil.addSuccessMessage("AMP Activated Successfully");
         } else {
             // Deactivate AMP
-            current.setRetired(true);
-            current.setRetiredAt(new Date());
-            current.setRetirer(getSessionController().getLoggedUser());
+            current.setInactive(true);
             JsfUtil.addSuccessMessage("AMP Deactivated Successfully");
         }
 
@@ -1753,7 +1751,7 @@ public class AmpController implements Serializable {
                 String jpql = "SELECT a FROM AuditEvent a WHERE a.objectId = :objectId "
                         + "AND a.entityType = :entityType ORDER BY a.eventDataTime DESC";
                 Map<String, Object> parameters = new HashMap<>();
-                parameters.put("objectId", current.getId().toString());
+                parameters.put("objectId", current.getId());
                 parameters.put("entityType", "Amp");
 
                 ampAuditEvents = auditEventFacade.findByJpql(jpql, parameters);

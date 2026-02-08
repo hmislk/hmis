@@ -86,6 +86,7 @@ public class Department implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
+    @Deprecated // Use inactive instead
     private Boolean active;
 
     //Inactive Status
@@ -356,10 +357,12 @@ public class Department implements Serializable {
         this.email = email;
     }
 
+    @Deprecated // Use inactive instead
     public Boolean getActive() {
         return active;
     }
 
+    @Deprecated // Use inactive instead
     public void setActive(Boolean active) {
         this.active = active;
     }
