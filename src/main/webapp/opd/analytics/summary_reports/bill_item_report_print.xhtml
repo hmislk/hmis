@@ -284,6 +284,7 @@
                                                             </td>
                                                             <td style=" text-align: left;">
                                                                 <h:outputText value="#{bill.transactionTypeLabel}" style="margin-left: 1mm;"/>
+                                                                <h:outputText value=" (Cancelled)" style="color: red; font-weight: bold;" rendered="#{bill.cancelled}" />
                                                             </td>
                                                             <td class="text-end">
                                                                 <h:outputText value="#{bill.hospitalFee}" style="margin-right: 1mm;">
