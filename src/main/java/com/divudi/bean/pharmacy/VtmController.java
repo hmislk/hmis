@@ -83,6 +83,9 @@ public class VtmController implements Serializable {
     boolean reportedAs;
     private boolean editable;
 
+    // Filter state for active/inactive VTMs
+    private String filterStatus = "active"; // "active", "inactive", "all"
+
     public String navigateToListAllVtms() {
         return "/emr/reports/vtms?faces-redirect=true";
     }
@@ -140,7 +143,24 @@ public class VtmController implements Serializable {
         } else {
             String sql = "SELECT c FROM Vtm c WHERE c.retired=:retired "
                     + "AND UPPER(c.name) LIKE :query "
-                    + "AND (c.departmentType IS NULL OR c.departmentType=:dep) "
+                    + "AND c.inactive=false "
+                    + "ORDER BY c.name";
+            Map<String, Object> params = new HashMap<>();
+            params.put("retired", false);
+            params.put("query", "%" + query.toUpperCase() + "%");
+            vtmList = getFacade().findByJpql(sql, params);
+        }
+        return vtmList;
+    }
+    
+    public List<Vtm> completeVtmPharmacy(String query) {
+        if (query == null) {
+            vtmList = new ArrayList<Vtm>();
+        } else {
+            String sql = "SELECT c FROM Vtm c WHERE c.retired=:retired "
+                    + "AND UPPER(c.name) LIKE :query "
+                    + "AND c.departmentType=:dep "
+                    + "AND c.inactive=false "
                     + "ORDER BY c.name";
             Map<String, Object> params = new HashMap<>();
             params.put("retired", false);
@@ -284,7 +304,7 @@ public class VtmController implements Serializable {
             JsfUtil.addErrorMessage("Please select a VTM to edit");
             return;
         }
-        if (current.isRetired()) {
+        if (current.isInactive()) {
             JsfUtil.addWarningMessage("Editing inactive VTM '" + current.getName() + "'");
         }
         editable = true;
@@ -523,11 +543,22 @@ public class VtmController implements Serializable {
     public List<Vtm> getItems() {
         if (items == null) {
             String sql = "SELECT c FROM Vtm c WHERE c.retired=:retired "
-                    + "AND (c.departmentType IS NULL OR c.departmentType=:dep) "
-                    + "ORDER BY c.name";
+                    + "AND (c.departmentType IS NULL OR c.departmentType=:dep) ";
             Map<String, Object> params = new HashMap<>();
             params.put("retired", false);
             params.put("dep", DepartmentType.Pharmacy);
+
+            // Apply status filter on inactive field
+            if ("active".equals(filterStatus)) {
+                sql += "AND c.inactive=:inactive ";
+                params.put("inactive", false);
+            } else if ("inactive".equals(filterStatus)) {
+                sql += "AND c.inactive=:inactive ";
+                params.put("inactive", true);
+            }
+            // For "all", no additional inactive filter
+
+            sql += "ORDER BY c.name";
             items = getFacade().findByJpql(sql, params);
         }
         return items;
@@ -562,16 +593,26 @@ public class VtmController implements Serializable {
                     + "v.descreption, "
                     + "v.instructions, "
                     + "v.retired, "
+                    + "v.inactive, "
                     + "COALESCE(CAST(v.departmentType AS string), 'Pharmacy')) "
                     + "FROM Vtm v WHERE v.retired=:retired "
-                    + "AND (v.departmentType IS NULL OR v.departmentType=:dep) "
-                    + "ORDER BY v.name";
+                    + "AND (v.departmentType IS NULL OR v.departmentType=:dep) ";
 
             Map<String, Object> params = new HashMap<>();
             params.put("retired", false);
             params.put("dep", DepartmentType.Pharmacy);
 
-            // Use findLightsByJpql for DTO constructor queries
+            // Apply status filter on inactive field
+            if ("active".equals(filterStatus)) {
+                jpql += "AND v.inactive=:inactive ";
+                params.put("inactive", false);
+            } else if ("inactive".equals(filterStatus)) {
+                jpql += "AND v.inactive=:inactive ";
+                params.put("inactive", true);
+            }
+
+            jpql += "ORDER BY v.name";
+
             vtmDtoList = (List<VtmDto>) getFacade().findLightsByJpql(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
         }
         return vtmDtoList;
@@ -583,10 +624,7 @@ public class VtmController implements Serializable {
      * @return 
      */
     public List<VtmDto> completeVtmDto(String query) {
-        System.out.println("completeVtmDto called with query: '" + query + "'");
-
         if (query == null || query.trim().isEmpty()) {
-            System.out.println("Query is null or empty, returning empty list");
             return new ArrayList<>();
         }
 
@@ -596,29 +634,32 @@ public class VtmController implements Serializable {
                 + "v.code, "
                 + "v.descreption, "
                 + "v.instructions, "
-                + "v.retired) "
+                + "v.retired, "
+                + "v.inactive) "
                 + "FROM Vtm v WHERE v.retired=:retired "
                 + "AND v.name LIKE :query "
-                + "AND (v.departmentType=:dep) "
-                + "ORDER BY v.name";
+                + "AND (v.departmentType=:dep) ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("retired", false);
         params.put("query", "%" + query + "%");
         params.put("dep", DepartmentType.Pharmacy);
 
-        System.out.println("JPQL: " + jpql);
-        System.out.println("Parameters: " + params);
+        // Apply status filter on inactive field
+        if ("active".equals(filterStatus)) {
+            jpql += "AND v.inactive=:inactive ";
+            params.put("inactive", false);
+        } else if ("inactive".equals(filterStatus)) {
+            jpql += "AND v.inactive=:inactive ";
+            params.put("inactive", true);
+        }
+
+        jpql += "ORDER BY v.name";
 
         try {
             List<VtmDto> results = (List<VtmDto>) getFacade().findLightsByJpql(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
-            System.out.println("Found " + (results != null ? results.size() : 0) + " results");
-            if (results != null && !results.isEmpty()) {
-                System.out.println("First result: " + results.get(0).getName());
-            }
             return results;
         } catch (Exception e) {
-            System.out.println("Error in completeVtmDto: " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<>();
         }
@@ -644,7 +685,8 @@ public class VtmController implements Serializable {
                 vtm.getCode(),
                 vtm.getDescreption(),
                 vtm.getInstructions(),
-                vtm.isRetired()
+                vtm.isRetired(),
+                vtm.isInactive()
         );
     }
 
@@ -760,6 +802,138 @@ public class VtmController implements Serializable {
         return "/pharmacy/admin/vtm_audit_events?faces-redirect=true";
     }
 
+    // ===================== Filter Methods =====================
+
+    public String getFilterStatus() {
+        return filterStatus;
+    }
+
+    public void setFilterStatus(String filterStatus) {
+        this.filterStatus = filterStatus;
+    }
+
+    public void setFilterToActive() {
+        filterStatus = "active";
+        refreshData();
+    }
+
+    public void setFilterToInactive() {
+        filterStatus = "inactive";
+        refreshData();
+    }
+
+    public void setFilterToAll() {
+        filterStatus = "all";
+        refreshData();
+    }
+
+    public void refreshData() {
+        items = null;
+        clearDtoCache();
+
+        // Clear selection if current item doesn't match new filter
+        if (current != null) {
+            boolean shouldKeepSelection = false;
+            switch (filterStatus) {
+                case "active":
+                    shouldKeepSelection = !current.isInactive();
+                    break;
+                case "inactive":
+                    shouldKeepSelection = current.isInactive();
+                    break;
+                case "all":
+                    shouldKeepSelection = true;
+                    break;
+            }
+
+            if (!shouldKeepSelection) {
+                current = null;
+                selectedVtmDto = null;
+                vtmAuditEvents = null;
+            }
+        }
+    }
+
+    public boolean isShowingActive() {
+        return "active".equals(filterStatus);
+    }
+
+    public boolean isShowingInactive() {
+        return "inactive".equals(filterStatus);
+    }
+
+    public boolean isShowingAll() {
+        return "all".equals(filterStatus);
+    }
+
+    public String getFilterStatusDisplay() {
+        switch (filterStatus) {
+            case "active":
+                return "Active VTMs";
+            case "inactive":
+                return "Inactive VTMs";
+            case "all":
+                return "All VTMs";
+            default:
+                return "Active VTMs";
+        }
+    }
+
+    // ===================== Toggle Status Methods =====================
+
+    public void toggleVtmStatus() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No VTM selected");
+            return;
+        }
+
+        // Capture before state for audit
+        Map<String, Object> beforeData = createAuditMap(current);
+        boolean wasInactive = current.isInactive();
+
+        if (wasInactive) {
+            current.setInactive(false);
+            JsfUtil.addSuccessMessage("VTM Activated Successfully");
+        } else {
+            current.setInactive(true);
+            JsfUtil.addSuccessMessage("VTM Deactivated Successfully");
+        }
+
+        getFacade().edit(current);
+
+        // Log audit for status change
+        Map<String, Object> afterData = createAuditMap(current);
+        String action = wasInactive ? "Activate VTM" : "Deactivate VTM";
+        auditService.logAudit(beforeData, afterData,
+                getSessionController().getLoggedUser(),
+                "Vtm", action, current.getId());
+
+        // Refresh displays
+        items = null;
+        clearDtoCache();
+    }
+
+    public String getToggleStatusButtonText() {
+        if (current == null || current.getId() == null) {
+            return "Toggle Status";
+        }
+        return current.isInactive() ? "Activate" : "Deactivate";
+    }
+
+    public String getToggleStatusButtonIcon() {
+        if (current == null || current.getId() == null) {
+            return "fas fa-toggle-off";
+        }
+        return current.isInactive() ? "fas fa-check-circle" : "fas fa-times-circle";
+    }
+
+    public String getToggleStatusButtonClass() {
+        if (current == null || current.getId() == null) {
+            return "ui-button-secondary";
+        }
+        return current.isInactive() ? "ui-button-success" : "ui-button-warning";
+    }
+
     // Entity Methods (existing) - Keep for backward compatibility and business logic
     private Map<String, Object> createAuditMap(Vtm vtm) {
         Map<String, Object> auditData = new HashMap<>();
@@ -768,6 +942,7 @@ public class VtmController implements Serializable {
             auditData.put("name", vtm.getName());
             auditData.put("code", vtm.getCode());
             auditData.put("retired", vtm.isRetired());
+            auditData.put("inactive", vtm.isInactive());
             auditData.put("departmentType", vtm.getDepartmentType() != null ? vtm.getDepartmentType().toString() : null);
             auditData.put("descreption", vtm.getDescreption()); // Note: intentional spelling for backward compatibility
             auditData.put("instructions", vtm.getInstructions());

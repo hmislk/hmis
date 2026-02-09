@@ -1,0 +1,365 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/pharmacy/admin/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="form">
+                    <p:growl id="msg" life="3000"/>
+
+
+
+                    <p:panel header="Lab AMP Management" styleClass="mb-3">
+
+                        <div class="row" >
+                            <div class="col-6" >
+                                <!-- Status Filter Section -->
+                                <h:panelGroup id="statusFilterPanel" layout="block" styleClass="status-filter-section mb-3">
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <h:outputText value="Filter:" styleClass="form-label mb-0"/>
+                                        <p:commandButton
+                                            id="btnFilterActive"
+                                            value="Active"
+                                            action="#{labAmpController.setFilterToActive()}"
+                                            update="acAmp detailPanel statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{labAmpController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
+                                            icon="fas fa-check-circle"
+                                            disabled="#{labAmpController.editable}"
+                                            title="Show only active Lab AMPs"/>
+
+                                        <p:commandButton
+                                            id="btnFilterInactive"
+                                            value="Inactive"
+                                            action="#{labAmpController.setFilterToInactive()}"
+                                            update="acAmp detailPanel statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{labAmpController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
+                                            icon="fas fa-times-circle"
+                                            disabled="#{labAmpController.editable}"
+                                            title="Show only inactive Lab AMPs"/>
+
+                                        <p:commandButton
+                                            id="btnFilterAll"
+                                            value="All"
+                                            action="#{labAmpController.setFilterToAll()}"
+                                            update="acAmp detailPanel statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{labAmpController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
+                                            icon="fas fa-list"
+                                            disabled="#{labAmpController.editable}"
+                                            title="Show all Lab AMPs"/>
+                                    </div>
+
+                                    <p:outputLabel id="filterStatusLabel"
+                                                   value="Currently showing: #{labAmpController.filterStatusDisplay}"
+                                                   styleClass="text-muted small mt-1"/>
+
+
+
+                                </h:panelGroup>
+                                <!-- Modern Search Section -->
+                                <div class="search-section mb-3">
+                                    <h:outputText value="Search &amp; Select Lab AMP" styleClass="mb-2" style="display:block; font-size:1rem; font-weight:500;"/>
+                                    <p:autoComplete
+                                        id="acAmp"
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        value="#{labAmpController.selectedAmpDto}"
+                                        completeMethod="#{labAmpController.completeAmpDto}"
+                                        var="dto"
+                                        itemLabel="#{dto.name}"
+                                        itemValue="#{dto}"
+                                        converter="labAmpDtoConverter"
+                                        maxResults="20"
+                                        minQueryLength="2"
+                                        forceSelection="true"
+                                        disabled="#{labAmpController.editable}"
+                                        placeholder="Search by name, code, or barcode (minimum 2 characters)...">
+                                        <p:ajax event="itemSelect"
+                                                process="@this"
+                                                update="detailPanel actionButtons" />
+                                        <p:column headerText="Name" style="padding: 3px;">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h:outputText value="#{dto.name}"/>
+                                                <p:badge value="#{dto.inactive ? 'INACTIVE' : 'ACTIVE'}"
+                                                         severity="#{dto.inactive ? 'danger' : 'success'}"
+                                                         style="font-size: 0.65em; margin-left: 8px;"/>
+                                            </div>
+                                        </p:column>
+                                    </p:autoComplete>
+                                </div>
+
+
+                                <h:panelGroup id="actionButtons">
+                                    <p:commandButton
+                                        id="btnAdd"
+                                        value="Add New"
+                                        action="#{labAmpController.prepareAdd()}"
+                                        styleClass="ui-button-success m-1"
+                                        update="acAmp detailPanel actionButtons statusFilterPanel"
+                                        icon="fas fa-plus"
+                                        process="@this"
+                                        disabled="#{labAmpController.editable}"
+                                        title="Add a new Lab AMP record"/>
+
+                                    <p:commandButton
+                                        id="btnEdit"
+                                        value="Edit Selected"
+                                        action="#{labAmpController.edit()}"
+                                        icon="fas fa-edit"
+                                        update="detailPanel acAmp actionButtons statusFilterPanel"
+                                        process="@this"
+                                        styleClass="ui-button-warning m-1"
+                                        disabled="#{labAmpController.editable or labAmpController.current.id eq null}"
+                                        title="Edit selected Lab AMP record"/>
+
+                                    <p:commandButton
+                                        id="btnDelete"
+                                        value="Delete Selected"
+                                        action="#{labAmpController.delete()}"
+                                        icon="fas fa-trash"
+                                        update="form:msg acAmp detailPanel actionButtons statusFilterPanel"
+                                        process="@this"
+                                        styleClass="ui-button-danger m-1"
+                                        disabled="#{labAmpController.editable or labAmpController.current.id eq null}"
+                                        title="Delete selected Lab AMP record">
+                                        <p:confirm
+                                            header="Confirm Delete"
+                                            message="Are you sure you want to delete this Lab AMP record?"
+                                            icon="fas fa-exclamation-triangle" />
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        id="btnToggleStatus"
+                                        value="#{labAmpController.toggleStatusButtonText}"
+                                        action="#{labAmpController.toggleAmpStatus()}"
+                                        icon="#{labAmpController.toggleStatusButtonIcon}"
+                                        update="form:msg acAmp detailPanel actionButtons statusFilterPanel filterStatusLabel"
+                                        process="@this"
+                                        styleClass="#{labAmpController.toggleStatusButtonClass} amp-toggle-status m-1"
+                                        disabled="#{labAmpController.editable or labAmpController.current.id eq null}"
+                                        title="Toggle Lab AMP active/inactive status">
+                                        <p:confirm
+                                            header="Confirm Status Change"
+                                            message="Are you sure you want to #{labAmpController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this Lab AMP: #{labAmpController.current.name}?"
+                                            icon="fas fa-question-circle" />
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        id="btnAuditEvents"
+                                        value="Audit History"
+                                        action="#{labAmpController.navigateToAmpAuditEvents()}"
+                                        icon="fas fa-history"
+                                        ajax="false"
+                                        styleClass="ui-button-info m-1"
+                                        disabled="#{labAmpController.current.id eq null}"
+                                        title="View audit history for this Lab AMP record"/>
+                                </h:panelGroup>
+
+
+                            </div>
+                            <div class="col-6" >
+
+                                <p:panel id="detailPanel" styleClass="h-100">
+                                    <f:facet name="header">
+                                        <div class="d-flex justify-content-between align-items-center w-100">
+                                            <!-- Labels - Left -->
+                                            <div class="d-flex align-items-center">
+                                                <h:outputLabel value="Lab AMP Details"
+                                                               rendered="#{empty labAmpController.current}"
+                                                               styleClass="fw-bold mb-0"/>
+                                                <h:outputLabel value="Add New Lab AMP"
+                                                               rendered="#{not empty labAmpController.current and empty labAmpController.current.id}"
+                                                               styleClass="fw-bold mb-0"/>
+                                                <h:outputLabel value="Edit Lab AMP Details"
+                                                               rendered="#{not empty labAmpController.current and not empty labAmpController.current.id}"
+                                                               styleClass="fw-bold mb-0"/>
+                                            </div>
+                                            <!-- Status - Centre -->
+                                            <div class="d-flex align-items-center gap-2">
+                                                <h:panelGroup rendered="#{labAmpController.current ne null and labAmpController.current.id ne null}"
+                                                              styleClass="badge #{labAmpController.current.inactive ? 'badge-danger' : 'badge-success'}">
+                                                    <h:outputLabel value="#{labAmpController.current.inactive ? 'Inactive' : 'Active'}"
+                                                                   styleClass="mb-0"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{labAmpController.editable}"
+                                                              styleClass="badge badge-warning">
+                                                    <h:outputLabel value="#{labAmpController.current.id ne null ? 'Editing' : 'Adding New'}"
+                                                                   styleClass="mb-0"/>
+                                                </h:panelGroup>
+                                            </div>
+                                            <!-- Buttons - Right -->
+                                            <div class="d-flex align-items-center gap-1">
+                                                <p:commandButton
+                                                    id="btnSave"
+                                                    value="Save"
+                                                    action="#{labAmpController.save}"
+                                                    update="form:msg acAmp detailPanel actionButtons statusFilterPanel"
+                                                    process="@form"
+                                                    styleClass="ui-button-success"
+                                                    icon="fas fa-save"
+                                                    disabled="#{!labAmpController.editable}"
+                                                    title="Save Lab AMP record"/>
+                                                <p:commandButton
+                                                    id="btnCancel"
+                                                    value="Cancel"
+                                                    action="#{labAmpController.cancel()}"
+                                                    update="acAmp detailPanel actionButtons statusFilterPanel"
+                                                    process="@this"
+                                                    styleClass="ui-button-secondary"
+                                                    icon="fas fa-times"
+                                                    disabled="#{!labAmpController.editable}"
+                                                    title="Cancel changes and clear form"/>
+                                            </div>
+                                        </div>
+                                    </f:facet>
+
+                                    <!-- Clean, simplified form fields -->
+                                    <h:panelGroup layout="block" styleClass="form-section" rendered="#{labAmpController.current ne null}">
+
+                                        <!-- Essential Information Section -->
+                                        <h:outputText value="Essential Information" styleClass="section-header" style="display:block; font-size:1rem; font-weight:500;"/>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <p:outputLabel for="ampName" value="Lab AMP Name *"/>
+                                                <p:inputText id="ampName"
+                                                             value="#{labAmpController.current.name}"
+                                                             class="form-control"
+                                                             disabled="#{not labAmpController.editable}"
+                                                             required="true"
+                                                             requiredMessage="Lab AMP name is required"/>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <p:outputLabel for="ampCode" value="Code *">
+                                                    <i class="fas fa-info-circle ms-1 text-muted"
+                                                       title="Auto-generated if blank"></i>
+                                                </p:outputLabel>
+                                                <div class="input-group">
+                                                    <p:inputText id="ampCode"
+                                                                 value="#{labAmpController.current.code}"
+                                                                 class="form-control"
+                                                                 disabled="#{not labAmpController.editable}"/>
+                                                    <p:commandButton icon="fas fa-magic"
+                                                                     title="Generate Code"
+                                                                     action="#{labAmpController.generateCode()}"
+                                                                     update="ampCode"
+                                                                     rendered="#{labAmpController.editable}"
+                                                                     styleClass="ui-button-secondary"
+                                                                     process="@this"/>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <p:outputLabel for="ampBarcode" value="Barcode"/>
+                                                <p:inputText id="ampBarcode"
+                                                             value="#{labAmpController.current.barcode}"
+                                                             class="form-control"
+                                                             disabled="#{not labAmpController.editable}"/>
+                                            </div>
+                                        </div>
+                                            
+                                        <!-- VMP Relationship Section -->
+                                        <h:outputText value="Product Information" styleClass="section-header" style="display:block; font-size:1rem; font-weight:500;"/>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <p:outputLabel for="vmpSelect" value="VMP*"/>
+                                                <p:autoComplete id="vmpSelect"
+                                                                value="#{labAmpController.current.vmp}"
+                                                                completeMethod="#{labAmpController.completeVmpByName}"
+                                                                var="vmp"
+                                                                inputStyleClass="w-100"
+                                                                itemLabel="#{vmp.name}"
+                                                                itemValue="#{vmp}"
+                                                                converter="vmp"
+                                                                disabled="#{not labAmpController.editable}"
+                                                                class="w-100"
+                                                                required="true"
+                                                                requiredMessage="VMP selection is required">
+                                                    <p:ajax event="itemSelect" update="dosageInfo"/>
+                                                </p:autoComplete>
+                                        </div>
+                                            <div class="col-md-6">
+                                                <h:panelGroup id="dosageInfo">
+                                                    <p:outputLabel value="Dosage Form"/>
+                                                    <p:outputLabel
+                                                        value="#{labAmpController.current.vmp.dosageForm.name}"
+                                                        class="form-control-plaintext"
+                                                        rendered="#{labAmpController.current.vmp ne null}"/>
+                                                    <p:outputLabel
+                                                        value="Not specified"
+                                                        class="form-control-plaintext text-muted"
+                                                        rendered="#{labAmpController.current.vmp eq null}"/>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+
+                                        <!-- Business Rules Section -->
+                                        <h:outputText value="Business Rules" styleClass="section-header" style="display:block; font-size:1rem; font-weight:500;"/>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <p:selectBooleanCheckbox id="discountAllowed"
+                                                                             value="#{labAmpController.current.discountAllowed}"
+                                                                             disabled="#{not labAmpController.editable}"
+                                                                             styleClass="form-check-input"/>
+                                                    <p:outputLabel for="discountAllowed" value="Allow Discounts" styleClass="form-check-label"/>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <p:selectBooleanCheckbox id="refundsAllowed"
+                                                                             value="#{labAmpController.current.refundsAllowed}"
+                                                                             disabled="#{not labAmpController.editable}"
+                                                                             styleClass="form-check-input"/>
+                                                    <p:outputLabel for="refundsAllowed" value="Allow Refunds" styleClass="form-check-label"/>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <p:selectBooleanCheckbox id="consumptionAllowed"
+                                                                             value="#{labAmpController.current.consumptionAllowed}"
+                                                                             disabled="#{not labAmpController.editable}"
+                                                                             styleClass="form-check-input"/>
+                                                    <p:outputLabel for="consumptionAllowed" value="Consumable" styleClass="form-check-label"/>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <p:selectBooleanCheckbox id="allowFractions"
+                                                                             value="#{labAmpController.current.allowFractions}"
+                                                                             disabled="#{not labAmpController.editable}"
+                                                                             styleClass="form-check-input"/>
+                                                    <p:outputLabel for="allowFractions" value="Allow Fractions" styleClass="form-check-label"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                </p:panel>
+
+                            </div>
+                        </div>
+
+
+
+
+
+
+                    </p:panel>
+
+
+
+                    <!-- Confirmation Dialog -->
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="fas fa-check" />
+                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fas fa-times" />
+                    </p:confirmDialog>
+                </h:form>
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

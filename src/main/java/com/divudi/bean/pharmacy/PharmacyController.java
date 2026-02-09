@@ -92,6 +92,22 @@ public class PharmacyController implements Serializable {
     @Inject
     private AmpController ampController;
     @Inject
+    private com.divudi.bean.store.StoreAmpController storeAmpController;
+    @Inject
+    private com.divudi.bean.lab.LabAmpController labAmpController;
+    @Inject
+    private com.divudi.bean.store.StoreVtmController storeVtmController;
+    @Inject
+    private com.divudi.bean.lab.LabVtmController labVtmController;
+    @Inject
+    private com.divudi.bean.store.StoreAtmController storeAtmController;
+    @Inject
+    private com.divudi.bean.lab.LabAtmController labAtmController;
+    @Inject
+    private com.divudi.bean.store.StoreVmpController storeVmpController;
+    @Inject
+    private com.divudi.bean.lab.LabVmpController labVmpController;
+    @Inject
     VtmController vtmController;
     @Inject
     AtmController atmController;
@@ -1360,6 +1376,26 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/admin/amp?faces-redirect=true";
     }
 
+    public String navigateToStoreAmp() {
+        storeAmpController.setItems(null);
+        return "/pharmacy/admin/store_amp?faces-redirect=true";
+    }
+
+    public String navigateToLabAmp() {
+        labAmpController.setItems(null);
+        return "/pharmacy/admin/lab_amp?faces-redirect=true";
+    }
+
+    public String navigateToStoreVtm() {
+        storeVtmController.clearDtoCache();
+        return "/pharmacy/admin/store_vtm?faces-redirect=true";
+    }
+
+    public String navigateToLabVtm() {
+        labVtmController.clearDtoCache();
+        return "/pharmacy/admin/lab_vtm?faces-redirect=true";
+    }
+
     public String navigateToAmpp() {
         return "/pharmacy/admin/ampp?faces-redirect=true";
     }
@@ -1368,6 +1404,24 @@ public class PharmacyController implements Serializable {
         atmController.getItems();
         atmController.getCurrent();
         return "/pharmacy/admin/atm_dto?faces-redirect=true";
+    }
+
+    public String navigateToStoreAtm() {
+        storeAtmController.clearDtoCache();
+        return "/pharmacy/admin/store_atm?faces-redirect=true";
+    }
+
+    public String navigateToLabAtm() {
+        labAtmController.clearDtoCache();
+        return "/pharmacy/admin/lab_atm?faces-redirect=true";
+    }
+
+    public String navigateToStoreVmp() {
+        return "/pharmacy/admin/store_vmp?faces-redirect=true";
+    }
+
+    public String navigateToLabVmp() {
+        return "/pharmacy/admin/lab_vmp?faces-redirect=true";
     }
 
     public String navigateToManufacturers() {
@@ -1420,7 +1474,23 @@ public class PharmacyController implements Serializable {
     }
 
     public String navigateToVmpp() {
-        return "/pharmacy/admin/vmpp?faces-redirect=true";
+        return "/pharmacy/admin/vmpp_dto?faces-redirect=true";
+    }
+
+    public String navigateToStoreVmpp() {
+        return "/pharmacy/admin/store_vmpp?faces-redirect=true";
+    }
+
+    public String navigateToLabVmpp() {
+        return "/pharmacy/admin/lab_vmpp?faces-redirect=true";
+    }
+
+    public String navigateToStoreAmpp() {
+        return "/pharmacy/admin/store_ampp?faces-redirect=true";
+    }
+
+    public String navigateToLabAmpp() {
+        return "/pharmacy/admin/lab_ampp?faces-redirect=true";
     }
 
     public String navigateToDosageFormsMultiple() {
