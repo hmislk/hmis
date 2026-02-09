@@ -9,6 +9,7 @@ import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PatientReportFacade;
 import com.divudi.core.facade.UploadFacade;
+import com.divudi.service.AuditService;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,6 +42,8 @@ public class PatientReportUploadController implements Serializable {
     private PatientReportFacade patientReportFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
+    private AuditService auditService;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -141,6 +144,10 @@ public class PatientReportUploadController implements Serializable {
             patientReportController.getCurrentPatientReport().getPatientInvestigation().setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
             patientReportController.getCurrentPatientReport().getPatientInvestigation().setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
             patientInvestigationFacade.edit(patientReportController.getCurrentPatientReport().getPatientInvestigation());
+            
+            // Investigation approval audit event
+//            patientReportController.setInitialInvestigation(new HashMap<>(20));
+//            patientReportController.patientInvestigationToAuditMap(patientReportController.getInitialInvestigation(),patientReportController.getCurrentPatientReport());
 
             JsfUtil.addSuccessMessage("File Uploaded Successfully.");
             file = null;
@@ -171,7 +178,17 @@ public class PatientReportUploadController implements Serializable {
         patientReportController.getCurrentPatientReport().getPatientInvestigation().setApproveAt(new Date());
         patientReportController.getCurrentPatientReport().getPatientInvestigation().setApproveUser(sessionController.getLoggedUser());
         patientReportController.getCurrentPatientReport().getPatientInvestigation().setApproved(Boolean.TRUE);
+        
+        // Investigation approval audit event
+        patientReportController.setUpdateInvestigation(new HashMap<>(20));
+        patientReportController.patientInvestigationToAuditMap(patientReportController.getUpdateInvestigation(), patientReportController.getCurrentPatientReport());
+        
         patientInvestigationFacade.edit(patientReportController.getCurrentPatientReport().getPatientInvestigation());
+        
+        auditService.logAudit(patientReportController.getInitialInvestigation(), patientReportController.getUpdateInvestigation(), sessionController.getLoggedUser(), "PatientInvestigation", "ApprovePatientReport", patientReportController.getCurrentPatientReport().getPatientInvestigation().getId());
+        
+        patientReportController.setInitialInvestigation(null);
+        patientReportController.setUpdateInvestigation(null);
 
         JsfUtil.addSuccessMessage("Report Approved.");
     }
@@ -191,8 +208,12 @@ public class PatientReportUploadController implements Serializable {
         patientReportController.getCurrentPatientReport().getPatientInvestigation().setApproveAt(null);
         patientReportController.getCurrentPatientReport().getPatientInvestigation().setApproveUser(null);
         patientReportController.getCurrentPatientReport().getPatientInvestigation().setApproved(null);
+        
+        patientReportController.setInitialInvestigation(new HashMap<>(20));
+        patientReportController.patientInvestigationToAuditMap(patientReportController.getInitialInvestigation(), patientReportController.getCurrentPatientReport());
+        
         patientInvestigationFacade.edit(patientReportController.getCurrentPatientReport().getPatientInvestigation());
-
+        
         JsfUtil.addSuccessMessage("Cancel Approved.");
     }
 
