@@ -2623,8 +2623,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             paymentMethods.add(pm);
         }
 
-        // Set default payment method to original or Cash as fallback
-        if (originalBillPayments != null && !originalBillPayments.isEmpty()) {
+        // Set default payment method based on original bill's payments
+        if (originalBillPayments != null && originalBillPayments.size() > 1) {
+            paymentMethod = PaymentMethod.MultiplePaymentMethods;
+        } else if (originalBillPayments != null && originalBillPayments.size() == 1) {
             paymentMethod = originalBillPayments.get(0).getPaymentMethod();
         } else {
             paymentMethod = PaymentMethod.Cash;
@@ -3467,6 +3469,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public void setOriginalBillPayments(List<Payment> originalBillPayments) {
         this.originalBillPayments = originalBillPayments;
+    }
+
+    public boolean isInBatchCancellationDisplayMode() {
+        return batchBill != null
+                && originalCancellationPaymentMethod == PaymentMethod.MultiplePaymentMethods
+                && paymentMethod == PaymentMethod.MultiplePaymentMethods;
     }
 
     public boolean isOriginalBillCredit() {
