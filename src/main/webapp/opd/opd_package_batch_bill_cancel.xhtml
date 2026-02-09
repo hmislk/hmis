@@ -272,6 +272,11 @@
                                                         paymentMethods="#{configOptionController.paymentMethodsUnderMultipleForOpdBilling}"
                                                         class="w-100"
                                                         rendered="#{billPackageController.isInBatchCancellationDisplayMode()}"/>
+                                                    <pa:multiple_payment_methods
+                                                        controller="#{billPackageController}"
+                                                        paymentMethods="#{configOptionController.paymentMethodsUnderMultipleForOpdBilling}"
+                                                        class="w-100"
+                                                        rendered="#{not billPackageController.isInBatchCancellationDisplayMode()}"/>
 
                                                 </h:panelGroup>
                                                 </fieldset>

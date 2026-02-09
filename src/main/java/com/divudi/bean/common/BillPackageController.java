@@ -1430,9 +1430,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             return;
         }
 
-        // If payment method matches the original, don't reset - preserve the loaded data
-        if (paymentMethod == originalCancellationPaymentMethod) {
-            // User is keeping the same payment method - keep the original data
+        // If payment method matches the original, reinitialize from original payments
+        // to restore data that may have been cleared by a previous method change
+        if (paymentMethod == originalCancellationPaymentMethod && batchBill != null) {
+            List<Payment> batchBillPayments = billService.fetchBillPayments(batchBill);
+            if (batchBillPayments != null && !batchBillPayments.isEmpty()) {
+                paymentMethodData = new PaymentMethodData();
+                initializeCancellationPaymentFromOriginalPayments(batchBillPayments, batchBill);
+            }
             return;
         }
 
