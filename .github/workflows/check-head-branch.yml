@@ -22,7 +22,7 @@ jobs:
           if git merge-base --is-ancestor origin/hims-qa3 HEAD; then
             echo "✅ Branch is based on hims-qa3"
           else
-            echo "❌ This PR branch was NOT created from qa"
+            echo "❌ This PR branch was NOT created from hims-qa3"
             echo "Only branches created from hims-qa3 can be merged into hims-qa3"
             exit 1
           fi
