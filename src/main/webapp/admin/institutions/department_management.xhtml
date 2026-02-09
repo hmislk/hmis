@@ -188,11 +188,12 @@
                             <p:panelGrid
                                 id="gpDetail"
                                 columns="1"
-                                class="w-100">
+                                class="w-100"
+                                rendered="#{departmentController.current ne null}">
 
                                 <p:tabView class="w-100">
                                     <p:tab title="Basic Details" class="w-100">
-                                        <h:panelGrid id="gpDetailText" columns="2" class="w-100">
+                                        <p:panelGrid id="gpDetailText" columns="2" class="w-100" layout="tabular">
                                             <h:outputText value="Name" />
                                             <p:inputText autocomplete="off"
                                                          id="txtName"
@@ -238,9 +239,13 @@
                                                     disabled="#{!departmentController.editable}">
                                                     <p:ajax process="acIns" update="cmbSupDept pnlInstitution"/>
                                                 </p:autoComplete>
-                                                <h:panelGroup rendered="#{departmentController.current.institution ne null and departmentController.current.institution.id ne null}"
-                                                              styleClass="badge #{departmentController.current.institution.inactive ? 'badge-danger' : 'badge-success'} mt-1">
-                                                    #{departmentController.current.institution.inactive ? 'Inactive' : 'Active'}
+                                                <h:panelGroup rendered="#{departmentController.current.institution ne null and departmentController.current.institution.id ne null and departmentController.current.institution.retired}"
+                                                              styleClass="text-danger small mt-1" layout="block">
+                                                    <i class="fas fa-exclamation-triangle" /> Warning: This institution is retired.
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{departmentController.current.institution ne null and departmentController.current.institution.id ne null and departmentController.current.institution.inactive and !departmentController.current.institution.retired}"
+                                                              styleClass="text-warning small mt-1" layout="block">
+                                                    <i class="fas fa-exclamation-triangle" /> Warning: This institution is inactive.
                                                 </h:panelGroup>
                                             </h:panelGroup>
 
@@ -271,16 +276,20 @@
                                                     disabled="#{!departmentController.editable}">
                                                     <p:ajax process="acSite" update="pnlSite"/>
                                                 </p:autoComplete>
-                                                <h:panelGroup rendered="#{departmentController.current.site ne null and departmentController.current.site.id ne null}"
-                                                              styleClass="badge #{departmentController.current.site.inactive ? 'badge-danger' : 'badge-success'} mt-1">
-                                                    #{departmentController.current.site.inactive ? 'Inactive' : 'Active'}
+                                                <h:panelGroup rendered="#{departmentController.current.site ne null and departmentController.current.site.id ne null and departmentController.current.site.retired}"
+                                                              styleClass="text-danger small mt-1" layout="block">
+                                                    <i class="fas fa-exclamation-triangle" /> Warning: This site is retired.
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{departmentController.current.site ne null and departmentController.current.site.id ne null and departmentController.current.site.inactive and !departmentController.current.site.retired}"
+                                                              styleClass="text-warning small mt-1" layout="block">
+                                                    <i class="fas fa-exclamation-triangle" /> Warning: This site is inactive.
                                                 </h:panelGroup>
                                             </h:panelGroup>
-                                        </h:panelGrid>
+                                        </p:panelGrid>
                                     </p:tab>
 
                                     <p:tab title="Contact Details">
-                                        <h:panelGrid columns="2" class="w-100">
+                                        <p:panelGrid columns="2" class="w-100" layout="tabular">
                                             <h:outputText value="Printing Name" />
                                             <p:inputText autocomplete="off" class="w-100"
                                                          value="#{departmentController.current.printingName}"
@@ -305,11 +314,11 @@
                                             <p:inputText class="w-100" autocomplete="off"
                                                          value="#{departmentController.current.email}"
                                                          disabled="#{!departmentController.editable}" />
-                                        </h:panelGrid>
+                                        </p:panelGrid>
                                     </p:tab>
 
-                                    <p:tab title="Pricing Details" class="w-100">
-                                        <h:panelGrid columns="2" class="w-100">
+                                    <p:tab title="Pricing Details" class="w-100" >
+                                        <p:panelGrid columns="2" class="w-100" layout="tabular">
                                             <h:outputText value="OPD Margin Percentage" />
                                             <p:inputText class="w-100" autocomplete="off"
                                                          value="#{departmentController.current.margin}"
@@ -318,7 +327,7 @@
                                             <p:inputText class="w-100" autocomplete="off"
                                                          value="#{departmentController.current.pharmacyMarginFromPurchaseRate}"
                                                          disabled="#{!departmentController.editable}" />
-                                        </h:panelGrid>
+                                        </p:panelGrid>
                                     </p:tab>
                                 </p:tabView>
 

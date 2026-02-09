@@ -399,7 +399,7 @@ public class DepartmentController implements Serializable {
         if (department == null || department.getId() == null) {
             return DepartmentType.Other;
         }
-        
+
         Department d = getFacade().find(department.getId());
 
         if (d == null) {
@@ -411,7 +411,7 @@ public class DepartmentController implements Serializable {
         if (type == null) {
             return DepartmentType.Other;
         }
-        
+
         return type;
     }
 
@@ -686,6 +686,7 @@ public class DepartmentController implements Serializable {
         HashMap<String, Object> hm = new HashMap<>();
         sql = "select c from Department c "
                 + " where c.retired=false "
+                + " and c.inactive=false "
                 + " and (c.name) like :q "
                 + " and c.institution=:ins "
                 + " order by c.name";
@@ -700,6 +701,7 @@ public class DepartmentController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from Department c "
                 + " where c.retired=false "
+                + " and c.inactive=false "
                 + " and (c.name) like :q "
                 + " and c.institution=:ins "
                 + " order by c.name";
@@ -723,6 +725,7 @@ public class DepartmentController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from Department c "
                 + " where c.retired=false "
+                + " and c.inactive=false "
                 + " and c.name like :q "
                 + " and c.institution=:ins "
                 + " and c.departmentType=:dt"
@@ -741,6 +744,7 @@ public class DepartmentController implements Serializable {
             hm = new HashMap();
             sql = "select c from Department c "
                     + " where c.retired=false "
+                    + " and c.inactive=false "
                     + " and c.name like :q "
                     + " order by c.name";
             hm.put("q", "%" + qry.toUpperCase() + "%");
@@ -754,6 +758,7 @@ public class DepartmentController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from Department c "
                 + " where c.retired=false "
+                + " and c.inactive=false "
                 + " and ((c.name) like :q or (c.institution.name) like :q )"
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
@@ -769,6 +774,7 @@ public class DepartmentController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from Department c "
                 + " where c.retired=false "
+                + " and c.inactive=false "
                 + " and upper(c.name) like :q "
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
@@ -1062,7 +1068,6 @@ public class DepartmentController implements Serializable {
     }
 
     // ===================== Filter Status Management (VMP/AMP Pattern) =====================
-
     public String getFilterStatus() {
         return filterStatus;
     }
@@ -1139,7 +1144,6 @@ public class DepartmentController implements Serializable {
     }
 
     // ===================== Status Toggle Methods =====================
-
     /**
      * Toggle Department inactive status with audit logging
      */
@@ -1194,7 +1198,6 @@ public class DepartmentController implements Serializable {
     }
 
     // ===================== Audit Trail Methods =====================
-
     /**
      * Create audit map with Department-specific fields
      */
@@ -1208,22 +1211,22 @@ public class DepartmentController implements Serializable {
             auditData.put("departmentCode", dept.getDepartmentCode());
             auditData.put("retired", dept.isRetired());
             auditData.put("inactive", dept.isInactive());
-            auditData.put("departmentType", dept.getDepartmentType() != null ?
-                    dept.getDepartmentType().toString() : null);
+            auditData.put("departmentType", dept.getDepartmentType() != null
+                    ? dept.getDepartmentType().toString() : null);
 
             // Relationships
-            auditData.put("institutionId", dept.getInstitution() != null ?
-                    dept.getInstitution().getId() : null);
-            auditData.put("institutionName", dept.getInstitution() != null ?
-                    dept.getInstitution().getName() : null);
-            auditData.put("siteId", dept.getSite() != null ?
-                    dept.getSite().getId() : null);
-            auditData.put("siteName", dept.getSite() != null ?
-                    dept.getSite().getName() : null);
-            auditData.put("superDepartmentId", dept.getSuperDepartment() != null ?
-                    dept.getSuperDepartment().getId() : null);
-            auditData.put("superDepartmentName", dept.getSuperDepartment() != null ?
-                    dept.getSuperDepartment().getName() : null);
+            auditData.put("institutionId", dept.getInstitution() != null
+                    ? dept.getInstitution().getId() : null);
+            auditData.put("institutionName", dept.getInstitution() != null
+                    ? dept.getInstitution().getName() : null);
+            auditData.put("siteId", dept.getSite() != null
+                    ? dept.getSite().getId() : null);
+            auditData.put("siteName", dept.getSite() != null
+                    ? dept.getSite().getName() : null);
+            auditData.put("superDepartmentId", dept.getSuperDepartment() != null
+                    ? dept.getSuperDepartment().getId() : null);
+            auditData.put("superDepartmentName", dept.getSuperDepartment() != null
+                    ? dept.getSuperDepartment().getName() : null);
         }
         return auditData;
     }
@@ -1268,7 +1271,6 @@ public class DepartmentController implements Serializable {
     }
 
     // ===================== DTO Methods =====================
-
     public List<DepartmentDto> completeDepartmentDto(String query) {
         if (query == null || query.trim().isEmpty()) {
             return new ArrayList<>();
@@ -1414,7 +1416,6 @@ public class DepartmentController implements Serializable {
     }
 
     // ===================== Inner Classes =====================
-
     public static class DepartmentDuplicateGroup {
 
         private List<Department> departments;

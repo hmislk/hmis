@@ -45,8 +45,8 @@
                                           styleClass="text-muted"/>
                             <p:outputLabel for="atmStatus" value="Status: "/>
                             <p:badge id="atmStatus"
-                                     value="#{atmController.current.retired ? 'Retired' : 'Active'}"
-                                     severity="#{atmController.current.retired ? 'danger' : 'success'}"/>
+                                     value="#{atmController.current.inactive ? 'Inactive' : 'Active'}"
+                                     severity="#{atmController.current.inactive ? 'danger' : 'success'}"/>
                             <p:outputLabel for="atmDept" value="Department: "/>
                             <h:outputText id="atmDept" value="#{atmController.current.departmentType}"/>
                             <p:outputLabel for="totalEvents" value="Total Audit Events: "/>

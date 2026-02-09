@@ -116,7 +116,7 @@
                                             title="Toggle Institution active/inactive status">
                                             <p:confirm
                                                 header="Confirm Status Change"
-                                                message="Are you sure you want to #{institutionController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this Institution: #{institutionController.current.name}?"
+                                                message="Are you sure you want to #{not empty institutionController.selectedInstitutionDto ? (institutionController.selectedInstitutionDto.inactive ? 'ACTIVATE' : 'DEACTIVATE') : 'CHANGE STATUS'} this Institution: #{not empty institutionController.selectedInstitutionDto ? institutionController.selectedInstitutionDto.name : ''}?"
                                                 icon="fas fa-question-circle" />
                                         </p:commandButton>
 
@@ -178,7 +178,7 @@
                                                   styleClass="badge #{institutionController.current.inactive ? 'badge-danger' : 'badge-success'}">
                                         #{institutionController.current.inactive ? 'Inactive' : 'Active'}
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{institutionController.editable}"
+                                    <h:panelGroup rendered="#{institutionController.editable and institutionController.current ne null}"
                                                   styleClass="badge badge-warning">
                                         #{institutionController.current.id ne null ? 'Editing' : 'Adding New'}
                                     </h:panelGroup>
@@ -188,11 +188,12 @@
                             <p:panelGrid
                                 id="gpDetail"
                                 columns="1"
-                                class="w-100">
+                                class="w-100"
+                                rendered="#{institutionController.current ne null}">
 
                                 <p:tabView class="w-100">
                                     <p:tab title="Basic Details" class="w-100">
-                                        <h:panelGrid id="gpDetailText" columns="2" class="w-100">
+                                        <p:panelGrid id="gpDetailText" columns="2" class="w-100" layout="tabular">
                                             <h:outputText value="Name" />
                                             <p:inputText autocomplete="off"
                                                          id="txtName"
@@ -259,11 +260,11 @@
                                             <p:inputTextarea class="w-100"
                                                              value="#{institutionController.current.descreption}"
                                                              disabled="#{!institutionController.editable}" />
-                                        </h:panelGrid>
+                                        </p:panelGrid>
                                     </p:tab>
 
                                     <p:tab title="Contact Details">
-                                        <h:panelGrid columns="2" class="w-100">
+                                        <p:panelGrid columns="2" class="w-100" layout="tabular">
                                             <h:outputText value="Phone" />
                                             <p:inputText class="w-100" autocomplete="off"
                                                          value="#{institutionController.current.phone}"
@@ -284,11 +285,11 @@
                                             <p:inputText class="w-100" autocomplete="off"
                                                          value="#{institutionController.current.web}"
                                                          disabled="#{!institutionController.editable}" />
-                                        </h:panelGrid>
+                                        </p:panelGrid>
                                     </p:tab>
 
                                     <p:tab title="Advanced">
-                                        <h:panelGrid columns="2" class="w-100">
+                                        <p:panelGrid columns="2" class="w-100" layout="tabular">
                                             <h:outputText value="Point of Issue No." />
                                             <p:inputText class="w-100"
                                                          value="#{institutionController.current.pointOfIssueNo}"
@@ -319,7 +320,7 @@
                                             <p:inputText class="w-100" autocomplete="off"
                                                          value="#{institutionController.current.ownerEmail}"
                                                          disabled="#{!institutionController.editable}" />
-                                        </h:panelGrid>
+                                        </p:panelGrid>
                                     </p:tab>
                                 </p:tabView>
 

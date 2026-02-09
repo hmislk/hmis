@@ -1596,10 +1596,10 @@ public class AmpController implements Serializable {
             boolean shouldKeepSelection = false;
             switch (filterStatus) {
                 case "active":
-                    shouldKeepSelection = !current.isRetired();
+                    shouldKeepSelection = !current.isInactive();
                     break;
                 case "inactive":
-                    shouldKeepSelection = current.isRetired();
+                    shouldKeepSelection = current.isInactive();
                     break;
                 case "all":
                     shouldKeepSelection = true;
@@ -1694,9 +1694,9 @@ public class AmpController implements Serializable {
 
         // Capture before state for audit
         Map<String, Object> beforeData = createAuditMap(current);
-        boolean wasRetired = current.isRetired();
+        boolean wasInactive = current.isInactive();
 
-        if (wasRetired) {
+        if (wasInactive) {
             // Activate AMP
             current.setInactive(false);
             JsfUtil.addSuccessMessage("AMP Activated Successfully");
@@ -1710,7 +1710,7 @@ public class AmpController implements Serializable {
 
         // Log audit for status change
         Map<String, Object> afterData = createAuditMap(current);
-        String action = wasRetired ? "Activate AMP" : "Deactivate AMP";
+        String action = wasInactive ? "Activate AMP" : "Deactivate AMP";
         auditService.logAudit(beforeData, afterData,
                 getSessionController().getLoggedUser(),
                 "Amp", action, current.getId());
@@ -1724,23 +1724,23 @@ public class AmpController implements Serializable {
         if (current == null || current.getId() == null) {
             return "Toggle Status";
         }
-        return current.isRetired() ? "Activate" : "Deactivate";
+        return current.isInactive() ? "Activate" : "Deactivate";
     }
 
     public String getToggleStatusButtonIcon() {
         if (current == null || current.getId() == null) {
             return "fas fa-toggle-off";
         }
-        return current.isRetired() ? "fas fa-check-circle" : "fas fa-times-circle";
+        return current.isInactive() ? "fas fa-check-circle" : "fas fa-times-circle";
     }
 
     public String getToggleStatusButtonClass() {
         if (current == null || current.getId() == null) {
             return "ui-button-secondary";
         }
-        // If retired (inactive), show green "Activate" button
+        // If inactive, show green "Activate" button
         // If active, show orange "Deactivate" button
-        return current.isRetired() ? "ui-button-success" : "ui-button-warning";
+        return current.isInactive() ? "ui-button-success" : "ui-button-warning";
     }
 
     // ===================== Audit History Management =====================
