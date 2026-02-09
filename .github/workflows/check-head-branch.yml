@@ -1,0 +1,28 @@
+name: Validate QA3 PR Source Branch
+
+on:
+  pull_request:
+    branches:
+      - hims-qa3
+
+jobs:
+  validate-branch-origin:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # IMPORTANT: required for branch history
+
+      - name: Validate branch was created from hmis-qa3
+        run: |
+          git fetch origin qa
+
+          if git merge-base --is-ancestor origin/qa HEAD; then
+            echo "✅ Branch is based on qa3"
+          else
+            echo "❌ This PR branch was NOT created from qa"
+            echo "Only branches created from qa3 can be merged into qa3"
+            exit 1
+          fi
