@@ -333,6 +333,21 @@
                                         action="#" >
                                         <p:printer target="gpSummaryPreview" />
                                     </p:commandButton>
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        value="Settings"
+                                        icon="fas fa-cog"
+                                        class="ui-button-secondary mx-1"
+                                        type="button"
+                                        onclick="PF('opdDoctorPaymentConfigDialog').show();" />
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('Admin')}"
+                                        value="Config"
+                                        icon="fa fa-cog"
+                                        title="Page Configuration Management"
+                                        action="#{pageAdminController.navigateToPageAdmin('opd/professional_payments/payment_staff_bill')}"
+                                        ajax="false"
+                                        styleClass="ui-button-secondary ms-2" />
                                 </div>
                             </div>
                         </f:facet>
@@ -389,6 +404,104 @@
                         </h:panelGroup>
 
                     </p:panel>
+
+                    <!-- OPD Doctor Payment Configuration Dialog -->
+                    <p:dialog id="opdDoctorPaymentConfigDialog"
+                              header="OPD Doctor Payment Printer Configuration"
+                              widgetVar="opdDoctorPaymentConfigDialog"
+                              modal="true"
+                              width="600"
+                              height="500"
+                              resizable="true"
+                              maximizable="true"
+                              closeOnEscape="true">
+
+                        <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update=":#{p:resolveFirstComponentWithId('opdDoctorPaymentCheckboxes',view).clientId}" process="@this" />
+
+                        <h:form id="opdDoctorPaymentConfigForm">
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card config-section">
+                                        <div class="card-header">
+                                            <h6><i class="fas fa-file-alt"></i> OPD Doctor Payment Paper Settings</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <h:panelGroup id="opdDoctorPaymentCheckboxes">
+                                                <div class="mb-3">
+                                                    <p:selectBooleanCheckbox
+                                                        id="opdDocPayA4"
+                                                        value="#{pharmacyConfigController.opdDoctorPaymentA4Paper}" />
+                                                    <p:outputLabel for="opdDocPayA4" value="A4 Paper Format" class="ms-2" />
+                                                    <small class="form-text text-muted d-block">Standard A4 size paper format for OPD Doctor Payment voucher</small>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <p:selectBooleanCheckbox
+                                                        id="opdDocPayFiveFive"
+                                                        value="#{pharmacyConfigController.opdDoctorPaymentFiveFivePaper}" />
+                                                    <p:outputLabel for="opdDocPayFiveFive" value="5x5 Paper Format" class="ms-2" />
+                                                    <small class="form-text text-muted d-block">5x5 inch paper format with headings for OPD Doctor Payment voucher</small>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <p:selectBooleanCheckbox
+                                                        id="opdDocPayPos"
+                                                        value="#{pharmacyConfigController.opdDoctorPaymentPosPaper}" />
+                                                    <p:outputLabel for="opdDocPayPos" value="POS Paper Format" class="ms-2" />
+                                                    <small class="form-text text-muted d-block">Point of Sale receipt format for OPD Doctor Payment voucher</small>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <p:selectBooleanCheckbox
+                                                        id="opdDocPayHideDetails"
+                                                        value="#{pharmacyConfigController.opdDoctorPaymentHideDetails}" />
+                                                    <p:outputLabel for="opdDocPayHideDetails" value="Hide Details" class="ms-2" />
+                                                    <small class="form-text text-muted d-block">Hide the details on the OPD Doctor Payment Bill</small>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <p:selectBooleanCheckbox
+                                                        id="opdDocPayHideFiveFiveHeader"
+                                                        value="#{pharmacyConfigController.opdDoctorPaymentHideFiveFiveHeader}" />
+                                                    <p:outputLabel for="opdDocPayHideFiveFiveHeader" value="Hide 5x5 Header" class="ms-2" />
+                                                    <small class="form-text text-muted d-block">Hide the Header Details on the OPD Doctor Payment 5x5 Bill</small>
+                                                </div>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p:messages id="opdDoctorPaymentConfigMessages" showDetail="true" closable="true" />
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex gap-2">
+                                                    <p:commandButton
+                                                        value="Apply &amp; Close"
+                                                        icon="fas fa-save"
+                                                        class="ui-button-success"
+                                                        ajax="false"
+                                                        action="#{pharmacyConfigController.saveOpdDoctorPaymentConfig}" />
+                                                    <p:commandButton
+                                                        value="Cancel"
+                                                        icon="fas fa-times"
+                                                        class="ui-button-secondary"
+                                                        onclick="PF('opdDoctorPaymentConfigDialog').hide(); return false;"
+                                                        type="button" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </h:form>
+                    </p:dialog>
+
                 </h:form>
             </ui:define>
         </ui:composition>
