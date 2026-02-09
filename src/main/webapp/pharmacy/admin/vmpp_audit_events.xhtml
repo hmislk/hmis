@@ -41,8 +41,8 @@
                             <h:outputText id="vmppVmp" value="#{vmppController.current.vmp.name}"/>
                             <p:outputLabel for="vmppStatus" value="Status: "/>
                             <p:badge id="vmppStatus"
-                                     value="#{vmppController.current.retired ? 'Retired' : 'Active'}"
-                                     severity="#{vmppController.current.retired ? 'danger' : 'success'}"/>
+                                     value="#{vmppController.current.inactive ? 'Inactive' : 'Active'}"
+                                     severity="#{vmppController.current.inactive ? 'danger' : 'success'}"/>
                             <p:outputLabel for="vmppDept" value="Department: "/>
                             <h:outputText id="vmppDept" value="#{vmppController.current.departmentType}"/>
                             <p:outputLabel for="totalEvents" value="Total Audit Events: "/>

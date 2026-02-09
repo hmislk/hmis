@@ -39,8 +39,8 @@
                             <h:outputText id="vmpCode" value="#{vmpController.current.code}"/>
                             <p:outputLabel for="vmpStatus" value="Status: "/>
                             <p:badge id="vmpStatus"
-                                     value="#{vmpController.current.retired ? 'Retired' : 'Active'}"
-                                     severity="#{vmpController.current.retired ? 'danger' : 'success'}"/>
+                                     value="#{vmpController.current.inactive ? 'Inactive' : 'Active'}"
+                                     severity="#{vmpController.current.inactive ? 'danger' : 'success'}"/>
                             <p:outputLabel for="vmpDept" value="Department: "/>
                             <h:outputText id="vmpDept" value="#{vmpController.current.departmentType}"/>
                             <p:outputLabel for="vmpVtm" value="Generic Name: "/>
