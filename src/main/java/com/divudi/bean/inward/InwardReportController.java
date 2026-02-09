@@ -481,7 +481,6 @@ public class InwardReportController implements Serializable {
             );
 
         } catch (Exception e) {
-            e.printStackTrace();
             JsfUtil.addErrorMessage("Error loading unsettled invoices: " + e.getMessage());
             unsettledInvoicesList = new ArrayList<>();
         }
