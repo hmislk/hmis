@@ -290,6 +290,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private PaymentMethod paymentMethod;
     private String blacklistComment;
     private Long objectId;
+    private boolean isNewPatient;
+    private Object before;
     
     public boolean isBlackListStatus() {
         return blackListStatus;
@@ -1079,8 +1081,59 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         reGenerateePhn = webUserController.hasPrivilege("EditData");
-
+        
+        isNewPatient = false;
+        before = createPatientJson(current);
         return "/opd/patient_edit?faces-redirect=true";
+    }
+    
+    public Object createPatientJson(Patient patient){
+        Map<String , Object> json = new HashMap<>();
+        json.put("patientId", patient.getId());
+        json.put("phn", patient.getPhn());
+        json.put("code", patient.getCode());
+        
+        if (patient.getPerson() != null){
+            Map<String , Object> patientMap = new HashMap<>();
+            patientMap.put("id",patient.getPerson().getId());
+            patientMap.put("name",patient.getPerson().getName());
+            // Format date safely
+            if (patient.getPerson().getDob() != null) {
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                patientMap.put("dob", sdf.format(patient.getPerson().getDob()));
+            } else {
+                patientMap.put("dob", null);
+            }
+            
+            patientMap.put("sex", patient.getPerson().getSex() != null ? 
+                patient.getPerson().getSex().toString() : null);
+            patientMap.put("nic", patient.getPerson().getNic());
+            patientMap.put("phone", patient.getPerson().getPhone());
+            patientMap.put("mobile", patient.getPerson().getMobile());
+            patientMap.put("address", patient.getPerson().getAddress());
+            patientMap.put("email", patient.getPerson().getEmail());
+            
+            json.put("person", patientMap);
+        }
+          // Add creation details
+        if (patient.getCreatedAt() != null) {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            json.put("createdAt", sdf.format(patient.getCreatedAt()));
+        } else {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            json.put("createdAt", sdf.format(new Date()));
+        }
+        
+        // Get creator name safely
+        String createdBy = "system";
+        if (patient.getCreater() != null && patient.getCreater().getWebUserPerson() != null) {
+            createdBy = patient.getCreater().getWebUserPerson().getName();
+        } else if (sessionController != null && sessionController.getLoggedUser() != null && 
+                   sessionController.getLoggedUser().getWebUserPerson() != null) {
+            createdBy = sessionController.getLoggedUser().getWebUserPerson().getName();
+        }
+        json.put("createdBy", createdBy);
+        return json;
     }
 
     public String navigateToOpdPatientEditFromId() {
@@ -3061,6 +3114,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getCurrent();
 
         reGenerateePhn = true;
+        isNewPatient = true;
         return "/opd/patient_edit?faces-redirect=true";
     }
 
@@ -3073,6 +3127,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigateToAddNewPatientForOpd(String name, String nic, String phone) {
         current = null;
         getCurrent();
+        isNewPatient = true;
         getCurrent().getPerson().setName(name);
         getCurrent().getPerson().setNic(nic);
         getCurrent().getPerson().setPhone(phone);
@@ -3093,6 +3148,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigateToAddNewPatientForOpd(String phone) {
         current = null;
         getCurrent();
+        isNewPatient = true;
         getCurrent().getPerson().setPhone(phone);
         getCurrent().getPerson().setMobile(phone);
         return "/opd/patient_edit?faces-redirect=true";
@@ -3321,7 +3377,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return auditEventFacade;
     }
     public boolean saveSelected(Patient p) {
-        boolean isNew = (p.getId() == null);
         if (p == null) {
             JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
             return false;
@@ -3398,88 +3453,19 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().editAndFlush(p);    // Immediate flush to database
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
         }
-        createAuditEventPatientSaved(p, isNew);
+        createAuditEventPatientSaved(p);
         return true;
     }
-    public void createAuditEventPatientSaved(Patient patient, boolean isNew){
+    public void createAuditEventPatientSaved(Patient patient){
          try {
-        Object before = null;
         
-        // If this is an edit (patient already has an ID), get the previous state
-        if (!isNew && patient.getId() != null) {
-            String jpql = "SELECT a FROM AuditEvent a WHERE a.objectId = :objectId AND a.entityType = :entityType ORDER BY a.eventDataTime DESC";
-            Map<String, Object> params = new HashMap<>();
-            params.put("objectId", patient.getId());
-            params.put("entityType", "Patient");
-            
-            try {
-                List<AuditEvent> previousAudits = getAuditEventFacade().findByJpql(jpql, params, 1);
-                if (previousAudits != null && !previousAudits.isEmpty()) {
-                    AuditEvent lastEvent = previousAudits.get(0);
-                    // The "after" from the last save becomes "before" for this save
-                    String afterJson=lastEvent.getAfterJson();
-                    Gson gson=new Gson();
-                    before = gson.fromJson(afterJson,new TypeToken<Map<String,Object>>(){}.getType());
-//                    before = lastEvent.getAfterJson();
-                }
-            } catch (Exception e) {
-                // Log the error but don't fail the audit
-                System.err.println("Error retrieving previous audit state: " + e.getMessage());
-            }
+        if (isNewPatient == true){
+            before = null;
         }
-        
-        // Build the current state (after)
-        Map<String, Object> after = new HashMap<>();
-        after.put("patientId", patient.getId());
-        after.put("phn", patient.getPhn());
-        after.put("code", patient.getCode());
-        
-        // Add person information if available
-        if (patient.getPerson() != null) {
-            Map<String, Object> personMap = new HashMap<>();
-            personMap.put("id", patient.getPerson().getId());
-            personMap.put("name", patient.getPerson().getName());
-            
-            // Format date safely
-            if (patient.getPerson().getDob() != null) {
-                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
-                personMap.put("dob", sdf.format(patient.getPerson().getDob()));
-            } else {
-                personMap.put("dob", null);
-            }
-            
-            personMap.put("sex", patient.getPerson().getSex() != null ? 
-                patient.getPerson().getSex().toString() : null);
-            personMap.put("nic", patient.getPerson().getNic());
-            personMap.put("phone", patient.getPerson().getPhone());
-            personMap.put("mobile", patient.getPerson().getMobile());
-            personMap.put("address", patient.getPerson().getAddress());
-            personMap.put("email", patient.getPerson().getEmail());
-            
-            after.put("person", personMap);
-        }
-        
-        // Add creation details
-        if (patient.getCreatedAt() != null) {
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            after.put("createdAt", sdf.format(patient.getCreatedAt()));
-        } else {
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            after.put("createdAt", sdf.format(new Date()));
-        }
-        
-        // Get creator name safely
-        String createdBy = "system";
-        if (patient.getCreater() != null && patient.getCreater().getWebUserPerson() != null) {
-            createdBy = patient.getCreater().getWebUserPerson().getName();
-        } else if (sessionController != null && sessionController.getLoggedUser() != null && 
-                   sessionController.getLoggedUser().getWebUserPerson() != null) {
-            createdBy = sessionController.getLoggedUser().getWebUserPerson().getName();
-        }
-        after.put("createdBy", createdBy);
+        Object after = createPatientJson(patient);
         
         // Determine event trigger
-        String eventTrigger = isNew ? "Create patient" : "Update patient";
+        String eventTrigger = isNewPatient ? "Create patient" : "Update patient";
         
         // Log the audit
         Long objectId = patient.getId();
