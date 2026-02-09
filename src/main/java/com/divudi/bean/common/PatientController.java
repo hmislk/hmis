@@ -67,8 +67,6 @@ import com.divudi.core.facade.AuditEventFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.MembershipService;
 import com.divudi.service.AuditService;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -289,7 +287,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private boolean reGenerateePhn;
     private PaymentMethod paymentMethod;
     private String blacklistComment;
-    private Long objectId;
     private boolean isNewPatient;
     private Object before;
     
@@ -1146,7 +1143,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-
         return "/opd/patient?faces-redirect=true";
     }
 
@@ -3373,9 +3369,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         return "/opd/patient?faces-redirect=true";
     }
+    
     public AuditEventFacade getAuditEventFacade(){
         return auditEventFacade;
     }
+    
     public boolean saveSelected(Patient p) {
         if (p == null) {
             JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
