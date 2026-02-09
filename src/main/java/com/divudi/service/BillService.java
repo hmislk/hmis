@@ -620,7 +620,7 @@ public class BillService {
                 + " FROM BillItem bi "
                 + " WHERE bi.bill=:bl "
                 + " and (bi.retired is null or bi.retired=false) "
-                + " and bi.referenceBill.billTypeAtomic != :miscType "
+                + " and (bi.referenceBill IS NULL OR bi.referenceBill.billTypeAtomic != :miscType) "
                 + " order by bi.id";
         params.put("bl", b);
         params.put("miscType", BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
@@ -648,7 +648,7 @@ public class BillService {
                 + " FROM BillItem bi "
                 + " WHERE bi.bill=:bl "
                 + " and (bi.retired is null or bi.retired=false) "
-                + " and bi.referenceBill.billTypeAtomic != :miscType ";
+                + " and (bi.referenceBill IS NULL OR bi.referenceBill.billTypeAtomic != :miscType) ";
         params.put("bl", b);
         params.put("miscType", BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
         return billItemFacade.findLongByJpql(jpql, params);
@@ -661,7 +661,7 @@ public class BillService {
                 + " FROM BillItem bi "
                 + " WHERE bi.bill=:bl "
                 + " and (bi.retired is null or bi.retired=false) "
-                + " and bi.referenceBill.billTypeAtomic != :miscType ";
+                + " and (bi.referenceBill IS NULL OR bi.referenceBill.billTypeAtomic != :miscType) ";
         params.put("bl", b);
         params.put("miscType", BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
         return billItemFacade.findDoubleByJpql(jpql, params);

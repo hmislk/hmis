@@ -192,105 +192,104 @@
                             <bi:staff_payment_pos_summary controller="#{billSearch}" bill="#{billSearch.bill}" dup="false"/>
                         </h:panelGroup>
                     </h:panelGroup>
+                </h:form>
 
-                    <!-- OPD Doctor Payment Reprint Configuration Dialog -->
-                    <p:dialog id="opdDoctorPaymentReprintConfigDialog"
-                              header="OPD Doctor Payment Printer Configuration"
-                              widgetVar="opdDoctorPaymentReprintConfigDialog"
-                              modal="true"
-                              width="600"
-                              height="500"
-                              resizable="true"
-                              maximizable="true"
-                              closeOnEscape="true">
+                <!-- OPD Doctor Payment Reprint Configuration Dialog -->
+                <p:dialog id="opdDoctorPaymentReprintConfigDialog"
+                          header="OPD Doctor Payment Printer Configuration"
+                          widgetVar="opdDoctorPaymentReprintConfigDialog"
+                          modal="true"
+                          width="600"
+                          height="500"
+                          resizable="true"
+                          maximizable="true"
+                          closeOnEscape="true">
 
-                        <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update=":#{p:resolveFirstComponentWithId('opdDoctorPaymentReprintCheckboxes',view).clientId}" process="@this" />
+                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update=":#{p:resolveFirstComponentWithId('opdDoctorPaymentReprintCheckboxes',view).clientId}" process="@this" />
 
-                        <h:form id="opdDoctorPaymentReprintConfigForm">
+                    <h:form id="opdDoctorPaymentReprintConfigForm">
 
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="card config-section">
-                                        <div class="card-header">
-                                            <h6><i class="fas fa-file-alt"></i> OPD Doctor Payment Paper Settings</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <h:panelGroup id="opdDoctorPaymentReprintCheckboxes">
-                                                <div class="mb-3">
-                                                    <p:selectBooleanCheckbox
-                                                        id="opdDocPayReprintA4"
-                                                        value="#{pharmacyConfigController.opdDoctorPaymentA4Paper}" />
-                                                    <p:outputLabel for="opdDocPayReprintA4" value="A4 Paper Format" class="ms-2" />
-                                                    <small class="form-text text-muted d-block">Standard A4 size paper format for OPD Doctor Payment voucher</small>
-                                                </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card config-section">
+                                    <div class="card-header">
+                                        <h:outputText value="OPD Doctor Payment Paper Settings" styleClass="h6" />
+                                    </div>
+                                    <div class="card-body">
+                                        <h:panelGroup id="opdDoctorPaymentReprintCheckboxes">
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="opdDocPayReprintA4"
+                                                    value="#{pharmacyConfigController.opdDoctorPaymentA4Paper}" />
+                                                <p:outputLabel for="opdDocPayReprintA4" value="A4 Paper Format" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Standard A4 size paper format for OPD Doctor Payment voucher</small>
+                                            </div>
 
-                                                <div class="mb-3">
-                                                    <p:selectBooleanCheckbox
-                                                        id="opdDocPayReprintFiveFive"
-                                                        value="#{pharmacyConfigController.opdDoctorPaymentFiveFivePaper}" />
-                                                    <p:outputLabel for="opdDocPayReprintFiveFive" value="5x5 Paper Format" class="ms-2" />
-                                                    <small class="form-text text-muted d-block">5x5 inch paper format with headings for OPD Doctor Payment voucher</small>
-                                                </div>
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="opdDocPayReprintFiveFive"
+                                                    value="#{pharmacyConfigController.opdDoctorPaymentFiveFivePaper}" />
+                                                <p:outputLabel for="opdDocPayReprintFiveFive" value="5x5 Paper Format" class="ms-2" />
+                                                <small class="form-text text-muted d-block">5x5 inch paper format with headings for OPD Doctor Payment voucher</small>
+                                            </div>
 
-                                                <div class="mb-3">
-                                                    <p:selectBooleanCheckbox
-                                                        id="opdDocPayReprintPos"
-                                                        value="#{pharmacyConfigController.opdDoctorPaymentPosPaper}" />
-                                                    <p:outputLabel for="opdDocPayReprintPos" value="POS Paper Format" class="ms-2" />
-                                                    <small class="form-text text-muted d-block">Point of Sale receipt format for OPD Doctor Payment voucher</small>
-                                                </div>
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="opdDocPayReprintPos"
+                                                    value="#{pharmacyConfigController.opdDoctorPaymentPosPaper}" />
+                                                <p:outputLabel for="opdDocPayReprintPos" value="POS Paper Format" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Point of Sale receipt format for OPD Doctor Payment voucher</small>
+                                            </div>
 
-                                                <div class="mb-3">
-                                                    <p:selectBooleanCheckbox
-                                                        id="opdDocPayReprintHideDetails"
-                                                        value="#{pharmacyConfigController.opdDoctorPaymentHideDetails}" />
-                                                    <p:outputLabel for="opdDocPayReprintHideDetails" value="Hide Details" class="ms-2" />
-                                                    <small class="form-text text-muted d-block">Hide the details on the OPD Doctor Payment Bill</small>
-                                                </div>
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="opdDocPayReprintHideDetails"
+                                                    value="#{pharmacyConfigController.opdDoctorPaymentHideDetails}" />
+                                                <p:outputLabel for="opdDocPayReprintHideDetails" value="Hide Details" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Hide the details on the OPD Doctor Payment Bill</small>
+                                            </div>
 
-                                                <div class="mb-3">
-                                                    <p:selectBooleanCheckbox
-                                                        id="opdDocPayReprintHideFiveFiveHeader"
-                                                        value="#{pharmacyConfigController.opdDoctorPaymentHideFiveFiveHeader}" />
-                                                    <p:outputLabel for="opdDocPayReprintHideFiveFiveHeader" value="Hide 5x5 Header" class="ms-2" />
-                                                    <small class="form-text text-muted d-block">Hide the Header Details on the OPD Doctor Payment 5x5 Bill</small>
-                                                </div>
-                                            </h:panelGroup>
-                                        </div>
+                                            <div class="mb-3">
+                                                <p:selectBooleanCheckbox
+                                                    id="opdDocPayReprintHideFiveFiveHeader"
+                                                    value="#{pharmacyConfigController.opdDoctorPaymentHideFiveFiveHeader}" />
+                                                <p:outputLabel for="opdDocPayReprintHideFiveFiveHeader" value="Hide 5x5 Header" class="ms-2" />
+                                                <small class="form-text text-muted d-block">Hide the Header Details on the OPD Doctor Payment 5x5 Bill</small>
+                                            </div>
+                                        </h:panelGroup>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="row mt-4">
-                                <div class="col-12">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <p:messages id="opdDoctorPaymentReprintConfigMessages" showDetail="true" closable="true" />
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div class="d-flex gap-2">
-                                                    <p:commandButton
-                                                        value="Apply &amp; Close"
-                                                        icon="fas fa-save"
-                                                        class="ui-button-success"
-                                                        ajax="false"
-                                                        action="#{pharmacyConfigController.saveOpdDoctorPaymentConfig}" />
-                                                    <p:commandButton
-                                                        value="Cancel"
-                                                        icon="fas fa-times"
-                                                        class="ui-button-secondary"
-                                                        onclick="PF('opdDoctorPaymentReprintConfigDialog').hide(); return false;"
-                                                        type="button" />
-                                                </div>
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p:messages id="opdDoctorPaymentReprintConfigMessages" showDetail="true" closable="true" />
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex gap-2">
+                                                <p:commandButton
+                                                    value="Apply &amp; Close"
+                                                    icon="fas fa-save"
+                                                    class="ui-button-success"
+                                                    ajax="false"
+                                                    action="#{pharmacyConfigController.saveOpdDoctorPaymentConfig}" />
+                                                <p:commandButton
+                                                    value="Cancel"
+                                                    icon="fas fa-times"
+                                                    class="ui-button-secondary"
+                                                    onclick="PF('opdDoctorPaymentReprintConfigDialog').hide(); return false;"
+                                                    type="button" />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                        </h:form>
-                    </p:dialog>
-
-                </h:form>
+                    </h:form>
+                </p:dialog>
 
             </ui:define>
 
