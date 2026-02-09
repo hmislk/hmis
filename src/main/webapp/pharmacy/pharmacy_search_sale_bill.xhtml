@@ -85,7 +85,7 @@
                                             action="#{pharmacyBillSearch.navigatePharmacyReprintRetailBill()}">
                                             <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>  
                                         </p:commandLink>
-                                        <p:commandLink
+<!--                                        <p:commandLink
                                             ajax="false"
                                             action="#{pharmacyBillSearch.navigatePharmacyReturnRetailBill}"
                                             title="View Refund Bills"
@@ -94,7 +94,7 @@
                                           
                                             <p:badge rendered="#{bill.returnPreBills ne null}" value="Refunded" severity="warning"></p:badge>
                                             <f:setPropertyActionListener value="#{bill.deptId}" target="#{searchController.searchKeyword.refBillNo}"/> 
-                                        </p:commandLink>
+                                        </p:commandLink>-->
                                     </p:column>
 
                                     <p:column headerText="Paid/Not">
