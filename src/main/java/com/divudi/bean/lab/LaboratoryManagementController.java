@@ -260,7 +260,13 @@ public class LaboratoryManagementController implements Serializable {
 
     public String navigateToEditReport(Long patientReportID) {
         PatientReport currentPatientReport = patientReportFacade.find(patientReportID);
-        reportHandoverStaff = null;
+        reportHandoverStaff = null; 
+        
+        if (currentPatientReport != null && (currentPatientReport.getApproved() == null || !currentPatientReport.getApproved())) {
+            patientReportController.setInitialInvestigation(new HashMap<>(20));
+            patientReportController.patientInvestigationToAuditMap(patientReportController.getInitialInvestigation(), currentPatientReport);
+        }
+        
         if (null == currentPatientReport.getReportType()) {
             patientReportController.setCurrentPatientReport(currentPatientReport);
             addViewReportHistory(currentPatientReport.getId());
@@ -283,7 +289,7 @@ public class LaboratoryManagementController implements Serializable {
                 case UPLOAD:
 
                     Upload u = patientReportController.loadUpload(currentPatientReport);
-
+                    patientReportController.setCurrentPatientReport(currentPatientReport);
                     if (u != null) {
                         patientReportUploadController.setReportUpload(u);
                     } else {
