@@ -267,6 +267,7 @@ public class PharmacyReportController implements Serializable {
     private List<BillLight> billLights;
 
     private List<ItemCount> reportOpdServiceCount;
+    private List<DepartmentType> selectedDepartmentTypes;
     private ReportTemplateRowBundle bundle;
     private List<ReportTemplateRow> unifiedBundle;
     private List<ReportTemplateRowBundle> bundleList;
@@ -4853,6 +4854,10 @@ public class PharmacyReportController implements Serializable {
                 jpql += "and s.item=:itm ";
                 m.put("itm", item);
             }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql += " and s.pbItem.billItem.bill.departmentType in :departmentTypes ";
+                m.put("departmentTypes", selectedDepartmentTypes);
+            }
 //            if ("transferReceiveDoc".equals(documentType) || "transferIssueDoc".equals(documentType) || documentType == null) {
 //                jpql += " and s.department IS NOT NULL ";
 //            }
@@ -4957,6 +4962,11 @@ public class PharmacyReportController implements Serializable {
             params.put("cat", category);
         }
 
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+            jpql.append("  AND sh2.item.departmentType IN :departmentTypes ");
+            params.put("departmentTypes", selectedDepartmentTypes);
+        }
+
         if (amp != null) {
             item = amp;
             jpql.append("  AND sh2.item = :itm ");
@@ -4989,6 +4999,9 @@ public class PharmacyReportController implements Serializable {
         }
         if (category != null) {
             jpql.append("AND sh.item.category = :cat ");
+        }
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+            jpql.append("AND sh.item.departmentType IN :departmentTypes ");
         }
         if (amp != null) {
             jpql.append("AND sh.item = :itm ");
@@ -5170,6 +5183,11 @@ public class PharmacyReportController implements Serializable {
             params.put("cat", category);
         }
 
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+            jpql.append("  AND sh2.itemBatch.item.departmentType IN :departmentTypes ");
+            params.put("departmentTypes", selectedDepartmentTypes);
+        }
+
         if (amp != null) {
             item = amp;
             jpql.append("  AND sh2.itemBatch.item = :itm ");
@@ -5202,6 +5220,9 @@ public class PharmacyReportController implements Serializable {
         }
         if (category != null) {
             jpql.append("AND sh.itemBatch.item.category = :cat ");
+        }
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+            jpql.append("AND sh.itemBatch.item.departmentType IN :departmentTypes ");
         }
         if (amp != null) {
             jpql.append("AND sh.itemBatch.item = :itm ");
@@ -9249,6 +9270,26 @@ public class PharmacyReportController implements Serializable {
 
     public void setBillItemRemainingCostValues(Map<Long, Double> billItemRemainingCostValues) {
         this.billItemRemainingCostValues = billItemRemainingCostValues;
+    }
+
+    public List<DepartmentType> getSelectedDepartmentTypes() {
+        if (selectedDepartmentTypes == null) {
+            selectedDepartmentTypes = new ArrayList<>();
+        }
+        return selectedDepartmentTypes;
+    }
+
+    public void setSelectedDepartmentTypes(List<DepartmentType> selectedDepartmentTypes) {
+        this.selectedDepartmentTypes = selectedDepartmentTypes;
+    }
+
+    public List<DepartmentType> getAvailableDepartmentTypes() {
+        return Arrays.asList(
+            DepartmentType.Pharmacy,
+            DepartmentType.Store,
+            DepartmentType.Lab,
+            DepartmentType.Kitchen
+        );
     }
 
     public boolean isStockCorrectionDisplayEnabled() {

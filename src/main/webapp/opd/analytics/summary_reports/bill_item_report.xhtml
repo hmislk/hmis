@@ -288,6 +288,14 @@
                                 styleClass="ui-button-success m-1"
                                 icon="pi pi-cog">
                             </p:commandButton>
+
+                            <p:commandButton
+                                value="To Print"
+                                action="bill_item_report_print?faces-redirect=true"
+                                styleClass="ui-button-warning m-1"
+                                icon="pi pi-print"
+                                rendered="#{opdReportController.billItemReportDtos != null and not empty opdReportController.billItemReportDtos}">
+                            </p:commandButton>
                         </h:panelGroup>
 
                         <!-- Display grouped data by payment method -->
@@ -403,6 +411,7 @@
                                                                                            (bill.billCategory == 'CANCELLATION' ? 'warning' : 'danger')}">
                                                                       #{bill.transactionTypeLabel}
                                                                 </span>
+                                                                <h:outputText value=" (Cancelled)" styleClass="badge badge-danger" rendered="#{bill.cancelled}" />
                                                             </td>
                                                             <td class="text-end">
                                                                 <h:outputText value="#{bill.hospitalFee}">

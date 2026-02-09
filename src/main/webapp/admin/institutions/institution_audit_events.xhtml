@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/admin/institutions/admin_institutions_index.xhtml">
+            <ui:define name="admin">
+                <h:form id="form">
+                    <p:growl id="msg"/>
+                    <p:panel styleClass="mb-3">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <h:outputText value="Institution Audit Events" />
+                                <div>
+                                    <p:commandButton
+                                        value="Back to Institution List"
+                                        icon="fas fa-arrow-left"
+                                        action="/admin/institutions/institutions?faces-redirect=true"
+                                        styleClass="ui-button-info ui-button-outlined mx-1"
+                                        ajax="false"
+                                        immediate="true"
+                                        title="Return to Institution management"/>
+
+                                    <p:commandButton
+                                        value="Refresh Events"
+                                        icon="fas fa-sync"
+                                        action="#{institutionController.fillInstitutionAuditEvents}"
+                                        update=":form:auditTable :form:msg"
+                                        styleClass="ui-button-info mx-1"
+                                        title="Reload audit events for this Institution"/>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <p:panelGrid columns="2" layout="tabular" styleClass="mb-3">
+                            <p:outputLabel for="instName" value="Name: "/>
+                            <h:outputText id="instName" value="#{institutionController.current.name}"/>
+                            <p:outputLabel for="instCode" value="Code: "/>
+                            <h:outputText id="instCode" value="#{institutionController.current.code}"/>
+                            <p:outputLabel for="instStatus" value="Status: "/>
+                            <h:panelGroup id="instStatus">
+                                <h:outputText value="Active" rendered="#{not institutionController.current.retired}"
+                                              style="background-color: #28a745; color: white; padding: 3px 8px; border-radius: 3px;"/>
+                                <h:outputText value="Inactive" rendered="#{institutionController.current.retired}"
+                                              style="background-color: #ffc107; color: black; padding: 3px 8px; border-radius: 3px;"/>
+                            </h:panelGroup>
+                            <p:outputLabel for="instType" value="Institution Type: "/>
+                            <h:outputText id="instType" value="#{institutionController.current.institutionType.label}"/>
+                            <p:outputLabel for="instAddress" value="Address: "/>
+                            <h:outputText id="instAddress" value="#{institutionController.current.address}"/>
+                            <p:outputLabel for="totalEvents" value="Total Audit Events: "/>
+                            <h:outputText id="totalEvents" value="#{institutionController.institutionAuditEvents.size()}"
+                                          style="background-color: #17a2b8; color: white; padding: 3px 8px; border-radius: 3px;"/>
+                        </p:panelGrid>
+
+                        <p:dataTable
+                            id="auditTable"
+                            value="#{institutionController.institutionAuditEvents}"
+                            var="audit"
+                            paginator="true"
+                            rows="20"
+                            paginatorPosition="both"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} events"
+                            rowsPerPageTemplate="10,20,50,100"
+                            emptyMessage="No audit events found for this Institution."
+                            styleClass="table table-striped">
+
+                            <p:column headerText="ID" style="width: 4em;" styleClass="text-end">
+                                <h:outputText value="#{audit.id}" />
+                            </p:column>
+
+                            <p:column headerText="Date / Time" style="width: 12em;">
+                                <h:outputText value="#{audit.eventDataTime}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Action" style="width: 10em;" styleClass="text-center">
+                                <h:outputText value="#{audit.eventTrigger}"
+                                              style="background-color: #{audit.eventTrigger eq 'Create Institution' ? '#28a745' :
+                                                    (audit.eventTrigger eq 'Update Institution' ? '#ffc107' :
+                                                    (audit.eventTrigger eq 'Delete Institution' ? '#dc3545' :
+                                                    (audit.eventTrigger eq 'Activate Institution' ? '#17a2b8' :
+                                                    (audit.eventTrigger eq 'Deactivate Institution' ? '#6c757d' : '#007bff'))))};
+                                                    color: #{audit.eventTrigger eq 'Update Institution' ? 'black' : 'white'};
+                                                    padding: 3px 8px; border-radius: 3px; font-size: 0.85em;"/>
+                            </p:column>
+
+                            <p:column headerText="User" style="width: 12em;">
+                                <h:outputText value="#{webUserController.findWebUserNameWithTitleById(audit.webUserId)}" />
+                            </p:column>
+
+                            <p:column headerText="Changes" style="width: auto;">
+                                <div class="audit-changes">
+                                    <h:outputText value="#{audit.difference}" />
+                                </div>
+                            </p:column>
+
+                            <p:column headerText="Status" style="width: 6em;" styleClass="text-center">
+                                <h:outputText value="#{audit.eventStatus}"
+                                              style="background-color: #{audit.eventStatus eq 'Completed' ? '#28a745' :
+                                                    (audit.eventStatus eq 'Failed' ? '#dc3545' : '#ffc107')};
+                                                    color: #{audit.eventStatus eq 'Failed' or audit.eventStatus eq 'Completed' ? 'white' : 'black'};
+                                                    padding: 3px 8px; border-radius: 3px; font-size: 0.85em;"/>
+                            </p:column>
+
+                            <p:column headerText="IP Address" style="width: 10em;">
+                                <h:outputText value="#{audit.ipAddress}" styleClass="text-muted" style="font-size: 0.85em;"/>
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:panel>
+
+                    <!-- Load audit events when page loads -->
+                    <f:event type="preRenderView" listener="#{institutionController.fillInstitutionAuditEvents}" />
+
+                </h:form>
+
+                <!-- Custom CSS for better audit display -->
+                <style>
+                    .audit-changes {
+                        max-width: 400px;
+                        word-wrap: break-word;
+                        white-space: pre-line;
+                        font-family: 'Courier New', monospace;
+                        font-size: 0.85em;
+                        line-height: 1.3;
+                    }
+
+                    .table th {
+                        background-color: #f8f9fa;
+                        font-weight: 600;
+                        border-top: none;
+                    }
+
+                    .table td {
+                        vertical-align: middle;
+                        padding: 0.75rem 0.5rem;
+                    }
+                </style>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -199,6 +199,49 @@ public class PharmacyAdjustmentApiService implements Serializable {
         return response;
     }
 
+    /**
+     * Adjust purchase rate for a single stock item
+     */
+    @Transactional
+    public AdjustmentResponseDTO adjustPurchaseRate(PurchaseRateAdjustmentDTO request, WebUser user) throws Exception {
+        validatePurchaseRateRequest(request);
+
+        Stock stock = loadAndValidateStock(request.getStockId());
+        Department department = loadAndValidateDepartment(request.getDepartmentId());
+
+        double currentPurchaseRate = stock.getItemBatch().getPurcahseRate(); // Note: typo is intentional for database compatibility
+        double newPurchaseRate = request.getNewPurchaseRate();
+        double rateChange = newPurchaseRate - currentPurchaseRate;
+        double changeValue = stock.getStock() * rateChange;
+
+        // Create adjustment bill
+        Bill adjustmentBill = createPurchaseRateAdjustmentBill(request.getComment(), user, department);
+
+        // Create bill items for audit trail
+        PharmaceuticalBillItem pharmaceuticalBillItem = createPurchaseRateAdjustmentBillItem(
+            adjustmentBill, stock, currentPurchaseRate, newPurchaseRate, rateChange, changeValue, user);
+
+        // Update actual purchase rate
+        stock.getItemBatch().setPurcahseRate(newPurchaseRate); // Note: typo is intentional for database compatibility
+        itemBatchFacade.edit(stock.getItemBatch());
+
+        // Add to stock history for audit trail
+        pharmacyBean.addToStockHistory(pharmaceuticalBillItem, stock, department);
+
+        // Create response
+        AdjustmentResponseDTO response = new AdjustmentResponseDTO();
+        response.setBillId(adjustmentBill.getId());
+        response.setBillNumber(adjustmentBill.getDeptId());
+        response.setStockId(stock.getId());
+        response.setStockType("PURCHASE_RATE");
+        response.setBeforeValue(currentPurchaseRate);
+        response.setAfterValue(newPurchaseRate);
+        response.setComment(request.getComment());
+        response.setAdjustmentDate(adjustmentBill.getBillDate());
+
+        return response;
+    }
+
     // Private helper methods
 
     private void validateStockQuantityRequest(StockQuantityAdjustmentDTO request) throws Exception {
@@ -240,6 +283,24 @@ public class PharmacyAdjustmentApiService implements Serializable {
         }
         if (request.getNewExpiryDate() == null || request.getNewExpiryDate().trim().isEmpty()) {
             throw new Exception("New expiry date is required");
+        }
+        if (request.getComment() == null || request.getComment().trim().isEmpty()) {
+            throw new Exception("Comment is required");
+        }
+        if (request.getDepartmentId() == null) {
+            throw new Exception("Department ID is required");
+        }
+    }
+
+    private void validatePurchaseRateRequest(PurchaseRateAdjustmentDTO request) throws Exception {
+        if (request.getStockId() == null) {
+            throw new Exception("Stock ID is required");
+        }
+        if (request.getNewPurchaseRate() == null) {
+            throw new Exception("New purchase rate is required");
+        }
+        if (request.getNewPurchaseRate() < 0) {
+            throw new Exception("Purchase rate cannot be negative");
         }
         if (request.getComment() == null || request.getComment().trim().isEmpty()) {
             throw new Exception("Comment is required");
@@ -353,6 +414,29 @@ public class PharmacyAdjustmentApiService implements Serializable {
         return bill;
     }
 
+    private Bill createPurchaseRateAdjustmentBill(String comment, WebUser user, Department department) {
+        Bill bill = new Bill();
+        bill.setBillDate(Calendar.getInstance().getTime());
+        bill.setBillTime(Calendar.getInstance().getTime());
+        bill.setCreatedAt(Calendar.getInstance().getTime());
+        bill.setCreater(user);
+
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
+        bill.setDeptId(deptId);
+        bill.setInsId(deptId);
+        bill.setBillType(BillType.PharmacyAdjustmentPurchaseRate);
+        bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
+
+        bill.setDepartment(department);
+        bill.setInstitution(department.getInstitution());
+        bill.setFromDepartment(department);
+        bill.setFromInstitution(department.getInstitution());
+        bill.setComments(comment);
+
+        billFacade.create(bill);
+        return bill;
+    }
+
     private PharmaceuticalBillItem createStockAdjustmentBillItem(Bill bill, Stock stock, double quantityChange,
                                                                double beforeQty, double afterQty, WebUser user) {
         BillItem billItem = new BillItem();
@@ -435,6 +519,37 @@ public class PharmacyAdjustmentApiService implements Serializable {
         pharmaceuticalBillItem.setQty(0.0);
         pharmaceuticalBillItem.setBeforeAdjustmentExpiry(oldExpiryDate);
         pharmaceuticalBillItem.setAfterAdjustmentExpiry(newExpiryDate);
+
+        billItem.setPharmaceuticalBillItem(pharmaceuticalBillItem);
+        pharmaceuticalBillItem.setBillItem(billItem);
+
+        billItemFacade.create(billItem);
+        return pharmaceuticalBillItem;
+    }
+
+    private PharmaceuticalBillItem createPurchaseRateAdjustmentBillItem(Bill bill, Stock stock, double oldPurchaseRate,
+                                                                       double newPurchaseRate, double rateChange, double changeValue, WebUser user) {
+        BillItem billItem = new BillItem();
+        billItem.setItem(stock.getItemBatch().getItem());
+        billItem.setQty(stock.getStock());
+        billItem.setGrossValue(changeValue);
+        billItem.setNetValue(changeValue);
+        billItem.setInwardChargeType(InwardChargeType.Medicine);
+        billItem.setBill(bill);
+        billItem.setSearialNo(1);
+        billItem.setCreatedAt(Calendar.getInstance().getTime());
+        billItem.setCreater(user);
+
+        PharmaceuticalBillItem pharmaceuticalBillItem = new PharmaceuticalBillItem();
+        pharmaceuticalBillItem.setStock(stock);
+        pharmaceuticalBillItem.setDoe(stock.getItemBatch().getDateOfExpire());
+        pharmaceuticalBillItem.setItemBatch(stock.getItemBatch());
+        pharmaceuticalBillItem.setQty(stock.getStock());
+        pharmaceuticalBillItem.setPurchaseRate(oldPurchaseRate);
+        pharmaceuticalBillItem.setLastPurchaseRate(newPurchaseRate); // Store new rate
+        pharmaceuticalBillItem.setFreeQty((float) rateChange); // Store rate change
+        pharmaceuticalBillItem.setBeforeAdjustmentValue(stock.getStock() * oldPurchaseRate);
+        pharmaceuticalBillItem.setAfterAdjustmentValue(stock.getStock() * newPurchaseRate);
 
         billItem.setPharmaceuticalBillItem(pharmaceuticalBillItem);
         pharmaceuticalBillItem.setBillItem(billItem);

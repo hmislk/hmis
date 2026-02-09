@@ -146,7 +146,7 @@
                                                             accesskey="i"
                                                             id="acStock"
                                                             value="#{pharmacySaleForCashierController1.stockDto}"
-                                                            completeMethod="#{pharmacySaleForCashierController1.completeAvailableStockOptimizedDto}"
+                                                            completeMethod="#{pharmacySaleForCashierController1.completeAvailableStockOptimizedDtoFilteredByDepartmentType}"
                                                             converter="#{pharmacySaleForCashierController1.stockDtoConverter}"
                                                             var="i"
                                                             class="w-100"
@@ -201,14 +201,14 @@
                                                     <div class="col-md-2">
                                                         <br/>
                                                         <p:commandButton
-                                                            accesskey="a" 
-                                                            id="btnAdd" 
+                                                            accesskey="a"
+                                                            id="btnAdd"
                                                             value="Add"
                                                             icon="fa fa-plus"
                                                             class="w-100 ui-button-success"
                                                             action="#{pharmacySaleForCashierController1.addBillItem()}"
-                                                            process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmdDiscountScheme',view).clientId}"
-                                                            update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('txtVal',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId}" >
+                                                            process="@this acStock txtQty selDepartmentType :#{p:resolveFirstComponentWithId('cmdDiscountScheme',view).clientId}"
+                                                            update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('txtVal',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem selDepartmentType :#{p:resolveFirstComponentWithId('panelErrorMsg',view).clientId}" >
                                                         </p:commandButton>
                                                     </div>
                                                 </div>
@@ -495,6 +495,24 @@
                                                             update="pBillDetails welfareStaff"
                                                             event="change"
                                                             listener="#{pharmacySaleForCashierController1.changeListener()}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <div class="col-6">
+                                                <p:outputLabel
+                                                    value="Department Type"
+                                                    class="form-label m-1"
+                                                    for="selDepartmentType"/>
+                                                <p:selectOneMenu
+                                                    id="selDepartmentType"
+                                                    value="#{pharmacySaleForCashierController1.preBill.departmentType}"
+                                                    class="w-100 m-1"
+                                                    disabled="#{not empty pharmacySaleForCashierController1.preBill.billItems and pharmacySaleForCashierController1.preBill.billItems.size() gt 0}">
+                                                    <f:selectItem itemLabel="Select Department Type" itemValue="#{null}"/>
+                                                    <f:selectItems value="#{sessionController.availableDepartmentTypesForPharmacyTransactions}"
+                                                                   var="dt"
+                                                                   itemLabel="#{dt.label}"
+                                                                   itemValue="#{dt}"/>
+                                                    <p:ajax process="@this" update="acStock" event="change"/>
                                                 </p:selectOneMenu>
                                             </div>
                                         </div>

@@ -1,0 +1,184 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <h:body>
+
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form id="frm">
+
+                    <p:panel header="Department Vice Stock Report">
+
+                        <h:panelGroup id="panelActions" layout="block" styleClass="container-fluid my-2">
+                            <h:panelGroup layout="block" styleClass="row">
+                                <!-- Action Buttons -->
+                                <h:panelGroup layout="block" styleClass="col-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                        <h:outputLabel value="&nbsp;" styleClass="mb-0"/>
+                                    </h:panelGroup>
+                                    <p:commandButton
+                                        ajax="false" value="Process" icon="fas fa-cogs" styleClass="ui-button-warning mx-1"
+                                        actionListener="#{reportsStock.fillDepartmentViceStockDtos()}" />
+
+                                    <p:commandButton styleClass="ui-button-danger mx-1" icon="fas fa-file-pdf" value="PDF" ajax="false">
+                                        <p:dataExporter type="pdf" target="tbl" fileName="department_vice_stock_report" />
+                                    </p:commandButton>
+
+                                    <p:commandButton icon="fas fa-file-excel" styleClass="ui-button-success mx-1" value="Excel" ajax="false">
+                                        <p:dataExporter type="xlsx" target="tbl" fileName="department_vice_stock_report" />
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="Print" icon="fas fa-print"
+                                        styleClass="ui-button-info mx-1"
+                                        actionListener="#{reportsStock.prepareForPrint()}"
+                                        oncomplete="$('#frm\\:print').click()" update=":frm:tbl" />
+                                    <p:commandButton id="print" value="Actual print" style="display: none;">
+                                        <p:ajax event="click" listener="#{reportsStock.prepareForView()}" update=":frm:tbl" />
+                                        <p:printer target=":frm:tbl" />
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder" style="min-width: 100%!important;">
+
+                            <p:dataTable id="tbl" rowIndexVar="ii"
+                                         value="#{reportsStock.departmentViceStockDtos}" var="i"
+                                         rows="20"
+                                         paginator="true"
+                                         paginatorPosition="bottom"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks}{NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="20, 50, 100">
+
+                                <f:facet name="header">
+                                    <h:outputLabel value="Department Vice Stock Report" />
+                                </f:facet>
+
+                                <p:column headerText="Serial No" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.serialNo}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Serial No" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.serialNo}" />
+                                </p:column>
+
+                                <p:column headerText="Institution" style="text-align: left;"
+                                          sortBy="#{i.institutionName}"
+                                          filterBy="#{i.institutionName}"
+                                          filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Institution" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.institutionName}" />
+                                </p:column>
+
+                                <p:column headerText="Site" style="text-align: left;"
+                                          sortBy="#{i.siteName}"
+                                          filterBy="#{i.siteName}"
+                                          filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Site" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.siteName}" />
+                                </p:column>
+
+                                <p:column headerText="Department" style="text-align: left;"
+                                          sortBy="#{i.departmentName}"
+                                          filterBy="#{i.departmentName}"
+                                          filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Department" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.departmentName}" />
+                                </p:column>
+
+                                <p:column headerText="Items Department Type" style="text-align: left;"
+                                          sortBy="#{i.departmentType}"
+                                          filterBy="#{i.departmentType}"
+                                          filterMatchMode="exact">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Items Department Type" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.departmentType.label}" />
+                                </p:column>
+
+                                <p:column headerText="Qty" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.quantity}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Qty" />
+                                    </f:facet>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsStock.totalDepartmentViceStockQuantity}" style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.quantity}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Purchase Value" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.purchaseValue}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Purchase Value" />
+                                    </f:facet>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsStock.totalDepartmentViceStockPurchaseValue}" style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.purchaseValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Retail Value" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.retailValue}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Retail Value" />
+                                    </f:facet>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsStock.totalDepartmentViceStockRetailValue}" style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.retailValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Cost Value" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.costValue}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cost Value" />
+                                    </f:facet>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsStock.totalDepartmentViceStockCostValue}" style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.costValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                            </p:dataTable>
+                        </h:panelGroup>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>
