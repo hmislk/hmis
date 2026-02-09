@@ -21,6 +21,8 @@ public class BillItemReportDTO implements Serializable {
     private PaymentMethod paymentMethod;
     private BillTypeAtomic billTypeAtomic;
 
+    private Boolean cancelled;             // Whether the bill is cancelled
+
     // Computed fields
     private String transactionTypeLabel;   // User-friendly bill type description
     private BillCategory billCategory;     // Direct category access
@@ -31,7 +33,8 @@ public class BillItemReportDTO implements Serializable {
     // Constructor for JPQL
     public BillItemReportDTO(Long billId, Long billItemId, String deptId, String patientName, String itemName,
                             String doctorName, Double hospitalFee, Double staffFee, Double netValue,
-                            Date billDate, PaymentMethod paymentMethod, BillTypeAtomic billTypeAtomic) {
+                            Date billDate, PaymentMethod paymentMethod, BillTypeAtomic billTypeAtomic,
+                            Boolean cancelled) {
         this.billId = billId;
         this.billItemId = billItemId;
         this.deptId = deptId;
@@ -44,6 +47,7 @@ public class BillItemReportDTO implements Serializable {
         this.billDate = billDate;
         this.paymentMethod = paymentMethod;
         this.billTypeAtomic = billTypeAtomic;
+        this.cancelled = cancelled;
 
         // Initialize computed fields
         this.billCategory = getBillCategoryFromBillTypeAtomic(billTypeAtomic);
@@ -147,6 +151,14 @@ public class BillItemReportDTO implements Serializable {
         // Update dependent fields when bill type changes
         this.billCategory = getBillCategoryFromBillTypeAtomic(billTypeAtomic);
         this.transactionTypeLabel = getBillCategoryDisplayName(billTypeAtomic);
+    }
+
+    public Boolean getCancelled() {
+        return cancelled;
+    }
+
+    public void setCancelled(Boolean cancelled) {
+        this.cancelled = cancelled;
     }
 
     public String getTransactionTypeLabel() {
