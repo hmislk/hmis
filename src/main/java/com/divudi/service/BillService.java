@@ -613,6 +613,73 @@ public class BillService {
         return billItemFacade.findByJpql(jpql, params);
     }
 
+    public List<BillItem> fetchPatientRelatedBillItems(Bill b) {
+        String jpql;
+        HashMap<String, Object> params = new HashMap<>();
+        jpql = "SELECT bi "
+                + " FROM BillItem bi "
+                + " WHERE bi.bill=:bl "
+                + " and (bi.retired is null or bi.retired=false) "
+                + " and bi.referenceBill.billTypeAtomic != :miscType "
+                + " order by bi.id";
+        params.put("bl", b);
+        params.put("miscType", BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
+        return billItemFacade.findByJpql(jpql, params);
+    }
+
+    public List<BillItem> fetchMiscellaneousBillItems(Bill b) {
+        String jpql;
+        HashMap<String, Object> params = new HashMap<>();
+        jpql = "SELECT bi "
+                + " FROM BillItem bi "
+                + " WHERE bi.bill=:bl "
+                + " and (bi.retired is null or bi.retired=false) "
+                + " and bi.referenceBill.billTypeAtomic = :miscType "
+                + " order by bi.id";
+        params.put("bl", b);
+        params.put("miscType", BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
+        return billItemFacade.findByJpql(jpql, params);
+    }
+
+    public Long countPatientRelatedBillItems(Bill b) {
+        String jpql;
+        HashMap<String, Object> params = new HashMap<>();
+        jpql = "SELECT COUNT(bi) "
+                + " FROM BillItem bi "
+                + " WHERE bi.bill=:bl "
+                + " and (bi.retired is null or bi.retired=false) "
+                + " and bi.referenceBill.billTypeAtomic != :miscType ";
+        params.put("bl", b);
+        params.put("miscType", BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
+        return billItemFacade.findLongByJpql(jpql, params);
+    }
+
+    public Double calculatePatientRelatedBillItemsTotal(Bill b) {
+        String jpql;
+        HashMap<String, Object> params = new HashMap<>();
+        jpql = "SELECT COALESCE(SUM(bi.netValue), 0) "
+                + " FROM BillItem bi "
+                + " WHERE bi.bill=:bl "
+                + " and (bi.retired is null or bi.retired=false) "
+                + " and bi.referenceBill.billTypeAtomic != :miscType ";
+        params.put("bl", b);
+        params.put("miscType", BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
+        return billItemFacade.findDoubleByJpql(jpql, params);
+    }
+
+    public Double calculateMiscellaneousBillItemsTotal(Bill b) {
+        String jpql;
+        HashMap<String, Object> params = new HashMap<>();
+        jpql = "SELECT COALESCE(SUM(bi.netValue), 0) "
+                + " FROM BillItem bi "
+                + " WHERE bi.bill=:bl "
+                + " and (bi.retired is null or bi.retired=false) "
+                + " and bi.referenceBill.billTypeAtomic = :miscType ";
+        params.put("bl", b);
+        params.put("miscType", BillTypeAtomic.MISCELLANEOUS_STAFF_FEE_BILL);
+        return billItemFacade.findDoubleByJpql(jpql, params);
+    }
+
     /**
      * Fetches bill type atomics for OPD finance operations, now including all
      * pharmacy credit bills as part of the credit consolidation initiative
@@ -2099,7 +2166,8 @@ public class BillService {
                 + " coalesce(bi.netValue,0.0), "        // Net value from BillItem
                 + " b.createdAt, "                       // Bill date
                 + " b.paymentMethod, "                   // Payment method
-                + " b.billTypeAtomic ) "                 // Bill type atomic
+                + " b.billTypeAtomic, "                  // Bill type atomic
+                + " b.cancelled ) "                      // Whether bill is cancelled
                 + " from Bill b "
                 + " JOIN b.billItems bi "                // Join to BillItem (inner join)
                 + " LEFT JOIN bi.item i "                // Join to Item for item name

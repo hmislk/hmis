@@ -300,66 +300,94 @@
                             <div class="d-flex justify-content-between">
                                 <h:outputLabel value="Doctor/Staff Payment Voucher" class="mt-2"/>
                                 <div class="d-flex gap-2">
-                                    <p:commandButton 
-                                        class="ui-button-success" 
-                                        icon="fas fa-plus" 
-                                        id="btnNewPayment" 
+                                    <p:commandButton
+                                        class="ui-button-success"
+                                        icon="fas fa-plus"
+                                        id="btnNewPayment"
                                         ajax="false"
-                                        value="New Payment" 
-                                        action="#{staffPaymentBillController.newPayment}" 
+                                        value="New Payment"
+                                        action="#{staffPaymentBillController.newPayment}"
                                         oncomplete="location.reload(true);">
                                     </p:commandButton>
-                                    <p:commandButton 
-                                        value="Print" 
-                                        class="ui-button-info" 
-                                        icon="fas fa-print" 
-                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill: Print separately.', false)}"
-                                        ajax="false" 
+                                    <p:commandButton
+                                        value="Print Detailed"
+                                        class="ui-button-info"
+                                        icon="fas fa-print"
+                                        ajax="false"
                                         action="#" >
-                                        <p:printer target="gpBillPreview" ></p:printer>
+                                        <p:printer target="gpDetailedPreview" />
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="Print Summarised"
+                                        class="ui-button-warning"
+                                        icon="fas fa-print"
+                                        ajax="false"
+                                        action="#" >
+                                        <p:printer target="gpSummarisedPreview" />
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="Print Summary"
+                                        class="ui-button-help"
+                                        icon="fas fa-print"
+                                        ajax="false"
+                                        action="#" >
+                                        <p:printer target="gpSummaryPreview" />
                                     </p:commandButton>
                                 </div>
                             </div>
-
                         </f:facet>
 
-                        <h:panelGroup id="gpBillPreview" >
-
+                        <!-- Format 1: Detailed -->
+                        <h:panelGroup id="gpDetailedPreview" >
                             <h:panelGroup class="mb-4" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is A4 paper', true)}">
                                 <h:panelGroup class="d-flex justify-content-center">
-                                    <p:commandButton 
-                                        value="Print A4 Paper" 
-                                        class="ui-button-info mb-3 " 
-                                        icon="fas fa-print" 
-                                        ajax="false" 
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill: Print separately.', false)}"
-                                        action="#" >
-                                        <p:printer target="A4Paper" ></p:printer>
-                                    </p:commandButton>
-                                </h:panelGroup>
-                                <h:panelGroup id="A4Paper" class="d-flex justify-content-center">
                                     <bi:A4PaperPamentOPDDoctor controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
                                 </h:panelGroup>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is five five paper.')}">
+                                <bi:staff_payment_five_five_paper_with_headings controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" />
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is POS paper')}">
+                                <bi:staff_payment_pos_detailed controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <!-- Format 2: Summarised -->
+                        <h:panelGroup id="gpSummarisedPreview" >
+                            <h:panelGroup class="mb-4" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is A4 paper', true)}">
                                 <h:panelGroup class="d-flex justify-content-center">
-                                    <p:commandButton 
-                                        value="Print 5x5 Paper" 
-                                        class="ui-button-info mb-3 mt-4" 
-                                        icon="fas fa-print"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill: Print separately.', false)}"
-                                        ajax="false" 
-                                        action="#" >
-                                        <p:printer target="fivefivePaper" ></p:printer>
-                                    </p:commandButton>
-                                </h:panelGroup>
-                                <h:panelGroup id="fivefivePaper">
-                                    <bi:staff_payment_five_five_paper_with_headings  controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" />
+                                    <bi:A4PaperPaymentOPDDoctorSummarised controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
                                 </h:panelGroup>
                             </h:panelGroup>
-                            
+
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is five five paper.')}">
+                                <bi:staff_payment_five_five_summarised controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is POS paper')}">
+                                <bi:staff_payment_pos_summarised controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                            </h:panelGroup>
                         </h:panelGroup>
+
+                        <!-- Format 3: Summary -->
+                        <h:panelGroup id="gpSummaryPreview" >
+                            <h:panelGroup class="mb-4" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is A4 paper', true)}">
+                                <h:panelGroup class="d-flex justify-content-center">
+                                    <bi:A4PaperPaymentOPDDoctorSummary controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                                </h:panelGroup>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is five five paper.')}">
+                                <bi:staff_payment_five_five_summary controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is POS paper')}">
+                                <bi:staff_payment_pos_summary controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
                     </p:panel>
                 </h:form>
             </ui:define>

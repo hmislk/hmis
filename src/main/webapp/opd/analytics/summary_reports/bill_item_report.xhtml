@@ -411,6 +411,7 @@
                                                                                            (bill.billCategory == 'CANCELLATION' ? 'warning' : 'danger')}">
                                                                       #{bill.transactionTypeLabel}
                                                                 </span>
+                                                                <h:outputText value=" (Cancelled)" styleClass="badge badge-danger" rendered="#{bill.cancelled}" />
                                                             </td>
                                                             <td class="text-end">
                                                                 <h:outputText value="#{bill.hospitalFee}">
