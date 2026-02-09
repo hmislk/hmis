@@ -2623,15 +2623,16 @@ public class ItemController implements Serializable {
                 // - Query matches name, code, or barcode (case-insensitive)
                 // - Department type is in allowed list
                 // - Using COALESCE to handle null codes and barcodes
-                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or COALESCE(c.code, '') like '%" + query.toUpperCase() + "%' or COALESCE(c.barcode, '') like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
+                sql = "select c from Item c where c.retired=false and c.inactive=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or COALESCE(c.code, '') like '%" + query.toUpperCase() + "%' or COALESCE(c.barcode, '') like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
             } else {
                 // Criteria:
                 // - Not retired
+                // - Not inactive
                 // - Type is Amp or Ampp
                 // - Query matches name or code only
                 // - Department type is in allowed list
                 // - Using COALESCE to handle null codes
-                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or COALESCE(c.code, '') like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
+                sql = "select c from Item c where c.retired=false and c.inactive=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or COALESCE(c.code, '') like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
             }
 
             tmpMap.put("amp", Amp.class);
@@ -2664,15 +2665,16 @@ public class ItemController implements Serializable {
                 // - Query matches name, code, or barcode (case-insensitive)
                 // - Department type is in allowed list
                 // - Using COALESCE to handle null codes and barcodes
-                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or COALESCE(c.code, '') like '%" + query.toUpperCase() + "%' or COALESCE(c.barcode, '') like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
+                sql = "select c from Item c where c.retired=false and c.inactive=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or COALESCE(c.code, '') like '%" + query.toUpperCase() + "%' or COALESCE(c.barcode, '') like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
             } else {
                 // Criteria:
                 // - Not retired
+                // - Not inactive
                 // - Type is Amp or Ampp
                 // - Query matches name or code only
                 // - Department type is in allowed list
                 // - Using COALESCE to handle null codes
-                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or COALESCE(c.code, '') like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
+                sql = "select c from Item c where c.retired=false and c.inactive=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or COALESCE(c.code, '') like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
             }
 
             tmpMap.put("amp", Amp.class);
@@ -2815,7 +2817,7 @@ public class ItemController implements Serializable {
         boolean includeBarcode = q.length() >= barcodeMinLength;
 
         jpql = "SELECT i FROM Item i "
-                + "WHERE i.retired = false "
+                + "WHERE i.retired = false and i.inactive = false "
                 + "AND TYPE(i) IN (:amp, :ampp, :vmp, :vmpp) "
                 + "AND i.departmentType in :dts "
                 + "AND (UPPER(i.name) LIKE :q "

@@ -41,7 +41,7 @@
                     </f:facet>
 
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-8">
                             <div class="d-flex justify-content-end">
                                 <p:outputLabel value="Paper Type" class="mt-2 mx-2"></p:outputLabel>
                                 <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
@@ -137,11 +137,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-6" >
-                            <p:panelGrid columns="2" layout="tabular" class="w-100 m-1" columnClasses="text-start ps-5, text-end pe-5">
+                        <div class="col-4" >
+                            <p:panelGrid columns="2" layout="tabular" class="w-100" columnClasses="text-start ps-5, text-end pe-5">
                                 <f:facet name="header">
                                     <div class="d-flex justify-content-between align-items-center w-100">
-                                        <h:outputLabel value="Batch Bill Details" class="" />
+                                        <h:outputLabel value="Batch Bill Details" class="mt-2" style="font-weight: 700; font-size: 20px;" />
                                         <div class="d-flex">
                                             <p:commandButton
                                                 ajax="false"
@@ -150,7 +150,7 @@
                                                 disabled="#{billPackageController.batchBill.cancelled or billPackageController.batchBill.refunded}"
                                                 action="#{billPackageController.navigateToCancelOpdPackageBatchBill}"
                                                 rendered="#{webUserController.hasPrivilege('OpdPackageBillCancel')}"
-                                                styleClass="m-1 ui-button-danger">
+                                                styleClass="ui-button-danger">
                                             </p:commandButton>
 
                                         </div>
@@ -185,36 +185,51 @@
                                 var="b" 
                                 resizeMode="expand"
                                 reflow="true"
-                                class="w-100 m-1" 
+                                class="w-100 mt-3" 
                                 rowStyleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                 <f:facet name="header" >
-                                    <h:outputLabel class="mx-5" value="Individual Bills" ></h:outputLabel>
+                                    <h:outputLabel value="Individual Bills"  class="mt-2" style="font-weight: 700; font-size: 20px;"></h:outputLabel>
                                 </f:facet>
+                                
                                 <p:column headerText="Bill No" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                     <h:outputText value="#{b.deptId}"  class="w-100 m-1" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Gross Total" 
+                                
+                                <p:column 
+                                    width="6em;"
+                                    headerText="Gross Total" 
                                           styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}"
                                           class="text-end">
                                     <h:outputText value="#{b.total}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputText>
                                 </p:column>
-                                <p:column headerText="Discount" 
+                                
+                                <p:column 
+                                    width="6em;"
+                                    headerText="Discount" 
                                           styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}"
                                           class="text-end">
                                     <h:outputText value="#{b.discount}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputText>
                                 </p:column>
-                                <p:column headerText="Net Total" 
+                                
+                                <p:column 
+                                    width="6em;"
+                                    headerText="Net Total" 
                                           styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}"
                                           class="text-end">
                                     <h:outputText value="#{b.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputText>
                                 </p:column>
-                                <p:column  headerText="Actions" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                
+                                <p:column  
+                                    headerText="Actions" 
+                                    width="9em;" 
+                                    class="text-center"
+                                    styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
                                     <!-- To Bill Details Button -->
                                     <p:commandButton 
                                         ajax="false"
@@ -225,7 +240,7 @@
                                         action="#{billSearch.navigateToViewBillByAtomicBillType()}">
                                         <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
                                     </p:commandButton>
-                                  
+
                                     <p:commandButton 
                                         ajax="false"
                                         title="Manage Bill"
@@ -260,16 +275,18 @@
 
                             <p:dataTable 
                                 value="#{billPackageController.payments}"
-                                class="m-2"
+                                class="mt-3"
                                 var="p" >
                                 <f:facet name="header" >
-                                    <h:outputLabel value="Payments" ></h:outputLabel>
+                                    <h:outputLabel value="Payments"  class="mt-2" style="font-weight: 700; font-size: 20px;"></h:outputLabel>
                                 </f:facet>
                                 <p:column headerText="Payment Method" >
                                     <h:outputText value="#{p.paymentMethod.label}" ></h:outputText>
                                 </p:column>
-                                <p:column headerText="Value">
-                                    <h:outputText value="#{p.paidValue}" ></h:outputText>
+                                <p:column headerText="Value" class="text-end">
+                                    <h:outputText value="#{p.paidValue}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
                                 </p:column>
                             </p:dataTable>
 

@@ -39,7 +39,7 @@
                             </p:commandButton>
                             <p:commandButton
                                 id="btnDelete"
-                                onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                onclick="if (!confirm('Are you sure you want to delete this VTM? This action cannot be undone.'))
                                             return false;"
                                 action="#{vtmController.delete()}"
                                 value="Delete"
@@ -47,7 +47,7 @@
                                 class=" m-1 ui-button-danger w-25"
                                 update="acVtm gpDetail msg"
                                 process="btnDelete"
-                                disabled="#{vtmController.editable}">
+                                disabled="#{vtmController.editable or vtmController.current.id eq null}">
                             </p:commandButton>
                             <p:autoComplete
                                 class="w-100"
@@ -68,7 +68,16 @@
 
                         </div>
                         <div class="col-md-7">
-                            <p:panel header="Manage VTM Details">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Manage VTM Details</span>
+                                        <h:panelGroup rendered="#{vtmController.current.id ne null}"
+                                                      styleClass="badge #{vtmController.current.inactive ? 'badge-danger' : 'badge-success'}">
+                                            #{vtmController.current.inactive ? 'Inactive' : 'Active'}
+                                        </h:panelGroup>
+                                    </div>
+                                </f:facet>
                                 <p:panelGrid
                                     id="gpDetail"
                                     columns="1"
@@ -85,8 +94,19 @@
                                             id="txtName"
                                             value="#{vtmController.current.name}"
                                             required="true"
-                                            requiredMessage="Enter a name for VTM"
+                                            requiredMessage="VTM name is required"
+                                            placeholder="Enter VTM name"
                                             class="w-100"
+                                            disabled="#{!vtmController.editable}" />
+
+                                        <h:outputText value="Code" />
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="txtCode"
+                                            value="#{vtmController.current.code}"
+                                            required="false"
+                                            class="w-100"
+                                            placeholder="Enter VTM code (optional)"
                                             disabled="#{!vtmController.editable}" />
 
                                         <h:outputText value="Type" />
@@ -106,6 +126,8 @@
                                             value="#{vtmController.current.descreption}"
                                             required="false"
                                             class="form-control"
+                                            placeholder="Enter VTM description (optional)"
+                                            rows="3"
                                             disabled="#{!vtmController.editable}" />
 
                                         <p:outputLabel for="txtIns" value="Instructions" class="form-label"/>
@@ -114,6 +136,8 @@
                                             value="#{vtmController.current.instructions}"
                                             required="false"
                                             class="form-control"
+                                            placeholder="Enter usage instructions (optional)"
+                                            rows="3"
                                             disabled="#{!vtmController.editable}" />
                                     </p:panelGrid>
 
