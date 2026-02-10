@@ -225,7 +225,7 @@
                                         <h:outputText value="Essential Information" styleClass="section-header" style="display:block; font-size:1rem; font-weight:500;"/>
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
-                                                <p:outputLabel for="ampName" value="Lab AMP Name *"/>
+                                                <p:outputLabel for="ampName" value="Lab AMP Name"/>
                                                 <p:inputText id="ampName"
                                                              value="#{labAmpController.current.name}"
                                                              class="form-control"
@@ -265,7 +265,7 @@
                                         <h:outputText value="Product Information" styleClass="section-header" style="display:block; font-size:1rem; font-weight:500;"/>
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
-                                                <p:outputLabel for="vmpSelect" value="VMP*"/>
+                                                <p:outputLabel for="vmpSelect" value="VMP"/>
                                                 <p:autoComplete id="vmpSelect"
                                                                 value="#{labAmpController.current.vmp}"
                                                                 completeMethod="#{labAmpController.completeVmpByName}"
@@ -292,6 +292,40 @@
                                                         value="Not specified"
                                                         class="form-control-plaintext text-muted"
                                                         rendered="#{labAmpController.current.vmp eq null}"/>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <p:outputLabel for="ampCat" value="Category"/>
+                                                <p:autoComplete 
+                                                    id="ampCat"
+                                                    value="#{labAmpController.current.category}"
+                                                    completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" 
+                                                    var="vt"
+                                                    inputStyleClass="w-100"
+                                                    itemLabel="#{vt.name}"
+                                                    forceSelection="true"
+                                                    itemValue="#{vt}"
+                                                    disabled="#{not labAmpController.editable}"
+                                                    class="w-100"
+                                                    required="true"
+                                                    requiredMessage="Category is required">                                                    
+                                                </p:autoComplete>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h:panelGroup id="txtShortExpiary">
+                                                    <p:outputLabel value="Days of Short Expiry">
+                                                        <i class="fas fa-info-circle ms-1 text-muted" 
+                                                           title="Default expiry : 30 days."
+                                                           data-bs-toggle="tooltip">
+                                                        </i>
+                                                    </p:outputLabel>
+                                                    <p:inputText
+                                                        value="#{labAmpController.current.numberOfDaysToMarkAsShortExpiary}"
+                                                        class="form-control-plaintext"
+                                                        disabled="#{not labAmpController.editable}"/>
                                                 </h:panelGroup>
                                             </div>
                                         </div>
