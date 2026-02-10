@@ -86,8 +86,8 @@
                                         <p:column headerText="Name" style="padding: 3px;">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <h:outputText value="#{dto.name}"/>
-                                                <p:badge value="#{dto.retired ? 'INACTIVE' : 'ACTIVE'}"
-                                                         severity="#{dto.retired ? 'danger' : 'success'}"
+                                                <p:badge value="#{dto.inactive ? 'INACTIVE' : 'ACTIVE'}"
+                                                         severity="#{dto.inactive ? 'danger' : 'success'}"
                                                          style="font-size: 0.65em; margin-left: 8px;"/>
                                             </div>
                                         </p:column>
@@ -260,7 +260,7 @@
                                                              disabled="#{not storeAmpController.editable}"/>
                                             </div>
                                         </div>
-
+                                            
                                         <!-- VMP Relationship Section -->
                                         <h6 class="section-header">Product Information</h6>
                                         <div class="row g-3 mb-3">
@@ -280,7 +280,7 @@
                                                                 requiredMessage="VMP selection is required">
                                                     <p:ajax event="itemSelect" update="dosageInfo"/>
                                                 </p:autoComplete>
-                                            </div>
+                                        </div>
                                             <div class="col-md-6">
                                                 <h:panelGroup id="dosageInfo">
                                                     <p:outputLabel value="Dosage Form"/>

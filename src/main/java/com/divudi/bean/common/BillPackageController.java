@@ -1973,7 +1973,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public double calculatRemainForMultiplePaymentTotal() {
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+            for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 // Fixed: Sum only the selected payment method's value for this component
                 multiplePaymentMethodTotalValue += calculateSelectedPaymentTotal(cd);
             }

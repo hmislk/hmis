@@ -562,6 +562,7 @@ public class PharmacyIssueController implements Serializable {
         List<Item> items;
         String sql;
         sql = "select i from Item i where i.retired=false "
+                + " and i.inactive=false "
                 + " and (i.name) like :n and type(i)=:t "
                 + " and i.id not in(select ibs.id from Stock ibs where ibs.stock >:s and ibs.department=:d and (ibs.itemBatch.item.name) like :n ) order by i.name ";
         m.put("t", Amp.class);
@@ -584,9 +585,9 @@ public class PharmacyIssueController implements Serializable {
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
         if (qry.length() > 4) {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.retired=false and i.itemBatch.item.inactive=false and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         } else {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.retired=false and i.itemBatch.item.inactive=false and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
         stockList = getStockFacade().findByJpql(sql, m, 20);
         itemsWithoutStocks = completeIssueItems(qry);
@@ -639,6 +640,8 @@ public class PharmacyIssueController implements Serializable {
         sql.append("FROM Stock s ")
             .append("WHERE s.stock > :stockMin ")
             .append("AND s.department = :department ")
+            .append("AND s.itemBatch.item.retired = false ")
+            .append("AND s.itemBatch.item.inactive = false ")
             .append("AND (");
 
         sql.append("UPPER(s.itemBatch.item.name) LIKE :query ");
@@ -713,7 +716,9 @@ public class PharmacyIssueController implements Serializable {
 
         sql.append("FROM Stock s ")
             .append("WHERE s.stock > :stockMin ")
-            .append("AND s.department = :department ");
+            .append("AND s.department = :department ")
+            .append("AND s.itemBatch.item.retired = false ")
+            .append("AND s.itemBatch.item.inactive = false ");
 
         // Add department type filter if set
         if (getPreBill().getDepartmentType() != null) {

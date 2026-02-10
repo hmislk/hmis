@@ -44,8 +44,8 @@
 
                             <p:outputLabel for="ampStatus" value="Status: "/>
                             <p:badge id="ampStatus"
-                                     value="#{ampController.current.retired ? 'Inactive' : 'Active'}"
-                                     severity="#{ampController.current.retired ? 'danger' : 'success'}"/>
+                                     value="#{ampController.current.inactive ? 'Inactive' : 'Active'}"
+                                     severity="#{ampController.current.inactive ? 'danger' : 'success'}"/>
 
                             <p:outputLabel for="ampVmp" value="VMP: "/>
                             <h:outputText id="ampVmp" value="#{ampController.current.vmp.name}"/>
@@ -91,7 +91,7 @@
 
                             <p:column headerText="Changes" style="width: auto;">
                                 <div class="audit-changes">
-                                    <h:outputText escape="false" value="#{audit.difference}" />
+                                    <h:outputText value="#{audit.difference}" />
                                 </div>
                             </p:column>
 

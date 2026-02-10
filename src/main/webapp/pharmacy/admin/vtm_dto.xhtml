@@ -59,7 +59,38 @@
                                     <p:outputLabel id="filterStatusLabel"
                                                    value="Currently showing: #{vtmController.filterStatusDisplay}"
                                                    styleClass="text-muted small mt-1"/>
+
                                 </h:panelGroup>
+
+                                <div class="row" >
+                                    <div class="col-12"  >
+                                        <p:autoComplete
+                                            class="w-100 m-1"
+                                            inputStyleClass="w-100"
+                                            id="acVtm"
+                                            widgetVar="acVtm"
+                                            value="#{vtmController.selectedVtmDto}"
+                                            completeMethod="#{vtmController.completeVtmDto}"
+                                            var="dto"
+                                            itemLabel="#{dto.name}"
+                                            itemValue="#{dto}"
+                                            converter="vtmDtoConverter"
+                                            forceSelection="true"
+                                            disabled="#{vtmController.editable}"
+                                            placeholder="Type to search VTMs (Pharmacy Department)..."
+                                            cache="false"
+                                            minQueryLength="2">
+                                            <p:ajax event="itemSelect" process="@this" update="gpDetail actionButtons vtmDetails" />
+                                            <p:ajax event="change" process="@this" update="gpDetail actionButtons vtmDetails" />
+                                            <p:column headerText="Name" >
+                                                <h:outputText value="#{dto.name}" />
+                                            </p:column>
+                                            <p:column headerText="Code" >
+                                                <h:outputText value="#{dto.code}"/>
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </div>
+                                </div>
 
                                 <h:panelGroup id="actionButtons">
                                     <div class="row" >
@@ -107,7 +138,7 @@
                                                 value="#{vtmController.toggleStatusButtonText}"
                                                 action="#{vtmController.toggleVtmStatus()}"
                                                 icon="#{vtmController.toggleStatusButtonIcon}"
-                                                update="form:msg acVtm gpDetail actionButtons statusFilterPanel vtmDetails filterStatusLabel"
+                                                update="form:msg acVtm gpDetail actionButtons statusFilterPanel vtmDetails"
                                                 process="@this"
                                                 styleClass="#{vtmController.toggleStatusButtonClass} m-1"
                                                 disabled="#{vtmController.editable or vtmController.selectedVtmDto eq null}"
@@ -132,35 +163,7 @@
                                     </div>
                                 </h:panelGroup>
 
-                                <div class="row" >
-                                    <div class="col-12"  >
-                                        <p:autoComplete
-                                            class="w-100 m-1"
-                                            inputStyleClass="w-100"
-                                            id="acVtm"
-                                            widgetVar="acVtm"
-                                            value="#{vtmController.selectedVtmDto}"
-                                            completeMethod="#{vtmController.completeVtmDto}"
-                                            var="dto"
-                                            itemLabel="#{dto.name}"
-                                            itemValue="#{dto}"
-                                            converter="vtmDtoConverter"
-                                            forceSelection="true"
-                                            disabled="#{vtmController.editable}"
-                                            placeholder="Type to search VTMs (Pharmacy Department)..."
-                                            cache="false"
-                                            minQueryLength="2">
-                                            <p:ajax event="itemSelect" process="@this" update="gpDetail actionButtons vtmDetails" />
-                                            <p:ajax event="change" process="@this" update="gpDetail actionButtons vtmDetails" />
-                                            <p:column headerText="Name" >
-                                                <h:outputText value="#{dto.name}" />
-                                            </p:column>
-                                            <p:column headerText="Code" >
-                                                <h:outputText value="#{dto.code}"/>
-                                            </p:column>
-                                        </p:autoComplete>
-                                    </div>
-                                </div>
+
 
                             </p:panel>
 

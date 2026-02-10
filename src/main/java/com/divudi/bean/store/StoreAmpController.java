@@ -45,8 +45,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -100,7 +100,6 @@ public class StoreAmpController implements Serializable {
     private String filterStatus = "active";
 
     // ========== Backward-compatibility methods ==========
-
     public List<Amp> getItemsByCode() {
         if (itemsByCode == null) {
             Map<String, Object> m = new HashMap<>();
@@ -144,7 +143,6 @@ public class StoreAmpController implements Serializable {
     }
 
     // ========== Core CRUD Methods ==========
-
     public void prepareAdd() {
         current = new Amp();
         current.setItemType(ItemType.Amp);
@@ -253,21 +251,6 @@ public class StoreAmpController implements Serializable {
         // Set department type to Store for new AMPs
         if (current.getDepartmentType() == null) {
             current.setDepartmentType(DepartmentType.Store);
-        }
-
-        if (current.getVmp() == null) {
-            JsfUtil.addErrorMessage("No VMP selected");
-            return;
-        }
-
-        if (current.getCategory() == null) {
-            if (current.getVmp().getCategory() != null) {
-                current.setCategory(current.getVmp().getCategory());
-                JsfUtil.addSuccessMessage("Taken the category from VMP");
-            } else {
-                JsfUtil.addErrorMessage("No category");
-                return;
-            }
         }
 
         if (current.getItemType() == null) {
@@ -443,10 +426,9 @@ public class StoreAmpController implements Serializable {
     }
 
     /**
-     * Permanently soft-deletes the current AMP by setting retired=true.
-     * Retired items are excluded from every query and cannot be restored
-     * from the UI. For temporary removal use toggleAmpStatus() which
-     * sets inactive instead.
+     * Permanently soft-deletes the current AMP by setting retired=true. Retired
+     * items are excluded from every query and cannot be restored from the UI.
+     * For temporary removal use toggleAmpStatus() which sets inactive instead.
      */
     public void delete() {
         if (current != null) {
@@ -477,7 +459,6 @@ public class StoreAmpController implements Serializable {
     }
 
     // ========== Getters/Setters ==========
-
     public StoreAmpController() {
     }
 
@@ -544,6 +525,21 @@ public class StoreAmpController implements Serializable {
         this.items = items;
     }
 
+    public List<Amp> completeAmp(String qry) {
+        List<Amp> suggestions;
+        if (qry == null || qry.trim().isEmpty()) {
+            suggestions = new ArrayList<>();
+        } else {
+            String jpql = "SELECT c FROM Amp c WHERE c.retired = false AND LOWER(c.name) LIKE :query "
+                    + "AND c.departmentType=:dep ORDER BY c.name";
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("query", "%" + qry.trim().toLowerCase() + "%");
+            parameters.put("dep", DepartmentType.Store);
+            suggestions = getFacade().findByJpqlWithoutCache(jpql, parameters);
+        }
+        return suggestions;
+    }
+
     public List<Amp> findItems() {
         String jpql = "select a "
                 + " from Amp a "
@@ -602,7 +598,6 @@ public class StoreAmpController implements Serializable {
     }
 
     // ===================== DTO Management Methods =====================
-
     public List<AmpDto> getAmpDtos() {
         String jpql = "SELECT new com.divudi.core.data.dto.AmpDto("
                 + "a.id, a.name, a.code, a.barcode, a.retired, "
@@ -632,8 +627,7 @@ public class StoreAmpController implements Serializable {
         }
 
         String jpql = "SELECT new com.divudi.core.data.dto.AmpDto("
-                + "a.id, a.name, a.code, a.barcode, a.retired, "
-                + "a.vmp.id, a.vmp.name) "
+                + "a.id, a.name, a.code, a.barcode, a.inactive) "
                 + "FROM Amp a WHERE a.retired=false "
                 + "AND (LOWER(a.name) LIKE :query "
                 + "OR LOWER(a.code) LIKE :query "
@@ -681,7 +675,6 @@ public class StoreAmpController implements Serializable {
     }
 
     // ===================== Filter Status Management =====================
-
     public String getFilterStatus() {
         return filterStatus;
     }
@@ -757,7 +750,6 @@ public class StoreAmpController implements Serializable {
     }
 
     // ===================== Audit Management Methods =====================
-
     private Map<String, Object> createAuditMap(Amp amp) {
         Map<String, Object> auditData = new HashMap<>();
         if (amp != null) {
@@ -767,8 +759,8 @@ public class StoreAmpController implements Serializable {
             auditData.put("barcode", amp.getBarcode());
             auditData.put("retired", amp.isRetired());
             auditData.put("inactive", amp.isInactive());
-            auditData.put("departmentType", amp.getDepartmentType() != null ?
-                    amp.getDepartmentType().toString() : null);
+            auditData.put("departmentType", amp.getDepartmentType() != null
+                    ? amp.getDepartmentType().toString() : null);
             auditData.put("vmpId", amp.getVmp() != null ? amp.getVmp().getId() : null);
             auditData.put("vmpName", amp.getVmp() != null ? amp.getVmp().getName() : null);
             auditData.put("atmId", amp.getAtm() != null ? amp.getAtm().getId() : null);
@@ -788,10 +780,10 @@ public class StoreAmpController implements Serializable {
     }
 
     /**
-     * Toggles the temporary active/inactive status of the current AMP.
-     * This sets the 'inactive' flag, NOT 'retired'. The item remains in
-     * the system and can be reactivated at any time by the user.
-     * For permanent removal see delete() which sets retired=true.
+     * Toggles the temporary active/inactive status of the current AMP. This
+     * sets the 'inactive' flag, NOT 'retired'. The item remains in the system
+     * and can be reactivated at any time by the user. For permanent removal see
+     * delete() which sets retired=true.
      */
     public void toggleAmpStatus() {
         if (current == null) {
@@ -844,7 +836,6 @@ public class StoreAmpController implements Serializable {
     }
 
     // ===================== Audit History Management =====================
-
     public void fillAmpAuditEvents() {
         if (current != null && current.getId() != null) {
             try {
@@ -882,9 +873,9 @@ public class StoreAmpController implements Serializable {
     }
 
     // ===================== JSF AmpDto Converter =====================
-
     @FacesConverter("storeAmpDtoConverter")
     public static class StoreAmpDtoConverter implements Converter {
+
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
             if (value == null || value.isEmpty()) {

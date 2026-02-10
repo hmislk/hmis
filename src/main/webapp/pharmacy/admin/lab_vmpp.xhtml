@@ -1,0 +1,297 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/pharmacy/admin/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="form">
+                    <p:growl id="msg"/>
+                    <p:focus id="selectFocus" for="acVmpp" />
+
+                    <div class="row">
+                        <div class="col-md-5">
+                            <!-- DTO-Optimized Lab VMPP Selection -->
+                            <p:panel header="Lab VMPP Management" class="mb-3 w-100">
+
+                                <!-- Status Filter Section -->
+                                <h:panelGroup id="statusFilterPanel" layout="block" styleClass="mb-3">
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <label class="form-label mb-0">Filter:</label>
+                                        <p:commandButton
+                                            id="btnFilterActive"
+                                            value="Active"
+                                            action="#{labVmppController.setFilterToActive()}"
+                                            update="acVmpp gpDetail vmppDetails statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{labVmppController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
+                                            icon="fas fa-check-circle"
+                                            disabled="#{labVmppController.editable}"
+                                            title="Show only active Lab VMPPs"/>
+
+                                        <p:commandButton
+                                            id="btnFilterInactive"
+                                            value="Inactive"
+                                            action="#{labVmppController.setFilterToInactive()}"
+                                            update="acVmpp gpDetail vmppDetails statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{labVmppController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
+                                            icon="fas fa-times-circle"
+                                            disabled="#{labVmppController.editable}"
+                                            title="Show only inactive Lab VMPPs"/>
+
+                                        <p:commandButton
+                                            id="btnFilterAll"
+                                            value="All"
+                                            action="#{labVmppController.setFilterToAll()}"
+                                            update="acVmpp gpDetail vmppDetails statusFilterPanel actionButtons"
+                                            process="@this"
+                                            styleClass="m-1 #{labVmppController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
+                                            icon="fas fa-list"
+                                            disabled="#{labVmppController.editable}"
+                                            title="Show all Lab VMPPs"/>
+                                    </div>
+                                </h:panelGroup>
+
+                                <div class="row" >
+                                    <div class="col-12"  >
+                                        <p:autoComplete
+                                            class="w-100 m-1"
+                                            inputStyleClass="w-100"
+                                            id="acVmpp"
+                                            value="#{labVmppController.selectedVmppDto}"
+                                            completeMethod="#{labVmppController.completeVmppDto}"
+                                            var="dto"
+                                            itemLabel="#{dto.name}"
+                                            itemValue="#{dto}"
+                                            converter="labVmppDtoConverter"
+                                            forceSelection="true"
+                                            disabled="#{labVmppController.editable}"
+                                            placeholder="Type to search Lab VMPPs..."
+                                            minQueryLength="2">
+                                            <p:ajax event="itemSelect" process="@this" update=":form:gpDetail :form:actionButtons :form:vmppDetails" />
+                                            <p:column headerText="Name" style="padding: 3px;">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h:outputText value="#{dto.name}" />
+                                                    <p:badge value="#{dto.inactive ? 'INACTIVE' : 'ACTIVE'}"
+                                                             severity="#{dto.inactive ? 'danger' : 'success'}"
+                                                             style="font-size: 0.65em; margin-left: 8px;"/>
+                                                </div>
+                                            </p:column>
+                                            <p:column headerText="Code">
+                                                <h:outputText value="#{dto.code}"/>
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <p:outputLabel id="filterStatusLabel"
+                                                       value="Currently showing: #{labVmppController.filterStatusDisplay}"
+                                                       styleClass="text-muted small mt-1"/>
+                                    </div>
+                                </div>
+
+                                <h:panelGroup id="actionButtons" layout="block">
+                                    <div class="row" >
+                                        <div class="col-12" >
+                                            <p:commandButton
+                                                id="btnAdd"
+                                                value="Add New"
+                                                icon="fa fa-plus"
+                                                action="#{labVmppController.prepareAdd()}"
+                                                class="m-1 ui-button-success"
+                                                update=":form:acVmpp :form:gpDetail :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
+                                                process="btnAdd"
+                                                disabled="#{labVmppController.editable}">
+                                                <f:setPropertyActionListener target="#{labVmppController.selectedVmppDto}" value="#{null}" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnEdit"
+                                                value="Edit"
+                                                icon="fas fa-edit"
+                                                action="#{labVmppController.edit()}"
+                                                class="m-1 ui-button-info"
+                                                update=":form:acVmpp :form:gpDetail :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
+                                                process="btnEdit"
+                                                disabled="#{labVmppController.editable or labVmppController.selectedVmppDto eq null}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnDelete"
+                                                action="#{labVmppController.delete()}"
+                                                value="Delete"
+                                                icon="fas fa-trash"
+                                                class="m-1 ui-button-danger"
+                                                update=":form:acVmpp :form:gpDetail :form:msg :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
+                                                process="btnDelete"
+                                                disabled="#{labVmppController.editable or labVmppController.selectedVmppDto eq null}">
+                                                <p:confirm
+                                                    header="Confirm Delete"
+                                                    message="Are you sure you want to delete this Lab VMPP? This action cannot be undone."
+                                                    icon="fas fa-exclamation-triangle" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnToggleStatus"
+                                                value="#{labVmppController.toggleStatusButtonText}"
+                                                action="#{labVmppController.toggleVmppStatus()}"
+                                                icon="#{labVmppController.toggleStatusButtonIcon}"
+                                                update=":form:msg :form:acVmpp :form:gpDetail :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
+                                                process="@this"
+                                                styleClass="#{labVmppController.toggleStatusButtonClass} m-1"
+                                                disabled="#{labVmppController.editable or labVmppController.selectedVmppDto eq null}"
+                                                title="Toggle Lab VMPP active/inactive status">
+                                                <p:confirm
+                                                    header="Confirm Status Change"
+                                                    message="Are you sure you want to #{labVmppController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this Lab VMPP: #{labVmppController.current.name}?"
+                                                    icon="fas fa-question-circle" />
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnViewAuditEvents"
+                                                value="History"
+                                                icon="fas fa-history"
+                                                action="#{labVmppController.navigateToVmppAuditEvents()}"
+                                                class="m-1 ui-button-secondary"
+                                                process="btnViewAuditEvents"
+                                                ajax="false"
+                                                disabled="#{labVmppController.selectedVmppDto eq null}">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                            </p:panel>
+
+                        </div>
+
+                        <div class="col-md-7">
+                            <p:panel id="vmppDetails">
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <i class="fa fa-pills" /> Lab VMPP Details
+                                        </span>
+                                        <h:panelGroup rendered="#{labVmppController.current ne null and labVmppController.current.id ne null}"
+                                                      styleClass="badge #{labVmppController.current.inactive ? 'badge-danger' : 'badge-success'}">
+                                            #{labVmppController.current.inactive ? 'Inactive' : 'Active'}
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{labVmppController.editable}"
+                                                      styleClass="badge badge-warning">
+                                            #{labVmppController.current.id ne null ? 'Editing' : 'Adding New'}
+                                        </h:panelGroup>
+                                    </div>
+                                </f:facet>
+
+                                <p:panelGrid
+                                    id="gpDetail"
+                                    columns="1"
+                                    class="w-100">
+                                    <p:panelGrid
+                                        id="gpDetailText"
+                                        columns="2"
+                                        columnClasses="w-25 , w-75"
+                                        class="w-100">
+                                        <!-- Form fields -->
+                                        <h:outputText value="Name" />
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="txtName"
+                                            value="#{labVmppController.current.name}"
+                                            required="true"
+                                            requiredMessage="Lab VMPP name is required"
+                                            placeholder="Enter Lab VMPP name"
+                                            class="w-100"
+                                            disabled="#{!labVmppController.editable}" />
+
+                                        <h:outputText value="VMP" />
+                                        <p:autoComplete
+                                            id="acVmp"
+                                            class="w-100"
+                                            inputStyleClass="w-100"
+                                            value="#{labVmppController.current.vmp}"
+                                            forceSelection="true"
+                                            completeMethod="#{labVmpController.completeVmp}"
+                                            var="vt"
+                                            itemLabel="#{vt.name}"
+                                            itemValue="#{vt}"
+                                            placeholder="Type to search Lab VMP..."
+                                            disabled="#{!labVmppController.editable}" />
+
+                                        <h:outputText value="Pack Size" />
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="txtPackSize"
+                                            value="#{labVmppController.current.dblValue}"
+                                            class="w-100"
+                                            placeholder="Enter pack size"
+                                            disabled="#{!labVmppController.editable}">
+                                            <f:convertNumber pattern="#" />
+                                        </p:inputText>
+
+                                        <h:outputText value="Pack Unit" />
+                                        <p:selectOneMenu
+                                            id="selPackUnit"
+                                            class="w-100"
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            value="#{labVmppController.current.strengthUnit}"
+                                            disabled="#{!labVmppController.editable}">
+                                            <f:selectItem itemLabel="Select Pack Unit" />
+                                            <f:selectItems value="#{measurementUnitController.items}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
+                                        </p:selectOneMenu>
+
+                                        <h:outputText value="Description" />
+                                        <h:inputTextarea
+                                            id="txtDes"
+                                            value="#{labVmppController.current.descreption}"
+                                            required="false"
+                                            class="form-control"
+                                            rows="3"
+                                            disabled="#{!labVmppController.editable}" />
+
+                                    </p:panelGrid>
+
+                                    <h:panelGroup layout="block" class="text-end">
+                                        <div>
+                                            <p:commandButton
+                                                id="btnSave"
+                                                value="Save"
+                                                icon="fas fa-save"
+                                                action="#{labVmppController.save}"
+                                                class="m-1 ui-button-warning w-25"
+                                                process="btnSave gpDetail"
+                                                update=":form:acVmpp :form:gpDetail :form:msg :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
+                                                disabled="#{!labVmppController.editable}">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                immediate="true"
+                                                id="btnCancel"
+                                                value="Cancel"
+                                                icon="fas fa-times"
+                                                action="#{labVmppController.cancel()}"
+                                                class="m-1 ui-button-secondary w-25"
+                                                process="btnCancel"
+                                                update=":form:acVmpp :form:gpDetail :form:actionButtons :form:vmppDetails :form:statusFilterPanel"
+                                                disabled="#{!labVmppController.editable}">
+                                                <f:setPropertyActionListener target="#{labVmppController.selectedVmppDto}" value="#{null}" />
+                                            </p:commandButton>
+                                        </div>
+                                    </h:panelGroup>
+                                </p:panelGrid>
+                            </p:panel>
+                        </div>
+                    </div>
+
+                    <!-- Confirmation Dialog -->
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="fas fa-check" />
+                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fas fa-times" />
+                    </p:confirmDialog>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
