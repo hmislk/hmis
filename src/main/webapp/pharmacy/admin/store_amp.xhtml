@@ -20,7 +20,7 @@
                                 <!-- Status Filter Section -->
                                 <h:panelGroup id="statusFilterPanel" layout="block" styleClass="status-filter-section mb-3">
                                     <div class="d-flex gap-2 align-items-center">
-                                        <label class="form-label mb-0">Filter:</label>
+                                        <h:outputLabel value="Filter:" styleClass="form-label mb-0"/>
                                         <p:commandButton
                                             id="btnFilterActive"
                                             value="Active"
@@ -64,7 +64,7 @@
                                 </h:panelGroup>
                                 <!-- Modern Search Section -->
                                 <div class="search-section mb-3">
-                                    <h6 class="mb-2">Search &amp; Select Store AMP</h6>
+                                    <h:outputText value="Search &amp; Select Store AMP" styleClass="mb-2"/>
                                     <p:autoComplete
                                         id="acAmp"
                                         class="w-100"
@@ -222,7 +222,7 @@
                                     <h:panelGroup layout="block" styleClass="form-section" rendered="#{storeAmpController.current ne null}">
 
                                         <!-- Essential Information Section -->
-                                        <h6 class="section-header">Essential Information</h6>
+                                        <h:outputText value="Essential Information" styleClass="section-header"/>
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
                                                 <p:outputLabel for="ampName" value="Store AMP Name"/>
@@ -262,7 +262,7 @@
                                         </div>
 
                                         <!-- VMP Relationship Section -->
-                                        <h6 class="section-header">Product Information</h6>
+                                        <h:outputText value="Product Information" styleClass="section-header"/>
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
                                                 <p:outputLabel for="vmpSelect" value="VMP"/>
@@ -331,7 +331,7 @@
                                         </div>
 
                                         <!-- Business Rules Section -->
-                                        <h6 class="section-header">Business Rules</h6>
+                                        <h:outputText value="Business Rules" styleClass="section-header"/>
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-3">
                                                 <div class="form-check">
