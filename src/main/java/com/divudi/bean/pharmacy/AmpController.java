@@ -31,6 +31,12 @@ import com.divudi.core.facade.AmpFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.VmpFacade;
 import com.divudi.core.facade.VirtualProductIngredientFacade;
+import com.divudi.core.data.dto.AmpDto;
+import com.divudi.core.facade.AuditEventFacade;
+import com.divudi.bean.common.AuditEventController;
+import com.divudi.core.entity.AuditEvent;
+import com.divudi.service.AuditService;
+import javax.persistence.TemporalType;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -106,8 +112,24 @@ public class AmpController implements Serializable {
     @Inject
     private ItemController itemController;
 
+    // Audit-related injections
+    @Inject
+    private AuditService auditService;
+    @EJB
+    private AuditEventFacade auditEventFacade;
+    @Inject
+    private AuditEventController auditEventController;
+
     private boolean duplicateCode;
     private boolean editable;
+
+    // DTO Management fields
+    private AmpDto selectedAmpDto;
+    private List<AmpDto> ampDtos;
+    private List<AuditEvent> ampAuditEvents;
+
+    // Filter state for active/inactive AMPs - using string like VMP
+    private String filterStatus = "active"; // "active", "inactive", "all"
 
     private UploadedFile file;
 
@@ -118,6 +140,7 @@ public class AmpController implements Serializable {
     public void setFile(UploadedFile file) {
         this.file = file;
     }
+
 
     public String navigateToCreateItemList() {
         return "/pharmacy/list_amps?faces-redirect=true"; // Then navigate
@@ -191,11 +214,36 @@ public class AmpController implements Serializable {
         String jpql = "Select amp "
                 + " from Amp amp "
                 + " where amp.retired=:ret "
+                + " and amp.departmentType=:dep "
                 + " order by amp.name";
         Map m = new HashMap();
         m.put("ret", false);
+        m.put("dep", DepartmentType.Pharmacy);
         items = getFacade().findByJpql(jpql, m);
         return "/emr/reports/amps?faces-redirect=true";
+    }
+
+    public Amp findOrCreateAmpByName(String ampName) {
+        String jpql = "Select amp "
+                + " from Amp amp "
+                + " where amp.retired=:ret "
+                + " and amp.name=:ampName "
+                + " and amp.departmentType=:dep "
+                + " order by amp.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("ampName", ampName);
+        m.put("dep", DepartmentType.Pharmacy);
+        Amp amp = getFacade().findFirstByJpql(jpql, m);
+        if (amp == null) {
+            amp = new Amp();
+            amp.setName(ampName);
+            amp.setDepartmentType(DepartmentType.Pharmacy); // Set to Pharmacy
+            amp.setItemType(ItemType.Amp);
+            amp.setSymanticType(SymanticType.Pharmacologic_Substance);
+            getFacade().create(amp);
+        }
+        return amp;
     }
 
     public void fillItemsForItemSupplierPrices() {
@@ -410,20 +458,19 @@ public class AmpController implements Serializable {
     }
 
     public List<Amp> completeAmp(String qry) {
-        List<Amp> a = null;
-        Map m = new HashMap();
-        m.put("n", "%" + qry + "%");
-        if (qry != null) {
-            a = getFacade().findByJpql("select c from Amp c where "
-                    + " c.retired=false "
-                    + " and ((c.name) like :n or (c.code)  "
-                    + "like :n or (c.barcode) like :n) order by c.name", m, 30);
-        }
+        List<Amp> suggestions;
+        if (qry == null || qry.trim().isEmpty()) {
+            suggestions = new ArrayList<>();
+        } else {
+            String jpql = "SELECT c FROM Amp c WHERE c.retired = false AND LOWER(c.name) LIKE :query "
+                    + "AND c.departmentType=:dep ORDER BY c.name";
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("query", "%" + qry.trim().toLowerCase() + "%");
+            parameters.put("dep", DepartmentType.Pharmacy);
 
-        if (a == null) {
-            a = new ArrayList<>();
+            suggestions = getFacade().findByJpqlWithoutCache(jpql, parameters);
         }
-        return a;
+        return suggestions;
     }
 
     public List<Amp> completeAmpWithRetired(String qry) {
@@ -546,7 +593,9 @@ public class AmpController implements Serializable {
     public void prepareAdd() {
         current = new Amp();
         current.setItemType(ItemType.Amp);
-        current.setDepartmentType(DepartmentType.Pharmacy);
+        current.setDepartmentType(DepartmentType.Pharmacy); // Automatically set to Pharmacy
+        selectedAmpDto = null; // Clear DTO selection
+        ampAuditEvents = null; // Clear audit events
         editable = true;
     }
 
@@ -555,11 +604,24 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("Select one to edit");
             return;
         }
+        // Sync the DTO with current entity
+        if (current.getId() != null) {
+            selectedAmpDto = createAmpDto(current);
+        }
         editable = true;
+    }
+
+    /**
+     * Prepare edit - wrapper for edit() to maintain UI consistency
+     */
+    public void prepareEdit() {
+        edit();
     }
 
     public void cancel() {
         current = null;
+        selectedAmpDto = null;
+        ampAuditEvents = null;
         editable = false;
     }
 
@@ -735,9 +797,12 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("This Code has Already been Used.");
             return;
         }
+
+        // Set department type to Pharmacy for new AMPs
         if (current.getDepartmentType() == null) {
             current.setDepartmentType(DepartmentType.Pharmacy);
         }
+
         if (current.getVmp() == null) {
             JsfUtil.addErrorMessage("No VMP selected");
             return;
@@ -757,19 +822,46 @@ public class AmpController implements Serializable {
             current.setItemType(ItemType.Amp);
         }
 
-        if (getCurrent().getId() != null) {
+        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            // UPDATE - capture before state
+            Amp beforeUpdate = getFacade().find(getCurrent().getId());
+            Map<String, Object> beforeData = createAuditMap(beforeUpdate);
+
+            // Update audit fields
             getCurrent().setEditedAt(new Date());
             getCurrent().setEditer(getSessionController().getLoggedUser());
-            getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Updated Successfully.");
+
+            getFacade().edit(getCurrent());
+
+            // Log audit for update
+            Map<String, Object> afterData = createAuditMap(getCurrent());
+            auditService.logAudit(beforeData, afterData,
+                    getSessionController().getLoggedUser(),
+                    "Amp", "Update AMP", getCurrent().getId());
+
+            JsfUtil.addSuccessMessage("AMP Updated Successfully.");
         } else {
-            current.setCreatedAt(new Date());
-            current.setCreater(getSessionController().getLoggedUser());
-            getFacade().create(current);
-            JsfUtil.addSuccessMessage("Saved Successfully");
-            recreateModel();
-            getItems();
+            // CREATE - no before state, set creation fields
+            getCurrent().setCreatedAt(new Date());
+            getCurrent().setCreater(getSessionController().getLoggedUser());
+            getCurrent().setItemType(ItemType.Amp); // Ensure correct item type
+            getFacade().create(getCurrent());
+
+            // Log audit for create
+            Map<String, Object> afterData = createAuditMap(getCurrent());
+            auditService.logAudit(null, afterData,
+                    getSessionController().getLoggedUser(),
+                    "Amp", "Create AMP", getCurrent().getId());
+
+            JsfUtil.addSuccessMessage("AMP Created Successfully.");
         }
+
+        // Refresh data and keep selection synced
+        recreateModel();
+        getItems();
+        selectedAmpDto = createAmpDto(current);
+        ampDtos = null;
+        editable = false;
     }
 
     public boolean checkItemCode(String code, Amp savingAmp) {
@@ -993,19 +1085,33 @@ public class AmpController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
+            // Capture before state for audit
+            Map<String, Object> beforeData = createAuditMap(current);
+
+            // Perform soft delete (retirement)
             current.setRetired(true);
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Deleted Successfully");
+
+            // Capture after state for audit
+            Map<String, Object> afterData = createAuditMap(current);
+            auditService.logAudit(beforeData, afterData,
+                    getSessionController().getLoggedUser(),
+                    "Amp", "Delete AMP", current.getId());
+
+            JsfUtil.addSuccessMessage("AMP Deleted Successfully");
         } else {
-            JsfUtil.addErrorMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("No AMP Selected to Delete");
         }
+
+        // Clear all selections and state
         recreateModel();
         getItems();
         current = null;
+        selectedAmpDto = null; // Clear DTO selection
+        ampAuditEvents = null; // Clear audit events
         getCurrent();
         editable = false;
     }
@@ -1017,19 +1123,40 @@ public class AmpController implements Serializable {
 
     public List<Amp> getItems() {
         if (items == null) {
-            items = findItems();
+            String jpql;
+            Map<String, Object> params = new HashMap<>();
+            jpql = "select a "
+                    + " from Amp a "
+                    + " where a.departmentType=:dep ";
+
+            params.put("dep", DepartmentType.Pharmacy);
+
+            // Apply status filter
+            if ("active".equals(filterStatus)) {
+                jpql += "and a.retired=:retired ";
+                params.put("retired", false);
+            } else if ("inactive".equals(filterStatus)) {
+                jpql += "and a.retired=:retired ";
+                params.put("retired", true);
+            }
+            // For "all", no additional filter needed
+
+            jpql += "order by a.name";
+            items = getFacade().findByJpql(jpql, params);
         }
         return items;
     }
 
     public List<Amp> findItems() {
-        String jpql = "select i "
-                + " from Amp i "
-                + " where i.retired=:ret"
-                + " order by i.name";
-        Map m = new HashMap();
-        m.put("ret", false);
-        return getFacade().findByJpql(jpql, m);
+        String jpql = "select a "
+                + " from Amp a "
+                + " where a.retired=:ret"
+                + " and a.departmentType=:dep"
+                + " order by a.name";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("dep", DepartmentType.Pharmacy);
+        return getFacade().findByJpql(jpql, params);
     }
 
     public List<Amp> getLongCodeItems() {
@@ -1339,6 +1466,352 @@ public class AmpController implements Serializable {
             }
             padded.append(trimmedCode);
             return padded.toString();
+        }
+    }
+
+    // ===================== DTO Management Methods =====================
+
+    /**
+     * Get AMP DTOs with status filtering
+     */
+    public List<AmpDto> getAmpDtos() {
+        String jpql = "SELECT new com.divudi.core.data.dto.AmpDto("
+                + "a.id, a.name, a.code, a.barcode, a.inactive, "
+                + "v.id, v.name) "
+                + "FROM Amp a LEFT JOIN a.vmp v WHERE a.departmentType=:dep ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("dep", DepartmentType.Pharmacy);
+
+        // Apply status filter based on inactive attribute
+        if ("active".equals(filterStatus)) {
+            jpql += "AND a.inactive=:inactive ";
+            params.put("inactive", false);
+        } else if ("inactive".equals(filterStatus)) {
+            jpql += "AND a.inactive=:inactive ";
+            params.put("inactive", true);
+        }
+        // For "all", no additional filter needed
+
+        jpql += "ORDER BY a.name";
+
+        return (List<AmpDto>) getFacade().findLightsByJpql(jpql, params);
+    }
+
+    /**
+     * Modern autocomplete with 2+ characters and multi-field search
+     */
+    public List<AmpDto> completeAmpDto(String query) {
+        if (query == null || query.trim().length() < 2) {
+            return new ArrayList<>();
+        }
+
+        String jpql = "SELECT new com.divudi.core.data.dto.AmpDto("
+                + "a.id, a.name, a.code, a.barcode, a.inactive, "
+                + "v.id, v.name) "
+                + "FROM Amp a LEFT JOIN a.vmp v "
+                + "WHERE (LOWER(a.name) LIKE :query OR LOWER(a.code) LIKE :query OR LOWER(a.barcode) LIKE :query) "
+                + "AND a.departmentType=:dep "
+                + "AND a.retired=false ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("query", "%" + query.toLowerCase() + "%");
+        params.put("dep", DepartmentType.Pharmacy);
+
+        // Apply status filter based on inactive attribute
+        if ("active".equals(filterStatus)) {
+            jpql += "AND a.inactive=:inactive ";
+            params.put("inactive", false);
+        } else if ("inactive".equals(filterStatus)) {
+            jpql += "AND a.inactive=:inactive ";
+            params.put("inactive", true);
+        }
+        // For "all", no additional filter needed
+
+        jpql += "ORDER BY a.name";
+
+        return (List<AmpDto>) getFacade().findLightsByJpql(jpql, params);
+    }
+
+    /**
+     * DTO selection with entity sync
+     */
+    public void setSelectedAmpDto(AmpDto selectedAmpDto) {
+        this.selectedAmpDto = selectedAmpDto;
+        if (selectedAmpDto != null && selectedAmpDto.getId() != null) {
+            this.current = getFacade().find(selectedAmpDto.getId());
+        } else {
+            this.current = null;
+        }
+    }
+
+    public AmpDto getSelectedAmpDto() {
+        return selectedAmpDto;
+    }
+
+    /**
+     * Entity-to-DTO conversion
+     */
+    public AmpDto createAmpDto(Amp amp) {
+        if (amp == null) {
+            return null;
+        }
+        return new AmpDto(amp.getId(), amp.getName(), amp.getCode(),
+                amp.getBarcode(), amp.isInactive(),
+                amp.getVmp() != null ? amp.getVmp().getId() : null,
+                amp.getVmp() != null ? amp.getVmp().getName() : null);
+    }
+
+    // ===================== Filter Status Management (VMP Pattern) =====================
+
+    public String getFilterStatus() {
+        return filterStatus;
+    }
+
+    public void setFilterStatus(String filterStatus) {
+        this.filterStatus = filterStatus;
+    }
+
+    public void setFilterToActive() {
+        filterStatus = "active";
+        refreshData();
+    }
+
+    public void setFilterToInactive() {
+        filterStatus = "inactive";
+        refreshData();
+    }
+
+    public void setFilterToAll() {
+        filterStatus = "all";
+        refreshData();
+    }
+
+    public void refreshData() {
+        recreateModel();
+        ampDtos = null; // Clear DTO cache
+
+        // Clear selection if current item doesn't match new filter
+        if (current != null) {
+            boolean shouldKeepSelection = false;
+            switch (filterStatus) {
+                case "active":
+                    shouldKeepSelection = !current.isInactive();
+                    break;
+                case "inactive":
+                    shouldKeepSelection = current.isInactive();
+                    break;
+                case "all":
+                    shouldKeepSelection = true;
+                    break;
+            }
+
+            if (!shouldKeepSelection) {
+                current = null;
+                selectedAmpDto = null;
+                ampAuditEvents = null;
+            }
+        }
+    }
+
+    public boolean isShowingActive() {
+        return "active".equals(filterStatus);
+    }
+
+    public boolean isShowingInactive() {
+        return "inactive".equals(filterStatus);
+    }
+
+    public boolean isShowingAll() {
+        return "all".equals(filterStatus);
+    }
+
+    public String getFilterStatusDisplay() {
+        switch (filterStatus) {
+            case "active":
+                return "Active AMPs";
+            case "inactive":
+                return "Inactive AMPs";
+            case "all":
+                return "All AMPs";
+            default:
+                return "Active AMPs";
+        }
+    }
+
+    // ===================== Audit Management Methods =====================
+
+    /**
+     * Create audit map with AMP-specific fields
+     */
+    private Map<String, Object> createAuditMap(Amp amp) {
+        Map<String, Object> auditData = new HashMap<>();
+        if (amp != null) {
+            // Core identification
+            auditData.put("id", amp.getId());
+            auditData.put("name", amp.getName());
+            auditData.put("code", amp.getCode());
+            auditData.put("barcode", amp.getBarcode());
+            auditData.put("retired", amp.isRetired());
+            auditData.put("departmentType", amp.getDepartmentType() != null ?
+                    amp.getDepartmentType().toString() : null);
+
+            // VMP relationship
+            auditData.put("vmpId", amp.getVmp() != null ? amp.getVmp().getId() : null);
+            auditData.put("vmpName", amp.getVmp() != null ? amp.getVmp().getName() : null);
+
+            // ATM relationship (if exists)
+            auditData.put("atmId", amp.getAtm() != null ? amp.getAtm().getId() : null);
+            auditData.put("atmName", amp.getAtm() != null ? amp.getAtm().getName() : null);
+
+            // Category and type information
+            auditData.put("categoryId", amp.getCategory() != null ? amp.getCategory().getId() : null);
+            auditData.put("categoryName", amp.getCategory() != null ? amp.getCategory().getName() : null);
+            auditData.put("itemType", amp.getItemType() != null ? amp.getItemType().toString() : null);
+
+            // Business rules
+            auditData.put("discountAllowed", amp.isDiscountAllowed());
+            auditData.put("refundsAllowed", amp.isRefundsAllowed());
+            auditData.put("consumptionAllowed", amp.isConsumptionAllowed());
+            auditData.put("allowFractions", amp.isAllowFractions());
+
+            // Strength and units
+            auditData.put("strengthOfAnIssueUnit", amp.getStrengthOfAnIssueUnit());
+            auditData.put("strengthUnit", amp.getStrengthUnit());
+            auditData.put("issueUnit", amp.getIssueUnit());
+        }
+        return auditData;
+    }
+
+    /**
+     * Toggle AMP status (Active/Inactive) with audit logging
+     */
+    public void toggleAmpStatus() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No AMP selected");
+            return;
+        }
+
+        // Capture before state for audit
+        Map<String, Object> beforeData = createAuditMap(current);
+        boolean wasInactive = current.isInactive();
+
+        if (wasInactive) {
+            // Activate AMP
+            current.setInactive(false);
+            JsfUtil.addSuccessMessage("AMP Activated Successfully");
+        } else {
+            // Deactivate AMP
+            current.setInactive(true);
+            JsfUtil.addSuccessMessage("AMP Deactivated Successfully");
+        }
+
+        getFacade().edit(current);
+
+        // Log audit for status change
+        Map<String, Object> afterData = createAuditMap(current);
+        String action = wasInactive ? "Activate AMP" : "Deactivate AMP";
+        auditService.logAudit(beforeData, afterData,
+                getSessionController().getLoggedUser(),
+                "Amp", action, current.getId());
+
+        // Refresh displays
+        recreateModel();
+        ampDtos = null; // Force refresh of DTO list
+    }
+
+    public String getToggleStatusButtonText() {
+        if (current == null || current.getId() == null) {
+            return "Toggle Status";
+        }
+        return current.isInactive() ? "Activate" : "Deactivate";
+    }
+
+    public String getToggleStatusButtonIcon() {
+        if (current == null || current.getId() == null) {
+            return "fas fa-toggle-off";
+        }
+        return current.isInactive() ? "fas fa-check-circle" : "fas fa-times-circle";
+    }
+
+    public String getToggleStatusButtonClass() {
+        if (current == null || current.getId() == null) {
+            return "ui-button-secondary";
+        }
+        // If inactive, show green "Activate" button
+        // If active, show orange "Deactivate" button
+        return current.isInactive() ? "ui-button-success" : "ui-button-warning";
+    }
+
+    // ===================== Audit History Management =====================
+
+    public void fillAmpAuditEvents() {
+        if (current != null && current.getId() != null) {
+            try {
+                String jpql = "SELECT a FROM AuditEvent a WHERE a.objectId = :objectId "
+                        + "AND a.entityType = :entityType ORDER BY a.eventDataTime DESC";
+                Map<String, Object> parameters = new HashMap<>();
+                parameters.put("objectId", current.getId());
+                parameters.put("entityType", "Amp");
+
+                ampAuditEvents = auditEventFacade.findByJpql(jpql, parameters);
+            } catch (Exception e) {
+                ampAuditEvents = new ArrayList<>();
+                JsfUtil.addErrorMessage("Error loading audit history: " + e.getMessage());
+            }
+        } else {
+            ampAuditEvents = new ArrayList<>();
+        }
+    }
+
+    public String navigateToAmpAuditEvents() {
+        fillAmpAuditEvents();
+        return "/pharmacy/admin/amp_audit_events?faces-redirect=true";
+    }
+
+    public List<AuditEvent> getAmpAuditEvents() {
+        if (ampAuditEvents == null) {
+            fillAmpAuditEvents();
+        }
+        return ampAuditEvents;
+    }
+
+    public void refreshAuditEvents() {
+        ampAuditEvents = null;
+        fillAmpAuditEvents();
+    }
+
+    // ===================== JSF AmpDto Converter =====================
+
+    @FacesConverter("ampDtoConverter")
+    public static class AmpDtoConverter implements Converter {
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.isEmpty()) {
+                return null;
+            }
+            try {
+                Long id = Long.parseLong(value);
+                AmpController controller = (AmpController) facesContext.getApplication()
+                        .getELResolver().getValue(facesContext.getELContext(), null, "ampController");
+
+                Amp entity = controller.getFacade().find(id);
+                return entity != null ? controller.createAmpDto(entity) : null;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof AmpDto) {
+                AmpDto dto = (AmpDto) object;
+                return dto.getId() != null ? dto.getId().toString() : null;
+            }
+            throw new IllegalArgumentException("Expected AmpDto object");
         }
     }
 

@@ -89,6 +89,7 @@ import com.divudi.core.facade.StockVarientBillItemFacade;
 import com.divudi.core.facade.UserStockContainerFacade;
 import com.divudi.core.facade.UserStockFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.DatabaseMigrationService;
 import com.divudi.service.LogFileService;
 import com.divudi.service.BillService;
 import java.sql.SQLSyntaxErrorException;
@@ -272,6 +273,11 @@ public class DataAdministrationController implements Serializable {
     private LogFileService logService;
     @EJB
     private BillService billService;
+    @EJB
+    private DatabaseMigrationService databaseMigrationService;
+
+    @Inject
+    WebUserController webUserController;
 
     List<Bill> bills;
     List<Bill> selectedBills;
@@ -2001,6 +2007,31 @@ public class DataAdministrationController implements Serializable {
         billFacade.edit(originalBill);
 
         JsfUtil.addSuccessMessage("Added Dept Bill Number");
+    }
+
+    public boolean canAccessMigrationPage() {
+        if (databaseMigrationService.isMigrationPending()) {
+            return true;
+        }
+        return webUserController.hasPrivilege("Admin");
+    }
+
+    public boolean isMigrationPageAccessDenied() {
+        return !canAccessMigrationPage();
+    }
+
+    public boolean isMigrationPending() {
+        return databaseMigrationService.isMigrationPending();
+    }
+
+    public void markMigrationComplete() {
+        databaseMigrationService.markMigrationComplete();
+        JsfUtil.addSuccessMessage("Migration marked as complete. The migration page is now restricted to administrators.");
+    }
+
+    public void markMigrationNotNecessary() {
+        databaseMigrationService.markMigrationNotNecessary();
+        JsfUtil.addSuccessMessage("Migration marked as not necessary. The migration page is now restricted to administrators.");
     }
 
     public void checkMissingFields1() {

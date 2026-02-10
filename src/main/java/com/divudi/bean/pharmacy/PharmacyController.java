@@ -92,6 +92,22 @@ public class PharmacyController implements Serializable {
     @Inject
     private AmpController ampController;
     @Inject
+    private com.divudi.bean.store.StoreAmpController storeAmpController;
+    @Inject
+    private com.divudi.bean.lab.LabAmpController labAmpController;
+    @Inject
+    private com.divudi.bean.store.StoreVtmController storeVtmController;
+    @Inject
+    private com.divudi.bean.lab.LabVtmController labVtmController;
+    @Inject
+    private com.divudi.bean.store.StoreAtmController storeAtmController;
+    @Inject
+    private com.divudi.bean.lab.LabAtmController labAtmController;
+    @Inject
+    private com.divudi.bean.store.StoreVmpController storeVmpController;
+    @Inject
+    private com.divudi.bean.lab.LabVmpController labVmpController;
+    @Inject
     VtmController vtmController;
     @Inject
     AtmController atmController;
@@ -205,9 +221,9 @@ public class PharmacyController implements Serializable {
     private List<Amp> filteredAmps;
 
     // DTO properties for improved performance
-    private List<com.divudi.core.data.dto.AmpDTO> ampDtos;
-    private List<com.divudi.core.data.dto.AmpDTO> ampDtosSelected;
-    private List<com.divudi.core.data.dto.AmpDTO> filteredAmpDtos;
+    private List<com.divudi.core.data.dto.AmpDto> ampDtos;
+    private List<com.divudi.core.data.dto.AmpDto> ampDtosSelected;
+    private List<com.divudi.core.data.dto.AmpDto> filteredAmpDtos;
 
     private Atm atm;
     private Vtm vtm;
@@ -1205,7 +1221,7 @@ public class PharmacyController implements Serializable {
                 + "WHERE a.retired = false "
                 + "ORDER BY a.name";
 
-        ampDtos = (List<com.divudi.core.data.dto.AmpDTO>) ampFacade.findLightsByJpql(jpql);
+        ampDtos = (List<com.divudi.core.data.dto.AmpDto>) ampFacade.findLightsByJpql(jpql);
     }
 
     private void fillVmpps() {
@@ -1360,6 +1376,26 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/admin/amp?faces-redirect=true";
     }
 
+    public String navigateToStoreAmp() {
+        storeAmpController.setItems(null);
+        return "/pharmacy/admin/store_amp?faces-redirect=true";
+    }
+
+    public String navigateToLabAmp() {
+        labAmpController.setItems(null);
+        return "/pharmacy/admin/lab_amp?faces-redirect=true";
+    }
+
+    public String navigateToStoreVtm() {
+        storeVtmController.clearDtoCache();
+        return "/pharmacy/admin/store_vtm?faces-redirect=true";
+    }
+
+    public String navigateToLabVtm() {
+        labVtmController.clearDtoCache();
+        return "/pharmacy/admin/lab_vtm?faces-redirect=true";
+    }
+
     public String navigateToAmpp() {
         return "/pharmacy/admin/ampp?faces-redirect=true";
     }
@@ -1367,7 +1403,25 @@ public class PharmacyController implements Serializable {
     public String navigateToAtm() {
         atmController.getItems();
         atmController.getCurrent();
-        return "/pharmacy/admin/atm?faces-redirect=true";
+        return "/pharmacy/admin/atm_dto?faces-redirect=true";
+    }
+
+    public String navigateToStoreAtm() {
+        storeAtmController.clearDtoCache();
+        return "/pharmacy/admin/store_atm?faces-redirect=true";
+    }
+
+    public String navigateToLabAtm() {
+        labAtmController.clearDtoCache();
+        return "/pharmacy/admin/lab_atm?faces-redirect=true";
+    }
+
+    public String navigateToStoreVmp() {
+        return "/pharmacy/admin/store_vmp?faces-redirect=true";
+    }
+
+    public String navigateToLabVmp() {
+        return "/pharmacy/admin/lab_vmp?faces-redirect=true";
     }
 
     public String navigateToManufacturers() {
@@ -1409,13 +1463,34 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/admin/vmp?faces-redirect=true";
     }
 
-    public String navigateToVtm() {
-        vtmController.fillItems();
-        return "/pharmacy/admin/vtm?faces-redirect=true";
+//    public String navigateToVtm() {
+//        vtmController.fillItems();
+//        return "/pharmacy/admin/vtm?faces-redirect=true";
+//    }
+
+    public String navigateToVtmDto() {
+        vtmController.clearDtoCache(); // Ensure fresh DTO data
+        return "/pharmacy/admin/vtm_dto?faces-redirect=true";
     }
 
     public String navigateToVmpp() {
-        return "/pharmacy/admin/vmpp?faces-redirect=true";
+        return "/pharmacy/admin/vmpp_dto?faces-redirect=true";
+    }
+
+    public String navigateToStoreVmpp() {
+        return "/pharmacy/admin/store_vmpp?faces-redirect=true";
+    }
+
+    public String navigateToLabVmpp() {
+        return "/pharmacy/admin/lab_vmpp?faces-redirect=true";
+    }
+
+    public String navigateToStoreAmpp() {
+        return "/pharmacy/admin/store_ampp?faces-redirect=true";
+    }
+
+    public String navigateToLabAmpp() {
+        return "/pharmacy/admin/lab_ampp?faces-redirect=true";
     }
 
     public String navigateToDosageFormsMultiple() {
@@ -1849,7 +1924,7 @@ public class PharmacyController implements Serializable {
             return;
         }
         List<Amp> ampsToUpdate = new ArrayList<>();
-        for (com.divudi.core.data.dto.AmpDTO dto : ampDtosSelected) {
+        for (com.divudi.core.data.dto.AmpDto dto : ampDtosSelected) {
             Amp amp = ampFacade.find(dto.getId());
             if (amp != null) {
                 amp.setDiscountAllowed(true);
@@ -1867,7 +1942,7 @@ public class PharmacyController implements Serializable {
             return;
         }
         List<Amp> ampsToUpdate = new ArrayList<>();
-        for (com.divudi.core.data.dto.AmpDTO dto : ampDtosSelected) {
+        for (com.divudi.core.data.dto.AmpDto dto : ampDtosSelected) {
             Amp amp = ampFacade.find(dto.getId());
             if (amp != null) {
                 amp.setDiscountAllowed(false);
@@ -1885,7 +1960,7 @@ public class PharmacyController implements Serializable {
             return;
         }
         List<Amp> ampsToUpdate = new ArrayList<>();
-        for (com.divudi.core.data.dto.AmpDTO dto : ampDtosSelected) {
+        for (com.divudi.core.data.dto.AmpDto dto : ampDtosSelected) {
             Amp amp = ampFacade.find(dto.getId());
             if (amp != null) {
                 amp.setAllowFractions(true);
@@ -1903,7 +1978,7 @@ public class PharmacyController implements Serializable {
             return;
         }
         List<Amp> ampsToUpdate = new ArrayList<>();
-        for (com.divudi.core.data.dto.AmpDTO dto : ampDtosSelected) {
+        for (com.divudi.core.data.dto.AmpDto dto : ampDtosSelected) {
             Amp amp = ampFacade.find(dto.getId());
             if (amp != null) {
                 amp.setAllowFractions(false);
@@ -1921,7 +1996,7 @@ public class PharmacyController implements Serializable {
             return;
         }
         List<Amp> ampsToUpdate = new ArrayList<>();
-        for (com.divudi.core.data.dto.AmpDTO dto : ampDtosSelected) {
+        for (com.divudi.core.data.dto.AmpDto dto : ampDtosSelected) {
             Amp amp = ampFacade.find(dto.getId());
             if (amp != null) {
                 amp.setConsumptionAllowed(true);
@@ -1939,7 +2014,7 @@ public class PharmacyController implements Serializable {
             return;
         }
         List<Amp> ampsToUpdate = new ArrayList<>();
-        for (com.divudi.core.data.dto.AmpDTO dto : ampDtosSelected) {
+        for (com.divudi.core.data.dto.AmpDto dto : ampDtosSelected) {
             Amp amp = ampFacade.find(dto.getId());
             if (amp != null) {
                 amp.setConsumptionAllowed(false);
@@ -1957,7 +2032,7 @@ public class PharmacyController implements Serializable {
             return;
         }
         List<Amp> ampsToUpdate = new ArrayList<>();
-        for (com.divudi.core.data.dto.AmpDTO dto : ampDtosSelected) {
+        for (com.divudi.core.data.dto.AmpDto dto : ampDtosSelected) {
             Amp amp = ampFacade.find(dto.getId());
             if (amp != null) {
                 amp.setRefundsAllowed(true);
@@ -1975,7 +2050,7 @@ public class PharmacyController implements Serializable {
             return;
         }
         List<Amp> ampsToUpdate = new ArrayList<>();
-        for (com.divudi.core.data.dto.AmpDTO dto : ampDtosSelected) {
+        for (com.divudi.core.data.dto.AmpDto dto : ampDtosSelected) {
             Amp amp = ampFacade.find(dto.getId());
             if (amp != null) {
                 amp.setRefundsAllowed(false);
@@ -9990,27 +10065,27 @@ public class PharmacyController implements Serializable {
     }
 
     // DTO getters and setters for improved performance
-    public List<com.divudi.core.data.dto.AmpDTO> getAmpDtos() {
+    public List<com.divudi.core.data.dto.AmpDto> getAmpDtos() {
         return ampDtos;
     }
 
-    public void setAmpDtos(List<com.divudi.core.data.dto.AmpDTO> ampDtos) {
+    public void setAmpDtos(List<com.divudi.core.data.dto.AmpDto> ampDtos) {
         this.ampDtos = ampDtos;
     }
 
-    public List<com.divudi.core.data.dto.AmpDTO> getAmpDtosSelected() {
+    public List<com.divudi.core.data.dto.AmpDto> getAmpDtosSelected() {
         return ampDtosSelected;
     }
 
-    public void setAmpDtosSelected(List<com.divudi.core.data.dto.AmpDTO> ampDtosSelected) {
+    public void setAmpDtosSelected(List<com.divudi.core.data.dto.AmpDto> ampDtosSelected) {
         this.ampDtosSelected = ampDtosSelected;
     }
 
-    public List<com.divudi.core.data.dto.AmpDTO> getFilteredAmpDtos() {
+    public List<com.divudi.core.data.dto.AmpDto> getFilteredAmpDtos() {
         return filteredAmpDtos;
     }
 
-    public void setFilteredAmpDtos(List<com.divudi.core.data.dto.AmpDTO> filteredAmpDtos) {
+    public void setFilteredAmpDtos(List<com.divudi.core.data.dto.AmpDto> filteredAmpDtos) {
         this.filteredAmpDtos = filteredAmpDtos;
     }
 
