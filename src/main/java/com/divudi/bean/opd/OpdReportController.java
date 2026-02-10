@@ -576,7 +576,7 @@ public class OpdReportController implements Serializable {
     }
 
     public void generateOpdIncomeReportDto() {
-        processOpdIncomeReport();
+//        processOpdIncomeReport();
         reportTimerController.trackReportExecution(() -> {
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
@@ -597,6 +597,15 @@ public class OpdReportController implements Serializable {
             System.out.println("Results returned: " + (opdIncomeReportDtos != null ? opdIncomeReportDtos.size() : 0));
 
             bundle = new IncomeBundle(opdIncomeReportDtos);
+            
+            for(IncomeRow dto : bundle.getRows()){
+                if(dto.getBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods){
+                    Bill batchBill = billService.fetchBatchBillOfIndividualBill(dto.getBill());
+                    dto.setBatchBill(batchBill);
+                    dto.setPayments(billService.fetchBillPayments(dto.getBill(), dto.getBatchBill()));
+                }
+            }
+            
             bundle.generatePaymentDetailsForBillsAndBatchBills();
         }, CommonReports.LAB_REPORTS, "OpdReportController.generateOpdIncomeReportDto", sessionController.getLoggedUser());
     }

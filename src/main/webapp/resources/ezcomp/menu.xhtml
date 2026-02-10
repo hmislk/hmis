@@ -813,7 +813,14 @@
                             actionListener="#{searchController.makeListNull}"
                             rendered="#{webUserController.hasPrivilege('OpdBillItemSearch')}" >
                         </p:menuitem>
-
+                        <p:menuitem 
+                            ajax="false" 
+                            action="#{billPackageController.navigateToSearchOpdPackageBills()}" 
+                            value="OPD Package Bill Search" 
+                            icon="fa fa-box-open"
+                            actionListener="#{searchController.clearBillList()}"
+                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" >
+                        </p:menuitem>
                         <p:menuitem 
                             ajax="false" 
                             action="/lab/inward_search_service?faces-redirect=true" 
