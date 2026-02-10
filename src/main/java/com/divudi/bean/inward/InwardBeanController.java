@@ -1943,7 +1943,7 @@ public class InwardBeanController implements Serializable {
 
         boolean institutionBasedBht = configOptionApplicationController
                 .getBooleanValueByKey("Generate Separate BHT Number Series for Each Institution");
-        Institution currentInstitution = sessionController.getInstitution();
+        Institution currentInstitution = getSessionController().getInstitution();
 
         if (admissionType != null) {
             if (admissionType.isGenerateSeparateAdmissionNumber()) {

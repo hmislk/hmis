@@ -209,6 +209,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 OptionScope.APPLICATION
         ));
 
+        configOptionApplicationController.getBooleanValueByKey(
+                "Generate Separate BHT Number Series for Each Institution", false);
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Generate Separate BHT Number Series for Each Institution",
                 "When enabled, each institution generates its own independent BHT number series with the institution code as a prefix (default false)",
@@ -2049,7 +2051,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void bhtNumberCalculation() {
         if (getCurrent() == null || getCurrent().getAdmissionType() == null) {
-//            JsfUtil.addErrorMessage("Please Set Admission Type DayCase/Admission For this this Admission ");
             return;
         }
 
