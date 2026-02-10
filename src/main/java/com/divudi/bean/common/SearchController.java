@@ -1411,6 +1411,7 @@ public class SearchController implements Serializable {
         printPreview = false;
         showLoggedDepartmentOnly = true;
         settledBillType = null;
+        total = 0.0;
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
@@ -7355,6 +7356,11 @@ public class SearchController implements Serializable {
             sql += " and  ((b.bill.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
+        
+        if (getSearchKeyword().getPhn() != null && !getSearchKeyword().getPhn().trim().equals("")) {
+            sql += " and  ((b.bill.patient.phn) like :phn )";
+            temMap.put("phn", "%" + getSearchKeyword().getPhn().trim().toUpperCase() + "%");
+        }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  ((b.bill.deptId) like :billNo )";
@@ -7915,6 +7921,11 @@ public class SearchController implements Serializable {
             sql += " and  ((b.paidForBillFee.bill.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
+        
+        if (getSearchKeyword().getPhn() != null && !getSearchKeyword().getPhn().trim().equals("")) {
+            sql += " and  ((b.paidForBillFee.bill.patient.phn) like :phn )";
+            temMap.put("phn", "%" + getSearchKeyword().getPhn().trim().toUpperCase() + "%");
+        }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  ((b.paidForBillFee.bill.deptId) like :billNo )";
@@ -7983,6 +7994,11 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             sql += " and  ((b.paidForBillFee.bill.patient.person.name) like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+        
+        if (getSearchKeyword().getPhn() != null && !getSearchKeyword().getPhn().trim().equals("")) {
+            sql += " and  ((b.paidForBillFee.bill.patient.phn) like :phn )";
+            temMap.put("phn", "%" + getSearchKeyword().getPhn().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
