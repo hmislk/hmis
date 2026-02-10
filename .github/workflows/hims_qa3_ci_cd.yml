@@ -1,9 +1,7 @@
 name: HIMS QA-3 Environment CI-CD Workflow
 
 on:
-  push:
-    branches:
-      - hims-qa3
+  workflow_dispatch:
 
 jobs:
   build:
