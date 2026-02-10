@@ -254,131 +254,114 @@
                             </table>
 
                             <p:dataTable
+                                value="#{reportController.billItems}"
                                 id="printPanel"
-                                var="var"
-                                rowIndexVar="n"
+                                var="item"
                                 paginator="true"
-                                paginatorPosition="bottom"
                                 rows="10"
-                                rendered="true"
-                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
-                                rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                                rowsPerPageTemplate="10,25,50,100,500"
                                 styleClass="table-sm">
 
-                                <p:column width= "8em" >
-                                    <f:facet name="header" >
-                                        <h:outputText value="MRNO" />
+                                <p:column headerText="MRNO" style="width: 8em">
+                                    <h:outputText value="#{item.bill.patient.phn}" />
+                                    <f:facet name="footer">
+                                        <h:outputText value="Total:" />
                                     </f:facet>
-                                    <h:outputText value="">
+                                </p:column>
+
+                                <p:column headerText="BHT No." style="width: 8em">
+                                    <h:outputText value="#{item.bill.patientEncounter.bhtNo}" />
+                                </p:column>
+
+                                <p:column headerText="Invoice No." style="width: 8em">
+                                    <h:outputText value="#{item.bill.deptId}" />
+                                </p:column>
+
+                                <p:column headerText="Bill No." style="width: 8em">
+                                    <h:outputText value="#{item.bill.insId}" />
+                                </p:column>
+
+                                <p:column headerText="Invoice Date" style="width: 8em">
+                                    <h:outputText value="#{item.bill.billDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Item Rate" style="width: 8em; text-align: right">
+                                    <h:outputText value="#{item.rate}">
+                                        <f:convertNumber type="currency" currencySymbol="" groupingUsed="true" minFractionDigits="2" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Gross Value" style="width: 8em; text-align: right">
+                                    <h:outputText value="#{item.grossValue}">
+                                        <f:convertNumber type="currency" currencySymbol="" groupingUsed="true" minFractionDigits="2" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Gross Total" style="width: 8em; text-align: right">
+                                    <h:outputText value="#{item.netValue}">
+                                        <f:convertNumber type="currency" currencySymbol="" groupingUsed="true" minFractionDigits="2" />
                                     </h:outputText>
                                     <f:facet name="footer">
-                                        <h:outputText value=""/>
+                                        <h:outputText >
+                                            <f:convertNumber type="currency" currencySymbol="" groupingUsed="true" minFractionDigits="2" />
+                                        </h:outputText>
                                     </f:facet>
                                 </p:column>
 
-                                <p:column width= "8em" >
-                                    <f:facet name="header" >
-                                        <h:outputText value="BHT No." />
-                                    </f:facet>
-                                    <h:outputText value="">
+                                <p:column headerText="Margin Value" style="width: 8em; text-align: right">
+                                    <h:outputText value="#{item.marginValue}">
+                                        <f:convertNumber type="currency" currencySymbol="" groupingUsed="true" minFractionDigits="2" />
                                     </h:outputText>
                                 </p:column>
 
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Invoice No." />
+                                <p:column headerText="Margin Total" style="width: 8em; text-align: right">
+                                    <h:outputText >
+                                        <f:convertNumber type="currency" currencySymbol="" groupingUsed="true" minFractionDigits="2" />
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText >
+                                            <f:convertNumber type="currency" currencySymbol="" groupingUsed="true" minFractionDigits="2" />
+                                        </h:outputText>
                                     </f:facet>
-                                    <h:outputText value=""> 
+                                </p:column>
+
+                                <p:column headerText="Discount Value" style="width: 8em; text-align: right">
+                                    <h:outputText value="#{item.discount}">
+                                        <f:convertNumber type="currency" currencySymbol="" groupingUsed="true" minFractionDigits="2" />
                                     </h:outputText>
                                 </p:column>
 
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Bill No." />
+                                <p:column headerText="Discount Total" style="width: 8em; text-align: right">
+                                    <h:outputText value="#{item.discount}">
+                                        <f:convertNumber type="currency" currencySymbol="" groupingUsed="true" minFractionDigits="2" />
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{reportController.totalDiscount}">
+                                            <f:convertNumber type="currency" currencySymbol="" groupingUsed="true" minFractionDigits="2" />
+                                        </h:outputText>
                                     </f:facet>
-                                    <h:outputText value=""> 
+                                </p:column>
+
+                                <p:column headerText="Net Value" style="width: 8em; text-align: right">
+                                    <h:outputText value="#{item.netValue}">
+                                        <f:convertNumber type="currency" currencySymbol="" groupingUsed="true" minFractionDigits="2" />
                                     </h:outputText>
                                 </p:column>
 
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Invoice Date" />
-                                    </f:facet>
-                                    <h:outputText value=""> 
+                                <p:column headerText="Net Total" style="width: 8em; text-align: right">
+                                    <h:outputText value="#{item.netValue}">
+                                        <f:convertNumber type="currency" currencySymbol="" groupingUsed="true" minFractionDigits="2" />
                                     </h:outputText>
-                                </p:column>
-
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Item Rate" />
+                                    <f:facet name="footer">
+                                        <h:outputText >
+                                            <f:convertNumber type="currency" currencySymbol="" groupingUsed="true" minFractionDigits="2" />
+                                        </h:outputText>
                                     </f:facet>
-                                    <h:outputText value=""> 
-                                    </h:outputText>
-                                </p:column>
-
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Gross Value" />
-                                    </f:facet>
-                                    <h:outputText value=""> 
-                                    </h:outputText>
-                                </p:column>
-
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Gross Total" />
-                                    </f:facet>
-                                    <h:outputText value=""> 
-                                    </h:outputText>
-                                </p:column>
-
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Margin Value" />
-                                    </f:facet>
-                                    <h:outputText value=""> 
-                                    </h:outputText>
-                                </p:column>
-
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Margin Total" />
-                                    </f:facet>
-                                    <h:outputText value=""> 
-                                    </h:outputText>
-                                </p:column>
-
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Discount Value" />
-                                    </f:facet>
-                                    <h:outputText value=""> 
-                                    </h:outputText>
-                                </p:column>
-
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Discount Total" />
-                                    </f:facet>
-                                    <h:outputText value=""> 
-                                    </h:outputText>
-                                </p:column>
-
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Net Value" />
-                                    </f:facet>
-                                    <h:outputText value=""> 
-                                    </h:outputText>
-                                </p:column>
-
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Net Total" />
-                                    </f:facet>
-                                    <h:outputText value=""> 
-                                    </h:outputText>
                                 </p:column>
 
                             </p:dataTable>
