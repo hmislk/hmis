@@ -3,15 +3,17 @@ name: write-wiki
 description: >
   Create user documentation for the HMIS wiki following writing guidelines. Use when
   creating documentation for end users (pharmacy staff, nurses, doctors, administrators).
-  Produces documentation in wiki-docs/ directory ready for publishing.
+  Creates documentation directly in the sibling ../hmis.wiki directory.
 disable-model-invocation: true
-allowed-tools: Read, Write, Glob, Grep
+allowed-tools: Read, Write, Glob, Grep, Bash
 argument-hint: "[module/Feature-Name]"
 ---
 
 # Write Wiki Documentation
 
-Create end-user documentation in `wiki-docs/` following the project's wiki writing guidelines.
+Create end-user documentation directly in the sibling `../hmis.wiki` directory following the project's wiki writing guidelines.
+
+**IMPORTANT**: Wiki files live ONLY in the sibling `../hmis.wiki` directory. Do NOT create wiki markdown files inside the main project repository - this causes git submodule issues.
 
 ## Arguments
 
@@ -54,6 +56,11 @@ Every wiki page must include these sections:
 
 ## File Location
 
-Create files at: `wiki-docs/$0.md`
+Create files at: `../hmis.wiki/$0.md`
 
-After creating, suggest using `/publish-wiki` to publish to the GitHub Wiki.
+Ensure the wiki repo exists first:
+```bash
+test -d "../hmis.wiki" || (cd .. && git clone https://github.com/hmislk/hmis.wiki.git && cd hmis)
+```
+
+After creating, suggest using `/publish-wiki` to commit and push to the GitHub Wiki.
