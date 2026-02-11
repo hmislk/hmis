@@ -81,6 +81,7 @@ public class CollectingCentrePaymentController implements Serializable {
 
     private double totalCCReceiveAmount = 0.0;
     private double payingTotalCCAmount = 0.0;
+    private double periodPaidAmount = 0.0;
     private PaymentMethod paymentMethod;
 
     private boolean printPriview;
@@ -97,8 +98,8 @@ public class CollectingCentrePaymentController implements Serializable {
     private String comment;
 
     private List<AgentHistory> allHistorys;
-
 // </editor-fold>
+
 // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToSearchCCPaymentBills() {
         makeNull();
@@ -123,8 +124,8 @@ public class CollectingCentrePaymentController implements Serializable {
         makeNull();
         return "/collecting_centre/sent_payment_to_collecting_centre?faces-redirect=true";
     }
-
 // </editor-fold>
+
 // <editor-fold defaultstate="collapsed" desc="Functions">
     public CollectingCentrePaymentController() {
     }
@@ -140,6 +141,7 @@ public class CollectingCentrePaymentController implements Serializable {
         currentCollectingCentre = null;
         totalCCReceiveAmount = 0.0;
         payingTotalCCAmount = 0.0;
+        periodPaidAmount = 0.0;
         paymentMethod = null;
         printPriview = false;
         startingBalanseInCC = 0.0;
@@ -167,7 +169,6 @@ public class CollectingCentrePaymentController implements Serializable {
         //double paymentpending = getAllAgentHistory(currentCollectingCentre, false);
         //System.out.println("paymentpending = " + paymentpending);
 
-
         findPendingCCBills();
 
         allHistorys = getAllAgentHistory(currentCollectingCentre);
@@ -181,12 +182,16 @@ public class CollectingCentrePaymentController implements Serializable {
         if (endingHistory != null) {
             finalEndingBalanseInCC = endingHistory.getBalanceAfterTransaction();
         }
+        
+        periodPaidAmount = getPaidAgentPaymentsDuringThisPeriod(currentCollectingCentre);
+        
+        System.out.println("periodPaidAmount = " + periodPaidAmount);
 
-        calculaPayingBalanceAcodingToCCBalabce(startingHistory, endingHistory);
+        calculaPayingBalanceAcodingToCCBalabce(startingHistory, endingHistory,periodPaidAmount);
 
         calculateTotalOfPaymentReceive();
     }
-
+    
     public List<AgentHistory> getAllHistoryFromPaymentBill(Bill ccPaymentBill) {
         List<HistoryType> types = new ArrayList<>();
         types.add(HistoryType.CollectingCentreBilling);
@@ -221,10 +226,15 @@ public class CollectingCentrePaymentController implements Serializable {
         return listCount;
     }
 
-    public double calculaPayingBalanceAcodingToCCBalabce(AgentHistory startingHistory, AgentHistory endingHistory) {
+    public double calculaPayingBalanceAcodingToCCBalabce(AgentHistory startingHistory, AgentHistory endingHistory, double paidCCAmount) {
+        System.out.println("------------- calculaPayingBalanceAcodingToCCBalabce Start -------------");
         double payingBalance = 0.0;
         if (startingHistory != null && endingHistory != null) {
-            payingBalance = endingHistory.getBalanceAfterTransaction() - startingHistory.getBalanceBeforeTransaction();
+            System.out.println("Ending Balance = " + endingHistory.getBalanceAfterTransaction());
+            System.out.println("Starting Balance = " + startingHistory.getBalanceBeforeTransaction());
+            System.out.println("Paid CC Amount = " + paidCCAmount);
+            payingBalance = endingHistory.getBalanceAfterTransaction() - (startingHistory.getBalanceBeforeTransaction() - paidCCAmount);
+            System.out.println("payingBalance (Calculated) = " + payingBalance);
         }
 
         if (payingBalance > 0.0) {
@@ -232,6 +242,8 @@ public class CollectingCentrePaymentController implements Serializable {
         } else {
             payingBalanceAcodingToCCBalabce = 0.0;
         }
+        System.out.println("payingBalanceAcodingToCCBalabce = " + payingBalanceAcodingToCCBalabce);
+        System.out.println("------------- calculaPayingBalanceAcodingToCCBalabce End ------------- ");
         return payingBalanceAcodingToCCBalabce;
     }
 
@@ -266,6 +278,35 @@ public class CollectingCentrePaymentController implements Serializable {
         return h;
 
     }
+    
+    public double getPaidAgentPaymentsDuringThisPeriod(Institution collectingCentre) {
+        System.out.println(" -------------------------- Start -  getAgentPaymentHistory --------------------------"  );
+        List<HistoryType> types = new ArrayList<>();
+        types.add(HistoryType.RepaymentToCollectingCentre);
+
+        String jpql = "select sum(ah.paidAmountToAgency) "
+                + " from AgentHistory ah "
+                + " where ah.retired=:ret"
+                + " and ah.agency =:cc "
+                + " and ah.historyType in :types "
+                + " and ah.bill.createdAt between :fromDate and :toDate "
+                + " and ah.bill.retired = false "
+                + " and ah.bill.cancelled = false "
+                + " order by ah.bill.createdAt asc ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("cc", collectingCentre);
+        m.put("types", types);
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
+
+        double total = agentHistoryFacade.findDoubleByJpql(jpql, m, TemporalType.TIMESTAMP);
+        
+        
+        System.out.println(" -------------------------- End -  getAgentPaymentHistory --------------------------"  );
+        return total;
+    }
 
     public List<AgentHistory> getAllAgentHistory(Institution collectingCentre) {
         List<HistoryType> types = new ArrayList<>();
@@ -297,7 +338,7 @@ public class CollectingCentrePaymentController implements Serializable {
         List<AgentHistory> h = agentHistoryFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         return h;
     }
-
+    
     public double getAllAgentHistory(Institution collectingCentre, boolean paymentDone) {
         List<HistoryType> types = new ArrayList<>();
         types.add(HistoryType.CollectingCentreBilling);
@@ -368,7 +409,7 @@ public class CollectingCentrePaymentController implements Serializable {
         String jpql;
         Map temMap = new HashMap();
 
-        jpql = "select new com.divudi.core.light.common.BillLight(bill.id, bill.deptId, bill.referenceNumber, bill.createdAt, bill.patient.person.name,  bill.totalCenterFee, bill.totalHospitalFee ) "
+        jpql = "select new com.divudi.core.light.common.BillLight(bill.id, bill.deptId, bill.referenceNumber, bill.createdAt, bill.patient.person.title, bill.patient.person.name,  bill.totalCenterFee, bill.totalHospitalFee ) "
                 + " from Bill bill "
                 + " where bill.collectingCentre=:cc "
                 + " and bill.createdAt between :fromDate and :toDate "
@@ -390,7 +431,7 @@ public class CollectingCentrePaymentController implements Serializable {
             if (bl.getReferenceNumber() == null || bl.getReferenceNumber().isEmpty()) {
 
                 Map map = new HashMap();
-                String newJpql = "select new com.divudi.core.light.common.BillLight(bill.id, bill.deptId, bill.referenceNumber, bill.createdAt, bill.patient.person.name,  bill.totalCenterFee, bill.totalHospitalFee ) "
+                String newJpql = "select new com.divudi.core.light.common.BillLight(bill.id, bill.deptId, bill.referenceNumber, bill.createdAt, bill.patient.person.title, bill.patient.person.name,  bill.totalCenterFee, bill.totalHospitalFee ) "
                         + " from Bill bill "
                         + " where bill.collectingCentre=:cc "
                         + " and bill.cancelledBill.id=:canBillId"
@@ -685,7 +726,7 @@ public class CollectingCentrePaymentController implements Serializable {
                 Cell dateCell = row.createCell(2);
                 dateCell.setCellValue(sdf.format(bl.getBillDate()));
 
-                row.createCell(3).setCellValue(defaultIfNullOrEmpty(bl.getPatientName(), ""));
+                row.createCell(3).setCellValue(defaultIfNullOrEmpty(bl.getPatientNameWithTitle(), ""));
 
                 // Numeric values with formatting
                 Cell hospitalCell = row.createCell(4);
@@ -847,8 +888,8 @@ public class CollectingCentrePaymentController implements Serializable {
 
         return ccAgentPaymentCancelBill;
     }
-
     // </editor-fold>
+
 // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public Date getFromDate() {
         if (fromDate == null) {
@@ -1016,5 +1057,13 @@ public class CollectingCentrePaymentController implements Serializable {
         this.allHistorys = allHistorys;
     }
 
+    public double getPeriodPaidAmount() {
+        return periodPaidAmount;
+    }
+
+    public void setPeriodPaidAmount(double periodPaidAmount) {
+        this.periodPaidAmount = periodPaidAmount;
+    }
 // </editor-fold>
+
 }
