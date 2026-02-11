@@ -166,8 +166,6 @@ public class CollectingCentrePaymentController implements Serializable {
             setCurrentCollectingCentre(null);
             return;
         }
-        //double paymentpending = getAllAgentHistory(currentCollectingCentre, false);
-        //System.out.println("paymentpending = " + paymentpending);
 
         findPendingCCBills();
 
@@ -184,8 +182,6 @@ public class CollectingCentrePaymentController implements Serializable {
         }
         
         periodPaidAmount = getPaidAgentPaymentsDuringThisPeriod(currentCollectingCentre);
-        
-        System.out.println("periodPaidAmount = " + periodPaidAmount);
 
         calculaPayingBalanceAcodingToCCBalabce(startingHistory, endingHistory,periodPaidAmount);
 
@@ -227,14 +223,9 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
     public double calculaPayingBalanceAcodingToCCBalabce(AgentHistory startingHistory, AgentHistory endingHistory, double paidCCAmount) {
-        System.out.println("------------- calculaPayingBalanceAcodingToCCBalabce Start -------------");
         double payingBalance = 0.0;
         if (startingHistory != null && endingHistory != null) {
-            System.out.println("Ending Balance = " + endingHistory.getBalanceAfterTransaction());
-            System.out.println("Starting Balance = " + startingHistory.getBalanceBeforeTransaction());
-            System.out.println("Paid CC Amount = " + paidCCAmount);
             payingBalance = endingHistory.getBalanceAfterTransaction() - (startingHistory.getBalanceBeforeTransaction() - paidCCAmount);
-            System.out.println("payingBalance (Calculated) = " + payingBalance);
         }
 
         if (payingBalance > 0.0) {
@@ -242,8 +233,6 @@ public class CollectingCentrePaymentController implements Serializable {
         } else {
             payingBalanceAcodingToCCBalabce = 0.0;
         }
-        System.out.println("payingBalanceAcodingToCCBalabce = " + payingBalanceAcodingToCCBalabce);
-        System.out.println("------------- calculaPayingBalanceAcodingToCCBalabce End ------------- ");
         return payingBalanceAcodingToCCBalabce;
     }
 
@@ -280,7 +269,6 @@ public class CollectingCentrePaymentController implements Serializable {
     }
     
     public double getPaidAgentPaymentsDuringThisPeriod(Institution collectingCentre) {
-        System.out.println(" -------------------------- Start -  getAgentPaymentHistory --------------------------"  );
         List<HistoryType> types = new ArrayList<>();
         types.add(HistoryType.RepaymentToCollectingCentre);
 
@@ -303,8 +291,6 @@ public class CollectingCentrePaymentController implements Serializable {
 
         double total = agentHistoryFacade.findDoubleByJpql(jpql, m, TemporalType.TIMESTAMP);
         
-        
-        System.out.println(" -------------------------- End -  getAgentPaymentHistory --------------------------"  );
         return total;
     }
 
