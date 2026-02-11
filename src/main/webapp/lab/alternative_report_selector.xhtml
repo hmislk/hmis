@@ -42,8 +42,10 @@
                         <div class="col-3">
                             <p:selectOneMenu 
                                 class="mx-3 w-50"
-                                value="#{patientReportController.currentPatientSampleComponant}">
-                                <f:selectItem itemLabel="Select Sample"/>
+                                value="#{patientReportController.currentPatientSampleComponant}"
+                                required="true">
+                                <f:selectItem itemLabel="Select Sample"
+                                              noSelectionOption="true"/>
                                 <f:selectItems 
                                     value="#{patientInvestigationController.patientSampleComponentsByInvestigation}" 
                                     var="psc"

@@ -3495,10 +3495,10 @@ public class PatientReportController implements Serializable {
         PatientInvestigation pi = pr.getPatientInvestigation();
 
         m.put("investigationID", pi.getId());
-        m.put("ApproveStatus", pi.getApproved());
-        m.put("ApprovedAt", pi.getApproveAt());
-        if (pi.getApproveUser() != null) {
-            m.put("ApprovingUser", pi.getApproveUser().getId());
+        m.put("Report-ApproveStatus", pr.getApproved());
+        m.put("Report-ApprovedAt", pr.getApproveAt());
+        if (pr.getApproveUser() != null) {
+            m.put("Report-ApproveUser", pr.getApproveUser().getId());
         } 
         m.put("CollectedAt", pi.getSampleCollectedAt());
         m.put("DataEntered", pr.getDataEntered());
