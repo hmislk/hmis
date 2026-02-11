@@ -209,7 +209,7 @@ public class PatientReportController implements Serializable {
         
         if (patientReport != null && (patientReport.getApproved() == null || !patientReport.getApproved() )) {
             initialInvestigation = new HashMap<>(20);
-            patientInvestigationToAuditMap(initialInvestigation,currentPatientReport);
+            patientInvestigationToAuditMap(initialInvestigation,patientReport);
         }
         
         if (null == patientReport.getReportType()) {
@@ -3093,6 +3093,8 @@ public class PatientReportController implements Serializable {
         PatientReport newlyCreatedReport = null;
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
             newlyCreatedReport = createNewMicrobiologyReport(pi, ix);
+        } else if (ix.getReportType() == InvestigationReportType.HtmlTemplate) {
+            newlyCreatedReport = createNewPatientTemplateReport(pi, ix);
         } else {
             newlyCreatedReport = createNewPatientReport(pi, ix);
         }
@@ -3517,7 +3519,10 @@ public class PatientReportController implements Serializable {
             Map<String, Object> Items = new HashMap<>();
             
             for (PatientReportItemValue prv : pr.getPatientReportItemValues()) {
-                Items.put(prv.getInvestigationItem().getName(), prv.getValue());
+                InvestigationItemType itemType = prv.getInvestigationItem().getIxItemType();
+                if (itemType == InvestigationItemType.DynamicLabel || itemType == InvestigationItemType.Value || itemType == InvestigationItemType.Flag || itemType == InvestigationItemType.WorningFlag || itemType == InvestigationItemType.Calculation) {
+                    Items.put(prv.getInvestigationItem().getName(), prv.getValue());
+                }    
             }
             m.put("Result", Items);
         }
