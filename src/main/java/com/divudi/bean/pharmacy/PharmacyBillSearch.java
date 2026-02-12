@@ -1722,7 +1722,10 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     private void calculateCancelledRetailSaleFinancials(CancelledBill cancelledBill, Bill originalBill) {
-        if (originalBill.getBillFinanceDetails() != null) {
+        // Use getId() to check for a persisted BillFinanceDetails.
+        // Bill.getBillFinanceDetails() lazily creates a new instance, so a null
+        // check on the getter would always be true and would mutate the original bill.
+        if (originalBill.getBillFinanceDetails() != null && originalBill.getBillFinanceDetails().getId() != null) {
             BillFinanceDetails cancelledBfd = new BillFinanceDetails();
             cancelledBfd.invertValue(originalBill.getBillFinanceDetails());
             cancelledBfd.setBill(cancelledBill);
@@ -1733,7 +1736,10 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     private void calculateCancelledRetailSaleBillItemFinancials(BillItem cancelledItem, BillItem originalItem) {
-        if (originalItem.getBillItemFinanceDetails() != null) {
+        // Use getId() to check for a persisted BillItemFinanceDetails.
+        // BillItem.getBillItemFinanceDetails() lazily creates a new instance, so a null
+        // check on the getter would always be true and would mutate the original item.
+        if (originalItem.getBillItemFinanceDetails() != null && originalItem.getBillItemFinanceDetails().getId() != null) {
             BillItemFinanceDetails cancelledBifd = new BillItemFinanceDetails();
             cancelledBifd.invertValue(originalItem.getBillItemFinanceDetails());
             cancelledBifd.setBillItem(cancelledItem);
