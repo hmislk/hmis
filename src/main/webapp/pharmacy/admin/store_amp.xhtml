@@ -278,20 +278,27 @@
                                                                 class="w-100"
                                                                 required="true"
                                                                 requiredMessage="VMP selection is required">
-                                                    <p:ajax event="itemSelect" update="dosageInfo"/>
+                                                    <p:ajax event="itemSelect" update="dosageInfo txtShortExpiary"/>
                                                 </p:autoComplete>
                                             </div>
                                             <div class="col-md-6">
                                                 <h:panelGroup id="dosageInfo">
                                                     <p:outputLabel value="Dosage Form"/>
-                                                    <p:outputLabel
-                                                        value="#{storeAmpController.current.vmp.dosageForm.name}"
-                                                        class="form-control-plaintext"
-                                                        rendered="#{storeAmpController.current.vmp ne null}"/>
-                                                    <p:outputLabel
-                                                        value="Not specified"
-                                                        class="form-control-plaintext text-muted"
-                                                        rendered="#{storeAmpController.current.vmp eq null}"/>
+                                                    <p:selectOneMenu
+                                                        id="selDosageForm"
+                                                        value="#{storeAmpController.current.dosageForm}"
+                                                        styleClass="form-control-plaintext"
+                                                        filter="true"
+                                                        required="true"
+                                                        requiredMessage="Dosage Form is required"
+                                                        disabled="#{!storeAmpController.editable}">
+                                                        <f:selectItem itemLabel="-- Select Dosage Form --" itemValue="#{null}"/>
+                                                        <f:selectItems
+                                                            value="#{dosageFormController.items}"
+                                                            var="df"
+                                                            itemValue="#{df}"
+                                                            itemLabel="#{df.name}"/>
+                                                    </p:selectOneMenu>
                                                 </h:panelGroup>
                                             </div>
                                         </div>
