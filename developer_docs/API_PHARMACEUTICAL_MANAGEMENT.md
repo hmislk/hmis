@@ -363,7 +363,7 @@ All responses follow this standard format:
 - `id`, `name`, `code`, `descreption`, `retired`, `inactive`, `vtmId`, `vtmName`, `dosageFormId`, `dosageFormName`
 
 ### AMP Response
-- `id`, `name`, `code`, `barcode`, `inactive`, `vmpId`, `vmpName`, `categoryId`, `categoryName`
+- `id`, `name`, `code`, `barcode`, `inactive`, `vmpId`, `vmpName`, `categoryId`, `categoryName`, `dosageFormId`, `dosageFormName`
 
 ### VMPP Response
 - `id`, `name`, `code`, `retired`, `inactive`, `vmpId`, `vmpName`

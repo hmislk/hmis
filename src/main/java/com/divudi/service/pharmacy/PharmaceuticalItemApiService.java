@@ -190,8 +190,10 @@ public class PharmaceuticalItemApiService implements Serializable {
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT new com.divudi.core.data.dto.AmpDto(")
                 .append("i.id, i.name, i.code, i.barcode, i.inactive, ")
-                .append("i.vmp.id, i.vmp.name, i.category.id, i.category.name) ")
+                .append("i.vmp.id, i.vmp.name, i.category.id, i.category.name, ")
+                .append("df.id, df.name) ")
                 .append("FROM Amp i ")
+                .append("LEFT JOIN i.dosageForm df ")
                 .append("WHERE i.retired = false ")
                 .append("AND (upper(i.name) LIKE :query OR upper(i.code) LIKE :query) ");
 
@@ -317,9 +319,12 @@ public class PharmaceuticalItemApiService implements Serializable {
         String vmpName = item.getVmp() != null ? item.getVmp().getName() : null;
         Long categoryId = item.getCategory() != null ? item.getCategory().getId() : null;
         String categoryName = item.getCategory() != null ? item.getCategory().getName() : null;
+        Long dosageFormId = item.getDosageForm() != null ? item.getDosageForm().getId() : null;
+        String dosageFormName = item.getDosageForm() != null ? item.getDosageForm().getName() : null;
         return new AmpDto(item.getId(), item.getName(), item.getCode(),
                 item.getBarcode(), item.isInactive(),
-                vmpId, vmpName, categoryId, categoryName);
+                vmpId, vmpName, categoryId, categoryName,
+                dosageFormId, dosageFormName);
     }
 
     private VmppDto findVmppById(Long id) throws Exception {
@@ -440,9 +445,12 @@ public class PharmaceuticalItemApiService implements Serializable {
         String vmpName = item.getVmp() != null ? item.getVmp().getName() : null;
         Long categoryId = item.getCategory() != null ? item.getCategory().getId() : null;
         String categoryName = item.getCategory() != null ? item.getCategory().getName() : null;
+        Long dosageFormId = item.getDosageForm() != null ? item.getDosageForm().getId() : null;
+        String dosageFormName = item.getDosageForm() != null ? item.getDosageForm().getName() : null;
         return new AmpDto(item.getId(), item.getName(), item.getCode(),
                 item.getBarcode(), item.isInactive(),
-                vmpId, vmpName, categoryId, categoryName);
+                vmpId, vmpName, categoryId, categoryName,
+                dosageFormId, dosageFormName);
     }
 
     private VmppDto createVmpp(VmppRequestDTO request, WebUser user) throws Exception {
@@ -596,9 +604,12 @@ public class PharmaceuticalItemApiService implements Serializable {
         String vmpName = item.getVmp() != null ? item.getVmp().getName() : null;
         Long categoryId = item.getCategory() != null ? item.getCategory().getId() : null;
         String categoryName = item.getCategory() != null ? item.getCategory().getName() : null;
+        Long dosageFormId = item.getDosageForm() != null ? item.getDosageForm().getId() : null;
+        String dosageFormName = item.getDosageForm() != null ? item.getDosageForm().getName() : null;
         return new AmpDto(item.getId(), item.getName(), item.getCode(),
                 item.getBarcode(), item.isInactive(),
-                vmpId, vmpName, categoryId, categoryName);
+                vmpId, vmpName, categoryId, categoryName,
+                dosageFormId, dosageFormName);
     }
 
     private VmppDto updateVmpp(Long id, VmppRequestDTO request, WebUser user) throws Exception {
