@@ -1721,6 +1721,27 @@ public class PharmacyBillSearch implements Serializable {
         }
     }
 
+    private void calculateCancelledRetailSaleFinancials(CancelledBill cancelledBill, Bill originalBill) {
+        if (originalBill.getBillFinanceDetails() != null) {
+            BillFinanceDetails cancelledBfd = new BillFinanceDetails();
+            cancelledBfd.invertValue(originalBill.getBillFinanceDetails());
+            cancelledBfd.setBill(cancelledBill);
+            cancelledBfd.setCreatedAt(new Date());
+            cancelledBfd.setCreatedBy(getSessionController().getLoggedUser());
+            cancelledBill.setBillFinanceDetails(cancelledBfd);
+        }
+    }
+
+    private void calculateCancelledRetailSaleBillItemFinancials(BillItem cancelledItem, BillItem originalItem) {
+        if (originalItem.getBillItemFinanceDetails() != null) {
+            BillItemFinanceDetails cancelledBifd = new BillItemFinanceDetails();
+            cancelledBifd.invertValue(originalItem.getBillItemFinanceDetails());
+            cancelledBifd.setBillItem(cancelledItem);
+            cancelledBifd.setCreatedAt(new Date());
+            cancelledItem.setBillItemFinanceDetails(cancelledBifd);
+        }
+    }
+
     private RefundBill pharmacyCreateRefundCancelBill() {
         RefundBill cb = new RefundBill();
         cb.invertQty();
@@ -2144,6 +2165,9 @@ public class PharmacyBillSearch implements Serializable {
             newlyCreatedReturningItem.copy(originalBillItem);
             newlyCreatedReturningItem.setBill(newlyCreatedCancellingBill);
             newlyCreatedReturningItem.invertValue(originalBillItem);
+
+            // Invert BillItemFinanceDetails for retail sale cancellation
+            calculateCancelledRetailSaleBillItemFinancials(newlyCreatedReturningItem, originalBillItem);
 
             if (newlyCreatedCancellingBill.getBillType() == BillType.PharmacyGrnBill || newlyCreatedCancellingBill.getBillType() == BillType.PharmacyGrnReturn) {
                 newlyCreatedReturningItem.setReferanceBillItem(originalBillItem.getReferanceBillItem());
@@ -2576,6 +2600,10 @@ public class PharmacyBillSearch implements Serializable {
             List<Payment> newlyCreatedCancellationPayments = pharmacySaleController.createPaymentForRetailSaleCancellation(newlyCreatedRetailSaleCancellationBill, paymentMethod);
             drawerController.updateDrawerForOuts(newlyCreatedCancellationPayments);
             pharmacyCancelBillItems(newlyCreatedRetailSaleCancellationBill, newlyCreatedCancellationPayments);
+
+            // Calculate and set BillFinanceDetails for retail sale cancellation
+            calculateCancelledRetailSaleFinancials(newlyCreatedRetailSaleCancellationBill, getBill());
+            getBillFacade().edit(newlyCreatedRetailSaleCancellationBill);
 
             getBill().setCancelled(true);
             getBill().setCancelledBill(newlyCreatedRetailSaleCancellationBill);
