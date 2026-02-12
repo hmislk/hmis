@@ -31,11 +31,11 @@
                     <p:commandButton value="Mark Migration as Complete"
                                      action="#{dataAdministrationController.markMigrationComplete()}"
                                      ajax="false"
-                                     styleClass="btn btn-success me-2"/>
+                                     styleClass="ui-button-success me-2"/>
                     <p:commandButton value="Mark as Not Necessary"
                                      action="#{dataAdministrationController.markMigrationNotNecessary()}"
                                      ajax="false"
-                                     styleClass="btn btn-secondary"/>
+                                     styleClass="ui-button-secondary"/>
                 </h:form>
             </div>
 
@@ -51,7 +51,7 @@
             <h:panelGroup rendered="#{not webUserController.hasPrivilege('Admin')}">
                 <div class="container mt-5">
                     <div class="alert alert-danger text-center" role="alert">
-                        <h4 class="alert-heading">Access Denied</h4>
+                        <h:outputText value="Access Denied" styleClass="alert-heading h4"/>
                         <p>This page is restricted to administrators. No database migration is currently pending.</p>
                     </div>
                 </div>
