@@ -187,6 +187,7 @@
                                 <h:outputText value="#{row.itemId}"  />
                                 <h:outputText value="#{row.itemName}"  />
                                 <p:commandLink
+                                    ajax="false"
                                     class="mx-2"
                                     rendered="#{row.itemId ne null}"
                                     action="#{searchController.navigateToOpdBillItemListFromDto(row)}">
