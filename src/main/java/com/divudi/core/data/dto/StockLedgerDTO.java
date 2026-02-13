@@ -64,6 +64,8 @@ public class StockLedgerDTO implements Serializable {
     /**
      * Constructor for byBatch report type.
      * Includes batch-specific fields (batchNo, dateOfExpire, batchCostRate).
+     * Note: transThisIsStockIn/Out are derived from qty+freeQty since they are
+     * @Transient on PharmaceuticalBillItem and cannot be used in JPQL.
      */
     public StockLedgerDTO(
             Long id,
@@ -73,8 +75,6 @@ public class StockLedgerDTO implements Serializable {
             String itemCode,
             String itemName,
             String measurementUnitName,
-            Boolean transThisIsStockIn,
-            Boolean transThisIsStockOut,
             String billDeptId,
             Long billId,
             BillTypeAtomic billTypeAtomic,
@@ -121,8 +121,6 @@ public class StockLedgerDTO implements Serializable {
         this.itemCode = itemCode;
         this.itemName = itemName;
         this.measurementUnitName = measurementUnitName;
-        this.transThisIsStockIn = transThisIsStockIn;
-        this.transThisIsStockOut = transThisIsStockOut;
         this.billDeptId = billDeptId;
         this.billId = billId;
         this.documentTypeLabel = billTypeAtomic != null ? billTypeAtomic.getLabel()
@@ -135,6 +133,10 @@ public class StockLedgerDTO implements Serializable {
         this.freeQty = freeQty;
         this.purchaseRate = purchaseRate;
         this.retailRate = retailRate;
+        // Derive transThisIsStockIn/Out from qty+freeQty (matches PharmaceuticalBillItem logic)
+        double totalQty = (qty != null ? qty : 0.0) + (freeQty != null ? freeQty : 0.0);
+        this.transThisIsStockIn = totalQty > 0;
+        this.transThisIsStockOut = totalQty < 0;
         this.stockQty = stockQty;
         this.instituionBatchQty = instituionBatchQty;
         this.totalBatchQty = totalBatchQty;
@@ -167,6 +169,8 @@ public class StockLedgerDTO implements Serializable {
     /**
      * Constructor for byItem report type.
      * Excludes batch-specific fields (batchNo, dateOfExpire, batchCostRate).
+     * Note: transThisIsStockIn/Out are derived from qty+freeQty since they are
+     * @Transient on PharmaceuticalBillItem and cannot be used in JPQL.
      */
     public StockLedgerDTO(
             Long id,
@@ -176,8 +180,6 @@ public class StockLedgerDTO implements Serializable {
             String itemCode,
             String itemName,
             String measurementUnitName,
-            Boolean transThisIsStockIn,
-            Boolean transThisIsStockOut,
             String billDeptId,
             Long billId,
             BillTypeAtomic billTypeAtomic,
@@ -221,8 +223,6 @@ public class StockLedgerDTO implements Serializable {
         this.itemCode = itemCode;
         this.itemName = itemName;
         this.measurementUnitName = measurementUnitName;
-        this.transThisIsStockIn = transThisIsStockIn;
-        this.transThisIsStockOut = transThisIsStockOut;
         this.billDeptId = billDeptId;
         this.billId = billId;
         this.documentTypeLabel = billTypeAtomic != null ? billTypeAtomic.getLabel()
@@ -235,6 +235,10 @@ public class StockLedgerDTO implements Serializable {
         this.freeQty = freeQty;
         this.purchaseRate = purchaseRate;
         this.retailRate = retailRate;
+        // Derive transThisIsStockIn/Out from qty+freeQty (matches PharmaceuticalBillItem logic)
+        double totalQty = (qty != null ? qty : 0.0) + (freeQty != null ? freeQty : 0.0);
+        this.transThisIsStockIn = totalQty > 0;
+        this.transThisIsStockOut = totalQty < 0;
         this.stockQty = stockQty;
         this.instituionBatchQty = instituionBatchQty;
         this.totalBatchQty = totalBatchQty;

@@ -4966,8 +4966,6 @@ public class PharmacyReportController implements Serializable {
             jpql.append(" COALESCE(amp.code, itm.code),");
             jpql.append(" itm.name,");
             jpql.append(" uom.name,");
-            jpql.append(" pbi.transThisIsStockIn,");
-            jpql.append(" pbi.transThisIsStockOut,");
             jpql.append(" b.deptId,");
             jpql.append(" b.id,");
             jpql.append(" b.billTypeAtomic,");
