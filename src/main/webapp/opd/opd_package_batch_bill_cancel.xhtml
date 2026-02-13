@@ -264,10 +264,19 @@
                                                 </h:panelGroup>
                                                 <h:panelGroup
                                                     class="row my-1 w-100"
-                                                    layout="block" 
-                                                    id="multiplePaymentMethods"  rendered="#{billPackageController.paymentMethod eq 'MultiplePaymentMethods'}" 
+                                                    layout="block"
+                                                    id="multiplePaymentMethods"  rendered="#{billPackageController.paymentMethod eq 'MultiplePaymentMethods'}"
                                                     >
-                                                    <pa:multiple_payment_methods controller="#{billPackageController}" paymentMethods="#{configOptionController.paymentMethodsUnderMultipleForOpdBilling}" class="w-100"/>
+                                                    <pa:multiple_payment_methods_view
+                                                        controller="#{billPackageController}"
+                                                        paymentMethods="#{configOptionController.paymentMethodsUnderMultipleForOpdBilling}"
+                                                        class="w-100"
+                                                        rendered="#{billPackageController.isInBatchCancellationDisplayMode()}"/>
+                                                    <pa:multiple_payment_methods
+                                                        controller="#{billPackageController}"
+                                                        paymentMethods="#{configOptionController.paymentMethodsUnderMultipleForOpdBilling}"
+                                                        class="w-100"
+                                                        rendered="#{not billPackageController.isInBatchCancellationDisplayMode()}"/>
 
                                                 </h:panelGroup>
                                                 </fieldset>

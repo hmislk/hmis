@@ -1430,9 +1430,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             return;
         }
 
-        // If payment method matches the original, don't reset - preserve the loaded data
-        if (paymentMethod == originalCancellationPaymentMethod) {
-            // User is keeping the same payment method - keep the original data
+        // If payment method matches the original, reinitialize from original payments
+        // to restore data that may have been cleared by a previous method change
+        if (paymentMethod == originalCancellationPaymentMethod && batchBill != null) {
+            List<Payment> batchBillPayments = billService.fetchBillPayments(batchBill);
+            if (batchBillPayments != null && !batchBillPayments.isEmpty()) {
+                paymentMethodData = new PaymentMethodData();
+                initializeCancellationPaymentFromOriginalPayments(batchBillPayments, batchBill);
+            }
             return;
         }
 
@@ -1973,7 +1978,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public double calculatRemainForMultiplePaymentTotal() {
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+            for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 // Fixed: Sum only the selected payment method's value for this component
                 multiplePaymentMethodTotalValue += calculateSelectedPaymentTotal(cd);
             }
@@ -2623,8 +2628,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             paymentMethods.add(pm);
         }
 
-        // Set default payment method to original or Cash as fallback
-        if (originalBillPayments != null && !originalBillPayments.isEmpty()) {
+        // Set default payment method based on original bill's payments
+        if (originalBillPayments != null && originalBillPayments.size() > 1) {
+            paymentMethod = PaymentMethod.MultiplePaymentMethods;
+        } else if (originalBillPayments != null && originalBillPayments.size() == 1) {
             paymentMethod = originalBillPayments.get(0).getPaymentMethod();
         } else {
             paymentMethod = PaymentMethod.Cash;
@@ -3467,6 +3474,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public void setOriginalBillPayments(List<Payment> originalBillPayments) {
         this.originalBillPayments = originalBillPayments;
+    }
+
+    public boolean isInBatchCancellationDisplayMode() {
+        return batchBill != null
+                && originalCancellationPaymentMethod == PaymentMethod.MultiplePaymentMethods
+                && paymentMethod == PaymentMethod.MultiplePaymentMethods;
     }
 
     public boolean isOriginalBillCredit() {

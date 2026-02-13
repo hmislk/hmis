@@ -1012,6 +1012,12 @@ public class EnumController implements Serializable {
             PaymentMethod.Slip};
         return p;
     }
+    public PaymentMethod[] getPaymentMethodsForIpReports() {
+        PaymentMethod[] p = {
+            PaymentMethod.Cash,
+            PaymentMethod.Credit};
+        return p;
+    }
 
     @Deprecated // Use getPaymentMethodsForPharmacyBilling
     public PaymentMethod[] PaymentMethodsForPharmacyRetailSale() {
