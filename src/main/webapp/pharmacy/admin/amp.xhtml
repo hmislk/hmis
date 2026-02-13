@@ -64,7 +64,7 @@
                                 </h:panelGroup>
                                 <!-- Modern Search Section -->
                                 <div class="search-section mb-3">
-                                    <h6 class="mb-2">Search &amp; Select AMP</h6>
+                                    <h:outputText value="Search &amp; Select AMP" styleClass="mb-2 d-block"/>
                                     <p:autoComplete
                                         id="acAmp"
                                         class="w-100"
@@ -222,10 +222,10 @@
                                     <h:panelGroup layout="block" styleClass="form-section" rendered="#{ampController.current ne null}">
 
                                         <!-- Essential Information Section -->
-                                        <h6 class="section-header">Essential Information</h6>
+                                        <h:outputText value="Essential Information" styleClass="section-header d-block"/>
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
-                                                <p:outputLabel for="ampName" value="AMP Name *"/>
+                                                <p:outputLabel for="ampName" value="AMP Name"/>
                                                 <p:inputText id="ampName"
                                                              value="#{ampController.current.name}"
                                                              class="form-control"
@@ -248,7 +248,7 @@
                                                                      action="#{ampController.generateCode()}"
                                                                      update="ampCode"
                                                                      rendered="#{ampController.editable}"
-                                                                     styleClass="btn btn-outline-secondary"
+                                                                     styleClass="ui-button-secondary ui-button-outlined"
                                                                      process="@this"/>
                                                 </div>
                                             </div>
@@ -262,10 +262,10 @@
                                         </div>
 
                                         <!-- VMP Relationship Section -->
-                                        <h6 class="section-header">Product Information</h6>
+                                        <h:outputText value="Product Information" styleClass="section-header d-block"/>
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
-                                                <p:outputLabel for="vmpSelect" value="VMP*"/>
+                                                <p:outputLabel for="vmpSelect" value="VMP"/>
                                                 <p:autoComplete id="vmpSelect"
                                                                 value="#{ampController.current.vmp}"
                                                                 completeMethod="#{ampController.completeVmpByName}"
@@ -278,26 +278,68 @@
                                                                 class="w-100"
                                                                 required="true"
                                                                 requiredMessage="VMP selection is required">
-                                                    <p:ajax event="itemSelect" update="dosageInfo"/>
+                                                    <p:ajax event="itemSelect" update="dosageInfo txtShortExpiary"/>
                                                 </p:autoComplete>
                                             </div>
                                             <div class="col-md-6">
                                                 <h:panelGroup id="dosageInfo">
                                                     <p:outputLabel value="Dosage Form"/>
-                                                    <p:outputLabel 
-                                                        value="#{ampController.current.vmp.dosageForm.name}"
-                                                        class="form-control-plaintext"
-                                                        rendered="#{ampController.current.vmp ne null}"/>
-                                                    <p:outputLabel
-                                                        value="Not specified"
-                                                        class="form-control-plaintext text-muted"
-                                                        rendered="#{ampController.current.vmp eq null}"/>
+                                                    <p:selectOneMenu 
+                                                        id="selDosageForm"
+                                                        value="#{ampController.current.dosageForm}"
+                                                        styleClass="form-control-plaintext"
+                                                        filter="true"
+                                                        required="true"
+                                                        requiredMessage="Dosage Form is required"
+                                                        disabled="#{!ampController.editable}">
+                                                        <f:selectItem itemLabel="-- Select Dosage Form --" itemValue="#{null}"/>
+                                                        <f:selectItems 
+                                                            value="#{dosageFormController.items}"
+                                                            var="df" 
+                                                            itemValue="#{df}" 
+                                                            itemLabel="#{df.name}"/>
+                                                    </p:selectOneMenu>
+
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <p:outputLabel for="ampCat" value="Category"/>
+                                                <p:autoComplete 
+                                                    id="ampCat"
+                                                    value="#{ampController.current.category}"
+                                                    completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" 
+                                                    var="vt"
+                                                    inputStyleClass="w-100"
+                                                    itemLabel="#{vt.name}"
+                                                    forceSelection="true"
+                                                    itemValue="#{vt}"
+                                                    disabled="#{not ampController.editable}"
+                                                    class="w-100"
+                                                    required="true"
+                                                    requiredMessage="Category is required">                                                    
+                                                </p:autoComplete>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h:panelGroup id="txtShortExpiary">
+                                                    <p:outputLabel value="Days of Short Expiry">
+                                                        <i class="fas fa-info-circle ms-1 text-muted" 
+                                                           title="Default expiry : 30 days."
+                                                           data-bs-toggle="tooltip">
+                                                        </i>
+                                                    </p:outputLabel>
+                                                    <p:inputText
+                                                        value="#{ampController.current.numberOfDaysToMarkAsShortExpiary}"
+                                                        class="form-control"
+                                                        disabled="#{not ampController.editable}"/>
                                                 </h:panelGroup>
                                             </div>
                                         </div>
 
                                         <!-- Business Rules Section -->
-                                        <h6 class="section-header">Business Rules</h6>
+                                        <h:outputText value="Business Rules" styleClass="section-header d-block"/>
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-3">
                                                 <div class="form-check">
