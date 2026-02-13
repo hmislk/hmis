@@ -37,6 +37,7 @@ import com.divudi.core.entity.Speciality;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.SurgeryType;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.facade.AdmissionTypeFacade;
 import com.divudi.core.facade.BillFacade;
@@ -176,6 +177,7 @@ public class InwardReportController implements Serializable {
 
     // Surgery Survey Report
     private String reportType;
+    private SurgeryType surgeryType;
     private List<MonthlySurgeryCountDTO> monthlySurgeryCountList;
     private List<String> surgeryHeaders;
 
@@ -361,46 +363,90 @@ public class InwardReportController implements Serializable {
             return;
         }
 
-        if (reportType.equals("SUMMARY")) {
-            generateSurgerySurveySummaryReport();
-        } else if (reportType.equals("DETAIL")) {
-            generateSurgerySurveyDetailReport();
-        }
-
-    }
-
-    private void generateSurgerySurveySummaryReport() {
-        System.out.println("summary");
-    }
-
-    private void generateSurgerySurveyDetailReport() {
-
-        System.out.println("==============================================");
-        System.out.println("Generating Surgery Survey Detail Report");
-        System.out.println("From Date : " + fromDate);
-        System.out.println("To Date   : " + toDate);
-        System.out.println("==============================================");
-
         monthlySurgeryCountList = new ArrayList<>();
 
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
-        jpql.append(" Select new com.divudi.core.data.dto.MonthServiceCountDTO(")
-                .append(" FUNCTION('MONTH', a.dateOfDischarge), ")
-                .append(" s.item.name, ")
-                .append(" count(s) ")
-                .append(") ")
-                .append(" from PatientEncounter s ")
-                .append(" join s.parentEncounter a ")
-                .append(" Where s.retired = false ")
-                .append(" and a.discharged = true ")
-                .append(" and a.dateOfDischarge is not null ")
-                .append(" AND a.dateOfDischarge BETWEEN :fromDate AND :toDate ")
-                .append(" Group By FUNCTION('MONTH', a.dateOfDischarge), s.item.name ");
+        if (reportType.equals("SUMMARY")) {
 
-        params.put("fromDate", fromDate);
-        params.put("toDate", toDate);
+            jpql.append(" Select new com.divudi.core.data.dto.MonthServiceCountDTO(")
+                    .append(" FUNCTION('MONTH', a.dateOfDischarge), ")
+                    .append(" s.item.category.name, ")
+                    .append(" count(s) ")
+                    .append(") ")
+                    .append(" from PatientEncounter s ")
+                    .append(" join s.parentEncounter a ")
+                    .append(" Where s.retired = false ")
+                    .append(" and a.discharged = true ")
+                    .append(" and a.dateOfDischarge is not null ")
+                    .append(" AND a.dateOfDischarge BETWEEN :fromDate AND :toDate ");
+
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            if (surgeryType != null) {
+                jpql.append(" and s.item.category = :stype ");
+                params.put("stype", surgeryType);
+            }
+
+            if (institution != null) {
+                jpql.append(" and a.institution = :inst");
+                params.put("inst", institution);
+            }
+
+            if (department != null) {
+                jpql.append(" and a.department = :dept");
+                params.put("dept", department);
+            }
+
+            if (site != null) {
+                jpql.append(" and a.department.site = :site");
+                params.put("site", site);
+            }
+
+            jpql.append(" Group By FUNCTION('MONTH', a.dateOfDischarge), s.item.category.name ");
+
+        } else if (reportType.equals("DETAIL")) {
+
+            jpql.append(" Select new com.divudi.core.data.dto.MonthServiceCountDTO(")
+                    .append(" FUNCTION('MONTH', a.dateOfDischarge), ")
+                    .append(" s.item.name, ")
+                    .append(" count(s) ")
+                    .append(") ")
+                    .append(" from PatientEncounter s ")
+                    .append(" join s.parentEncounter a ")
+                    .append(" Where s.retired = false ")
+                    .append(" and a.discharged = true ")
+                    .append(" and a.dateOfDischarge is not null ")
+                    .append(" AND a.dateOfDischarge BETWEEN :fromDate AND :toDate ");
+
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            if (surgeryType != null) {
+                jpql.append(" and s.item.category = :stype ");
+                params.put("stype", surgeryType);
+            }
+
+            if (institution != null) {
+                jpql.append(" and a.institution = :inst");
+                params.put("inst", institution);
+            }
+
+            if (department != null) {
+                jpql.append(" and a.department = :dept");
+                params.put("dept", department);
+            }
+
+            if (site != null) {
+                jpql.append(" and a.department.site = :site");
+                params.put("site", site);
+            }
+
+            jpql.append(" Group By FUNCTION('MONTH', a.dateOfDischarge), s.item.name ");
+
+        }
 
         List<MonthServiceCountDTO> rawList
                 = (List<MonthServiceCountDTO>) billFacade.findDTOsByJpql(
@@ -408,6 +454,10 @@ public class InwardReportController implements Serializable {
 
         System.out.println("Raw Result Size = " + rawList.size());
         System.out.println("--------------- RAW DATA ----------------");
+        if (rawList == null || rawList.isEmpty()) {
+            monthlySurgeryCountList = null;
+            return;
+        }
 
         for (MonthServiceCountDTO r : rawList) {
             System.out.println("Month: " + r.getMonth()
@@ -431,10 +481,10 @@ public class InwardReportController implements Serializable {
                 aggregated.setMonth(month);
                 monthMap.put(month, aggregated);
             }
-            
+
             System.out.println("Adding -> Month: " + month
-                + " | Service: " + dto.getServiceName()
-                + " | Count: " + dto.getServiceCount());
+                    + " | Service: " + dto.getServiceName()
+                    + " | Count: " + dto.getServiceCount());
 
             aggregated.addServiceCount(dto.getServiceName(), dto.getServiceCount());
             surgeryHeaderSet.add(dto.getServiceName());
@@ -460,8 +510,133 @@ public class InwardReportController implements Serializable {
             monthlySurgeryCountList.add(dto);
         }
 
-        grandTotal.alignWithHeaders(surgeryHeaders);
-        monthlySurgeryCountList.add(grandTotal);
+        if (!monthlySurgeryCountList.isEmpty()) {
+            grandTotal.alignWithHeaders(surgeryHeaders);
+            monthlySurgeryCountList.add(grandTotal);
+        }
+
+        System.out.println("Result Size = " + monthlySurgeryCountList.size());
+
+    }
+
+    private void generateSurgerySurveyDetailReport() {
+
+        System.out.println("==============================================");
+        System.out.println("Generating Surgery Survey Detail Report");
+        System.out.println("From Date : " + fromDate);
+        System.out.println("To Date   : " + toDate);
+        System.out.println("==============================================");
+
+        monthlySurgeryCountList = new ArrayList<>();
+
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append(" Select new com.divudi.core.data.dto.MonthServiceCountDTO(")
+                .append(" FUNCTION('MONTH', a.dateOfDischarge), ")
+                .append(" s.item.name, ")
+                .append(" count(s) ")
+                .append(") ")
+                .append(" from PatientEncounter s ")
+                .append(" join s.parentEncounter a ")
+                .append(" Where s.retired = false ")
+                .append(" and a.discharged = true ")
+                .append(" and a.dateOfDischarge is not null ")
+                .append(" AND a.dateOfDischarge BETWEEN :fromDate AND :toDate ");
+
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (surgeryType != null) {
+            jpql.append(" and s.item.category = :stype ");
+            params.put("stype", surgeryType);
+        }
+
+        if (institution != null) {
+            jpql.append(" and a.institution = :inst");
+            params.put("inst", institution);
+        }
+
+        if (department != null) {
+            jpql.append(" and a.department = :dept");
+            params.put("dept", department);
+        }
+
+        if (site != null) {
+            jpql.append(" and a.department.site = :site");
+            params.put("site", site);
+        }
+
+        jpql.append(" Group By FUNCTION('MONTH', a.dateOfDischarge), s.item.name ");
+
+        List<MonthServiceCountDTO> rawList
+                = (List<MonthServiceCountDTO>) billFacade.findDTOsByJpql(
+                        jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        System.out.println("Raw Result Size = " + rawList.size());
+        System.out.println("--------------- RAW DATA ----------------");
+        if (rawList == null || rawList.isEmpty()) {
+            monthlySurgeryCountList = null;
+            return;
+        }
+
+        for (MonthServiceCountDTO r : rawList) {
+            System.out.println("Month: " + r.getMonth()
+                    + " | Service: " + r.getServiceName()
+                    + " | Count: " + r.getServiceCount());
+        }
+
+        System.out.println("------------------------------------------");
+
+        Set<String> surgeryHeaderSet = new HashSet<>();
+        Map<Integer, MonthlySurgeryCountDTO> monthMap = new LinkedHashMap<>();
+
+        for (MonthServiceCountDTO dto : rawList) {
+
+            Integer month = dto.getMonth();
+
+            MonthlySurgeryCountDTO aggregated = monthMap.get(month);
+            if (aggregated == null) {
+                System.out.println("Creating new DTO for Month = " + month);
+                aggregated = new MonthlySurgeryCountDTO();
+                aggregated.setMonth(month);
+                monthMap.put(month, aggregated);
+            }
+
+            System.out.println("Adding -> Month: " + month
+                    + " | Service: " + dto.getServiceName()
+                    + " | Count: " + dto.getServiceCount());
+
+            aggregated.addServiceCount(dto.getServiceName(), dto.getServiceCount());
+            surgeryHeaderSet.add(dto.getServiceName());
+        }
+
+        surgeryHeaders = new ArrayList<>(surgeryHeaderSet);
+        Collections.sort(surgeryHeaders);
+
+        MonthlySurgeryCountDTO grandTotal = new MonthlySurgeryCountDTO();
+        grandTotal.setGrandTotal(true);
+
+        for (int month = 1; month <= 12; month++) {
+
+            MonthlySurgeryCountDTO dto = monthMap.get(month);
+
+            if (dto == null) {
+                continue;
+            }
+
+            System.out.println("Finalizing Month = " + month);
+            dto.alignWithHeaders(surgeryHeaders);
+            grandTotal.addAll(dto);
+            monthlySurgeryCountList.add(dto);
+        }
+
+        if (!monthlySurgeryCountList.isEmpty()) {
+            grandTotal.alignWithHeaders(surgeryHeaders);
+            monthlySurgeryCountList.add(grandTotal);
+        }
+
+        System.out.println("Result Size = " + monthlySurgeryCountList.size());
 
     }
 
@@ -2897,6 +3072,14 @@ public class InwardReportController implements Serializable {
 
     public void setSurgeryHeaders(List<String> surgeryHeaders) {
         this.surgeryHeaders = surgeryHeaders;
+    }
+
+    public SurgeryType getSurgeryType() {
+        return surgeryType;
+    }
+
+    public void setSurgeryType(SurgeryType surgeryType) {
+        this.surgeryType = surgeryType;
     }
 
     public class IncomeByCategoryRecord {
