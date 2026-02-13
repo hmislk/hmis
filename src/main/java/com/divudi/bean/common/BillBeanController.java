@@ -1245,6 +1245,26 @@ public class BillBeanController implements Serializable {
         return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
+    public List<BillItem> fetchPatientRelatedBillItems(Bill b) {
+        return billService.fetchPatientRelatedBillItems(b);
+    }
+
+    public List<BillItem> fetchMiscellaneousBillItems(Bill b) {
+        return billService.fetchMiscellaneousBillItems(b);
+    }
+
+    public Long countPatientRelatedBillItems(Bill b) {
+        return billService.countPatientRelatedBillItems(b);
+    }
+
+    public Double calculatePatientRelatedBillItemsTotal(Bill b) {
+        return billService.calculatePatientRelatedBillItemsTotal(b);
+    }
+
+    public Double calculateMiscellaneousBillItemsTotal(Bill b) {
+        return billService.calculateMiscellaneousBillItemsTotal(b);
+    }
+
     @Deprecated //Use BillService > fetchBillItems
     public List<BillItem> fetchBillItems(Bill b) {
         return billService.fetchBillItems(b);

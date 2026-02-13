@@ -14,6 +14,7 @@ import com.divudi.core.entity.UserPreference;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.UserPreferenceFacade;
+import com.divudi.service.DatabaseMigrationService;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -40,6 +41,8 @@ public class ApplicationController {
     private EmailManagerEjb eejb;
     @EJB
     private UserPreferenceFacade userPreferenceFacade;
+    @EJB
+    private DatabaseMigrationService databaseMigrationService;
 
     private UserPreference applicationPreference;
 
@@ -147,6 +150,10 @@ public class ApplicationController {
             loggins.remove(login);
         } catch (Exception e) {
         }
+    }
+
+    public boolean isDatabaseMigrationPending() {
+        return databaseMigrationService.isMigrationPending();
     }
 
     /**

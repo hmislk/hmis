@@ -44,6 +44,7 @@
 ### When Creating User Documentation
 - [Wiki Publishing Workflow](developer_docs/github/wiki-publishing.md) - Sibling folder approach
 - [Wiki Writing Guidelines](developer_docs/github/wiki-writing-guidelines.md) - Content standards
+- **Wiki Location**: `../hmis.wiki` sibling directory (NEVER inside the main project repo)
 - **Target Audience**: End users (pharmacy staff, nurses, doctors, administrators)
 
 ### When Committing Code
