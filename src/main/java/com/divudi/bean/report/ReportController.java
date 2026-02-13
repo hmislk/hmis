@@ -55,6 +55,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -2590,23 +2591,55 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private List<PharmacySaleDepartmentDTO> pharmacySaleDepartments;
 
     public void processPharmacySaleReport() {
+        pharmacySaleDepartments = null;
+        grossFeeTotal = 0.0;
+        discountTotal = 0.0;
+        netTotal = 0.0;
+
         List<BillTypeAtomic> billtypes = new ArrayList<>();
-        billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-        billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+
+        if ("OP".equals(reportType)) {
+            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
+            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+        } else if ("IP".equals(reportType)) {
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+            billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+            billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+        } else {
+            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
+            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+            billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+            billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+            billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+        }
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT NEW com.divudi.core.data.dto.PharmacySaleItemDTO(");
         jpql.append("bi.bill.department.id, ");
-        jpql.append("COALESCE(bi.bill.department.name, 'Unknown Department'), ");
-        jpql.append("COALESCE(bi.bill.patientEncounter.bhtNo, 'No BHT'), ");
+        jpql.append("bi.bill.department.name, ");
+        jpql.append("bi.bill.patientEncounter.bhtNo, ");
         jpql.append("bi.bill.id, ");
-        jpql.append("COALESCE(bi.bill.deptId, ''), ");
-        jpql.append("COALESCE(bi.bill.insId, ''), ");
+        jpql.append("bi.bill.deptId, ");
+        jpql.append("bi.bill.insId, ");
         jpql.append("bi.bill.billDate, ");
-        jpql.append("COALESCE(bi.bill.patient.phn, ''), ");
-        jpql.append("COALESCE(bi.bill.patient.person.name, ''), ");
-        jpql.append("COALESCE(item.id, 0L), ");
-        jpql.append("COALESCE(item.name, ''), ");
+        jpql.append("bi.bill.patient.phn, ");
+        jpql.append("bi.bill.patient.person.name, ");
+        jpql.append("item.id, ");
+        jpql.append("item.name, ");
         jpql.append("bi.qty, ");
         jpql.append("pbi.retailRate, ");
         jpql.append("pbi.purchaseRate, ");
@@ -2615,15 +2648,13 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         jpql.append("bi.discount, ");
         jpql.append("bi.netValue) ");
         jpql.append("FROM BillItem bi ");
-        jpql.append("LEFT JOIN bi.item item ");
+        jpql.append("JOIN bi.item item ");
         jpql.append("LEFT JOIN bi.pharmaceuticalBillItem pbi ");
-        jpql.append("WHERE bi.bill.cancelled = :cancelled ");
+        jpql.append("WHERE bi.bill.billTypeAtomic IN :bTypes ");
         jpql.append("AND bi.bill.billDate BETWEEN :fd AND :td ");
         jpql.append("AND bi.retired = :retired ");
-        jpql.append("AND bi.bill.billTypeAtomic IN :bTypes ");
 
         Map<String, Object> m = new HashMap<>();
-        m.put("cancelled", false);
         m.put("retired", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -2651,10 +2682,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         pharmacySaleDepartments = buildHierarchy(flatItems);
 
-        grossFeeTotal = 0.0;
-        discountTotal = 0.0;
-        netTotal = 0.0;
-
         if (pharmacySaleDepartments != null) {
             for (PharmacySaleDepartmentDTO dept : pharmacySaleDepartments) {
                 dept.calculateTotals();
@@ -2670,33 +2697,35 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             return new ArrayList<>();
         }
 
-        Map<Long, PharmacySaleDepartmentDTO> departmentMap = new java.util.LinkedHashMap<>();
+        Map<Long, PharmacySaleDepartmentDTO> departmentMap = new LinkedHashMap<>();
 
         for (PharmacySaleItemDTO item : flatItems) {
-            Long deptKey = item.getDepartmentId() != null ? item.getDepartmentId() : 0L;
+            Long deptKey = item.getDepartmentId();
+            if (deptKey == null) {
+                deptKey = 0L;
+            }
 
             PharmacySaleDepartmentDTO deptDto = departmentMap.get(deptKey);
             if (deptDto == null) {
-                deptDto = new PharmacySaleDepartmentDTO(deptKey, item.getDepartmentName());
+                deptDto = new PharmacySaleDepartmentDTO(deptKey,
+                        item.getDepartmentName() != null ? item.getDepartmentName() : "Unknown Department");
                 departmentMap.put(deptKey, deptDto);
             }
 
-            String bhtKey = item.getBhtNumber() != null ? item.getBhtNumber() : "No BHT";
             Long billKey = item.getBillId();
+            List<PharmacySaleBhtBillDTO> bhtBills = deptDto.getBhtBills();
 
             PharmacySaleBhtBillDTO bhtDto = null;
-            for (PharmacySaleBhtBillDTO existing : deptDto.getBhtBills()) {
-                if (bhtKey.equals(existing.getBhtNumber())
-                        && ((billKey == null && existing.getBillId() == null)
-                        || (billKey != null && billKey.equals(existing.getBillId())))) {
-                    bhtDto = existing;
-                    break;
+            if (!bhtBills.isEmpty()) {
+                PharmacySaleBhtBillDTO last = bhtBills.get(bhtBills.size() - 1);
+                if (billKey != null && billKey.equals(last.getBillId())) {
+                    bhtDto = last;
                 }
             }
 
             if (bhtDto == null) {
                 bhtDto = new PharmacySaleBhtBillDTO(
-                        bhtKey,
+                        item.getBhtNumber() != null ? item.getBhtNumber() : "No BHT",
                         item.getBillId(),
                         item.getDeptId(),
                         item.getInsId(),
@@ -2704,7 +2733,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                         item.getPatientPhn(),
                         item.getPatientName()
                 );
-                deptDto.getBhtBills().add(bhtDto);
+                bhtBills.add(bhtDto);
             }
 
             bhtDto.getItems().add(item);
