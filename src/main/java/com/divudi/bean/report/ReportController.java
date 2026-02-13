@@ -39,6 +39,9 @@ import com.divudi.core.light.common.PrescriptionSummaryReportRow;
 import com.divudi.service.BillAnalyticsService;
 import com.divudi.service.BillService;
 import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.dto.PharmacySaleBhtBillDTO;
+import com.divudi.core.data.dto.PharmacySaleDepartmentDTO;
+import com.divudi.core.data.dto.PharmacySaleItemDTO;
 import com.divudi.core.data.dto.ReferringDoctorRevenueDetailDTO;
 import com.divudi.core.data.dto.ReferringDoctorRevenueSummaryDTO;
 
@@ -2548,17 +2551,76 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }, CollectionCenterReport.COLLECTION_CENTER_RECEIPT_REPORT, sessionController.getLoggedUser());
     }
 
+//    public void processPharmacySaleReport() {
+//        List<BillTypeAtomic> billtypes = new ArrayList<>();
+//        billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+//        billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+//
+//        String jpql = "select bi "
+//                + " from BillItem bi "
+//                + " where bi.bill.cancelled=:cancelled "
+//                + " and bi.bill.billDate between :fd and :td "
+//                + " and bi.retired=:retired "
+//                + " and bi.bill.billTypeAtomic in :bTypes ";
+//
+//        Map<String, Object> m = new HashMap<>();
+//        m.put("cancelled", false);
+//        m.put("retired", false);
+//        m.put("fd", fromDate);
+//        m.put("td", toDate);
+//        m.put("bTypes", billtypes);
+//
+//        if (institution != null) {
+//            jpql += " and bi.bill.institution = :ins ";
+//            m.put("ins", institution);
+//        }
+//
+//        if (site != null) {
+//            jpql += " and bi.bill.department.site = :site ";
+//            m.put("site", site);
+//        }
+//
+//        if (department != null) {
+//            jpql += " and bi.bill.department = :dep ";
+//            m.put("dep", department);
+//        }
+//
+//        billItems = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+//    }
+    private List<PharmacySaleDepartmentDTO> pharmacySaleDepartments;
+
     public void processPharmacySaleReport() {
         List<BillTypeAtomic> billtypes = new ArrayList<>();
         billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
         billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
 
-        String jpql = "select bi "
-                + " from BillItem bi "
-                + " where bi.bill.cancelled=:cancelled "
-                + " and bi.bill.billDate between :fd and :td "
-                + " and bi.retired=:retired "
-                + " and bi.bill.billTypeAtomic in :bTypes ";
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT NEW com.divudi.core.data.dto.PharmacySaleItemDTO(");
+        jpql.append("bi.bill.department.id, ");
+        jpql.append("COALESCE(bi.bill.department.name, 'Unknown Department'), ");
+        jpql.append("COALESCE(bi.bill.patientEncounter.bhtNo, 'No BHT'), ");
+        jpql.append("bi.bill.id, ");
+        jpql.append("COALESCE(bi.bill.deptId, ''), ");
+        jpql.append("COALESCE(bi.bill.insId, ''), ");
+        jpql.append("bi.bill.billDate, ");
+        jpql.append("COALESCE(bi.bill.patient.phn, ''), ");
+        jpql.append("COALESCE(bi.bill.patient.person.name, ''), ");
+        jpql.append("COALESCE(item.id, 0L), ");
+        jpql.append("COALESCE(item.name, ''), ");
+        jpql.append("bi.qty, ");
+        jpql.append("pbi.retailRate, ");
+        jpql.append("pbi.purchaseRate, ");
+        jpql.append("bi.grossValue, ");
+        jpql.append("bi.marginValue, ");
+        jpql.append("bi.discount, ");
+        jpql.append("bi.netValue) ");
+        jpql.append("FROM BillItem bi ");
+        jpql.append("LEFT JOIN bi.item item ");
+        jpql.append("LEFT JOIN bi.pharmaceuticalBillItem pbi ");
+        jpql.append("WHERE bi.bill.cancelled = :cancelled ");
+        jpql.append("AND bi.bill.billDate BETWEEN :fd AND :td ");
+        jpql.append("AND bi.retired = :retired ");
+        jpql.append("AND bi.bill.billTypeAtomic IN :bTypes ");
 
         Map<String, Object> m = new HashMap<>();
         m.put("cancelled", false);
@@ -2568,21 +2630,87 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         m.put("bTypes", billtypes);
 
         if (institution != null) {
-            jpql += " and bi.bill.institution = :ins ";
+            jpql.append("AND bi.bill.institution = :ins ");
             m.put("ins", institution);
         }
 
         if (site != null) {
-            jpql += " and bi.bill.department.site = :site ";
+            jpql.append("AND bi.bill.department.site = :site ");
             m.put("site", site);
         }
 
         if (department != null) {
-            jpql += " and bi.bill.department = :dep ";
+            jpql.append("AND bi.bill.department = :dep ");
             m.put("dep", department);
         }
 
-        billItems = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        jpql.append("ORDER BY bi.bill.department.name, bi.bill.patientEncounter.bhtNo, bi.bill.billDate, bi.id");
+
+        List<PharmacySaleItemDTO> flatItems = (List<PharmacySaleItemDTO>) billItemFacade
+                .findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+
+        pharmacySaleDepartments = buildHierarchy(flatItems);
+
+        grossFeeTotal = 0.0;
+        discountTotal = 0.0;
+        netTotal = 0.0;
+
+        if (pharmacySaleDepartments != null) {
+            for (PharmacySaleDepartmentDTO dept : pharmacySaleDepartments) {
+                dept.calculateTotals();
+                grossFeeTotal += dept.getTotalGrossValue() != null ? dept.getTotalGrossValue() : 0.0;
+                discountTotal += dept.getTotalDiscount() != null ? dept.getTotalDiscount() : 0.0;
+                netTotal += dept.getTotalNetValue() != null ? dept.getTotalNetValue() : 0.0;
+            }
+        }
+    }
+
+    private List<PharmacySaleDepartmentDTO> buildHierarchy(List<PharmacySaleItemDTO> flatItems) {
+        if (flatItems == null || flatItems.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Map<Long, PharmacySaleDepartmentDTO> departmentMap = new java.util.LinkedHashMap<>();
+
+        for (PharmacySaleItemDTO item : flatItems) {
+            Long deptKey = item.getDepartmentId() != null ? item.getDepartmentId() : 0L;
+
+            PharmacySaleDepartmentDTO deptDto = departmentMap.get(deptKey);
+            if (deptDto == null) {
+                deptDto = new PharmacySaleDepartmentDTO(deptKey, item.getDepartmentName());
+                departmentMap.put(deptKey, deptDto);
+            }
+
+            String bhtKey = item.getBhtNumber() != null ? item.getBhtNumber() : "No BHT";
+            Long billKey = item.getBillId();
+
+            PharmacySaleBhtBillDTO bhtDto = null;
+            for (PharmacySaleBhtBillDTO existing : deptDto.getBhtBills()) {
+                if (bhtKey.equals(existing.getBhtNumber())
+                        && ((billKey == null && existing.getBillId() == null)
+                        || (billKey != null && billKey.equals(existing.getBillId())))) {
+                    bhtDto = existing;
+                    break;
+                }
+            }
+
+            if (bhtDto == null) {
+                bhtDto = new PharmacySaleBhtBillDTO(
+                        bhtKey,
+                        item.getBillId(),
+                        item.getDeptId(),
+                        item.getInsId(),
+                        item.getBillDate(),
+                        item.getPatientPhn(),
+                        item.getPatientName()
+                );
+                deptDto.getBhtBills().add(bhtDto);
+            }
+
+            bhtDto.getItems().add(item);
+        }
+
+        return new ArrayList<>(departmentMap.values());
     }
 
     public void downloadLabTestCount() {
@@ -4793,6 +4921,14 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
         // Remove or replace characters that are invalid in filenames
         return name.replaceAll("[^a-zA-Z0-9\\-_]", "_").replaceAll("_+", "_");
+    }
+
+    public List<PharmacySaleDepartmentDTO> getPharmacySaleDepartments() {
+        return pharmacySaleDepartments;
+    }
+
+    public void setPharmacySaleDepartments(List<PharmacySaleDepartmentDTO> pharmacySaleDepartments) {
+        this.pharmacySaleDepartments = pharmacySaleDepartments;
     }
 
 }
