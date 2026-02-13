@@ -17479,6 +17479,7 @@ public class SearchController implements Serializable {
             netCashForTheDayBundle.setTotal(netCashCollection);
 
             bundle.getBundles().add(netCashForTheDayBundle);
+            bundle.setName("Cashier_Summary");
             bundle.calculateTotalsByAllChildBundles();
         }, CashierReports.CASHIER_SUMMARY, sessionController.getLoggedUser());
     }
