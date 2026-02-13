@@ -32,6 +32,7 @@ import com.divudi.core.data.dto.BillItemDTO;
 import com.divudi.core.data.dto.CostOfGoodSoldBillDTO;
 import com.divudi.core.data.dto.ExpiryItemListDto;
 import com.divudi.core.data.dto.ExpiryItemStockListDto;
+import com.divudi.core.data.dto.StockLedgerDTO;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.entity.AgentHistory;
@@ -313,6 +314,7 @@ public class PharmacyReportController implements Serializable {
     private Speciality speciality;
 
     private List<StockHistory> stockLedgerHistories;
+    private List<StockLedgerDTO> stockLedgerDtos;
 
     private List<Stock> stocks;
     private double stockSaleValue;
@@ -4867,6 +4869,310 @@ public class PharmacyReportController implements Serializable {
         }, InventoryReports.STOCK_LEDGER_REPORT, sessionController.getLoggedUser());
     }
 
+    @SuppressWarnings("unchecked")
+    public void processStockLedgerDtoReport() {
+        reportTimerController.trackReportExecution(() -> {
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            List<BillType> billTypes = new ArrayList<>();
+
+            if ("ipSaleDoc".equals(documentType)) {
+                billTypes.add(BillType.PharmacyBhtPre);
+            } else if ("opSaleDoc".equals(documentType)) {
+                billTypes.add(BillType.PharmacyPre);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+            } else if ("grnDoc".equals(documentType)) {
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+                billTypes.add(BillType.PharmacyGrnBill);
+                billTypes.add(BillType.PharmacyGrnReturn);
+            } else if ("purchaseDoc".equals(documentType)) {
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+            } else if ("consumptionDoc".equals(documentType)) {
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+            } else if ("transferIssueDoc".equals(documentType)) {
+                billTypes.add(BillType.PharmacyTransferIssue);
+            } else if ("transferReceiveDoc".equals(documentType)) {
+                billTypes.add(BillType.PharmacyTransferReceive);
+            } else if ("returnWithoutReceiptDoc".equals(documentType)) {
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+            } else if ("stockAdjustmentDoc".equals(documentType)) {
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED);
+                billTypes.add(BillType.PharmacyStockAdjustmentBill);
+            } else if ("rateAdjustmentDoc".equals(documentType)) {
+                // Rate adjustments should NOT be listed
+            } else {
+                billTypes.add(BillType.PharmacyBhtPre);
+                billTypes.add(BillType.PharmacyPre);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+                billTypes.add(BillType.PharmacyGrnBill);
+                billTypes.add(BillType.PharmacyGrnReturn);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED);
+                billTypes.add(BillType.PharmacyIssue);
+                billTypes.add(BillType.PharmacyTransferIssue);
+                billTypes.add(BillType.PharmacyTransferReceive);
+                billTypes.add(BillType.PharmacyStockAdjustmentBill);
+                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+            }
+
+            stockLedgerDtos = new ArrayList<>();
+            Map m = new HashMap();
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+
+            boolean isByBatch = "byBatch".equals(stockLedgerReportType);
+
+            StringBuilder jpql = new StringBuilder();
+            jpql.append("SELECT new com.divudi.core.data.dto.StockLedgerDTO(");
+            jpql.append(" s.id,");
+            jpql.append(" dep.name,");
+            jpql.append(" COALESCE(ampCat.name, itemCat.name),");
+            jpql.append(" COALESCE(ampDf.name, itemDf.name),");
+            jpql.append(" COALESCE(amp.code, itm.code),");
+            jpql.append(" itm.name,");
+            jpql.append(" uom.name,");
+            jpql.append(" pbi.transThisIsStockIn,");
+            jpql.append(" pbi.transThisIsStockOut,");
+            jpql.append(" b.deptId,");
+            jpql.append(" b.id,");
+            jpql.append(" b.billTypeAtomic,");
+            jpql.append(" b.billType,");
+            jpql.append(" s.createdAt,");
+            jpql.append(" fromDep.name,");
+            jpql.append(" toDep.name,");
+            jpql.append(" billDep.name,");
+            jpql.append(" pbi.qty,");
+            jpql.append(" pbi.freeQty,");
+            jpql.append(" pbi.purchaseRate,");
+            jpql.append(" pbi.retailRate,");
+            jpql.append(" s.stockQty,");
+            jpql.append(" s.instituionBatchQty,");
+            jpql.append(" s.totalBatchQty,");
+            jpql.append(" s.stockPurchaseValue,");
+            jpql.append(" s.stockSaleValue,");
+            jpql.append(" s.stockCostValue,");
+            jpql.append(" s.institutionBatchStockValueAtPurchaseRate,");
+            jpql.append(" s.institutionBatchStockValueAtSaleRate,");
+            jpql.append(" s.institutionBatchStockValueAtCostRate,");
+            jpql.append(" s.totalBatchStockValueAtPurchaseRate,");
+            jpql.append(" s.totalBatchStockValueAtSaleRate,");
+            jpql.append(" s.totalBatchStockValueAtCostRate,");
+            jpql.append(" s.itemStock,");
+            jpql.append(" s.institutionItemStock,");
+            jpql.append(" s.totalItemStock,");
+            jpql.append(" s.itemStockValueAtPurchaseRate,");
+            jpql.append(" s.itemStockValueAtSaleRate,");
+            jpql.append(" s.itemStockValueAtCostRate,");
+            jpql.append(" s.institutionItemStockValueAtPurchaseRate,");
+            jpql.append(" s.institutionItemStockValueAtSaleRate,");
+            jpql.append(" s.institutionItemStockValueAtCostRate,");
+            jpql.append(" s.totalItemStockValueAtPurchaseRate,");
+            jpql.append(" s.totalItemStockValueAtSaleRate,");
+            jpql.append(" s.totalItemStockValueAtCostRate");
+            if (isByBatch) {
+                jpql.append(",");
+                jpql.append(" ib.batchNo,");
+                jpql.append(" ib.dateOfExpire,");
+                jpql.append(" ib.costRate");
+            }
+            jpql.append(")");
+            jpql.append(" FROM StockHistory s");
+            jpql.append(" LEFT JOIN s.department dep");
+            jpql.append(" LEFT JOIN s.itemBatch ib");
+            jpql.append(" LEFT JOIN s.pbItem pbi");
+            jpql.append(" LEFT JOIN pbi.billItem bi");
+            jpql.append(" LEFT JOIN bi.bill b");
+            jpql.append(" LEFT JOIN bi.item itm");
+            jpql.append(" LEFT JOIN itm.amp amp");
+            jpql.append(" LEFT JOIN itm.category itemCat");
+            jpql.append(" LEFT JOIN amp.category ampCat");
+            jpql.append(" LEFT JOIN itm.dosageForm itemDf");
+            jpql.append(" LEFT JOIN amp.dosageForm ampDf");
+            jpql.append(" LEFT JOIN itm.measurementUnit uom");
+            jpql.append(" LEFT JOIN b.fromDepartment fromDep");
+            jpql.append(" LEFT JOIN b.toDepartment toDep");
+            jpql.append(" LEFT JOIN b.department billDep");
+            jpql.append(" WHERE s.createdAt BETWEEN :fd AND :td");
+
+            if (institution != null) {
+                jpql.append(" AND s.institution = :ins");
+                m.put("ins", institution);
+            }
+            if (department != null) {
+                jpql.append(" AND s.department = :dep");
+                m.put("dep", department);
+            }
+            if (site != null) {
+                jpql.append(" AND s.department.site = :sit");
+                m.put("sit", site);
+            }
+            if (!billTypeAtomics.isEmpty() || !billTypes.isEmpty()) {
+                jpql.append(" AND (");
+                if (!billTypeAtomics.isEmpty()) {
+                    jpql.append(" b.billTypeAtomic IN :dtype");
+                    m.put("dtype", billTypeAtomics);
+                }
+                if (!billTypeAtomics.isEmpty() && !billTypes.isEmpty()) {
+                    jpql.append(" OR");
+                }
+                if (!billTypes.isEmpty()) {
+                    jpql.append(" b.billType IN :doctype");
+                    m.put("doctype", billTypes);
+                }
+                jpql.append(")");
+            }
+            if (amp != null) {
+                item = amp;
+                jpql.append(" AND s.item = :itm");
+                m.put("itm", item);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append(" AND b.departmentType IN :departmentTypes");
+                m.put("departmentTypes", selectedDepartmentTypes);
+            }
+
+            jpql.append(" ORDER BY s.id");
+            stockLedgerDtos = (List<StockLedgerDTO>) facade.findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+        }, InventoryReports.STOCK_LEDGER_DTO_REPORT, sessionController.getLoggedUser());
+    }
+
+    public void exportStockLedgerDtoToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        if (stockLedgerDtos == null || stockLedgerDtos.isEmpty()) {
+            return;
+        }
+
+        response.reset();
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Stock_Ledger_DTO_Report.pdf");
+        Document document = null;
+        try (OutputStream out = response.getOutputStream()) {
+            document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph title = new Paragraph("Stock Ledger Report (DTO)", (Font) titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            com.itextpdf.text.Font subTitleFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
+            Paragraph dateRange = new Paragraph(
+                    String.format("From: %s To: %s",
+                            formatDate(getFromDate()),
+                            formatDate(getToDate())), (Font) subTitleFont);
+            dateRange.setAlignment(Element.ALIGN_CENTER);
+            dateRange.setSpacingAfter(20);
+            document.add(dateRange);
+
+            com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            com.itextpdf.text.Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
+
+            PdfPTable table = new PdfPTable(16);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2});
+
+            String[] headers = {
+                "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
+                "Transaction", "Doc No", "Doc Date",
+                "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
+                "Closing Stock", "Rate"
+            };
+            addTableHeaders(table, headerFont, headers);
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat(configOptionApplicationController.getShortTextValueByKey("Short Date Format", sessionController.getApplicationPreference().getShortDateFormat()));
+
+            int rowNum = 1;
+            for (StockLedgerDTO f : stockLedgerDtos) {
+                table.addCell(createCell(String.valueOf(rowNum++), cellFont));
+                table.addCell(createCell(f.getDepartmentName() != null ? f.getDepartmentName() : "", cellFont));
+                table.addCell(createCell(f.getCategoryName() != null ? f.getCategoryName() : "", cellFont));
+                table.addCell(createCell(f.getItemCode() != null ? f.getItemCode() : "", cellFont));
+                table.addCell(createCell(f.getItemName() != null ? f.getItemName() : "", cellFont));
+                table.addCell(createCell(f.getMeasurementUnitName() != null ? f.getMeasurementUnitName() : "", cellFont));
+
+                boolean isIn = f.getTransThisIsStockIn() != null && f.getTransThisIsStockIn();
+                boolean isOut = f.getTransThisIsStockOut() != null && f.getTransThisIsStockOut();
+                String transactionType = isIn ? "STOCK IN" : isOut ? "STOCK OUT" : "N/A";
+                PdfPCell transCell = new PdfPCell(new Phrase(transactionType, cellFont));
+                transCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(transCell);
+
+                table.addCell(createCell(f.getBillDeptId() != null ? f.getBillDeptId() : "", cellFont));
+                table.addCell(createCell(f.getCreatedAt() != null ? dateFormat.format(f.getCreatedAt()) : "", cellFont));
+                table.addCell(createCell(f.getFromDepartmentName() != null ? f.getFromDepartmentName() : "", cellFont));
+                table.addCell(createCell(f.getToStoreOrBillDepartment() != null ? f.getToStoreOrBillDepartment() : "", cellFont));
+                table.addCell(createCell(f.getDocumentTypeLabel() != null ? f.getDocumentTypeLabel() : "", cellFont));
+
+                Double stockIn = f.getStockInQty();
+                table.addCell(createCell(stockIn != null ? DECIMAL_FORMAT.format(stockIn) : "", cellFont));
+
+                Double stockOut = f.getStockOutQty();
+                table.addCell(createCell(stockOut != null ? DECIMAL_FORMAT.format(stockOut) : "", cellFont));
+
+                double closingStock = f.getItemStock() != null ? f.getItemStock() : 0.0;
+                table.addCell(createCell(DECIMAL_FORMAT.format(closingStock), cellFont));
+
+                double purchaseRate = f.getPurchaseRate() != null ? f.getPurchaseRate() : 0.0;
+                table.addCell(createCell(DECIMAL_FORMAT.format(purchaseRate), cellFont));
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (document != null) {
+                try {
+                    if (document.isOpen()) {
+                        document.close();
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+
     /**
      * Process Closing Stock Report - ITEM-WISE
      *
@@ -8873,6 +9179,14 @@ public class PharmacyReportController implements Serializable {
 
     public void setStockLedgerHistories(List<StockHistory> stockLedgerHistories) {
         this.stockLedgerHistories = stockLedgerHistories;
+    }
+
+    public List<StockLedgerDTO> getStockLedgerDtos() {
+        return stockLedgerDtos;
+    }
+
+    public void setStockLedgerDtos(List<StockLedgerDTO> stockLedgerDtos) {
+        this.stockLedgerDtos = stockLedgerDtos;
     }
 
     public List<Stock> getStocks() {
