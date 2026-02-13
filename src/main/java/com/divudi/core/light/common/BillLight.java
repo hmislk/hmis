@@ -2,6 +2,7 @@ package com.divudi.core.light.common;
 
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Title;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PaymentScheme;
@@ -22,7 +23,9 @@ public class BillLight {
     private String institutionName;
     private String departmentName;
     private String userName;
+    private Title patientTitle;
     private String patientName;
+    private String patientNameWithTitle;
     private String patientAge;
     private String patientPhone;
     private Double grossValue;
@@ -134,6 +137,18 @@ public class BillLight {
         this.billNo = billNo;
         this.referenceNumber = referenceNumber;
         this.billDate = billDate;
+        this.patientName = patientName;
+        this.ccTotal = ccTotal;
+        this.hospitalTotal = hospitalTotal;
+    }
+    
+    //Collecting Centre Payment
+    public BillLight(Long id, String billNo, String referenceNumber, Date billDate, Title patientTitle, String patientName, Double ccTotal, Double hospitalTotal) {
+        this.id = id;
+        this.billNo = billNo;
+        this.referenceNumber = referenceNumber;
+        this.billDate = billDate;
+        this.patientTitle = patientTitle;
         this.patientName = patientName;
         this.ccTotal = ccTotal;
         this.hospitalTotal = hospitalTotal;
@@ -469,6 +484,30 @@ public class BillLight {
 
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
+    }
+
+    public Title getPatientTitle() {
+        return patientTitle;
+    }
+
+    public void setPatientTitle(Title patientTitle) {
+        this.patientTitle = patientTitle;
+    }
+
+    public String getPatientNameWithTitle() {
+        String temT;
+        Title t = getPatientTitle();
+        if (t != null) {
+            temT = t.getLabel();
+        } else {
+            temT = "";
+        }
+        patientNameWithTitle = temT + " " + getPatientName();
+        return patientNameWithTitle;
+    }
+
+    public void setPatientNameWithTitle(String patientNameWithTitle) {
+        this.patientNameWithTitle = patientNameWithTitle;
     }
 
 }
