@@ -2552,42 +2552,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }, CollectionCenterReport.COLLECTION_CENTER_RECEIPT_REPORT, sessionController.getLoggedUser());
     }
 
-//    public void processPharmacySaleReport() {
-//        List<BillTypeAtomic> billtypes = new ArrayList<>();
-//        billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-//        billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-//
-//        String jpql = "select bi "
-//                + " from BillItem bi "
-//                + " where bi.bill.cancelled=:cancelled "
-//                + " and bi.bill.billDate between :fd and :td "
-//                + " and bi.retired=:retired "
-//                + " and bi.bill.billTypeAtomic in :bTypes ";
-//
-//        Map<String, Object> m = new HashMap<>();
-//        m.put("cancelled", false);
-//        m.put("retired", false);
-//        m.put("fd", fromDate);
-//        m.put("td", toDate);
-//        m.put("bTypes", billtypes);
-//
-//        if (institution != null) {
-//            jpql += " and bi.bill.institution = :ins ";
-//            m.put("ins", institution);
-//        }
-//
-//        if (site != null) {
-//            jpql += " and bi.bill.department.site = :site ";
-//            m.put("site", site);
-//        }
-//
-//        if (department != null) {
-//            jpql += " and bi.bill.department = :dep ";
-//            m.put("dep", department);
-//        }
-//
-//        billItems = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
-//    }
+
     private List<PharmacySaleDepartmentDTO> pharmacySaleDepartments;
 
     public void processPharmacySaleReport() {
