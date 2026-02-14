@@ -311,8 +311,6 @@
                                 <f:selectItems value="#{dosageFormController.items}" var="df" itemLabel="#{df.name}" itemValue="#{df}"/>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20"/>
-
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2"/>
                                 <p:outputLabel value="Department Type" for="departmentTypeFilter" class="m-3"/>
@@ -336,10 +334,6 @@
                                 </p:selectCheckboxMenu>
                             </h:panelGroup>
 
-                            <p:spacer width="20"/>
-
-                            <!-- REMOVED: Show Only Pending checkbox - replaced with improved Document Status dropdown -->
-                            <p:spacer width="20"/>
                             <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -375,10 +369,6 @@
                                     <h:outputText value="#{user.person.name}"/>
                                 </p:column>
                             </p:autoComplete>
-
-                            <p:spacer width="20"/>
-                            <p:spacer width="20"/>
-                            <p:spacer width="20"/>
                         </h:panelGrid>
 
                         <div class="d-flex align-items-center my-2">

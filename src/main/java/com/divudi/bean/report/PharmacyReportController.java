@@ -5247,6 +5247,7 @@ public class PharmacyReportController implements Serializable {
                 + "  COALESCE(i.code, ''), "
                 + "  COALESCE(c.name, ''), "
                 + "  COALESCE(mu.name, ''), "
+                + "  COALESCE(df.name, ''), "
                 + "  COALESCE(sh.itemStock, 0.0), " // Department item stock
                 + "  COALESCE(sh.itemStockValueAtPurchaseRate, 0.0), " // Department item purchase value
                 + "  COALESCE(sh.itemStockValueAtSaleRate, 0.0), " // Department item sale value
@@ -5263,6 +5264,7 @@ public class PharmacyReportController implements Serializable {
                 + "JOIN sh.item i "
                 + "LEFT JOIN i.category c "
                 + "LEFT JOIN i.measurementUnit mu "
+                + "LEFT JOIN i.dosageForm df "
                 + "WHERE sh.retired = :ret "
                 + "AND sh.id IN ("
                 + "  SELECT MAX(sh2.id) FROM StockHistory sh2 "
@@ -5458,6 +5460,7 @@ public class PharmacyReportController implements Serializable {
                 + "  COALESCE(i.code, ''), "
                 + "  COALESCE(c.name, ''), "
                 + "  COALESCE(mu.name, ''), "
+                + "  COALESCE(df.name, ''), "
                 + "  ib.id, "
                 + "  COALESCE(ib.batchNo, ''), "
                 + "  ib.dateOfExpire, "
@@ -5481,6 +5484,7 @@ public class PharmacyReportController implements Serializable {
                 + "JOIN ib.item i "
                 + "LEFT JOIN i.category c "
                 + "LEFT JOIN i.measurementUnit mu "
+                + "LEFT JOIN i.dosageForm df "
                 + "WHERE sh.retired = :ret "
                 + "AND sh.id IN ("
                 + "  SELECT MAX(sh2.id) FROM StockHistory sh2 "
