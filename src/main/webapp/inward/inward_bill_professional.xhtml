@@ -30,7 +30,7 @@
                                                     value="Nursing WorkBench" 
                                                     action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
                                                     ajax="false"
-                                                    class="ui-button-operating-theatre rounded-pill"
+                                                    class="ui-button-operating-theatre "
                                                     icon="fa fa-arrow-left">
                                                 </p:commandButton>
                                             </h:panelGroup>
@@ -85,9 +85,10 @@
                                             </p:autoComplete>  
                                         </div>
                                         <div class="col-md-2">
-                                            <p:commandButton 
-                                                value="Select" 
+                                            <p:commandButton
+                                                value="Select"
                                                 ajax="false"
+                                                action="#{inwardProfessionalBillController.selectPatientEncounter()}"
                                                 icon="fa fa-check"
                                                 styleClass="w-100 ui-button-primary rounded">
                                             </p:commandButton>
@@ -124,19 +125,18 @@
             </h:panelGroup>
 
             <h:panelGroup rendered="#{inwardProfessionalBillController.current.patientEncounter ne null}">
-
-                <p:panel styleClass="border-0 shadow-sm mt-3">
+                <p:panel styleClass="border-0">
                     <f:facet name="header" >
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h:outputText styleClass="fas fa-money-bill fa-lg text-success" />
-                                <h:outputLabel class="ms-2 fs-5 fw-bold" value="Professional Fee Entry" />  
+                                <h:outputLabel class="ms-2 fs-5 fw-bold" value="Add New Professional Fees" />  
                             </div>
                             <div class="d-flex gap-2 align-items-center">
 
                                 <p:commandButton 
-                                    class="ui-button-success rounded-pill"
-                                    value="New Bill"
+                                    class="ui-button-warning "
+                                    value="To Add Another Professional Fee"
                                     icon="fa fa-plus"
                                     ajax="false" 
                                     actionListener="#{inwardProfessionalBillController.makeNull()}" >
@@ -173,17 +173,16 @@
                                                 target="#{patientController.current}" >
                                             </f:setPropertyActionListener>
                                         </p:commandButton>
-                                    </div>
-                                </h:panelGroup>
 
-                                <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
-                                    <p:commandButton 
-                                        value="Nursing WorkBench" 
-                                        action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
-                                        ajax="false"
-                                        class="ui-button-operating-theatre rounded-pill"
-                                        icon="fa fa-arrow-left">
-                                    </p:commandButton>
+                                        <p:commandButton 
+                                            rendered="#{webUserController.hasPrivilege('NursingWorkBench')}"
+                                            value="Nursing WorkBench" 
+                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                            ajax="false"
+                                            class="ui-button-operating-theatre"
+                                            icon="fa fa-arrow-left">
+                                        </p:commandButton>
+                                    </div>
                                 </h:panelGroup>
                             </div>
                         </div>
@@ -207,7 +206,7 @@
                                 <p:panel id='pIxAdd' styleClass="h-100 shadow-sm border-0">
                                     <f:facet name="header" >
                                         <h:outputText styleClass="fas fa-user-tie text-primary" />
-                                        <h:outputText value="Add Professional Fee" class="ms-2 fw-bold"></h:outputText>
+                                        <h:outputText value="New Professional Fee Details" class="ms-2 fw-bold"></h:outputText>
                                     </f:facet>
                                     <div class="p-2" id="profPanel">
                                         <div class="row mb-3 align-items-center">
@@ -217,6 +216,7 @@
                                             <div class="col-md-8">
                                                 <p:autoComplete 
                                                     styleClass="w-100" 
+                                                    inputStyleClass="w-100"
                                                     forceSelection="true"
                                                     value="#{inwardProfessionalBillController.currentBillFee.speciality}"
                                                     id="acSpeciality"
@@ -237,6 +237,7 @@
                                             <div class="col-md-8">
                                                 <p:autoComplete  
                                                     styleClass="w-100" 
+                                                    inputStyleClass="w-100"
                                                     forceSelection="true" 
                                                     value="#{inwardProfessionalBillController.currentBillFee.staff}" 
                                                     id="scStaff"
@@ -249,7 +250,7 @@
                                                 </p:autoComplete>
                                             </div>
                                         </div>
-
+                                        
                                         <div class="row mb-3 align-items-center">
                                             <div class="col-md-4">
                                                 <h:outputLabel value="Fee Amount" styleClass="fw-bold"/>
@@ -257,7 +258,8 @@
                                             <div class="col-md-8">
                                                 <div class="d-flex align-items-center gap-2">
                                                     <p:inputNumber 
-                                                        inputStyleClass="text-end"
+                                                        styleClass="w-100"
+                                                        inputStyleClass="text-end w-100"
                                                         placeholder="0.00"
                                                         id="prof" 
                                                         disabled="#{inwardProfessionalBillController.freeOfChargeProfessionalPayment}"
@@ -316,36 +318,32 @@
                                     <p:panel styleClass="shadow-sm border-0">
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-list text-primary" />
-                                            <h:outputLabel class="ms-2 fw-bold" value="Added Professional Fees"/>
+                                            <h:outputLabel class="ms-2 fw-bold" value="Professional Fees for This Encounter"/>
                                         </f:facet>
 
-                                        <p:dataTable rowIndexVar="rowIndex" id="bFee" value="#{inwardProfessionalBillController.lstBillFees}" var="bif" 
-                                                     styleClass="mt-2 border-0">
+                                        <p:dataTable rowIndexVar="rowIndex" id="bFee"
+                                                     value="#{inwardProfessionalBillController.encounterProfessionalFees}" var="bif"
+                                                     styleClass="mt-2 border-0"
+                                                     emptyMessage="No professional fees added for this encounter yet.">
 
                                             <p:column headerText="No" width="50">
                                                 <h:outputLabel value="#{rowIndex + 1}"/>
                                             </p:column>
                                             <p:column headerText="Fee">
-                                                <h:inputText autocomplete="off" id="txtFeeVal" value="#{bif.feeValue}" styleClass="form-control text-end">
-                                                    <p:ajax event="blur" process="txtFeeVal"
-                                                            update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
-                                                            listener="#{inwardProfessionalBillController.feeChanged(bif)}" />
+                                                <h:outputLabel value="#{bif.feeValue}" styleClass="text-end">
                                                     <f:convertNumber pattern="#,##0.00" />
-                                                </h:inputText>
+                                                </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Payee (Doctor)"> 
-                                                <h:outputLabel value="#{bif.staff.person.name}" rendered="#{bif.staff!=null}" styleClass="fw-bold text-dark"></h:outputLabel>
+                                            <p:column headerText="Payee (Doctor)">
+                                                <h:outputLabel value="#{bif.staff.person.name}" rendered="#{bif.staff!=null}" styleClass="fw-bold text-dark"/>
+                                            </p:column>
+                                            <p:column headerText="Speciality">
+                                                <h:outputLabel value="#{bif.speciality.name}" rendered="#{bif.speciality!=null}"/>
                                             </p:column>
                                             <p:column headerText="Fee Date">
                                                 <h:outputLabel value="#{bif.feeAt}" >
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                 </h:outputLabel>
-                                            </p:column>
-                                            <p:column width="100" styleClass="text-center">
-                                                <p:commandButton ajax="false" 
-                                                                 icon="fa fa-trash"
-                                                                 styleClass="ui-button-danger ui-button-flat rounded-circle" 
-                                                                 action="#{inwardProfessionalBillController.remove(bif)}" />
                                             </p:column>
                                         </p:dataTable>
                                     </p:panel>
@@ -356,14 +354,14 @@
                                     <p:panel id="pBillDetails" styleClass="h-100 shadow-sm border-0">
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-file-invoice text-success" />
-                                            <h:outputLabel class="ms-2 fw-bold" value="Bill Summary"/>
+                                            <h:outputLabel class="ms-2 fw-bold" value="Encounter Summary"/>
                                         </f:facet>
 
                                         <div class="card bg-light border-0">
                                             <div class="card-body">
                                                 <div class="d-flex justify-content-between align-items-center mb-0">
-                                                    <h:outputLabel value="Total Amount" styleClass="fs-5 fw-bold text-muted mb-0" />
-                                                    <h:outputLabel id="tot" value="#{inwardProfessionalBillController.current.total}" 
+                                                    <h:outputLabel value="Total Professional Fees" styleClass="fs-6 fw-bold text-muted mb-0" />
+                                                    <h:outputLabel id="tot" value="#{inwardProfessionalBillController.totalProfessionalFeesForEncounter}"
                                                                    styleClass="fs-3 fw-bold text-primary mb-0">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
@@ -375,7 +373,7 @@
                                             <small class="text-muted d-block mb-2">
                                                 <i class="fa fa-info-circle me-1"></i> Note:
                                             </small>
-                                            <p class="mb-0 small">Professional fees will be added to the patient's final bill.</p>
+                                            <p class="mb-0 small">This total includes all professional fees for this encounter, across all bills.</p>
                                         </div>
 
                                     </p:panel>
