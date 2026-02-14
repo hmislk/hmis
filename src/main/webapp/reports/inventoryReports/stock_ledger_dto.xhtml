@@ -205,8 +205,38 @@
                                 itemLabel="#{item.name}"
                                 itemValue="#{item}"
                                 ></p:autoComplete>
+                            <p:spacer width="20"></p:spacer>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-tags mr-2" />
+                                <p:outputLabel value="Category" for="phmCat" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmCat"
+                                value="#{pharmacyReportController.category}"
+                                class="w-100"
+                                filter="true"
+                                filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Categories"/>
+                                <f:selectItems value="#{pharmaceuticalItemCategoryController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}"/>
+                            </p:selectOneMenu>
 
                             <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-capsules mr-2" />
+                                <p:outputLabel value="Dosage Form" for="phmDf" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="phmDf"
+                                value="#{pharmacyReportController.dosageForm}"
+                                class="w-100"
+                                filter="true"
+                                filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Dosage Forms"/>
+                                <f:selectItems value="#{dosageFormController.items}" var="df" itemLabel="#{df.name}" itemValue="#{df}"/>
+                            </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-file-alt mr-2" />

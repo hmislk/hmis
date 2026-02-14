@@ -199,6 +199,44 @@
                         </p:selectOneMenu>
 
                         <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText styleClass="fa fa-capsules ml-5"/>
+                            <p:outputLabel value="Dosage Form" class="mx-2">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                            id="phmDf"
+                            value="#{pharmacyController.dosageForm}"
+                            class="w-100"
+                            filter="true"
+                            filterMatchMode="contains">
+                            <f:selectItem itemLabel="All Dosage Forms"/>
+                            <f:selectItems value="#{dosageFormController.items}" var="df" itemLabel="#{df.name}" itemValue="#{df}"/>
+                        </p:selectOneMenu>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText styleClass="fa fa-building ml-5"/>
+                            <p:outputLabel value="Department Type" for="departmentTypeFilter" class="mx-2"/>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <p:selectCheckboxMenu
+                                id="departmentTypeFilter"
+                                value="#{pharmacyController.selectedDepartmentTypes}"
+                                label="Select Department Types"
+                                class="w-100"
+                                filter="true"
+                                filterMatchMode="contains"
+                                showHeader="true"
+                                scrollHeight="200"
+                                title="Select one or more department types to filter results. Leave empty to include all.">
+                                <f:selectItems
+                                    value="#{pharmacyController.availableDepartmentTypes}"
+                                    var="depType"
+                                    itemLabel="#{depType.label}"
+                                    itemValue="#{depType}"/>
+                            </p:selectCheckboxMenu>
+                        </h:panelGroup>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText styleClass="fa fa-list-alt ml-5"/>
                             <p:outputLabel value="Type" class="mx-3">
                             </p:outputLabel>
@@ -346,6 +384,7 @@
                                     <p:column headerText="Invoice No" width="5rem"/>
                                     <p:column headerText="Store Name" width="5rem"/>
                                     <p:column headerText="Item Category" width="5rem"/>
+                                    <p:column headerText="Dosage Form" width="5rem"/>
                                     <p:column headerText="Code" width="5rem"/>
                                     <p:column headerText="Item" width="5rem"/>
                                     <p:column headerText="Receiving Time" width="10rem"/>
@@ -388,6 +427,11 @@
                                                 <h:outputText
                                                         value="#{bill.invoiceNumber eq null ? bill.referenceBill.invoiceNumber : bill.invoiceNumber}"
                                                         style="font-weight: bold;"/>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header">
+                                                <h:outputText value="-" style="font-weight: bold;"/>
                                             </f:facet>
                                         </p:column>
                                         <p:column>
@@ -511,6 +555,9 @@
                                     <h:outputText value="#{billItem.item.category.name}"/>
                                 </p:column>
                                 <p:column width="10em">
+                                    <h:outputText value="#{billItem.item.dosageForm.name}"/>
+                                </p:column>
+                                <p:column width="10em">
                                     <h:outputText value="#{billItem.item.code}"/>
                                 </p:column>
                                 <p:column width="10em">
@@ -573,7 +620,7 @@
                             </p:subTable>
                             <p:columnGroup type="footer">
                                 <p:row>
-                                    <p:column footerText="Total" colspan="19"
+                                    <p:column footerText="Total" colspan="20"
                                               style="text-align: center; font-weight: bold;">
                                         <h:outputText value="Total" style="font-weight: bold;"/>
                                     </p:column>
