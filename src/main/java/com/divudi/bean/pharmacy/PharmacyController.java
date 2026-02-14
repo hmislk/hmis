@@ -9051,7 +9051,7 @@ public class PharmacyController implements Serializable {
         }
 
         if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
-            sql += " AND EXISTS (SELECT bi FROM b.billItems bi WHERE bi.item.departmentType IN :departmentTypes)";
+            sql += " AND b.departmentType IN :departmentTypes";
             tmp.put("departmentTypes", selectedDepartmentTypes);
         }
 
