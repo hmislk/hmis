@@ -1056,7 +1056,7 @@ public class InwardProfessionalBillController implements Serializable {
     public BillFee getCurrentBillFee() {
         if (currentBillFee == null) {
             currentBillFee = new BillFee();
-
+            currentBillFee.setFeeAt(new Date());
         }
 
         return currentBillFee;

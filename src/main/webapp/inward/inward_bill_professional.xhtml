@@ -282,17 +282,31 @@
 
                                         <div class="row mb-3 align-items-center">
                                             <div class="col-md-4">
-                                                <h:outputLabel value="Fee Date" styleClass="fw-bold"/>
+                                                <h:outputLabel value="Fee at" styleClass="fw-bold"/>
                                             </div>
                                             <div class="col-md-8">
-                                                <p:datePicker 
-                                                    value="#{inwardProfessionalBillController.currentBillFee.feeAt}" 
+                                                <p:datePicker
+                                                    value="#{inwardProfessionalBillController.currentBillFee.feeAt}"
                                                     id="feeAt"
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                                     styleClass="w-100"
                                                     showTime="true"
-                                                    timeInput="true" >                               
-                                                </p:datePicker> 
+                                                    timeInput="true" >
+                                                </p:datePicker>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mb-3 align-items-center">
+                                            <div class="col-md-4">
+                                                <h:outputLabel value="Comments" styleClass="fw-bold"/>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <p:inputTextarea
+                                                    value="#{inwardProfessionalBillController.current.comments}"
+                                                    id="comments"
+                                                    rows="2"
+                                                    placeholder="Optional comments..."
+                                                    styleClass="w-100" />
                                             </div>
                                         </div>
 
@@ -329,20 +343,23 @@
                                             <p:column headerText="No" width="50">
                                                 <h:outputLabel value="#{rowIndex + 1}"/>
                                             </p:column>
-                                            <p:column headerText="Fee">
-                                                <h:outputLabel value="#{bif.feeValue}" styleClass="text-end">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Payee (Doctor)">
-                                                <h:outputLabel value="#{bif.staff.person.name}" rendered="#{bif.staff!=null}" styleClass="fw-bold text-dark"/>
-                                            </p:column>
                                             <p:column headerText="Speciality">
                                                 <h:outputLabel value="#{bif.speciality.name}" rendered="#{bif.speciality!=null}"/>
                                             </p:column>
-                                            <p:column headerText="Fee Date">
+                                            <p:column headerText="Doctor">
+                                                <h:outputLabel value="#{bif.staff.person.name}" rendered="#{bif.staff!=null}" styleClass="fw-bold text-dark"/>
+                                            </p:column>
+                                            <p:column headerText="Fee at">
                                                 <h:outputLabel value="#{bif.feeAt}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Comments">
+                                                <h:outputLabel value="#{bif.bill.comments}" />
+                                            </p:column>
+                                            <p:column headerText="Fee" styleClass="text-end">
+                                                <h:outputLabel value="#{bif.feeValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
                                         </p:dataTable>
