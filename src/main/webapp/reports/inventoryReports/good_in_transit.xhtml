@@ -417,10 +417,7 @@
                                 <h:outputLabel value="#{bi.billItem.item.code}"/>
                             </p:column>
                             <p:column headerText="Dosage Form">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Dosage Form"/>
-                                </f:facet>
-                                <h:outputLabel value="#{bi.billItem.item.dosageForm.name}"/>
+                                <h:outputLabel value="#{bi.billItem.item.dosageForm != null ? bi.billItem.item.dosageForm.name : ''}"/>
                             </p:column>
                             <p:column headerText="Stock"
                                       sortBy="#{bi.billItem.pharmaceuticalBillItem.qty}"
