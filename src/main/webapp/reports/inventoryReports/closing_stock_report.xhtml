@@ -240,8 +240,6 @@
                                 itemLabel="#{item.name}"
                                 itemValue="#{item}"/>
 
-                            <p:spacer width="20"/>
-
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-box mr-2"/>
                                 <p:outputLabel value="Is Consignment Item" for="consignmentItem" class="m-3">
@@ -347,7 +345,7 @@
                                 <p:column headerText="Item Category" width="12em">
                                     <h:outputText value="#{f.item.category.name}"/>
                                 </p:column>
-                                <p:column headerText="Dosage Form" width="10em">
+                                <p:column headerText="Dosage Form" width="30em">
                                     <h:outputText value="#{f.item.dosageForm.name}"/>
                                 </p:column>
                                 <p:column
@@ -500,7 +498,8 @@
                                     <h:outputText value="#{p.item.category.name}"/>
                                 </p:column>
                                 <p:column headerText="Dosage Form" width="10em">
-                                    <h:outputText value="#{p.item.dosageForm.name}"/>
+                                    D - 
+                                    <h:outputText value="#{p.item.dosageForm}"/>
                                 </p:column>
                                 <p:column
                                     headerText="Item Code"
