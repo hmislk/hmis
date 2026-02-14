@@ -203,6 +203,8 @@
                                                var="category"
                                                itemLabel="#{category.name}" itemValue="#{category}"/>
                             </p:selectOneMenu>
+                            
+                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-capsules mr-2"/>
@@ -219,7 +221,7 @@
                                 <f:selectItems value="#{dosageFormController.items}" var="df" itemLabel="#{df.name}" itemValue="#{df}"/>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20"/>
+                           <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-box mr-2"/>
