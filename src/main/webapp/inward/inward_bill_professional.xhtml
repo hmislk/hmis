@@ -73,7 +73,7 @@
                                                     <h:outputLabel value="#{apt2.patient.person.nameWithTitle}"/>
                                                 </p:column>
                                                 <p:column headerText="Room" style="padding: 6px; width: 8em;">
-                                                    <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                                                    <h:outputLabel value="#{apt2.currentPatientRoom ne null and apt2.currentPatientRoom.roomFacilityCharge ne null ? apt2.currentPatientRoom.roomFacilityCharge.name : ''}"/>
                                                 </p:column>
                                                 <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
                                                     <div class="d-flex justify-content-center">
