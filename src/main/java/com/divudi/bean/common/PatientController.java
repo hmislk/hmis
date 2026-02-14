@@ -58,12 +58,15 @@ import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.SpecificPatientStatus;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.facade.AuditEventFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.MembershipService;
+import com.divudi.service.AuditService;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -147,6 +150,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private PatientInvestigationFacade patientInvestigationFacade;
     @EJB
     MembershipService membershipService;
+    @EJB
+    private AuditEventFacade auditEventFacade;
+    @EJB 
+    AuditService auditService;
     /**
      *
      * Controllers
@@ -280,6 +287,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private boolean reGenerateePhn;
     private PaymentMethod paymentMethod;
     private String blacklistComment;
+    private boolean isNewPatient;
+    private Object before;
     
     public boolean isBlackListStatus() {
         return blackListStatus;
@@ -1069,8 +1078,59 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         reGenerateePhn = webUserController.hasPrivilege("EditData");
-
+        
+        isNewPatient = false;
+        before = createPatientJson(current);
         return "/opd/patient_edit?faces-redirect=true";
+    }
+    
+    public Object createPatientJson(Patient patient){
+        Map<String , Object> json = new HashMap<>();
+        json.put("patientId", patient.getId());
+        json.put("phn", patient.getPhn());
+        json.put("code", patient.getCode());
+        
+        if (patient.getPerson() != null){
+            Map<String , Object> patientMap = new HashMap<>();
+            patientMap.put("id",patient.getPerson().getId());
+            patientMap.put("name",patient.getPerson().getName());
+            // Format date safely
+            if (patient.getPerson().getDob() != null) {
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                patientMap.put("dob", sdf.format(patient.getPerson().getDob()));
+            } else {
+                patientMap.put("dob", null);
+            }
+            
+            patientMap.put("sex", patient.getPerson().getSex() != null ? 
+                patient.getPerson().getSex().toString() : null);
+            patientMap.put("nic", patient.getPerson().getNic());
+            patientMap.put("phone", patient.getPerson().getPhone());
+            patientMap.put("mobile", patient.getPerson().getMobile());
+            patientMap.put("address", patient.getPerson().getAddress());
+            patientMap.put("email", patient.getPerson().getEmail());
+            
+            json.put("person", patientMap);
+        }
+          // Add creation details
+        if (patient.getCreatedAt() != null) {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            json.put("createdAt", sdf.format(patient.getCreatedAt()));
+        } else {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            json.put("createdAt", sdf.format(new Date()));
+        }
+        
+        // Get creator name safely
+        String createdBy = "system";
+        if (patient.getCreater() != null && patient.getCreater().getWebUserPerson() != null) {
+            createdBy = patient.getCreater().getWebUserPerson().getName();
+        } else if (sessionController != null && sessionController.getLoggedUser() != null && 
+                   sessionController.getLoggedUser().getWebUserPerson() != null) {
+            createdBy = sessionController.getLoggedUser().getWebUserPerson().getName();
+        }
+        json.put("createdBy", createdBy);
+        return json;
     }
 
     public String navigateToOpdPatientEditFromId() {
@@ -1083,7 +1143,6 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-
         return "/opd/patient?faces-redirect=true";
     }
 
@@ -3051,6 +3110,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getCurrent();
 
         reGenerateePhn = true;
+        isNewPatient = true;
         return "/opd/patient_edit?faces-redirect=true";
     }
 
@@ -3063,6 +3123,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigateToAddNewPatientForOpd(String name, String nic, String phone) {
         current = null;
         getCurrent();
+        isNewPatient = true;
         getCurrent().getPerson().setName(name);
         getCurrent().getPerson().setNic(nic);
         getCurrent().getPerson().setPhone(phone);
@@ -3083,6 +3144,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public String navigateToAddNewPatientForOpd(String phone) {
         current = null;
         getCurrent();
+        isNewPatient = true;
         getCurrent().getPerson().setPhone(phone);
         getCurrent().getPerson().setMobile(phone);
         return "/opd/patient_edit?faces-redirect=true";
@@ -3160,7 +3222,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            JsfUtil.addErrorMessage("Nothing to Delete");
+             JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -3178,7 +3240,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            JsfUtil.addErrorMessage("Nothing to Delete");
+             JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -3307,7 +3369,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         return "/opd/patient?faces-redirect=true";
     }
-
+    
+    public AuditEventFacade getAuditEventFacade(){
+        return auditEventFacade;
+    }
+    
     public boolean saveSelected(Patient p) {
         if (p == null) {
             JsfUtil.addErrorMessage("No Current. Error. NOT SAVED");
@@ -3385,7 +3451,36 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().editAndFlush(p);    // Immediate flush to database
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
         }
+        createAuditEventPatientSaved(p);
         return true;
+    }
+    public void createAuditEventPatientSaved(Patient patient){
+         try {
+        
+        if (isNewPatient == true){
+            before = null;
+        }
+        Object after = createPatientJson(patient);
+        
+        // Determine event trigger
+        String eventTrigger = isNewPatient ? "Create patient" : "Update patient";
+        
+        // Log the audit
+        Long objectId = patient.getId();
+        auditService.logAudit(
+            before, 
+            after, 
+            sessionController.getLoggedUser(), 
+            "Patient", 
+            eventTrigger, 
+            objectId
+        );
+        
+    } catch (Exception e) {
+        // Don't let audit failures break the patient save operation
+        System.err.println("Error creating audit event: " + e.getMessage());
+        e.printStackTrace();
+    }
     }
 
     public List<Patient> findPatientUsingPhnNumber(String phn) {
