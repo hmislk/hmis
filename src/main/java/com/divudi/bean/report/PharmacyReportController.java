@@ -5187,7 +5187,24 @@ public class PharmacyReportController implements Serializable {
                 Double stockOut = f.getStockOutQty();
                 table.addCell(createCell(stockOut != null ? DECIMAL_FORMAT.format(stockOut) : "", cellFont));
 
-                double closingStock = f.getItemStock() != null ? f.getItemStock() : 0.0;
+                double closingStock = 0.0;
+                if ("byBatch".equals(stockLedgerReportType)) {
+                    if (department != null) {
+                        closingStock = f.getStockQty() != null ? f.getStockQty() : 0.0;
+                    } else if (institution != null) {
+                        closingStock = f.getInstituionBatchQty() != null ? f.getInstituionBatchQty() : 0.0;
+                    } else {
+                        closingStock = f.getTotalBatchQty() != null ? f.getTotalBatchQty() : 0.0;
+                    }
+                } else {
+                    if (department != null) {
+                        closingStock = f.getItemStock() != null ? f.getItemStock() : 0.0;
+                    } else if (institution != null) {
+                        closingStock = f.getInstitutionItemStock() != null ? f.getInstitutionItemStock() : 0.0;
+                    } else {
+                        closingStock = f.getTotalItemStock() != null ? f.getTotalItemStock() : 0.0;
+                    }
+                }
                 table.addCell(createCell(DECIMAL_FORMAT.format(closingStock), cellFont));
 
                 double purchaseRate = f.getPurchaseRate() != null ? f.getPurchaseRate() : 0.0;
