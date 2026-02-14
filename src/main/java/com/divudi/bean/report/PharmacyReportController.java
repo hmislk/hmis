@@ -4739,6 +4739,7 @@ public class PharmacyReportController implements Serializable {
         reportTimerController.trackReportExecution(() -> {
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             List<BillType> billTypes = new ArrayList<>();
+            boolean excludeAllBillTypes = false;
 
             if ("ipSaleDoc".equals(documentType)) {
                 billTypes.add(BillType.PharmacyBhtPre);
@@ -4792,13 +4793,8 @@ public class PharmacyReportController implements Serializable {
                 billTypes.add(BillType.PharmacyStockAdjustmentBill);
 
             } else if ("rateAdjustmentDoc".equals(documentType)) {
-
-//                Rate adjustments should NOT be listed 
-//                billTypeAtomics.add(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
-//                billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
-//                billTypeAtomics.add(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT);
-//                billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT);
-//                billTypeAtomics.add(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
+                // Rate adjustments should NOT be listed in the stock ledger
+                excludeAllBillTypes = true;
             } else {
                 billTypes.add(BillType.PharmacyBhtPre);
 
@@ -4867,7 +4863,9 @@ public class PharmacyReportController implements Serializable {
                 jpql += " and s.department.site=:sit ";
                 m.put("sit", site);
             }
-            if (!billTypeAtomics.isEmpty() || !billTypes.isEmpty()) {
+            if (excludeAllBillTypes) {
+                jpql += " and 1=0";
+            } else if (!billTypeAtomics.isEmpty() || !billTypes.isEmpty()) {
                 jpql += " and (";
                 if (!billTypeAtomics.isEmpty()) {
                     jpql += " s.pbItem.billItem.bill.billTypeAtomic in :dtype";
@@ -4905,6 +4903,7 @@ public class PharmacyReportController implements Serializable {
         reportTimerController.trackReportExecution(() -> {
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             List<BillType> billTypes = new ArrayList<>();
+            boolean excludeAllBillTypes = false;
 
             if ("ipSaleDoc".equals(documentType)) {
                 billTypes.add(BillType.PharmacyBhtPre);
@@ -4947,7 +4946,8 @@ public class PharmacyReportController implements Serializable {
                 billTypeAtomics.add(BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED);
                 billTypes.add(BillType.PharmacyStockAdjustmentBill);
             } else if ("rateAdjustmentDoc".equals(documentType)) {
-                // Rate adjustments should NOT be listed
+                // Rate adjustments should NOT be listed in the stock ledger
+                excludeAllBillTypes = true;
             } else {
                 billTypes.add(BillType.PharmacyBhtPre);
                 billTypes.add(BillType.PharmacyPre);
@@ -5070,7 +5070,9 @@ public class PharmacyReportController implements Serializable {
                 jpql.append(" AND s.department.site = :sit");
                 m.put("sit", site);
             }
-            if (!billTypeAtomics.isEmpty() || !billTypes.isEmpty()) {
+            if (excludeAllBillTypes) {
+                jpql.append(" AND 1=0");
+            } else if (!billTypeAtomics.isEmpty() || !billTypes.isEmpty()) {
                 jpql.append(" AND (");
                 if (!billTypeAtomics.isEmpty()) {
                     jpql.append(" b.billTypeAtomic IN :dtype");
