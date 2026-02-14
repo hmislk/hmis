@@ -385,7 +385,7 @@
                                     <h:outputText value="#{f.item.category.name}"/>
                                 </p:column>
                                 <p:column headerText="Dosage Form">
-                                    <h:outputText value="#{f.item.dosageForm.name}"/>
+                                    <h:outputText value="#{f.item.dosageForm ne null ? f.item.dosageForm.name : ''}"/>
                                 </p:column>
                                 <p:column headerText="Supplier(Last Purchase)">
                                     <h:outputText value="#{f.lastPurchaseSupplier.name}"/>
@@ -478,7 +478,7 @@
                                     <h:outputText value="#{s.item.category.name}"/>
                                 </p:column>
                                 <p:column headerText="Dosage Form">
-                                    <h:outputText value="#{s.item.dosageForm.name}"/>
+                                    <h:outputText value="#{s.item.dosageForm ne null ? s.item.dosageForm.name : ''}"/>
                                 </p:column>
                                 <p:column headerText="Supplier(Last Purchase)">
                                     <h:outputText value="#{s.lastPurchaseSupplier.name}"/>
@@ -572,7 +572,7 @@
                                     <h:outputText value="#{no.item.category.name}"/>
                                 </p:column>
                                 <p:column headerText="Dosage Form">
-                                    <h:outputText value="#{no.item.dosageForm.name}"/>
+                                    <h:outputText value="#{no.item.dosageForm ne null ? no.item.dosageForm.name : ''}"/>
                                 </p:column>
                                 <p:column headerText="Supplier(Last Purchase)">
                                     <h:outputText value="#{no.lastSupplier.name}"/>

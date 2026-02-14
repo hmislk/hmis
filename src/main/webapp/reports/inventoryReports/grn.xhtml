@@ -5,7 +5,8 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
 <h:body>
     <ui:composition template="/reports/index.xhtml">
         <ui:define name="subcontent">
@@ -226,13 +227,16 @@
                                 filterMatchMode="contains"
                                 showHeader="true"
                                 scrollHeight="200"
-                                title="Select one or more department types to filter results. Leave empty to include all.">
+                                title="Select one or more department types to filter results. Leave empty to include all."
+                                pt:aria-label="Select one or more department types to filter results. Leave empty to include all.">
                                 <f:selectItems
                                     value="#{pharmacyController.availableDepartmentTypes}"
                                     var="depType"
                                     itemLabel="#{depType.label}"
                                     itemValue="#{depType}"/>
                             </p:selectCheckboxMenu>
+                            <p:tooltip for="departmentTypeFilter"
+                                       value="Select one or more department types to filter results. Leave empty to include all." />
                         </h:panelGroup>
 
                         <h:panelGroup layout="block" styleClass="form-group">
