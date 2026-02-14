@@ -12,7 +12,7 @@
 
     <ui:define name="content">  
         <h:form id="form">
-            <h:panelGroup rendered="#{inwardProfessionalBillController.current.patientEncounter eq null}">
+            <h:panelGroup rendered="#{!inwardProfessionalBillController.printPreview and inwardProfessionalBillController.current.patientEncounter eq null}">
                 <div class="row justify-content-center mt-5">
                     <div class="col-md-10 col-lg-7">
 
@@ -124,7 +124,7 @@
                 </div>
             </h:panelGroup>
 
-            <h:panelGroup rendered="#{inwardProfessionalBillController.current.patientEncounter ne null}">
+            <h:panelGroup rendered="#{!inwardProfessionalBillController.printPreview and inwardProfessionalBillController.current.patientEncounter ne null}">
                 <p:panel styleClass="border-0">
                     <f:facet name="header" >
                         <div class="d-flex justify-content-between align-items-center">
@@ -148,10 +148,14 @@
                                             ajax="false"
                                             icon="fa fa-id-card"
                                             title="Inpatient Profile"
-                                            class="ui-button-secondary ui-button-outlined" 
+                                            class="ui-button-secondary ui-button-outlined"
                                             action="#{bhtSummeryController.navigateToInpatientProfile()}">
-                                            <f:setPropertyActionListener 
-                                                target="#{admissionController.current}" 
+                                            <f:setPropertyActionListener
+                                                target="#{bhtSummeryController.patientEncounter}"
+                                                value="#{inwardProfessionalBillController.current.patientEncounter}" >
+                                            </f:setPropertyActionListener>
+                                            <f:setPropertyActionListener
+                                                target="#{admissionController.current}"
                                                 value="#{inwardProfessionalBillController.current.patientEncounter}" >
                                             </f:setPropertyActionListener>
                                         </p:commandButton>
@@ -312,13 +316,14 @@
 
                                         <div class="row mt-4">
                                             <div class="col-12">
-                                                <p:commandButton 
-                                                    value="Add to Bill" 
+                                                <p:commandButton
+                                                    value="Add Professional Fee"
                                                     icon="fa fa-plus"
                                                     styleClass="w-100 ui-button-success shadow-sm rounded"
-                                                    id="btn" 
-                                                    action="#{inwardProfessionalBillController.addToProBill()}" 
-                                                    ajax="false" />
+                                                    id="btn"
+                                                    action="#{inwardProfessionalBillController.addToProBill()}"
+                                                    ajax="false"
+                                                    onclick="return confirm('Are you sure you want to add this professional fee?');" />
                                             </div>
                                         </div>
                                     </div>
@@ -400,6 +405,118 @@
 
                     </h:panelGroup>
                 </p:panel>
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{inwardProfessionalBillController.printPreview}">
+                <div class="row justify-content-center mt-5">
+                    <div class="col-md-10 col-lg-8">
+                        <p:panel styleClass="border-0 shadow">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h:outputText styleClass="fas fa-check-circle fa-lg text-success" />
+                                        <p:outputLabel value="Professional Fee Saved Successfully" class="ms-2 fs-5 fw-bold"/>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            type="button"
+                                            value="Print"
+                                            icon="fa fa-print"
+                                            styleClass="ui-button-primary">
+                                            <p:printer target="printArea" />
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            value="Add Another Professional Fee"
+                                            icon="fa fa-plus"
+                                            styleClass="ui-button-success"
+                                            ajax="false"
+                                            actionListener="#{inwardProfessionalBillController.addAnotherProfessionalFee()}" />
+
+                                        <p:commandButton
+                                            value="Change Patient / New Encounter"
+                                            icon="fa fa-users"
+                                            styleClass="ui-button-warning"
+                                            ajax="false"
+                                            actionListener="#{inwardProfessionalBillController.makeNull()}" />
+                                    </div>
+                                </div>
+                            </f:facet>
+
+                            <h:panelGroup id="printArea" layout="block">
+                                <div class="p-4">
+                                    <div class="row mb-4">
+                                        <div class="col-md-6">
+                                            <table class="table table-borderless mb-0">
+                                                <tr>
+                                                    <td class="fw-bold text-muted" style="width:40%">Bill No</td>
+                                                    <td>#{inwardProfessionalBillController.current.deptId}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fw-bold text-muted">Patient</td>
+                                                    <td>#{inwardProfessionalBillController.current.patientEncounter.patient.person.nameWithTitle}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fw-bold text-muted">BHT No</td>
+                                                    <td>#{inwardProfessionalBillController.current.patientEncounter.bhtNo}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-borderless mb-0">
+                                                <tr>
+                                                    <td class="fw-bold text-muted" style="width:40%">Bill Date</td>
+                                                    <td>
+                                                        <h:outputText value="#{inwardProfessionalBillController.current.billDate}">
+                                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fw-bold text-muted">Bill Total</td>
+                                                    <td class="fs-5 fw-bold text-primary">
+                                                        <h:outputText value="#{inwardProfessionalBillController.current.netTotal}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fw-bold text-muted">Comments</td>
+                                                    <td>#{inwardProfessionalBillController.current.comments}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <p:dataTable rowIndexVar="rowIndex"
+                                                 value="#{inwardProfessionalBillController.lstBillFees}" var="bif"
+                                                 styleClass="border-0"
+                                                 emptyMessage="No fees found.">
+                                        <p:column headerText="No" width="50">
+                                            <h:outputLabel value="#{rowIndex + 1}"/>
+                                        </p:column>
+                                        <p:column headerText="Speciality">
+                                            <h:outputLabel value="#{bif.speciality.name}" rendered="#{bif.speciality != null}"/>
+                                        </p:column>
+                                        <p:column headerText="Doctor">
+                                            <h:outputLabel value="#{bif.staff.person.name}" rendered="#{bif.staff != null}" styleClass="fw-bold"/>
+                                        </p:column>
+                                        <p:column headerText="Fee Date">
+                                            <h:outputLabel value="#{bif.feeAt}">
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Fee" styleClass="text-end">
+                                            <h:outputLabel value="#{bif.feeValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </h:panelGroup>
+                        </p:panel>
+                    </div>
+                </div>
             </h:panelGroup>
 
         </h:form>

@@ -951,6 +951,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return "";
         }
 
+        patientDetailsEditable = false;
         if (configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)) {
             current.getPatient().setEditingMode(false);
             bhtSummeryController.setPatientEncounter(current);

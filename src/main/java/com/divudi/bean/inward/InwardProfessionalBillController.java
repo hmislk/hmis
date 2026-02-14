@@ -626,8 +626,8 @@ public class InwardProfessionalBillController implements Serializable {
         }
 
         currentBillFee.setPatienEncounter(getCurrent().getPatientEncounter());
-        currentBillFee.setOrderNo(lstBillFees.size() + 1);
-        lstBillFees.add(getCurrentBillFee());
+        currentBillFee.setOrderNo(getLstBillFees().size() + 1);
+        getLstBillFees().add(getCurrentBillFee());
 
         calTotals();
         //    clearBillItemValues();
@@ -728,6 +728,8 @@ public class InwardProfessionalBillController implements Serializable {
 
         fetchEncounterProfessionalFees();
 
+        printPreview = true;
+
         JsfUtil.addSuccessMessage("Bill Saved");
 
     }
@@ -754,8 +756,23 @@ public class InwardProfessionalBillController implements Serializable {
         Date toDate = null;
         current = null;
         batchBill = null;
+        printPreview = false;
         makeNullList();
 
+    }
+
+    public void addAnotherProfessionalFee() {
+        PatientEncounter pe = null;
+        if (current != null) {
+            pe = current.getPatientEncounter();
+        }
+        current = null;
+        printPreview = false;
+        makeNullList();
+        if (pe != null) {
+            getCurrent().setPatientEncounter(pe);
+            fetchEncounterProfessionalFees();
+        }
     }
 
     public void selectPatientEncounter() {
