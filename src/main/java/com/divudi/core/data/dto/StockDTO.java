@@ -40,6 +40,7 @@ public class StockDTO implements Serializable {
     private Boolean discountAllowed = true;  // Default to true for safety
     // Category ID for price matrix discount calculations
     private Long categoryId;
+    private String dosageFormName;
 
     public StockDTO() {
     }
@@ -163,6 +164,36 @@ public class StockDTO implements Serializable {
         this.purchaseRate = purchaseRate;
         this.costRate = costRate;
         this.retailRate = retailRate;
+    }
+
+    // Constructor for department stock report by batch using DTO (with dosage form)
+    public StockDTO(Long id,
+                    String categoryName,
+                    String itemName,
+                    DepartmentType departmentType,
+                    String code,
+                    String genericName,
+                    Date dateOfExpire,
+                    String batchNo,
+                    Double stockQty,
+                    Double purchaseRate,
+                    Double costRate,
+                    Double retailRate,
+                    String dosageFormName) {
+        this.id = id;
+        this.stockId = id;
+        this.categoryName = categoryName;
+        this.itemName = itemName;
+        this.departmentType = departmentType;
+        this.code = code;
+        this.genericName = genericName;
+        this.dateOfExpire = dateOfExpire;
+        this.batchNo = batchNo;
+        this.stockQty = stockQty;
+        this.purchaseRate = purchaseRate;
+        this.costRate = costRate;
+        this.retailRate = retailRate;
+        this.dosageFormName = dosageFormName;
     }
 
     // Constructor for stock count bill generation (optimized for performance)
@@ -493,5 +524,13 @@ public class StockDTO implements Serializable {
 
     public void setCategoryId(Long categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public String getDosageFormName() {
+        return dosageFormName;
+    }
+
+    public void setDosageFormName(String dosageFormName) {
+        this.dosageFormName = dosageFormName;
     }
 }
