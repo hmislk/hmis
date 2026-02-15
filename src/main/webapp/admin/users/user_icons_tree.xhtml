@@ -1,0 +1,119 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      template="/resources/template/template.xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+      >
+    <h:body>
+        <ui:composition template="/admin/users/user_list.xhtml">
+            <ui:define name="users">
+                <h:panelGroup rendered="#{not webUserController.hasPrivilege('AdminManagingUsers') and not sessionController.firstLogin}" >
+                    <na:not_authorize />
+                </h:panelGroup>
+
+                <p:panel class="w-100" rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}" >
+                    <f:facet name="header">
+                        <i class="fa fa-th" />
+                        <h:outputLabel class="mx-2" value="Manage User Icons (Bulk)"/>
+                    </f:facet>
+
+                    <h:panelGrid columns="3"
+                        class="w-100 m-1 p-1"
+                        columnClasses="custom-col-20, custom-col-40, custom-col-20">
+                        <p:outputLabel value="User Name" />
+                        <p:outputLabel class="form-control w-100" value="#{userIconController.user.name}" />
+                        <h:outputText value="" />
+
+                        <p:outputLabel value="Department" />
+                        <h:panelGroup class="d-flex align-items-center">
+                            <p:selectOneMenu
+                                id="cmbDepartment"
+                                placeholder="Department"
+                                value="#{userIconController.department}"
+                                class="flex-grow-1 me-2"
+                                filter="true">
+                                <f:selectItem itemLabel="Select" />
+                                <f:selectItems
+                                    value="#{userIconController.departments}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectOneMenu>
+                            <p:commandButton
+                                id="btnSetMyDepartment"
+                                title="Set to My Department"
+                                icon="fa fa-user"
+                                class="ui-button-success"
+                                style="min-width: 40px;"
+                                rendered="#{sessionController.department ne null}"
+                                actionListener="#{userIconController.setDepartmentToLoggedUser}"
+                                update="cmbDepartment"
+                                />
+                        </h:panelGroup>
+                        <p:commandButton
+                            id="btnListIcons"
+                            title="List Icons for the Department"
+                            value="List Icons"
+                            class="ui-button-success w-100 mx-2"
+                            ajax="false"
+                            icon="fa fa-list"
+                            action="#{userIconController.fillIconTreeSelections}"
+                            />
+                    </h:panelGrid>
+
+                    <h:panelGroup id="gpIconTree">
+
+                        <h:panelGroup rendered="#{userIconController.iconsLoaded}">
+                            <div class="w-100 mt-2 mb-2">
+                                <p:commandButton
+                                    value="Save Icons"
+                                    action="#{userIconController.saveIconsFromTree}"
+                                    class="ui-button-warning"
+                                    ajax="false"
+                                    icon="fa fa-save"
+                                    style="float: right" />
+                            </div>
+
+                            <p:outputLabel
+                                value="Search"
+                                class="m-1"
+                                for="txtIconSearch" />
+                            <p:inputText
+                                id="txtIconSearch"
+                                class="m-1"
+                                value="#{userIconController.iconSearchText}"
+                                autocomplete="off">
+                                <p:ajax
+                                    event="keyup"
+                                    process="@this"
+                                    listener="#{userIconController.filterIcons}"
+                                    update="iconTree"
+                                    oncomplete="PF('iconTreeWidget').filter()" />
+                            </p:inputText>
+                            <p:tree
+                                id="iconTree"
+                                widgetVar="iconTreeWidget"
+                                selectionMode="checkbox"
+                                datakey="#{node}"
+                                selection="#{userIconController.selectedIconNodes}"
+                                value="#{userIconController.rootIconTreeNode}"
+                                var="node"
+                                propagateSelectionDown="true"
+                                propagateSelectionUp="true">
+                                <p:treeNode>
+                                    <h:outputText value="#{node}" />
+                                </p:treeNode>
+                            </p:tree>
+                        </h:panelGroup>
+
+                    </h:panelGroup>
+
+                </p:panel>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
