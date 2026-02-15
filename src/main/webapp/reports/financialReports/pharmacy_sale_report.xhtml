@@ -194,8 +194,9 @@
                             <p:commandButton 
                                 class="ui-button-primary mx-1"
                                 icon="fas fa-print"
-                                ajax="false"
-                                value="Print All" />
+                                type="button"
+                                value="Print All"
+                                onclick="printReportData()" />
 
                             <p:commandButton 
                                 class="ui-button-success mx-1"
@@ -519,6 +520,40 @@
                         </p:panel>
 
                     </p:panel>
+
+                    <style type="text/css" media="print">
+                        body * {
+                            visibility: hidden;
+                        }
+                        #printPanel, #printPanel * {
+                            visibility: visible;
+                        }
+                        #printPanel {
+                            position: absolute;
+                            left: 0;
+                            top: 0;
+                            width: 100%;
+                        }
+                        #printPanel table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            font-size: 10pt;
+                        }
+                        #printPanel th, #printPanel td {
+                            border: 1px solid #333;
+                            padding: 4px 6px;
+                        }
+                        @page {
+                            size: landscape;
+                            margin: 10mm;
+                        }
+                    </style>
+
+                    <script type="text/javascript">
+                        function printReportData() {
+                            window.print();
+                        }
+                    </script>
 
                 </h:form>
 
