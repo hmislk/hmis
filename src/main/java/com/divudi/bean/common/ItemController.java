@@ -2327,38 +2327,36 @@ public class ItemController implements Serializable {
         List<Item> suggestions = new ArrayList<>();
         if (query == null || query.trim().isEmpty()) {
             return suggestions;
-        } else {
-            String[] words = query.split("\\s+");
-            String sql = "SELECT c FROM Item c WHERE c.retired = false AND type(c) = :amp AND "
-                    + "(c.departmentType IS NULL OR c.departmentType != :dep) AND (";
-
-            // Dynamic part of the query for the name field using each word
-            StringBuilder nameConditions = new StringBuilder();
-            for (int i = 0; i < words.length; i++) {
-                if (i > 0) {
-                    nameConditions.append(" AND ");
-                }
-                nameConditions.append("LOWER(c.name) LIKE :nameStr").append(i);
-            }
-
-            // Adding name conditions and the static conditions for code and barcode
-            sql += "(" + nameConditions + ") OR LOWER(c.code) LIKE :codeStr "
-                    + "OR LOWER(c.barcode) LIKE :barcodeStr OR c.barcode = :exactBarcodeStr) "
-                    + "ORDER BY c.name";
-
-            // Setting parameters
-            HashMap<String, Object> tmpMap = new HashMap<>();
-            tmpMap.put("dep", DepartmentType.Store);
-            tmpMap.put("amp", Amp.class);
-            tmpMap.put("codeStr", "%" + query.toLowerCase() + "%");
-            tmpMap.put("barcodeStr", "%" + query.toLowerCase() + "%");
-            tmpMap.put("exactBarcodeStr", query);
-
-            for (int i = 0; i < words.length; i++) {
-                tmpMap.put("nameStr" + i, "%" + words[i].toLowerCase() + "%");
-            }
-            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
+
+        String[] words = query.split("\\s+");
+
+        StringBuilder jpql = new StringBuilder(
+                "SELECT c FROM Item c WHERE c.retired = false AND c.inactive = false AND type(c) = :amp AND (");
+
+        StringBuilder nameConditions = new StringBuilder();
+        for (int i = 0; i < words.length; i++) {
+            if (i > 0) {
+                nameConditions.append(" AND ");
+            }
+            nameConditions.append("LOWER(c.name) LIKE :nameStr").append(i);
+        }
+
+        jpql.append("(").append(nameConditions).append(")")
+                .append(" OR LOWER(c.code) = :code")
+                .append(" OR c.barcode = :barcode)")
+                .append(" ORDER BY c.name");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("amp", Amp.class);
+        params.put("code", query.toLowerCase().trim());
+        params.put("barcode", query.trim());
+
+        for (int i = 0; i < words.length; i++) {
+            params.put("nameStr" + i, "%" + words[i].toLowerCase() + "%");
+        }
+
+        suggestions = getFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP, 30);
         return suggestions;
     }
 
