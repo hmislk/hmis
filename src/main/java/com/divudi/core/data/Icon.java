@@ -137,7 +137,37 @@ public enum Icon {
     pharmacy_bill_search("Pharmacy Bill Search"),
     pharmacy_bill_search_new("Pharmacy Bill Search (New)"),
     pharmacy_disposal_issue("Pharmacy Disposal - Direct Issue"),
-    Patient_Deposit_Management("Patient Deposit Management");
+    Patient_Deposit_Management("Patient Deposit Management"),
+
+    //for Inpatient Section
+    Edit_Admission_Details("Edit Admission Details"),
+    Change_Patient_for_Admission("Change Patient for Admission"),
+    Appointment_Admission("Appointment Admission"),
+    Manage_Appointment("Manage Appointment"),
+    Room_Reservations("Room Reservations"),
+    Room_Occupancy("Room Occupancy"),
+    Room_Vacancy("Room Vacancy"),
+    Admit_Room("Admit Room"),
+    Room_Change("Room Change"),
+    Guardian_Room_Change("Guardian Room Change"),
+    Add_Services_Investigations("Add Services and Investigations"),
+    Add_Services_With_Payments("Add Services and Investigations with Payments"),
+    Add_Outside_Charges("Add Outside Charges"),
+    Add_Professional_Fee("Add Professional Fee"),
+    Add_Estimated_Professional_Fee("Add Estimated Professional Fee"),
+    Add_Timed_Services("Add Timed Services"),
+    Interim_Bill("Interim Bill"),
+    Interim_Bill_Estimated("Interim Bill - Estimated Professional Fees"),
+    Interim_Bill_Search("Interim Bill Search"),
+    Search_Service_Bill("Search Service Bill"),
+    Search_Professional_Bill("Search Professional Bill"),
+    Search_Estimated_Professional_Bill("Search Estimated Professional Bill"),
+    Search_Provisional_Bill("Search Provisional Bill"),
+    Search_Final_Bill("Search Final Bill"),
+    Search_Final_Bill_By_Discharge_Date("Search Final Bill by Discharge Date"),
+    Request_Medicines_From_Pharmacy("Request Medicines from Pharmacy"),
+    View_Pharmacy_Requests("View Pharmacy Requests"),
+    Inward_Analytics("Inward Analytics");
 
     private final String label;
 
@@ -151,13 +181,13 @@ public enum Icon {
 
     /**
      * Returns the image filename for this icon.
-     * For Patient_Deposit_Management, returns .svg extension.
-     * For all other icons, returns .png extension (legacy format).
+     * Icons from Patient_Deposit_Management onwards use .svg extension.
+     * Earlier icons use .png extension (legacy format).
      *
      * @return Image filename with extension (e.g., "Patient_Lookup.png" or "Patient_Deposit_Management.svg")
      */
     public String getImage() {
-        if (this == Patient_Deposit_Management) {
+        if (this.ordinal() >= Patient_Deposit_Management.ordinal()) {
             return this.name() + ".svg";
         }
         return this.name() + ".png";
