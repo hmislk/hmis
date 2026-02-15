@@ -46,9 +46,11 @@ import com.divudi.core.data.dto.ReferringDoctorRevenueDetailDTO;
 import com.divudi.core.data.dto.ReferringDoctorRevenueSummaryDTO;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -64,6 +66,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.ejb.EJB;
+import javax.faces.context.ExternalContext;
 import javax.inject.Inject;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -76,6 +79,15 @@ import javax.faces.context.FacesContext;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
 /**
  * @author Senula Nanayakkara
@@ -2552,7 +2564,6 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }, CollectionCenterReport.COLLECTION_CENTER_RECEIPT_REPORT, sessionController.getLoggedUser());
     }
 
-
     private List<PharmacySaleDepartmentDTO> pharmacySaleDepartments;
 
     public void processPharmacySaleReport() {
@@ -2705,6 +2716,338 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
 
         return new ArrayList<>(departmentMap.values());
+    }
+
+    public void downloadPharmacySaleReportExcel() {
+        if (pharmacySaleDepartments == null || pharmacySaleDepartments.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        SXSSFWorkbook workbook = null;
+        try {
+            // SXSSFWorkbook: streaming API, keeps only 100 rows in memory
+            workbook = new SXSSFWorkbook(100);
+            workbook.setCompressTempFiles(true);
+            SXSSFSheet sheet = workbook.createSheet("Pharmacy Sale Report");
+
+            // Pre-create all styles once
+            ExcelStyleBundle styles = createStyleBundle(workbook);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+            int rowIdx = 0;
+
+            // Title
+            Row titleRow = sheet.createRow(rowIdx++);
+            createCell(titleRow, 0, "Pharmacy Sale Report (OP/IP)", styles.title);
+
+            rowIdx++; // blank
+
+            // Report info
+            rowIdx = writeInfoRow(sheet, rowIdx, "Institution:", institution != null ? institution.getName() : "All", styles);
+            rowIdx = writeInfoRow(sheet, rowIdx, "Site:", site != null ? site.getName() : "All", styles);
+            rowIdx = writeInfoRow(sheet, rowIdx, "Store/Department:", department != null ? department.getName() : "All", styles);
+            rowIdx = writeInfoRow(sheet, rowIdx, "From Date:", fromDate != null ? sdf.format(fromDate) : "", styles);
+            rowIdx = writeInfoRow(sheet, rowIdx, "To Date:", toDate != null ? sdf.format(toDate) : "", styles);
+
+            rowIdx++; // blank
+
+            // Column headers
+            String[] headers = {
+                "MRNO", "BHT No.", "Invoice No.", "Bill No.", "Invoice Date/Qty",
+                "Item Rate", "Gross Value", "Gross Total",
+                "Margin Value", "Margin Total",
+                "Discount Value", "Discount Total",
+                "Net Value", "Net Total"
+            };
+            Row headerRow = sheet.createRow(rowIdx++);
+            for (int i = 0; i < headers.length; i++) {
+                createCell(headerRow, i, headers[i], styles.header);
+            }
+
+            // Data
+            for (PharmacySaleDepartmentDTO dept : pharmacySaleDepartments) {
+
+                // Department header
+                Row deptRow = sheet.createRow(rowIdx++);
+                createCell(deptRow, 0, dept.getDepartmentName(), styles.deptHeader);
+                for (int i = 1; i < 14; i++) {
+                    createCell(deptRow, i, "", styles.deptHeader);
+                }
+
+                if (dept.getBhtBills() != null) {
+                    for (PharmacySaleBhtBillDTO bht : dept.getBhtBills()) {
+
+                        // Bill header
+                        Row billRow = sheet.createRow(rowIdx++);
+                        createCell(billRow, 0, bht.getPatientPhn(), styles.billHeader);
+                        createCell(billRow, 1, bht.getBhtNumber(), styles.billHeader);
+                        createCell(billRow, 2, bht.getDeptId(), styles.billHeader);
+                        createCell(billRow, 3, bht.getInsId(), styles.billHeader);
+                        createCell(billRow, 4, bht.getBillDate() != null ? sdf.format(bht.getBillDate()) : "", styles.billHeader);
+                        for (int i = 5; i < 14; i++) {
+                            createCell(billRow, i, "", styles.billHeader);
+                        }
+
+                        // Items
+                        if (bht.getItems() != null) {
+                            for (PharmacySaleItemDTO item : bht.getItems()) {
+                                Row itemRow = sheet.createRow(rowIdx++);
+                                createCell(itemRow, 0, "   " + nullSafe(item.getItemName()), styles.normal);
+                                for (int i = 1; i < 4; i++) {
+                                    createCell(itemRow, i, "", styles.normal);
+                                }
+                                createNumericCell(itemRow, 4, item.getQty(), styles.number);
+                                createNumericCell(itemRow, 5, item.getRetailRate(), styles.number);
+                                createNumericCell(itemRow, 6, item.getGrossValue(), styles.number);
+                                createCell(itemRow, 7, "", styles.normal);
+                                createNumericCell(itemRow, 8, item.getMarginValue(), styles.number);
+                                createCell(itemRow, 9, "", styles.normal);
+                                createNumericCell(itemRow, 10, item.getDiscount(), styles.number);
+                                createCell(itemRow, 11, "", styles.normal);
+                                createNumericCell(itemRow, 12, item.getNetValue(), styles.number);
+                                createCell(itemRow, 13, "", styles.normal);
+                            }
+                        }
+
+                        // BHT subtotal
+                        Row bhtTotalRow = sheet.createRow(rowIdx++);
+                        for (int i = 0; i < 4; i++) {
+                            createCell(bhtTotalRow, i, "", styles.bhtTotal);
+                        }
+                        createCell(bhtTotalRow, 4, "BHT Total:", styles.bhtTotal);
+                        createCell(bhtTotalRow, 5, "", styles.bhtTotal);
+                        createCell(bhtTotalRow, 6, "", styles.bhtTotal);
+                        createNumericCell(bhtTotalRow, 7, bht.getTotalGrossValue(), styles.bhtTotalNumber);
+                        createCell(bhtTotalRow, 8, "", styles.bhtTotal);
+                        createNumericCell(bhtTotalRow, 9, bht.getTotalMarginValue(), styles.bhtTotalNumber);
+                        createCell(bhtTotalRow, 10, "", styles.bhtTotal);
+                        createNumericCell(bhtTotalRow, 11, bht.getTotalDiscount(), styles.bhtTotalNumber);
+                        createCell(bhtTotalRow, 12, "", styles.bhtTotal);
+                        createNumericCell(bhtTotalRow, 13, bht.getTotalNetValue(), styles.bhtTotalNumber);
+                    }
+                }
+
+                // Department subtotal
+                Row deptTotalRow = sheet.createRow(rowIdx++);
+                for (int i = 0; i < 4; i++) {
+                    createCell(deptTotalRow, i, "", styles.deptTotal);
+                }
+                createCell(deptTotalRow, 4, dept.getDepartmentName() + " Total:", styles.deptTotal);
+                createCell(deptTotalRow, 5, "", styles.deptTotal);
+                createCell(deptTotalRow, 6, "", styles.deptTotal);
+                createNumericCell(deptTotalRow, 7, dept.getTotalGrossValue(), styles.deptTotalNumber);
+                createCell(deptTotalRow, 8, "", styles.deptTotal);
+                createNumericCell(deptTotalRow, 9, dept.getTotalMarginValue(), styles.deptTotalNumber);
+                createCell(deptTotalRow, 10, "", styles.deptTotal);
+                createNumericCell(deptTotalRow, 11, dept.getTotalDiscount(), styles.deptTotalNumber);
+                createCell(deptTotalRow, 12, "", styles.deptTotal);
+                createNumericCell(deptTotalRow, 13, dept.getTotalNetValue(), styles.deptTotalNumber);
+
+                rowIdx++; // blank between departments
+            }
+
+            // Grand total
+            rowIdx++;
+            Row grandRow = sheet.createRow(rowIdx++);
+            for (int i = 0; i < 4; i++) {
+                createCell(grandRow, i, "", styles.grandTotal);
+            }
+            createCell(grandRow, 4, "Grand Total:", styles.grandTotal);
+            createCell(grandRow, 5, "", styles.grandTotal);
+            createCell(grandRow, 6, "", styles.grandTotal);
+            createNumericCell(grandRow, 7, grossFeeTotal, styles.grandTotalNumber);
+            createCell(grandRow, 8, "", styles.grandTotal);
+            createCell(grandRow, 9, "", styles.grandTotal);
+            createCell(grandRow, 10, "", styles.grandTotal);
+            createNumericCell(grandRow, 11, discountTotal, styles.grandTotalNumber);
+            createCell(grandRow, 12, "", styles.grandTotal);
+            createNumericCell(grandRow, 13, netTotal, styles.grandTotalNumber);
+
+            // Set column widths manually (autoSizeColumn not available with SXSSF streaming)
+            int[] colWidths = {3500, 3500, 3000, 3000, 4500, 3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000};
+            for (int i = 0; i < colWidths.length; i++) {
+                sheet.setColumnWidth(i, colWidths[i]);
+            }
+
+            // Write to response
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            String fileName = "Pharmacy_Sale_Report_" + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".xlsx";
+            externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+            try (OutputStream out = externalContext.getResponseOutputStream()) {
+                workbook.write(out);
+                out.flush();
+            }
+            facesContext.responseComplete();
+
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error generating Excel: " + e.getMessage());
+        } finally {
+            if (workbook != null) {
+                try {
+                    workbook.dispose(); // Clean up SXSSF temp files
+                    workbook.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
+    private static class ExcelStyleBundle {
+
+        CellStyle title;
+        CellStyle infoBold;
+        CellStyle info;
+        CellStyle header;
+        CellStyle deptHeader;
+        CellStyle billHeader;
+        CellStyle normal;
+        CellStyle number;
+        CellStyle bhtTotal;
+        CellStyle bhtTotalNumber;
+        CellStyle deptTotal;
+        CellStyle deptTotalNumber;
+        CellStyle grandTotal;
+        CellStyle grandTotalNumber;
+    }
+
+    private ExcelStyleBundle createStyleBundle(SXSSFWorkbook wb) {
+        ExcelStyleBundle s = new ExcelStyleBundle();
+        DataFormat df = wb.createDataFormat();
+        short numFmt = df.getFormat("#,##0.00");
+
+        // Fonts
+        Font titleFont = wb.createFont();
+        titleFont.setBold(true);
+        titleFont.setFontHeightInPoints((short) 14);
+
+        Font boldFont = wb.createFont();
+        boldFont.setBold(true);
+
+        Font normalFont = wb.createFont();
+        normalFont.setFontHeightInPoints((short) 10);
+
+        Font grandFont = wb.createFont();
+        grandFont.setBold(true);
+        grandFont.setFontHeightInPoints((short) 12);
+
+        // Title
+        s.title = wb.createCellStyle();
+        s.title.setFont(titleFont);
+
+        // Info
+        s.infoBold = wb.createCellStyle();
+        s.infoBold.setFont(boldFont);
+
+        s.info = wb.createCellStyle();
+        s.info.setFont(normalFont);
+
+        // Header
+        s.header = createBorderedStyle(wb);
+        s.header.setFont(boldFont);
+        s.header.setAlignment(HorizontalAlignment.CENTER);
+        s.header.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        s.header.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+        // Dept header
+        s.deptHeader = createBorderedStyle(wb);
+        s.deptHeader.setFont(boldFont);
+        s.deptHeader.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        s.deptHeader.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+        // Bill header
+        s.billHeader = createBorderedStyle(wb);
+        s.billHeader.setFillForegroundColor(IndexedColors.LEMON_CHIFFON.getIndex());
+        s.billHeader.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+        // Normal
+        s.normal = createBorderedStyle(wb);
+
+        // Number
+        s.number = createBorderedStyle(wb);
+        s.number.setAlignment(HorizontalAlignment.RIGHT);
+        s.number.setDataFormat(numFmt);
+
+        // BHT total
+        s.bhtTotal = createBorderedStyle(wb);
+        s.bhtTotal.setFont(boldFont);
+        s.bhtTotal.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+        s.bhtTotal.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+        s.bhtTotalNumber = createBorderedStyle(wb);
+        s.bhtTotalNumber.setFont(boldFont);
+        s.bhtTotalNumber.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+        s.bhtTotalNumber.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        s.bhtTotalNumber.setAlignment(HorizontalAlignment.RIGHT);
+        s.bhtTotalNumber.setDataFormat(numFmt);
+
+        // Dept total
+        s.deptTotal = createBorderedStyle(wb);
+        s.deptTotal.setFont(boldFont);
+        s.deptTotal.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+        s.deptTotal.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        s.deptTotal.setBorderTop(BorderStyle.MEDIUM);
+        s.deptTotal.setBorderBottom(BorderStyle.MEDIUM);
+
+        s.deptTotalNumber = createBorderedStyle(wb);
+        s.deptTotalNumber.setFont(boldFont);
+        s.deptTotalNumber.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+        s.deptTotalNumber.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        s.deptTotalNumber.setBorderTop(BorderStyle.MEDIUM);
+        s.deptTotalNumber.setBorderBottom(BorderStyle.MEDIUM);
+        s.deptTotalNumber.setAlignment(HorizontalAlignment.RIGHT);
+        s.deptTotalNumber.setDataFormat(numFmt);
+
+        // Grand total
+        s.grandTotal = createBorderedStyle(wb);
+        s.grandTotal.setFont(grandFont);
+        s.grandTotal.setBorderTop(BorderStyle.DOUBLE);
+        s.grandTotal.setBorderBottom(BorderStyle.DOUBLE);
+
+        s.grandTotalNumber = createBorderedStyle(wb);
+        s.grandTotalNumber.setFont(grandFont);
+        s.grandTotalNumber.setBorderTop(BorderStyle.DOUBLE);
+        s.grandTotalNumber.setBorderBottom(BorderStyle.DOUBLE);
+        s.grandTotalNumber.setAlignment(HorizontalAlignment.RIGHT);
+        s.grandTotalNumber.setDataFormat(numFmt);
+
+        return s;
+    }
+
+    private CellStyle createBorderedStyle(SXSSFWorkbook wb) {
+        CellStyle style = wb.createCellStyle();
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+        return style;
+    }
+
+    private void createCell(Row row, int col, String value, CellStyle style) {
+        Cell cell = row.createCell(col);
+        cell.setCellValue(value != null ? value : "");
+        cell.setCellStyle(style);
+    }
+
+    private void createNumericCell(Row row, int col, double value, CellStyle style) {
+        Cell cell = row.createCell(col);
+        cell.setCellValue(value);
+        cell.setCellStyle(style);
+    }
+
+    private int writeInfoRow(SXSSFSheet sheet, int rowIdx, String label, String value, ExcelStyleBundle styles) {
+        Row row = sheet.createRow(rowIdx);
+        createCell(row, 0, label, styles.infoBold);
+        createCell(row, 1, value, styles.info);
+        return rowIdx + 1;
+    }
+
+    private String nullSafe(String value) {
+        return value != null ? value : "";
     }
 
     public void downloadLabTestCount() {
