@@ -13,25 +13,35 @@
             .svg-link:hover {
             color: #{configOptionApplicationController.getColorValueByKey('Home Icon Hover Colour', '#1565C0')};
             }
-        </h:outputStylesheet>
-
-        <h:outputStylesheet>
-            .icon-group-header {
-            color: #555;
-            font-weight: 600;
-            margin-top: 0.75rem;
-            margin-bottom: 0.25rem;
-            padding-left: 0.5rem;
-            border-bottom: 1px solid #dee2e6;
-            padding-bottom: 0.25rem;
+            .home-icon-grid {
+            column-count: 3;
+            column-gap: 1rem;
+            padding: 1rem;
+            }
+            .home-icon-grid .ui-panel {
+            break-inside: avoid;
+            margin-bottom: 1rem;
+            }
+            .home-icon-grid .ui-panel-content .row > [class*="col-1"] {
+            flex: 0 0 25%;
+            max-width: 25%;
+            }
+            .home-icon-grid .img-thumbnail {
+            border: none;
+            background: transparent;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: transform 0.15s ease, background-color 0.15s ease;
+            }
+            .home-icon-grid .img-thumbnail:hover {
+            transform: scale(1.12);
+            background-color: var(--surface-c);
             }
         </h:outputStylesheet>
 
+        <div class="home-icon-grid">
         <ui:repeat value="#{sessionController.groupedUserIcons}" var="group">
-            <h:panelGroup rendered="#{not empty group.userIcons}" layout="block" class="col-12">
-                <h:panelGroup rendered="#{sessionController.groupedUserIcons.size() gt 1}" layout="block">
-                    <h6 class="icon-group-header">#{group.groupName}</h6>
-                </h:panelGroup>
+            <p:panel header="#{group.groupName}" rendered="#{not empty group.userIcons}">
                 <div class="row">
                     <ui:repeat value="#{group.userIcons}" var="ui">
 
@@ -2112,7 +2122,8 @@
 
                     </ui:repeat>
                 </div>
-            </h:panelGroup>
+            </p:panel>
         </ui:repeat>
+        </div>
     </ui:define>
 </ui:composition>
