@@ -3,7 +3,7 @@
 ## Repository Information
 - **GitHub Repository**: https://github.com/hmislk/hmis (not buddhika75/hmis)
 - **Issues URL**: https://github.com/hmislk/hmis/issues
-- **Project tmp Folder**: `/tmp/` directory contains project-specific temporary files
+- **Project tmp Folder**: `tmp/` directory **inside the project root** (i.e., `<project-root>/tmp/`) for project-specific temporary files. Do NOT use the system `/tmp/` directory.
 
 ## Essential Rules (Always Apply)
 
