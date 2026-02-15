@@ -799,7 +799,9 @@ public class UserIconController implements Serializable {
     }
 
     // Inner class for tree node data
-    public class IconHolder {
+    public static class IconHolder implements Serializable {
+
+        private static final long serialVersionUID = 1L;
 
         private Icon icon;
         private String name;
