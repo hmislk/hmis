@@ -25,6 +25,7 @@ import com.divudi.core.entity.lab.ItemForItem;
 import com.divudi.core.entity.lab.Machine;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.entity.Staff;
+import com.divudi.core.data.dto.AmpDto;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.Atm;
@@ -2358,6 +2359,41 @@ public class ItemController implements Serializable {
 
         suggestions = getFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP, 30);
         return suggestions;
+    }
+
+    public List<AmpDto> completeAmpItemDto(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String[] words = query.split("\\s+");
+
+        StringBuilder jpql = new StringBuilder(
+                "SELECT NEW com.divudi.core.data.dto.AmpDto(c.id, c.name, c.code, c.barcode, c.inactive, c.departmentType) "
+                + "FROM Amp c WHERE c.retired = false AND c.inactive = false AND (");
+
+        StringBuilder nameConditions = new StringBuilder();
+        for (int i = 0; i < words.length; i++) {
+            if (i > 0) {
+                nameConditions.append(" AND ");
+            }
+            nameConditions.append("LOWER(c.name) LIKE :nameStr").append(i);
+        }
+
+        jpql.append("(").append(nameConditions).append(")")
+                .append(" OR LOWER(c.code) = :code")
+                .append(" OR c.barcode = :barcode)")
+                .append(" ORDER BY c.name");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("code", query.toLowerCase().trim());
+        params.put("barcode", query.trim());
+
+        for (int i = 0; i < words.length; i++) {
+            params.put("nameStr" + i, "%" + words[i].toLowerCase() + "%");
+        }
+
+        return (List<AmpDto>) itemFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP, 30);
     }
 
     public List<Item> completeAmpItemForLoggedDepartment(String query) {

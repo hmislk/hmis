@@ -170,15 +170,31 @@
                         </h:panelGroup>
                         <p:autoComplete
                                 id="phmItem"
-                                value="#{pharmacyController.amp}"
-                                completeMethod="#{itemController.completeAmpItem}"
+                                value="#{pharmacyController.selectedAmpDto}"
+                                completeMethod="#{itemController.completeAmpItemDto}"
+                                converter="ampDtoConverter"
                                 var="item"
                                 class="w-100"
                                 minQueryLength="3"
                                 maxResults="20"
                                 inputStyleClass="w-100"
                                 itemLabel="#{item.name}"
-                                itemValue="#{item}"/>
+                                itemValue="#{item}">
+                                <p:column headerText="Name">
+                                    <h:outputText value="#{item.name}"/>
+                                </p:column>
+                                <p:column headerText="Code">
+                                    <h:outputText value="#{item.code}"/>
+                                </p:column>
+                                <p:column headerText="Dept. Type">
+                                    <h:outputText value="#{item.departmentTypeLabel}"/>
+                                </p:column>
+                                <p:column headerText="Status">
+                                    <p:badge value="#{item.inactive ? 'Inactive' : 'Active'}"
+                                             severity="#{item.inactive ? 'danger' : 'success'}"
+                                             style="font-size: 0.65em;"/>
+                                </p:column>
+                        </p:autoComplete>
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText styleClass="fa fa-pills ml-5"/>

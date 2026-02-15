@@ -1,5 +1,6 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.DepartmentType;
 import java.io.Serializable;
 
 /**
@@ -31,6 +32,9 @@ public class AmpDto implements Serializable {
     private Long dosageFormId;
     private String dosageFormName;
 
+    // Department type
+    private DepartmentType departmentType;
+
     // Business rule fields
     private Boolean discountAllowed;
     private Boolean allowFractions;
@@ -59,6 +63,21 @@ public class AmpDto implements Serializable {
         this.code = code;
         this.barcode = barcode;
         this.inactive = inactive;
+    }
+
+    /**
+     * Constructor with department type - for autocomplete with department type display
+     *
+     * @param id AMP ID
+     * @param name AMP name
+     * @param code AMP code
+     * @param barcode AMP barcode
+     * @param inactive Whether AMP is inactive
+     * @param departmentType Department type of the AMP
+     */
+    public AmpDto(Long id, String name, String code, String barcode, Boolean inactive, DepartmentType departmentType) {
+        this(id, name, code, barcode, inactive);
+        this.departmentType = departmentType;
     }
 
     /**
@@ -363,6 +382,20 @@ public class AmpDto implements Serializable {
 
     public void setRefundsAllowed(Boolean refundsAllowed) {
         this.refundsAllowed = refundsAllowed;
+    }
+
+    // Department type getter and setter
+
+    public DepartmentType getDepartmentType() {
+        return departmentType;
+    }
+
+    public void setDepartmentType(DepartmentType departmentType) {
+        this.departmentType = departmentType;
+    }
+
+    public String getDepartmentTypeLabel() {
+        return departmentType != null ? departmentType.getShortLabel() : "";
     }
 
     // Utility methods for consistency
