@@ -27,6 +27,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Category;
+import com.divudi.core.entity.DosageForm;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
@@ -86,6 +87,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     private ReportViewType reportViewType;
     private List<ReportViewType> reportViewTypes;
     private Category category;
+    private DosageForm dosageForm;
     private DepartmentType departmentType;
     private List<DepartmentType> selectedDepartmentTypes;
     List<Stock> stocks;
@@ -270,7 +272,8 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             jpql.append("COALESCE(s.stock, 0.0), ");
             jpql.append("COALESCE(s.itemBatch.purcahseRate, 0.0), ");
             jpql.append("COALESCE(s.itemBatch.costRate, 0.0), ");
-            jpql.append("COALESCE(s.itemBatch.retailsaleRate, 0.0)) ");
+            jpql.append("COALESCE(s.itemBatch.retailsaleRate, 0.0), ");
+            jpql.append("COALESCE(s.itemBatch.item.dosageForm.name, '')) ");
             jpql.append("from Stock s join TREAT(s.itemBatch.item as Amp) amp where s.stock > 0");
 
             if (department != null) {
@@ -287,6 +290,16 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
                 jpql.append(" and s.itemBatch.item.departmentType IN :departmentTypes");
                 m.put("departmentTypes", selectedDepartmentTypes);
+            }
+
+            if (category != null) {
+                jpql.append(" and s.itemBatch.item.category=:cat");
+                m.put("cat", category);
+            }
+
+            if (dosageForm != null) {
+                jpql.append(" and s.itemBatch.item.dosageForm=:df");
+                m.put("df", dosageForm);
             }
 
             stockDtos = (List<StockDTO>) stockFacade.findLightsByJpql(jpql.toString(), m);
@@ -1774,6 +1787,14 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public DosageForm getDosageForm() {
+        return dosageForm;
+    }
+
+    public void setDosageForm(DosageForm dosageForm) {
+        this.dosageForm = dosageForm;
     }
 
     @Override

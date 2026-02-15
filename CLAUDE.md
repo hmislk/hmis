@@ -17,10 +17,11 @@
 5. **🚨 DISCUSS UNCERTAINTIES**: ALWAYS discuss with user when uncertain about implementation approach
 6. **🚨 BACKWARD COMPATIBILITY**: Never "fix" intentional typos (e.g., `purcahseRate`) - database compatibility
 7. **🚨 COMPONENT NAMING**: Never rename composite components without checking ALL usage
+8. **🚨 NEVER MODIFY EXISTING CONSTRUCTORS**: Only ADD new constructors. Changing or removing existing constructor signatures breaks other callers. New constructors should delegate to the existing one via `this(...)` when possible. See [DTO Guidelines](developer_docs/dto/implementation-guidelines.md)
 
 ### Git & Documentation
-8. **Include issue closing keywords** (`Closes #N`) in commit messages
-9. **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
+9. **Include issue closing keywords** (`Closes #N`) in commit messages
+10. **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
 
 ## Situational Guidelines (Reference When Needed)
 

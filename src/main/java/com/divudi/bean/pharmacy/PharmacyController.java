@@ -199,6 +199,7 @@ public class PharmacyController implements Serializable {
     private int managePharamcyReportIndex = -1;
     double persentage;
     Category category;
+    private DosageForm dosageForm;
 
     private PharmaceuticalItemLight selectedLight;
     private List<PharmaceuticalItemLight> selectedLights;
@@ -3419,6 +3420,11 @@ public class PharmacyController implements Serializable {
                 tmp.put("category", category);
             }
 
+            if (dosageForm != null) {
+                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.dosageForm = :df)";
+                tmp.put("df", dosageForm);
+            }
+
             if (item != null) {
                 jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item = :item)";
                 tmp.put("item", item);
@@ -3530,6 +3536,11 @@ public class PharmacyController implements Serializable {
 //                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item = :item)";
 //                tmp.put("item", item);
 //            }
+            if (dosageForm != null) {
+                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.dosageForm = :df)";
+                tmp.put("df", dosageForm);
+            }
+
             if (toDepartment != null) {
                 jpql += " AND b.toDepartment = :toDept";
                 tmp.put("toDept", toDepartment);
@@ -3601,6 +3612,11 @@ public class PharmacyController implements Serializable {
             if (category != null) {
                 jpql.append("AND bi.item.category = :category ");
                 parameters.put("category", category);
+            }
+
+            if (dosageForm != null) {
+                jpql.append("AND bi.item.dosageForm = :df ");
+                parameters.put("df", dosageForm);
             }
 
             if (item != null) {
@@ -3685,6 +3701,11 @@ public class PharmacyController implements Serializable {
             if (category != null) {
                 jpql.append("AND bi.item.category = :category ");
                 parameters.put("category", category);
+            }
+
+            if (dosageForm != null) {
+                jpql.append("AND bi.item.dosageForm = :df ");
+                parameters.put("df", dosageForm);
             }
 
             if (item != null) {
@@ -3786,6 +3807,10 @@ public class PharmacyController implements Serializable {
             sql += " AND b.department = :dept";
             parameters.put("dept", dept);
         }
+        if (dosageForm != null) {
+            sql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.dosageForm = :df)";
+            parameters.put("df", dosageForm);
+        }
         if (toDepartment != null) {
             sql += " AND b.toDepartment = :toDept";
             parameters.put("toDept", toDepartment);
@@ -3877,6 +3902,11 @@ public class PharmacyController implements Serializable {
         if (category != null) {
             sql.append("AND bi.item.category = :category ");
             parameters.put("category", category);
+        }
+
+        if (dosageForm != null) {
+            sql.append("AND bi.item.dosageForm = :df ");
+            parameters.put("df", dosageForm);
         }
 
         if (item != null) {
@@ -5681,6 +5711,14 @@ public class PharmacyController implements Serializable {
         addFilter(sql, parameters, "b.toInstitution", "tIns", toInstitution);
         addFilter(sql, parameters, "b.toDepartment.site", "tSite", toSite);
         addFilter(sql, parameters, "b.toDepartment", "tDept", toDepartment);
+        if (category != null) {
+            sql.append(" AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.category = :cat) ");
+            parameters.put("cat", category);
+        }
+        if (dosageForm != null) {
+            sql.append(" AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.dosageForm = :df) ");
+            parameters.put("df", dosageForm);
+        }
         if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
             sql.append(" AND b.departmentType IN :departmentTypes ");
             parameters.put("departmentTypes", selectedDepartmentTypes);
@@ -5714,6 +5752,8 @@ public class PharmacyController implements Serializable {
             addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
             addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
             addFilter(sql, parameters, "bi.item", "item", item);
+            addFilter(sql, parameters, "bi.item.category", "cat", category);
+            addFilter(sql, parameters, "bi.item.dosageForm", "df", dosageForm);
             if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
                 sql.append(" AND bi.bill.departmentType IN :departmentTypes ");
                 parameters.put("departmentTypes", selectedDepartmentTypes);
@@ -5808,6 +5848,8 @@ public class PharmacyController implements Serializable {
             addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
             addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
             addFilter(sql, parameters, "bi.item", "item", item);
+            addFilter(sql, parameters, "bi.item.category", "cat", category);
+            addFilter(sql, parameters, "bi.item.dosageForm", "df", dosageForm);
             if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
                 sql.append(" AND bi.bill.departmentType IN :departmentTypes ");
                 parameters.put("departmentTypes", selectedDepartmentTypes);
@@ -5903,6 +5945,8 @@ public class PharmacyController implements Serializable {
         addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
         addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
         addFilter(sql, parameters, "bi.item", "item", item);
+        addFilter(sql, parameters, "bi.item.category", "cat", category);
+        addFilter(sql, parameters, "bi.item.dosageForm", "df", dosageForm);
         if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
             sql.append(" AND bi.bill.departmentType IN :departmentTypes ");
             parameters.put("departmentTypes", selectedDepartmentTypes);
@@ -9001,6 +9045,16 @@ public class PharmacyController implements Serializable {
             tmp.put("category", category);
         }
 
+        if (dosageForm != null) {
+            sql += " AND EXISTS (SELECT bi FROM b.billItems bi WHERE bi.item.dosageForm = :df)";
+            tmp.put("df", dosageForm);
+        }
+
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+            sql += " AND b.departmentType IN :departmentTypes";
+            tmp.put("departmentTypes", selectedDepartmentTypes);
+        }
+
         if (toDepartment != null) {
             sql += " AND b.toDepartment = :toDepartment";
             tmp.put("toDepartment", toDepartment);
@@ -9926,6 +9980,14 @@ public class PharmacyController implements Serializable {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public DosageForm getDosageForm() {
+        return dosageForm;
+    }
+
+    public void setDosageForm(DosageForm dosageForm) {
+        this.dosageForm = dosageForm;
     }
 
     public int getPharmacyAdminIndex() {
