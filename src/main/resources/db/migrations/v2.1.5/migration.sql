@@ -30,21 +30,21 @@ ORDER BY INDEX_NAME, SEQ_IN_INDEX;
 
 -- Step 3: Create index for item-level discount queries on PRICEMATRIX (Production/Ubuntu - uppercase)
 -- Using IF NOT EXISTS for idempotency (can be re-run safely)
-CREATE INDEX IF NOT EXISTS idx_psd_item ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, ITEM_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID);
+CREATE INDEX idx_psd_item ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, ITEM_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID);
 
 -- ==========================================
 -- INDEX CREATION - CATEGORY LEVEL DISCOUNTS
 -- ==========================================
 
 -- Step 4: Create index for category-level discount queries on PRICEMATRIX (Production/Ubuntu - uppercase)
-CREATE INDEX IF NOT EXISTS idx_psd_category ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, CATEGORY_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID);
+CREATE INDEX idx_psd_category ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, CATEGORY_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID);
 
 -- ==========================================
 -- INDEX CREATION - DEPARTMENT LEVEL DISCOUNTS
 -- ==========================================
 
 -- Step 5: Create index for department-level discount queries on PRICEMATRIX (Production/Ubuntu - uppercase)
-CREATE INDEX IF NOT EXISTS idx_psd_department ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, DEPARTMENT_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID);
+CREATE INDEX idx_psd_department ON PRICEMATRIX(RETIRED, PAYMENTMETHOD, DEPARTMENT_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID);
 
 -- ==========================================
 -- POST-MIGRATION VERIFICATION

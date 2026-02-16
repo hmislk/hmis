@@ -12,12 +12,12 @@
 
 -- Index for ITEM.NAME searches (prefix matching for autocomplete)
 -- Covers queries like: WHERE i.name LIKE 'para%'
-CREATE INDEX IF NOT EXISTS idx_item_name_search
+CREATE INDEX idx_item_name_search
 ON ITEM(NAME(15));
 
 -- Index for ITEM.CODE searches (prefix matching for autocomplete)
 -- Covers queries like: WHERE i.code LIKE 'MED123%'
-CREATE INDEX IF NOT EXISTS idx_item_code_search
+CREATE INDEX idx_item_code_search
 ON ITEM(CODE(15));
 
 -- 2. Optimize STOCK table filtering for pharmacy sales
@@ -25,7 +25,7 @@ ON ITEM(CODE(15));
 
 -- Composite index for department-stock-batch filtering
 -- Covers queries like: WHERE s.department_id = ? AND s.stock > 0 AND s.itembatch_id IS NOT NULL
-CREATE INDEX IF NOT EXISTS idx_stock_dept_stock_batch
+CREATE INDEX idx_stock_dept_stock_batch
 ON STOCK(DEPARTMENT_ID, STOCK, ITEMBATCH_ID);
 
 -- 3. Optimize ITEMBATCH table for join and sorting operations
@@ -33,7 +33,7 @@ ON STOCK(DEPARTMENT_ID, STOCK, ITEMBATCH_ID);
 
 -- Composite index for item-expiry optimization
 -- Covers joins and sorting: JOIN itembatch ib ON s.itembatch_id = ib.id ORDER BY ib.dateofexpire
-CREATE INDEX IF NOT EXISTS idx_itembatch_item_expire
+CREATE INDEX idx_itembatch_item_expire
 ON ITEMBATCH(ITEM_ID, DATEOFEXPIRE);
 
 -- ==============================================================================

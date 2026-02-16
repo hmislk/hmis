@@ -177,17 +177,6 @@
                                     <h:outputLabel value="#{i.code}" />
                                 </p:column>
 
-                                <p:column headerText="Generic Name"
-                                          sortBy="#{i.genericName}"
-                                          filterBy="#{i.genericName}"
-                                          filterMatchMode="contains"
-                                          rendered="#{userSettingsController.pharmacyDepartmentStockByBatchGenericNameVisible}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Generic Name" />
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.genericName}" />
-                                </p:column>
-
                                 <p:column headerText="Expiry" sortBy="#{i.dateOfExpire}"
                                           rendered="#{userSettingsController.pharmacyDepartmentStockByBatchExpiryVisible}">
                                     <f:facet name="header">
@@ -336,13 +325,6 @@
                                             <f:ajax render="tbl" />
                                         </h:selectBooleanCheckbox>
                                         <h:outputLabel for="chkCode" value="Code" styleClass="ms-1" />
-                                    </div>
-
-                                    <div class="d-flex align-items-center me-3 mb-2">
-                                        <h:selectBooleanCheckbox id="chkGenericName" value="#{userSettingsController.pharmacyDepartmentStockByBatchGenericNameVisible}">
-                                            <f:ajax render="tbl" />
-                                        </h:selectBooleanCheckbox>
-                                        <h:outputLabel for="chkGenericName" value="Generic Name" styleClass="ms-1" />
                                     </div>
 
                                     <div class="d-flex align-items-center me-3 mb-2">

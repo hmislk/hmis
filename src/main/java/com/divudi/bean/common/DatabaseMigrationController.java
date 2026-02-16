@@ -551,8 +551,18 @@ public class DatabaseMigrationController implements Serializable {
                 if (!trimmedStmt.isEmpty() && !trimmedStmt.startsWith("--")) {
                     logBuilder.append("Executing: ").append(trimmedStmt.substring(0, Math.min(100, trimmedStmt.length()))).append("...\\n");
 
-                    // Use facade to execute native SQL
-                    migrationFacade.executeNativeSql(trimmedStmt);
+                    try {
+                        // Use facade to execute native SQL
+                        migrationFacade.executeNativeSql(trimmedStmt);
+                    } catch (Exception e) {
+                        // Check if this is a "duplicate index" error (MySQL error 1061)
+                        // for CREATE INDEX statements - safe to skip
+                        if (isCreateIndexStatement(trimmedStmt) && isDuplicateIndexError(e)) {
+                            logBuilder.append("Index already exists, skipping...\\n");
+                        } else {
+                            throw e;
+                        }
+                    }
                 }
             }
 
@@ -562,6 +572,23 @@ public class DatabaseMigrationController implements Serializable {
             logBuilder.append("Error executing SQL: ").append(e.getMessage()).append("\\n");
             throw e;
         }
+    }
+
+    private boolean isCreateIndexStatement(String sql) {
+        return sql.toUpperCase().trim().startsWith("CREATE INDEX");
+    }
+
+    private boolean isDuplicateIndexError(Exception e) {
+        // MySQL error 1061: Duplicate key name
+        Throwable cause = e;
+        while (cause != null) {
+            String message = cause.getMessage();
+            if (message != null && (message.contains("1061") || message.contains("Duplicate key name"))) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
     }
 
     /**

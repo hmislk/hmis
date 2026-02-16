@@ -60,7 +60,7 @@ SELECT
     END AS uppercase_table_status;
 
 -- Create index if table exists and index doesn't
-CREATE INDEX IF NOT EXISTS idx_user_stock_fast_lookup
+CREATE INDEX idx_user_stock_fast_lookup
 ON USER_STOCK(STOCK_ID, RETIRED, CREATEDAT, CREATER_ID);
 
 SELECT 'Index created successfully on USER_STOCK (if table exists)' AS uppercase_index_status;
@@ -75,7 +75,7 @@ SELECT
     END AS lowercase_table_status;
 
 -- Create index if table exists and index doesn't
-CREATE INDEX IF NOT EXISTS idx_user_stock_fast_lookup
+CREATE INDEX idx_user_stock_fast_lookup
 ON userstock(STOCK_ID, RETIRED, CREATEDAT, CREATER_ID);
 
 SELECT 'Index created successfully on userstock (if table exists)' AS lowercase_index_status;
