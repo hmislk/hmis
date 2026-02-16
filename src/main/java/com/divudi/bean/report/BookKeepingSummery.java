@@ -4530,10 +4530,9 @@ public class BookKeepingSummery implements Serializable {
 
         String jpql = "SELECT NEW com.divudi.core.data.dto.CategoryDayEndReportDto("
                 + "COALESCE(c.name, 'Channel'), "
-                + "SUM(b.netTotal), "
-                + "COUNT(b.id)) "
-                + "FROM Bill b "
-                + "LEFT JOIN b.billItems bi "
+                + "SUM(bi.netValue), "
+                + "COUNT(DISTINCT b.id)) "
+                + "FROM BillItem bi JOIN bi.bill b "
                 + "LEFT JOIN bi.item.category c "
                 + "WHERE b.billType IN :billTypes "
                 + "AND b.institution = :ins "

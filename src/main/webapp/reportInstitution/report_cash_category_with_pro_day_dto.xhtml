@@ -18,11 +18,11 @@
                     <h:outputLabel value="Book Keeping Summary (With Professional) - DTO Optimized"  styleClass="noPrintButton" />
                     </f:facet>
                     <h:panelGrid columns="2" class="my-2" >
-                        <h:outputLabel value="From Date"/>
+                        <h:outputLabel for="frmDate" value="From Date"/>
                         <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{bookKeepingSummery.fromDate}" pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
 
-                        <h:outputLabel value="To Date"/>
+                        <h:outputLabel for="toDate" value="To Date"/>
                         <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{bookKeepingSummery.toDate}" pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
 
@@ -47,8 +47,7 @@
                                             pharmacySalesTable,
                                             pharmacyWholeSalesTable,
                                             channelTable,
-                                            inwardTable,
-                                            summaryTable"
+                                            inwardTable"
                                             fileName="Book_Keeping_Summery_with_pro_day_dto"
                                             />
                         </p:commandButton>
@@ -66,7 +65,7 @@
                     <p:spacer height="30"/>
 
                     <!-- OPD Cash Collections -->
-                    <h3>OPD Cash Collections (Cash, Card, Cheque, Slip)</h3>
+                    <h:outputText value="OPD Cash Collections (Cash, Card, Cheque, Slip)" style="display:block; font-size:1.17em; font-weight:bold; padding:8px 0;" />
                     <p:dataTable id="opdCashTable" value="#{bookKeepingSummery.opdCashDtoList}" var="dto"
                                  emptyMessage="No data available">
                         <p:column headerText="Category">
@@ -90,7 +89,7 @@
                     <p:spacer height="30"/>
 
                     <!-- OPD Credit Collections -->
-                    <h3>OPD Credit Collections</h3>
+                    <h:outputText value="OPD Credit Collections" style="display:block; font-size:1.17em; font-weight:bold; padding:8px 0;" />
                     <p:dataTable id="opdCreditTable" value="#{bookKeepingSummery.opdCreditDtoList}" var="dto"
                                  emptyMessage="No data available">
                         <p:column headerText="Category">
@@ -114,7 +113,7 @@
                     <p:spacer height="30"/>
 
                     <!-- Pharmacy Sales -->
-                    <h3>Pharmacy Sales</h3>
+                    <h:outputText value="Pharmacy Sales" style="display:block; font-size:1.17em; font-weight:bold; padding:8px 0;" />
                     <p:dataTable id="pharmacySalesTable" value="#{bookKeepingSummery.pharmacySalesDtoList}" var="dto"
                                  emptyMessage="No data available">
                         <p:column headerText="Category">
@@ -133,7 +132,7 @@
                     <p:spacer height="30"/>
 
                     <!-- Pharmacy Wholesale -->
-                    <h3>Pharmacy Wholesale</h3>
+                    <h:outputText value="Pharmacy Wholesale" style="display:block; font-size:1.17em; font-weight:bold; padding:8px 0;" />
                     <p:dataTable id="pharmacyWholeSalesTable" value="#{bookKeepingSummery.pharmacyWholeSalesDtoList}" var="dto"
                                  emptyMessage="No data available">
                         <p:column headerText="Category">
@@ -157,7 +156,7 @@
                     <p:spacer height="30"/>
 
                     <!-- Channel Collections -->
-                    <h3>Channel Collections</h3>
+                    <h:outputText value="Channel Collections" style="display:block; font-size:1.17em; font-weight:bold; padding:8px 0;" />
                     <p:dataTable id="channelTable" value="#{bookKeepingSummery.channelBillsDtoList}" var="dto"
                                  emptyMessage="No data available">
                         <p:column headerText="Category">
@@ -181,7 +180,7 @@
                     <p:spacer height="30"/>
 
                     <!-- Inward Collections -->
-                    <h3>Inward Collections</h3>
+                    <h:outputText value="Inward Collections" style="display:block; font-size:1.17em; font-weight:bold; padding:8px 0;" />
                     <p:dataTable id="inwardTable" value="#{bookKeepingSummery.inwardCollectionsDtoList}" var="dto"
                                  emptyMessage="No data available">
                         <p:column headerText="Category">
@@ -205,7 +204,7 @@
                     <p:spacer height="30"/>
 
                     <!-- Agent Collections (using existing entity-based) -->
-                    <h3>Agent Collections</h3>
+                    <h:outputText value="Agent Collections" style="display:block; font-size:1.17em; font-weight:bold; padding:8px 0;" />
                     <p:dataTable value="#{bookKeepingSummery.agentCollections}" var="bill"
                                  emptyMessage="No data available">
                         <p:column headerText="Bill Number">
@@ -226,7 +225,7 @@
                     <p:spacer height="30"/>
 
                     <!-- Collecting Centre Collections (using existing entity-based) -->
-                    <h3>Collecting Centre Collections</h3>
+                    <h:outputText value="Collecting Centre Collections" style="display:block; font-size:1.17em; font-weight:bold; padding:8px 0;" />
                     <p:dataTable value="#{bookKeepingSummery.collectingCentreCollections}" var="bill"
                                  emptyMessage="No data available">
                         <p:column headerText="Bill Number">
@@ -247,17 +246,13 @@
                     <p:spacer height="30"/>
 
                     <!-- Grand Summary -->
-                    <h3>Grand Summary</h3>
-                    <p:dataTable id="summaryTable">
-                        <p:column headerText="Description" style="font-weight: bold;">
-                            <h:outputLabel value="Grand Total (DTO Optimized)" />
-                        </p:column>
-                        <p:column headerText="Amount" style="text-align: right; font-weight: bold;">
-                            <h:outputLabel value="#{bookKeepingSummery.grandDtoTotal}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputLabel>
-                        </p:column>
-                    </p:dataTable>
+                    <h:outputText value="Grand Summary" styleClass="ui-widget-header" style="display:block; font-size:1.17em; font-weight:bold; padding:8px 0;" />
+                    <p:panelGrid id="summaryTable" columns="2" styleClass="ui-panelgrid-blank" style="width:100%;">
+                        <h:outputLabel value="Grand Total (DTO Optimized)" style="font-weight: bold;" />
+                        <h:outputLabel value="#{bookKeepingSummery.grandDtoTotal}" style="text-align: right; font-weight: bold;">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </p:panelGrid>
 
                     <f:facet name="footer" >
                         <h:outputLabel value="Printed By: #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
