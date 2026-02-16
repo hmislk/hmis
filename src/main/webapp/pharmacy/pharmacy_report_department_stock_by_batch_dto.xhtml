@@ -20,6 +20,42 @@
 
                         <h:panelGroup id="panelDeptType" layout="block" styleClass="container-fluid my-2">
                             <h:panelGroup layout="block" styleClass="row">
+                                <!-- Category Filter -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText styleClass="fa fa-tags mr-2" />
+                                            <h:outputLabel value="Category" for="categoryFilter" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <p:selectOneMenu
+                                            id="categoryFilter"
+                                            value="#{reportsStock.category}"
+                                            styleClass="w-100"
+                                            filter="true"
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="All Categories"/>
+                                            <f:selectItems value="#{pharmaceuticalItemCategoryController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}"/>
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <!-- Dosage Form Filter -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText styleClass="fa fa-capsules mr-2" />
+                                            <h:outputLabel value="Dosage Form" for="dosageFormFilter" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <p:selectOneMenu
+                                            id="dosageFormFilter"
+                                            value="#{reportsStock.dosageForm}"
+                                            styleClass="w-100"
+                                            filter="true"
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="All Dosage Forms"/>
+                                            <f:selectItems value="#{dosageFormController.items}" var="df" itemLabel="#{df.name}" itemValue="#{df}"/>
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+                                </h:panelGroup>
                                 <!-- Department Type Filter -->
                                 <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
                                     <h:panelGroup layout="block" styleClass="form-group">
@@ -99,6 +135,16 @@
                                     <h:outputLabel value="#{i.categoryName}" />
                                 </p:column>
 
+                                <p:column headerText="Dosage Form" style="text-align: left;"
+                                          sortBy="#{i.dosageFormName}"
+                                          filterBy="#{i.dosageFormName}"
+                                          filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Dosage Form" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.dosageFormName}" />
+                                </p:column>
+
                                 <p:column headerText="Item"
                                           sortBy="#{i.itemName}"
                                           filterBy="#{i.itemName}"
@@ -129,17 +175,6 @@
                                         <h:outputLabel value="Code" />
                                     </f:facet>
                                     <h:outputLabel value="#{i.code}" />
-                                </p:column>
-
-                                <p:column headerText="Generic Name"
-                                          sortBy="#{i.genericName}"
-                                          filterBy="#{i.genericName}"
-                                          filterMatchMode="contains"
-                                          rendered="#{userSettingsController.pharmacyDepartmentStockByBatchGenericNameVisible}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Generic Name" />
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.genericName}" />
                                 </p:column>
 
                                 <p:column headerText="Expiry" sortBy="#{i.dateOfExpire}"
@@ -290,13 +325,6 @@
                                             <f:ajax render="tbl" />
                                         </h:selectBooleanCheckbox>
                                         <h:outputLabel for="chkCode" value="Code" styleClass="ms-1" />
-                                    </div>
-
-                                    <div class="d-flex align-items-center me-3 mb-2">
-                                        <h:selectBooleanCheckbox id="chkGenericName" value="#{userSettingsController.pharmacyDepartmentStockByBatchGenericNameVisible}">
-                                            <f:ajax render="tbl" />
-                                        </h:selectBooleanCheckbox>
-                                        <h:outputLabel for="chkGenericName" value="Generic Name" styleClass="ms-1" />
                                     </div>
 
                                     <div class="d-flex align-items-center me-3 mb-2">

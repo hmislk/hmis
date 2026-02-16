@@ -1,5 +1,6 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.DepartmentType;
 import java.io.Serializable;
 
 /**
@@ -26,6 +27,13 @@ public class AmpDto implements Serializable {
     // Category relationship fields
     private Long categoryId;
     private String categoryName;
+
+    // Dosage form relationship fields
+    private Long dosageFormId;
+    private String dosageFormName;
+
+    // Department type
+    private DepartmentType departmentType;
 
     // Business rule fields
     private Boolean discountAllowed;
@@ -55,6 +63,21 @@ public class AmpDto implements Serializable {
         this.code = code;
         this.barcode = barcode;
         this.inactive = inactive;
+    }
+
+    /**
+     * Constructor with department type - for autocomplete with department type display
+     *
+     * @param id AMP ID
+     * @param name AMP name
+     * @param code AMP code
+     * @param barcode AMP barcode
+     * @param inactive Whether AMP is inactive
+     * @param departmentType Department type of the AMP
+     */
+    public AmpDto(Long id, String name, String code, String barcode, Boolean inactive, DepartmentType departmentType) {
+        this(id, name, code, barcode, inactive);
+        this.departmentType = departmentType;
     }
 
     /**
@@ -95,6 +118,30 @@ public class AmpDto implements Serializable {
         this(id, name, code, barcode, inactive, vmpId, vmpName);
         this.categoryId = categoryId;
         this.categoryName = categoryName;
+    }
+
+    /**
+     * Comprehensive constructor with dosage form - includes VMP, category, and dosage form
+     * Used for complete AMP information display including dosage form data
+     *
+     * @param id AMP ID
+     * @param name AMP name
+     * @param code AMP code
+     * @param barcode AMP barcode
+     * @param inactive Whether AMP is inactive
+     * @param vmpId VMP ID
+     * @param vmpName VMP name
+     * @param categoryId Category ID
+     * @param categoryName Category name
+     * @param dosageFormId Dosage form ID
+     * @param dosageFormName Dosage form name
+     */
+    public AmpDto(Long id, String name, String code, String barcode, Boolean inactive,
+                  Long vmpId, String vmpName, Long categoryId, String categoryName,
+                  Long dosageFormId, String dosageFormName) {
+        this(id, name, code, barcode, inactive, vmpId, vmpName, categoryId, categoryName);
+        this.dosageFormId = dosageFormId;
+        this.dosageFormName = dosageFormName;
     }
 
     /**
@@ -265,6 +312,24 @@ public class AmpDto implements Serializable {
         this.categoryName = categoryName;
     }
 
+    // Dosage form relationship getters and setters
+
+    public Long getDosageFormId() {
+        return dosageFormId;
+    }
+
+    public void setDosageFormId(Long dosageFormId) {
+        this.dosageFormId = dosageFormId;
+    }
+
+    public String getDosageFormName() {
+        return dosageFormName;
+    }
+
+    public void setDosageFormName(String dosageFormName) {
+        this.dosageFormName = dosageFormName;
+    }
+
     // Business rule getters and setters
 
     public Boolean getDiscountAllowed() {
@@ -319,6 +384,20 @@ public class AmpDto implements Serializable {
         this.refundsAllowed = refundsAllowed;
     }
 
+    // Department type getter and setter
+
+    public DepartmentType getDepartmentType() {
+        return departmentType;
+    }
+
+    public void setDepartmentType(DepartmentType departmentType) {
+        this.departmentType = departmentType;
+    }
+
+    public String getDepartmentTypeLabel() {
+        return departmentType != null ? departmentType.getShortLabel() : "";
+    }
+
     // Utility methods for consistency
 
     @Override
@@ -345,6 +424,7 @@ public class AmpDto implements Serializable {
                 ", inactive=" + inactive +
                 ", vmpName='" + vmpName + '\'' +
                 ", categoryName='" + categoryName + '\'' +
+                ", dosageFormName='" + dosageFormName + '\'' +
                 '}';
     }
 }
