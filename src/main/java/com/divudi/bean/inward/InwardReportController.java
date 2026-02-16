@@ -17,9 +17,11 @@ import com.divudi.core.data.dto.InwardAdmissionDemographicDataDTO;
 import com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO;
 import com.divudi.core.data.dto.MonthServiceCountDTO;
 import com.divudi.core.data.dto.MonthlySurgeryCountDTO;
+import com.divudi.core.data.dto.IpUnsettledInvoiceDTO;
 import com.divudi.core.data.dto.PaymentTypeAdmissionDTO;
 import com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.inward.AdmissionStatus;
 import com.divudi.core.data.inward.InwardChargeType;
 
 import com.divudi.core.entity.Bill;
@@ -38,6 +40,7 @@ import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.SurgeryType;
+import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.facade.AdmissionTypeFacade;
 import com.divudi.core.facade.BillFacade;
@@ -180,6 +183,19 @@ public class InwardReportController implements Serializable {
     private SurgeryType surgeryType;
     private List<MonthlySurgeryCountDTO> monthlySurgeryCountList;
     private List<String> surgeryHeaders;
+
+    private Date dischargeFromDate;
+    private Date dischargeToDate;
+    private Date invoiceApprovedFromDate;
+    private Date invoiceApprovedToDate;
+    private Department serviceCenter;
+    private Institution sponsor;
+    private String dischargeType;
+    private String patientCategory;
+    private AdmissionStatus admissionStatus;
+    private RoomCategory roomCategory;
+    private Staff consultant;
+    private List<IpUnsettledInvoiceDTO> unsettledInvoicesList;
 
     // for specialty/doctor wise income
     private List<InwardIncomeDoctorSpecialtyDTO> spcDocIncomeBillList;
@@ -452,8 +468,7 @@ public class InwardReportController implements Serializable {
                 = (List<MonthServiceCountDTO>) billFacade.findDTOsByJpql(
                         jpql.toString(), params, TemporalType.TIMESTAMP);
 
-       
-        if ( rawList.isEmpty()) {
+        if (rawList.isEmpty()) {
             monthlySurgeryCountList = null;
             return;
         }
@@ -467,12 +482,11 @@ public class InwardReportController implements Serializable {
 
             MonthlySurgeryCountDTO aggregated = monthMap.get(month);
             if (aggregated == null) {
-              
+
                 aggregated = new MonthlySurgeryCountDTO();
                 aggregated.setMonth(month);
                 monthMap.put(month, aggregated);
             }
-
 
             aggregated.addServiceCount(dto.getServiceName(), dto.getServiceCount());
             surgeryHeaderSet.add(dto.getServiceName());
@@ -500,6 +514,134 @@ public class InwardReportController implements Serializable {
         if (!monthlySurgeryCountList.isEmpty()) {
             grandTotal.alignWithHeaders(surgeryHeaders);
             monthlySurgeryCountList.add(grandTotal);
+        }
+
+    }
+
+    public void processIpUnsettledInvoicesReport() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        // Use PatientEncounter instead of Admission
+        jpql.append("SELECT new com.divudi.core.data.dto.IpUnsettledInvoiceDTO(")
+                .append("pe.id, ")
+                .append("pe.patient.phn, ")
+                .append("pe.patient.person.name, ")
+                .append("pe.patient.person.title, ")
+                .append("pe.patient.person.phone, ")
+                .append("pe.patient.person.dob, ")
+                .append("pe.currentPatientRoom, ")
+                .append("pe.dateOfDischarge, ")
+                .append("pe.paymentFinalized, ")
+                .append("COALESCE(pe.netTotal, 0.0), ")
+                .append("COALESCE(pe.creditPaidAmount, 0.0), ")
+                .append("pe.creater")
+                .append(") FROM PatientEncounter pe ");
+
+        if (roomCategory != null) {
+            jpql.append("LEFT JOIN pe.currentPatientRoom room ")
+                    .append("LEFT JOIN room.roomFacilityCharge rfc ");
+        }
+
+        jpql.append("WHERE pe.retired = :ret ")
+                .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ")
+                .append("AND pe.discharged = TRUE ")
+                .append("AND pe.paymentFinalized = FALSE ");
+
+        params.put("ret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        // Discharge date filter
+        if (dischargeFromDate != null && dischargeToDate != null) {
+            jpql.append("AND pe.dateOfDischarge BETWEEN :dfd AND :dtd ");
+            params.put("dfd", dischargeFromDate);
+            params.put("dtd", dischargeToDate);
+        }
+
+        // Invoice approved date filter
+        if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
+            jpql.append("AND pe.finalBill IS NOT NULL ")
+                    .append("AND pe.finalBill.createdAt BETWEEN :iafd AND :iatd ");
+            params.put("iafd", invoiceApprovedFromDate);
+            params.put("iatd", invoiceApprovedToDate);
+        }
+
+        // Institution filter
+        if (institution != null) {
+            jpql.append("AND pe.institution = :inst ");
+            params.put("inst", institution);
+        }
+
+        // Site filter
+        if (site != null) {
+            jpql.append("AND pe.department.site = :site ");
+            params.put("site", site);
+        }
+
+        // Department filter
+        if (department != null) {
+            jpql.append("AND pe.department = :dept ");
+            params.put("dept", department);
+        }
+
+        // Consultant filter
+        if (consultant != null) {
+            jpql.append("AND pe.referringConsultant = :cons ");
+            params.put("cons", consultant);
+        }
+
+        // Service Center filter (assuming this uses department)
+        if (serviceCenter != null) {
+            jpql.append("AND pe.department = :sc ");
+            params.put("sc", serviceCenter);
+        }
+
+        if (sponsor != null) {
+            jpql.append("AND pe.creditCompany = :sponsor ");
+            params.put("sponsor", sponsor);
+        }
+
+        // Admission Status filter (if PatientEncounter has admissionStatus)
+        if (admissionStatus != null) {
+            jpql.append("AND pe.admissionStatus = :as ");
+            params.put("as", admissionStatus);
+        }
+
+        // Admission Type filter
+        if (admissionType != null) {
+            jpql.append("AND pe.admissionType = :at ");
+            params.put("at", admissionType);
+        }
+
+        // Payment Method filter
+        if (paymentMethod != null) {
+            jpql.append("AND pe.paymentMethod = :pm ");
+            params.put("pm", paymentMethod);
+        }
+
+        // Room Category filter
+        if (roomCategory != null) {
+            jpql.append("AND rfc.roomCategory = :rc ");
+            params.put("rc", roomCategory);
+        }
+
+        jpql.append("ORDER BY pe.dateOfAdmission ");
+
+        try {
+            unsettledInvoicesList = (List<IpUnsettledInvoiceDTO>) peFacade.findLightsByJpql(
+                    jpql.toString(),
+                    params,
+                    TemporalType.TIMESTAMP
+            );
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error loading unsettled invoices: " + e.getMessage());
+            unsettledInvoicesList = new ArrayList<>();
+        }
+
+        if (unsettledInvoicesList == null) {
+            unsettledInvoicesList = new ArrayList<>();
         }
 
     }
@@ -2914,6 +3056,7 @@ public class InwardReportController implements Serializable {
         this.demographicDataUnknownGender = demographicDataUnknownGender;
     }
 
+   
     public String getReportType() {
         return reportType;
     }
@@ -2944,6 +3087,103 @@ public class InwardReportController implements Serializable {
 
     public void setSurgeryType(SurgeryType surgeryType) {
         this.surgeryType = surgeryType;
+    }
+
+    public Date getDischargeFromDate() {
+        return dischargeFromDate;
+    }
+
+    public void setDischargeFromDate(Date dischargeFromDate) {
+        this.dischargeFromDate = dischargeFromDate;
+    }
+
+    public Date getDischargeToDate() {
+        return dischargeToDate;
+    }
+
+    public void setDischargeToDate(Date dischargeToDate) {
+        this.dischargeToDate = dischargeToDate;
+    }
+
+    public Date getInvoiceApprovedFromDate() {
+        return invoiceApprovedFromDate;
+    }
+
+    public void setInvoiceApprovedFromDate(Date invoiceApprovedFromDate) {
+        this.invoiceApprovedFromDate = invoiceApprovedFromDate;
+    }
+
+    public Date getInvoiceApprovedToDate() {
+        return invoiceApprovedToDate;
+    }
+
+    public void setInvoiceApprovedToDate(Date invoiceApprovedToDate) {
+        this.invoiceApprovedToDate = invoiceApprovedToDate;
+    }
+
+    public Department getServiceCenter() {
+        return serviceCenter;
+    }
+
+    public void setServiceCenter(Department serviceCenter) {
+        this.serviceCenter = serviceCenter;
+    }
+
+    public Institution getSponsor() {
+        return sponsor;
+    }
+
+    public void setSponsor(Institution sponsor) {
+        this.sponsor = sponsor;
+    }
+
+    public String getDischargeType() {
+        return dischargeType;
+    }
+
+    public void setDischargeType(String dischargeType) {
+        this.dischargeType = dischargeType;
+    }
+
+    public String getPatientCategory() {
+        return patientCategory;
+    }
+
+    public void setPatientCategory(String patientCategory) {
+        this.patientCategory = patientCategory;
+    }
+
+    public AdmissionStatus getAdmissionStatus() {
+        return admissionStatus;
+    }
+
+    public void setAdmissionStatus(AdmissionStatus admissionStatus) {
+        this.admissionStatus = admissionStatus;
+    }
+
+    public RoomCategory getRoomCategory() {
+        return roomCategory;
+    }
+
+    public void setRoomCategory(RoomCategory roomCategory) {
+        this.roomCategory = roomCategory;
+    }
+
+    public Staff getConsultant() {
+        return consultant;
+    }
+
+    public void setConsultant(Staff consultant) {
+        this.consultant = consultant;
+    }
+
+    public List<IpUnsettledInvoiceDTO> getUnsettledInvoicesList() {
+        return unsettledInvoicesList;
+    }
+
+    public void setUnsettledInvoicesList(List<IpUnsettledInvoiceDTO> unsettledInvoicesList) {
+        this.unsettledInvoicesList = unsettledInvoicesList;
+       
     }
 
     public class IncomeByCategoryRecord {

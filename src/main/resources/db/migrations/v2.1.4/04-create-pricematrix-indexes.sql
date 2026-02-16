@@ -2,9 +2,9 @@
 -- SCRIPT 4: CREATE PRICEMATRIX INDEXES
 -- ==========================================
 -- Purpose: Create indexes on PRICEMATRIX for settle button optimization
--- Safe to run: YES (uses IF NOT EXISTS)
--- Can be run separately: YES
--- Idempotent: YES (safe to re-run)
+-- Safe to run: YES (duplicate index errors are handled by DatabaseMigrationController)
+-- Can be run separately: NO (requires DatabaseMigrationController error handling)
+-- Idempotent: YES (duplicate index errors are silently skipped)
 
 SELECT 'Creating PRICEMATRIX Indexes - Script 4 of 5' AS status;
 SELECT NOW() AS script_start_time;
@@ -14,25 +14,25 @@ SELECT NOW() AS script_start_time;
 -- Optimizing these lookups significantly improves settle button performance
 
 -- Create composite index for payment scheme + department + category lookups on uppercase table
-CREATE INDEX IF NOT EXISTS idx_pricematrix_payment_dept_category
+CREATE INDEX idx_pricematrix_payment_dept_category
 ON PRICEMATRIX(PAYMENTSCHEME_ID, DEPARTMENT_ID, CATEGORY_ID, RETIRED);
 
 SELECT 'Index idx_pricematrix_payment_dept_category created on PRICEMATRIX (if table exists)' AS uppercase_pm_payment_dept_category_result;
 
 -- Create composite index for payment scheme + department + category lookups on lowercase table
-CREATE INDEX IF NOT EXISTS idx_pricematrix_payment_dept_category
+CREATE INDEX idx_pricematrix_payment_dept_category
 ON pricematrix(PAYMENTSCHEME_ID, DEPARTMENT_ID, CATEGORY_ID, RETIRED);
 
 SELECT 'Index idx_pricematrix_payment_dept_category created on pricematrix (if table exists)' AS lowercase_pm_payment_dept_category_result;
 
 -- Create composite index for payment scheme + category lookups (without department filter) on uppercase table
-CREATE INDEX IF NOT EXISTS idx_pricematrix_payment_category
+CREATE INDEX idx_pricematrix_payment_category
 ON PRICEMATRIX(PAYMENTSCHEME_ID, CATEGORY_ID, RETIRED);
 
 SELECT 'Index idx_pricematrix_payment_category created on PRICEMATRIX (if table exists)' AS uppercase_pm_payment_category_result;
 
 -- Create composite index for payment scheme + category lookups (without department filter) on lowercase table
-CREATE INDEX IF NOT EXISTS idx_pricematrix_payment_category
+CREATE INDEX idx_pricematrix_payment_category
 ON pricematrix(PAYMENTSCHEME_ID, CATEGORY_ID, RETIRED);
 
 SELECT 'Index idx_pricematrix_payment_category created on pricematrix (if table exists)' AS lowercase_pm_payment_category_result;
