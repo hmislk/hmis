@@ -44,13 +44,22 @@
                                                 class="ui-button-warning m-1 " />
 
                                             <p:commandButton
-                                                value="Patient Lookup" 
+                                                value="Patient Lookup"
                                                 action="#{opdBillController.navigateToSearchPatients()}"
-                                                ajax="false" 
-                                                icon="fa fa-search" 
-                                                iconPos="left" 
-                                                class="ui-button-warning m-1 " 
+                                                ajax="false"
+                                                icon="fa fa-search"
+                                                iconPos="left"
+                                                class="ui-button-warning m-1 "
                                                 immediate="true" />
+
+                                            <p:commandButton
+                                                value="Admission Profile"
+                                                rendered="#{admissionController.current ne null and admissionController.current.id ne null}"
+                                                action="#{patientController.saveAndNavigateToAdmissionProfile()}"
+                                                ajax="false"
+                                                icon="fa fa-hospital-o"
+                                                iconPos="left"
+                                                class="ui-button-info m-1" />
 
                                         </div>
                                     </div>
