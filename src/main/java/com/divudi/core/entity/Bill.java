@@ -1636,9 +1636,6 @@ public class Bill implements Serializable, RetirableEntity {
     }
 
     public Patient getPatient() {
-        if (patientEncounter != null) {
-            patient = patientEncounter.getPatient();
-        }
         return patient;
     }
 

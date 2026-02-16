@@ -12,6 +12,9 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.service.pharmacy.PharmacyBatchApiService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 
 import javax.enterprise.context.RequestScoped;
@@ -22,6 +25,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.lang.reflect.Type;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +56,34 @@ public class PharmacyBatchApi {
     private PharmacyBatchApiService batchService;
 
     private static final Gson gson = new GsonBuilder()
-            .setDateFormat("yyyy-MM-dd HH:mm:ss")
+            // Support multiple date formats for expiryDate and other Date fields
+            .registerTypeAdapter(Date.class, (JsonDeserializer<Date>) (JsonElement json, Type typeOfT, com.google.gson.JsonDeserializationContext context) -> {
+                if (json == null) {
+                    return null;
+                }
+                String s = json.getAsString();
+                if (s == null || s.trim().isEmpty()) {
+                    return null;
+                }
+
+                String value = s.trim();
+                String[] patterns = new String[]{
+                        "yyyy-MM-dd HH:mm:ss",
+                        "yyyy-MM-dd'T'HH:mm:ss",
+                        "yyyy-MM-dd"
+                };
+
+                for (String p : patterns) {
+                    try {
+                        SimpleDateFormat sdf = new SimpleDateFormat(p);
+                        sdf.setLenient(false);
+                        return sdf.parse(value);
+                    } catch (ParseException ignored) {
+                    }
+                }
+
+                throw new JsonParseException("Invalid date format: " + value);
+            })
             .create();
 
     public PharmacyBatchApi() {
@@ -117,6 +150,9 @@ public class PharmacyBatchApi {
                 request = gson.fromJson(requestBody, BatchCreateRequestDTO.class);
             } catch (JsonSyntaxException e) {
                 return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
+            } catch (JsonParseException e) {
+                // Date parsing errors land here
+                return errorResponse("Invalid date format: " + e.getMessage(), 400);
             }
 
             if (request == null) {
