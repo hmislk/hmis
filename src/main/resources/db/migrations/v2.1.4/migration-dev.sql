@@ -65,7 +65,7 @@ SELECT
 
 SELECT 'Step 2: Creating composite index for query optimization...' AS progress;
 
--- Create index only if it doesn't exist
+-- Create index (duplicate index errors are handled by DatabaseMigrationController)
 -- This index optimizes the UserStockController.isStockAvailable() query:
 -- SELECT sum(us.updationQty) FROM UserStock us
 -- WHERE us.retired=false

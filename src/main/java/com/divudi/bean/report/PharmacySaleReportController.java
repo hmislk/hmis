@@ -4231,7 +4231,7 @@ public class PharmacySaleReportController implements Serializable {
                 double cv = (double) o[5];
                 double qty = (double) o[6];
 
-                if (sv == 0) {
+                if (sv == 0 && qty == 0) {
                     continue;
                 }
                 if (previousItemId == null || !tiId.equals(previousItemId)) {

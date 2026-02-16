@@ -2,9 +2,9 @@
 -- SCRIPT 2: CREATE USER_STOCK INDEXES
 -- ==========================================
 -- Purpose: Create composite index on USER_STOCK for performance optimization
--- Safe to run: YES (uses IF NOT EXISTS)
--- Can be run separately: YES
--- Idempotent: YES (safe to re-run)
+-- Safe to run: YES (duplicate index errors are handled by DatabaseMigrationController)
+-- Can be run separately: NO (requires DatabaseMigrationController error handling)
+-- Idempotent: YES (duplicate index errors are silently skipped)
 
 SELECT 'Creating USER_STOCK Indexes - Script 2 of 5' AS status;
 SELECT NOW() AS script_start_time;

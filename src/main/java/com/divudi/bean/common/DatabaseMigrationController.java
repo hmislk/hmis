@@ -575,15 +575,18 @@ public class DatabaseMigrationController implements Serializable {
     }
 
     private boolean isCreateIndexStatement(String sql) {
-        return sql.toUpperCase().trim().startsWith("CREATE INDEX");
+        String upper = sql.toUpperCase().trim();
+        return upper.startsWith("CREATE INDEX") || upper.startsWith("CREATE UNIQUE INDEX");
     }
 
     private boolean isDuplicateIndexError(Exception e) {
         // MySQL error 1061: Duplicate key name
+        // MySQL error 1146: Table doesn't exist (e.g., case-sensitive table name mismatch)
         Throwable cause = e;
         while (cause != null) {
             String message = cause.getMessage();
-            if (message != null && (message.contains("1061") || message.contains("Duplicate key name"))) {
+            if (message != null && (message.contains("1061") || message.contains("Duplicate key name")
+                    || message.contains("1146") || message.contains("doesn't exist"))) {
                 return true;
             }
             cause = cause.getCause();

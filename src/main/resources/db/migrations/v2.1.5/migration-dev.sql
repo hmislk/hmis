@@ -28,7 +28,7 @@ ORDER BY INDEX_NAME, SEQ_IN_INDEX;
 -- ==========================================
 
 -- Step 3: Create index for item-level discount queries on pricematrix (Development/Windows - lowercase)
--- Using IF NOT EXISTS for idempotency (can be re-run safely)
+-- Duplicate index errors are handled by DatabaseMigrationController
 CREATE INDEX idx_psd_item ON pricematrix(RETIRED, PAYMENTMETHOD, ITEM_ID, PAYMENTSCHEME_ID, MEMBERSHIPSCHEME_ID);
 
 -- ==========================================

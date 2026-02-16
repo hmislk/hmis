@@ -2,9 +2,9 @@
 -- SCRIPT 3: CREATE USERSTOCKCONTAINER INDEXES
 -- ==========================================
 -- Purpose: Create indexes on USERSTOCKCONTAINER for join optimization
--- Safe to run: YES (uses IF NOT EXISTS)
--- Can be run separately: YES
--- Idempotent: YES (safe to re-run)
+-- Safe to run: YES (duplicate index errors are handled by DatabaseMigrationController)
+-- Can be run separately: NO (requires DatabaseMigrationController error handling)
+-- Idempotent: YES (duplicate index errors are silently skipped)
 
 SELECT 'Creating USERSTOCKCONTAINER Indexes - Script 3 of 5' AS status;
 SELECT NOW() AS script_start_time;

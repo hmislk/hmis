@@ -44,7 +44,7 @@ ORDER BY (data_length + index_length) DESC;
 
 -- =====================================================
 -- PERFORMANCE INDEX CREATION
--- Using conditional logic to avoid "index already exists" errors
+-- Index creation is unconditional; duplicate index errors are handled by DatabaseMigrationController
 -- =====================================================
 
 -- INDEX 1: Critical stock value calculation performance
