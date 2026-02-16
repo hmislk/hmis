@@ -28,6 +28,7 @@ import com.divudi.core.data.dataStructure.ItemDetailsCell;
 import com.divudi.core.data.dataStructure.ItemLastSupplier;
 import com.divudi.core.data.dataStructure.PharmacyStockRow;
 import com.divudi.core.data.dataStructure.StockReportRecord;
+import com.divudi.core.data.dto.AmpDto;
 import com.divudi.core.data.dto.BillItemDTO;
 import com.divudi.core.data.dto.CostOfGoodSoldBillDTO;
 import com.divudi.core.data.dto.ExpiryItemListDto;
@@ -210,6 +211,7 @@ public class PharmacyReportController implements Serializable {
     private DosageForm dosageForm;
     private Item item;
     private Amp amp;
+    private AmpDto selectedAmpDto;
     private Machine machine;
     private String processBy;
     private Institution collectingCentre;
@@ -9380,6 +9382,22 @@ public class PharmacyReportController implements Serializable {
 
     public void setAmp(Amp amp) {
         this.amp = amp;
+    }
+
+    public AmpDto getSelectedAmpDto() {
+        return selectedAmpDto;
+    }
+
+    public void setSelectedAmpDto(AmpDto selectedAmpDto) {
+        this.selectedAmpDto = selectedAmpDto;
+        if (selectedAmpDto != null && selectedAmpDto.getId() != null) {
+            Item found = itemFacade.find(selectedAmpDto.getId());
+            if (found instanceof Amp) {
+                this.amp = (Amp) found;
+            }
+        } else {
+            this.amp = null;
+        }
     }
 
     public String getDateRange() {
