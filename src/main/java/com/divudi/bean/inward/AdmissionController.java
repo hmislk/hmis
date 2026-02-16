@@ -313,8 +313,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
         for (ClinicalFindingValue al : patientAllergies) {
-            if (al.getPatient() == null) {
-                al.setPatient(getCurrent().getPatient());
+            if (al.getPatient() == null || al.getPatient().getId() == null) {
+                al.setPatient(patient);
             }
             if (al.getId() == null) {
                 clinicalFindingValueFacade.create(al);
@@ -658,10 +658,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToEditAdmission() {
-
-        current = new Admission();
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission to edit");
+            return "";
+        }
         bhtEditController.setCurrent(current);
-        bhtEditController.getCurrent().getPatient().setEditingMode(true);
+        if (current.getPatient() != null) {
+            current.getPatient().setEditingMode(true);
+        }
         return bhtEditController.navigateToEditAdmissionDetails();
     }
 
@@ -1354,7 +1358,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getPatientFacade().editAndFlush(getPatient());    // Immediate flush
         }
 
-        // NO third edit operation - removed null/reassign pattern
+        // Ensure the admission references the persisted patient
+        if (getCurrent() != null) {
+            getCurrent().setPatient(patient);
+        }
     }
 
     private void saveGuardian() {
