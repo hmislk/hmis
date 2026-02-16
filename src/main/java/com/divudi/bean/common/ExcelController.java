@@ -3335,7 +3335,7 @@ public class ExcelController {
                 Row excelRow = dataSheet.createRow(startRow++);
                 excelRow.createCell(0).setCellValue(row.getItemName() != null ? row.getItemName() : "");
                 excelRow.createCell(1).setCellValue(row.getCategoryName() != null ? row.getCategoryName() : "");
-                excelRow.createCell(2).setCellValue(row.getItemName() != null ? row.getItemName() : "");
+                excelRow.createCell(2).setCellValue(row.getPaymentName() != null ? row.getPaymentName() : "");
                 excelRow.createCell(3).setCellValue(row.getItemNetTotal() != null ? row.getItemNetTotal() : 0.0);
             }
         } else {
@@ -3369,7 +3369,7 @@ public class ExcelController {
                 excelRow.createCell(0).setCellValue(row.getItemName() != null ? row.getItemName() : "");
                 excelRow.createCell(1).setCellValue(row.getCategoryName() != null ? row.getCategoryName() : "");
                 excelRow.createCell(2).setCellValue(row.getItemNetTotal() != null ? row.getItemNetTotal() : 0.0);
-                excelRow.createCell(3).setCellValue(row.getItemName() != null ? row.getItemName() : "");
+                excelRow.createCell(3).setCellValue(""); // Reference bills data not available in DTO
             }
         } else {
             Row noDataRow = dataSheet.createRow(startRow++);
