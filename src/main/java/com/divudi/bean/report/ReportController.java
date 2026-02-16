@@ -20,7 +20,6 @@ import com.divudi.core.data.TestWiseCountReport;
 import com.divudi.core.data.dataStructure.BillAndItemDataRow;
 import com.divudi.core.data.dataStructure.ItemDetailsCell;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
-import com.divudi.core.data.reports.CollectionCenterReport;
 import com.divudi.core.entity.channel.AgentReferenceBook;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.Investigation;
@@ -2619,13 +2618,13 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         jpql.append("SELECT NEW com.divudi.core.data.dto.PharmacySaleItemDTO(");
         jpql.append("bi.bill.department.id, ");
         jpql.append("bi.bill.department.name, ");
-        jpql.append("bi.bill.patientEncounter.bhtNo, ");
+        jpql.append("pe.bhtNo, ");
         jpql.append("bi.bill.id, ");
         jpql.append("bi.bill.deptId, ");
         jpql.append("bi.bill.insId, ");
         jpql.append("bi.bill.billDate, ");
-        jpql.append("bi.bill.patient.phn, ");
-        jpql.append("bi.bill.patient.person.name, ");
+        jpql.append("pt.phn, ");
+        jpql.append("pn.name, ");
         jpql.append("item.id, ");
         jpql.append("item.name, ");
         jpql.append("bi.qty, ");
@@ -2638,6 +2637,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         jpql.append("FROM BillItem bi ");
         jpql.append("JOIN bi.item item ");
         jpql.append("LEFT JOIN bi.pharmaceuticalBillItem pbi ");
+        jpql.append("LEFT JOIN bi.bill.patientEncounter pe ");
+        jpql.append("LEFT JOIN bi.bill.patient pt ");
+        jpql.append("LEFT JOIN pt.person pn ");
         jpql.append("WHERE bi.bill.billTypeAtomic IN :bTypes ");
         jpql.append("AND bi.bill.billDate BETWEEN :fd AND :td ");
         jpql.append("AND bi.retired = :retired ");
@@ -2663,7 +2665,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             m.put("dep", department);
         }
 
-        jpql.append("ORDER BY bi.bill.department.name, bi.bill.patientEncounter.bhtNo, bi.bill.billDate, bi.id");
+        jpql.append("ORDER BY bi.bill.department.name, pe.bhtNo, bi.bill.billDate, bi.id");
 
         List<PharmacySaleItemDTO> flatItems = (List<PharmacySaleItemDTO>) billItemFacade
                 .findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
@@ -2686,6 +2688,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
 
         Map<Long, PharmacySaleDepartmentDTO> departmentMap = new LinkedHashMap<>();
+        Map<Long, Map<Long, PharmacySaleBhtBillDTO>> deptBillMaps = new HashMap<>();
 
         for (PharmacySaleItemDTO item : flatItems) {
             Long deptKey = item.getDepartmentId();
@@ -2695,33 +2698,30 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
             PharmacySaleDepartmentDTO deptDto = departmentMap.get(deptKey);
             if (deptDto == null) {
-                deptDto = new PharmacySaleDepartmentDTO(deptKey,
-                        item.getDepartmentName() != null ? item.getDepartmentName() : "Unknown Department");
+                deptDto = new PharmacySaleDepartmentDTO();
+                deptDto.setDepartmentId(deptKey);
+                deptDto.setDepartmentName(item.getDepartmentName());
+                deptDto.setBhtBills(new ArrayList<>());
                 departmentMap.put(deptKey, deptDto);
+                deptBillMaps.put(deptKey, new LinkedHashMap<>());
             }
 
-            Long billKey = item.getBillId();
-            List<PharmacySaleBhtBillDTO> bhtBills = deptDto.getBhtBills();
+            Long billKey = item.getBillId() != null ? item.getBillId() : 0L;
+            Map<Long, PharmacySaleBhtBillDTO> billMap = deptBillMaps.get(deptKey);
 
-            PharmacySaleBhtBillDTO bhtDto = null;
-            if (!bhtBills.isEmpty()) {
-                PharmacySaleBhtBillDTO last = bhtBills.get(bhtBills.size() - 1);
-                if (billKey != null && billKey.equals(last.getBillId())) {
-                    bhtDto = last;
-                }
-            }
-
+            PharmacySaleBhtBillDTO bhtDto = billMap.get(billKey);
             if (bhtDto == null) {
-                bhtDto = new PharmacySaleBhtBillDTO(
-                        item.getBhtNumber() != null ? item.getBhtNumber() : "No BHT",
-                        item.getBillId(),
-                        item.getDeptId(),
-                        item.getInsId(),
-                        item.getBillDate(),
-                        item.getPatientPhn(),
-                        item.getPatientName()
-                );
-                bhtBills.add(bhtDto);
+                bhtDto = new PharmacySaleBhtBillDTO();
+                bhtDto.setBhtNumber(item.getBhtNumber());
+                bhtDto.setBillId(item.getBillId());
+                bhtDto.setDeptId(item.getDeptId());
+                bhtDto.setInsId(item.getInsId());
+                bhtDto.setBillDate(item.getBillDate());
+                bhtDto.setPatientPhn(item.getPatientPhn());
+                bhtDto.setPatientName(item.getPatientName());
+                bhtDto.setItems(new ArrayList<>());
+                billMap.put(billKey, bhtDto);
+                deptDto.getBhtBills().add(bhtDto);
             }
 
             bhtDto.getItems().add(item);
