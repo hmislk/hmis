@@ -28,6 +28,7 @@ import com.divudi.core.facade.*;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.dataStructure.CategoryWithItem;
 import com.divudi.core.data.dataStructure.PharmacySummery;
+import com.divudi.core.data.dto.AmpDto;
 import com.divudi.core.data.dto.PharmacyGrnItemDTO;
 import com.divudi.core.data.dto.PharmacyGrnReturnItemDTO;
 import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
@@ -230,6 +231,7 @@ public class PharmacyController implements Serializable {
     private Vtm vtm;
     private Vmp vmp;
     private Amp amp;
+    private AmpDto selectedAmpDto;
     private Vmpp vmpp;
     private Ampp ampp;
 
@@ -10197,6 +10199,22 @@ public class PharmacyController implements Serializable {
 
     public void setAmp(Amp amp) {
         this.amp = amp;
+    }
+
+    public AmpDto getSelectedAmpDto() {
+        return selectedAmpDto;
+    }
+
+    public void setSelectedAmpDto(AmpDto selectedAmpDto) {
+        this.selectedAmpDto = selectedAmpDto;
+        if (selectedAmpDto != null && selectedAmpDto.getId() != null) {
+            Amp found = ampFacade.find(selectedAmpDto.getId());
+            if (found != null) {
+                this.amp = found;
+            }
+        } else {
+            this.amp = null;
+        }
     }
 
     public Vmpp getVmpp() {
