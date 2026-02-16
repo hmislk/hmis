@@ -18,7 +18,7 @@
                             <!-- From Date -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
-                                <p:outputLabel value="From Date" class="m-3"/>
+                                <p:outputLabel value="From Date" class="m-3" for="fromDate"/>
                             </h:panelGroup>
                             <p:datePicker
                                 styleClass="w-100"
@@ -35,7 +35,7 @@
                             <!-- To Date -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
-                                <p:outputLabel value="To Date" class="m-3"/>
+                                <p:outputLabel value="To Date" class="m-3" for="toDate"/>
                             </h:panelGroup>
                             <p:datePicker
                                 styleClass="w-100"
@@ -53,7 +53,7 @@
                             <!-- Institution -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2"/>
-                                <p:outputLabel value="Institution" class="m-3"/>
+                                <p:outputLabel value="Institution" class="m-3" for="grnInstitution"/>
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="grnInstitution"
@@ -70,7 +70,7 @@
                             <!-- Site -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
-                                <p:outputLabel value="Site" class="m-3"/>
+                                <p:outputLabel value="Site" class="m-3" for="grnSite"/>
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="grnSite"
@@ -87,9 +87,10 @@
                             <!-- Department/Store -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2"/>
-                                <p:outputLabel value="Department/Store" class="m-3"/>
+                                <p:outputLabel value="Department/Store" class="m-3" for="grnDepartmentStore"/>
                             </h:panelGroup>
                             <p:selectOneMenu
+                                id="grnDepartmentStore"
                                 styleClass="w-100 form-control"
                                 filterMatchMode="contains"
                                 filter="true">
@@ -105,7 +106,7 @@
                             <!-- Payment Mode -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-credit-card mr-2"/>
-                                <p:outputLabel value="Payment Mode" class="m-3"/>
+                                <p:outputLabel value="Payment Mode" class="m-3" for="grnPaymentMode"/>
                             </h:panelGroup>
                             <p:selectOneMenu 
                                 id="grnPaymentMode" 
@@ -122,10 +123,10 @@
                             <!-- GRN Status -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-info-circle mr-2"/>
-                                <p:outputLabel value="Purchase Type" class="m-3"/>
+                                <p:outputLabel value="Purchase Type" class="m-3" for="purchaseType"/>
                             </h:panelGroup>
                             <p:selectOneMenu 
-                                id="grnStatus" 
+                                id="purchaseType" 
                                 class="w-100">
                                 <f:selectItem itemLabel="All Types"/>
                                 <f:selectItem itemLabel="Direct Purchase" itemValue="received"/>
@@ -145,7 +146,7 @@
                             <p:commandButton 
                                 value="Print" 
                                 icon="fas fa-print"
-                                class="ui-button- mx-1"
+                                class="ui-button-secondary mx-1"
                                 type="button"/>
                             <p:commandButton 
                                 value="Download" 
