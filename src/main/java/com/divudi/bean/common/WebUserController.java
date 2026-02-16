@@ -1082,6 +1082,17 @@ public class WebUserController implements Serializable {
         return "/admin/users/user_icons?faces-redirect=true";
     }
 
+    public String navigateToManageUserIconsTree() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        userIconController.setUser(selected);
+        userIconController.setDepartments(getUserPrivilageController().fillWebUserDepartments(selected));
+        userIconController.setIconsLoaded(false);
+        return "/admin/users/user_icons_tree?faces-redirect=true";
+    }
+
     public String navigateToManageUserSubscriptions() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");

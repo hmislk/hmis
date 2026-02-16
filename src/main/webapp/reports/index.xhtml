@@ -432,7 +432,10 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="9. GRN" action="#{reportController.navigateToGrn()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="10. Before Stock Taking" action="#{reportController.navigateToBeforeStockTaking()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="11. After Stock Taking" action="#{reportController.navigateToAfterStockTaking()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="12. Stock Leger" action="#{reportController.navigateToStockLedger()}" />
+                                    
+                                    <p:commandButton   class="w-100 ui-button-success"  ajax="false" value="12. Stock Ledger" action="#{reportController.navigateToStockLedgerDto()}" icon="fa fa-rocket" title="High-performance DTO-based Stock Ledger report" />
+                                    <p:commandButton   class="w-100 ui-button-secondary"  ajax="false" value="12. Stock Leger (Legacy)" action="#{reportController.navigateToStockLedger()}" />
+                                    
                                     <p:commandButton   class="w-100"  ajax="false" value="13. Expiry Item Report" action="#{reportController.navigateToExpiryItem()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="14. GRN Return Variance Report" action="#{reportController.navigateToGrnReturnVarianceReport()}" />
                                 </div>

@@ -57,16 +57,36 @@
                     <div class="col-3" >
                         <p:panel header="Admission &amp; Billing"  class="m-1">
                             <div class="d-grid gap-3">
-                                <p:commandButton 
-                                    value="Edit Admission" 
+                                <p:commandButton
+                                    value="Edit Patient Details"
                                     ajax="false"
-                                    action="#{admissionController.navigateToEditAdmission}" 
+                                    action="#{patientController.navigateToOpdPatientEdit()}"
+                                    icon="fa fa-edit"
+                                    class="w-100 ui-button-warning">
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current.patient}"
+                                        target="#{patientController.current}" />
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Edit Admission"
+                                    ajax="false"
+                                    action="#{admissionController.navigateToEditAdmission}"
                                     icon="fa fa-edit"
                                     class="w-100 ">
-                                    <f:setPropertyActionListener 
-                                        value="#{admissionController.current}" 
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
                                         target="#{bhtEditController.current}" >
                                     </f:setPropertyActionListener>
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Manage Allergies"
+                                    ajax="false"
+                                    action="#{bhtEditController.navigateToManageAllergies()}"
+                                    icon="fa-solid fa-allergies"
+                                    class="w-100">
+                                    <f:setPropertyActionListener
+                                        value="#{admissionController.current}"
+                                        target="#{bhtEditController.current}"/>
                                 </p:commandButton>
 
                                 <p:commandButton 
