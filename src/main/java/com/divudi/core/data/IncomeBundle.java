@@ -9,6 +9,7 @@ import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
+import com.divudi.service.BillService;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -21,6 +22,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import java.util.*;
+import javax.ejb.EJB;
 
 /**
  * @author buddhika
@@ -354,7 +356,6 @@ public class IncomeBundle implements Serializable {
             }
         }
     }
-
 
     public void generateRetailAndCostDetailsForPharmaceuticalBillItems() {
         saleValue = 0;
@@ -961,7 +962,7 @@ public class IncomeBundle implements Serializable {
                 pm = bb.getPaymentMethod();
             } else {
                 pm = b.getPaymentMethod();
-            }
+            }  
 
             if (pm == null) {
                 r.setCreditValue(b.getNetTotal());
@@ -1042,146 +1043,72 @@ public class IncomeBundle implements Serializable {
         }
         populateSummaryRow();
     }
-    
-    public void generatePaymentDetailsForOpdRevenue(String select) {
+
+    public void generateDiscountDetailsForDashboard() {
         Map<Object, IncomeRow> grouped = new LinkedHashMap<>();
-        
-        if (select.equals("Department Wise")) {
-            for (IncomeRow r : getRows()) {
-                Bill b = r.getBill();
 
-                if (b == null || b.getToDepartment() == null) {
-                    continue;
-                }
+        for (IncomeRow r : getRows()) {
+            Bill b = r.getBill();
 
-                r.setGrossTotal(b.getTotal());
-                r.setNetTotal(b.getNetTotal());
+            if (b == null || (b.getDepartment() == null && b.getToDepartment() == null)) {
+                continue;
+            }
 
-                DepartmentType st = b.getToDepartment().getDepartmentType();
-                String dept;
-                
+            r.setDiscount(b.getDiscount());
+
+            DepartmentType st;
+            String dept;
+            if (b.getToDepartment() != null) {
+                st = b.getToDepartment().getDepartmentType();
                 if (st == null) {
                     dept = b.getToDepartment().getName();
                 } else {
                     dept = st.toString();
                 }
-                
-                IncomeRow groupRow = grouped.computeIfAbsent(dept, k -> {
-                    IncomeRow ir = new IncomeRow();
-                    ir.setDepartment(b.getToDepartment());
-                    ir.setRowType(k.toString());
-                    return ir;
-                });
-
-                groupRow.setNetTotal(groupRow.getNetTotal() + r.getNetTotal());
-                groupRow.setGrossTotal(groupRow.getGrossTotal() + r.getGrossTotal());
-
-            }
-            getRows().clear();
-            grouped.values().stream()
-                .sorted(Comparator.comparing(IncomeRow::getRowType, 
-                        Comparator.nullsLast(Comparator.naturalOrder())))
-                .forEachOrdered(getRows()::add);
-        } else if (select.equals("Institution Wise")) {
-            for (IncomeRow r : getRows()) {
-                Bill b = r.getBill();
-
-                if (b == null || b.getInstitution()== null) {
-                    continue;
-                }
-
-                r.setGrossTotal(b.getTotal());
-                r.setNetTotal(b.getNetTotal());
-
-                Institution inst = b.getInstitution();
-                IncomeRow groupRow = grouped.computeIfAbsent(inst, k -> {
-                    IncomeRow ir = new IncomeRow();
-                    ir.setInstitution((Institution)k);
-                    ir.setRowType(((Institution)k).getName());
-                    return ir;
-                });
-
-                groupRow.setNetTotal(groupRow.getNetTotal() + r.getNetTotal());
-                groupRow.setGrossTotal(groupRow.getGrossTotal() + r.getGrossTotal());
-
-            }
-            getRows().clear();
-            grouped.values().stream()
-                .sorted(Comparator.comparing(IncomeRow::getInstitution, 
-                        Comparator.nullsLast(Comparator.comparing(Institution::getName))))
-                .forEachOrdered(getRows()::add);
-        } else if (select.equals("Site Wise")) {
-            for (IncomeRow r : getRows()) {
-                Bill b = r.getBill();
-
-                if (b == null || b.getToDepartment() == null) {
-                    continue;
-                }
-
-                r.setGrossTotal(b.getTotal());
-                r.setNetTotal(b.getNetTotal());
-
-                Institution site = b.getToDepartment().getSite();
-                if (site == null) {
-                    continue;
-                }
-                IncomeRow groupRow = grouped.computeIfAbsent(site, k -> {
-                    IncomeRow ir = new IncomeRow();
-                    ir.setSite((Institution)k);
-                    ir.setRowType(((Institution)k).getName());
-                    return ir;
-                });
-
-                groupRow.setNetTotal(groupRow.getNetTotal() + r.getNetTotal());
-                groupRow.setGrossTotal(groupRow.getGrossTotal() + r.getGrossTotal());
-
-            }
-            getRows().clear();
-            grouped.values().stream()
-                .sorted(Comparator.comparing(IncomeRow::getSite, 
-                        Comparator.nullsLast(Comparator.comparing(Institution::getName))))
-                .forEachOrdered(getRows()::add);
-        }
-        
-        populateSummaryRow();
-    }
-    
-    public void generateDiscountDetailsForDashboard() {
-        Map<Object, IncomeRow> grouped = new LinkedHashMap<>();
-        
-        for (IncomeRow r : getRows()) {
-            Bill b = r.getBill();
-            
-            if(b == null || b.getToDepartment() == null) {
-                continue;
-            }
-            
-            r.setDiscount(b.getDiscount());
-            
-            DepartmentType st = b.getToDepartment().getDepartmentType();
-            String dept;
-                
-            if (st == null) {
-                dept = b.getToDepartment().getName();
             } else {
-                dept = st.toString();
+                st = b.getDepartment().getDepartmentType();
+                if (st == null) {
+                    dept = b.getDepartment().getName();
+                } else {
+                    dept = st.toString();
+                }
             }
-                
+
             IncomeRow groupRow = grouped.computeIfAbsent(dept, k -> {
                 IncomeRow ir = new IncomeRow();
-                ir.setDepartment(b.getToDepartment());
                 ir.setRowType(k.toString());
                 return ir;
             });
-            groupRow.setDiscount(groupRow.getDiscount() + r.getDiscount());
+            if (b.getBillTypeAtomic() != null) {
+                switch (b.getBillTypeAtomic().getBillCategory()) {
+                    case REFUND:
+                        groupRow.setDiscount(groupRow.getDiscount() + (-(Math.abs(r.getDiscount()))));
+                        break;
+                    case CANCELLATION:
+                        groupRow.setDiscount(groupRow.getDiscount() + (-(Math.abs(r.getDiscount()))));
+                        break;
+                    case BILL:
+                        groupRow.setDiscount(groupRow.getDiscount() + (Math.abs(r.getDiscount())));
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
+
         getRows().clear();
         grouped.values().stream()
-                .sorted(Comparator.comparing(IncomeRow::getRowType, 
+                .filter(row -> row.getDiscount() != 0.0)
+                .sorted(Comparator.comparing(IncomeRow::getRowType,
                         Comparator.nullsLast(Comparator.naturalOrder())))
                 .forEachOrdered(getRows()::add);
-        
-        populateSummaryRow();
+
+        double sumOfDiscount = 0.0;
+        for (IncomeRow r : rows) {
+            sumOfDiscount += r.getDiscount();
+        }
+
+        getSummaryRow().setDiscount(sumOfDiscount);
     }
 
     @Deprecated
@@ -1317,10 +1244,10 @@ public class IncomeBundle implements Serializable {
         r.setDiscount(b.getDiscount());
         r.setServiceCharge(b.getMargin());
         r.setActualTotal(r.getNetTotal() - r.getServiceCharge());
-        
-        if(b.getPatientEncounter() != null){
+
+        if (b.getPatientEncounter() != null) {
             r.setBhtNo(b.getPatientEncounter().getBhtNo());
-        }else{
+        } else {
             r.setBhtNo("");
         }
 
@@ -1684,6 +1611,7 @@ public class IncomeBundle implements Serializable {
                 }
             }
         }
+
     }
 
     private double nullSafeDouble(Double value) {

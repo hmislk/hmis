@@ -24,6 +24,8 @@ public class ExpiryItemStockListDto implements Serializable {
     private Double retailRate;
     private Double stockQuantity;
 
+    private String dosageFormName;
+
     // Calculated fields
     private Double valueAtCostRate;       // stockQuantity * costRate
     private Double valueAtRetailRate;     // stockQuantity * retailRate
@@ -54,6 +56,17 @@ public class ExpiryItemStockListDto implements Serializable {
         // Calculate values
         this.valueAtCostRate = (costRate != null && stockQuantity != null) ? costRate * stockQuantity : 0.0;
         this.valueAtRetailRate = (retailRate != null && stockQuantity != null) ? retailRate * stockQuantity : 0.0;
+    }
+
+    // Constructor with dosage form name
+    public ExpiryItemStockListDto(Long stockId, String departmentName, String categoryCode,
+                                String categoryName, String itemCode, String itemName,
+                                String uom, String itemType, Long batchNumber,
+                                Date expiryDate, Double costRate, Double retailRate,
+                                Double stockQuantity, String dosageFormName) {
+        this(stockId, departmentName, categoryCode, categoryName, itemCode, itemName,
+             uom, itemType, batchNumber, expiryDate, costRate, retailRate, stockQuantity);
+        this.dosageFormName = dosageFormName;
     }
 
     // Getters and Setters
@@ -182,5 +195,13 @@ public class ExpiryItemStockListDto implements Serializable {
 
     public void setValueAtRetailRate(Double valueAtRetailRate) {
         this.valueAtRetailRate = valueAtRetailRate;
+    }
+
+    public String getDosageFormName() {
+        return dosageFormName;
+    }
+
+    public void setDosageFormName(String dosageFormName) {
+        this.dosageFormName = dosageFormName;
     }
 }

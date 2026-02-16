@@ -130,7 +130,10 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
-    //Retairing properties
+    // Retired: permanent soft-delete. Once retired, the item is excluded from
+    // all queries and is no longer available anywhere in the system. This is
+    // irreversible from a UI perspective (set only by the delete action).
+    // JPQL convention: always filter "a.retired=false" in every query.
     boolean retired;
     @ManyToOne
     WebUser retirer;
@@ -170,6 +173,11 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     boolean marginNotAllowed;
     private boolean printSessionNumber;
     private boolean allowFractions = false;
+    // Inactive: temporary, user-togglable status. An inactive item is still
+    // present in the system but hidden from day-to-day use. Users can
+    // reactivate it at any time via the toggle button. The Active/Inactive/All
+    // filter in management pages operates on this field, NOT on 'retired'.
+    // Do NOT conflate with 'retired' which is a permanent removal.
     boolean inactive = false;
     @ManyToOne
     Institution manufacturer;
@@ -213,6 +221,9 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     private Date expiryDate;
     private boolean scanFee;
     double profitMargin;
+    
+    @Transient
+    private Boolean expired;
 
     //Matara Phrmacy Sale Autocomplete
     @ManyToOne
@@ -306,7 +317,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     @Column(nullable = false)
     private boolean consumptionAllowed = true;
-    
+
     private boolean allowedForBillingPriority;
 
     public double getVatPercentage() {
@@ -387,6 +398,38 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setInactive(boolean inactive) {
         this.inactive = inactive;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
+    }
+
+    public WebUser getRetirer() {
+        return retirer;
+    }
+
+    public void setRetirer(WebUser retirer) {
+        this.retirer = retirer;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    public void setRetiredAt(Date retiredAt) {
+        this.retiredAt = retiredAt;
+    }
+
+    public String getRetireComments() {
+        return retireComments;
+    }
+
+    public void setRetireComments(String retireComments) {
+        this.retireComments = retireComments;
     }
 
     public List<WorksheetItem> getWorksheetItems() {
@@ -740,37 +783,6 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
         this.createdAt = createdAt;
     }
 
-    public boolean isRetired() {
-        return retired;
-    }
-
-    public void setRetired(boolean retired) {
-        this.retired = retired;
-    }
-
-    public WebUser getRetirer() {
-        return retirer;
-    }
-
-    public void setRetirer(WebUser retirer) {
-        this.retirer = retirer;
-    }
-
-    public Date getRetiredAt() {
-        return retiredAt;
-    }
-
-    public void setRetiredAt(Date retiredAt) {
-        this.retiredAt = retiredAt;
-    }
-
-    public String getRetireComments() {
-        return retireComments;
-    }
-
-    public void setRetireComments(String retireComments) {
-        this.retireComments = retireComments;
-    }
 
     public Item getParentItem() {
         return parentItem;
@@ -1667,6 +1679,18 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
         this.allowedForBillingPriority = allowedForBillingPriority;
     }
 
+    public Boolean getExpired() {
+        if (expiryDate == null) {
+            return false;
+        }
+        expired = new Date().after(expiryDate);
+        return expired;
+    }
+
+    public void setExpired(Boolean expired) {
+        this.expired = expired;
+    }
+    
     static class ReportItemComparator implements Comparator<ReportItem> {
 
         @Override

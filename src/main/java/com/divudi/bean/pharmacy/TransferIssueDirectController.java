@@ -29,9 +29,11 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
 import java.math.BigDecimal;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -130,6 +132,11 @@ public class TransferIssueDirectController implements Serializable {
         if (!userStockController.isStockAvailable(getTmpStock(), getQty(), getSessionController().getLoggedUser())) {
             JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
+        }
+
+        // Validate item department type for direct issue
+        if (!validateItemForDirectIssue(getTmpStock().getItemBatch().getItem())) {
+            return; // Don't add the item if validation fails
         }
 
         if (billItem.getBillItemFinanceDetails().getUnitsPerPack() == null || billItem.getBillItemFinanceDetails().getUnitsPerPack() == BigDecimal.ZERO) {
@@ -631,6 +638,29 @@ public class TransferIssueDirectController implements Serializable {
             return null;
         }
         return stockFacade.find(stockDto.getId());
+    }
+
+    /**
+     * Validates if an item can be added to the direct issue based on department type restrictions
+     * Note: Direct issue validation is handled by stock filtering via stockController.completeAvailableStocksWithItemStockDtoForAllowedDepartments
+     * This additional validation ensures only allowed department types can be added
+     */
+    private boolean validateItemForDirectIssue(Item item) {
+        if (item == null) return true;
+
+        DepartmentType itemDeptType = item.getDepartmentType();
+        // Treat items without department type as Pharmacy
+        if (itemDeptType == null) {
+            itemDeptType = DepartmentType.Pharmacy;
+        }
+
+        List allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+        if (allowedTypes == null || !allowedTypes.contains(itemDeptType)) {
+            JsfUtil.addErrorMessage("Items of type " + itemDeptType.getLabel() +
+                " are not allowed for this department");
+            return false;
+        }
+        return true;
     }
 
     // ------------------------------------------------------------------

@@ -24,6 +24,7 @@ public class ExpiryItemListDto implements Serializable {
     private Double totalStockQuantity;    // Sum of stock quantities across all batches of this item
     private Double totalCostValue;        // Sum of (batch_quantity * cost_rate) across all batches of this item
     private Double totalRetailValue;      // Sum of (batch_quantity * retail_rate) across all batches of this item
+    private String dosageFormName;
 
     public ExpiryItemListDto() {
     }
@@ -86,6 +87,17 @@ public class ExpiryItemListDto implements Serializable {
         this.totalStockQuantity = totalStockQuantity;
         this.totalCostValue = totalCostValue;
         this.totalRetailValue = totalRetailValue;
+    }
+
+    // Constructor for item-level aggregation with dosage form name
+    public ExpiryItemListDto(Long itemId, String departmentName, String categoryCode,
+                           String categoryName, String itemCode, String itemName,
+                           String uom, String itemType, Date earliestExpiryDate,
+                           Double totalStockQuantity, Double totalCostValue,
+                           Double totalRetailValue, String dosageFormName) {
+        this(itemId, departmentName, categoryCode, categoryName, itemCode, itemName,
+             uom, itemType, earliestExpiryDate, totalStockQuantity, totalCostValue, totalRetailValue);
+        this.dosageFormName = dosageFormName;
     }
 
     // Getters and Setters
@@ -191,5 +203,13 @@ public class ExpiryItemListDto implements Serializable {
 
     public void setTotalRetailValue(Double totalRetailValue) {
         this.totalRetailValue = totalRetailValue;
+    }
+
+    public String getDosageFormName() {
+        return dosageFormName;
+    }
+
+    public void setDosageFormName(String dosageFormName) {
+        this.dosageFormName = dosageFormName;
     }
 }

@@ -40,32 +40,40 @@
                                                 <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" />
                                                 <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" />
 
-                                                <p:column headerText="User Name" 
-                                                          sortBy="#{u.userName}" 
-                                                          filterBy="#{u.userName}"
-                                                          filterMatchMode="contains">
+                                                <p:column 
+                                                    headerText="User Name" 
+                                                    style="padding: 10px;"
+                                                    sortBy="#{u.userName}" 
+                                                    filterBy="#{u.userName}"
+                                                    filterMatchMode="contains">
                                                     <h:outputText value="#{u.userName}"/>
                                                 </p:column>
 
-                                                <p:column headerText="Name" 
-                                                          sortBy="#{u.name}" 
-                                                          filterBy="#{u.name}"
-                                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable filtering logged users name on the View Users Page',false)}"
-                                                          filterMatchMode="contains">
+                                                <p:column 
+                                                    headerText="Name" 
+                                                    sortBy="#{u.name}" 
+                                                    style="padding: 10px;"
+                                                    filterBy="#{u.name}"
+                                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable filtering logged users name on the View Users Page',false)}"
+                                                    filterMatchMode="contains">
                                                     <h:outputText value="#{u.name}"/>
                                                 </p:column>
 
-                                                <p:column headerText="Code" 
-                                                          sortBy="#{u.code}" 
-                                                          filterBy="#{u.code}"
-                                                          filterMatchMode="contains">
+                                                <p:column 
+                                                    headerText="Code" 
+                                                    style="padding: 10px;"
+                                                    sortBy="#{u.code}" 
+                                                    filterBy="#{u.code}"
+                                                    filterMatchMode="contains">
                                                     <h:outputText value="#{u.code}"/>
                                                 </p:column>
 
-                                                <p:column headerText="Staff Name" 
-                                                          sortBy="#{u.staffNameWithTitle}" 
-                                                          filterBy="#{u.staffNameWithTitle}"
-                                                          filterMatchMode="contains">
+                                                <p:column 
+                                                    headerText="Staff Name" 
+                                                    style="padding: 10px;"
+                                                    sortBy="#{u.staffNameWithTitle}" 
+                                                    filterBy="#{u.staffNameWithTitle}"
+                                                    filterMatchMode="contains">
                                                     <h:outputText value="#{u.staffNameWithTitle}"/>
                                                 </p:column>
                                             </p:dataTable>
@@ -81,15 +89,114 @@
                                             onclick="if (!confirm('Are you sure you want to Remove User?'))
                                                         return false;" action="#{webUserController.removeUser}" >
                                         </p:commandButton>
-                                        <p:commandButton immediate="true" disabled="#{webUserController.selected == null}" icon="fa fa-user-cog" value="Manage User" class="m-1" action="#{webUserController.navigateToEditUser()}" ajax="false" />
-                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-key" value="Manage Password" class="m-1" action="#{webUserController.navigateToEditPasswordByAdmin()}" ajax="false" />
-                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-users-cog" value="Manage Staff" class="m-1" action="#{webUserController.navigateToManageStaff()}" ajax="false" />
-                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-building" value="Manage User Departments" class="m-1" action="#{webUserController.navigateToManageDepartments()}" ajax="false" />
-                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-building" value="Manage User Routes" class="m-1" action="#{webUserController.navigateToManageRoutes()}" ajax="false" />
-                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-unlock-alt" value="Manage Privileges" class="m-1" action="#{webUserController.navigateToManagePrivileges()}" ajax="false" />
-                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-credit-card" value="Manage User Payment Schemes" class="m-1" action="#{webUserController.navigateToManagePaymentSchemes()}" ajax="false" />
-                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-icons" value="Manage User Icons" class="m-1" action="#{webUserController.navigateToManageUserIcons()}" ajax="false" />
-                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fas fa-rss" value="Manage User Subscriptions" class="m-1" action="#{webUserController.navigateToManageUserSubscriptions()}" ajax="false" />
+
+                                        <p:commandButton 
+                                            immediate="true" 
+                                            disabled="#{webUserController.selected == null}" 
+                                            icon="fa fa-user-cog" 
+                                            value="Manage User" 
+                                            class="m-1" 
+                                            action="#{webUserController.navigateToEditUser()}" 
+                                            ajax="false" >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            immediate="true"  
+                                            disabled="#{webUserController.selected == null}" 
+                                            icon="fa fa-key" value="Manage Password" 
+                                            class="m-1" 
+                                            action="#{webUserController.navigateToEditPasswordByAdmin()}" 
+                                            ajax="false" >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            immediate="true"  
+                                            disabled="#{webUserController.selected == null}" 
+                                            icon="fa fa-users-cog" value="Manage Staff" 
+                                            class="m-1" 
+                                            action="#{webUserController.navigateToManageStaff()}" 
+                                            ajax="false" >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            immediate="true"  
+                                            disabled="#{webUserController.selected == null}" 
+                                            icon="fa fa-building" 
+                                            value="Manage User Departments" 
+                                            class="m-1" 
+                                            action="#{webUserController.navigateToManageDepartments()}" 
+                                            ajax="false" >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            immediate="true"  
+                                            disabled="#{webUserController.selected == null}" 
+                                            icon="fa fa-building" 
+                                            value="Manage User Routes" 
+                                            class="m-1" 
+                                            action="#{webUserController.navigateToManageRoutes()}" 
+                                            ajax="false" >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            immediate="true"  
+                                            disabled="#{webUserController.selected == null}" 
+                                            icon="fa fa-building" 
+                                            value="Manage User Role" 
+                                            class="m-1" 
+                                            action="#{webUserController.navigateToManageUserRole()}" 
+                                            ajax="false" >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            immediate="true"  
+                                            disabled="#{webUserController.selected == null}" 
+                                            icon="fa fa-unlock-alt" 
+                                            value="Manage Privileges" 
+                                            class="m-1" 
+                                            action="#{webUserController.navigateToManagePrivileges()}" 
+                                            ajax="false" >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            immediate="true"  
+                                            disabled="#{webUserController.selected == null}" 
+                                            icon="fa fa-credit-card" 
+                                            value="Manage User Payment Schemes" 
+                                            class="m-1" 
+                                            action="#{webUserController.navigateToManagePaymentSchemes()}" 
+                                            ajax="false" >
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            immediate="true"
+                                            disabled="#{webUserController.selected == null}"
+                                            icon="fa fa-icons"
+                                            value="Manage User Icons"
+                                            class="m-1"
+                                            action="#{webUserController.navigateToManageUserIcons()}"
+                                            ajax="false" >
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            immediate="true"
+                                            disabled="#{webUserController.selected == null}"
+                                            icon="fa fa-th"
+                                            value="Manage User Icons (Bulk)"
+                                            class="m-1"
+                                            action="#{webUserController.navigateToManageUserIconsTree()}"
+                                            ajax="false" >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            immediate="true"  
+                                            disabled="#{webUserController.selected == null}" 
+                                            icon="fas fa-rss" 
+                                            value="Manage User Subscriptions" 
+                                            class="m-1" 
+                                            action="#{webUserController.navigateToManageUserSubscriptions()}" 
+                                            ajax="false" >
+                                        </p:commandButton>
 
                                         <p:commandButton 
                                             immediate="true"  
@@ -101,11 +208,36 @@
                                             ajax="false" >
                                         </p:commandButton>
 
-                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-tachometer-alt" value="Manage Dashboards" class="m-1" action="#{webUserController.toManageDashboards()}" ajax="false" />
-                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="pi pi-folder-open" value="Manage Drawer" class="m-1" action="#{webUserController.toManageDrawers()}" ajax="false">
+                                        <p:commandButton 
+                                            immediate="true"  
+                                            disabled="#{webUserController.selected == null}" 
+                                            icon="fa fa-tachometer-alt" 
+                                            value="Manage Dashboards" 
+                                            class="m-1" 
+                                            action="#{webUserController.toManageDashboards()}" 
+                                            ajax="false" >
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            immediate="true"  
+                                            disabled="#{webUserController.selected == null}" 
+                                            icon="pi pi-folder-open" 
+                                            value="Manage Drawer" 
+                                            class="m-1" 
+                                            action="#{webUserController.toManageDrawers()}" 
+                                            ajax="false">
                                             <f:setPropertyActionListener value="true" target="#{drawerController.editDrawerAccess}"/>
                                         </p:commandButton>
-                                        <p:commandButton immediate="true"  disabled="#{webUserController.selected == null}" icon="fa fa-tachometer-alt" value="Manage Preferences" class="m-1" action="#{webUserController.toManageUserPreferences()}" ajax="false" />
+
+                                        <p:commandButton 
+                                            immediate="true"  
+                                            disabled="#{webUserController.selected == null}" 
+                                            icon="fa fa-tachometer-alt" 
+                                            value="Manage Preferences" 
+                                            class="m-1" 
+                                            action="#{webUserController.toManageUserPreferences()}"
+                                            ajax="false" >
+                                        </p:commandButton>
 
                                     </h:panelGroup>
                                 </div>

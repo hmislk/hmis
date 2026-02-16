@@ -52,6 +52,7 @@ public class Department implements Serializable {
 
     @ManyToOne
     Department superDepartment;
+    @Enumerated(EnumType.STRING)
     DepartmentType departmentType;
     @ManyToOne
 
@@ -85,7 +86,11 @@ public class Department implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
+    @Deprecated // Use inactive instead
     private Boolean active;
+
+    //Inactive Status
+    private boolean inactive;
 
     double margin;
     double pharmacyMarginFromPurchaseRate;
@@ -352,12 +357,22 @@ public class Department implements Serializable {
         this.email = email;
     }
 
+    @Deprecated // Use inactive instead
     public Boolean getActive() {
         return active;
     }
 
+    @Deprecated // Use inactive instead
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public boolean isInactive() {
+        return inactive;
+    }
+
+    public void setInactive(boolean inactive) {
+        this.inactive = inactive;
     }
 
     public Institution getSite() {

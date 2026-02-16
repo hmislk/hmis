@@ -228,7 +228,7 @@ public class ItemFeeController implements Serializable {
             getFacade().edit(currentIx);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
 
         currentIx = null;

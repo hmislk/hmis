@@ -55,6 +55,9 @@
                                 <h:outputText styleClass="mx-2 fw-semibold" value="Build time" />
                                 <h:outputText styleClass="mx-2" value=":" />
                                 <h:outputText styleClass="mx-2" value="#{versionController.gitBuildTime}#{versionController.gitBuildTimeElapsed != null ? ' ('.concat(versionController.gitBuildTimeElapsed).concat(')') : ''}" />
+                                <h:outputText styleClass="mx-2 fw-semibold" value="Last Restart Time" />
+                                <h:outputText styleClass="mx-2" value=":" />
+                                <h:outputText styleClass="mx-2" value="#{versionController.applicationStartupTime}#{versionController.applicationStartupTimeElapsed != null ? ' ('.concat(versionController.applicationStartupTimeElapsed).concat(')') : ''}" />
                                 <h:outputText styleClass="mx-2 fw-semibold" value="Last commit" />
                                 <h:outputText styleClass="mx-2" value=":" />
                                 <h:outputText styleClass="mx-2" value="#{versionController.gitCommitIdAbbrev} (#{versionController.gitBranch})" />
@@ -93,7 +96,7 @@
                                 <h:outputText styleClass="h4 fw-bold text-primary" value="Available Department Types for Pharmacy Transactions" />
                             </div>
                             <p:dataList value="#{sessionController.availableDepartmentTypesForPharmacyTransactions}" var="deptType" rendered="#{sessionController.loggedUser != null}">
-                                <p:chip label="#{deptType}" styleClass="me-2 mb-2"/>
+                                <p:chip label="#{deptType.shortLabel}" styleClass="me-2 mb-2"/>
                             </p:dataList>
                             </div>
                         </div>

@@ -36,14 +36,13 @@
                                         update="@all"
                                         action="#{bookingControllerViewScope.navigateToChannelBookingFromMenuByDate()}"
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Navigation Button To Channel Booking By Date From OPD Billing')}"/>
-                                    <p:commandButton 
+                                    <p:commandButton
                                         id="btnNewOpdBill"
-                                        value="New OPD Bill" 
+                                        value="New OPD Bill"
                                         class="ui-button-primary m-1"
                                         icon="fa fa-plus"
                                         action="#{opdBillController.navigateToNewOpdBill()}"
-                                        process="btnNewOpdBill"
-                                        update="@all">
+                                        ajax="false">
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -79,15 +78,15 @@
                                                         value="Searched Patient Details" 
                                                         class="mx-2"
                                                         ></h:outputText>
-                                                    <h:panelGroup rendered="true" id="edit" >
-                                                        <p:selectBooleanButton 
-                                                            value="#{opdBillController.patientDetailsEditable}" 
-                                                            offIcon="pi pi-pencil" 
-                                                            onIcon="pi pi-eye"                                 
+                                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdEditPatientDetails')}" id="edit" >
+                                                        <p:selectBooleanButton
+                                                            value="#{opdBillController.patientDetailsEditable}"
+                                                            offIcon="pi pi-pencil"
+                                                            onIcon="pi pi-eye"
                                                             class="mx-2"
                                                             >
-                                                            <p:ajax 
-                                                                process="@this" 
+                                                            <p:ajax
+                                                                process="@this"
                                                                 update="viewPatient editPatient btnDone edit" />
                                                         </p:selectBooleanButton>
                                                         <p:commandButton 
@@ -683,10 +682,10 @@
                                                 icon="fas fa-refresh"
                                                 class="w-100 mt-5 ui-button-warning"
                                                 action="#{opdBillController.fillDepartmentOpdItems()}"
-                                                rendered="#{webUserController.hasPrivilege('Admin')}"
                                                 process="btnRefreshItemLight"
                                                 update="acIx departments"
                                                 />
+                                            <!--ANy one should be able to reload them-->
                                         </div>
                                     </div>
                                 </p:panel>
@@ -858,7 +857,10 @@
                                                     <f:facet name="header">
                                                         <h:outputText value="Qty" />
                                                     </f:facet>
-                                                    <h:outputText value="#{bi.billItem.qty}" class="mx-1 text-end"  ></h:outputText>
+                                                    <h:outputText
+                                                        id="txtBillItemQty"
+                                                        value="#{bi.billItem.qty}" 
+                                                        class="mx-1 text-end"  ></h:outputText>
                                                 </p:column>
                                                 
                                                 <p:column  width="10em" >

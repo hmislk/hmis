@@ -1951,6 +1951,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     private Request currentRequest;
 
+    @Deprecated // Use OpdBatchBillCancellationController's method with the same name
     public String navigateToCancelOpdBatchBill() {
         if (batchBill == null) {
             JsfUtil.addErrorMessage("No Batch bill is selected");

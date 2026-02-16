@@ -15,8 +15,8 @@
             <ui:define name="content">
 
                 <div class="row g-3">
-                    <div class="col-md-3">
-                        <h:panelGroup layout="block" styleClass="px-2">
+                    <div class="col-md-2">
+                        <h:panelGroup layout="block" styleClass="">
 <!--                            <h:outputText value="Payment Management" styleClass="h5 text-primary d-block mb-2"/>
                             <h:outputText value="Select an action from the tabs to manage payments." styleClass="text-muted small d-block mb-3"/>-->
                             <h:form id="paymentMenuForm">
@@ -24,26 +24,52 @@
                                     <p:ajax process="@this"/>
                                     <p:tab title="Professional Payments - OPD">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton  
+                                            <p:commandButton
                                                 styleClass="w-100 ui-button-info ui-button-outlined"
-                                                ajax="false" 
-                                                value="Initiate Professional Payments" title="Initiate Professional Payments"
-                                                action="#{staffPaymentBillController.navigateToViewOpdPayProfessionalPayments()}" 
+                                                ajax="false"
+                                                value="Initiate Professional Payments" 
+                                                title="Initiate Professional Payments"
+                                                action="#{staffPaymentBillController.navigateToViewOpdPayProfessionalPayments()}"
                                                 icon="fa fa-money-bill-wave"
                                                 rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
-                                            <p:commandButton  
+                                            <p:button
+                                                styleClass="w-100 ui-button-success ui-button-outlined"
+                                                value="Add Miscellaneous Staff Fee" 
+                                                title="Add Miscellaneous Staff Fee"
+                                                outcome="/opd/professional_payments/miscellaneous_staff_fee?faces-redirect=true"
+                                                icon="fa fa-plus"
+                                                rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
+                                            <p:commandButton
                                                 styleClass="w-100 ui-button-info ui-button-outlined"
-                                                ajax="false" 
-                                                action="#{billSearch.navigateToViewOpdProfessionalPaymentsDue()}" 
-                                                actionListener="#{searchController.makeListNull}" 
-                                                value="Search Outstanding Professinal Payments" title="Search Outstanding Professinal Payments" 
+                                                ajax="false"
+                                                value="Miscellaneous Fee Report" 
+                                                title="Report of miscellaneous fees with filters"
+                                                action="#{miscellaneousStaffFeeController.navigateToMiscellaneousFeeReport()}"
+                                                icon="fa fa-file-alt"
+                                                rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
+                                            <p:commandButton
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false"
+                                                value="Miscellaneous Bill Report" 
+                                                title="Report of miscellaneous bills with filters"
+                                                action="#{miscellaneousStaffFeeController.navigateToMiscellaneousBillReport()}"
+                                                icon="fa fa-file-invoice"
+                                                rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
+                                            <p:commandButton
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false"
+                                                action="#{billSearch.navigateToViewOpdProfessionalPaymentsDue()}"
+                                                actionListener="#{searchController.makeListNull}"
+                                                value="Search Outstanding Professional Payments" 
+                                                title="Search Outstanding Professional Payments"
                                                 icon="fa fa-search-dollar"
                                                 rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
-                                            <p:commandButton  
-                                                styleClass="w-100 ui-button-info ui-button-outlined" 
-                                                ajax="false" 
-                                                value="List Completed Professional Payments" title="List Completed Professional Payments" 
-                                                action="#{billSearch.navigateToViewOpdProfessionalPaymentsDoneByUser()}" 
+                                            <p:commandButton
+                                                styleClass="w-100 ui-button-info ui-button-outlined"
+                                                ajax="false"
+                                                value="List Completed Professional Payments" 
+                                                title="List Completed Professional Payments"
+                                                action="#{billSearch.navigateToViewOpdProfessionalPaymentsDoneByUser()}"
                                                 actionListener="#{searchController.makeListNull}"
                                                 icon="fa fa-check-circle"
                                                 rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}"/>
@@ -57,14 +83,16 @@
                                                 styleClass="w-100 ui-button-info ui-button-outlined" 
                                                 ajax="false" 
                                                 icon="fa fa-money-bill-wave"
-                                                value="Initiate Professional Payments" title="Initiate Professional Payments" 
+                                                value="Initiate Professional Payments" 
+                                                title="Initiate Professional Payments" 
                                                 action="/inward/inward_bill_staff_payment?faces-redirect=true" 
                                                 rendered="#{webUserController.hasPrivilege('PaymentBilling') and false}" />
 
                                             <p:commandButton  
                                                 styleClass="w-100 ui-button-info ui-button-outlined"
                                                 ajax="false" 
-                                                value="Initiate Professional Payments" title="Initiate Professional Payments"
+                                                value="Initiate Professional Payments" 
+                                                title="Initiate Professional Payments"
                                                 action="#{inwardStaffPaymentBillController.navigateToViewInwardPayProfessionalPayments()}" 
                                                 icon="fa fa-money-bill-wave"
                                                 rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
@@ -72,7 +100,8 @@
                                             <p:commandButton  
                                                 styleClass="w-100 ui-button-info ui-button-outlined"
                                                 ajax="false" 
-                                                value="Initiate Professional Payments By Surgeries" title="Initiate Professional Payments"
+                                                value="Initiate Professional Payments By Surgeries" 
+                                                title="Initiate Professional Payments"
                                                 action="/inward/inward_bill_surgery_payment?faces-redirect=true" 
                                                 icon="fa fa-money-bill-wave"
                                                 rendered="#{webUserController.hasPrivilege('PaymentBilling')}" />
@@ -83,13 +112,15 @@
                                                 icon="fa fa-search-dollar"
                                                 action="/inward/inward_search_professional_payment_due?faces-redirect=true" 
                                                 actionListener="#{searchController.makeListNull}"  
-                                                value="Search Outstanding Professinal Payments" title="Search Outstanding Professinal Payments" 
+                                                value="Search Outstanding Professional Payments" 
+                                                title="Search Outstanding Professional Payments" 
                                                 rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" />
                                             <p:commandButton  
                                                 styleClass="w-100 ui-button-info ui-button-outlined" 
                                                 ajax="false" 
                                                 icon="fa fa-check-circle"
-                                                value="List Completed Professional Payments" title="List Completed Professional Payments" 
+                                                value="List Completed Professional Payments" 
+                                                title="List Completed Professional Payments" 
                                                 action="/inward/inward_search_professional_payment_done?faces-redirect=true" 
                                                 actionListener="#{searchController.makeListNull}" 
                                                 rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}"/>
@@ -108,7 +139,8 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
                                                 styleClass="w-100 ui-button-info ui-button-outlined" 
-                                                ajax="false" value="Payment" 
+                                                ajax="false" 
+                                                value="Payment" 
                                                 title="Payment" 
                                                 action="/inward/inward_bill_payment?faces-redirect=true" 
                                                 actionListener="#{inwardPaymentController.makeNull}" 
@@ -116,21 +148,26 @@
                                             </p:commandButton>
                                             <p:commandButton 
                                                 styleClass="w-100 ui-button-info ui-button-outlined" 
-                                                ajax="false" value="Payment Search" 
+                                                ajax="false" 
+                                                value="Payment Search" 
                                                 title="Payment Search" action="/inward/inward_search_payment?faces-redirect=true" 
                                                 actionListener="#{searchController.makeListNull}" 
                                                 rendered="#{webUserController.hasPrivilege('InwardBillSearch')}" >
                                             </p:commandButton>
                                             <p:commandButton 
                                                 styleClass="w-100 ui-button-info ui-button-outlined" 
-                                                ajax="false" value="Refund" title="Refund" 
+                                                ajax="false" 
+                                                value="Refund" 
+                                                title="Refund" 
                                                 action="/inward/inward_bill_refund?faces-redirect=true" 
                                                 actionListener="#{inwardRefundController.makeNull}" 
                                                 rendered="#{webUserController.hasPrivilege('InwardBilling')}" >
                                             </p:commandButton>
                                             <p:commandButton 
                                                 styleClass="w-100 ui-button-info ui-button-outlined" 
-                                                ajax="false" value="Refund Search" title="Refund Search" 
+                                                ajax="false" 
+                                                value="Refund Search" 
+                                                title="Refund Search" 
                                                 action="/inward/inward_search_refund?faces-redirect=true" 
                                                 actionListener="#{searchController.makeListNull}" 
                                                 rendered="#{webUserController.hasPrivilege('InwardBillSearch')}">
@@ -146,14 +183,16 @@
                                                 ajax="false" 
                                                 action="#{paymentController.navigateToPayCheques()}" 
                                                 value="Pay Cheques"
-                                                title="Pay outstanding cheques" />
+                                                title="Pay outstanding cheques" >
+                                                </p:commandButton>
                                             <p:commandButton 
                                                 styleClass="w-100 ui-button-info" 
                                                 icon="pi pi-check-circle" 
                                                 ajax="false" 
                                                 action="#{paymentController.navigateToMarkChequesAsCleared()}" 
                                                 value="Mark Cheques as Cleared"
-                                                title="Mark cheques as cleared"/>
+                                                title="Mark cheques as cleared">
+                                                </p:commandButton>
                                         </div>
                                     </p:tab>
 
@@ -173,28 +212,57 @@
                                                 action="#{iouBillController.navigateToCreateIou()}"
                                                 value="Create IOU"
                                                 icon="pi pi-plus"
-                                                title="Create a new IOU" /> 
+                                                title="Create a new IOU" >
+                                                </p:commandButton> 
                                             <p:commandButton  
                                                 styleClass="w-100 ui-button-info" 
                                                 ajax="false" 
                                                 action="#{iouBillController.navigateToTrackIous()}"
                                                 value="Track IOUs"
                                                 icon="pi pi-search"
-                                                title="Track outstanding IOUs" /> 
+                                                title="Track outstanding IOUs" >
+                                                </p:commandButton> 
                                             <p:commandButton 
                                                 styleClass="w-100 ui-button-success ui-button-outlined"
                                                 ajax="false"
                                                 action="#{iouBillController.navigateToSettleIous}" 
                                                 value="Settle IOUs"
                                                 icon="pi pi-check"
-                                                title="Settle IOUs" /> 
+                                                title="Settle IOUs" >
+                                                </p:commandButton> 
                                         </div>
                                     </p:tab>
+                                    
+                                    <p:tab title="Reports">
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton
+                                                    styleClass="w-100 ui-button-info ui-button-outlined"
+                                                    ajax="false"
+                                                    value="Miscellaneous Fee Report"
+                                                    title="Report of miscellaneous fees with filters"
+                                                    action="#{miscellaneousStaffFeeController.navigateToMiscellaneousFeeReport()}"
+                                                    icon="fa fa-file-alt"
+                                                    rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" >
+                                                </p:commandButton>
+
+                                                <p:commandButton
+                                                    styleClass="w-100 ui-button-info ui-button-outlined"
+                                                    ajax="false"
+                                                    value="Miscellaneous Bill Report"
+                                                    title="Report of miscellaneous bills with filters"
+                                                    action="#{miscellaneousStaffFeeController.navigateToMiscellaneousBillReport()}"
+                                                    icon="fa fa-file-invoice"
+                                                    rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" >
+                                                </p:commandButton>
+
+                                                
+                                            </div>
+                                        </p:tab>
                                 </p:accordionPanel>
                             </h:form>
                         </h:panelGroup>
                     </div>
-                    <div class="col-md-9">
+                    <div class="col-md-10">
                         <ui:insert name="admin"/>
                     </div>
                 </div>

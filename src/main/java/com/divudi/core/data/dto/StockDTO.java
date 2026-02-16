@@ -40,6 +40,7 @@ public class StockDTO implements Serializable {
     private Boolean discountAllowed = true;  // Default to true for safety
     // Category ID for price matrix discount calculations
     private Long categoryId;
+    private String dosageFormName;
 
     public StockDTO() {
     }
@@ -165,6 +166,54 @@ public class StockDTO implements Serializable {
         this.retailRate = retailRate;
     }
 
+    // Constructor for department stock report by batch using DTO (with dosage form)
+    public StockDTO(Long id,
+                    String categoryName,
+                    String itemName,
+                    DepartmentType departmentType,
+                    String code,
+                    String genericName,
+                    Date dateOfExpire,
+                    String batchNo,
+                    Double stockQty,
+                    Double purchaseRate,
+                    Double costRate,
+                    Double retailRate,
+                    String dosageFormName) {
+        this.id = id;
+        this.stockId = id;
+        this.categoryName = categoryName;
+        this.itemName = itemName;
+        this.departmentType = departmentType;
+        this.code = code;
+        this.genericName = genericName;
+        this.dateOfExpire = dateOfExpire;
+        this.batchNo = batchNo;
+        this.stockQty = stockQty;
+        this.purchaseRate = purchaseRate;
+        this.costRate = costRate;
+        this.retailRate = retailRate;
+        this.dosageFormName = dosageFormName;
+    }
+
+    // Constructor for department stock report by batch (without genericName)
+    // Uses exact field types from entities: Stock.stock=Double, ItemBatch.purcahseRate=double,
+    // ItemBatch.costRate=Double, ItemBatch.retailsaleRate=double (EclipseLink requires exact match)
+    public StockDTO(Long id,
+                    String categoryName,
+                    String itemName,
+                    DepartmentType departmentType,
+                    String code,
+                    Date dateOfExpire,
+                    String batchNo,
+                    Double stockQty,
+                    double purchaseRate,
+                    Double costRate,
+                    double retailRate,
+                    String dosageFormName) {
+        this(id, categoryName, itemName, departmentType, code, "", dateOfExpire, batchNo, stockQty, purchaseRate, costRate, retailRate, dosageFormName);
+    }
+
     // Constructor for stock count bill generation (optimized for performance)
     public StockDTO(Long stockId, Long itemBatchId, Long itemId,
                     String categoryName, String itemName, String batchNo,
@@ -253,6 +302,24 @@ public class StockDTO implements Serializable {
         this.dateOfExpire = dateOfExpire;
         this.discountAllowed = discountAllowed;
         this.costRate = costRate;
+    }
+
+    // Constructor for optimized retail sale autocomplete with departmentType (for department type filtering)
+    public StockDTO(Long id, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, String batchNo, Double retailRate, Double stockQty,
+                    Date dateOfExpire, Boolean discountAllowed, DepartmentType departmentType) {
+        this.id = id;
+        this.itemBatchId = itemBatchId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.batchNo = batchNo;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.discountAllowed = discountAllowed;
+        this.departmentType = departmentType;
     }
 
     public Long getId() {
@@ -475,5 +542,13 @@ public class StockDTO implements Serializable {
 
     public void setCategoryId(Long categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public String getDosageFormName() {
+        return dosageFormName;
+    }
+
+    public void setDosageFormName(String dosageFormName) {
+        this.dosageFormName = dosageFormName;
     }
 }

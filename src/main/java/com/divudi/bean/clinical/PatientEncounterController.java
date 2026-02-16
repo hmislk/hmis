@@ -3047,7 +3047,7 @@ public class PatientEncounterController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -4255,7 +4255,7 @@ public class PatientEncounterController implements Serializable {
                         finalValue = doubleVal;
                     } else if (strVal != null && !strVal.trim().isEmpty()) {
                         try {
-                            finalValue = Double.parseDouble(strVal.trim());
+                            finalValue = Double.valueOf(strVal.trim());
                         } catch (NumberFormatException e) {
                             continue; // Skip non-numeric string values
                         }

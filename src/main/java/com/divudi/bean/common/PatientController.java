@@ -1328,6 +1328,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         // Copy bill details
         cancelBill.copy(getBill());
+        // Copy financial values (netTotal, total, discount, etc.) which are needed for proper cancellation
+        getCancelBill().copyValue(getBill());
         getCancelBill().setPaymentMethod(getBill().getPaymentMethod());
         getCancelBill().setComments(tempComment);
         getBill().setCancelled(true);
@@ -3158,7 +3160,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -3176,7 +3178,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -3304,6 +3306,18 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return null;
         }
         return "/opd/patient?faces-redirect=true";
+    }
+
+    public String saveAndNavigateToAdmissionProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        boolean savedSuccessfully = saveSelected(current);
+        if (!savedSuccessfully) {
+            return null;
+        }
+        return admissionController.navigateToAdmissionProfilePage();
     }
 
     public boolean saveSelected(Patient p) {

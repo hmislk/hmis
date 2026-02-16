@@ -12,7 +12,11 @@ import com.divudi.bean.common.AppointmentController;
 import com.divudi.bean.common.ClinicalFindingValueController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithPatient;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
 
 import com.divudi.core.data.ApplicationInstitution;
 import com.divudi.core.data.PaymentMethod;
@@ -42,6 +46,8 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.RoomFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import com.divudi.core.data.AppointmentStatus;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -61,6 +67,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
@@ -83,6 +90,7 @@ import org.primefaces.event.TabChangeEvent;
 public class AdmissionController implements Serializable, ControllerWithPatient {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger logger = Logger.getLogger(AdmissionController.class.getName());
     @Inject
     SessionController sessionController;
     @Inject
@@ -97,6 +105,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
 
     ////////////
     @EJB
@@ -176,6 +186,104 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     private Reservation currentReservation;
 
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("inward/inward_admission");
+        metadata.setPageName("Admit a Patient");
+        metadata.setDescription("Patient admission page for inward services including BHT generation, room assignment, and guardian details");
+        metadata.setControllerClass("AdmissionController");
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "BHT Number can be edited at the time of admission",
+                "Allow editing of the auto-generated BHT number during admission (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        configOptionApplicationController.getBooleanValueByKey(
+                "Generate Separate BHT Number Series for Each Institution", false);
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Generate Separate BHT Number Series for Each Institution",
+                "When enabled, each institution generates its own independent BHT number series with the institution code as a prefix (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Patient admission and room assignment are simultaneous processes.",
+                "Room is assigned at the time of admission (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Patient Details Required in Patient Admission",
+                "Require patient details (name, gender, age, etc.) during admission (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Details Required in Patient Admission",
+                "Require guardian details during admission (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Patient Admit - Enable Referred From in Patient Admission",
+                "Show the Referred From field during admission (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Admission Needed Header and Logo",
+                "Use BHT print template with header and logo (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Admission - Find And Fill Last Used Credit Companies of a Patient",
+                "Auto-fill last used credit companies when admitting a patient (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Patient Admit - Credit Companies Require Reference Number",
+                "Require a reference number for credit companies during admission (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Restirct Inward Admission Search to Logged Department of the User",
+                "Restrict admission search results to the user's logged department (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Enable blacklist patient management for inward from the system",
+                "Prevent blacklisted patients from being admitted (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
+    }
+
     public void addPatientAllergy() {
         if (currentPatientAllergy == null) {
             return;
@@ -185,12 +293,19 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void removePatientAllergy(ClinicalFindingValue pa) {
-        if (currentPatientAllergy == null) {
+        if (pa == null) {
+            JsfUtil.addErrorMessage("Invalid allergy selection");
             return;
         }
-        pa.setRetired(true);
-        clinicalFindingValueFacade.edit(pa);
-        patientAllergies.remove(pa);
+        try {
+            pa.setRetired(true);
+            clinicalFindingValueFacade.edit(pa);
+            getPatientAllergies().remove(pa);
+            JsfUtil.addSuccessMessage("Allergy removed successfully");
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to remove patient allergy with ID: " + (pa != null ? pa.getId() : "null"), e);
+            JsfUtil.addErrorMessage("Failed to remove allergy: " + e.getMessage());
+        }
     }
 
     public void savePatientAllergies() {
@@ -198,8 +313,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
         for (ClinicalFindingValue al : patientAllergies) {
-            if (al.getPatient() == null) {
-                al.setPatient(getCurrent().getPatient());
+            if (al.getPatient() == null || al.getPatient().getId() == null) {
+                al.setPatient(patient);
             }
             if (al.getId() == null) {
                 clinicalFindingValueFacade.create(al);
@@ -543,10 +658,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToEditAdmission() {
-
-        current = new Admission();
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission to edit");
+            return "";
+        }
         bhtEditController.setCurrent(current);
-        bhtEditController.getCurrent().getPatient().setEditingMode(true);
+        if (current.getPatient() != null) {
+            current.getPatient().setEditingMode(true);
+        }
         return bhtEditController.navigateToEditAdmissionDetails();
     }
 
@@ -836,6 +955,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return "";
         }
 
+        patientDetailsEditable = false;
         if (configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)) {
             current.getPatient().setEditingMode(false);
             bhtSummeryController.setPatientEncounter(current);
@@ -1135,7 +1255,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         prepereToAdmitNewPatient();
 //        getItems();
@@ -1238,7 +1358,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getPatientFacade().editAndFlush(getPatient());    // Immediate flush
         }
 
-        // NO third edit operation - removed null/reassign pattern
+        // Ensure the admission references the persisted patient
+        if (getCurrent() != null) {
+            getCurrent().setPatient(patient);
+        }
     }
 
     private void saveGuardian() {
@@ -1622,7 +1745,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setInstitution(sessionController.getInstitution());
             getCurrent().setDepartment(sessionController.getDepartment());
             getFacade().create(getCurrent());
-            JsfUtil.addSuccessMessage("Patient Admitted Succesfully");
+            JsfUtil.addSuccessMessage("Patient admitted successfully with BHT No: " + getCurrent().getBhtNo());
         }
 
         if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
@@ -1736,7 +1859,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setInstitution(sessionController.getInstitution());
             getCurrent().setDepartment(sessionController.getDepartment());
             getFacade().create(getCurrent());
-            JsfUtil.addSuccessMessage("Patient Admitted Succesfully");
+            JsfUtil.addSuccessMessage("Patient admitted successfully with BHT No: " + getCurrent().getBhtNo());
         }
 
         if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
@@ -1936,7 +2059,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void bhtNumberCalculation() {
         if (getCurrent() == null || getCurrent().getAdmissionType() == null) {
-//            JsfUtil.addErrorMessage("Please Set Admission Type DayCase/Admission For this this Admission ");
             return;
         }
 

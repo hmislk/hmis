@@ -28,6 +28,7 @@ import com.divudi.core.facade.*;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.dataStructure.CategoryWithItem;
 import com.divudi.core.data.dataStructure.PharmacySummery;
+import com.divudi.core.data.dto.AmpDto;
 import com.divudi.core.data.dto.PharmacyGrnItemDTO;
 import com.divudi.core.data.dto.PharmacyGrnReturnItemDTO;
 import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
@@ -91,6 +92,22 @@ public class PharmacyController implements Serializable {
     private SessionController sessionController;
     @Inject
     private AmpController ampController;
+    @Inject
+    private com.divudi.bean.store.StoreAmpController storeAmpController;
+    @Inject
+    private com.divudi.bean.lab.LabAmpController labAmpController;
+    @Inject
+    private com.divudi.bean.store.StoreVtmController storeVtmController;
+    @Inject
+    private com.divudi.bean.lab.LabVtmController labVtmController;
+    @Inject
+    private com.divudi.bean.store.StoreAtmController storeAtmController;
+    @Inject
+    private com.divudi.bean.lab.LabAtmController labAtmController;
+    @Inject
+    private com.divudi.bean.store.StoreVmpController storeVmpController;
+    @Inject
+    private com.divudi.bean.lab.LabVmpController labVmpController;
     @Inject
     VtmController vtmController;
     @Inject
@@ -183,6 +200,7 @@ public class PharmacyController implements Serializable {
     private int managePharamcyReportIndex = -1;
     double persentage;
     Category category;
+    private DosageForm dosageForm;
 
     private PharmaceuticalItemLight selectedLight;
     private List<PharmaceuticalItemLight> selectedLights;
@@ -205,14 +223,15 @@ public class PharmacyController implements Serializable {
     private List<Amp> filteredAmps;
 
     // DTO properties for improved performance
-    private List<com.divudi.core.data.dto.AmpDTO> ampDtos;
-    private List<com.divudi.core.data.dto.AmpDTO> ampDtosSelected;
-    private List<com.divudi.core.data.dto.AmpDTO> filteredAmpDtos;
+    private List<com.divudi.core.data.dto.AmpDto> ampDtos;
+    private List<com.divudi.core.data.dto.AmpDto> ampDtosSelected;
+    private List<com.divudi.core.data.dto.AmpDto> filteredAmpDtos;
 
     private Atm atm;
     private Vtm vtm;
     private Vmp vmp;
     private Amp amp;
+    private AmpDto selectedAmpDto;
     private Vmpp vmpp;
     private Ampp ampp;
 
@@ -1205,7 +1224,7 @@ public class PharmacyController implements Serializable {
                 + "WHERE a.retired = false "
                 + "ORDER BY a.name";
 
-        ampDtos = (List<com.divudi.core.data.dto.AmpDTO>) ampFacade.findLightsByJpql(jpql);
+        ampDtos = (List<com.divudi.core.data.dto.AmpDto>) ampFacade.findLightsByJpql(jpql);
     }
 
     private void fillVmpps() {
@@ -1360,6 +1379,26 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/admin/amp?faces-redirect=true";
     }
 
+    public String navigateToStoreAmp() {
+        storeAmpController.setItems(null);
+        return "/pharmacy/admin/store_amp?faces-redirect=true";
+    }
+
+    public String navigateToLabAmp() {
+        labAmpController.setItems(null);
+        return "/pharmacy/admin/lab_amp?faces-redirect=true";
+    }
+
+    public String navigateToStoreVtm() {
+        storeVtmController.clearDtoCache();
+        return "/pharmacy/admin/store_vtm?faces-redirect=true";
+    }
+
+    public String navigateToLabVtm() {
+        labVtmController.clearDtoCache();
+        return "/pharmacy/admin/lab_vtm?faces-redirect=true";
+    }
+
     public String navigateToAmpp() {
         return "/pharmacy/admin/ampp?faces-redirect=true";
     }
@@ -1367,7 +1406,25 @@ public class PharmacyController implements Serializable {
     public String navigateToAtm() {
         atmController.getItems();
         atmController.getCurrent();
-        return "/pharmacy/admin/atm?faces-redirect=true";
+        return "/pharmacy/admin/atm_dto?faces-redirect=true";
+    }
+
+    public String navigateToStoreAtm() {
+        storeAtmController.clearDtoCache();
+        return "/pharmacy/admin/store_atm?faces-redirect=true";
+    }
+
+    public String navigateToLabAtm() {
+        labAtmController.clearDtoCache();
+        return "/pharmacy/admin/lab_atm?faces-redirect=true";
+    }
+
+    public String navigateToStoreVmp() {
+        return "/pharmacy/admin/store_vmp?faces-redirect=true";
+    }
+
+    public String navigateToLabVmp() {
+        return "/pharmacy/admin/lab_vmp?faces-redirect=true";
     }
 
     public String navigateToManufacturers() {
@@ -1409,13 +1466,34 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/admin/vmp?faces-redirect=true";
     }
 
-    public String navigateToVtm() {
-        vtmController.fillItems();
-        return "/pharmacy/admin/vtm?faces-redirect=true";
+//    public String navigateToVtm() {
+//        vtmController.fillItems();
+//        return "/pharmacy/admin/vtm?faces-redirect=true";
+//    }
+
+    public String navigateToVtmDto() {
+        vtmController.clearDtoCache(); // Ensure fresh DTO data
+        return "/pharmacy/admin/vtm_dto?faces-redirect=true";
     }
 
     public String navigateToVmpp() {
-        return "/pharmacy/admin/vmpp?faces-redirect=true";
+        return "/pharmacy/admin/vmpp_dto?faces-redirect=true";
+    }
+
+    public String navigateToStoreVmpp() {
+        return "/pharmacy/admin/store_vmpp?faces-redirect=true";
+    }
+
+    public String navigateToLabVmpp() {
+        return "/pharmacy/admin/lab_vmpp?faces-redirect=true";
+    }
+
+    public String navigateToStoreAmpp() {
+        return "/pharmacy/admin/store_ampp?faces-redirect=true";
+    }
+
+    public String navigateToLabAmpp() {
+        return "/pharmacy/admin/lab_ampp?faces-redirect=true";
     }
 
     public String navigateToDosageFormsMultiple() {
@@ -1849,7 +1927,7 @@ public class PharmacyController implements Serializable {
             return;
         }
         List<Amp> ampsToUpdate = new ArrayList<>();
-        for (com.divudi.core.data.dto.AmpDTO dto : ampDtosSelected) {
+        for (com.divudi.core.data.dto.AmpDto dto : ampDtosSelected) {
             Amp amp = ampFacade.find(dto.getId());
             if (amp != null) {
                 amp.setDiscountAllowed(true);
@@ -1867,7 +1945,7 @@ public class PharmacyController implements Serializable {
             return;
         }
         List<Amp> ampsToUpdate = new ArrayList<>();
-        for (com.divudi.core.data.dto.AmpDTO dto : ampDtosSelected) {
+        for (com.divudi.core.data.dto.AmpDto dto : ampDtosSelected) {
             Amp amp = ampFacade.find(dto.getId());
             if (amp != null) {
                 amp.setDiscountAllowed(false);
@@ -1885,7 +1963,7 @@ public class PharmacyController implements Serializable {
             return;
         }
         List<Amp> ampsToUpdate = new ArrayList<>();
-        for (com.divudi.core.data.dto.AmpDTO dto : ampDtosSelected) {
+        for (com.divudi.core.data.dto.AmpDto dto : ampDtosSelected) {
             Amp amp = ampFacade.find(dto.getId());
             if (amp != null) {
                 amp.setAllowFractions(true);
@@ -1903,7 +1981,7 @@ public class PharmacyController implements Serializable {
             return;
         }
         List<Amp> ampsToUpdate = new ArrayList<>();
-        for (com.divudi.core.data.dto.AmpDTO dto : ampDtosSelected) {
+        for (com.divudi.core.data.dto.AmpDto dto : ampDtosSelected) {
             Amp amp = ampFacade.find(dto.getId());
             if (amp != null) {
                 amp.setAllowFractions(false);
@@ -1921,7 +1999,7 @@ public class PharmacyController implements Serializable {
             return;
         }
         List<Amp> ampsToUpdate = new ArrayList<>();
-        for (com.divudi.core.data.dto.AmpDTO dto : ampDtosSelected) {
+        for (com.divudi.core.data.dto.AmpDto dto : ampDtosSelected) {
             Amp amp = ampFacade.find(dto.getId());
             if (amp != null) {
                 amp.setConsumptionAllowed(true);
@@ -1939,7 +2017,7 @@ public class PharmacyController implements Serializable {
             return;
         }
         List<Amp> ampsToUpdate = new ArrayList<>();
-        for (com.divudi.core.data.dto.AmpDTO dto : ampDtosSelected) {
+        for (com.divudi.core.data.dto.AmpDto dto : ampDtosSelected) {
             Amp amp = ampFacade.find(dto.getId());
             if (amp != null) {
                 amp.setConsumptionAllowed(false);
@@ -1957,7 +2035,7 @@ public class PharmacyController implements Serializable {
             return;
         }
         List<Amp> ampsToUpdate = new ArrayList<>();
-        for (com.divudi.core.data.dto.AmpDTO dto : ampDtosSelected) {
+        for (com.divudi.core.data.dto.AmpDto dto : ampDtosSelected) {
             Amp amp = ampFacade.find(dto.getId());
             if (amp != null) {
                 amp.setRefundsAllowed(true);
@@ -1975,7 +2053,7 @@ public class PharmacyController implements Serializable {
             return;
         }
         List<Amp> ampsToUpdate = new ArrayList<>();
-        for (com.divudi.core.data.dto.AmpDTO dto : ampDtosSelected) {
+        for (com.divudi.core.data.dto.AmpDto dto : ampDtosSelected) {
             Amp amp = ampFacade.find(dto.getId());
             if (amp != null) {
                 amp.setRefundsAllowed(false);
@@ -2028,7 +2106,7 @@ public class PharmacyController implements Serializable {
         grantIssueQty = 0.00;
         grantIssueValue = 0.00;
 
-        fromDate = CommonFunctions.getStartOfMonth();
+        fromDate = CommonFunctions.addDaysToDate(new Date(), -30L);
         toDate = CommonFunctions.getEndOfDay(new Date());
 
         pharmacyItem = null;
@@ -3344,6 +3422,11 @@ public class PharmacyController implements Serializable {
                 tmp.put("category", category);
             }
 
+            if (dosageForm != null) {
+                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.dosageForm = :df)";
+                tmp.put("df", dosageForm);
+            }
+
             if (item != null) {
                 jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item = :item)";
                 tmp.put("item", item);
@@ -3455,9 +3538,19 @@ public class PharmacyController implements Serializable {
 //                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item = :item)";
 //                tmp.put("item", item);
 //            }
+            if (dosageForm != null) {
+                jpql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.dosageForm = :df)";
+                tmp.put("df", dosageForm);
+            }
+
             if (toDepartment != null) {
                 jpql += " AND b.toDepartment = :toDept";
                 tmp.put("toDept", toDepartment);
+            }
+
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql += " AND b.departmentType IN :departmentTypes";
+                tmp.put("departmentTypes", selectedDepartmentTypes);
             }
 
             jpql += " order by b.createdAt asc";
@@ -3521,6 +3614,11 @@ public class PharmacyController implements Serializable {
             if (category != null) {
                 jpql.append("AND bi.item.category = :category ");
                 parameters.put("category", category);
+            }
+
+            if (dosageForm != null) {
+                jpql.append("AND bi.item.dosageForm = :df ");
+                parameters.put("df", dosageForm);
             }
 
             if (item != null) {
@@ -3607,6 +3705,11 @@ public class PharmacyController implements Serializable {
                 parameters.put("category", category);
             }
 
+            if (dosageForm != null) {
+                jpql.append("AND bi.item.dosageForm = :df ");
+                parameters.put("df", dosageForm);
+            }
+
             if (item != null) {
                 jpql.append("AND bi.item = :item ");
                 parameters.put("item", item);
@@ -3615,6 +3718,11 @@ public class PharmacyController implements Serializable {
             if (toDepartment != null) {
                 jpql.append("AND bi.bill.toDepartment = :toDepartment ");
                 parameters.put("toDepartment", toDepartment);
+            }
+
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND bi.bill.departmentType IN :departmentTypes ");
+                parameters.put("departmentTypes", selectedDepartmentTypes);
             }
 
             jpql.append("ORDER BY bi.bill.createdAt ASC");
@@ -3700,6 +3808,10 @@ public class PharmacyController implements Serializable {
         if (dept != null) {
             sql += " AND b.department = :dept";
             parameters.put("dept", dept);
+        }
+        if (dosageForm != null) {
+            sql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.dosageForm = :df)";
+            parameters.put("df", dosageForm);
         }
         if (toDepartment != null) {
             sql += " AND b.toDepartment = :toDept";
@@ -3792,6 +3904,11 @@ public class PharmacyController implements Serializable {
         if (category != null) {
             sql.append("AND bi.item.category = :category ");
             parameters.put("category", category);
+        }
+
+        if (dosageForm != null) {
+            sql.append("AND bi.item.dosageForm = :df ");
+            parameters.put("df", dosageForm);
         }
 
         if (item != null) {
@@ -4029,6 +4146,11 @@ public class PharmacyController implements Serializable {
             if (toDepartment != null) {
                 jpql += "AND bi.bill.toDepartment = :toDepartment ";
                 parameters.put("toDepartment", toDepartment);
+            }
+
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql += "AND bi.bill.departmentType IN :departmentTypes ";
+                parameters.put("departmentTypes", selectedDepartmentTypes);
             }
 
             // Group by clause - removed rates since we're aggregating values
@@ -5591,6 +5713,18 @@ public class PharmacyController implements Serializable {
         addFilter(sql, parameters, "b.toInstitution", "tIns", toInstitution);
         addFilter(sql, parameters, "b.toDepartment.site", "tSite", toSite);
         addFilter(sql, parameters, "b.toDepartment", "tDept", toDepartment);
+        if (category != null) {
+            sql.append(" AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.category = :cat) ");
+            parameters.put("cat", category);
+        }
+        if (dosageForm != null) {
+            sql.append(" AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.dosageForm = :df) ");
+            parameters.put("df", dosageForm);
+        }
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+            sql.append(" AND b.departmentType IN :departmentTypes ");
+            parameters.put("departmentTypes", selectedDepartmentTypes);
+        }
     }
 
     public void generateReportByBillItems(BillType billType) {
@@ -5620,6 +5754,12 @@ public class PharmacyController implements Serializable {
             addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
             addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
             addFilter(sql, parameters, "bi.item", "item", item);
+            addFilter(sql, parameters, "bi.item.category", "cat", category);
+            addFilter(sql, parameters, "bi.item.dosageForm", "df", dosageForm);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                sql.append(" AND bi.bill.departmentType IN :departmentTypes ");
+                parameters.put("departmentTypes", selectedDepartmentTypes);
+            }
 
             sql.append(" ORDER BY bi.id DESC");
 
@@ -5710,6 +5850,12 @@ public class PharmacyController implements Serializable {
             addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
             addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
             addFilter(sql, parameters, "bi.item", "item", item);
+            addFilter(sql, parameters, "bi.item.category", "cat", category);
+            addFilter(sql, parameters, "bi.item.dosageForm", "df", dosageForm);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                sql.append(" AND bi.bill.departmentType IN :departmentTypes ");
+                parameters.put("departmentTypes", selectedDepartmentTypes);
+            }
 
             sql.append(" ORDER BY bi.id DESC");
 
@@ -5801,6 +5947,12 @@ public class PharmacyController implements Serializable {
         addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
         addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
         addFilter(sql, parameters, "bi.item", "item", item);
+        addFilter(sql, parameters, "bi.item.category", "cat", category);
+        addFilter(sql, parameters, "bi.item.dosageForm", "df", dosageForm);
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+            sql.append(" AND bi.bill.departmentType IN :departmentTypes ");
+            parameters.put("departmentTypes", selectedDepartmentTypes);
+        }
 
         try {
             List<BillItem> items = getBillItemFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
@@ -7612,6 +7764,7 @@ public class PharmacyController implements Serializable {
     }
 
     private Institution institution;
+    private List<DepartmentType> selectedDepartmentTypes;
     private List<StockAverage> stockAverages;
 
     @Inject
@@ -8894,6 +9047,16 @@ public class PharmacyController implements Serializable {
             tmp.put("category", category);
         }
 
+        if (dosageForm != null) {
+            sql += " AND EXISTS (SELECT bi FROM b.billItems bi WHERE bi.item.dosageForm = :df)";
+            tmp.put("df", dosageForm);
+        }
+
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+            sql += " AND b.departmentType IN :departmentTypes";
+            tmp.put("departmentTypes", selectedDepartmentTypes);
+        }
+
         if (toDepartment != null) {
             sql += " AND b.toDepartment = :toDepartment";
             tmp.put("toDepartment", toDepartment);
@@ -9821,6 +9984,14 @@ public class PharmacyController implements Serializable {
         this.category = category;
     }
 
+    public DosageForm getDosageForm() {
+        return dosageForm;
+    }
+
+    public void setDosageForm(DosageForm dosageForm) {
+        this.dosageForm = dosageForm;
+    }
+
     public int getPharmacyAdminIndex() {
         return pharmacyAdminIndex;
     }
@@ -9958,27 +10129,27 @@ public class PharmacyController implements Serializable {
     }
 
     // DTO getters and setters for improved performance
-    public List<com.divudi.core.data.dto.AmpDTO> getAmpDtos() {
+    public List<com.divudi.core.data.dto.AmpDto> getAmpDtos() {
         return ampDtos;
     }
 
-    public void setAmpDtos(List<com.divudi.core.data.dto.AmpDTO> ampDtos) {
+    public void setAmpDtos(List<com.divudi.core.data.dto.AmpDto> ampDtos) {
         this.ampDtos = ampDtos;
     }
 
-    public List<com.divudi.core.data.dto.AmpDTO> getAmpDtosSelected() {
+    public List<com.divudi.core.data.dto.AmpDto> getAmpDtosSelected() {
         return ampDtosSelected;
     }
 
-    public void setAmpDtosSelected(List<com.divudi.core.data.dto.AmpDTO> ampDtosSelected) {
+    public void setAmpDtosSelected(List<com.divudi.core.data.dto.AmpDto> ampDtosSelected) {
         this.ampDtosSelected = ampDtosSelected;
     }
 
-    public List<com.divudi.core.data.dto.AmpDTO> getFilteredAmpDtos() {
+    public List<com.divudi.core.data.dto.AmpDto> getFilteredAmpDtos() {
         return filteredAmpDtos;
     }
 
-    public void setFilteredAmpDtos(List<com.divudi.core.data.dto.AmpDTO> filteredAmpDtos) {
+    public void setFilteredAmpDtos(List<com.divudi.core.data.dto.AmpDto> filteredAmpDtos) {
         this.filteredAmpDtos = filteredAmpDtos;
     }
 
@@ -10028,6 +10199,22 @@ public class PharmacyController implements Serializable {
 
     public void setAmp(Amp amp) {
         this.amp = amp;
+    }
+
+    public AmpDto getSelectedAmpDto() {
+        return selectedAmpDto;
+    }
+
+    public void setSelectedAmpDto(AmpDto selectedAmpDto) {
+        this.selectedAmpDto = selectedAmpDto;
+        if (selectedAmpDto != null && selectedAmpDto.getId() != null) {
+            Amp found = ampFacade.find(selectedAmpDto.getId());
+            if (found != null) {
+                this.amp = found;
+            }
+        } else {
+            this.amp = null;
+        }
     }
 
     public Vmpp getVmpp() {
@@ -10575,6 +10762,26 @@ public class PharmacyController implements Serializable {
 
     public void setPharmacyHistoryIndex(int pharmacyHistoryIndex) {
         this.pharmacyHistoryIndex = pharmacyHistoryIndex;
+    }
+
+    public List<DepartmentType> getSelectedDepartmentTypes() {
+        if (selectedDepartmentTypes == null) {
+            selectedDepartmentTypes = new ArrayList<>();
+        }
+        return selectedDepartmentTypes;
+    }
+
+    public void setSelectedDepartmentTypes(List<DepartmentType> selectedDepartmentTypes) {
+        this.selectedDepartmentTypes = selectedDepartmentTypes;
+    }
+
+    public List<DepartmentType> getAvailableDepartmentTypes() {
+        return Arrays.asList(
+            DepartmentType.Pharmacy,
+            DepartmentType.Store,
+            DepartmentType.Lab,
+            DepartmentType.Kitchen
+        );
     }
 
     public static class TransferBreakdownGroup implements Serializable {

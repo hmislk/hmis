@@ -12,7 +12,7 @@
                     <h:panelGroup rendered="#{!webUserController.hasPrivilege('CourierCollectSamples')}" >
                         You are NOT Authorized to view OPD Revenue Dashboard Page
                     </h:panelGroup>
-                    <h:panelGroup rendered="#{webUserController.hasPrivilege('CourierCollectSamples')}" >
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('CourierCollectSamples')}">
                         <div class="container ">
                             <h:panelGroup>
                                     <p:panel class="w-100">
@@ -20,7 +20,8 @@
                                         <h:outputLabel value="Opd Revenue" styleClass="fa-bed"   class="mx-4 text-center fs-2 text-uppercase"/>
                                     </f:facet>
                                 <h:panelGrid columns="6"
-                                             styleClass="w-100 form-gird">
+                                             class="w-100 ui-fluid"
+                                             style="table-layout: fixed">
                                     <h:panelGroup layout="block"
                                                   styleClass="form-group">
                                         <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
@@ -159,31 +160,14 @@
                                                     itemValue="#{d}"/>
                                         </p:selectOneMenu>
                                     </h:panelGroup>
-
-                                    <p:spacer width="40"></p:spacer>
-
-                                    <h:panelGroup layout="block" styleClass="form-group">
-                                        <p:outputLabel value="Selection" for="phmDept" class="m-3"/>
-                                    </h:panelGroup>
-                                    <p:selectOneMenu
-                                        id="phmDept"
-                                        class="w-100"
-                                        filter="true"
-                                        value="#{inwardReportDashboardController.selectionTypeOpdRevenue}">
-                                        <f:selectItems
-                                            value="#{inwardReportDashboardController.selectionTypesOpdRevenue}"
-                                                    var="d"
-                                                    itemLabel="#{d}"
-                                                    itemValue="#{d}"/>
-                                    </p:selectOneMenu>
-                            </h:panelGrid>
+                                </h:panelGrid>
                                     <p:spacer width="20"/>
 
 
 
 
                                  <!--Command Buttons-->
-                                <div class="d-flex align-items-center my-4">
+                                <div class="d-flex align-items-center my-2">
 
                                         <p:commandButton 
                                             styleClass="ui-button-warning mx-1"
@@ -208,13 +192,13 @@
                                         <div class="mt-4" 
                                              style="overflow-x: auto; width: 50%; min-width: 400px">
                                             <p:dataTable 
-                                                value="#{inwardReportDashboardController.opdRevenueBundle.rows}"
+                                                value="#{inwardReportDashboardController.opdRevenueDashboardDtos}"
                                                 var="row"
                                                 styleClass="ui-datatable-sm compact-datatable"
                                                 emptyMessage="No data available">
                                                 
                                                 <p:column headerText="Label">
-                                                    <h:outputText value="#{row.rowType}" 
+                                                    <h:outputText value="#{row.serviceCategoryName}" 
                                                                   style="padding: 0px!important; margin: 0px!important;"/>
                                                     <f:facet name="footer">
                                                         <h:outputText value="Total Amounts"
@@ -224,12 +208,12 @@
                                                 </p:column>
                                                 
                                                 <p:column headerText="Value">
-                                                    <h:outputText value="#{row.grossTotal}"
+                                                    <h:outputText value="#{row.total}"
                                                                   style="padding: 0px!important; margin: 0px!important;">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputText>
                                                     <f:facet name="footer">
-                                                        <h:outputText value="#{inwardReportDashboardController.opdRevenueBundle.summaryRow.grossTotal}"
+                                                        <h:outputText value="#{inwardReportDashboardController.totalRevenue}"
                                                                 style="padding: 0px!important; margin: 0px!important; font-weight: bold">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>

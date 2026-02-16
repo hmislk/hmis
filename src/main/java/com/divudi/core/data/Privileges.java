@@ -57,6 +57,7 @@ public enum Privileges {
     OpdAddNewCollectingCentre("OPD Add New Collecting Centre"),
     ChangeProfessionalFee("Change Professional Fee"),
     OpdPackageBillCancel("OPD Package Bill Cancel"),
+    OpdEditPatientDetails("OPD Edit Patient Details"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Inpatient">
@@ -748,6 +749,7 @@ public enum Privileges {
             case OpdReactivate:
             case OpdBillItemSearch:
             case OpdBillSearchEdit:
+            case OpdEditPatientDetails:
             case OpdCollectingCentreBilling:
             case OpdCollectingCentreBillSearch:
             case OpdCollectingCentreBillingMenu:

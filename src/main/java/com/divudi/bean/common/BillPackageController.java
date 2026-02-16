@@ -188,6 +188,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private double cashBalance;
     private Institution chequeBank;
     private BillItem currentBillItem;
+    private Item currentSelectedPackage;
     private Institution collectingCentre;
     private Staff toStaff;
 
@@ -1429,9 +1430,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             return;
         }
 
-        // If payment method matches the original, don't reset - preserve the loaded data
-        if (paymentMethod == originalCancellationPaymentMethod) {
-            // User is keeping the same payment method - keep the original data
+        // If payment method matches the original, reinitialize from original payments
+        // to restore data that may have been cleared by a previous method change
+        if (paymentMethod == originalCancellationPaymentMethod && batchBill != null) {
+            List<Payment> batchBillPayments = billService.fetchBillPayments(batchBill);
+            if (batchBillPayments != null && !batchBillPayments.isEmpty()) {
+                paymentMethodData = new PaymentMethodData();
+                initializeCancellationPaymentFromOriginalPayments(batchBillPayments, batchBill);
+            }
             return;
         }
 
@@ -1716,6 +1722,26 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             return;
         }
 
+        if(configOptionApplicationController.getBooleanValueByKey("Package bill – Reloading of Packages with Consideration of Gender")){
+            if(getPatient() == null){
+                JsfUtil.addErrorMessage("Please add the Patient first.");
+                return;
+            }
+            if(getPatient().getPerson().getSex() == null){
+                JsfUtil.addErrorMessage("Please add the Patient Gender.");
+                return;
+            }
+
+            String gender = currentBillItem.getItem().getForGender();
+
+            if(!"Both".equals(gender)){
+                if(! getPatient().getPerson().getSex().getLabel().equals(gender)){
+                    JsfUtil.addErrorMessage("This item/service is only available for " + gender + " patients.");
+                    return;
+                }
+            }
+        }
+
         savePatient();
         if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
@@ -1952,7 +1978,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     public double calculatRemainForMultiplePaymentTotal() {
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+            for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 // Fixed: Sum only the selected payment method's value for this component
                 multiplePaymentMethodTotalValue += calculateSelectedPaymentTotal(cd);
             }
@@ -2305,7 +2331,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(bi);
         addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
-        addingEntry.setLstBillFees(getBillBean().billFeefromBillItemPackage(bi, currentBillItem.getItem()));
+        addingEntry.setLstBillFees(getBillBean().billFeefromBillItemPackage(bi, currentSelectedPackage));
         addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
         getLstBillEntries().add(addingEntry);
         bi.setRate(getBillBean().billItemRate(addingEntry));
@@ -2322,30 +2348,58 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public void addToBill() {
-        if (getLstBillEntries().size() > 0) {
+        if (!getLstBillEntries().isEmpty()) {
             JsfUtil.addErrorMessage("You can not add more than on package at a time create new bill");
             return;
         }
-        if (getCurrentBillItem() == null) {
-            JsfUtil.addErrorMessage("Nothing to add");
+        
+        if (currentSelectedPackage == null) {
+            JsfUtil.addErrorMessage("Please select a Package");
             return;
         }
-        if (getCurrentBillItem().getItem() == null) {
-            JsfUtil.addErrorMessage("Please select an Item");
-            return;
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Package bill – Reloading of Packages with Consideration of Expiry Date.", false)) {
+            if (currentSelectedPackage.getExpired()) {
+                JsfUtil.addErrorMessage("Selected Package is Expired.");
+                return;
+            }
+        }
+        
+        if(configOptionApplicationController.getBooleanValueByKey("Package bill – Reloading of Packages with Consideration of Gender")){
+            if(getPatient() == null){
+                JsfUtil.addErrorMessage("Please add the Patient first.");
+                return;
+            }
+            if(getPatient().getPerson().getSex() == null){
+                JsfUtil.addErrorMessage("Please add the Patient Gender.");
+                return;
+            }
+
+            String gender = currentSelectedPackage.getForGender();
+            
+            if(!"Both".equals(gender)){
+                if(! getPatient().getPerson().getSex().getLabel().equals(gender)){
+                    JsfUtil.addErrorMessage("This item/service is only available for " + gender + " patients.");
+                    return;
+                }
+            }
         }
 
-        List<Item> itemList = getBillBean().itemFromPackage(currentBillItem.getItem());
+        List<Item> itemList = getBillBean().itemFromPackage(currentSelectedPackage);
+        
         for (Item i : itemList) {
             if (i.getDepartment() == null) {
                 JsfUtil.addErrorMessage("Under administration, add a Department for item " + i.getName());
                 return;
             }
-
+            
             BillItem tmp = new BillItem();
             tmp.setItem(i);
             addEntry(tmp);
         }
+        
+        getCurrentBillItem().setItem(currentSelectedPackage);
+        
         JsfUtil.addSuccessMessage("Item Added");
     }
 
@@ -2426,6 +2480,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         clearBillItemValues();
         clearBillValues();
         setPrintPreview(true);
+        currentSelectedPackage = null;
         printPreview = false;
     }
 
@@ -2573,8 +2628,10 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             paymentMethods.add(pm);
         }
 
-        // Set default payment method to original or Cash as fallback
-        if (originalBillPayments != null && !originalBillPayments.isEmpty()) {
+        // Set default payment method based on original bill's payments
+        if (originalBillPayments != null && originalBillPayments.size() > 1) {
+            paymentMethod = PaymentMethod.MultiplePaymentMethods;
+        } else if (originalBillPayments != null && originalBillPayments.size() == 1) {
             paymentMethod = originalBillPayments.get(0).getPaymentMethod();
         } else {
             paymentMethod = PaymentMethod.Cash;
@@ -3219,6 +3276,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     @Override
     public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        // Allow editing for new patients (id is null), or if user has the privilege for existing patients
+        if (patientDetailsEditable && patient != null && patient.getId() != null && !getWebUserController().hasPrivilege("OpdEditPatientDetails")) {
+            JsfUtil.addErrorMessage("You don't have permission to edit patient details");
+            this.patientDetailsEditable = false;
+            return;
+        }
         this.patientDetailsEditable = patientDetailsEditable;
     }
 
@@ -3413,6 +3476,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         this.originalBillPayments = originalBillPayments;
     }
 
+    public boolean isInBatchCancellationDisplayMode() {
+        return batchBill != null
+                && originalCancellationPaymentMethod == PaymentMethod.MultiplePaymentMethods
+                && paymentMethod == PaymentMethod.MultiplePaymentMethods;
+    }
+
     public boolean isOriginalBillCredit() {
         return originalBillCredit;
     }
@@ -3550,6 +3619,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             // Don't re-throw to prevent cancellation from failing completely
             // The individual package bill cancellation should still succeed
         }
+    }
+
+    public Item getCurrentSelectedPackage() {
+        return currentSelectedPackage;
+    }
+
+    public void setCurrentSelectedPackage(Item currentSelectedPackage) {
+        this.currentSelectedPackage = currentSelectedPackage;
     }
 
 }
