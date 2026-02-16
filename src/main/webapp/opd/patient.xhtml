@@ -57,6 +57,15 @@
                                             styleClass="ui-button-warning"
                                             title="Edit patient information">
                                         </p:commandButton>
+                                        <p:commandButton
+                                            icon="fa fa-hospital-o"
+                                            ajax="false"
+                                            value="Admission Profile"
+                                            rendered="#{admissionController.current ne null and admissionController.current.id ne null}"
+                                            action="#{admissionController.navigateToAdmissionProfilePage()}"
+                                            styleClass="ui-button-info"
+                                            title="Back to Admission Profile">
+                                        </p:commandButton>
                                     </div>
                                 </div>
                             </f:facet>
