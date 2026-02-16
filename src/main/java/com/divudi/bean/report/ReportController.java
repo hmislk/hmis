@@ -3881,6 +3881,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/inventoryReports/stock_ledger?faces-redirect=true";
     }
 
+    public String navigateToStockLedgerDto() {
+        return "/reports/inventoryReports/stock_ledger_dto?faces-redirect=true";
+    }
+
     public String navigateToExpiryItem() {
 
         return "/reports/inventoryReports/expiry_item?faces-redirect=true";

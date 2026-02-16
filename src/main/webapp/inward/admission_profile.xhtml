@@ -49,6 +49,18 @@
                         <div class="m-1" >
                             <common:patient_details searchable="false" controller="#{admissionController}" class="w-100"/>
                         </div>
+                        <div class="m-1 d-grid" >
+                            <p:commandButton
+                                value="Edit Patient Details"
+                                ajax="false"
+                                action="#{patientController.navigateToOpdPatientEdit()}"
+                                icon="fa fa-edit"
+                                class="w-100 ui-button-warning">
+                                <f:setPropertyActionListener
+                                    value="#{admissionController.current.patient}"
+                                    target="#{patientController.current}" />
+                            </p:commandButton>
+                        </div>
                         <div class="m-1" >
                             <common:admission_details admission="#{admissionController.current}" class="w-100 m-1"/>
                         </div>

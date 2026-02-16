@@ -1788,6 +1788,314 @@
                     </h:form>
                 </h:panelGroup>
 
+                <!-- Edit Admission Details -->
+                <h:panelGroup rendered="#{ui.icon eq 'Edit_Admission_Details' and webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Edit_Admission_Details" value="Edit Admission Details" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Edit_Admission_Details" ajax="false" action="#{admissionController.navigateToEditAdmission()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/edit-admission.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Edit Admission Details"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Change Patient for Admission -->
+                <h:panelGroup rendered="#{ui.icon eq 'Change_Patient_for_Admission' and webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Change_Patient_for_Admission" value="Change Patient for Admission" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Change_Patient_for_Admission" ajax="false" action="#{admissionPatientChangeController.navigateToChangeAdmissionPatient()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/change-patient-admission.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Change Patient for Admission"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Appointment Admission -->
+                <h:panelGroup rendered="#{ui.icon eq 'Appointment_Admission' and webUserController.hasPrivilege('InwardAppointmentAdmission')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Appointment_Admission" value="Appointment Admission" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Appointment_Admission" ajax="false" action="#{appointmentController.navigateToAppointmentAdminFromMenu()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/appointment-admission.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Appointment Admission"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Manage Appointment -->
+                <h:panelGroup rendered="#{ui.icon eq 'Manage_Appointment' and webUserController.hasPrivilege('InwardAppointmentMenu')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Manage_Appointment" value="Manage Appointment" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Manage_Appointment" ajax="false" action="#{appointmentController.navigateToSearchAppointmentsListFromMenu()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/manage-appointment.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Manage Appointment"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Room Reservations -->
+                <h:panelGroup rendered="#{ui.icon eq 'Room_Reservations' and webUserController.hasPrivilege('InwardRoomRoomOccupency')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Room_Reservations" value="Room Reservations" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Room_Reservations" ajax="false" action="#{inwardReservationController.navigateToReservationCalendarFromMenu()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/room-reservations.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Room Reservations"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Room Occupancy -->
+                <h:panelGroup rendered="#{ui.icon eq 'Room_Occupancy' and webUserController.hasPrivilege('InwardRoomRoomOccupency')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Room_Occupancy" value="Room Occupancy" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Room_Occupancy" ajax="false" action="#{admissionController.navigateToRoomOccupancy()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/room-occupancy.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Room Occupancy"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Room Vacancy -->
+                <h:panelGroup rendered="#{ui.icon eq 'Room_Vacancy' and webUserController.hasPrivilege('InwardRoomRoomOccupency')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Room_Vacancy" value="Room Vacancy" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Room_Vacancy" ajax="false" action="#{admissionController.navigateToRoomVacancy()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/room-vacancy.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Room Vacancy"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Admit Room -->
+                <h:panelGroup rendered="#{ui.icon eq 'Admit_Room' and webUserController.hasPrivilege('WatingRoomAdmitPatient')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Admit_Room" value="Admit Room" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Admit_Room" ajax="false" action="#{roomChangeController.navigateToAdmitRoomFromMenu()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/admit-room.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Admit Room"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Room Change -->
+                <h:panelGroup rendered="#{ui.icon eq 'Room_Change' and webUserController.hasPrivilege('InwardRoomRoomChange')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Room_Change" value="Room Change" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Room_Change" ajax="false" action="#{admissionController.navigateToRoomChange()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/room-change.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Room Change"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Guardian Room Change -->
+                <h:panelGroup rendered="#{ui.icon eq 'Guardian_Room_Change' and webUserController.hasPrivilege('InwardRoomGurdianRoomChange')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Guardian_Room_Change" value="Guardian Room Change" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Guardian_Room_Change" ajax="false" action="#{admissionController.navigateToGuardianRoomChange()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/guardian-room-change.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Guardian Room Change"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Add Services and Investigations -->
+                <h:panelGroup rendered="#{ui.icon eq 'Add_Services_Investigations' and webUserController.hasPrivilege('InwardServicesAndItemsAddServices')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Add_Services_Investigations" value="Add Services and Investigations" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Add_Services_Investigations" ajax="false" action="#{billBhtController.navigateToAddServicesFromMenu}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/add-services.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Add Services and Investigations"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Add Services and Investigations with Payments -->
+                <h:panelGroup rendered="#{ui.icon eq 'Add_Services_With_Payments' and webUserController.hasPrivilege('InwardServicesAndItemsAddServices')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Add_Services_With_Payments" value="Add Services and Investigations with Payments" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Add_Services_With_Payments" ajax="false" action="#{opdBillController.navigateToNewInwardServiceBill}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/add-services-payments.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Add Services and Investigations with Payments"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Add Outside Charges -->
+                <h:panelGroup rendered="#{ui.icon eq 'Add_Outside_Charges' and webUserController.hasPrivilege('InwardServicesAndItemsAddOutSideCharges')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Add_Outside_Charges" value="Add Outside Charges" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Add_Outside_Charges" ajax="false" action="#{inwardAdditionalChargeController.navigateToAddOutsideChargeFromMenu()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/add-outside-charges.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Add Outside Charges"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Add Professional Fee -->
+                <h:panelGroup rendered="#{ui.icon eq 'Add_Professional_Fee' and webUserController.hasPrivilege('InwardServicesAndItemsAddProfessionalFee')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Add_Professional_Fee" value="Add Professional Fee" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Add_Professional_Fee" ajax="false" action="#{inwardProfessionalBillController.navigateToAddProfessionalFeesFromMenu()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/add-professional-fee.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Add Professional Fee"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Add Estimated Professional Fee -->
+                <h:panelGroup rendered="#{ui.icon eq 'Add_Estimated_Professional_Fee' and webUserController.hasPrivilege('InwardServicesAndItemsAddProfessionalFee')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Add_Estimated_Professional_Fee" value="Add Estimated Professional Fee" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Add_Estimated_Professional_Fee" ajax="false" action="#{inwardProfessionalBillController.navigateToAddEstimatedProfessionalFeeFromMenu()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/add-estimated-professional-fee.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Add Estimated Professional Fee"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Add Timed Services -->
+                <h:panelGroup rendered="#{ui.icon eq 'Add_Timed_Services' and webUserController.hasPrivilege('InwardServicesAndItemsAddTimedServices')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Add_Timed_Services" value="Add Timed Services" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Add_Timed_Services" ajax="false" action="#{inwardTimedItemController.navigateToAddInwardTimedServicesFromMenu}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/add-timed-services.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Add Timed Services"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Interim Bill -->
+                <h:panelGroup rendered="#{ui.icon eq 'Interim_Bill' and webUserController.hasPrivilege('InwardBillingInterimBill')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Interim_Bill" value="Interim Bill" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Interim_Bill" ajax="false" action="#{bhtSummeryController.navigateToIntrimBill()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/interim-bill.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Interim Bill"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Interim Bill - Estimated Professional Fees -->
+                <h:panelGroup rendered="#{ui.icon eq 'Interim_Bill_Estimated' and webUserController.hasPrivilege('InwardBillingInterimBill')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Interim_Bill_Estimated" value="Interim Bill - Estimated Professional Fees" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Interim_Bill_Estimated" ajax="false" action="#{bhtSummeryController.navigateToIntrimBillEstimate}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/interim-bill-estimated.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Interim Bill - Estimated Professional Fees"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Interim Bill Search -->
+                <h:panelGroup rendered="#{ui.icon eq 'Interim_Bill_Search' and webUserController.hasPrivilege('InwardBillingInterimBillSearch')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Interim_Bill_Search" value="Interim Bill Search" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Interim_Bill_Search" ajax="false" action="/inward/inward_search_intrim?faces-redirect=true" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/interim-bill-search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Interim Bill Search"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Search Service Bill -->
+                <h:panelGroup rendered="#{ui.icon eq 'Search_Service_Bill' and webUserController.hasPrivilege('InwardSearchServiceBill')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Search_Service_Bill" value="Search Service Bill" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Search_Service_Bill" ajax="false" action="/inward/inward_search_service?faces-redirect=true" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/search-service-bill.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Service Bill"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Search Professional Bill -->
+                <h:panelGroup rendered="#{ui.icon eq 'Search_Professional_Bill' and webUserController.hasPrivilege('InwardSearchProfessionalBill')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Search_Professional_Bill" value="Search Professional Bill" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Search_Professional_Bill" ajax="false" action="/inward/inward_search_professional?faces-redirect=true" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/search-professional-bill.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Professional Bill"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Search Estimated Professional Bill -->
+                <h:panelGroup rendered="#{ui.icon eq 'Search_Estimated_Professional_Bill' and webUserController.hasPrivilege('InwardSearchProfessionalBill')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Search_Estimated_Professional_Bill" value="Search Estimated Professional Bill" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Search_Estimated_Professional_Bill" ajax="false" action="/inward/inward_search_professional_estimate?faces-redirect=true" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/search-estimated-professional-bill.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Estimated Professional Bill"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Search Provisional Bill -->
+                <h:panelGroup rendered="#{ui.icon eq 'Search_Provisional_Bill' and webUserController.hasPrivilege('InwardSearchFinalBill')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Search_Provisional_Bill" value="Search Provisional Bill" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Search_Provisional_Bill" ajax="false" action="/inward/inward_search_provisional?faces-redirect=true" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/search-provisional-bill.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Provisional Bill"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Search Final Bill -->
+                <h:panelGroup rendered="#{ui.icon eq 'Search_Final_Bill' and webUserController.hasPrivilege('InwardSearchFinalBill')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Search_Final_Bill" value="Search Final Bill" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Search_Final_Bill" ajax="false" action="/inward/inward_search_final?faces-redirect=true" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/search-final-bill.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Final Bill"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Search Final Bill by Discharge Date -->
+                <h:panelGroup rendered="#{ui.icon eq 'Search_Final_Bill_By_Discharge_Date' and webUserController.hasPrivilege('InwardSearchFinalBill')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Search_Final_Bill_By_Discharge_Date" value="Search Final Bill by Discharge Date" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Search_Final_Bill_By_Discharge_Date" ajax="false" action="/inward/inward_search_final_check?faces-redirect=true" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/search-final-bill-discharge.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Final Bill by Discharge Date"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Request Medicines from Pharmacy -->
+                <h:panelGroup rendered="#{ui.icon eq 'Request_Medicines_From_Pharmacy' and webUserController.hasPrivilege('InwardPharmacyIssueRequest')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Request_Medicines_From_Pharmacy" value="Request Medicines from Pharmacy" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Request_Medicines_From_Pharmacy" ajax="false" action="#{admissionController.navigateToPharmacyBhtRequestFromMenu}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/request-medicines.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Request Medicines from Pharmacy"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- View Pharmacy Requests -->
+                <h:panelGroup rendered="#{ui.icon eq 'View_Pharmacy_Requests' and webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="View_Pharmacy_Requests" value="View Pharmacy Requests" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="View_Pharmacy_Requests" ajax="false" action="#{admissionController.navigateToSearchInwardBills}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/view-pharmacy-requests.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="View Pharmacy Requests"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Inward Analytics -->
+                <h:panelGroup rendered="#{ui.icon eq 'Inward_Analytics' and webUserController.hasPrivilege('InwardReport')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Inward_Analytics" value="Inward Analytics" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Inward_Analytics" ajax="false" action="/inward/inward_reports?faces-redirect=true" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/inward-analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Inward Analytics"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
             </ui:repeat>
         </div>
     </ui:define>
