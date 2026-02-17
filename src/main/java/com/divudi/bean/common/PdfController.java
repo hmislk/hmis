@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 import com.divudi.bean.hr.StaffImageController;
 import com.divudi.bean.lab.CommonReportItemController;
 import com.divudi.bean.lab.PatientInvestigationController;
+import java.text.SimpleDateFormat;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -772,10 +773,15 @@ public class PdfController {
                 break;
             case "paymentReportStaffWelfare":
             case "paymentReportVoucher":
+                break;
             case "paymentReportCheque":
+                populateTableForChequePayments(document, addingBundle);
+                break;
             case "paymentReportEwallet":
+                populateTableForEwalletPayments(document, addingBundle);
+                break;
             case "paymentReportSlip":
-//                populateTableForPaymentReports(document, addingBundle);
+                populateTableForSlipPayments(document, addingBundle);
                 break;
             case "netCash":
                 populateTitleBundleForPdf(document, addingBundle);
@@ -819,6 +825,27 @@ public class PdfController {
             case "pharmacyServiceCancellations":
             case "pharmacyServiceRefunds":
                 populateTableForpharmacyServiceCancellations(document, addingBundle);
+                break;
+            case "PharmacyCreditBills":
+            case "pharmacyCreditBills":
+            case "PharmacyCreditCancel":
+            case "PharmacyCreditRefund":
+                populateTableForopdServiceBilled(document, addingBundle);
+                break;
+            case "patientDepositReceiptsSummary":
+            case "carriedOutPatientDeposit":
+                populateSummaryOnlyBundleForPdf(document, addingBundle);
+                break;
+            case "patientDepositUtilization":
+            case "patientDepositUtilizationSummary":
+                populateTableForPatientDepositUtilization(document, addingBundle);
+                break;
+            case "opdPatientDepositPayments":
+            case "pharmacyPatientDepositPayments":
+                populateTableForOpdPatientDepositPayments(document, addingBundle);
+                break;
+            case "inwardPatientDepositPayments":
+                populateTableForInwardPatientDepositPayments(document, addingBundle);
                 break;
             default:
                 table.addCell(new Cell().add(new Paragraph("Data for unknown type"))); // Default handling for unknown types
@@ -1964,6 +1991,307 @@ public class PdfController {
 
         // Visual separator after the total
         document.add(lineSeparator);
+    }
+
+    /**
+     * Summary-only bundle (e.g., Patient Deposit Receipts Summary, Carried Out Patient Deposit).
+     * Display: Name | Total (single row, no detail rows)
+     */
+    private void populateSummaryOnlyBundleForPdf(Document document, ReportTemplateRowBundle addingBundle) {
+        float[] columnWidths = {2, 1};
+        Table table = new Table(columnWidths).useAllAvailableWidth();
+
+        Cell nameCell = new Cell()
+                .add(new Paragraph(addingBundle.getName()).setBold().setTextAlignment(TextAlignment.LEFT));
+        nameCell.setBorder(Border.NO_BORDER);
+        table.addCell(nameCell);
+
+        Cell valueCell = new Cell()
+                .add(new Paragraph(String.format("%,.2f", addingBundle.getTotal())).setTextAlignment(TextAlignment.RIGHT));
+        valueCell.setBorder(Border.NO_BORDER);
+        table.addCell(valueCell);
+
+        table.setBorder(Border.NO_BORDER);
+        document.add(table);
+    }
+
+    /**
+     * Patient Deposit Utilization (patientDepositUtilization, patientDepositUtilizationSummary).
+     * Display: Bill No | Date & Time | Patient | Bill Type | Value
+     */
+    private void populateTableForPatientDepositUtilization(Document document, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            document.add(new Paragraph("No Data for " + addingBundle.getName()));
+        } else {
+            Table table = new Table(new float[]{15, 20, 20, 15, 15}).useAllAvailableWidth();
+
+            table.addCell(new Cell(1, 4).add(new Paragraph(addingBundle.getName()).setBold()));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", addingBundle.getTotal())).setTextAlignment(TextAlignment.RIGHT)));
+
+            String[] headers = {"Bill No", "Date & Time", "Patient", "Bill Type", "Value"};
+            for (String header : headers) {
+                table.addCell(new Cell().add(new Paragraph(header).setBold()));
+            }
+
+            SimpleDateFormat dtFormat = new SimpleDateFormat("dd MMM yyyy hh:mm a");
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getDeptId() != null
+                                ? row.getPayment().getBill().getDeptId() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getCreatedAt() != null
+                                ? dtFormat.format(row.getPayment().getBill().getCreatedAt()) : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null
+                                && row.getPayment().getBill().getPatient() != null
+                                && row.getPayment().getBill().getPatient().getPerson() != null
+                                ? row.getPayment().getBill().getPatient().getPerson().getName() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null
+                                && row.getPayment().getBill().getBillTypeAtomic() != null
+                                ? row.getPayment().getBill().getBillTypeAtomic().getLabel() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        String.format("%,.2f", row.getPayment() != null ? row.getPayment().getPaidValue() : 0.0))
+                        .setTextAlignment(TextAlignment.RIGHT)));
+            }
+
+            document.add(table);
+        }
+    }
+
+    /**
+     * OPD/Pharmacy Patient Deposit Payments.
+     * Display: Bill No | Date & Time | Patient | Department | Value
+     */
+    private void populateTableForOpdPatientDepositPayments(Document document, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            document.add(new Paragraph("No Data for " + addingBundle.getName()));
+        } else {
+            Table table = new Table(new float[]{15, 20, 20, 15, 15}).useAllAvailableWidth();
+
+            table.addCell(new Cell(1, 4).add(new Paragraph(addingBundle.getName()).setBold()));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", addingBundle.getTotal())).setTextAlignment(TextAlignment.RIGHT)));
+
+            String[] headers = {"Bill No", "Date & Time", "Patient", "Department", "Value"};
+            for (String header : headers) {
+                table.addCell(new Cell().add(new Paragraph(header).setBold()));
+            }
+
+            SimpleDateFormat dtFormat = new SimpleDateFormat("dd MMM yyyy hh:mm a");
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getDeptId() != null
+                                ? row.getPayment().getBill().getDeptId() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getCreatedAt() != null
+                                ? dtFormat.format(row.getPayment().getCreatedAt()) : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null
+                                && row.getPayment().getBill().getPatient() != null
+                                && row.getPayment().getBill().getPatient().getPerson() != null
+                                ? row.getPayment().getBill().getPatient().getPerson().getName() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null
+                                && row.getPayment().getBill().getDepartment() != null
+                                ? row.getPayment().getBill().getDepartment().getName() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        String.format("%,.2f", row.getPayment() != null ? row.getPayment().getPaidValue() : 0.0))
+                        .setTextAlignment(TextAlignment.RIGHT)));
+            }
+
+            document.add(table);
+        }
+    }
+
+    /**
+     * Inward Patient Deposit Payments.
+     * Display: Bill No | BHT | Date & Time | Patient | Department | Value
+     */
+    private void populateTableForInwardPatientDepositPayments(Document document, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            document.add(new Paragraph("No Data for " + addingBundle.getName()));
+        } else {
+            Table table = new Table(new float[]{15, 10, 18, 18, 15, 12}).useAllAvailableWidth();
+
+            table.addCell(new Cell(1, 5).add(new Paragraph(addingBundle.getName()).setBold()));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", addingBundle.getTotal())).setTextAlignment(TextAlignment.RIGHT)));
+
+            String[] headers = {"Bill No", "BHT", "Date & Time", "Patient", "Department", "Value"};
+            for (String header : headers) {
+                table.addCell(new Cell().add(new Paragraph(header).setBold()));
+            }
+
+            SimpleDateFormat dtFormat = new SimpleDateFormat("dd MMM yyyy hh:mm a");
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getDeptId() != null
+                                ? row.getPayment().getBill().getDeptId() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null
+                                && row.getPayment().getBill().getPatientEncounter() != null
+                                && row.getPayment().getBill().getPatientEncounter().getBhtNo() != null
+                                ? row.getPayment().getBill().getPatientEncounter().getBhtNo() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getCreatedAt() != null
+                                ? dtFormat.format(row.getPayment().getCreatedAt()) : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null
+                                && row.getPayment().getBill().getPatient() != null
+                                && row.getPayment().getBill().getPatient().getPerson() != null
+                                ? row.getPayment().getBill().getPatient().getPerson().getName() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null
+                                && row.getPayment().getBill().getDepartment() != null
+                                ? row.getPayment().getBill().getDepartment().getName() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        String.format("%,.2f", row.getPayment() != null ? row.getPayment().getPaidValue() : 0.0))
+                        .setTextAlignment(TextAlignment.RIGHT)));
+            }
+
+            document.add(table);
+        }
+    }
+
+    /**
+     * Cheque Payments (paymentReportCheque).
+     * Display: Bill No | Date & Time | Patient | Cheque No | Cheque Date | Bank | Cheque Value
+     */
+    private void populateTableForChequePayments(Document document, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            document.add(new Paragraph("No Data for " + addingBundle.getName()));
+        } else {
+            Table table = new Table(new float[]{15, 18, 15, 10, 12, 12, 12}).useAllAvailableWidth();
+
+            table.addCell(new Cell(1, 6).add(new Paragraph(addingBundle.getName()).setBold()));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", addingBundle.getTotal())).setTextAlignment(TextAlignment.RIGHT)));
+
+            String[] headers = {"Bill No", "Date & Time", "Patient", "Cheque No", "Cheque Date", "Bank", "Cheque Value"};
+            for (String header : headers) {
+                table.addCell(new Cell().add(new Paragraph(header).setBold()));
+            }
+
+            SimpleDateFormat dtFormat = new SimpleDateFormat("dd MMM yyyy hh:mm a");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getDeptId() != null
+                                ? row.getPayment().getBill().getDeptId() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getCreatedAt() != null
+                                ? dtFormat.format(row.getPayment().getBill().getCreatedAt()) : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null
+                                && row.getPayment().getBill().getPatient() != null
+                                && row.getPayment().getBill().getPatient().getPerson() != null
+                                ? row.getPayment().getBill().getPatient().getPerson().getName() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getReferenceNo() != null
+                                ? row.getPayment().getReferenceNo() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getChequeDate() != null
+                                ? dateFormat.format(row.getPayment().getChequeDate()) : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBank() != null
+                                ? row.getPayment().getBank().getName() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        String.format("%,.2f", row.getPayment() != null ? row.getPayment().getPaidValue() : 0.0))
+                        .setTextAlignment(TextAlignment.RIGHT)));
+            }
+
+            document.add(table);
+        }
+    }
+
+    /**
+     * E-Wallet Payments (paymentReportEwallet).
+     * Display: Bill No | Date & Time | Patient | eWallet Provider | Transaction Ref | eWallet Value
+     */
+    private void populateTableForEwalletPayments(Document document, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            document.add(new Paragraph("No Data for " + addingBundle.getName()));
+        } else {
+            Table table = new Table(new float[]{15, 18, 18, 15, 15, 12}).useAllAvailableWidth();
+
+            table.addCell(new Cell(1, 5).add(new Paragraph(addingBundle.getName()).setBold()));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", addingBundle.getTotal())).setTextAlignment(TextAlignment.RIGHT)));
+
+            String[] headers = {"Bill No", "Date & Time", "Patient", "eWallet Provider", "Transaction Ref", "eWallet Value"};
+            for (String header : headers) {
+                table.addCell(new Cell().add(new Paragraph(header).setBold()));
+            }
+
+            SimpleDateFormat dtFormat = new SimpleDateFormat("dd MMM yyyy hh:mm a");
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getDeptId() != null
+                                ? row.getPayment().getBill().getDeptId() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getCreatedAt() != null
+                                ? dtFormat.format(row.getPayment().getBill().getCreatedAt()) : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null
+                                && row.getPayment().getBill().getPatient() != null
+                                && row.getPayment().getBill().getPatient().getPerson() != null
+                                ? row.getPayment().getBill().getPatient().getPerson().getName() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBank() != null
+                                ? row.getPayment().getBank().getName() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getReferenceNo() != null
+                                ? row.getPayment().getReferenceNo() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        String.format("%,.2f", row.getPayment() != null ? row.getPayment().getPaidValue() : 0.0))
+                        .setTextAlignment(TextAlignment.RIGHT)));
+            }
+
+            document.add(table);
+        }
+    }
+
+    /**
+     * Slip Payments (paymentReportSlip).
+     * Display: Bill No | Date & Time | Patient | Slip Number | Bank/Institution | Fee
+     */
+    private void populateTableForSlipPayments(Document document, ReportTemplateRowBundle addingBundle) {
+        if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
+            document.add(new Paragraph("No Data for " + addingBundle.getName()));
+        } else {
+            Table table = new Table(new float[]{15, 18, 18, 12, 15, 12}).useAllAvailableWidth();
+
+            table.addCell(new Cell(1, 5).add(new Paragraph(addingBundle.getName()).setBold()));
+            table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", addingBundle.getTotal())).setTextAlignment(TextAlignment.RIGHT)));
+
+            String[] headers = {"Bill No", "Date & Time", "Patient", "Slip Number", "Bank/Institution", "Fee"};
+            for (String header : headers) {
+                table.addCell(new Cell().add(new Paragraph(header).setBold()));
+            }
+
+            SimpleDateFormat dtFormat = new SimpleDateFormat("dd MMM yyyy hh:mm a");
+            for (ReportTemplateRow row : addingBundle.getReportTemplateRows()) {
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getDeptId() != null
+                                ? row.getPayment().getBill().getDeptId() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null && row.getPayment().getBill().getCreatedAt() != null
+                                ? dtFormat.format(row.getPayment().getBill().getCreatedAt()) : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBill() != null
+                                && row.getPayment().getBill().getPatient() != null
+                                && row.getPayment().getBill().getPatient().getPerson() != null
+                                ? row.getPayment().getBill().getPatient().getPerson().getName() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getReferenceNo() != null
+                                ? row.getPayment().getReferenceNo() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        row.getPayment() != null && row.getPayment().getBank() != null
+                                ? row.getPayment().getBank().getName() : "")));
+                table.addCell(new Cell().add(new Paragraph(
+                        String.format("%,.2f", row.getPayment() != null ? row.getPayment().getPaidValue() : 0.0))
+                        .setTextAlignment(TextAlignment.RIGHT)));
+            }
+
+            document.add(table);
+        }
     }
 
     // New method for DTO-based bundles
