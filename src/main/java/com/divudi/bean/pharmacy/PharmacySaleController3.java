@@ -252,6 +252,8 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
     Token currentToken;
 
     PaymentMethod paymentMethod;
+    
+    private Map<String, Object> initialPatient;
 
     public Token getCurrentToken() {
         return currentToken;
@@ -4176,6 +4178,16 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
 
     public void setBillSettlingStarted(boolean billSettlingStarted) {
         this.billSettlingStarted = billSettlingStarted;
+    }
+    
+    @Override
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    @Override
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
     public void calculateDobFromAge() {

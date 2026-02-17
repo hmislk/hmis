@@ -185,6 +185,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Reservation latestfoundReservation;
 
     private Reservation currentReservation;
+    
+    private Map<String, Object> initialPatient;
 
     @PostConstruct
     public void init() {
@@ -2449,6 +2451,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setCurrentReservation(Reservation currentReservation) {
         this.currentReservation = currentReservation;
+    }
+    
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
     /**

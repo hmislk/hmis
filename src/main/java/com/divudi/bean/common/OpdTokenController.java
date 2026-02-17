@@ -89,6 +89,8 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     private List<TokenCount> tokenCounts;
 
     private boolean printPreview;
+    
+    private Map<String, Object> initialPatient;
 
     public OpdTokenController() {
     }
@@ -692,6 +694,16 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
     @Override
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+    
+    @Override
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    @Override
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
 }

@@ -212,7 +212,11 @@
 
 
                                                         </p:selectBooleanButton>
-                                                        <p:commandButton id="btnDone" alt="Save Patient Details" ajax="true" process="ptImp" update="ptImp" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(bhtEditController.patient)}" rendered="#{bhtEditController.patientDetailsEditable}" />
+                                                        <p:commandButton id="btnDone" alt="Save Patient Details" ajax="true" process="ptImp" update="ptImp" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(bhtEditController.patient)}" rendered="#{bhtEditController.patientDetailsEditable}">
+                                                            <f:setPropertyActionListener 
+                                                                        target="#{patientController.editController}" 
+                                                                        value="#{bhtEditController}" />
+                                                        </p:commandButton>
                                                     </h:panelGroup>
 
                                                 </h:panelGroup>

@@ -317,6 +317,8 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
     private String refNo;
     private double remainAmount;
     private Double currentBillItemQty;
+    
+    private Map<String, Object> initialPatient;
 
     /**
      *
@@ -4674,6 +4676,16 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
 
     public void setCurrentBillItemQty(Double currentBillItemQty) {
         this.currentBillItemQty = currentBillItemQty;
+    }
+    
+    @Override
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    @Override
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
 }

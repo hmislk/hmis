@@ -73,6 +73,9 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
     private boolean showConfirmation;
     private List<ClinicalFindingValue> patientAllergies;
     private ClinicalFindingValue currentPatientAllergy;
+    
+    private Map<String, Object> initialPatient;
+    
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Functions">
@@ -409,6 +412,14 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
 
     public void setCurrentPatientAllergy(ClinicalFindingValue currentPatientAllergy) {
         this.currentPatientAllergy = currentPatientAllergy;
+    }
+    
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
     // </editor-fold>

@@ -269,6 +269,8 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     private double remainAmount;
     private List<SessionInstance> sessionsForHolidayMark;
     private List<SessionInstance> sessionsForCancellation;
+    
+    private Map<String, Object> initialPatient;
 
     public List<SessionInstance> getSessionsForCancellation() {
         return sessionsForCancellation;
@@ -4809,6 +4811,14 @@ public class BookingController implements Serializable, ControllerWithPatient, C
 
     public void setRemainAmount(double remainAmount) {
         this.remainAmount = remainAmount;
+    }
+    
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
     @Override

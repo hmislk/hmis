@@ -152,6 +152,8 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     private Date reservedToDate;
     private RoomFacilityCharge reservedRoom;
     private String comment;
+    
+    private Map<String, Object> initialPatient;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Navigations">
@@ -1717,6 +1719,14 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+    
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
     // </editor-fold>
 

@@ -306,6 +306,8 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
     Token currentToken;
 
     PaymentMethod paymentMethod;
+    
+    private Map<String, Object> initialPatient;
 
     /**
      * Creates a new instance of PharmacySaleController
@@ -6022,6 +6024,16 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
 
     public void setBillSettlingStarted(boolean billSettlingStarted) {
         this.billSettlingStarted = billSettlingStarted;
+    }
+    
+    @Override
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    @Override
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
     public void calculateDobFromAge() {

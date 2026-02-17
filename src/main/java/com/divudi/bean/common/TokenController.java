@@ -80,6 +80,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
     private Department selectedCounter;
 
     private boolean patientDetailsEditable;
+    
+    private Map<String, Object> initialPatient;
 
     // </editor-fold>
     public TokenController() {
@@ -682,6 +684,16 @@ public class TokenController implements Serializable, ControllerWithPatient {
     @Override
     public void listnerForPaymentMethodChange() {
         // ToDo: Add Logic
+    }
+    
+    @Override
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    @Override
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
     public List<Token> getInprogressTokensSaleForCashier() {

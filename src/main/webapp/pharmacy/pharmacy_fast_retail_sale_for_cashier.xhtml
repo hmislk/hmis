@@ -454,7 +454,7 @@
                                                                     value="Searched Patient Details"
                                                                     class="mx-2"
                                                                     ></h:outputText>
-                                                                <h:panelGroup rendered="#{cc.attrs.editable}" id="edit" >
+                                                                <h:panelGroup rendered="true" id="edit" >
                                                                     <p:selectBooleanButton
                                                                         value="#{pharmacyFastRetailSaleForCashierController.patientDetailsEditable}"
                                                                         offIcon="pi pi-pencil"
@@ -465,7 +465,9 @@
                                                                             process="@this"
                                                                             update="viewPatient editPatient btnDone edit" />
                                                                     </p:selectBooleanButton>
-                                                                    <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(pharmacyFastRetailSaleForCashierController.patient)}" rendered="#{pharmacyFastRetailSaleForCashierController.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('panelPatient',view).clientId} " />
+                                                                    <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(pharmacyFastRetailSaleForCashierController.patient)}" rendered="#{pharmacyFastRetailSaleForCashierController.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('panelPatient',view).clientId} ">
+                                                                        <f:setPropertyActionListener target="#{patientController.editController}" value="#{pharmacyFastRetailSaleForCashierController}" />
+                                                                    </p:commandButton>
                                                                 </h:panelGroup>
 
                                                             </h:panelGroup>

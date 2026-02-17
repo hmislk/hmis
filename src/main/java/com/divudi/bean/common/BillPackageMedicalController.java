@@ -147,6 +147,8 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
     List<BillItem> billItems;
     Institution institution;
     Item ServiceItem;
+    
+    private Map<String, Object> initialPatient;
 
     public void makeNull() {
         billItems = null;
@@ -1452,6 +1454,16 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
     @Override
     public void listnerForPaymentMethodChange() {
         // ToDo: Add Logic
+    }
+    
+    @Override
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    @Override
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
 }

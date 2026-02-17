@@ -32,7 +32,11 @@
                                                 ajax="false" 
                                                 icon="pi pi-check" 
                                                 iconPos="left" 
-                                                class="ui-button-success m-1 " />
+                                                class="ui-button-success m-1 ">
+                                                <f:setPropertyActionListener 
+                                                    target="#{patientController.editController}" 
+                                                    value="#{patientController}" />
+                                            </p:commandButton>
 
                                             <p:commandButton 
                                                 value="Patient Profile" 

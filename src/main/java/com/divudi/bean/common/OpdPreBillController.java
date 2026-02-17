@@ -197,6 +197,8 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     private List<ItemLight> departmentOpdItems;
     private List<Department> opdItemDepartments;
     private Department selectedOpdItemDepartment;
+    
+    private Map<String, Object> initialPatient;
 
     // </editor-fold>
     public double getCashRemain() {
@@ -2193,6 +2195,16 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     @Override
     public void listnerForPaymentMethodChange() {
         // ToDo: Add Logic
+    }
+    
+    @Override
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    @Override
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
 }

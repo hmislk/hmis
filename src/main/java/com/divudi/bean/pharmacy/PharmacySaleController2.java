@@ -252,6 +252,8 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     Token currentToken;
 
     PaymentMethod paymentMethod;
+    
+    private Map<String, Object> initialPatient;
 
     public Token getCurrentToken() {
         return currentToken;
@@ -4186,6 +4188,16 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
             return;
         }
         patient.getPerson().calDobFromAge();
+    }
+    
+    @Override
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    @Override
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
     // Getter method for JSF to access the converter

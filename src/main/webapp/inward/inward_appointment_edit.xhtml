@@ -111,7 +111,9 @@
 
 
                                                         </p:selectBooleanButton>
-                                                        <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(appointmentController.patient)}" rendered="#{appointmentController.patientDetailsEditable}" />
+                                                        <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(appointmentController.patient)}" rendered="#{appointmentController.patientDetailsEditable}">
+                                                            <f:setPropertyActionListener target="#{patientController.editController}" value="#{appointmentController}" />
+                                                        </p:commandButton>
                                                     </h:panelGroup>
 
                                                 </h:panelGroup>

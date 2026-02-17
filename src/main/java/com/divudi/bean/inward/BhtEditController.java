@@ -145,6 +145,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     
     Map<String, Object> originalAdmission;
     Map<String, Object> updatedAdmission;
+    private Map<String, Object> initialPatient;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Functons">
@@ -897,6 +898,14 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     public void setCurrecntEncounterCreditCompany(EncounterCreditCompany currecntEncounterCreditCompany) {
         this.currecntEncounterCreditCompany = currecntEncounterCreditCompany;
+    }
+    
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
     // </editor-fold>

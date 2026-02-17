@@ -108,6 +108,8 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     private List<PatientDepositHistoryDto> latestPatientDepositHistoryDto;
 
     private int patientDepositManagementIndex = 0;
+    
+    private Map<String, Object> initialPatient;
 
     public String navigateToAddNewPatientDeposit() {
         clearDataForPatientDeposit();
@@ -922,6 +924,16 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     @Override
     public void listnerForPaymentMethodChange() {
         // ToDo: Add Logic
+    }
+    
+    @Override
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    @Override
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
     /**

@@ -235,6 +235,8 @@ public class PastBookingController implements Serializable, ControllerWithPatien
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
 
     private Double feeTotalForSelectedBill;
+    
+    private Map<String, Object> initialPatient;
 
     public boolean chackNull(String template) {
         boolean chack;
@@ -2746,6 +2748,16 @@ public class PastBookingController implements Serializable, ControllerWithPatien
     @Override
     public void listnerForPaymentMethodChange() {
         // ToDo: Add Logic
+    }
+    
+    @Override
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    @Override
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
 }

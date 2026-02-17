@@ -610,7 +610,9 @@
                                                                         process="@this"
                                                                         update="viewPatient editPatient btnDone edit" />
                                                                 </p:selectBooleanButton>
-                                                                <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(pharmacySaleController3.patient)}" rendered="#{pharmacySaleController3.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('panelPatient',view).clientId} " />
+                                                                <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(pharmacySaleController3.patient)}" rendered="#{pharmacySaleController3.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('panelPatient',view).clientId} ">
+                                                                    <f:setPropertyActionListener target="#{patientController.editController}" value="#{pharmacySaleController3}" />
+                                                                </p:commandButton>
                                                             </h:panelGroup>
 
                                                         </h:panelGroup>

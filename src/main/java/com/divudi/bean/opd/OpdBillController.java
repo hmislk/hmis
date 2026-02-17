@@ -314,6 +314,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     private Double currentBillItemQty;
     private PatientEncounter patientEncounter;
     private Priority currentBillItemPriority;
+    
+    private Map<String, Object> editedPatient;
+    private Map<String, Object> initialPatient;
 
     @PostConstruct
     public void init() {
@@ -5452,6 +5455,22 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
     public void setCurrentBillItemPriority(Priority currentBillItemPriority) {
         this.currentBillItemPriority = currentBillItemPriority;
+    }
+    
+    public Map<String, Object> getEditedPatient() {
+        return editedPatient;
+    }
+
+    public void setEditedPatient(Map<String, Object> editedPatient) {
+        this.editedPatient = editedPatient;
+    }
+
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
 }

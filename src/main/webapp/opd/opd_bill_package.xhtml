@@ -124,7 +124,11 @@
                                                                 process="btnDone editPatient"
                                                                 action="#{patientController.saveSelected(billPackageController.patient)}" 
                                                                 rendered="#{billPackageController.patientDetailsEditable}" 
-                                                                update="msg :#{p:resolveFirstComponentWithId('ptImp',view).clientId} " />
+                                                                update="msg :#{p:resolveFirstComponentWithId('ptImp',view).clientId} ">
+                                                                <f:setPropertyActionListener 
+                                                                        target="#{patientController.editController}" 
+                                                                        value="#{billPackageController}" />
+                                                            </p:commandButton>
                                                         </h:panelGroup>
 
                                                     </h:panelGroup>

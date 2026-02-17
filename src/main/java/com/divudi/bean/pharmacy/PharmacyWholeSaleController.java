@@ -170,6 +170,8 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
     ///////////////////
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
+    
+    private Map<String, Object> initialPatient;
 
     public String pharmacyWholeRetailSale() {
         return "/pharmacy_wholesale/pharmacy_bill_retail_sale";
@@ -2211,6 +2213,16 @@ public class PharmacyWholeSaleController implements Serializable, ControllerWith
     @Override
     public void listnerForPaymentMethodChange() {
         // ToDo: Add Logic
+    }
+    
+    @Override
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    @Override
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
 }

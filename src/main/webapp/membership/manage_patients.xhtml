@@ -106,7 +106,9 @@
                                     <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" />
                                     <p:commandButton  process="panelDetails" ajax="false"
                                                       value="Save" 
-                                                      action="#{patientController.saveSelected()}"></p:commandButton>
+                                                      action="#{patientController.saveSelected()}">
+                                        <f:setPropertyActionListener target="#{patientController.editController}" value="#{patientController}" />                
+                                    </p:commandButton>
 
                                 </f:facet>
 

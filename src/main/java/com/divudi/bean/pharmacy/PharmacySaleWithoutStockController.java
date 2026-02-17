@@ -189,6 +189,8 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
     private String comment;
     private UserStockContainer userStockContainer;
     private PaymentMethodData paymentMethodData;
+    
+    private Map<String, Object> initialPatient;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -201,6 +203,16 @@ public class PharmacySaleWithoutStockController implements Serializable, Control
     // <editor-fold defaultstate="collapsed" desc="Functions">
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
+    
+    @Override
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    @Override
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
+    }
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Inner Classes">
     // </editor-fold>  

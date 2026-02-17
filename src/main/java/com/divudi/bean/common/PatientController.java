@@ -63,6 +63,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.AuditService;
 import com.divudi.service.MembershipService;
 
 import java.io.ByteArrayInputStream;
@@ -73,6 +74,7 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -147,6 +149,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private PatientInvestigationFacade patientInvestigationFacade;
     @EJB
     MembershipService membershipService;
+    @EJB
+    private AuditService auditService;
     /**
      *
      * Controllers
@@ -280,6 +284,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
     private boolean reGenerateePhn;
     private PaymentMethod paymentMethod;
     private String blacklistComment;
+    
+    private Map<String, Object> editedPatient;
+    private Map<String, Object> initialPatient;
+    private ControllerWithPatient editController;
     
     public boolean isBlackListStatus() {
         return blackListStatus;
@@ -1069,6 +1077,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         reGenerateePhn = webUserController.hasPrivilege("EditData");
+        
+        // patient lookup -> edit patient
+        initialPatient = new HashMap<>();
+        patientToAuditMap(initialPatient, current);
 
         return "/opd/patient_edit?faces-redirect=true";
     }
@@ -2203,6 +2215,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
             }
 //            admissionController.fillCurrentPatientAllergies(current);//TODO
 
+            // Audit Event: set initialPatient of relevant controller
+            controller.setInitialPatient(new HashMap<>());
+            patientToAuditMap(controller.getInitialPatient(), patientSearched);
+            
             boolean automaticallySetPatientDeposit = configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false);
             System.out.println("One patient found - controller.getPatient().getHasAnAccount() = " + controller.getPatient().getHasAnAccount());
             if (controller.getPatient().getHasAnAccount() != null) {
@@ -2213,6 +2229,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             }
             controller.listnerForPaymentMethodChange();
             quickSearchPatientList = null;
+            System.out.println("quickSearchPatientList = " + quickSearchPatientList);
         } else {
             controller.setPatient(null);
             patientSearched = null;
@@ -2240,6 +2257,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
         controller.setPatient(current);
         controller.setPatientDetailsEditable(false);
 //        controller.setPaymentMethod(null);
+
+        // Audit Event: set initalPatient of relevant controller
+        controller.setInitialPatient(new HashMap<>());
+        patientToAuditMap(controller.getInitialPatient(), current);
 
         admissionController.fillCurrentPatientAllergies(current); //TODO
 
@@ -3382,10 +3403,39 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFacade().createAndFlush(p);  // Immediate flush to database
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
         } else {
+            editedPatient = new HashMap<>();
+            patientToAuditMap(editedPatient, p);
+            
             getFacade().editAndFlush(p);    // Immediate flush to database
+            
+            if (editController != null) {
+                auditService.logAudit(editController.getInitialPatient(), editedPatient, sessionController.getLoggedUser(), "Patient", "EditPatient", p.getId());
+                
+                editController.setInitialPatient(editedPatient);
+                editedPatient = null;
+            } else {
+                System.out.println("controller not with patient = ");
+            }
+            
             JsfUtil.addSuccessMessage("Patient Saved Successfully");
         }
         return true;
+    }
+    
+    public boolean saveSelected(Patient p, PharmacySaleController c) {
+        boolean result = saveSelected(p);
+        Map<String, Object> editedPatient = new HashMap<>();
+        patientToAuditMap(editedPatient, p);
+        
+        // controller wise audit event log
+        if (result == true && p.getId() != null) {
+             auditService.logAudit(c.getInitialPatient(), editedPatient, sessionController.getLoggedUser(), "Patient", "EditPatient", p.getId());
+        }
+        
+        c.setInitialPatient(editedPatient);
+        c.setEditedPatient(null);
+        
+        return result;
     }
 
     public List<Patient> findPatientUsingPhnNumber(String phn) {
@@ -4724,6 +4774,30 @@ public class PatientController implements Serializable, ControllerWithPatient {
     public void setSearchPatientAddress(String searchPatientAddress) {
         this.searchPatientAddress = searchPatientAddress;
     }
+    
+    public Map<String, Object> getEditedPatient() {
+        return editedPatient;
+    }
+
+    public void setEditedPatient(Map<String, Object> editedPatient) {
+        this.editedPatient = editedPatient;
+    }
+
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
+    }
+
+    public ControllerWithPatient getEditController() {
+        return editController;
+    }
+
+    public void setEditController(ControllerWithPatient editController) {
+        this.editController = editController;
+    }
 
     private void initializePaymentDataFromOriginalPayments(List<Payment> originalPayments) {
         if (originalPayments == null || originalPayments.isEmpty()) {
@@ -4782,7 +4856,32 @@ public class PatientController implements Serializable, ControllerWithPatient {
             // This is a complex scenario that may require additional UI handling
         }
     }
-
+    
+    // Patient Edit: prepare data to audit event log
+    public void patientToAuditMap(Map<String, Object> m, Patient p) {
+        if (p == null || m == null) {
+            return;
+        }
+        
+        m.put("patientId", p.getId());
+        m.put("phn", p.getPhn());
+        
+        if (p.getPerson() != null) {
+            Person pr = p.getPerson();
+            Map<String, Object> dtl = new HashMap<>();
+            dtl.put("personId", pr.getId());
+            dtl.put("name", pr.getName());
+            dtl.put("dob", pr.getDob() == null ? null :
+                new SimpleDateFormat("yyyy-MM-dd").format(pr.getDob()));
+            dtl.put("sex", pr.getSex().toString());
+            dtl.put("address", pr.getAddress());
+            
+            m.put("Person", dtl);
+        } else {
+            m.put("person", "No Person");
+        }
+        
+    }
     
     /**
      *

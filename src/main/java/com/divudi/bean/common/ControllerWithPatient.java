@@ -2,6 +2,7 @@ package com.divudi.bean.common;
 
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Patient;
+import java.util.Map;
 
 public interface ControllerWithPatient {
 
@@ -20,4 +21,8 @@ public interface ControllerWithPatient {
     PaymentMethod getPaymentMethod();
 
     void listnerForPaymentMethodChange();
+    
+    void setInitialPatient(Map<String, Object> p);
+    
+    Map<String, Object> getInitialPatient();
 }

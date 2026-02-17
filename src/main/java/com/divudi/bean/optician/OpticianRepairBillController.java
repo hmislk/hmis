@@ -283,6 +283,8 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
     private Double totalHospitalFee;
     private Double totalSaffFee;
     private boolean canChangeSpecialityAndDoctorInAddedBillItem;
+    
+    private Map<String, Object> initialPatient;
 
     /**
      *
@@ -3858,6 +3860,16 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
 
     public void setDepartmentOpdItems(List<ItemLight> departmentOpdItems) {
         this.departmentOpdItems = departmentOpdItems;
+    }
+    
+    @Override
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    @Override
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
 }

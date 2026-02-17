@@ -16,6 +16,7 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import org.primefaces.event.SelectEvent;
 
 /**
@@ -47,6 +48,8 @@ public class ChannelBookingController implements Serializable, ControllerWithPat
     private Staff toStaff;
     private String errorText;
     private boolean patientDetailsEditable;
+    
+    private Map<String, Object> initialPatient;
 
     public ChannelBookingController() {
     }
@@ -242,6 +245,16 @@ public class ChannelBookingController implements Serializable, ControllerWithPat
 
     public void setErrorText(String errorText) {
         this.errorText = errorText;
+    }
+    
+    @Override
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    @Override
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
     @Override

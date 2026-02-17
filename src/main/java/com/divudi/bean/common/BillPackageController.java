@@ -216,6 +216,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private double remainAmount;
     private List<Payment> originalBillPayments;
     private boolean originalBillCredit;
+    
+    private Map<String, Object> initialPatient;
 
     //</editor-fold>
     private void savePatient() {
@@ -3627,6 +3629,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public void setCurrentSelectedPackage(Item currentSelectedPackage) {
         this.currentSelectedPackage = currentSelectedPackage;
+    }
+    
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
 }

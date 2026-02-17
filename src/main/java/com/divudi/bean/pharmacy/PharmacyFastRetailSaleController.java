@@ -290,6 +290,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     Token currentToken;
 
     PaymentMethod paymentMethod;
+    
+    private Map<String, Object> initialPatient;
 
     public Token getCurrentToken() {
         return currentToken;
@@ -2562,6 +2564,16 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     @Override
     public void toggalePatientEditable() {
         patientDetailsEditable = !patientDetailsEditable;
+    }
+    
+    @Override
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    @Override
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
     public void processBillItems() {

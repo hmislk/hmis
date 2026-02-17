@@ -262,6 +262,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private PaymentMethodData paymentMethodData;
 
     private String externalDoctor;
+    
+    private Map<String, Object> initialPatient;
 
     private final AtomicBoolean ccBillSettlingStarted = new AtomicBoolean(false);
 
@@ -2580,6 +2582,14 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     public void setCcBillSettlingStarted(boolean ccBillSettlingStarted) {
         this.ccBillSettlingStarted.set(ccBillSettlingStarted);
 
+    }
+    
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
     public class CollectingCenterBookSummeryRow {

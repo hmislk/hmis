@@ -16,6 +16,7 @@ import com.divudi.bean.common.ControllerWithPatientViewScope;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.ItemForItemController;
+import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.common.SessionController;
@@ -89,6 +90,7 @@ import com.divudi.core.facade.AgentReferenceBookFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.SessionInstanceFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.AuditService;
 import com.divudi.service.ClinicService;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -177,6 +179,8 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     StaffService staffBean;
     @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
+    @EJB
+    AuditService auditService;
     /**
      * Controllers
      */
@@ -234,6 +238,8 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     EnumController enumController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    PatientController patientController;
     /**
      * Properties
      */
@@ -364,6 +370,9 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     private ScheduleEvent<?> sEvent = new DefaultScheduleEvent<>();
 
     private List<BillFee> lstBillFees;
+    
+    private Map<String, Object> editedPatient;
+    private Map<String, Object> initialPatient;
 
     public void makeNull() {
         consultant = null;
@@ -8350,6 +8359,10 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     @Override
     public void selectQuickOneFromQuickSearchPatient() {
         setPatient(patient);
+        
+        initialPatient = new HashMap<>();
+        patientController.patientToAuditMap(initialPatient, patient);
+        
         setPatientDetailsEditable(false);
         quickSearchPatientList = null;
     }
@@ -8376,6 +8389,15 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             patientFacade.create(patient);
         } else {
             patientFacade.edit(patient);
+            editedPatient = new HashMap<>();
+            patientController.patientToAuditMap(editedPatient, patient);
+            
+            patientFacade.edit(patient);
+            
+            auditService.logAudit(getInitialPatient(), editedPatient, sessionController.getLoggedUser(), "Patient", "EditPatient", p.getId());
+                
+            initialPatient = editedPatient;
+            editedPatient = null;
         }
     }
 
@@ -8425,6 +8447,10 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         } else if (quickSearchPatientList.size() == 1) {
             patientSearched = quickSearchPatientList.get(0);
             setPatient(patientSearched);
+            
+            initialPatient = new HashMap<>();
+            patientController.patientToAuditMap(initialPatient, patientSearched);
+            
             setPatientDetailsEditable(false);
             quickSearchPatientList = null;
         } else {
@@ -8815,6 +8841,22 @@ public class ClinicController implements Serializable, ControllerWithPatientView
 
     public void setLstBillFees(List<BillFee> lstBillFees) {
         this.lstBillFees = lstBillFees;
+    }
+    
+    public Map<String, Object> getEditedPatient() {
+        return editedPatient;
+    }
+
+    public void setEditedPatient(Map<String, Object> editedPatient) {
+        this.editedPatient = editedPatient;
+    }
+
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
     }
 
 }

@@ -221,6 +221,8 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
     private Token currentToken;
 
     private PaymentMethod paymentMethod;
+    
+    private Map<String, Object> initialPatient;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -465,6 +467,16 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
+    
+    @Override
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
+
+    @Override
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
+    }
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Inner Classes Static Converter">
     // </editor-fold>  

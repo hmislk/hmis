@@ -15,6 +15,7 @@ import com.divudi.bean.common.ControllerWithPatientViewScope;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.ItemForItemController;
+import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.common.SessionController;
@@ -97,6 +98,7 @@ import com.divudi.core.facade.OnlineBookingFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.SessionInstanceFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.AuditService;
 import com.divudi.service.ChannelService;
 
 import java.io.Serializable;
@@ -189,6 +191,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     AgentReferenceBookFacade agentReferenceBookFacade;
     @EJB
     ChannelService channelService;
+    @EJB
+    AuditService auditService;
     /**
      * Controllers
      */
@@ -246,6 +250,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     EnumController enumController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    PatientController patientController;
     /**
      * Properties
      */
@@ -383,6 +389,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private ScheduleEvent<?> sEvent = new DefaultScheduleEvent<>();
 
     private List<BillFee> lstBillFees;
+    
+    private Map<String, Object> initialPatient;
+    private Map<String, Object> editedPatient;
 
     public List<BillSession> getAllBillSessionsWithTemporaryBookings() {
         return allBillSessionsWithTemporaryBookings;
@@ -9373,6 +9382,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     @Override
     public void selectQuickOneFromQuickSearchPatient() {
         setPatient(patient);
+        
+        initialPatient = new HashMap<>();
+        patientController.patientToAuditMap(initialPatient, patient);
+        
         setPatientDetailsEditable(false);
         quickSearchPatientList = null;
     }
@@ -9398,7 +9411,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             patient.setCreater(sessionController.getLoggedUser());
             patientFacade.create(patient);
         } else {
+            editedPatient = new HashMap<>();
+            patientController.patientToAuditMap(editedPatient, patient);
+            
             patientFacade.edit(patient);
+            
+            auditService.logAudit(getInitialPatient(), editedPatient, sessionController.getLoggedUser(), "Patient", "EditPatient", p.getId());
+                
+            initialPatient = editedPatient;
+            editedPatient = null;
         }
     }
     
@@ -9453,6 +9474,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         } else if (quickSearchPatientList.size() == 1) {
             patientSearched = quickSearchPatientList.get(0);
             setPatient(patientSearched);
+            
+            initialPatient = new HashMap<>();
+            patientController.patientToAuditMap(initialPatient, patientSearched);
+            
             setPatientDetailsEditable(false);
             quickSearchPatientList = null;
         } else {
@@ -9847,5 +9872,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void setLstBillFees(List<BillFee> lstBillFees) {
         this.lstBillFees = lstBillFees;
     }
+    
+    public Map<String, Object> getInitialPatient() {
+        return initialPatient;
+    }
 
+    public void setInitialPatient(Map<String, Object> initialPatient) {
+        this.initialPatient = initialPatient;
+    }
+    
 }
